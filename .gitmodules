@@ -1,0 +1,3 @@
+[submodule "CMake/Sober"]
+	path = CMake/Sober
+	url = https://github.com/KonstantinTomashevich/Sober
