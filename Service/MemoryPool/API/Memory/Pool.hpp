@@ -17,10 +17,10 @@ public:
     Pool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
 
     /// \brief Copying memory pool contradicts with its usage practices.
-    Pool (const Pool &otherPool) = delete;
+    Pool (const Pool &_other) = delete;
 
     // \brief Captures pages of given pool and leaves that pool empty.
-    Pool (Pool &&other) noexcept;
+    Pool (Pool &&_other) noexcept;
 
     ~Pool () noexcept;
 
@@ -49,4 +49,4 @@ private:
     /// \see ::MAX_FIELDS_SIZE.
     std::array <uint8_t, MAX_FIELDS_SIZE> fields;
 };
-}// namespace Emergence::Memory
+} // namespace Emergence::Memory
