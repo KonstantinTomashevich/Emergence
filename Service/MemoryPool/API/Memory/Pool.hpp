@@ -10,11 +10,17 @@ class Pool final
 {
 public:
     /// \param _chunkSize fixed chunk size, must be greater or equal to `sizeof (uintptr_t)`.
-    Pool (std::size_t _chunkSize) noexcept;
+    explicit Pool (std::size_t _chunkSize) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
     /// \see ::Pool (std::size_t)
     Pool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+
+    /// \brief Copying memory pool contradicts with its usage practices.
+    Pool (const Pool &otherPool) = delete;
+
+    // \brief Captures pages of given pool and leaves that pool empty.
+    Pool (Pool &&other) noexcept;
 
     ~Pool () noexcept;
 
