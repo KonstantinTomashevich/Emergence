@@ -4,6 +4,7 @@
 
 namespace Emergence::StandardLayout
 {
+/// \brief Mapped field unique identifier.
 using FieldId = uint_fast64_t;
 
 /// \brief Defines mapping-independent field space projection rule.
@@ -13,22 +14,57 @@ using FieldId = uint_fast64_t;
 /// \return unique id (among `Y` class fields) for `nestedField` of `X` from `objectField` of `Y`.
 FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept;
 
-enum class FieldComparisonType
+/// \brief Declares field archetype, that can be used to reconstruct actual field type.
+///
+/// \details Field type reconstruction can be useful for serialization or reflection-based comparison.
+enum class FieldArchetype
 {
+    /// Single bit.
+    BIT,
+
+    /// Just integer.
     INT,
+
+    /// Unsigned integer.
     UINT,
+
+    /// Floating point number.
     FLOAT,
+
+    /// Zero terminated string.
     STRING,
+
+    /// Fixed size memory block.
     BLOCK
 };
 
+/// \brief Contains basic information about field.
 struct FieldMeta final
 {
 public:
+    /// \brief Field offset in mapped structure in bytes.
     std::size_t offset = 0u;
-    std::size_t size = 0u;
-    FieldComparisonType comparisonType = FieldComparisonType::BLOCK;
 
+    union
+    {
+        /// \brief Field size in bytes, excluding suffix alignment gap, gut including internal gaps.
+        ///
+        /// \invariant #archetype is not FieldArchetype::BIT.
+        std::size_t size = 0u;
+
+        /// \brief Offset of required bit in byte, pointer by #offset.
+        ///
+        /// \invariant #archetype is FieldArchetype::BIT.
+        /// \invariant less than 7u.
+        uint_fast8_t bitOffset = 0u;
+    };
+
+    /// \brief Field archetype, in pair with #size can be used to reconstruct actual field type.
+    FieldArchetype archetype = FieldArchetype::BLOCK;
+
+    /// \param _object pointer to structure, that contains this field.
+    /// \return pointer to this field in given structure.
+    /// \invariant _object is not `nullptr`.
     void *GetValue (void *_object) const noexcept;
 };
 } // namespace Emergence::StandardLayout

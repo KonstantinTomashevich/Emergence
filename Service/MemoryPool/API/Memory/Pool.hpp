@@ -9,11 +9,13 @@ namespace Emergence::Memory
 class Pool final
 {
 public:
-    /// \param _chunkSize fixed chunk size, must be greater or equal to `sizeof (uintptr_t)`.
+    /// \param _chunkSize fixed chunk size.
+    /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
     explicit Pool (std::size_t _chunkSize) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
     /// \see ::Pool (std::size_t)
+    /// \invariant _preferredPageCapacity must be greater than zero.
     Pool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
 
     /// \brief Copying memory pool contradicts with its usage practices.
@@ -29,6 +31,7 @@ public:
     void *Acquire () noexcept;
 
     /// \brief Releases given memory chunk.
+    /// \invariant chunk belongs to this pool.
     void Release (void *chunk) noexcept;
 
     /// \brief Releases all empty pages.

@@ -6,6 +6,9 @@
 
 namespace Emergence::StandardLayout
 {
+/// \brief Finished field mapping for user defined object type.
+///
+/// \brief MappingBuilder should be used to construct mappings.
 class Mapping final
 {
 public:
@@ -13,9 +16,11 @@ public:
 
     Mapping (Mapping &&other) noexcept;
 
+    /// \return user defined object size in bytes including alignment gaps.
     std::size_t GetObjectSize () const noexcept;
 
-    const FieldMeta &GetField (FieldId _field) const noexcept;
+    /// \return pointer to meta of field with given id or `nullptr` if there is no such field.
+    const FieldMeta *const GetField (FieldId _field) const noexcept;
 
 private:
     friend class MappingBuilder;
@@ -24,14 +29,7 @@ private:
 
     ~Mapping () noexcept;
 
-    /// \brief Max total size of mapping type fields in bytes.
-    ///
-    /// \details It could be critical for performance to store mapping instance, not handle, as field of other class.
-    /// Therefore we specify max total size of fields for any implementation and reserve this space using std::array.
-    static constexpr std::size_t MAX_FIELDS_SIZE = sizeof (uintptr_t) * 5u;
-
-    /// \brief Stub, that reserves space for implementation fields.
-    /// \see ::MAX_FIELDS_SIZE.
-    std::array <uint8_t, MAX_FIELDS_SIZE> fields;
+    /// \brief Mapping implementation handle.
+    void *handle;
 };
 } // namespace Emergence::StandardLayout
