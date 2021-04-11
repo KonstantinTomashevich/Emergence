@@ -4,6 +4,7 @@ project (Emergence)
 set (CMAKE_CXX_STANDARD 17)
 include ("${CMAKE_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 
+enable_testing()
 add_subdirectory (Service)
 add_subdirectory (Library)
 add_subdirectory (Test)
