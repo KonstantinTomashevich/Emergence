@@ -1,5 +1,8 @@
-# Temporary implementation, will be deleted after addition of first implementation.
 sober_implementation_begin (Original)
-    sober_implementation_setup_target (STATIC "${CMAKE_CURRENT_SOURCE_DIR}/Stub.cpp")
+    file (GLOB_RECURSE SOURCES *.cpp)
+    file (GLOB_RECURSE HEADERS *.hpp)
+    list (APPEND SOURCES ${HEADERS})
+
+    sober_implementation_setup_target (STATIC "${SOURCES}")
     sober_implementation_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}")
 sober_implementation_end ()

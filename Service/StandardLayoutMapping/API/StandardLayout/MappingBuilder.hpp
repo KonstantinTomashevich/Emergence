@@ -80,6 +80,6 @@ public:
 
 private:
     /// \brief MappingBuilder implementation handle.
-    void *handle;
+    void *handle = nullptr;
 };
 } // namespace Emergence::StandardLayout
