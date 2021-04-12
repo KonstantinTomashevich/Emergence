@@ -10,3 +10,5 @@ sober_test_begin (StandardLayoutMapping)
     sober_test_variant_begin (Original)
     sober_test_variant_end ()
 sober_test_end ()
+
+# TODO: Enable exceptions for Boost.Test on CLang compilers.
