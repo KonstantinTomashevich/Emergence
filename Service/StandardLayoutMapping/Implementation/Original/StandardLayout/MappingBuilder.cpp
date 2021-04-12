@@ -42,25 +42,6 @@ struct MappingBuilderState final
     std::size_t fieldCapacity = 0u;
 };
 
-FieldMeta ConstructBitField (std::size_t _offset, uint_fast8_t _bitOffset)
-{
-    FieldMeta meta;
-    meta.offset = _offset;
-    meta.bitOffset = _bitOffset;
-    meta.archetype = FieldArchetype::BIT;
-    return meta;
-}
-
-FieldMeta ConstructStandardField (std::size_t _offset, std::size_t _size, FieldArchetype _archetype)
-{
-    assert (_archetype != FieldArchetype::BIT);
-    FieldMeta meta;
-    meta.offset = _offset;
-    meta.size = _size;
-    meta.archetype = _archetype;
-    return meta;
-}
-
 MappingBuilder::MappingBuilder () noexcept
 {
     handle = new MappingBuilderState ();
@@ -100,91 +81,91 @@ FieldId MappingBuilder::RegisterBit (std::size_t _offset, uint_fast8_t _bitOffse
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructBitField (_offset, _bitOffset));
+    return state->AddField ({.offset = _offset, .bitOffset = _bitOffset, .archetype = FieldArchetype::BIT});
 }
 
 FieldId MappingBuilder::RegisterInt8 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (int8_t), FieldArchetype::INT));
+    return state->AddField ({.offset = _offset, .size = sizeof (int8_t), .archetype = FieldArchetype::INT});
 }
 
 FieldId MappingBuilder::RegisterInt16 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (int16_t), FieldArchetype::INT));
+    return state->AddField ({.offset = _offset, .size = sizeof (int16_t), .archetype = FieldArchetype::INT});
 }
 
 FieldId MappingBuilder::RegisterInt32 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (int32_t), FieldArchetype::INT));
+    return state->AddField ({.offset = _offset, .size = sizeof (int32_t), .archetype = FieldArchetype::INT});
 }
 
 FieldId MappingBuilder::RegisterInt64 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (int64_t), FieldArchetype::INT));
+    return state->AddField ({.offset = _offset, .size = sizeof (int64_t), .archetype = FieldArchetype::INT});
 }
 
 FieldId MappingBuilder::RegisterUInt8 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (uint8_t), FieldArchetype::UINT));
+    return state->AddField ({.offset = _offset, .size = sizeof (uint8_t), .archetype = FieldArchetype::UINT});
 }
 
 FieldId MappingBuilder::RegisterUInt16 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (uint16_t), FieldArchetype::UINT));
+    return state->AddField ({.offset = _offset, .size = sizeof (uint16_t), .archetype = FieldArchetype::UINT});
 }
 
 FieldId MappingBuilder::RegisterUInt32 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (uint32_t), FieldArchetype::UINT));
+    return state->AddField ({.offset = _offset, .size = sizeof (uint32_t), .archetype = FieldArchetype::UINT});
 }
 
 FieldId MappingBuilder::RegisterUInt64 (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (uint64_t), FieldArchetype::UINT));
+    return state->AddField ({.offset = _offset, .size = sizeof (uint64_t), .archetype = FieldArchetype::UINT});
 }
 
 FieldId MappingBuilder::RegisterFloat (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (float), FieldArchetype::FLOAT));
+    return state->AddField ({.offset = _offset, .size = sizeof (float), .archetype = FieldArchetype::FLOAT});
 }
 
 FieldId MappingBuilder::RegisterDouble (std::size_t _offset) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, sizeof (double), FieldArchetype::FLOAT));
+    return state->AddField ({.offset = _offset, .size = sizeof (double), .archetype = FieldArchetype::FLOAT});
 }
 
 FieldId MappingBuilder::RegisterString (std::size_t _offset, std::size_t _maxSize) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, _maxSize, FieldArchetype::STRING));
+    return state->AddField ({.offset = _offset, .size = _maxSize, .archetype = FieldArchetype::STRING});
 }
 
 FieldId MappingBuilder::RegisterBlock (std::size_t _offset, std::size_t _size) noexcept
 {
     assert (handle);
     auto *state = static_cast <MappingBuilderState *> (handle);
-    return state->AddField (ConstructStandardField (_offset, _size, FieldArchetype::BLOCK));
+    return state->AddField ({.offset = _offset, .size = _size, .archetype = FieldArchetype::BLOCK});
 }
 
 FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping &nestedMapping) noexcept
@@ -196,7 +177,7 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
     const auto *nestedPlainMapping = static_cast <const PlainMapping *> (nestedMapping.handle);
 
     FieldId mainNestedId = state->AddField (
-        ConstructStandardField (_offset, nestedPlainMapping->objectSize, FieldArchetype::BLOCK));
+        {.offset = _offset, .size = nestedPlainMapping->objectSize, .archetype = FieldArchetype::BLOCK});
 
     // TODO: Better iteration mechanism when mapping iteration support will be added?
     for (FieldId field = 0u; field < static_cast <const PlainMapping *> (nestedMapping.handle)->fieldCount; ++field)
@@ -204,10 +185,17 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
         const FieldMeta *fieldMeta = nestedPlainMapping->GetField (field);
         assert (fieldMeta);
 
-        FieldId nestedFieldId = state->AddField (
-            fieldMeta->archetype == FieldArchetype::BIT ?
-            ConstructBitField (_offset + fieldMeta->offset, fieldMeta->bitOffset) :
-            ConstructStandardField (_offset + fieldMeta->offset, fieldMeta->size, fieldMeta->archetype));
+        FieldId nestedFieldId;
+        if (fieldMeta->archetype == FieldArchetype::BIT)
+        {
+            nestedFieldId = state->AddField ({.offset = _offset + fieldMeta->offset,
+                                                 .size = fieldMeta->bitOffset, .archetype = FieldArchetype::BIT});
+        }
+        else
+        {
+            nestedFieldId = state->AddField ({.offset = _offset + fieldMeta->offset,
+                                                 .size = fieldMeta->size, .archetype = fieldMeta->archetype});
+        }
 
         assert (nestedFieldId == ProjectNestedField (mainNestedId, field));
     }

@@ -21,7 +21,8 @@ struct PlainMapping final
     std::size_t references = 0u;
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
-    // inplace_dynamic_array <FieldMeta> fields (fieldCount /* or fieldCapacity during construction */);
+    // inplace_dynamic_array <FieldMeta> fields (fieldCount);
+    // unused_memory additionalFieldPlaceholder (0u, infinity);
 };
 
 static_assert (std::is_trivial_v <FieldMeta>);

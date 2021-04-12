@@ -36,7 +36,9 @@ enum class FieldArchetype
     STRING,
 
     /// Fixed size memory block.
-    BLOCK
+    BLOCK,
+
+    // TODO: Archetype for nested fields? Save info about field type instead of size?
 };
 
 /// \brief Contains basic information about field.
@@ -56,7 +58,7 @@ public:
         /// \brief Offset of required bit in byte, pointer by #offset.
         ///
         /// \invariant #archetype is FieldArchetype::BIT.
-        /// \invariant less than 7u.
+        /// \invariant less than 8u.
         uint_fast8_t bitOffset;
     };
 

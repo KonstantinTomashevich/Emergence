@@ -1,1 +1,1 @@
-add_subdirectory (StandartLayoutMapping)
+add_subdirectory (StandardLayoutMapping)
