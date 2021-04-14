@@ -20,25 +20,29 @@ FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept;
 /// \details Field type reconstruction can be useful for serialization or reflection-based comparison.
 enum class FieldArchetype
 {
-    /// Single bit.
+    /// \brief Single bit.
     BIT,
 
-    /// Just integer.
+    /// \brief Just integer.
     INT,
 
-    /// Unsigned integer.
+    /// \brief Unsigned integer.
     UINT,
 
-    /// Floating point number.
+    /// \brief Floating point number.
     FLOAT,
 
-    /// Zero terminated string.
+    /// \brief Zero terminated string.
     STRING,
 
-    /// Fixed size memory block.
+    /// \brief Fixed size memory block.
     BLOCK,
 
-    // TODO: Archetype for nested fields? Save info about field type instead of size?
+    /// \brief Complex field, that has internal fields.
+    ///
+    /// \details All nested fields are projected into root mapping, but sometimes
+    ///          it's useful to process complex fields as independent instances.
+    INSTANCE,
 };
 
 /// \brief Provides read access to information about field.
@@ -49,29 +53,41 @@ class Field final
 {
 public:
     /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.
+    /// \invariant Handle must be valid.
     FieldArchetype GetArchetype () const noexcept;
 
     /// \return Field offset in mapped structure in bytes.
+    /// \invariant Handle must be valid.
     std::size_t GetOffset () const noexcept;
 
     /// \return Field size in bytes, excluding suffix alignment gap, but including internal gaps.
+    /// \invariant Handle must be valid.
     std::size_t GetSize () const noexcept;
 
     /// \return Offset of required bit in byte, pointed by #offset. Always less than 8u.
+    /// \invariant Handle must be valid.
     /// \invariant Field archetype is FieldArchetype::BIT.
     std::size_t GetBitOffset () const noexcept;
 
     /// \return Mapping of object type, which instance resides in this field.
-    /// \invariant Field archetype is FieldArchetype::NESTED.
-    class Mapping GetNestedMapping () const noexcept;
+    /// \invariant Handle must be valid.
+    /// \invariant Field archetype is FieldArchetype::INSTANCE.
+    class Mapping GetInstanceMapping () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
     /// \return pointer to this field in given structure.
+    /// \invariant Handle must be valid.
     /// \invariant _object is not `nullptr`.
     void *GetValue (void *_object) const noexcept;
 
     /// \brief Const version of ::GetValue(void *).
     const void *GetValue (const void *_object) const noexcept;
+
+    /// \return is field ::handle valid?
+    bool IsHandleValid () const;
+
+    /// \return ::IsHandleValid ()
+    operator bool () const;
 
 private:
     friend class Mapping;

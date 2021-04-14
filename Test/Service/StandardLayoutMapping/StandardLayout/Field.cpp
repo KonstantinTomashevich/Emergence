@@ -14,6 +14,8 @@ uint8_t *operator "" _ptr (uintptr_t value)
     return reinterpret_cast <uint8_t *> (value);
 }
 
+// TODO: New Field class can not be created separately, therefore it can be tested only as part of whole service.
+
 namespace Tests::FieldMeta::GetValue
 {
 //struct Dataset

@@ -20,12 +20,16 @@ public:
     std::size_t GetObjectSize () const noexcept;
 
     /// \return pointer to meta of field with given id or `nullptr` if there is no such field.
-    const Field GetField (FieldId _field) const noexcept;
+    Field GetField (FieldId _field) const noexcept;
 
     // TODO: Add field list getter? Is it really required?
 
 private:
+    /// Mapping builder constructs mappings.
     friend class MappingBuilder;
+
+    /// Field::GetInstanceMapping() wraps implementation data into Mapping interface.
+    friend class Field;
 
     explicit Mapping (void *_handle) noexcept;
 

@@ -76,7 +76,7 @@ public:
 
     /// \brief Registers nested structure using its Mapping.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterNestedObject (std::size_t _offset, const Mapping &nestedMapping) noexcept;
+    FieldId RegisterNestedObject (std::size_t _offset, const Mapping &objectMapping) noexcept;
 
 private:
     /// \brief MappingBuilder implementation handle.
