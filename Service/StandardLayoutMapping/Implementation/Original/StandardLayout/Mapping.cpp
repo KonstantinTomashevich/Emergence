@@ -23,20 +23,20 @@ std::size_t Mapping::GetObjectSize () const noexcept
     return static_cast <const PlainMapping *> (handle)->objectSize;
 }
 
-const FieldMeta *Mapping::GetField (FieldId _field) const noexcept
-{
-    assert (handle);
-    const auto *mapping = static_cast <const PlainMapping *> (handle);
-
-    if (_field < mapping->fieldCount)
-    {
-        return reinterpret_cast <const FieldMeta *> (mapping + 1u) + _field;
-    }
-    else
-    {
-        return nullptr;
-    }
-}
+//const FieldMeta *Mapping::GetField (FieldId _field) const noexcept
+//{
+//    assert (handle);
+//    const auto *mapping = static_cast <const PlainMapping *> (handle);
+//
+//    if (_field < mapping->fieldCount)
+//    {
+//        return reinterpret_cast <const FieldMeta *> (mapping + 1u) + _field;
+//    }
+//    else
+//    {
+//        return nullptr;
+//    }
+//}
 
 Mapping::Mapping (void *_handle) noexcept
     : handle (_handle)

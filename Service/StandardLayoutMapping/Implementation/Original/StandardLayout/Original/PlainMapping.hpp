@@ -14,9 +14,9 @@ struct PlainMapping final
 
     PlainMapping *Reallocate (std::size_t _fieldCapacity) noexcept;
 
-    const FieldMeta *GetField (FieldId _field) const noexcept;
-
-    FieldMeta *GetField (FieldId _field) noexcept;
+//    const FieldMeta *GetField (FieldId _field) const noexcept;
+//
+//    FieldMeta *GetField (FieldId _field) noexcept;
 
     std::size_t references = 0u;
     std::size_t objectSize = 0u;
@@ -25,5 +25,5 @@ struct PlainMapping final
     // unused_memory additionalFieldPlaceholder (0u, infinity);
 };
 
-static_assert (std::is_trivial_v <FieldMeta>);
+//static_assert (std::is_trivial_v <FieldMeta>);
 } // namespace Emergence::StandardLayout

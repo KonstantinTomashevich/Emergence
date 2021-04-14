@@ -41,29 +41,29 @@ enum class FieldArchetype
     // TODO: Archetype for nested fields? Save info about field type instead of size?
 };
 
-/// \brief Contains basic information about field.
-struct FieldMeta final
+/// \brief Provides read access to information about field.
+///
+/// \details Mapping of corresponding type should be used to get Field by FieldId.
+/// \warning Storing Field instance outside of corresponding Mapping instance scope results in undefined behaviour.
+class Field final
 {
 public:
-    /// \brief Field offset in mapped structure in bytes.
-    std::size_t offset;
+    /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.
+    FieldArchetype GetArchetype () const noexcept;
 
-    union
-    {
-        /// \brief Field size in bytes, excluding suffix alignment gap, gut including internal gaps.
-        ///
-        /// \invariant #archetype is not FieldArchetype::BIT.
-        std::size_t size;
+    /// \return Field offset in mapped structure in bytes.
+    std::size_t GetOffset () const noexcept;
 
-        /// \brief Offset of required bit in byte, pointer by #offset.
-        ///
-        /// \invariant #archetype is FieldArchetype::BIT.
-        /// \invariant less than 8u.
-        uint_fast8_t bitOffset;
-    };
+    /// \return Field size in bytes, excluding suffix alignment gap, but including internal gaps.
+    std::size_t GetSize () const noexcept;
 
-    /// \brief Field archetype, in pair with #size can be used to reconstruct actual field type.
-    FieldArchetype archetype;
+    /// \return Offset of required bit in byte, pointed by #offset. Always less than 8u.
+    /// \invariant Field archetype is FieldArchetype::BIT.
+    std::size_t GetBitOffset () const noexcept;
+
+    /// \return Mapping of object type, which instance resides in this field.
+    /// \invariant Field archetype is FieldArchetype::NESTED.
+    class Mapping GetNestedMapping () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
     /// \return pointer to this field in given structure.
@@ -72,5 +72,15 @@ public:
 
     /// \brief Const version of ::GetValue(void *).
     const void *GetValue (const void *_object) const noexcept;
+
+private:
+    friend class Mapping;
+
+    explicit Field (void *_handle);
+
+    ~Field ();
+
+    /// \brief Field implementation handle.
+    void *handle;
 };
 } // namespace Emergence::StandardLayout

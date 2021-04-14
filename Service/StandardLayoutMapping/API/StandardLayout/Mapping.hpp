@@ -8,7 +8,7 @@ namespace Emergence::StandardLayout
 {
 /// \brief Finished field mapping for user defined object type.
 ///
-/// \brief MappingBuilder should be used to construct mappings.
+/// \details MappingBuilder should be used to construct mappings.
 class Mapping final
 {
 public:
@@ -20,7 +20,7 @@ public:
     std::size_t GetObjectSize () const noexcept;
 
     /// \return pointer to meta of field with given id or `nullptr` if there is no such field.
-    const FieldMeta *GetField (FieldId _field) const noexcept;
+    const Field GetField (FieldId _field) const noexcept;
 
     // TODO: Add field list getter? Is it really required?
 
