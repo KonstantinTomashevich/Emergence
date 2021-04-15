@@ -243,7 +243,13 @@ PlainMapping::ConstIterator PlainMapping::End () const noexcept
 FieldId PlainMapping::GetFieldId (const PlainMapping::ConstIterator &_iterator) const
 {
     assert(_iterator >= Begin ());
+    assert(_iterator < End ());
     return _iterator - Begin ();
+}
+
+FieldId PlainMapping::GetFieldId (const FieldData &_field) const
+{
+    return GetFieldId (ConstIterator (&_field));
 }
 
 PlainMapping::PlainMapping (std::size_t _objectSize) noexcept
@@ -254,16 +260,22 @@ PlainMapping::PlainMapping (std::size_t _objectSize) noexcept
 
 PlainMapping::~PlainMapping () noexcept
 {
-    ConstIterator current = Begin ();
-    ConstIterator end = End ();
-
-    while (current != end)
+    for (const FieldData &fieldData : *this)
     {
-        current->~FieldData ();
-        ++current;
+        fieldData.~FieldData ();
     }
 
     free (this);
+}
+
+PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept
+{
+    return mapping.Begin ();
+}
+
+PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept
+{
+    return mapping.End ();
 }
 
 void PlainMappingBuilder::Begin (std::size_t _objectSize) noexcept

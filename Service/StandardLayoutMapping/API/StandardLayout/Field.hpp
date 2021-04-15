@@ -10,9 +10,9 @@ using FieldId = uint_fast64_t;
 
 /// \brief Defines mapping-independent field space projection rule.
 ///
-/// \param objectField id of any field in class `Y`, that contains structure of class `X`.
-/// \param nestedField id of any field from class `X`.
-/// \return unique id (among `Y` class fields) for `nestedField` of `X` from `objectField` of `Y`.
+/// \param objectField Id of any field in class `Y`, that contains structure of class `X`.
+/// \param nestedField Id of any field from class `X`.
+/// \return Unique id (among `Y` class fields) for `nestedField` of `X` from `objectField` of `Y`.
 FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept;
 
 /// \brief Declares field archetype, that can be used to reconstruct actual field type.
@@ -75,7 +75,7 @@ public:
     class Mapping GetInstanceMapping () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
-    /// \return pointer to this field in given structure.
+    /// \return Pointer to this field in given structure.
     /// \invariant Handle must be valid.
     /// \invariant _object is not `nullptr`.
     void *GetValue (void *_object) const noexcept;
@@ -83,7 +83,7 @@ public:
     /// \brief Const version of ::GetValue(void *).
     const void *GetValue (const void *_object) const noexcept;
 
-    /// \return is field ::handle valid?
+    /// \return Is field ::handle valid?
     bool IsHandleValid () const;
 
     /// \return ::IsHandleValid ()

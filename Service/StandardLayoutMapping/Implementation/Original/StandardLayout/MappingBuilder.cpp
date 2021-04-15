@@ -127,17 +127,14 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
     auto *nestedPlainMapping = static_cast <PlainMapping *> (objectMapping.handle);
     FieldId objectFieldId = state->AddField ({_offset, nestedPlainMapping});
 
-    PlainMapping::ConstIterator current = nestedPlainMapping->Begin ();
-    PlainMapping::ConstIterator end = nestedPlainMapping->End ();
-
-    while (current != end)
+    for (const FieldData &field : *nestedPlainMapping)
     {
         FieldId nestedFieldId;
-        switch (current->GetArchetype ())
+        switch (field.GetArchetype ())
         {
             case FieldArchetype::BIT:
                 nestedFieldId = state->AddField (
-                    {_offset + current->GetOffset (), current->GetBitOffset ()});
+                    {_offset + field.GetOffset (), field.GetBitOffset ()});
                 break;
 
             case FieldArchetype::INT:
@@ -146,19 +143,18 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
             case FieldArchetype::STRING:
             case FieldArchetype::BLOCK:
                 nestedFieldId = state->AddField (
-                    {current->GetArchetype (), _offset + current->GetOffset (), current->GetSize ()});
+                    {field.GetArchetype (), _offset + field.GetOffset (), field.GetSize ()});
                 break;
 
             case FieldArchetype::INSTANCE:
                 // We don't need to recursively add fields, because given nested mapping is finished,
                 // therefore all fields of internal objects are already projected into this mapping.
                 nestedFieldId = state->AddField (
-                    {_offset + current->GetOffset (), current->GetInstanceMapping ()});
+                    {_offset + field.GetOffset (), field.GetInstanceMapping ()});
                 break;
         }
 
-        assert (nestedFieldId == ProjectNestedField (objectFieldId, nestedPlainMapping->GetFieldId (current)));
-        ++current;
+        assert (nestedFieldId == ProjectNestedField (objectFieldId, nestedPlainMapping->GetFieldId (field)));
     }
 
     return objectFieldId;

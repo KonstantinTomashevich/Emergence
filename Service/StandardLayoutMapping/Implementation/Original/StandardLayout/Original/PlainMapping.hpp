@@ -60,8 +60,6 @@ public:
 
         ConstIterator () noexcept;
 
-        explicit ConstIterator (const FieldData *_target) noexcept;
-
         const FieldData &operator * () const noexcept;
 
         const FieldData *operator -> () const noexcept;
@@ -101,6 +99,10 @@ public:
         bool operator >= (const ConstIterator &_other) const noexcept;
 
     private:
+        friend class PlainMapping;
+
+        explicit ConstIterator (const FieldData *_target) noexcept;
+
         const FieldData *target = nullptr;
     };
 
@@ -122,6 +124,8 @@ public:
 
     FieldId GetFieldId (const ConstIterator &_iterator) const;
 
+    FieldId GetFieldId (const FieldData &_field) const;
+
 private:
     friend class PlainMappingBuilder;
 
@@ -136,6 +140,10 @@ private:
     // inplace_dynamic_array <FieldMeta> fields (fieldCount);
     // unused_memory additionalFieldPlaceholder (0u, infinity);
 };
+
+PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept;
+
+PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept;
 
 class PlainMappingBuilder
 {
