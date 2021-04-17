@@ -299,7 +299,7 @@ FieldId PlainMappingBuilder::AddField (FieldData _fieldData) noexcept
 {
     assert (underConstruction);
     assert (underConstruction->fieldCount <= fieldCapacity);
-    assert (_fieldData.GetOffset () + _fieldData.GetSize () < underConstruction->objectSize);
+    assert (_fieldData.GetOffset () + _fieldData.GetSize () <= underConstruction->objectSize);
 
     if (underConstruction->fieldCount == fieldCapacity)
     {
@@ -318,7 +318,8 @@ FieldId PlainMappingBuilder::AddField (FieldData _fieldData) noexcept
 void PlainMappingBuilder::ReallocateMapping (std::size_t _fieldCapacity) noexcept
 {
     assert (underConstruction);
-    underConstruction = static_cast <PlainMapping *> (realloc (this, CalculateMappingSize (_fieldCapacity)));
+    underConstruction = static_cast <PlainMapping *> (
+        realloc (underConstruction, CalculateMappingSize (_fieldCapacity)));
     fieldCapacity = _fieldCapacity;
 }
 } // namespace Emergence::StandardLayout

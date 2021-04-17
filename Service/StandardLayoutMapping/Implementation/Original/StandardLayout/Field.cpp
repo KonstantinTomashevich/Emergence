@@ -11,6 +11,40 @@ FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept
     return objectField + nestedField + 1u;
 }
 
+const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept
+{
+    switch (_archetype)
+    {
+        case FieldArchetype::BIT:
+            return "BIT";
+
+        case FieldArchetype::INT:
+            return "INT";
+
+        case FieldArchetype::UINT:
+            return "UINT";
+
+        case FieldArchetype::FLOAT:
+            return "FLOAT";
+
+        case FieldArchetype::STRING:
+            return "STRING";
+
+        case FieldArchetype::BLOCK:
+            return "BLOCK";
+
+        case FieldArchetype::INSTANCE:
+            return "INSTANCE";
+    }
+
+    assert (false);
+    return "UNKNOWN";
+}
+
+Field::~Field ()
+{
+}
+
 FieldArchetype Field::GetArchetype () const noexcept
 {
     assert (IsHandleValid ());
@@ -63,10 +97,6 @@ Field::operator bool () const
 
 Field::Field (void *_handle)
     : handle (_handle)
-{
-}
-
-Field::~Field ()
 {
 }
 } // namespace Emergence::StandardLayout

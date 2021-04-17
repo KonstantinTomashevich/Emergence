@@ -21,7 +21,7 @@ FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept;
 enum class FieldArchetype
 {
     /// \brief Single bit.
-    BIT,
+    BIT = 0u,
 
     /// \brief Just integer.
     INT,
@@ -42,8 +42,11 @@ enum class FieldArchetype
     ///
     /// \details All nested fields are projected into root mapping, but sometimes
     ///          it's useful to process complex fields as independent instances.
+    /// \todo Rename to object or something like that? MappingBuilder calls it nested object.
     INSTANCE,
 };
+
+const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept;
 
 /// \brief Provides read access to information about field.
 ///
@@ -52,6 +55,8 @@ enum class FieldArchetype
 class Field final
 {
 public:
+    ~Field ();
+
     /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.
     /// \invariant Handle must be valid.
     FieldArchetype GetArchetype () const noexcept;
@@ -93,8 +98,6 @@ private:
     friend class Mapping;
 
     explicit Field (void *_handle);
-
-    ~Field ();
 
     /// \brief Field implementation handle.
     void *handle;

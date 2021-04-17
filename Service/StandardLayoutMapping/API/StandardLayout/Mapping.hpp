@@ -61,6 +61,8 @@ public:
 
     Mapping (Mapping &&_other) noexcept;
 
+    ~Mapping () noexcept;
+
     /// \return User defined object size in bytes including alignment gaps.
     std::size_t GetObjectSize () const noexcept;
 
@@ -85,8 +87,6 @@ private:
     friend class Field;
 
     explicit Mapping (void *_handle) noexcept;
-
-    ~Mapping () noexcept;
 
     /// \brief Mapping implementation handle.
     void *handle = nullptr;
