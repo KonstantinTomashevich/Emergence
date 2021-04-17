@@ -9,7 +9,6 @@
 
 #include <StandardLayout/MappingBuilder.hpp>
 
-// TODO: Clean up, use less virtuals?
 namespace Emergence::StandardLayout::Test
 {
 bool MappingBuilderTestIncludeMarker () noexcept
@@ -88,6 +87,7 @@ static bool operator == (const Mapping &_first, const Mapping &_second) noexcept
     return secondIterator == secondEnd;
 }
 
+template <typename Derived>
 class FieldSeedBase
 {
 public:
@@ -100,14 +100,12 @@ public:
         if (field.IsHandleValid ())
         {
             BOOST_CHECK_EQUAL (field.GetOffset (), offset);
-            BOOST_CHECK_EQUAL (field.GetSize (), GetSize ());
-            ContinueCheck (_mapping, field);
+            BOOST_CHECK_EQUAL (field.GetSize (), static_cast <const Derived *> (this)->GetSize ());
+            static_cast <const Derived *> (this)->ContinueCheck (_mapping, field);
         }
     }
 
-    virtual std::size_t GetSize () const = 0;
-
-    size_t GetOffset () const
+    std::size_t GetOffset () const
     {
         return offset;
     }
@@ -119,18 +117,16 @@ public:
     }
 
 protected:
-    explicit FieldSeedBase (size_t _offset)
+    explicit FieldSeedBase (std::size_t _offset)
         : offset (_offset)
     {
     }
-
-    virtual void ContinueCheck (const Mapping &_mapping, Field _field) const = 0;
 
     FieldId recordedId = 0u;
     std::size_t offset;
 };
 
-class BitFieldSeed final : public FieldSeedBase
+class BitFieldSeed final : public FieldSeedBase <BitFieldSeed>
 {
 public:
     BitFieldSeed (size_t _offset, uint_fast8_t _bitOffset)
@@ -144,38 +140,41 @@ public:
         recordedId = _builder.RegisterBit (offset, bitOffset);
     }
 
-    size_t GetSize () const override
+    size_t GetSize () const
     {
         return 1u;
     }
 
-protected:
-    void ContinueCheck (const Mapping &_mapping, Field _field) const override
+private:
+    friend class FieldSeedBase <BitFieldSeed>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::BIT);
         BOOST_CHECK_EQUAL (_field.GetBitOffset (), bitOffset);
     }
 
-private:
     std::uint_fast8_t bitOffset;
 };
 
 template <typename IntType>
-class IntFieldSeedBase : public FieldSeedBase
+class IntFieldSeedBase : public FieldSeedBase <IntFieldSeedBase <IntType>>
 {
 public:
     explicit IntFieldSeedBase (size_t _offset)
-        : FieldSeedBase (_offset)
+        : FieldSeedBase <IntFieldSeedBase <IntType>> (_offset)
     {
     }
 
-    std::size_t GetSize () const override
+    std::size_t GetSize () const
     {
         return sizeof (IntType);
     }
 
-protected:
-    void ContinueCheck (const Mapping &_mapping, Field _field) const override
+private:
+    friend class FieldSeedBase <IntFieldSeedBase <IntType>>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::INT);
     }
@@ -238,21 +237,23 @@ public:
 };
 
 template <typename UIntType>
-class UIntFieldSeedBase : public FieldSeedBase
+class UIntFieldSeedBase : public FieldSeedBase <UIntFieldSeedBase <UIntType>>
 {
 public:
     explicit UIntFieldSeedBase (size_t _offset)
-        : FieldSeedBase (_offset)
+        : FieldSeedBase <UIntFieldSeedBase <UIntType>> (_offset)
     {
     }
 
-    size_t GetSize () const override
+    size_t GetSize () const
     {
         return sizeof (UIntType);
     }
 
-protected:
-    void ContinueCheck (const Mapping &_mapping, Field _field) const override
+private:
+    friend class FieldSeedBase <UIntFieldSeedBase <UIntType>>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::UINT);
     }
@@ -314,7 +315,7 @@ public:
     }
 };
 
-class StringFieldSeed final : public FieldSeedBase
+class StringFieldSeed final : public FieldSeedBase <StringFieldSeed>
 {
 public:
     StringFieldSeed (size_t _offset, size_t _maxSize)
@@ -328,22 +329,23 @@ public:
         recordedId = _builder.RegisterString (offset, maxSize);
     }
 
-    size_t GetSize () const override
+    size_t GetSize () const
     {
         return maxSize;
     }
 
-protected:
-    void ContinueCheck (const Mapping &_mapping, Field _field) const override
+private:
+    friend class FieldSeedBase <StringFieldSeed>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::STRING);
     }
 
-private:
     std::size_t maxSize;
 };
 
-class BlockFieldSeed final : public FieldSeedBase
+class BlockFieldSeed final : public FieldSeedBase <BlockFieldSeed>
 {
 public:
     BlockFieldSeed (size_t _offset, size_t _size)
@@ -357,22 +359,23 @@ public:
         recordedId = _builder.RegisterBlock (offset, size);
     }
 
-    size_t GetSize () const override
+    size_t GetSize () const
     {
         return size;
     }
 
-protected:
-    void ContinueCheck (const Mapping &_mapping, Field _field) const override
+private:
+    friend class FieldSeedBase <BlockFieldSeed>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::BLOCK);
     }
 
-private:
     std::size_t size;
 };
 
-class NestedObjectFieldSeed final : public FieldSeedBase
+class NestedObjectFieldSeed final : public FieldSeedBase <NestedObjectFieldSeed>
 {
 public:
     NestedObjectFieldSeed (size_t _offset, Mapping _typeMapping)
@@ -387,12 +390,12 @@ public:
         recordedId = _builder.RegisterNestedObject (offset, typeMapping);
     }
 
-    size_t GetSize () const override
+    size_t GetSize () const
     {
         return typeMapping.GetObjectSize ();
     }
 
-    void ExtractIds (std::unordered_set <FieldId> &into) const override
+    void ExtractIds (std::unordered_set <FieldId> &into) const
     {
         FieldSeedBase::ExtractIds (into);
         Mapping::FieldIterator iterator = typeMapping.Begin ();
@@ -407,8 +410,10 @@ public:
         }
     }
 
-protected:
-    void ContinueCheck (const Mapping &_mapping, Field _field) const override
+private:
+    friend class FieldSeedBase <NestedObjectFieldSeed>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::INSTANCE);
         BOOST_CHECK_EQUAL (_field.GetInstanceMapping (), typeMapping);
@@ -428,7 +433,6 @@ protected:
         }
     }
 
-private:
     Mapping typeMapping;
 };
 
@@ -529,20 +533,20 @@ struct AllBasicTypesStruct final
 
 static MappingSeed allBasicTypes (
     {
-        BitFieldSeed (offsetof(AllBasicTypesStruct, someFlags), 0u),
-        BitFieldSeed (offsetof(AllBasicTypesStruct, someFlags), 1u),
-        BitFieldSeed (offsetof(AllBasicTypesStruct, someFlags), 2u),
-        BitFieldSeed (offsetof(AllBasicTypesStruct, someFlags), 3u),
-        Int8FieldSeed (offsetof(AllBasicTypesStruct, int8)),
-        Int16FieldSeed (offsetof(AllBasicTypesStruct, int16)),
-        Int32FieldSeed (offsetof(AllBasicTypesStruct, int32)),
-        Int64FieldSeed (offsetof(AllBasicTypesStruct, int64)),
-        UInt8FieldSeed (offsetof(AllBasicTypesStruct, uint8)),
-        UInt16FieldSeed (offsetof(AllBasicTypesStruct, uint16)),
-        UInt32FieldSeed (offsetof(AllBasicTypesStruct, uint32)),
-        UInt64FieldSeed (offsetof(AllBasicTypesStruct, uint64)),
-        StringFieldSeed (offsetof(AllBasicTypesStruct, string), sizeof (AllBasicTypesStruct::string)),
-        BlockFieldSeed (offsetof(AllBasicTypesStruct, block), sizeof (AllBasicTypesStruct::block)),
+        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 0u),
+        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 1u),
+        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 2u),
+        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 3u),
+        Int8FieldSeed (offsetof (AllBasicTypesStruct, int8)),
+        Int16FieldSeed (offsetof (AllBasicTypesStruct, int16)),
+        Int32FieldSeed (offsetof (AllBasicTypesStruct, int32)),
+        Int64FieldSeed (offsetof (AllBasicTypesStruct, int64)),
+        UInt8FieldSeed (offsetof (AllBasicTypesStruct, uint8)),
+        UInt16FieldSeed (offsetof (AllBasicTypesStruct, uint16)),
+        UInt32FieldSeed (offsetof (AllBasicTypesStruct, uint32)),
+        UInt64FieldSeed (offsetof (AllBasicTypesStruct, uint64)),
+        StringFieldSeed (offsetof (AllBasicTypesStruct, string), sizeof (AllBasicTypesStruct::string)),
+        BlockFieldSeed (offsetof (AllBasicTypesStruct, block), sizeof (AllBasicTypesStruct::block)),
     });
 } // namespace Emergence::StandardLayout::Test
 
