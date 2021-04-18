@@ -38,6 +38,29 @@ FieldData::FieldData (size_t _offset, PlainMapping *_instanceMapping)
     size = instanceMapping->GetObjectSize ();
 }
 
+FieldData::FieldData (const FieldData &_other)
+{
+    // TODO: Placement new looks awkward here.
+    switch (_other.archetype)
+    {
+        case FieldArchetype::BIT:
+            new (this) FieldData (_other.offset, _other.bitOffset);
+            break;
+
+        case FieldArchetype::INT:
+        case FieldArchetype::UINT:
+        case FieldArchetype::FLOAT:
+        case FieldArchetype::STRING:
+        case FieldArchetype::BLOCK:
+            new (this) FieldData (_other.archetype, _other.offset, _other.size);
+            break;
+
+        case FieldArchetype::INSTANCE:
+            new (this) FieldData (_other.offset, _other.instanceMapping);
+            break;
+    }
+}
+
 FieldData::~FieldData ()
 {
     if (archetype == FieldArchetype::INSTANCE)
@@ -295,7 +318,7 @@ PlainMapping *PlainMappingBuilder::End () noexcept
     return finished;
 }
 
-FieldId PlainMappingBuilder::AddField (FieldData _fieldData) noexcept
+FieldId PlainMappingBuilder::AddField (const FieldData &_fieldData) noexcept
 {
     assert (underConstruction);
     assert (underConstruction->fieldCount <= fieldCapacity);
@@ -311,7 +334,7 @@ FieldId PlainMappingBuilder::AddField (FieldData _fieldData) noexcept
 
     FieldData *output = underConstruction->GetField (fieldId);
     assert (output);
-    *output = _fieldData;
+    new (output) FieldData (_fieldData);
     return fieldId;
 }
 

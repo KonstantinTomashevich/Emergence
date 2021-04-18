@@ -467,6 +467,7 @@ public:
 private:
     friend class FieldSeedBase <NestedObjectFieldSeed>;
 
+    // TODO: Replace all registration and verification methods with one method, that operates on variant.
     void ContinueCheck (const Mapping &_mapping, Field _field) const
     {
         BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::INSTANCE);
@@ -482,6 +483,8 @@ private:
                 _mapping.GetField (ProjectNestedField (recordedId, typeMapping.GetFieldId (iterator)));
 
             BOOST_CHECK (projectedField.IsHandleValid ());
+
+            // TODO: Ignore offsets during comparison, because offsets can be different!
             BOOST_CHECK_EQUAL (nestedField, projectedField);
             ++iterator;
         }
@@ -522,6 +525,12 @@ public:
                 },
                 seed);
         }
+    }
+
+    Mapping Grow ()
+    {
+        MappingBuilder builder;
+        return Grow (builder);
     }
 
     Mapping Grow (MappingBuilder &_builder)
@@ -670,8 +679,61 @@ static MappingSeed unionWithBasicTypes (
         BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 2u),
         BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 3u),
     });
+
+struct NestedOneSublevelTest
+{
+    uint64_t uint64;
+    TwoIntsTest firstNested;
+    TwoIntsTest secondNested;
+    char block[32u];
+};
+
+static MappingSeed nestedOneSublevel (
+    {
+        UInt64FieldSeed (offsetof (NestedOneSublevelTest, uint64)),
+        NestedObjectFieldSeed (offsetof (NestedOneSublevelTest, firstNested), twoIntsCorrectOrder.Grow ()),
+        NestedObjectFieldSeed (offsetof (NestedOneSublevelTest, secondNested), twoIntsReversedOrder.Grow ()),
+        BlockFieldSeed (offsetof (NestedOneSublevelTest, block), sizeof (NestedOneSublevelTest::block)),
+    });
+
+struct NestedInUnionOneSublevelTest
+{
+    uint64_t uint64;
+    union
+    {
+        TwoIntsTest firstNested;
+        TwoIntsTest secondNested;
+    };
+
+    char block[32u];
+};
+
+static MappingSeed nestedInUnionOneSublevel (
+    {
+        UInt64FieldSeed (offsetof (NestedInUnionOneSublevelTest, uint64)),
+        NestedObjectFieldSeed (offsetof (NestedInUnionOneSublevelTest, firstNested), twoIntsCorrectOrder.Grow ()),
+        NestedObjectFieldSeed (offsetof (NestedInUnionOneSublevelTest, secondNested), twoIntsReversedOrder.Grow ()),
+        BlockFieldSeed (offsetof (NestedInUnionOneSublevelTest, block), sizeof (NestedOneSublevelTest::block)),
+    });
+
+struct NestedTwoSublevelsTest
+{
+    float floatField;
+    NestedOneSublevelTest firstNested;
+    char string[24u];
+    NestedInUnionOneSublevelTest secondNested;
+};
+
+static MappingSeed nestedTwoSublevels (
+    {
+        FloatFieldSeed (offsetof (NestedTwoSublevelsTest, floatField)),
+        NestedObjectFieldSeed (offsetof (NestedTwoSublevelsTest, firstNested), nestedOneSublevel.Grow ()),
+        BlockFieldSeed (offsetof (NestedTwoSublevelsTest, string), sizeof (NestedTwoSublevelsTest::string)),
+        NestedObjectFieldSeed (offsetof (NestedTwoSublevelsTest, secondNested), nestedInUnionOneSublevel.Grow ()),
+    });
 } // namespace Emergence::StandardLayout::Test
 
+// Inject output and comparison implementations into boost test details.
 namespace boost::test_tools::tt_detail
 {
 template <>
@@ -704,6 +766,7 @@ void PrintField (std::ostream &_output, Emergence::StandardLayout::Field const &
             break;
 
         case Emergence::StandardLayout::FieldArchetype::INSTANCE:
+            _output << ", instanceMapping: ";
             PrintMapping (_output, _value.GetInstanceMapping ());
             break;
     }
@@ -783,10 +846,26 @@ struct GenerationDataset
 BOOST_DATA_TEST_CASE (
     GenerateMapping, boost::unit_test::data::monomorphic::collection (
     std::vector <GenerationDataset> {
-        {&Emergence::StandardLayout::Test::twoIntsCorrectOrder,  "two ints, correct registration order"},
-        {&Emergence::StandardLayout::Test::twoIntsReversedOrder, "two ints, reversed registration order"},
-        {&Emergence::StandardLayout::Test::allBasicTypes,        "all basic types"},
-        {&Emergence::StandardLayout::Test::unionWithBasicTypes,  "struct with unions with basic types"},
+        {&Emergence::StandardLayout::Test::twoIntsCorrectOrder,
+            "struct with two ints, correct registration order"},
+
+        {&Emergence::StandardLayout::Test::twoIntsReversedOrder,
+            "struct with two ints, reversed registration order"},
+
+        {&Emergence::StandardLayout::Test::allBasicTypes,
+            "struct with all basic types"},
+
+        {&Emergence::StandardLayout::Test::unionWithBasicTypes,
+            "struct with unions with basic types"},
+
+        {&Emergence::StandardLayout::Test::nestedOneSublevel,
+            "struct with two nested objects, that have no nested objects inside"},
+
+        {&Emergence::StandardLayout::Test::nestedInUnionOneSublevel,
+            "struct with two nested objects inside union, that have no nested objects inside"},
+
+        {&Emergence::StandardLayout::Test::nestedTwoSublevels,
+            "struct with two nested objects, that have other nested objects inside"},
     }))
 {
     BOOST_REQUIRE_NE (sample.seed, nullptr);

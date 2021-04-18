@@ -17,6 +17,16 @@ public:
 
     FieldData (size_t _offset, class PlainMapping *_instanceMapping);
 
+    // TODO: There is problem with current field registration mechanism: user creates field data and passes it to
+    //       builder and then builder moves/copies it to allocated cell in mapping. But it leads to some logical
+    //       problems:
+    //       1. FieldData should not have custom move constructor, because it is realloc-movable.
+    //       2. Copying field during registration sounds stupid, because there is not real need to do so.
+
+    FieldData (const FieldData &_other);
+
+    FieldData (FieldData &&_other) = delete;
+
     ~FieldData ();
 
     FieldArchetype GetArchetype () const;
@@ -152,7 +162,7 @@ public:
 
     PlainMapping *End () noexcept;
 
-    FieldId AddField (FieldData _fieldData) noexcept;
+    FieldId AddField (const FieldData &_fieldData) noexcept;
 
 private:
     static constexpr std::size_t INITIAL_FIELD_CAPACITY = 32u;
