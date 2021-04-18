@@ -110,7 +110,7 @@ public:
         return offset;
     }
 
-    virtual void ExtractIds (std::unordered_set <FieldId> &into) const
+    void ExtractIds (std::unordered_set <FieldId> &into) const
     {
         BOOST_CHECK_EQUAL (into.count (recordedId), 0u);
         into.insert (recordedId);
@@ -315,6 +315,60 @@ public:
     }
 };
 
+class FloatFieldSeed : public FieldSeedBase <FloatFieldSeed>
+{
+public:
+    explicit FloatFieldSeed (size_t _offset)
+        : FieldSeedBase (_offset)
+    {
+    }
+
+    void Register (MappingBuilder &_builder)
+    {
+        recordedId = _builder.RegisterFloat (offset);
+    }
+
+    size_t GetSize () const
+    {
+        return sizeof (float);
+    }
+
+private:
+    friend class FieldSeedBase <FloatFieldSeed>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
+    {
+        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::FLOAT);
+    }
+};
+
+class DoubleFieldSeed : public FieldSeedBase <DoubleFieldSeed>
+{
+public:
+    explicit DoubleFieldSeed (size_t _offset)
+        : FieldSeedBase (_offset)
+    {
+    }
+
+    size_t GetSize () const
+    {
+        return sizeof (double);
+    }
+
+    void Register (MappingBuilder &_builder)
+    {
+        recordedId = _builder.RegisterDouble (offset);
+    }
+
+private:
+    friend class FieldSeedBase <DoubleFieldSeed>;
+
+    void ContinueCheck (const Mapping &_mapping, Field _field) const
+    {
+        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::FLOAT);
+    }
+};
+
 class StringFieldSeed final : public FieldSeedBase <StringFieldSeed>
 {
 public:
@@ -446,6 +500,8 @@ using FieldSeed = std::variant <
     UInt16FieldSeed,
     UInt32FieldSeed,
     UInt64FieldSeed,
+    FloatFieldSeed,
+    DoubleFieldSeed,
     StringFieldSeed,
     BlockFieldSeed,
     NestedObjectFieldSeed>;
@@ -516,37 +572,103 @@ private:
     std::size_t objectSize;
 };
 
-struct AllBasicTypesStruct final
+struct TwoIntsTest
+{
+    uint32_t first;
+    int16_t second;
+};
+
+static MappingSeed twoIntsCorrectOrder (
+    {
+        UInt32FieldSeed (offsetof (TwoIntsTest, first)),
+        Int16FieldSeed (offsetof (TwoIntsTest, second)),
+    });
+
+static MappingSeed twoIntsReversedOrder (
+    {
+        Int16FieldSeed (offsetof (TwoIntsTest, second)),
+        UInt32FieldSeed (offsetof (TwoIntsTest, first)),
+    });
+
+struct AllBasicTypesTest final
 {
     uint64_t someFlags;
+
     int8_t int8;
     int16_t int16;
     int32_t int32;
     int64_t int64;
+
     uint8_t uint8;
     uint16_t uint16;
     uint32_t uint32;
     uint64_t uint64;
+
     char block[48u];
     char string[24u];
 };
 
 static MappingSeed allBasicTypes (
     {
-        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 0u),
-        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 1u),
-        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 2u),
-        BitFieldSeed (offsetof (AllBasicTypesStruct, someFlags), 3u),
-        Int8FieldSeed (offsetof (AllBasicTypesStruct, int8)),
-        Int16FieldSeed (offsetof (AllBasicTypesStruct, int16)),
-        Int32FieldSeed (offsetof (AllBasicTypesStruct, int32)),
-        Int64FieldSeed (offsetof (AllBasicTypesStruct, int64)),
-        UInt8FieldSeed (offsetof (AllBasicTypesStruct, uint8)),
-        UInt16FieldSeed (offsetof (AllBasicTypesStruct, uint16)),
-        UInt32FieldSeed (offsetof (AllBasicTypesStruct, uint32)),
-        UInt64FieldSeed (offsetof (AllBasicTypesStruct, uint64)),
-        StringFieldSeed (offsetof (AllBasicTypesStruct, string), sizeof (AllBasicTypesStruct::string)),
-        BlockFieldSeed (offsetof (AllBasicTypesStruct, block), sizeof (AllBasicTypesStruct::block)),
+        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 0u),
+        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 1u),
+        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 2u),
+        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 3u),
+
+        Int8FieldSeed (offsetof (AllBasicTypesTest, int8)),
+        Int16FieldSeed (offsetof (AllBasicTypesTest, int16)),
+        Int32FieldSeed (offsetof (AllBasicTypesTest, int32)),
+        Int64FieldSeed (offsetof (AllBasicTypesTest, int64)),
+
+        UInt8FieldSeed (offsetof (AllBasicTypesTest, uint8)),
+        UInt16FieldSeed (offsetof (AllBasicTypesTest, uint16)),
+        UInt32FieldSeed (offsetof (AllBasicTypesTest, uint32)),
+        UInt64FieldSeed (offsetof (AllBasicTypesTest, uint64)),
+
+        StringFieldSeed (offsetof (AllBasicTypesTest, string), sizeof (AllBasicTypesTest::string)),
+        BlockFieldSeed (offsetof (AllBasicTypesTest, block), sizeof (AllBasicTypesTest::block)),
+    });
+
+struct UnionWithBasicTypesTest
+{
+    char nonUnionField[24u];
+    union
+    {
+        uint64_t union1UInt64;
+        char union1String[16u];
+    };
+
+    union
+    {
+        struct
+        {
+            int64_t union2Int64;
+            float union2Float;
+        };
+
+        double union2Double;
+    };
+
+    uint64_t nonUnionFlags;
+};
+
+static MappingSeed unionWithBasicTypes (
+    {
+        BlockFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionField),
+                        sizeof (UnionWithBasicTypesTest::nonUnionField)),
+
+        UInt64FieldSeed (offsetof (UnionWithBasicTypesTest, union1UInt64)),
+        StringFieldSeed (offsetof (UnionWithBasicTypesTest, union1String),
+                         sizeof (UnionWithBasicTypesTest::union1String)),
+
+        Int64FieldSeed (offsetof (UnionWithBasicTypesTest, union2Int64)),
+        FloatFieldSeed (offsetof (UnionWithBasicTypesTest, union2Float)),
+        DoubleFieldSeed (offsetof (UnionWithBasicTypesTest, union2Double)),
+
+        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 0u),
+        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 1u),
+        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 2u),
+        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 3u),
     });
 } // namespace Emergence::StandardLayout::Test
 
@@ -661,7 +783,10 @@ struct GenerationDataset
 BOOST_DATA_TEST_CASE (
     GenerateMapping, boost::unit_test::data::monomorphic::collection (
     std::vector <GenerationDataset> {
-        {&Emergence::StandardLayout::Test::allBasicTypes, "all basic types"}
+        {&Emergence::StandardLayout::Test::twoIntsCorrectOrder,  "two ints, correct registration order"},
+        {&Emergence::StandardLayout::Test::twoIntsReversedOrder, "two ints, reversed registration order"},
+        {&Emergence::StandardLayout::Test::allBasicTypes,        "all basic types"},
+        {&Emergence::StandardLayout::Test::unionWithBasicTypes,  "struct with unions with basic types"},
     }))
 {
     BOOST_REQUIRE_NE (sample.seed, nullptr);
