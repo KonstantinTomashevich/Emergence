@@ -22,6 +22,8 @@ public:
     //       problems:
     //       1. FieldData should not have custom move constructor, because it is realloc-movable.
     //       2. Copying field during registration sounds stupid, because there is not real need to do so.
+    //       Possible solution: delete copy and move constructors and use seed-like structures to pass constructor and
+    //       registration arguments.
 
     FieldData (const FieldData &_other);
 

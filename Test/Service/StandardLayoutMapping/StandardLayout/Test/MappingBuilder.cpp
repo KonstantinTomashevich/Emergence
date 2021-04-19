@@ -87,409 +87,69 @@ static bool operator == (const Mapping &_first, const Mapping &_second) noexcept
     return secondIterator == secondEnd;
 }
 
-template <typename Derived>
-class FieldSeedBase
+struct FieldSeedBase
 {
-public:
-    void Check (const Mapping &_mapping) const
-    {
-        BOOST_TEST_MESSAGE (boost::format ("Checking field %1%...") % recordedId);
-        Field field = _mapping.GetField (recordedId);
-        BOOST_CHECK (field.IsHandleValid ());
-
-        if (field.IsHandleValid ())
-        {
-            BOOST_CHECK_EQUAL (field.GetOffset (), offset);
-            BOOST_CHECK_EQUAL (field.GetSize (), static_cast <const Derived *> (this)->GetSize ());
-            static_cast <const Derived *> (this)->ContinueCheck (_mapping, field);
-        }
-    }
-
-    std::size_t GetOffset () const
-    {
-        return offset;
-    }
-
-    void ExtractIds (std::unordered_set <FieldId> &into) const
-    {
-        BOOST_CHECK_EQUAL (into.count (recordedId), 0u);
-        into.insert (recordedId);
-    }
-
-protected:
-    explicit FieldSeedBase (std::size_t _offset)
-        : offset (_offset)
-    {
-    }
-
+    std::size_t offset = 0u;
     FieldId recordedId = 0u;
-    std::size_t offset;
 };
 
-class BitFieldSeed final : public FieldSeedBase <BitFieldSeed>
+struct BitFieldSeed final : public FieldSeedBase
 {
-public:
-    BitFieldSeed (size_t _offset, uint_fast8_t _bitOffset)
-        : FieldSeedBase (_offset),
-          bitOffset (_bitOffset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterBit (offset, bitOffset);
-    }
-
-    size_t GetSize () const
-    {
-        return 1u;
-    }
-
-private:
-    friend class FieldSeedBase <BitFieldSeed>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::BIT);
-        BOOST_CHECK_EQUAL (_field.GetBitOffset (), bitOffset);
-    }
-
     std::uint_fast8_t bitOffset;
 };
 
-template <typename IntType>
-class IntFieldSeedBase : public FieldSeedBase <IntFieldSeedBase <IntType>>
+struct Int8FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit IntFieldSeedBase (size_t _offset)
-        : FieldSeedBase <IntFieldSeedBase <IntType>> (_offset)
-    {
-    }
-
-    std::size_t GetSize () const
-    {
-        return sizeof (IntType);
-    }
-
-private:
-    friend class FieldSeedBase <IntFieldSeedBase <IntType>>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::INT);
-    }
 };
 
-class Int8FieldSeed : public IntFieldSeedBase <int8_t>
+struct Int16FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit Int8FieldSeed (size_t _offset)
-        : IntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterInt8 (offset);
-    }
 };
 
-class Int16FieldSeed : public IntFieldSeedBase <int16_t>
+struct Int32FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit Int16FieldSeed (size_t _offset)
-        : IntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterInt16 (offset);
-    }
 };
 
-class Int32FieldSeed : public IntFieldSeedBase <int32_t>
+struct Int64FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit Int32FieldSeed (size_t _offset)
-        : IntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterInt32 (offset);
-    }
 };
 
-class Int64FieldSeed : public IntFieldSeedBase <int64_t>
+struct UInt8FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit Int64FieldSeed (size_t _offset)
-        : IntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterInt64 (offset);
-    }
 };
 
-template <typename UIntType>
-class UIntFieldSeedBase : public FieldSeedBase <UIntFieldSeedBase <UIntType>>
+struct UInt16FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit UIntFieldSeedBase (size_t _offset)
-        : FieldSeedBase <UIntFieldSeedBase <UIntType>> (_offset)
-    {
-    }
-
-    size_t GetSize () const
-    {
-        return sizeof (UIntType);
-    }
-
-private:
-    friend class FieldSeedBase <UIntFieldSeedBase <UIntType>>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::UINT);
-    }
 };
 
-class UInt8FieldSeed : public UIntFieldSeedBase <uint8_t>
+struct UInt32FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit UInt8FieldSeed (size_t _offset)
-        : UIntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterUInt8 (offset);
-    }
 };
 
-class UInt16FieldSeed : public UIntFieldSeedBase <uint16_t>
+struct UInt64FieldSeed final : public FieldSeedBase
 {
-public:
-    explicit UInt16FieldSeed (size_t _offset)
-        : UIntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterUInt16 (offset);
-    }
 };
 
-class UInt32FieldSeed : public UIntFieldSeedBase <uint32_t>
+struct FloatFieldSeed final : public FieldSeedBase
 {
-public:
-    explicit UInt32FieldSeed (size_t _offset)
-        : UIntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterUInt32 (offset);
-    }
 };
 
-class UInt64FieldSeed : public UIntFieldSeedBase <uint64_t>
+struct DoubleFieldSeed final : public FieldSeedBase
 {
-public:
-    explicit UInt64FieldSeed (size_t _offset)
-        : UIntFieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterUInt64 (offset);
-    }
 };
 
-class FloatFieldSeed : public FieldSeedBase <FloatFieldSeed>
+struct StringFieldSeed final : public FieldSeedBase
 {
-public:
-    explicit FloatFieldSeed (size_t _offset)
-        : FieldSeedBase (_offset)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterFloat (offset);
-    }
-
-    size_t GetSize () const
-    {
-        return sizeof (float);
-    }
-
-private:
-    friend class FieldSeedBase <FloatFieldSeed>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::FLOAT);
-    }
-};
-
-class DoubleFieldSeed : public FieldSeedBase <DoubleFieldSeed>
-{
-public:
-    explicit DoubleFieldSeed (size_t _offset)
-        : FieldSeedBase (_offset)
-    {
-    }
-
-    size_t GetSize () const
-    {
-        return sizeof (double);
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterDouble (offset);
-    }
-
-private:
-    friend class FieldSeedBase <DoubleFieldSeed>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::FLOAT);
-    }
-};
-
-class StringFieldSeed final : public FieldSeedBase <StringFieldSeed>
-{
-public:
-    StringFieldSeed (size_t _offset, size_t _maxSize)
-        : FieldSeedBase (_offset),
-          maxSize (_maxSize)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterString (offset, maxSize);
-    }
-
-    size_t GetSize () const
-    {
-        return maxSize;
-    }
-
-private:
-    friend class FieldSeedBase <StringFieldSeed>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::STRING);
-    }
-
     std::size_t maxSize;
 };
 
-class BlockFieldSeed final : public FieldSeedBase <BlockFieldSeed>
+struct BlockFieldSeed final : public FieldSeedBase
 {
-public:
-    BlockFieldSeed (size_t _offset, size_t _size)
-        : FieldSeedBase (_offset),
-          size (_size)
-    {
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterBlock (offset, size);
-    }
-
-    size_t GetSize () const
-    {
-        return size;
-    }
-
-private:
-    friend class FieldSeedBase <BlockFieldSeed>;
-
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::BLOCK);
-    }
-
     std::size_t size;
 };
 
-class NestedObjectFieldSeed final : public FieldSeedBase <NestedObjectFieldSeed>
+struct NestedObjectFieldSeed final : public FieldSeedBase
 {
-public:
-    NestedObjectFieldSeed (size_t _offset, Mapping _typeMapping)
-        : FieldSeedBase (_offset),
-          typeMapping (std::move (_typeMapping))
-    {
-
-    }
-
-    void Register (MappingBuilder &_builder)
-    {
-        recordedId = _builder.RegisterNestedObject (offset, typeMapping);
-    }
-
-    size_t GetSize () const
-    {
-        return typeMapping.GetObjectSize ();
-    }
-
-    void ExtractIds (std::unordered_set <FieldId> &into) const
-    {
-        FieldSeedBase::ExtractIds (into);
-        Mapping::FieldIterator iterator = typeMapping.Begin ();
-        Mapping::FieldIterator end = typeMapping.End ();
-
-        while (iterator != end)
-        {
-            FieldId projectedId = ProjectNestedField (recordedId, typeMapping.GetFieldId (iterator));
-            BOOST_CHECK_EQUAL (into.count (projectedId), 0u);
-            into.insert (projectedId);
-            ++iterator;
-        }
-    }
-
-private:
-    friend class FieldSeedBase <NestedObjectFieldSeed>;
-
-    // TODO: Replace all registration and verification methods with one method, that operates on variant.
-    void ContinueCheck (const Mapping &_mapping, Field _field) const
-    {
-        BOOST_CHECK_EQUAL (_field.GetArchetype (), FieldArchetype::INSTANCE);
-        BOOST_CHECK_EQUAL (_field.GetInstanceMapping (), typeMapping);
-
-        Mapping::FieldIterator iterator = typeMapping.Begin ();
-        Mapping::FieldIterator end = typeMapping.End ();
-
-        while (iterator != end)
-        {
-            Field nestedField = *iterator;
-            Field projectedField =
-                _mapping.GetField (ProjectNestedField (recordedId, typeMapping.GetFieldId (iterator)));
-
-            BOOST_CHECK (projectedField.IsHandleValid ());
-
-            // TODO: Ignore offsets during comparison, because offsets can be different!
-            BOOST_CHECK_EQUAL (nestedField, projectedField);
-            ++iterator;
-        }
-    }
-
     Mapping typeMapping;
 };
 
@@ -512,19 +172,10 @@ using FieldSeed = std::variant <
 class MappingSeed final
 {
 public:
-    MappingSeed (std::vector <FieldSeed> _fields)
-        : fields (std::move (_fields))
+    MappingSeed (std::size_t _objectSize, std::vector <FieldSeed> _fields)
+        : objectSize (_objectSize),
+          fields (std::move (_fields))
     {
-        objectSize = 0u;
-        for (const FieldSeed &seed : fields)
-        {
-            std::visit (
-                [this] (const auto &unwrappedSeed)
-                {
-                    objectSize = std::max (objectSize, unwrappedSeed.GetOffset () + unwrappedSeed.GetSize ());
-                },
-                seed);
-        }
     }
 
     Mapping Grow ()
@@ -541,7 +192,68 @@ public:
             std::visit (
                 [&_builder] (auto &unwrappedSeed)
                 {
-                    unwrappedSeed.Register (_builder);
+                    using Seed = std::decay_t <decltype (unwrappedSeed)>;
+
+                    if constexpr (std::is_same_v <Seed, BitFieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterBit (
+                            unwrappedSeed.offset, static_cast <BitFieldSeed &> (unwrappedSeed).bitOffset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, Int8FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterInt8 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, Int16FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterInt16 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, Int32FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterInt32 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, Int64FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterInt64 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, UInt8FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterUInt8 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, UInt16FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterUInt16 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, UInt32FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterUInt32 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, UInt64FieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterUInt64 (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, FloatFieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterFloat (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, DoubleFieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterDouble (unwrappedSeed.offset);
+                    }
+                    else if constexpr (std::is_same_v <Seed, StringFieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterString (
+                            unwrappedSeed.offset, static_cast <StringFieldSeed &> (unwrappedSeed).maxSize);
+                    }
+                    else if constexpr (std::is_same_v <Seed, BlockFieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterBlock (
+                            unwrappedSeed.offset, static_cast <BlockFieldSeed &> (unwrappedSeed).size);
+                    }
+                    else if constexpr (std::is_same_v <Seed, NestedObjectFieldSeed>)
+                    {
+                        unwrappedSeed.recordedId = _builder.RegisterNestedObject (
+                            unwrappedSeed.offset, static_cast <NestedObjectFieldSeed &> (unwrappedSeed).typeMapping);
+                    }
                 },
                 seed);
         }
@@ -559,8 +271,130 @@ public:
             std::visit (
                 [&mapping, &idsFound] (auto &unwrappedSeed)
                 {
-                    unwrappedSeed.Check (mapping);
-                    unwrappedSeed.ExtractIds (idsFound);
+                    using Seed = std::decay_t <decltype (unwrappedSeed)>;
+                    BOOST_TEST_MESSAGE (boost::format ("Checking field %1%...") % unwrappedSeed.recordedId);
+                    Field field = mapping.GetField (unwrappedSeed.recordedId);
+                    BOOST_CHECK (field.IsHandleValid ());
+
+                    if (field.IsHandleValid ())
+                    {
+                        BOOST_CHECK_EQUAL (field.GetOffset (), unwrappedSeed.offset);
+
+                        if constexpr (std::is_same_v <Seed, BitFieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), 1u);
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BIT);
+
+                            BOOST_CHECK_EQUAL (
+                                field.GetBitOffset (), static_cast <BitFieldSeed &> (unwrappedSeed).bitOffset);
+                        }
+                        else if constexpr (std::is_same_v <Seed, Int8FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int8_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, Int16FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int16_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, Int32FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int32_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, Int64FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int64_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, UInt8FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint8_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, UInt16FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint16_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, UInt32FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint32_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, UInt64FieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint64_t));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, FloatFieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (float));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, DoubleFieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (double));
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
+                        }
+                        else if constexpr (std::is_same_v <Seed, StringFieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (
+                                field.GetSize (), static_cast <StringFieldSeed &> (unwrappedSeed).maxSize);
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::STRING);
+                        }
+                        else if constexpr (std::is_same_v <Seed, BlockFieldSeed>)
+                        {
+                            BOOST_CHECK_EQUAL (
+                                field.GetSize (), static_cast <BlockFieldSeed &> (unwrappedSeed).size);
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BLOCK);
+                        }
+                        else if constexpr (std::is_same_v <Seed, NestedObjectFieldSeed>)
+                        {
+                            auto &castedSeed = static_cast <NestedObjectFieldSeed &> (unwrappedSeed);
+                            BOOST_CHECK_EQUAL (field.GetSize (), castedSeed.typeMapping.GetObjectSize ());
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INSTANCE);
+                            BOOST_CHECK_EQUAL (field.GetInstanceMapping (), castedSeed.typeMapping);
+
+                            Mapping::FieldIterator iterator = castedSeed.typeMapping.Begin ();
+                            Mapping::FieldIterator end = castedSeed.typeMapping.End ();
+
+                            while (iterator != end)
+                            {
+                                Field nestedField = *iterator;
+                                Field projectedField = mapping.GetField (
+                                    ProjectNestedField (castedSeed.recordedId,
+                                                        castedSeed.typeMapping.GetFieldId (iterator)));
+
+                                BOOST_CHECK (projectedField.IsHandleValid ());
+
+                                // TODO: Ignore offsets during comparison, because offsets can be different!
+                                BOOST_CHECK_EQUAL (nestedField, projectedField);
+                                ++iterator;
+                            }
+                        }
+                    }
+
+                    BOOST_CHECK_EQUAL (idsFound.count (unwrappedSeed.recordedId), 0u);
+                    idsFound.insert (unwrappedSeed.recordedId);
+
+                    if constexpr (std::is_same_v <Seed, NestedObjectFieldSeed>)
+                    {
+                        auto &castedSeed = static_cast <NestedObjectFieldSeed &> (unwrappedSeed);
+                        Mapping::FieldIterator iterator = castedSeed.typeMapping.Begin ();
+                        Mapping::FieldIterator end = castedSeed.typeMapping.End ();
+
+                        while (iterator != end)
+                        {
+                            FieldId projectedId = ProjectNestedField (
+                                castedSeed.recordedId, castedSeed.typeMapping.GetFieldId (iterator));
+
+                            BOOST_CHECK_EQUAL (idsFound.count (projectedId), 0u);
+                            idsFound.insert (projectedId);
+                            ++iterator;
+                        }
+                    }
                 },
                 seed);
         }
@@ -588,15 +422,17 @@ struct TwoIntsTest
 };
 
 static MappingSeed twoIntsCorrectOrder (
+    sizeof (TwoIntsTest),
     {
-        UInt32FieldSeed (offsetof (TwoIntsTest, first)),
-        Int16FieldSeed (offsetof (TwoIntsTest, second)),
+        UInt32FieldSeed {{offsetof (TwoIntsTest, first)}},
+        Int16FieldSeed {{offsetof(TwoIntsTest, second)}},
     });
 
 static MappingSeed twoIntsReversedOrder (
+    sizeof (TwoIntsTest),
     {
-        Int16FieldSeed (offsetof (TwoIntsTest, second)),
-        UInt32FieldSeed (offsetof (TwoIntsTest, first)),
+        Int16FieldSeed {{offsetof (TwoIntsTest, second)}},
+        UInt32FieldSeed {{offsetof (TwoIntsTest, first)}},
     });
 
 struct AllBasicTypesTest final
@@ -618,24 +454,25 @@ struct AllBasicTypesTest final
 };
 
 static MappingSeed allBasicTypes (
+    sizeof (AllBasicTypesTest),
     {
-        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 0u),
-        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 1u),
-        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 2u),
-        BitFieldSeed (offsetof (AllBasicTypesTest, someFlags), 3u),
+        BitFieldSeed {{offsetof (AllBasicTypesTest, someFlags)}, 0u},
+        BitFieldSeed {{offsetof (AllBasicTypesTest, someFlags)}, 1u},
+        BitFieldSeed {{offsetof (AllBasicTypesTest, someFlags)}, 2u},
+        BitFieldSeed {{offsetof (AllBasicTypesTest, someFlags)}, 3u},
 
-        Int8FieldSeed (offsetof (AllBasicTypesTest, int8)),
-        Int16FieldSeed (offsetof (AllBasicTypesTest, int16)),
-        Int32FieldSeed (offsetof (AllBasicTypesTest, int32)),
-        Int64FieldSeed (offsetof (AllBasicTypesTest, int64)),
+        Int8FieldSeed {{offsetof (AllBasicTypesTest, int8)}},
+        Int16FieldSeed {{offsetof (AllBasicTypesTest, int16)}},
+        Int32FieldSeed {{offsetof (AllBasicTypesTest, int32)}},
+        Int64FieldSeed {{offsetof (AllBasicTypesTest, int64)}},
 
-        UInt8FieldSeed (offsetof (AllBasicTypesTest, uint8)),
-        UInt16FieldSeed (offsetof (AllBasicTypesTest, uint16)),
-        UInt32FieldSeed (offsetof (AllBasicTypesTest, uint32)),
-        UInt64FieldSeed (offsetof (AllBasicTypesTest, uint64)),
+        UInt8FieldSeed {{offsetof (AllBasicTypesTest, uint8)}},
+        UInt16FieldSeed {{offsetof (AllBasicTypesTest, uint16)}},
+        UInt32FieldSeed {{offsetof (AllBasicTypesTest, uint32)}},
+        UInt64FieldSeed {{offsetof (AllBasicTypesTest, uint64)}},
 
-        StringFieldSeed (offsetof (AllBasicTypesTest, string), sizeof (AllBasicTypesTest::string)),
-        BlockFieldSeed (offsetof (AllBasicTypesTest, block), sizeof (AllBasicTypesTest::block)),
+        StringFieldSeed {{offsetof (AllBasicTypesTest, string)}, sizeof (AllBasicTypesTest::string)},
+        BlockFieldSeed {{offsetof (AllBasicTypesTest, block)}, sizeof (AllBasicTypesTest::block)},
     });
 
 struct UnionWithBasicTypesTest
@@ -662,22 +499,23 @@ struct UnionWithBasicTypesTest
 };
 
 static MappingSeed unionWithBasicTypes (
+    sizeof (UnionWithBasicTypesTest),
     {
-        BlockFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionField),
-                        sizeof (UnionWithBasicTypesTest::nonUnionField)),
+        BlockFieldSeed {{offsetof (UnionWithBasicTypesTest, nonUnionField)},
+                        sizeof (UnionWithBasicTypesTest::nonUnionField)},
 
-        UInt64FieldSeed (offsetof (UnionWithBasicTypesTest, union1UInt64)),
-        StringFieldSeed (offsetof (UnionWithBasicTypesTest, union1String),
-                         sizeof (UnionWithBasicTypesTest::union1String)),
+        UInt64FieldSeed {{offsetof (UnionWithBasicTypesTest, union1UInt64)}},
+        StringFieldSeed {{offsetof (UnionWithBasicTypesTest, union1String)},
+                         sizeof (UnionWithBasicTypesTest::union1String)},
 
-        Int64FieldSeed (offsetof (UnionWithBasicTypesTest, union2Int64)),
-        FloatFieldSeed (offsetof (UnionWithBasicTypesTest, union2Float)),
-        DoubleFieldSeed (offsetof (UnionWithBasicTypesTest, union2Double)),
+        Int64FieldSeed {{offsetof (UnionWithBasicTypesTest, union2Int64)}},
+        FloatFieldSeed {{offsetof (UnionWithBasicTypesTest, union2Float)}},
+        DoubleFieldSeed {{offsetof (UnionWithBasicTypesTest, union2Double)}},
 
-        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 0u),
-        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 1u),
-        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 2u),
-        BitFieldSeed (offsetof (UnionWithBasicTypesTest, nonUnionFlags), 3u),
+        BitFieldSeed {{offsetof (UnionWithBasicTypesTest, nonUnionFlags)}, 0u},
+        BitFieldSeed {{offsetof (UnionWithBasicTypesTest, nonUnionFlags)}, 1u},
+        BitFieldSeed {{offsetof (UnionWithBasicTypesTest, nonUnionFlags)}, 2u},
+        BitFieldSeed {{offsetof (UnionWithBasicTypesTest, nonUnionFlags)}, 3u},
     });
 
 struct NestedOneSublevelTest
@@ -689,11 +527,12 @@ struct NestedOneSublevelTest
 };
 
 static MappingSeed nestedOneSublevel (
+    sizeof (NestedOneSublevelTest),
     {
-        UInt64FieldSeed (offsetof (NestedOneSublevelTest, uint64)),
-        NestedObjectFieldSeed (offsetof (NestedOneSublevelTest, firstNested), twoIntsCorrectOrder.Grow ()),
-        NestedObjectFieldSeed (offsetof (NestedOneSublevelTest, secondNested), twoIntsReversedOrder.Grow ()),
-        BlockFieldSeed (offsetof (NestedOneSublevelTest, block), sizeof (NestedOneSublevelTest::block)),
+        UInt64FieldSeed {{offsetof (NestedOneSublevelTest, uint64)}},
+        NestedObjectFieldSeed {{offsetof (NestedOneSublevelTest, firstNested)}, twoIntsCorrectOrder.Grow ()},
+        NestedObjectFieldSeed {{offsetof (NestedOneSublevelTest, secondNested)}, twoIntsReversedOrder.Grow ()},
+        BlockFieldSeed {{offsetof (NestedOneSublevelTest, block)}, sizeof (NestedOneSublevelTest::block)},
     });
 
 struct NestedInUnionOneSublevelTest
@@ -709,11 +548,12 @@ struct NestedInUnionOneSublevelTest
 };
 
 static MappingSeed nestedInUnionOneSublevel (
+    sizeof (NestedInUnionOneSublevelTest),
     {
-        UInt64FieldSeed (offsetof (NestedInUnionOneSublevelTest, uint64)),
-        NestedObjectFieldSeed (offsetof (NestedInUnionOneSublevelTest, firstNested), twoIntsCorrectOrder.Grow ()),
-        NestedObjectFieldSeed (offsetof (NestedInUnionOneSublevelTest, secondNested), twoIntsReversedOrder.Grow ()),
-        BlockFieldSeed (offsetof (NestedInUnionOneSublevelTest, block), sizeof (NestedOneSublevelTest::block)),
+        UInt64FieldSeed {{offsetof (NestedInUnionOneSublevelTest, uint64)}},
+        NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, firstNested)}, twoIntsCorrectOrder.Grow ()},
+        NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, secondNested)}, twoIntsReversedOrder.Grow ()},
+        BlockFieldSeed {{offsetof (NestedInUnionOneSublevelTest, block)}, sizeof (NestedOneSublevelTest::block)},
     });
 
 struct NestedTwoSublevelsTest
@@ -725,11 +565,12 @@ struct NestedTwoSublevelsTest
 };
 
 static MappingSeed nestedTwoSublevels (
+    sizeof (NestedTwoSublevelsTest),
     {
-        FloatFieldSeed (offsetof (NestedTwoSublevelsTest, floatField)),
-        NestedObjectFieldSeed (offsetof (NestedTwoSublevelsTest, firstNested), nestedOneSublevel.Grow ()),
-        BlockFieldSeed (offsetof (NestedTwoSublevelsTest, string), sizeof (NestedTwoSublevelsTest::string)),
-        NestedObjectFieldSeed (offsetof (NestedTwoSublevelsTest, secondNested), nestedInUnionOneSublevel.Grow ()),
+        FloatFieldSeed {{offsetof (NestedTwoSublevelsTest, floatField)}},
+        NestedObjectFieldSeed {{offsetof (NestedTwoSublevelsTest, firstNested)}, nestedOneSublevel.Grow ()},
+        BlockFieldSeed {{offsetof (NestedTwoSublevelsTest, string)}, sizeof (NestedTwoSublevelsTest::string)},
+        NestedObjectFieldSeed {{offsetof (NestedTwoSublevelsTest, secondNested)}, nestedInUnionOneSublevel.Grow ()},
     });
 } // namespace Emergence::StandardLayout::Test
 
@@ -872,5 +713,7 @@ BOOST_DATA_TEST_CASE (
     Emergence::StandardLayout::MappingBuilder builder;
     sample.seed->GrowAndTest (builder);
 }
+
+// TODO: Test creation of different mappings from one mapping builder.
 
 BOOST_AUTO_TEST_SUITE_END()
