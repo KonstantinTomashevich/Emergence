@@ -584,7 +584,7 @@ struct print_log_value <Emergence::StandardLayout::FieldArchetype>
 };
 } // namespace boost::test_tools::tt_detail
 
-BOOST_AUTO_TEST_SUITE(MappingBuilder)
+BOOST_AUTO_TEST_SUITE (MappingBuilder)
 
 
 struct GenerationDataset
@@ -628,6 +628,12 @@ BOOST_DATA_TEST_CASE (
     sample.seed->GrowAndTest (builder);
 }
 
-// TODO: Test creation of different mappings from one mapping builder.
+BOOST_AUTO_TEST_CASE (BuildMultipleMappings)
+{
+    Emergence::StandardLayout::MappingBuilder builder;
+    Emergence::StandardLayout::Test::twoIntsCorrectOrder.GrowAndTest (builder);
+    Emergence::StandardLayout::Test::unionWithBasicTypes.GrowAndTest (builder);
+    Emergence::StandardLayout::Test::nestedTwoSublevels.GrowAndTest (builder);
+}
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END ()
