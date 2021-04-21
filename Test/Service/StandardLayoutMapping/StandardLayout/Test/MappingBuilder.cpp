@@ -16,48 +16,43 @@ bool MappingBuilderTestIncludeMarker () noexcept
     return true;
 }
 
-static bool operator == (const Mapping &_first, const Mapping &_second) noexcept;
+static void CheckMappingEquality (const Mapping &_first, const Mapping &_second) noexcept;
 
-static bool operator == (const Field &_first, const Field &_second) noexcept
+static void CheckFieldEquality (const Field &_first, const Field &_second, bool _requireOffsetEquality = true) noexcept
 {
-    if (!_first.IsHandleValid () || !_second.IsHandleValid ())
+    BOOST_CHECK (_first.IsHandleValid ());
+    BOOST_CHECK (_second.IsHandleValid ());
+    BOOST_CHECK_EQUAL (_first.GetArchetype (), _second.GetArchetype ());
+
+    if (_requireOffsetEquality)
     {
-        return false;
+        BOOST_CHECK_EQUAL (_first.GetOffset (), _second.GetOffset ());
     }
 
-    if (_first.GetArchetype () != _second.GetArchetype () ||
-        _first.GetOffset () != _second.GetOffset () ||
-        _first.GetSize () != _second.GetSize ())
-    {
-        return false;
-    }
-
+    BOOST_CHECK_EQUAL (_first.GetSize (), _second.GetSize ());
     switch (_first.GetArchetype ())
     {
         case FieldArchetype::BIT:
-            return _first.GetBitOffset () == _second.GetBitOffset ();
+            BOOST_CHECK_EQUAL (_first.GetBitOffset (), _second.GetBitOffset ());
+            return;
 
         case FieldArchetype::INT:
         case FieldArchetype::UINT:
         case FieldArchetype::FLOAT:
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
-            return true;
+            return;
 
         case FieldArchetype::INSTANCE:
-            return _first.GetInstanceMapping () == _second.GetInstanceMapping ();
+            CheckMappingEquality (_first.GetInstanceMapping (), _second.GetInstanceMapping ());
+            return;
     }
 
-    BOOST_CHECK_MESSAGE (false, "Found unknown archetype value. Possible memory corruption");
-    return false;
+    BOOST_CHECK_MESSAGE (false, boost::format ("Found unknown archetype value %1%. Possible memory corruption.") %
+                                static_cast <uint64_t> (_first.GetArchetype ()));
 }
 
-static bool operator != (const Field &_first, const Field &_second) noexcept
-{
-    return !(_first == _second);
-}
-
-static bool operator == (const Mapping &_first, const Mapping &_second) noexcept
+static void CheckMappingEquality (const Mapping &_first, const Mapping &_second) noexcept
 {
     // There is no better implementation agnostic way of checking mapping equality than to check equality of all fields.
     // Also, we will assume that if mappings are truly equal, than order of fields in them is equal too.
@@ -72,19 +67,20 @@ static bool operator == (const Mapping &_first, const Mapping &_second) noexcept
     {
         if (secondIterator == secondEnd)
         {
-            return false;
+            BOOST_CHECK_MESSAGE (false, "Second mapping has less fields than first!");
+            return;
         }
 
-        if (*firstIterator != *secondIterator)
-        {
-            return false;
-        }
+        BOOST_TEST_MESSAGE (boost::format ("Checking fields with ids %1% and %2%.") %
+                            static_cast <uint64_t> (_first.GetFieldId (firstIterator)) %
+                            static_cast <uint64_t> (_second.GetFieldId (secondIterator)));
 
+        CheckFieldEquality (*firstIterator, *secondIterator);
         ++firstIterator;
         ++secondIterator;
     }
 
-    return secondIterator == secondEnd;
+    BOOST_CHECK_MESSAGE (secondIterator == secondEnd, "Second mapping has more fields than first!");
 }
 
 struct FieldSeedBase
@@ -355,7 +351,7 @@ public:
                             auto &castedSeed = static_cast <NestedObjectFieldSeed &> (unwrappedSeed);
                             BOOST_CHECK_EQUAL (field.GetSize (), castedSeed.typeMapping.GetObjectSize ());
                             BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INSTANCE);
-                            BOOST_CHECK_EQUAL (field.GetInstanceMapping (), castedSeed.typeMapping);
+                            CheckMappingEquality (field.GetInstanceMapping (), castedSeed.typeMapping);
 
                             Mapping::FieldIterator iterator = castedSeed.typeMapping.Begin ();
                             Mapping::FieldIterator end = castedSeed.typeMapping.End ();
@@ -368,9 +364,10 @@ public:
                                                         castedSeed.typeMapping.GetFieldId (iterator)));
 
                                 BOOST_CHECK (projectedField.IsHandleValid ());
+                                CheckFieldEquality (nestedField, projectedField, false);
 
-                                // TODO: Ignore offsets during comparison, because offsets can be different!
-                                BOOST_CHECK_EQUAL (nestedField, projectedField);
+                                BOOST_CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (),
+                                                   projectedField.GetOffset ());
                                 ++iterator;
                             }
                         }
@@ -574,7 +571,7 @@ static MappingSeed nestedTwoSublevels (
     });
 } // namespace Emergence::StandardLayout::Test
 
-// Inject output and comparison implementations into boost test details.
+// Inject output implementations into boost test details.
 namespace boost::test_tools::tt_detail
 {
 template <>
@@ -585,90 +582,7 @@ struct print_log_value <Emergence::StandardLayout::FieldArchetype>
         _output << Emergence::StandardLayout::GetFieldArchetypeName (_value);
     }
 };
-
-void PrintMapping (std::ostream &_output, Emergence::StandardLayout::Mapping const &_value);
-
-void PrintField (std::ostream &_output, Emergence::StandardLayout::Field const &_value)
-{
-    _output << "{ archetype: " << Emergence::StandardLayout::GetFieldArchetypeName (_value.GetArchetype ()) <<
-            ", offset: " << _value.GetOffset () << ", size: " << _value.GetSize ();
-
-    switch (_value.GetArchetype ())
-    {
-        case Emergence::StandardLayout::FieldArchetype::BIT:
-            _output << ", bitOffset: " << _value.GetBitOffset ();
-            break;
-
-        case Emergence::StandardLayout::FieldArchetype::INT:
-        case Emergence::StandardLayout::FieldArchetype::UINT:
-        case Emergence::StandardLayout::FieldArchetype::FLOAT:
-        case Emergence::StandardLayout::FieldArchetype::STRING:
-        case Emergence::StandardLayout::FieldArchetype::BLOCK:
-            break;
-
-        case Emergence::StandardLayout::FieldArchetype::INSTANCE:
-            _output << ", instanceMapping: ";
-            PrintMapping (_output, _value.GetInstanceMapping ());
-            break;
-    }
-
-    _output << " }";
-}
-
-void PrintMapping (std::ostream &_output, Emergence::StandardLayout::Mapping const &_value)
-{
-    _output << "{ objectSize: " << _value.GetObjectSize () << ", fields: {";
-    Emergence::StandardLayout::Mapping::FieldIterator iterator = _value.Begin ();
-    Emergence::StandardLayout::Mapping::FieldIterator end = _value.End ();
-
-    while (iterator != end)
-    {
-        Emergence::StandardLayout::FieldId fieldId = _value.GetFieldId (iterator);
-        _output << "\"" << fieldId << "\": ";
-        PrintField (_output, *iterator);
-        ++iterator;
-
-        if (iterator != end)
-        {
-            _output << ", ";
-        }
-    }
-
-    _output << "} }";
-}
-
-template <>
-struct print_log_value <Emergence::StandardLayout::Field>
-{
-    void operator () (std::ostream &_output, Emergence::StandardLayout::Field const &_value)
-    {
-        PrintField (_output, _value);
-    }
-};
-
-template <>
-struct print_log_value <Emergence::StandardLayout::Mapping>
-{
-    void operator () (std::ostream &_output, Emergence::StandardLayout::Mapping const &_value)
-    {
-        PrintMapping (_output, _value);
-    }
-};
-
-template <>
-assertion_result equal_impl (const Emergence::StandardLayout::Mapping &_first,
-                             const Emergence::StandardLayout::Mapping &_second)
-{
-    return Emergence::StandardLayout::Test::operator == (_first, _second);
-}
-
-template <>
-assertion_result equal_impl (const Emergence::StandardLayout::Field &_first,
-                             const Emergence::StandardLayout::Field &_second)
-{
-    return Emergence::StandardLayout::Test::operator == (_first, _second);
-}
-}
+} // namespace boost::test_tools::tt_detail
 
 BOOST_AUTO_TEST_SUITE(MappingBuilder)
 
