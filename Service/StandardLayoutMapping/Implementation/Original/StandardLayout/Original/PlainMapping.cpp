@@ -17,7 +17,7 @@ FieldData::FieldData (FieldArchetype _archetype, size_t _offset, size_t _size)
       size (_size)
 {
     assert (archetype != FieldArchetype::BIT);
-    assert (archetype != FieldArchetype::INSTANCE);
+    assert (archetype != FieldArchetype::NESTED_OBJECT);
 }
 
 FieldData::FieldData (size_t _offset, uint_fast8_t _bitOffset)
@@ -28,14 +28,14 @@ FieldData::FieldData (size_t _offset, uint_fast8_t _bitOffset)
 {
 }
 
-FieldData::FieldData (size_t _offset, PlainMapping *_instanceMapping)
-    : archetype (FieldArchetype::INSTANCE),
+FieldData::FieldData (size_t _offset, PlainMapping *_nestedObjectMapping)
+    : archetype (FieldArchetype::NESTED_OBJECT),
       offset (_offset),
-      instanceMapping (_instanceMapping)
+      nestedObjectMapping (_nestedObjectMapping)
 {
-    assert (_instanceMapping);
-    instanceMapping->RegisterReference ();
-    size = instanceMapping->GetObjectSize ();
+    assert (_nestedObjectMapping);
+    nestedObjectMapping->RegisterReference ();
+    size = nestedObjectMapping->GetObjectSize ();
 }
 
 FieldData::FieldData (const FieldData &_other)
@@ -55,17 +55,17 @@ FieldData::FieldData (const FieldData &_other)
             new (this) FieldData (_other.archetype, _other.offset, _other.size);
             break;
 
-        case FieldArchetype::INSTANCE:
-            new (this) FieldData (_other.offset, _other.instanceMapping);
+        case FieldArchetype::NESTED_OBJECT:
+            new (this) FieldData (_other.offset, _other.nestedObjectMapping);
             break;
     }
 }
 
 FieldData::~FieldData ()
 {
-    if (archetype == FieldArchetype::INSTANCE)
+    if (archetype == FieldArchetype::NESTED_OBJECT)
     {
-        instanceMapping->UnregisterReference ();
+        nestedObjectMapping->UnregisterReference ();
     }
 }
 
@@ -90,10 +90,10 @@ uint_fast8_t FieldData::GetBitOffset () const
     return bitOffset;
 }
 
-PlainMapping *FieldData::GetInstanceMapping () const
+PlainMapping *FieldData::GetNestedObjectMapping () const
 {
-    assert (archetype == FieldArchetype::INSTANCE);
-    return instanceMapping;
+    assert (archetype == FieldArchetype::NESTED_OBJECT);
+    return nestedObjectMapping;
 }
 
 PlainMapping::ConstIterator::ConstIterator () noexcept

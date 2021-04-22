@@ -83,7 +83,7 @@ private:
     /// Mapping builder constructs mappings.
     friend class MappingBuilder;
 
-    /// Field::GetInstanceMapping() wraps implementation data into Mapping interface.
+    /// Field::GetNestedObjectMapping() wraps implementation data into Mapping interface.
     friend class Field;
 
     explicit Mapping (void *_handle) noexcept;

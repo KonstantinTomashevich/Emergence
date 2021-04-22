@@ -41,9 +41,8 @@ enum class FieldArchetype
     /// \brief Complex field, that has internal fields.
     ///
     /// \details All nested fields are projected into root mapping, but sometimes
-    ///          it's useful to process complex fields as independent instances.
-    /// \todo Rename to object or something like that? MappingBuilder calls it nested object.
-    INSTANCE,
+    ///          it's useful to process complex fields as independent nested objects.
+    NESTED_OBJECT,
 };
 
 const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept;
@@ -74,10 +73,10 @@ public:
     /// \invariant Field archetype is FieldArchetype::BIT.
     std::size_t GetBitOffset () const noexcept;
 
-    /// \return Mapping of object type, which instance resides in this field.
+    /// \return Mapping, that describes nested object fields.
     /// \invariant Handle must be valid.
-    /// \invariant Field archetype is FieldArchetype::INSTANCE.
-    class Mapping GetInstanceMapping () const noexcept;
+    /// \invariant Field archetype is FieldArchetype::NESTED_OBJECT.
+    class Mapping GetNestedObjectMapping () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
     /// \return Pointer to this field in given structure.

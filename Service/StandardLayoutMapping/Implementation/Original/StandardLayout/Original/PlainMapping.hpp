@@ -15,7 +15,7 @@ public:
 
     FieldData (size_t _offset, uint_fast8_t _bitOffset);
 
-    FieldData (size_t _offset, class PlainMapping *_instanceMapping);
+    FieldData (size_t _offset, class PlainMapping *_nestedObjectMapping);
 
     // TODO: There is problem with current field registration mechanism: user creates field data and passes it to
     //       builder and then builder moves/copies it to allocated cell in mapping. But it leads to some logical
@@ -39,7 +39,7 @@ public:
 
     uint_fast8_t GetBitOffset () const;
 
-    class PlainMapping *GetInstanceMapping () const;
+    class PlainMapping *GetNestedObjectMapping () const;
 
 private:
     FieldArchetype archetype;
@@ -50,7 +50,7 @@ private:
     {
         std::uint_fast8_t bitOffset;
 
-        class PlainMapping *instanceMapping;
+        class PlainMapping *nestedObjectMapping;
     };
 };
 

@@ -33,8 +33,8 @@ const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept
         case FieldArchetype::BLOCK:
             return "BLOCK";
 
-        case FieldArchetype::INSTANCE:
-            return "INSTANCE";
+        case FieldArchetype::NESTED_OBJECT:
+            return "NESTED_OBJECT";
     }
 
     assert (false);
@@ -69,10 +69,10 @@ std::size_t Field::GetBitOffset () const noexcept
     return static_cast <const FieldData *> (handle)->GetBitOffset ();
 }
 
-Mapping Field::GetInstanceMapping () const noexcept
+Mapping Field::GetNestedObjectMapping () const noexcept
 {
     assert (IsHandleValid ());
-    return Mapping (static_cast <const FieldData *> (handle)->GetInstanceMapping ());
+    return Mapping (static_cast <const FieldData *> (handle)->GetNestedObjectMapping ());
 }
 
 void *Field::GetValue (void *_object) const noexcept

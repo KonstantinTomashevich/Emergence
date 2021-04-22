@@ -43,8 +43,8 @@ static void CheckFieldEquality (const Field &_first, const Field &_second, bool 
         case FieldArchetype::BLOCK:
             return;
 
-        case FieldArchetype::INSTANCE:
-            CheckMappingEquality (_first.GetInstanceMapping (), _second.GetInstanceMapping ());
+        case FieldArchetype::NESTED_OBJECT:
+            CheckMappingEquality (_first.GetNestedObjectMapping (), _second.GetNestedObjectMapping ());
             return;
     }
 
@@ -350,8 +350,8 @@ public:
                         {
                             auto &castedSeed = static_cast <NestedObjectFieldSeed &> (unwrappedSeed);
                             BOOST_CHECK_EQUAL (field.GetSize (), castedSeed.typeMapping.GetObjectSize ());
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INSTANCE);
-                            CheckMappingEquality (field.GetInstanceMapping (), castedSeed.typeMapping);
+                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::NESTED_OBJECT);
+                            CheckMappingEquality (field.GetNestedObjectMapping (), castedSeed.typeMapping);
 
                             Mapping::FieldIterator iterator = castedSeed.typeMapping.Begin ();
                             Mapping::FieldIterator end = castedSeed.typeMapping.End ();

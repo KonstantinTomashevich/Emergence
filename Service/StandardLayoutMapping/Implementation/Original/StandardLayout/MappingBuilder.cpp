@@ -146,11 +146,11 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
                     {field.GetArchetype (), _offset + field.GetOffset (), field.GetSize ()});
                 break;
 
-            case FieldArchetype::INSTANCE:
+            case FieldArchetype::NESTED_OBJECT:
                 // We don't need to recursively add fields, because given nested mapping is finished,
                 // therefore all fields of internal objects are already projected into this mapping.
                 nestedFieldId = state->AddField (
-                    {_offset + field.GetOffset (), field.GetInstanceMapping ()});
+                    {_offset + field.GetOffset (), field.GetNestedObjectMapping ()});
                 break;
         }
 
