@@ -94,6 +94,7 @@ public:
     operator bool () const;
 
 private:
+    /// Fields are constructed inside Mapping.
     friend class Mapping;
 
     explicit Field (void *_handle);

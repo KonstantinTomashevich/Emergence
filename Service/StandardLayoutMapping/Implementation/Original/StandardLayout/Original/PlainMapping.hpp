@@ -11,25 +11,38 @@ namespace Emergence::StandardLayout
 class FieldData final
 {
 public:
-    FieldData (FieldArchetype _archetype, size_t _offset, size_t _size);
+    /// \brief Used to register fields with archetypes other than
+    ///        FieldArchetype::BIT and FieldArchetype::NESTED_OBJECT.
+    ///
+    /// \details If FieldData::archetype is FieldArchetype::NESTED_OBJECT, FieldData must manage nestedObjectMapping as
+    //           counted reference. It's much easier to correctly implement this behaviour if FieldData construction
+    //           and destruction is done only in particular places (currently in PlainMappingBuilder and PlainMapping),
+    //           otherwise custom copy and move constructors will be required. Also, addition of custom move constructor
+    //           would violate realloc-movable requirement and create ambiguity.
+    struct StandardSeed final
+    {
+        FieldArchetype archetype;
 
-    FieldData (size_t _offset, uint_fast8_t _bitOffset);
+        std::size_t offset;
 
-    FieldData (size_t _offset, class PlainMapping *_nestedObjectMapping);
+        std::size_t size;
+    };
 
-    // TODO: There is problem with current field registration mechanism: user creates field data and passes it to
-    //       builder and then builder moves/copies it to allocated cell in mapping. But it leads to some logical
-    //       problems:
-    //       1. FieldData should not have custom move constructor, because it is realloc-movable.
-    //       2. Copying field during registration sounds stupid, because there is not real need to do so.
-    //       Possible solution: delete copy and move constructors and use seed-like structures to pass constructor and
-    //       registration arguments.
+    /// \brief Used to register fields with FieldArchetype::BIT.
+    struct BitSeed
+    {
+        std::size_t offset;
 
-    FieldData (const FieldData &_other);
+        uint_fast8_t bitOffset;
+    };
 
-    FieldData (FieldData &&_other) = delete;
+    /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
+    struct NestedObjectSeed
+    {
+        std::size_t offset;
 
-    ~FieldData ();
+        class PlainMapping *nestedObjectMapping;
+    };
 
     FieldArchetype GetArchetype () const;
 
@@ -42,6 +55,20 @@ public:
     class PlainMapping *GetNestedObjectMapping () const;
 
 private:
+    /// PlainMapping deletes FieldData's.
+    friend class PlainMapping;
+
+    /// PlainMappingBuilder constructs FieldData's.
+    friend class PlainMappingBuilder;
+
+    explicit FieldData (const StandardSeed &_seed) noexcept;
+
+    explicit FieldData (const BitSeed &_seed) noexcept;
+
+    explicit FieldData (const NestedObjectSeed &_seed) noexcept;
+
+    ~FieldData ();
+
     FieldArchetype archetype;
     std::size_t offset;
     std::size_t size;
@@ -139,6 +166,7 @@ public:
     FieldId GetFieldId (const FieldData &_field) const;
 
 private:
+    /// PlainMappingBuilder constructs PlainMapping's.
     friend class PlainMappingBuilder;
 
     explicit PlainMapping (std::size_t _objectSize) noexcept;
@@ -164,10 +192,16 @@ public:
 
     PlainMapping *End () noexcept;
 
-    FieldId AddField (const FieldData &_fieldData) noexcept;
+    FieldId AddField (const FieldData::StandardSeed &_seed) noexcept;
+
+    FieldId AddField (const FieldData::BitSeed &_seed) noexcept;
+
+    FieldId AddField (const FieldData::NestedObjectSeed &_seed) noexcept;
 
 private:
     static constexpr std::size_t INITIAL_FIELD_CAPACITY = 32u;
+
+    std::pair <FieldId, FieldData *> AllocateField () noexcept;
 
     void ReallocateMapping (std::size_t _fieldCapacity) noexcept;
 

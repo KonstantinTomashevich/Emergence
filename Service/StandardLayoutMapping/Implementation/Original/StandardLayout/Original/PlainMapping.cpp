@@ -11,64 +11,6 @@ static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept
     return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
 }
 
-FieldData::FieldData (FieldArchetype _archetype, size_t _offset, size_t _size)
-    : archetype (_archetype),
-      offset (_offset),
-      size (_size)
-{
-    assert (archetype != FieldArchetype::BIT);
-    assert (archetype != FieldArchetype::NESTED_OBJECT);
-}
-
-FieldData::FieldData (size_t _offset, uint_fast8_t _bitOffset)
-    : archetype (FieldArchetype::BIT),
-      offset (_offset),
-      size (1u),
-      bitOffset (_bitOffset)
-{
-}
-
-FieldData::FieldData (size_t _offset, PlainMapping *_nestedObjectMapping)
-    : archetype (FieldArchetype::NESTED_OBJECT),
-      offset (_offset),
-      nestedObjectMapping (_nestedObjectMapping)
-{
-    assert (_nestedObjectMapping);
-    nestedObjectMapping->RegisterReference ();
-    size = nestedObjectMapping->GetObjectSize ();
-}
-
-FieldData::FieldData (const FieldData &_other)
-{
-    // TODO: Placement new looks awkward here.
-    switch (_other.archetype)
-    {
-        case FieldArchetype::BIT:
-            new (this) FieldData (_other.offset, _other.bitOffset);
-            break;
-
-        case FieldArchetype::INT:
-        case FieldArchetype::UINT:
-        case FieldArchetype::FLOAT:
-        case FieldArchetype::STRING:
-        case FieldArchetype::BLOCK:
-            new (this) FieldData (_other.archetype, _other.offset, _other.size);
-            break;
-
-        case FieldArchetype::NESTED_OBJECT:
-            new (this) FieldData (_other.offset, _other.nestedObjectMapping);
-            break;
-    }
-}
-
-FieldData::~FieldData ()
-{
-    if (archetype == FieldArchetype::NESTED_OBJECT)
-    {
-        nestedObjectMapping->UnregisterReference ();
-    }
-}
-
 FieldArchetype FieldData::GetArchetype () const
 {
     return archetype;
@@ -94,6 +36,41 @@ PlainMapping *FieldData::GetNestedObjectMapping () const
 {
     assert (archetype == FieldArchetype::NESTED_OBJECT);
     return nestedObjectMapping;
+}
+
+FieldData::FieldData (const FieldData::StandardSeed &_seed) noexcept
+    : archetype (_seed.archetype),
+      offset (_seed.offset),
+      size (_seed.size)
+{
+    assert (archetype != FieldArchetype::BIT);
+    assert (archetype != FieldArchetype::NESTED_OBJECT);
+}
+
+FieldData::FieldData (const FieldData::BitSeed &_seed) noexcept
+    : archetype (FieldArchetype::BIT),
+      offset (_seed.offset),
+      size (1u),
+      bitOffset (_seed.bitOffset)
+{
+}
+
+FieldData::FieldData (const FieldData::NestedObjectSeed &_seed) noexcept
+    : archetype (FieldArchetype::NESTED_OBJECT),
+      offset (_seed.offset),
+      nestedObjectMapping (_seed.nestedObjectMapping)
+{
+    assert (nestedObjectMapping);
+    nestedObjectMapping->RegisterReference ();
+    size = nestedObjectMapping->GetObjectSize ();
+}
+
+FieldData::~FieldData ()
+{
+    if (archetype == FieldArchetype::NESTED_OBJECT)
+    {
+        nestedObjectMapping->UnregisterReference ();
+    }
 }
 
 PlainMapping::ConstIterator::ConstIterator () noexcept
@@ -318,11 +295,34 @@ PlainMapping *PlainMappingBuilder::End () noexcept
     return finished;
 }
 
-FieldId PlainMappingBuilder::AddField (const FieldData &_fieldData) noexcept
+FieldId PlainMappingBuilder::AddField (const FieldData::StandardSeed &_seed) noexcept
+{
+    auto[fieldId, allocatedField] = AllocateField ();
+    new (allocatedField) FieldData (_seed);
+    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
+    return fieldId;
+}
+
+FieldId PlainMappingBuilder::AddField (const FieldData::BitSeed &_seed) noexcept
+{
+    auto[fieldId, allocatedField] = AllocateField ();
+    new (allocatedField) FieldData (_seed);
+    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
+    return fieldId;
+}
+
+FieldId PlainMappingBuilder::AddField (const FieldData::NestedObjectSeed &_seed) noexcept
+{
+    auto[fieldId, allocatedField] = AllocateField ();
+    new (allocatedField) FieldData (_seed);
+    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
+    return fieldId;
+}
+
+std::pair <FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept
 {
     assert (underConstruction);
     assert (underConstruction->fieldCount <= fieldCapacity);
-    assert (_fieldData.GetOffset () + _fieldData.GetSize () <= underConstruction->objectSize);
 
     if (underConstruction->fieldCount == fieldCapacity)
     {
@@ -332,10 +332,9 @@ FieldId PlainMappingBuilder::AddField (const FieldData &_fieldData) noexcept
     FieldId fieldId = underConstruction->fieldCount;
     ++underConstruction->fieldCount;
 
-    FieldData *output = underConstruction->GetField (fieldId);
-    assert (output);
-    new (output) FieldData (_fieldData);
-    return fieldId;
+    FieldData *allocated = underConstruction->GetField (fieldId);
+    assert (allocated);
+    return {fieldId, allocated};
 }
 
 void PlainMappingBuilder::ReallocateMapping (std::size_t _fieldCapacity) noexcept
