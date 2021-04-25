@@ -23,6 +23,8 @@ public:
 
     void Clear () noexcept;
 
+    size_t GetAllocatedSpace () const noexcept;
+
 private:
     struct Chunk
     {
@@ -49,6 +51,7 @@ private:
 
     size_t pageCapacity;
     size_t chunkSize;
+    size_t pageCount;
     Page *topPage;
     Chunk *topFreeChunk;
 };

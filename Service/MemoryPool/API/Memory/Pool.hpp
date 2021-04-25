@@ -40,12 +40,15 @@ public:
     /// \brief Releases all pages.
     void Clear () noexcept;
 
+    /// \return How much memory pool currently holds?
+    std::size_t GetAllocatedSpace () const noexcept;
+
 private:
     /// \brief Max size of pool implementation object.
     ///
     /// \details It could be critical for performance to store pool object, not pool handle, as field of other class.
     /// Therefore we specify max object size for any implementation and reserve this space using std::array.
-    static constexpr std::size_t MAX_DATA_SIZE = sizeof (uintptr_t) * 4u;
+    static constexpr std::size_t MAX_DATA_SIZE = sizeof (uintptr_t) * 5u;
 
     /// \brief Stub, that reserves space for implementation object.
     /// \see ::MAX_FIELDS_SIZE.

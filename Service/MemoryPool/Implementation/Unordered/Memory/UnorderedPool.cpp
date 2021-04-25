@@ -2,13 +2,14 @@
 #include <cstdlib>
 #include <vector>
 
-#include <Memory/Pool/UnorderedPool.hpp>
+#include <Memory/UnorderedPool.hpp>
 
 namespace Emergence::Memory
 {
 UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity)
     : chunkSize (_chunkSize),
       pageCapacity (_pageCapacity),
+      pageCount (0u),
       topPage (nullptr),
       topFreeChunk (nullptr)
 {
@@ -19,9 +20,11 @@ UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity)
 UnorderedPool::UnorderedPool (UnorderedPool &&_other)
     : chunkSize (_other.chunkSize),
       pageCapacity (_other.pageCapacity),
+      pageCount (_other.pageCount),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk)
 {
+    _other.pageCount = 0u;
     _other.topPage = nullptr;
     _other.topFreeChunk = nullptr;
 }
@@ -40,15 +43,17 @@ void *UnorderedPool::Acquire () noexcept
         topPage = newPage;
         Chunk *currentChunk = GetFirstChunk (newPage);
 
-        for (size_t index = 1u; index < pageCapacity; ++index)
+        for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
             auto *next = reinterpret_cast <Chunk *> (reinterpret_cast <uint8_t *> (currentChunk) + chunkSize);
             currentChunk->nextFree = next;
             currentChunk = next;
         }
 
-        currentChunk->nextFree->nextFree = nullptr;
+        currentChunk->nextFree = nullptr;
         topFreeChunk = GetFirstChunk (newPage);
+        assert (pageCount + 1u > pageCount);
+        ++pageCount;
     }
 
     Chunk *acquired = topFreeChunk;
@@ -91,21 +96,14 @@ void UnorderedPool::Shrink () noexcept
         return;
     }
 
-    size_t pageCount = 0u;
-    Page *currentPage = topPage;
-
-    while (currentPage)
-    {
-        ++pageCount;
-        currentPage = currentPage->next;
-    }
-
+    // Pool Shrink operation is always slow (especially for unordered pools),
+    // therefore it's not so bad to dynamically create array here.
     std::vector <size_t> freeChunkCounters (pageCount, 0u);
     Chunk *currentFreeChunk = topFreeChunk;
 
     while (currentFreeChunk)
     {
-        currentPage = topPage;
+        Page *currentPage = topPage;
         size_t pageIndex = 0u;
 
         while (currentPage)
@@ -125,7 +123,7 @@ void UnorderedPool::Shrink () noexcept
 
     size_t currentPageIndex = 0u;
     Page *previousPage = nullptr;
-    currentPage = topPage;
+    Page *currentPage = topPage;
 
     while (currentPage)
     {
@@ -133,6 +131,9 @@ void UnorderedPool::Shrink () noexcept
         if (freeChunkCounters[currentPageIndex] == pageCapacity)
         {
             free (currentPage);
+            assert (pageCount - 1u < pageCount);
+            --pageCount;
+
             if (previousPage)
             {
                 previousPage->next = nextPage;
@@ -161,6 +162,15 @@ void UnorderedPool::Clear () noexcept
         free (page);
         page = next;
     }
+
+    pageCount = 0u;
+    topPage = nullptr;
+    topFreeChunk = nullptr;
+}
+
+size_t UnorderedPool::GetAllocatedSpace () const noexcept
+{
+    return pageCount * pageCapacity * chunkSize;
 }
 
 UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (UnorderedPool::Page *_page)

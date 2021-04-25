@@ -586,7 +586,6 @@ struct print_log_value <Emergence::StandardLayout::FieldArchetype>
 
 BOOST_AUTO_TEST_SUITE (MappingBuilder)
 
-
 struct GenerationDataset
 {
     Emergence::StandardLayout::Test::MappingSeed *seed;

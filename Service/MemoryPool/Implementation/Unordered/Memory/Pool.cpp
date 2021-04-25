@@ -1,5 +1,5 @@
 #include <Memory/Pool.hpp>
-#include <Memory/Pool/UnorderedPool.hpp>
+#include <Memory/UnorderedPool.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
 
@@ -45,5 +45,10 @@ void Pool::Shrink () noexcept
 void Pool::Clear () noexcept
 {
     block_cast <UnorderedPool> (data).Clear ();
+}
+
+std::size_t Pool::GetAllocatedSpace () const noexcept
+{
+    return block_cast <UnorderedPool> (data).GetAllocatedSpace ();
 }
 } // namespace Emergence::Memory
