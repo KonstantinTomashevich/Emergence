@@ -32,7 +32,7 @@ public:
 
     /// \brief Releases given memory chunk.
     /// \invariant chunk belongs to this pool.
-    void Release (void *chunk) noexcept;
+    void Release (void *_chunk) noexcept;
 
     /// \brief Releases all empty pages.
     void Shrink () noexcept;
@@ -41,15 +41,14 @@ public:
     void Clear () noexcept;
 
 private:
-    /// \brief Max total size of pool fields in bytes.
+    /// \brief Max size of pool implementation object.
     ///
     /// \details It could be critical for performance to store pool object, not pool handle, as field of other class.
-    /// Therefore we specify max total size of fields for any implementation and reserve this space using std::array.
-    /// Currently max size of pool object is equal to size of boost::pool.
-    static constexpr std::size_t MAX_FIELDS_SIZE = sizeof (uintptr_t) * 7u;
+    /// Therefore we specify max object size for any implementation and reserve this space using std::array.
+    static constexpr std::size_t MAX_DATA_SIZE = sizeof (uintptr_t) * 4u;
 
-    /// \brief Stub, that reserves space for implementation fields.
+    /// \brief Stub, that reserves space for implementation object.
     /// \see ::MAX_FIELDS_SIZE.
-    std::array <uint8_t, MAX_FIELDS_SIZE> fields;
+    std::array <uint8_t, MAX_DATA_SIZE> data;
 };
 } // namespace Emergence::Memory
