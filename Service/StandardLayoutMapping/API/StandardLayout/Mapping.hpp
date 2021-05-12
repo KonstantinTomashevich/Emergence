@@ -46,7 +46,7 @@ public:
         bool operator != (const FieldIterator &_other) const noexcept;
 
     private:
-        /// Mapping constructs iterators,
+        /// Mapping constructs iterators.
         friend class Mapping;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
