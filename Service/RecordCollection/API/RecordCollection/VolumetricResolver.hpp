@@ -74,36 +74,69 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \copydoc PointResolver::KeyFieldIterator
-    class KeyFieldIterator final
+    class DimensionIterator final
     {
     public:
-        ~KeyFieldIterator () noexcept;
+        struct BorderFields
+        {
+            StandardLayout::Field min;
 
-        StandardLayout::Field operator * () const noexcept;
+            StandardLayout::Field max;
+        };
 
-        KeyFieldIterator &operator ++ () noexcept;
+        ~DimensionIterator () noexcept;
 
-        KeyFieldIterator operator ++ (int) noexcept;
+        BorderFields operator * () const noexcept;
 
-        KeyFieldIterator &operator -- () noexcept;
+        DimensionIterator &operator ++ () noexcept;
 
-        KeyFieldIterator operator -- (int) noexcept;
+        DimensionIterator operator ++ (int) noexcept;
 
-        bool operator == (const KeyFieldIterator &_other) const noexcept;
+        DimensionIterator &operator -- () noexcept;
 
-        bool operator != (const KeyFieldIterator &_other) const noexcept;
+        DimensionIterator operator -- (int) noexcept;
+
+        bool operator == (const DimensionIterator &_other) const noexcept;
+
+        bool operator != (const DimensionIterator &_other) const noexcept;
 
     private:
-        /// VolumetricResolver constructs iterators for key fields.
+        /// VolumetricResolver constructs dimension iterators.
         friend class VolumetricResolver;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-        explicit KeyFieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DimensionIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
+
+    /// \brief Defines shape by specifying min-max value pair for each dimension.
+    ///
+    /// \details Dimension count and types are unknown during compile time, therefore Shape is a pointer to
+    ///          memory block, that holds min-max pair of values for each dimension in correct order. For example,
+    ///          if it's needed to describe rectangle with width equal to 3, height equal to 2, center in
+    ///          (x = 1, y = 3} point and dimensions are x = {float x0; float x1;} and y = {float y0; float y1;},
+    ///          then shape memory block should be {-0.5f, 2.5f, 2.0f, 4.0f}.
+    ///
+    /// \warning Due to runtime-only nature of shapes, logically incorrect pointers can not be caught.
+    /// \invariant Should not be `nullptr`.
+    using Shape = const uint8_t *;
+
+    // TODO: Think about direction normalization requirement.
+    //       It seems standard for floating point rays, but can not be applied to integer rays.
+
+    /// \brief Defines ray by specifying origin-direction value pair for each dimension.
+    ///
+    /// \details Dimension count and types are unknown during compile time, therefore Ray is a pointer to
+    ///          memory block, that holds origin-direction pair of values for each dimension in correct order.
+    ///          For example, if it's needed to describe ray with origin in (x = 2, y = 3) point,
+    ///          (dx = 0.8, dy = -0.6) direction and dimensions are x = {float x0; float x1;} and
+    ///          y = {float y0; float y1;}, then ray memory block should be {2.0f, 0.8f, 3.0f, -0.6f}.
+    ///
+    /// \warning Due to runtime-only nature of rays, logically incorrect pointers can not be caught.
+    /// \invariant Should not be `nullptr`.
+    using Ray = const uint8_t *;
 
     VolumetricResolver (const VolumetricResolver &_other) noexcept;
 
@@ -111,17 +144,17 @@ public:
 
     ~VolumetricResolver () noexcept;
 
-    ReadCursor ReadShapeIntersections (const uint8_t *_bounds) noexcept;
+    ReadCursor ReadShapeIntersections (Shape _shape) noexcept;
 
-    EditCursor EditShapeIntersections (const uint8_t *_bounds) noexcept;
+    EditCursor EditShapeIntersections (Shape _shape) noexcept;
 
-    ReadCursor ReadRayIntersections (const uint8_t *_rayDefinition) noexcept;
+    ReadCursor ReadRayIntersections (Ray _ray) noexcept;
 
-    EditCursor EditRayIntersections (const uint8_t *_rayDefinition) noexcept;
+    EditCursor EditRayIntersections (Ray _ray) noexcept;
 
-    KeyFieldIterator KeyFieldBegin () const noexcept;
+    DimensionIterator DimensionBegin () const noexcept;
 
-    KeyFieldIterator KeyFieldEnd () const noexcept;
+    DimensionIterator DimensionEnd () const noexcept;
 
     bool CanBeDropped () const;
 

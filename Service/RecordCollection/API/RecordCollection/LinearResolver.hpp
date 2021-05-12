@@ -73,15 +73,23 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
+    /// \brief Points to value, that defines one of interval borders.
+    ///
+    /// \details Key field type is unknown during compile time, therefore value is a pointer to memory
+    ///          block with actual value. `nullptr` values will be interpreted as absence of borders.
+    ///
+    /// \warning Due to runtime-only nature of values, logically incorrect pointers can not be caught.
+    using KeyFieldValue = const uint8_t *;
+
     LinearResolver (const LinearResolver &_other) noexcept;
 
     LinearResolver (LinearResolver &&_other) noexcept;
 
     ~LinearResolver () noexcept;
 
-    ReadCursor ReadInterval (const uint8_t *_keyFieldMinValue, const uint8_t *_keyFieldMaxValue) noexcept;
+    ReadCursor ReadInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
-    EditCursor EditInterval (const uint8_t *_keyFieldMinValue, const uint8_t *_keyFieldMaxValue) noexcept;
+    EditCursor EditInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
     StandardLayout::Field GetKeyField () const noexcept;
 

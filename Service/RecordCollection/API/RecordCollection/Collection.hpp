@@ -145,7 +145,8 @@ public:
 
     PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const;
 
-    VolumetricResolver CreateVolumetricResolver (const std::vector <StandardLayout::FieldId> _keyFields) const;
+    VolumetricResolver CreateVolumetricResolver (
+        const std::vector <std::pair <StandardLayout::FieldId, StandardLayout::FieldId>> _keyFields) const;
 
     LinearResolverIterator LinearResolverBegin ();
 

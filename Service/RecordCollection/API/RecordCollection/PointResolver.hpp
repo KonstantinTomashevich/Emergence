@@ -108,15 +108,24 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
+    /// \brief Defines point by specifying value for each key field.
+    ///
+    /// \details Key field count and types are unknown during compile time, therefore Point is
+    ///          a pointer to memory block, that holds values for each key field in correct order.
+    ///
+    /// \warning Due to runtime-only nature of points, logically incorrect pointers can not be caught.
+    /// \invariant Should not be `nullptr`.
+    using Point = const uint8_t *;
+
     PointResolver (const PointResolver &_other) noexcept;
 
     PointResolver (PointResolver &&_other) noexcept;
 
     ~PointResolver () noexcept;
 
-    ReadCursor ReadPoint (const uint8_t *_keyFieldValues) noexcept;
+    ReadCursor ReadPoint (Point _point) noexcept;
 
-    EditCursor EditPoint (const uint8_t *_keyFieldValues) noexcept;
+    EditCursor EditPoint (Point _point) noexcept;
 
     KeyFieldIterator KeyFieldBegin () const noexcept;
 
