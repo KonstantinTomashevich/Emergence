@@ -4,7 +4,9 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-#include <RecordCollection/Resolver.hpp>
+#include <RecordCollection/LinearResolver.hpp>
+#include <RecordCollection/PointResolver.hpp>
+#include <RecordCollection/VolumetricResolver.hpp>
 
 namespace Emergence::RecordCollection
 {
@@ -29,37 +31,6 @@ public:
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
         explicit Inserter (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
-    };
-
-    class PointResolverIterator final
-    {
-    public:
-        ~PointResolverIterator () noexcept;
-
-        PointResolver operator * () const noexcept;
-
-        PointResolverIterator &operator ++ () noexcept;
-
-        PointResolverIterator operator ++ (int) noexcept;
-
-        PointResolverIterator &operator -- () noexcept;
-
-        PointResolverIterator operator -- (int) noexcept;
-
-        bool operator == (const PointResolverIterator &_other) const noexcept;
-
-        bool operator != (const PointResolverIterator &_other) const noexcept;
-
-    private:
-        /// Collection constructs iterators for point resolvers.
-        friend class Collection;
-
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
-
-        explicit PointResolverIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -91,6 +62,37 @@ public:
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
         explicit LinearResolverIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+
+        /// \brief Iterator implementation-specific data.
+        std::array <uint8_t, DATA_MAX_SIZE> data;
+    };
+
+    class PointResolverIterator final
+    {
+    public:
+        ~PointResolverIterator () noexcept;
+
+        PointResolver operator * () const noexcept;
+
+        PointResolverIterator &operator ++ () noexcept;
+
+        PointResolverIterator operator ++ (int) noexcept;
+
+        PointResolverIterator &operator -- () noexcept;
+
+        PointResolverIterator operator -- (int) noexcept;
+
+        bool operator == (const PointResolverIterator &_other) const noexcept;
+
+        bool operator != (const PointResolverIterator &_other) const noexcept;
+
+    private:
+        /// Collection constructs iterators for point resolvers.
+        friend class Collection;
+
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+
+        explicit PointResolverIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -139,19 +141,19 @@ public:
     //       creation can not be done. Is it OK or is it better to use optionals in such situations?
     Inserter Insert ();
 
-    PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const;
-
     LinearResolver CreateLinearResolver (StandardLayout::FieldId _keyField) const;
 
+    PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const;
+
     VolumetricResolver CreateVolumetricResolver (const std::vector <StandardLayout::FieldId> _keyFields) const;
-
-    PointResolverIterator PointResolverBegin ();
-
-    PointResolverIterator PointResolverEnd ();
 
     LinearResolverIterator LinearResolverBegin ();
 
     LinearResolverIterator LinearResolverEnd ();
+
+    PointResolverIterator PointResolverBegin ();
+
+    PointResolverIterator PointResolverEnd ();
 
     VolumetricResolverIterator VolumetricResolverBegin ();
 
