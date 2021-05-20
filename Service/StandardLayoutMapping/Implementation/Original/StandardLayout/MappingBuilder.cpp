@@ -10,10 +10,18 @@ MappingBuilder::MappingBuilder () noexcept
     handle = new PlainMappingBuilder ();
 }
 
+MappingBuilder::MappingBuilder (MappingBuilder &&_other)
+    : handle (_other.handle)
+{
+    _other.handle = nullptr;
+}
+
 MappingBuilder::~MappingBuilder ()
 {
-    assert (handle);
-    delete static_cast <PlainMappingBuilder *> (handle);
+    if (handle)
+    {
+        delete static_cast <PlainMappingBuilder *> (handle);
+    }
 }
 
 void MappingBuilder::Begin (std::size_t _objectSize) noexcept

@@ -12,7 +12,10 @@ class MappingBuilder final
 public:
     MappingBuilder () noexcept;
 
-    // TODO: Delete copy constructor and introduce move constructor?
+    /// MappingBuilder is used as Mapping construction helper, there it sounds irrational to copy it.
+    MappingBuilder (const MappingBuilder &_other) = delete;
+
+    MappingBuilder (MappingBuilder &&_other);
 
     ~MappingBuilder ();
 
