@@ -7,6 +7,12 @@
 
 namespace Emergence::RecordCollection
 {
+/// \brief Represents records as axis aligned bounded shapes in given dimensions.
+///
+/// \details For example, volumetric resolver with 3 dimensions can be
+///          implemented as octree with axis aligned bounding boxes.
+///          Works as handle to real point resolver instance.
+///          Prevents destruction unless there is only one reference to instance.
 class VolumetricResolver final
 {
 public:
@@ -45,6 +51,8 @@ public:
     class EditCursor final
     {
     public:
+        /// Edit cursors can not be copied, because not more than one edit
+        /// cursor can exist inside one Collection at any moment of time.
         EditCursor (const EditCursor &_other) = delete;
 
         EditCursor (EditCursor &&_other);
@@ -55,7 +63,11 @@ public:
         void *operator * () noexcept;
 
         /// \brief Deletes current record from collection and moves to next record.
+        ///
         /// \invariant Cursor should not point to ending.
+        ///
+        /// \warning Record type is unknown during compile time, therefore appropriate
+        ///          destructor should be called before record deletion.
         EditCursor &operator ~ () noexcept;
 
         /// \brief Checks current record for key values changes. Then moves cursor to next record.
@@ -74,26 +86,52 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
+    /// \brief Allows iteration over VolumetricResolver dimensions.
     class DimensionIterator final
     {
     public:
-        struct BorderFields
+        /// \brief Describes one of resolver dimensions.
+        struct Dimension
         {
-            StandardLayout::Field min;
+            /// \brief Pointer to minimum possible value of #minField.
+            ///
+            /// \details Values, that are less than this value will be processed as this value.
+            const void *globalMin;
 
-            StandardLayout::Field max;
+            /// \brief Field, that holds record minimum border value for this dimension.
+            StandardLayout::Field minField;
+
+            /// \brief Pointer to maximum possible value of #maxField.
+            ///
+            /// \details Values, that are greater than this value will be processed as this value.
+            const void *globalMax;
+
+            /// \brief Field, that holds record maximum border value for this dimension.
+            StandardLayout::Field maxField;
         };
 
         ~DimensionIterator () noexcept;
 
-        BorderFields operator * () const noexcept;
+        /// \return Description of dimension, to which iterator points.
+        /// \invariant Inside valid bounds, but not in the ending.
+        Dimension operator * () const noexcept;
 
+        /// \brief Move to next field.
+        /// \invariant Inside valid bounds, but not in the ending.
         DimensionIterator &operator ++ () noexcept;
 
+        /// \brief Move to next field.
+        /// \return Unchanged instance of iterator.
+        /// \invariant Inside valid bounds, but not in the ending.
         DimensionIterator operator ++ (int) noexcept;
 
+        /// \brief Move to previous field.
+        /// \invariant Inside valid bounds, but not in the beginning.
         DimensionIterator &operator -- () noexcept;
 
+        /// \brief Move to previous field.
+        /// \return Unchanged instance of iterator.
+        /// \invariant Inside valid bounds, but not in the beginning.
         DimensionIterator operator -- (int) noexcept;
 
         bool operator == (const DimensionIterator &_other) const noexcept;
@@ -123,9 +161,6 @@ public:
     /// \invariant Should not be `nullptr`.
     using Shape = const uint8_t *;
 
-    // TODO: Think about direction normalization requirement.
-    //       It seems standard for floating point rays, but can not be applied to integer rays.
-
     /// \brief Defines ray by specifying origin-direction value pair for each dimension.
     ///
     /// \details Dimension count and types are unknown during compile time, therefore Ray is a pointer to
@@ -144,20 +179,49 @@ public:
 
     ~VolumetricResolver () noexcept;
 
+    /// \brief Finds records, which shape representations intersect with given shape, and allows user to read them.
+    ///
+    /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
+    ///          implementation specific function and N is count of records in Collection.
+    /// \invariant There is no active insertion transactions and edit cursors in Collection.
     ReadCursor ReadShapeIntersections (Shape _shape) noexcept;
 
+    /// \brief Finds records, which shape representations intersect
+    ///        with given shape, and allows user to edit and delete them.
+    ///
+    /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
+    ///          implementation specific function and N is count of records in Collection.
+    /// \invariant There is no active insertion transactions and read or edit cursors in Collection.
     EditCursor EditShapeIntersections (Shape _shape) noexcept;
 
-    ReadCursor ReadRayIntersections (Ray _ray) noexcept;
+    /// \brief Finds records, which shape representations intersect
+    ///        with [0.0, _rayLength] part of given ray, and allows user to read them.
+    ///
+    /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
+    ///          implementation specific function and N is count of records in Collection.
+    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    ReadCursor ReadRayIntersections (Ray _ray, float _rayLength) noexcept;
 
-    EditCursor EditRayIntersections (Ray _ray) noexcept;
+    /// \brief Finds records, which shape representations intersect
+    ///        with [0.0, _rayLength] part of given ray, and allows user to edit and delete them.
+    ///
+    /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
+    ///          implementation specific function and N is count of records in Collection.
+    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    EditCursor EditRayIntersections (Ray _ray, float _rayLength) noexcept;
 
+    /// \return Iterator, that points to beginning of dimensions sequence.
     DimensionIterator DimensionBegin () const noexcept;
 
+    /// \return Iterator, that points to ending of dimensions sequence.
     DimensionIterator DimensionEnd () const noexcept;
 
+    /// \return Can this resolver be safely dropped?
+    /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const;
 
+    /// \brief Deletes this volumetric resolver from Collection.
+    /// \invariant ::CanBeDropped
     void Drop ();
 
 private:

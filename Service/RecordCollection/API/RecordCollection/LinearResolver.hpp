@@ -7,6 +7,10 @@
 
 namespace Emergence::RecordCollection
 {
+/// \brief Represents records as sequence, in which records are sorted by value of given field in ascending order.
+///
+/// \details Works as handle to real linear resolver instance.
+///          Prevents destruction unless there is only one reference to instance.
 class LinearResolver final
 {
 public:
@@ -20,12 +24,25 @@ public:
 
         ~ReadCursor ();
 
-        /// \return Pointer to current record or nullptr if there is no more records.
+        /// \return Pointer to current record or nullptr if cursor points to ending.
         const void *operator * () const noexcept;
 
         /// \brief Moves cursor to next record.
-        /// \invariant Cursor should not point to ending.
+        /// \invariant Cursor should not point to interval ending.
         ReadCursor &operator ++ () noexcept;
+
+        /// \brief Moves cursor to next record.
+        /// \invariant Cursor should not point to interval beginning.
+        ReadCursor &operator -- () noexcept;
+
+        /// \brief Moves cursor to interval beginning.
+        void MoveToBeginning () noexcept;
+
+        /// \brief Moves cursor to interval ending.
+        void MoveToEnding () noexcept;
+
+        /// \return Does cursor point to interval beginning?
+        bool IsInBeginning () const noexcept;
 
     private:
         /// LinearResolver constructs its cursors.
@@ -44,6 +61,8 @@ public:
     class EditCursor final
     {
     public:
+        /// Edit cursors can not be copied, because not more than one edit
+        /// cursor can exist inside one Collection at any moment of time.
         EditCursor (const EditCursor &_other) = delete;
 
         EditCursor (EditCursor &&_other);
@@ -54,12 +73,29 @@ public:
         void *operator * () noexcept;
 
         /// \brief Deletes current record from collection and moves to next record.
+        ///
         /// \invariant Cursor should not point to ending.
+        ///
+        /// \warning Record type is unknown during compile time, therefore appropriate
+        ///          destructor should be called before record deletion.
         EditCursor &operator ~ () noexcept;
 
         /// \brief Checks current record for key values changes. Then moves cursor to next record.
         /// \invariant Cursor should not point to ending.
         EditCursor &operator ++ () noexcept;
+
+        /// \brief Moves cursor to next record.
+        /// \invariant Cursor should not point to interval beginning.
+        ReadCursor &operator -- () noexcept;
+
+        /// \brief Moves cursor to interval beginning.
+        void MoveToBeginning () noexcept;
+
+        /// \brief Moves cursor to interval ending.
+        void MoveToEnding () noexcept;
+
+        /// \return Does cursor point to interval beginning?
+        bool IsInBeginning () const noexcept;
 
     private:
         /// LinearResolver constructs its cursors.
@@ -87,14 +123,28 @@ public:
 
     ~LinearResolver () noexcept;
 
+    /// \brief Finds interval, described by given borders, and allows user to read records from it.
+    ///
+    /// \details Complexity -- O(lgN), where N is count of records in Collection.
+    /// \invariant There is no active insertion transactions and edit cursors in Collection.
     ReadCursor ReadInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
+    /// \brief Finds interval, described by given borders,
+    ///        and allows user to edit and delete records from this interval.
+    ///
+    /// \details Complexity -- O(lgN), where N is count of records in Collection.
+    /// \invariant There is no active insertion transactions and read or edit cursors in Collection.
     EditCursor EditInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
+    /// \return Field, by which records are sorted in this linear resolver.
     StandardLayout::Field GetKeyField () const noexcept;
 
+    /// \return Can this resolver be safely dropped?
+    /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const;
 
+    /// \brief Deletes this linear resolver from Collection.
+    /// \invariant ::CanBeDropped
     void Drop ();
 
 private:

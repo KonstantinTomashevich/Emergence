@@ -7,6 +7,10 @@
 
 namespace Emergence::RecordCollection
 {
+/// \brief Projects records to set of points, where point is a vector of values from given fields.
+///
+/// \details Works as handle to real point resolver instance.
+///          Prevents destruction unless there is only one reference to instance.
 class PointResolver final
 {
 public:
@@ -44,6 +48,8 @@ public:
     class EditCursor final
     {
     public:
+        /// Edit cursors can not be copied, because not more than one edit
+        /// cursor can exist inside one Collection at any moment of time.
         EditCursor (const EditCursor &_other) = delete;
 
         EditCursor (EditCursor &&_other);
@@ -58,7 +64,11 @@ public:
         void *operator * () noexcept;
 
         /// \brief Deletes current record from collection and moves to next record.
+        ///
         /// \invariant Cursor should not point to ending.
+        ///
+        /// \warning Record type is unknown during compile time, therefore appropriate
+        ///          destructor should be called before record deletion.
         EditCursor &operator ~ ();
 
         /// \brief Checks current record for key values changes. Then moves cursor to next record.
@@ -77,19 +87,32 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
+    /// \brief Allows iteration over PointResolver key fields.
     class KeyFieldIterator final
     {
     public:
         ~KeyFieldIterator () noexcept;
 
+        /// \return Key Field, to which iterator points.
+        /// \invariant Inside valid bounds, but not in the ending.
         StandardLayout::Field operator * () const noexcept;
 
+        /// \brief Move to next field.
+        /// \invariant Inside valid bounds, but not in the ending.
         KeyFieldIterator &operator ++ () noexcept;
 
+        /// \brief Move to next field.
+        /// \return Unchanged instance of iterator.
+        /// \invariant Inside valid bounds, but not in the ending.
         KeyFieldIterator operator ++ (int) noexcept;
 
+        /// \brief Move to previous field.
+        /// \invariant Inside valid bounds, but not in the beginning.
         KeyFieldIterator &operator -- () noexcept;
 
+        /// \brief Move to previous field.
+        /// \return Unchanged instance of iterator.
+        /// \invariant Inside valid bounds, but not in the beginning.
         KeyFieldIterator operator -- (int) noexcept;
 
         bool operator == (const KeyFieldIterator &_other) const noexcept;
@@ -123,16 +146,30 @@ public:
 
     ~PointResolver () noexcept;
 
+    /// \brief Finds point, described by given values, and allows user to read records from it.
+    ///
+    /// \details Complexity -- O(C*N), where C is amortized constant and N is total size of key fields in bytes.
+    /// \invariant There is no active insertion transactions and edit cursors in Collection.
     ReadCursor ReadPoint (Point _point) noexcept;
 
+    /// \brief Finds point, described by given values, and allows user to edit and delete records from this point.
+    ///
+    /// \details Complexity -- O(C*N), where C is amortized constant and N is total size of key fields in bytes.
+    /// \invariant There is no active insertion transactions and read or edit cursors in Collection.
     EditCursor EditPoint (Point _point) noexcept;
 
+    /// \return Iterator, that points to beginning of key fields sequence.
     KeyFieldIterator KeyFieldBegin () const noexcept;
 
+    /// \return Iterator, that points to ending of key fields sequence.
     KeyFieldIterator KeyFieldEnd () const noexcept;
 
+    /// \return Can this resolver be safely dropped?
+    /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const;
 
+    /// \brief Deletes this point resolver from Collection.
+    /// \invariant ::CanBeDropped
     void Drop ();
 
 private:

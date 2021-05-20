@@ -12,6 +12,8 @@ class MappingBuilder final
 public:
     MappingBuilder () noexcept;
 
+    // TODO: Delete copy constructor and introduce move constructor?
+
     ~MappingBuilder ();
 
     /// \brief Starts mapping construction routine.
