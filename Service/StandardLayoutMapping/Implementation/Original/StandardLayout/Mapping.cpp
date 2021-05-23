@@ -62,9 +62,8 @@ Mapping::Mapping (const Mapping &_other) noexcept
 }
 
 Mapping::Mapping (Mapping &&_other) noexcept
+    : Mapping (&_other.data)
 {
-    new (&data) Handling::Handle <PlainMapping> (
-        std::move (block_cast <Handling::Handle <PlainMapping> > (_other.data)));
 }
 
 std::size_t Mapping::GetObjectSize () const noexcept

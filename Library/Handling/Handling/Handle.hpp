@@ -18,16 +18,6 @@ concept Handleable = requires (Type _object)
     { _object.HasAnyReferences () } noexcept -> std::convertible_to <bool>;
 };
 
-/// \brief Class-marker, informs that on last Handle destruction
-///        instance destructor should be called instead of `delete`.
-///
-/// \details Some Handleable types use their own allocation strategy instead of `new` operator. Therefore delete can
-///          not be called for instances of such types and it's expected that these instances will deallocate their
-///          memory in their destructors.
-class CuriouslyAllocated
-{
-};
-
 /// \brief Strong reference to given object.
 template <Handleable Type>
 class Handle final
@@ -91,15 +81,7 @@ Handle <Type>::~Handle () noexcept
         instance->UnregisterReference ();
         if (!instance->HasAnyReferences ())
         {
-            if constexpr (std::is_base_of_v <CuriouslyAllocated, Type>)
-            {
-                instance->~Type ();
-            }
-            else
-            {
-                delete instance;
-            }
-
+            delete instance;
             instance = nullptr;
         }
     }

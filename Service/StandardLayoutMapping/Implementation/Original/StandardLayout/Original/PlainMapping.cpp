@@ -6,72 +6,6 @@
 
 namespace Emergence::StandardLayout
 {
-static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept
-{
-    return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
-}
-
-FieldArchetype FieldData::GetArchetype () const
-{
-    return archetype;
-}
-
-size_t FieldData::GetOffset () const
-{
-    return offset;
-}
-
-size_t FieldData::GetSize () const
-{
-    return size;
-}
-
-uint_fast8_t FieldData::GetBitOffset () const
-{
-    assert (archetype == FieldArchetype::BIT);
-    return bitOffset;
-}
-
-Handling::Handle <PlainMapping> FieldData::GetNestedObjectMapping () const
-{
-    assert (archetype == FieldArchetype::NESTED_OBJECT);
-    return nestedObjectMapping;
-}
-
-FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
-    : archetype (_seed.archetype),
-      offset (_seed.offset),
-      size (_seed.size)
-{
-    assert (archetype != FieldArchetype::BIT);
-    assert (archetype != FieldArchetype::NESTED_OBJECT);
-}
-
-FieldData::FieldData (FieldData::BitSeed _seed) noexcept
-    : archetype (FieldArchetype::BIT),
-      offset (_seed.offset),
-      size (1u),
-      bitOffset (_seed.bitOffset)
-{
-}
-
-FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
-    : archetype (FieldArchetype::NESTED_OBJECT),
-      offset (_seed.offset),
-      nestedObjectMapping (std::move (_seed.nestedObjectMapping))
-{
-    assert (nestedObjectMapping);
-    size = nestedObjectMapping->GetObjectSize ();
-}
-
-FieldData::~FieldData ()
-{
-    if (archetype == FieldArchetype::NESTED_OBJECT)
-    {
-        nestedObjectMapping.~Handle ();
-    }
-}
-
 PlainMapping::ConstIterator::ConstIterator () noexcept
     : target (nullptr)
 {
@@ -234,6 +168,11 @@ FieldId PlainMapping::GetFieldId (const FieldData &_field) const
     return GetFieldId (ConstIterator (&_field));
 }
 
+std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noexcept
+{
+    return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
+}
+
 PlainMapping::PlainMapping (std::size_t _objectSize) noexcept
     : objectSize (_objectSize)
 {
@@ -246,8 +185,22 @@ PlainMapping::~PlainMapping () noexcept
     {
         fieldData.~FieldData ();
     }
+}
 
-    free (this);
+void *PlainMapping::operator new (std::size_t _byteCount, std::size_t _fieldCapacity) noexcept
+{
+    return malloc (CalculateMappingSize (_fieldCapacity));
+}
+
+void PlainMapping::operator delete (void *_pointer) noexcept
+{
+    free (_pointer);
+}
+
+PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexcept
+{
+    assert (_newFieldCapacity >= fieldCount);
+    return static_cast <PlainMapping *> (realloc (this, CalculateMappingSize (_newFieldCapacity)));
 }
 
 PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept
@@ -260,11 +213,77 @@ PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept
     return mapping.End ();
 }
 
+FieldArchetype FieldData::GetArchetype () const
+{
+    return archetype;
+}
+
+size_t FieldData::GetOffset () const
+{
+    return offset;
+}
+
+size_t FieldData::GetSize () const
+{
+    return size;
+}
+
+uint_fast8_t FieldData::GetBitOffset () const
+{
+    assert (archetype == FieldArchetype::BIT);
+    return bitOffset;
+}
+
+Handling::Handle <PlainMapping> FieldData::GetNestedObjectMapping () const
+{
+    assert (archetype == FieldArchetype::NESTED_OBJECT);
+    return nestedObjectMapping;
+}
+
+FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
+    : archetype (_seed.archetype),
+      offset (_seed.offset),
+      size (_seed.size)
+{
+    assert (archetype != FieldArchetype::BIT);
+    assert (archetype != FieldArchetype::NESTED_OBJECT);
+}
+
+FieldData::FieldData (FieldData::BitSeed _seed) noexcept
+    : archetype (FieldArchetype::BIT),
+      offset (_seed.offset),
+      size (1u),
+      bitOffset (_seed.bitOffset)
+{
+}
+
+FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
+    : archetype (FieldArchetype::NESTED_OBJECT),
+      offset (_seed.offset),
+      nestedObjectMapping (std::move (_seed.nestedObjectMapping))
+{
+    assert (nestedObjectMapping);
+    size = nestedObjectMapping->GetObjectSize ();
+}
+
+FieldData::~FieldData ()
+{
+    if (archetype == FieldArchetype::NESTED_OBJECT)
+    {
+        nestedObjectMapping.~Handle ();
+    }
+}
+
+PlainMappingBuilder::~PlainMappingBuilder ()
+{
+    delete underConstruction;
+}
+
 void PlainMappingBuilder::Begin (std::size_t _objectSize) noexcept
 {
-    assert (underConstruction == nullptr);
+    assert (!underConstruction);
     fieldCapacity = INITIAL_FIELD_CAPACITY;
-    underConstruction = new (malloc (CalculateMappingSize (fieldCapacity))) PlainMapping (_objectSize);
+    underConstruction = new (fieldCapacity) PlainMapping (_objectSize);
 }
 
 Handling::Handle <PlainMapping> PlainMappingBuilder::End () noexcept
@@ -322,8 +341,7 @@ std::pair <FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept
 void PlainMappingBuilder::ReallocateMapping (std::size_t _fieldCapacity) noexcept
 {
     assert (underConstruction);
-    underConstruction = static_cast <PlainMapping *> (
-        realloc (underConstruction, CalculateMappingSize (_fieldCapacity)));
     fieldCapacity = _fieldCapacity;
+    underConstruction = underConstruction->ChangeCapacity (_fieldCapacity);
 }
 } // namespace Emergence::StandardLayout

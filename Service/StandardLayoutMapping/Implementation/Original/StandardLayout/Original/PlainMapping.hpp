@@ -13,7 +13,7 @@ namespace Emergence::StandardLayout
 {
 class FieldData;
 
-class PlainMapping final : public Handling::HandleableBase, public Handling::CuriouslyAllocated
+class PlainMapping final : public Handling::HandleableBase
 {
 public:
     class ConstIterator final
@@ -94,16 +94,35 @@ public:
     FieldId GetFieldId (const FieldData &_field) const;
 
 private:
-    /// PlainMappingBuilder constructs PlainMapping's.
+    /// PlainMappingBuilder handles PlainMapping allocation and construction routine.
     friend class PlainMappingBuilder;
 
     /// Handle calls PlainMapping destructor.
     template <Handling::Handleable Type>
     friend class Handling::Handle;
 
+    /// \return Size of mapping object, that can hold up to _fieldCapacity fields.
+    static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept;
+
     explicit PlainMapping (std::size_t _objectSize) noexcept;
 
     ~PlainMapping () noexcept;
+
+    /// \brief Allocates mapping object, that can hold up to _fieldCapacity fields.
+    ///
+    /// \details PlainMapping uses malloc-based allocation to support runtime capacity changes using ::ChangeCapacity.
+    void *operator new (std::size_t _byteCount, std::size_t _fieldCapacity) noexcept;
+
+    /// \brief PlainMapping has custom allocation logic and therefore needs custom deallocator.
+    void operator delete (void *_pointer) noexcept;
+
+    /// \brief Changes mapping object size by changing its field capacity.
+    /// \invariant ::fieldCount is less or equal to _newFieldCapacity.
+    ///
+    /// \warning This operation can cause reallocation of mapping object.
+    ///          Always use returned pointer instead of old one.
+    /// \return Pointer to new location of this mapping object.
+    PlainMapping *ChangeCapacity (std::size_t _newFieldCapacity) noexcept;
 
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
@@ -192,6 +211,8 @@ PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept;
 class PlainMappingBuilder
 {
 public:
+    ~PlainMappingBuilder ();
+
     void Begin (std::size_t _objectSize) noexcept;
 
     Handling::Handle <PlainMapping> End () noexcept;
