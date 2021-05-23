@@ -32,13 +32,13 @@ uint_fast8_t FieldData::GetBitOffset () const
     return bitOffset;
 }
 
-PlainMapping *FieldData::GetNestedObjectMapping () const
+Handling::Handle <PlainMapping> FieldData::GetNestedObjectMapping () const
 {
     assert (archetype == FieldArchetype::NESTED_OBJECT);
     return nestedObjectMapping;
 }
 
-FieldData::FieldData (const FieldData::StandardSeed &_seed) noexcept
+FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
     : archetype (_seed.archetype),
       offset (_seed.offset),
       size (_seed.size)
@@ -47,7 +47,7 @@ FieldData::FieldData (const FieldData::StandardSeed &_seed) noexcept
     assert (archetype != FieldArchetype::NESTED_OBJECT);
 }
 
-FieldData::FieldData (const FieldData::BitSeed &_seed) noexcept
+FieldData::FieldData (FieldData::BitSeed _seed) noexcept
     : archetype (FieldArchetype::BIT),
       offset (_seed.offset),
       size (1u),
@@ -55,13 +55,12 @@ FieldData::FieldData (const FieldData::BitSeed &_seed) noexcept
 {
 }
 
-FieldData::FieldData (const FieldData::NestedObjectSeed &_seed) noexcept
+FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
     : archetype (FieldArchetype::NESTED_OBJECT),
       offset (_seed.offset),
-      nestedObjectMapping (_seed.nestedObjectMapping)
+      nestedObjectMapping (std::move (_seed.nestedObjectMapping))
 {
     assert (nestedObjectMapping);
-    nestedObjectMapping->RegisterReference ();
     size = nestedObjectMapping->GetObjectSize ();
 }
 
@@ -69,7 +68,7 @@ FieldData::~FieldData ()
 {
     if (archetype == FieldArchetype::NESTED_OBJECT)
     {
-        nestedObjectMapping->UnregisterReference ();
+        nestedObjectMapping.~Handle ();
     }
 }
 
@@ -186,23 +185,6 @@ bool PlainMapping::ConstIterator::operator >= (const PlainMapping::ConstIterator
     return !(*this < _other);
 }
 
-void PlainMapping::RegisterReference () noexcept
-{
-    assert (references + 1u > references);
-    ++references;
-}
-
-void PlainMapping::UnregisterReference () noexcept
-{
-    assert (references > 0u);
-    --references;
-
-    if (references == 0u)
-    {
-        this->~PlainMapping ();
-    }
-}
-
 std::size_t PlainMapping::GetObjectSize () const noexcept
 {
     return objectSize;
@@ -285,7 +267,7 @@ void PlainMappingBuilder::Begin (std::size_t _objectSize) noexcept
     underConstruction = new (malloc (CalculateMappingSize (fieldCapacity))) PlainMapping (_objectSize);
 }
 
-PlainMapping *PlainMappingBuilder::End () noexcept
+Handling::Handle <PlainMapping> PlainMappingBuilder::End () noexcept
 {
     assert (underConstruction);
     ReallocateMapping (underConstruction->fieldCount);
@@ -295,7 +277,7 @@ PlainMapping *PlainMappingBuilder::End () noexcept
     return finished;
 }
 
-FieldId PlainMappingBuilder::AddField (const FieldData::StandardSeed &_seed) noexcept
+FieldId PlainMappingBuilder::AddField (FieldData::StandardSeed _seed) noexcept
 {
     auto[fieldId, allocatedField] = AllocateField ();
     new (allocatedField) FieldData (_seed);
@@ -303,7 +285,7 @@ FieldId PlainMappingBuilder::AddField (const FieldData::StandardSeed &_seed) noe
     return fieldId;
 }
 
-FieldId PlainMappingBuilder::AddField (const FieldData::BitSeed &_seed) noexcept
+FieldId PlainMappingBuilder::AddField (FieldData::BitSeed _seed) noexcept
 {
     auto[fieldId, allocatedField] = AllocateField ();
     new (allocatedField) FieldData (_seed);
@@ -311,7 +293,7 @@ FieldId PlainMappingBuilder::AddField (const FieldData::BitSeed &_seed) noexcept
     return fieldId;
 }
 
-FieldId PlainMappingBuilder::AddField (const FieldData::NestedObjectSeed &_seed) noexcept
+FieldId PlainMappingBuilder::AddField (FieldData::NestedObjectSeed _seed) noexcept
 {
     auto[fieldId, allocatedField] = AllocateField ();
     new (allocatedField) FieldData (_seed);

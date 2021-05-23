@@ -79,6 +79,8 @@ public:
     /// \invariant Inside valid bounds, but not in the ending.
     FieldId GetFieldId (const FieldIterator &_iterator) const noexcept;
 
+    // TODO: Assignment operators?
+
 private:
     /// Mapping builder constructs mappings.
     friend class MappingBuilder;
@@ -86,10 +88,16 @@ private:
     /// Field::GetNestedObjectMapping() wraps implementation data into Mapping interface.
     friend class Field;
 
-    explicit Mapping (void *_handle) noexcept;
+    static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-    /// \brief Mapping implementation handle.
-    void *handle = nullptr;
+    /// \brief Copies implementation-specific values from given pointer.
+    explicit Mapping (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+
+    /// \brief Moves implementation-specific values from given pointer.
+    explicit Mapping (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+
+    /// \brief Mapping implementation-specific data.
+    std::array <uint8_t, DATA_MAX_SIZE> data;
 };
 
 /// \brief Wraps Mapping::Begin for foreach sentences.

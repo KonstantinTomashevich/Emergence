@@ -83,6 +83,8 @@ public:
     /// \invariant There is active mapping construction routine, that uses this builder.
     FieldId RegisterNestedObject (std::size_t _offset, const Mapping &objectMapping) noexcept;
 
+    // TODO: Assignment operators?
+
 private:
     /// \brief MappingBuilder implementation handle.
     void *handle = nullptr;

@@ -72,7 +72,8 @@ std::size_t Field::GetBitOffset () const noexcept
 Mapping Field::GetNestedObjectMapping () const noexcept
 {
     assert (IsHandleValid ());
-    return Mapping (static_cast <const FieldData *> (handle)->GetNestedObjectMapping ());
+    Handling::Handle <PlainMapping> nestedMapping = static_cast <const FieldData *> (handle)->GetNestedObjectMapping ();
+    return Mapping (reinterpret_cast <decltype (Mapping::data) *> (&nestedMapping));
 }
 
 void *Field::GetValue (void *_object) const noexcept

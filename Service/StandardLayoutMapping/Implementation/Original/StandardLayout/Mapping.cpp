@@ -57,63 +57,68 @@ Mapping::FieldIterator::~FieldIterator () noexcept
 }
 
 Mapping::Mapping (const Mapping &_other) noexcept
-    : Mapping (_other.handle)
+    : Mapping (&_other.data)
 {
 }
 
 Mapping::Mapping (Mapping &&_other) noexcept
-    : handle (_other.handle)
 {
-    assert (handle);
-    _other.handle = nullptr;
+    new (&data) Handling::Handle <PlainMapping> (
+        std::move (block_cast <Handling::Handle <PlainMapping> > (_other.data)));
 }
 
 std::size_t Mapping::GetObjectSize () const noexcept
 {
+    const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);
     assert (handle);
-    return static_cast <const PlainMapping *> (handle)->GetObjectSize ();
+    return handle->GetObjectSize ();
 }
 
 Field Mapping::GetField (FieldId _field) const noexcept
 {
+    const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);
     assert (handle);
-    return Field (static_cast <PlainMapping *> (handle)->GetField (_field));
+    return Field (handle->GetField (_field));
 }
 
 Mapping::FieldIterator Mapping::Begin () const noexcept
 {
+    const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);
     assert (handle);
-    PlainMapping::ConstIterator iterator = static_cast <PlainMapping *> (handle)->Begin ();
+    PlainMapping::ConstIterator iterator = handle->Begin ();
     return FieldIterator (reinterpret_cast <decltype (FieldIterator::data) *> (&iterator));
 }
 
 Mapping::FieldIterator Mapping::End () const noexcept
 {
+    const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);
     assert (handle);
-    PlainMapping::ConstIterator iterator = static_cast <PlainMapping *> (handle)->End ();
+    PlainMapping::ConstIterator iterator = handle->End ();
     return FieldIterator (reinterpret_cast <decltype (FieldIterator::data) *> (&iterator));
 }
 
 FieldId Mapping::GetFieldId (const Mapping::FieldIterator &_iterator) const noexcept
 {
+    const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);
     assert (handle);
-    return static_cast <PlainMapping *> (handle)->GetFieldId (
-        *reinterpret_cast <const PlainMapping::ConstIterator *> (&_iterator.data));
+    return handle->GetFieldId (*reinterpret_cast <const PlainMapping::ConstIterator *> (&_iterator.data));
 }
 
-Mapping::Mapping (void *_handle) noexcept
-    : handle (_handle)
+Mapping::Mapping (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
-    assert (handle);
-    static_cast <PlainMapping *> (handle)->RegisterReference ();
+    assert (_data);
+    new (&data) Handling::Handle <PlainMapping> (block_cast <Handling::Handle <PlainMapping>> (*_data));
+}
+
+Mapping::Mapping (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
+{
+    assert (_data);
+    new (&data) Handling::Handle <PlainMapping> (std::move (block_cast <Handling::Handle <PlainMapping>> (*_data)));
 }
 
 Mapping::~Mapping () noexcept
 {
-    if (handle)
-    {
-        static_cast <PlainMapping *> (handle)->UnregisterReference ();
-    }
+    block_cast <Handling::Handle <PlainMapping>> (data).~Handle ();
 }
 
 Mapping::FieldIterator begin (const Mapping &_mapping) noexcept

@@ -224,6 +224,8 @@ public:
     /// \invariant ::CanBeDropped
     void Drop ();
 
+    // TODO: Assignment operators?
+
 private:
     /// Collection constructs resolvers.
     friend class Collection;

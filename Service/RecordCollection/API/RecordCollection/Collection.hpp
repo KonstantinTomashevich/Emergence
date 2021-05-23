@@ -250,6 +250,8 @@ public:
     /// \return Iterator, that points to ending of volumetric resolvers range.
     VolumetricResolverIterator VolumetricResolverEnd ();
 
+    // TODO: Assignment operators?
+
 private:
     /// \brief Implementation handle.
     void *handle;

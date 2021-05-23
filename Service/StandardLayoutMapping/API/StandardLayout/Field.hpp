@@ -93,6 +93,8 @@ public:
     /// \return ::IsHandleValid ()
     operator bool () const;
 
+    // TODO: Assignment operators? Copy and move constructors?
+
 private:
     /// Fields are constructed inside Mapping.
     friend class Mapping;

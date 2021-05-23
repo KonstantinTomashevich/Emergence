@@ -3,6 +3,8 @@
 #include <StandardLayout/MappingBuilder.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 namespace Emergence::StandardLayout
 {
 MappingBuilder::MappingBuilder () noexcept
@@ -33,7 +35,8 @@ void MappingBuilder::Begin (std::size_t _objectSize) noexcept
 Mapping MappingBuilder::End () noexcept
 {
     assert (handle);
-    return Mapping (static_cast <PlainMappingBuilder *> (handle)->End ());
+    Handling::Handle <PlainMapping> mapping = static_cast <PlainMappingBuilder *> (handle)->End ();
+    return Mapping (reinterpret_cast <decltype (Mapping::data) *> (&mapping));
 }
 
 FieldId MappingBuilder::RegisterBit (std::size_t _offset, uint_fast8_t _bitOffset) noexcept
@@ -131,11 +134,11 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
     assert (handle);
     auto *state = static_cast <PlainMappingBuilder *> (handle);
 
-    assert (objectMapping.handle);
-    auto *nestedPlainMapping = static_cast <PlainMapping *> (objectMapping.handle);
-    FieldId objectFieldId = state->AddField ({_offset, nestedPlainMapping});
+    const auto &nestedPlainMapping = block_cast <Handling::Handle <PlainMapping>> (objectMapping.data);
+    assert (nestedPlainMapping);
+    FieldId objectFieldId = state->AddField ({_offset, nestedPlainMapping.Get ()});
 
-    for (const FieldData &field : *nestedPlainMapping)
+    for (const FieldData &field : *nestedPlainMapping.Get ())
     {
         FieldId nestedFieldId;
         switch (field.GetArchetype ())
@@ -158,7 +161,7 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
                 // We don't need to recursively add fields, because given nested mapping is finished,
                 // therefore all fields of internal objects are already projected into this mapping.
                 nestedFieldId = state->AddField (
-                    {_offset + field.GetOffset (), field.GetNestedObjectMapping ()});
+                    {_offset + field.GetOffset (), field.GetNestedObjectMapping ().Get ()});
                 break;
         }
 

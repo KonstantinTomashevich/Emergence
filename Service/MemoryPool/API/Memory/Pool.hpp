@@ -43,6 +43,8 @@ public:
     /// \return How much memory pool currently holds?
     std::size_t GetAllocatedSpace () const noexcept;
 
+    // TODO: Assignment operators?
+
 private:
     /// \brief Max size of pool implementation object.
     ///
