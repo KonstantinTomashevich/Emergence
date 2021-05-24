@@ -51,4 +51,15 @@ std::size_t Pool::GetAllocatedSpace () const noexcept
 {
     return block_cast <UnorderedPool> (data).GetAllocatedSpace ();
 }
+
+Pool &Pool::operator = (Pool &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Pool ();
+        new (this) Pool (std::move (_other));
+    }
+
+    return *this;
+}
 } // namespace Emergence::Memory

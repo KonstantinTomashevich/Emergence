@@ -43,7 +43,11 @@ public:
     /// \return How much memory pool currently holds?
     std::size_t GetAllocatedSpace () const noexcept;
 
-    // TODO: Assignment operators?
+    /// \brief Copy assigning memory pool contradicts with its usage practices.
+    Pool &operator = (const Pool &_other) = delete;
+
+    /// \brief Drops all pages from this pool and captures all pages of given pool.
+    Pool &operator = (Pool &&_other) noexcept;
 
 private:
     /// \brief Max size of pool implementation object.

@@ -16,8 +16,6 @@ public:
     /// It doesn't make sense to move references counters.
     HandleableBase (HandleableBase &&_other) = delete;
 
-    // TODO: Is there any way to make these methods protected?
-
     /// \brief Adds reference to counter.
     /// \invariant ::references should not overflow during increment.
     void RegisterReference () noexcept;
