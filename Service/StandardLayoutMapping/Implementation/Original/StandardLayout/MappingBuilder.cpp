@@ -18,7 +18,7 @@ MappingBuilder::MappingBuilder (MappingBuilder &&_other)
     _other.handle = nullptr;
 }
 
-MappingBuilder::~MappingBuilder ()
+MappingBuilder::~MappingBuilder () noexcept
 {
     if (handle)
     {
@@ -169,5 +169,16 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
     }
 
     return objectFieldId;
+}
+
+MappingBuilder &MappingBuilder::operator = (MappingBuilder &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~MappingBuilder ();
+        new (this) MappingBuilder (std::move (_other));
+    }
+
+    return *this;
 }
 } // namespace Emergence::StandardLayout

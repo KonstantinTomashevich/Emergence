@@ -41,7 +41,18 @@ const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept
     return "UNKNOWN";
 }
 
-Field::~Field ()
+Field::Field (const Field &_other) noexcept
+    : Field (_other.handle)
+{
+}
+
+Field::Field (Field &&_other) noexcept
+    : Field (_other.handle)
+{
+    _other.handle = nullptr;
+}
+
+Field::~Field () noexcept
 {
 }
 
@@ -86,17 +97,39 @@ const void *Field::GetValue (const void *_object) const noexcept
     return static_cast <const uint8_t *> (_object) + GetOffset ();
 }
 
-bool Field::IsHandleValid () const
+bool Field::IsHandleValid () const noexcept
 {
     return handle;
 }
 
-Field::operator bool () const
+Field::operator bool () const noexcept
 {
     return IsHandleValid ();
 }
 
-Field::Field (void *_handle)
+Field &Field::operator = (const Field &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Field ();
+        new (this) Field (_other);
+    }
+
+    return *this;
+}
+
+Field &Field::operator = (Field &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Field ();
+        new (this) Field (std::move (_other));
+    }
+
+    return *this;
+}
+
+Field::Field (void *_handle) noexcept
     : handle (_handle)
 {
 }

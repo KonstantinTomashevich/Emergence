@@ -54,7 +54,11 @@ const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept;
 class Field final
 {
 public:
-    ~Field ();
+    Field (const Field &_other) noexcept;
+
+    Field (Field &&_other) noexcept;
+
+    ~Field () noexcept;
 
     /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.
     /// \invariant Handle must be valid.
@@ -88,18 +92,20 @@ public:
     const void *GetValue (const void *_object) const noexcept;
 
     /// \return Is field ::handle valid?
-    bool IsHandleValid () const;
+    bool IsHandleValid () const noexcept;
 
     /// \return ::IsHandleValid ()
-    operator bool () const;
+    operator bool () const noexcept;
 
-    // TODO: Assignment operators? Copy and move constructors?
+    Field &operator = (const Field &_other) noexcept;
+
+    Field &operator = (Field &&_other) noexcept;
 
 private:
     /// Fields are constructed inside Mapping.
     friend class Mapping;
 
-    explicit Field (void *_handle);
+    explicit Field (void *_handle) noexcept;
 
     /// \brief Field implementation handle.
     void *handle;

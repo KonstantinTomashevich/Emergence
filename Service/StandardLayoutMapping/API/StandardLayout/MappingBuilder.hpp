@@ -15,9 +15,9 @@ public:
     /// MappingBuilder is used as Mapping construction helper, there it sounds irrational to copy it.
     MappingBuilder (const MappingBuilder &_other) = delete;
 
-    MappingBuilder (MappingBuilder &&_other);
+    MappingBuilder (MappingBuilder &&_other) noexcept;
 
-    ~MappingBuilder ();
+    ~MappingBuilder () noexcept;
 
     /// \brief Starts mapping construction routine.
     /// \invariant There is no active mapping construction routine, that uses this builder.
@@ -83,7 +83,9 @@ public:
     /// \invariant There is active mapping construction routine, that uses this builder.
     FieldId RegisterNestedObject (std::size_t _offset, const Mapping &objectMapping) noexcept;
 
-    // TODO: Assignment operators?
+    MappingBuilder &operator = (const MappingBuilder &_other) = delete;
+
+    MappingBuilder &operator = (MappingBuilder &&_other) noexcept;
 
 private:
     /// \brief MappingBuilder implementation handle.

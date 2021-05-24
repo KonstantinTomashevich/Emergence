@@ -79,7 +79,9 @@ public:
     /// \invariant Inside valid bounds, but not in the ending.
     FieldId GetFieldId (const FieldIterator &_iterator) const noexcept;
 
-    // TODO: Assignment operators?
+    Mapping &operator = (const Mapping &_other) noexcept;
+
+    Mapping &operator = (Mapping &&_other) noexcept;
 
 private:
     /// Mapping builder constructs mappings.
