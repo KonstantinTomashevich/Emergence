@@ -187,7 +187,7 @@ PlainMapping::~PlainMapping () noexcept
     }
 }
 
-void *PlainMapping::operator new (std::size_t _byteCount, std::size_t _fieldCapacity) noexcept
+void *PlainMapping::operator new (std::size_t, std::size_t _fieldCapacity) noexcept
 {
     return malloc (CalculateMappingSize (_fieldCapacity));
 }

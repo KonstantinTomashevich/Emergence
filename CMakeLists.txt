@@ -2,9 +2,9 @@ cmake_minimum_required (VERSION 3.17)
 project (Emergence)
 
 set (CMAKE_CXX_STANDARD 20)
+include ("${CMAKE_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
 include ("${CMAKE_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 
-enable_testing()
 add_subdirectory (Service)
 add_subdirectory (Library)
 add_subdirectory (Test)

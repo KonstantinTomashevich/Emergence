@@ -169,8 +169,8 @@ class MappingSeed final
 {
 public:
     MappingSeed (std::size_t _objectSize, std::vector <FieldSeed> _fields)
-        : objectSize (_objectSize),
-          fields (std::move (_fields))
+        : fields (std::move (_fields)),
+          objectSize (_objectSize)
     {
     }
 

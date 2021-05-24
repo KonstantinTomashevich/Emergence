@@ -6,9 +6,9 @@
 
 namespace Emergence::Memory
 {
-UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity)
-    : chunkSize (_chunkSize),
-      pageCapacity (_pageCapacity),
+UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept
+    : pageCapacity (_pageCapacity),
+      chunkSize (_chunkSize),
       pageCount (0u),
       topPage (nullptr),
       topFreeChunk (nullptr)
@@ -17,9 +17,9 @@ UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity)
     assert (_chunkSize >= sizeof (Chunk));
 }
 
-UnorderedPool::UnorderedPool (UnorderedPool &&_other)
-    : chunkSize (_other.chunkSize),
-      pageCapacity (_other.pageCapacity),
+UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
+    : pageCapacity (_other.pageCapacity),
+      chunkSize (_other.chunkSize),
       pageCount (_other.pageCount),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk)
@@ -29,7 +29,7 @@ UnorderedPool::UnorderedPool (UnorderedPool &&_other)
     _other.topFreeChunk = nullptr;
 }
 
-UnorderedPool::~UnorderedPool ()
+UnorderedPool::~UnorderedPool () noexcept
 {
     Clear ();
 }
@@ -173,17 +173,17 @@ size_t UnorderedPool::GetAllocatedSpace () const noexcept
     return pageCount * pageCapacity * chunkSize;
 }
 
-UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (UnorderedPool::Page *_page)
+UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (UnorderedPool::Page *_page) noexcept
 {
     return const_cast <Chunk *> (GetFirstChunk (const_cast <const Page *> (_page)));
 }
 
-const UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (const UnorderedPool::Page *_page) const
+const UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (const UnorderedPool::Page *_page) const noexcept
 {
     return reinterpret_cast <const Chunk *> (_page + 1u);
 }
 
-bool UnorderedPool::IsInside (const UnorderedPool::Page *_page, const UnorderedPool::Chunk *_chunk) const
+bool UnorderedPool::IsInside (const UnorderedPool::Page *_page, const UnorderedPool::Chunk *_chunk) const noexcept
 {
     const Chunk *first = GetFirstChunk (_page);
     const auto *last = reinterpret_cast <const Chunk *> (
