@@ -12,7 +12,7 @@ MappingBuilder::MappingBuilder () noexcept
     handle = new PlainMappingBuilder ();
 }
 
-MappingBuilder::MappingBuilder (MappingBuilder &&_other)
+MappingBuilder::MappingBuilder (MappingBuilder &&_other) noexcept
     : handle (_other.handle)
 {
     _other.handle = nullptr;
