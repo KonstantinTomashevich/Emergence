@@ -18,11 +18,11 @@ public:
     class ReadCursor final
     {
     public:
-        ReadCursor (const ReadCursor &_other);
+        ReadCursor (const ReadCursor &_other) noexcept;
 
-        ReadCursor (ReadCursor &&_other);
+        ReadCursor (ReadCursor &&_other) noexcept;
 
-        ~ReadCursor ();
+        ~ReadCursor () noexcept;
 
         /// \return Pointer to current record or nullptr if there is no more records.
         const void *operator * () const noexcept;
@@ -30,6 +30,10 @@ public:
         /// \brief Moves cursor to next record.
         /// \invariant Cursor should not point to ending.
         ReadCursor &operator ++ () noexcept;
+
+        ReadCursor &operator = (const ReadCursor &_other) noexcept;
+
+        ReadCursor &operator = (ReadCursor &&_other) noexcept;
 
     private:
         /// PointResolver constructs its cursors.
@@ -52,9 +56,9 @@ public:
         /// cursor can exist inside one Collection at any moment of time.
         EditCursor (const EditCursor &_other) = delete;
 
-        EditCursor (EditCursor &&_other);
+        EditCursor (EditCursor &&_other) noexcept;
 
-        ~EditCursor ();
+        ~EditCursor () noexcept;
 
         // TODO: /reminder We can check for changes in indexed fields in MoveToNextRecord and ~WriteCursor.
         //                 Usually indexed fields are quite small and there is not a lot of such fields,
@@ -74,6 +78,10 @@ public:
         /// \brief Checks current record for key values changes. Then moves cursor to next record.
         /// \invariant Cursor should not point to ending.
         EditCursor &operator ++ () noexcept;
+
+        EditCursor &operator = (const EditCursor &_other) = delete;
+
+        EditCursor &operator = (EditCursor &&_other) noexcept;
 
     private:
         /// PointResolver constructs its cursors.
@@ -166,13 +174,15 @@ public:
 
     /// \return Can this resolver be safely dropped?
     /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
-    bool CanBeDropped () const;
+    bool CanBeDropped () const noexcept;
 
     /// \brief Deletes this point resolver from Collection.
     /// \invariant ::CanBeDropped
-    void Drop ();
+    void Drop () noexcept;
 
-    // TODO: Assignment operators?
+    PointResolver &operator = (const PointResolver &_other) noexcept;
+
+    PointResolver &operator = (PointResolver &&_other) noexcept;
 
 private:
     /// Collection constructs resolvers.

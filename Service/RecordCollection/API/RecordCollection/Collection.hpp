@@ -212,45 +212,47 @@ public:
     /// Collections are designed to store lots of records, therefore it's not optimal to copy such collections.
     Collection (const Collection &_other) = delete;
 
-    Collection (Collection &&_other);
+    Collection (Collection &&_other) noexcept;
 
-    ~Collection ();
+    ~Collection () noexcept;
 
     /// \brief Starts insertion transaction.
     /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    Inserter Insert ();
+    Inserter Insert () noexcept;
 
     /// \brief Adds LinearResolver to Collection, which sorts records by value of given _keyField.
     /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    LinearResolver CreateLinearResolver (StandardLayout::FieldId _keyField) const;
+    LinearResolver CreateLinearResolver (StandardLayout::FieldId _keyField) const noexcept;
 
     /// \brief Adds PointResolver to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const;
+    PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
 
     /// \brief Adds VolumetricResolver to Collection, that uses given _dimensions.
     /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    VolumetricResolver CreateVolumetricResolver (const std::vector <DimensionDescription> _dimensions) const;
+    VolumetricResolver CreateVolumetricResolver (const std::vector <DimensionDescription> _dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear resolvers range.
-    LinearResolverIterator LinearResolverBegin ();
+    LinearResolverIterator LinearResolverBegin () noexcept;
 
     /// \return Iterator, that points to ending of linear resolvers range.
-    LinearResolverIterator LinearResolverEnd ();
+    LinearResolverIterator LinearResolverEnd () noexcept;
 
     /// \return Iterator, that points to beginning of point resolvers range.
-    PointResolverIterator PointResolverBegin ();
+    PointResolverIterator PointResolverBegin () noexcept;
 
     /// \return Iterator, that points to ending of point resolvers range.
-    PointResolverIterator PointResolverEnd ();
+    PointResolverIterator PointResolverEnd () noexcept;
 
     /// \return Iterator, that points to beginning of volumetric resolvers range.
-    VolumetricResolverIterator VolumetricResolverBegin ();
+    VolumetricResolverIterator VolumetricResolverBegin () noexcept;
 
     /// \return Iterator, that points to ending of volumetric resolvers range.
-    VolumetricResolverIterator VolumetricResolverEnd ();
+    VolumetricResolverIterator VolumetricResolverEnd () noexcept;
 
-    // TODO: Assignment operators?
+    Collection &operator = (const Collection &_other) = delete;
+
+    Collection &operator = (Collection &&_other) noexcept;
 
 private:
     /// \brief Implementation handle.
