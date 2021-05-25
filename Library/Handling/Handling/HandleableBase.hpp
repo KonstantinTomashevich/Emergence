@@ -24,8 +24,8 @@ public:
     /// \invariant ::references should be greater than zero.
     void UnregisterReference () noexcept;
 
-    /// \return Is ::references greater than zero?
-    bool HasAnyReferences () const noexcept;
+    /// \return ::references
+    uintptr_t GetReferenceCount () const noexcept;
 
     /// It doesn't make sense to copy assign references counters.
     HandleableBase &operator = (const HandleableBase &_other) = delete;

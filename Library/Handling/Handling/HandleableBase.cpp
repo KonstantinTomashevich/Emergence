@@ -16,9 +16,9 @@ void HandleableBase::UnregisterReference () noexcept
     --references;
 }
 
-bool HandleableBase::HasAnyReferences () const noexcept
+uintptr_t HandleableBase::GetReferenceCount () const noexcept
 {
-    return references > 0u;
+    return references;
 }
 
 HandleableBase::HandleableBase ()

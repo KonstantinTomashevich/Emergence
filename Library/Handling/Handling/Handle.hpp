@@ -14,8 +14,8 @@ concept Handleable = requires (Type _object)
     /// \brief Decrements reference counter.
     { _object.UnregisterReference () } noexcept;
 
-    /// \return Is reference counter greater than zero?
-    { _object.HasAnyReferences () } noexcept -> std::convertible_to <bool>;
+    /// \return Reference counter value.
+    { _object.GetReferenceCount () } noexcept -> std::convertible_to <uintptr_t>;
 };
 
 /// \brief Strong reference to given object.
@@ -79,7 +79,7 @@ Handle <Type>::~Handle () noexcept
     if (instance)
     {
         instance->UnregisterReference ();
-        if (!instance->HasAnyReferences ())
+        if (instance->GetReferenceCount () == 0u)
         {
             delete instance;
             instance = nullptr;
