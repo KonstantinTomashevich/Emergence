@@ -18,6 +18,7 @@ class VolumetricResolver final
 public:
     /// \brief Allows user to read records, that match criteria, specified in
     ///        VolumetricResolver::ReadShapeIntersections or VolumetricResolver::ReadRayIntersections.
+    /// \details All ReadCursor operations are thread safe.
     class ReadCursor final
     {
     public:
