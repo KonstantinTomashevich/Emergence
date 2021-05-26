@@ -1,10 +1,104 @@
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <cassert>
 
 #include <Pegasus/Storage.hpp>
 
 namespace Emergence::Pegasus
 {
+Storage::Allocator::Allocator (Storage::Allocator &&_other) noexcept
+    : owner (_other.owner),
+      current (_other.current)
+{
+    _other.owner = nullptr;
+    _other.current = nullptr;
+}
+
+Storage::Allocator::~Allocator () noexcept
+{
+    if (owner && current)
+    {
+        owner->InsertRecord (current);
+    }
+}
+
+void *Storage::Allocator::Next () noexcept
+{
+    assert (owner);
+    if (current)
+    {
+        owner->InsertRecord (current);
+    }
+
+    current = owner->AllocateRecord ();
+    return current;
+}
+
+Storage::Allocator::Allocator (Storage *_owner)
+    : owner (_owner)
+{
+    assert (owner);
+    owner->RegisterWriter ();
+}
+
+Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
+    : records (_recordMapping.GetObjectSize ()),
+      reflection {.recordMapping = std::move (_recordMapping)}
+{
+}
+
+const std::vector <std::unique_ptr <HashIndex>> &Storage::GetHashIndices () noexcept
+{
+    return indices.hash;
+}
+
+const std::vector <std::unique_ptr <OrderedIndex>> &Storage::GetOrderedIndices () noexcept
+{
+    return indices.ordered;
+}
+
+const std::vector <std::unique_ptr <VolumetricIndex>> &Storage::GetVolumetricIndices () noexcept
+{
+    return indices.volumetric;
+}
+
+void Storage::RegisterReader () noexcept
+{
+    assert (accessCounter.writers == 0u);
+    ++accessCounter.readers;
+}
+
+void Storage::RegisterWriter () noexcept
+{
+    assert (accessCounter.writers == 0u);
+    assert (accessCounter.readers == 0u);
+    ++accessCounter.writers;
+}
+
+void *Storage::AllocateRecord () noexcept
+{
+    return records.Acquire ();
+}
+
+void Storage::InsertRecord (const void *record) noexcept
+{
+    assert (record);
+    for (std::unique_ptr <HashIndex> &index : indices.hash)
+    {
+        // index->InsertRecord (record);
+    }
+
+    for (std::unique_ptr <OrderedIndex> &index : indices.ordered)
+    {
+        // index->InsertRecord (record);
+    }
+
+    for (std::unique_ptr <VolumetricIndex> &index : indices.volumetric)
+    {
+        // index->InsertRecord (record);
+    }
+}
+
 void Storage::BeginRecordEdition (const void *record) noexcept
 {
     assert (record);

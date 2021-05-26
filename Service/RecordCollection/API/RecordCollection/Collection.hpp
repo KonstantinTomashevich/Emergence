@@ -14,31 +14,38 @@ namespace Emergence::RecordCollection
 class Collection final
 {
 public:
-    /// \brief Wraps insertion of several records into one transaction.
-    class Inserter final
+    /// \brief Wraps allocation and insertion of several records into one transaction.
+    class Allocator final
     {
     public:
-        Inserter (const Inserter &_other) = delete;
+        Allocator (const Allocator &_other) = delete;
 
-        Inserter (Inserter &&_other);
+        Allocator (Allocator &&_other) noexcept;
 
-        /// \brief Inserts all allocated records into collection and ends transaction.
-        ~Inserter ();
+        /// \brief Ends transaction. Inserts all allocated records, that are not inserted yet.
+        ~Allocator () noexcept;
 
         /// \brief Allocates new record for insertion.
         /// \warning Record type is unknown during compile time, therefore
         ///          appropriate constructor should be called after allocation.
-        void *AllocateRecord ();
+        /// \invariant Previous allocated recorded must be initialized and ready for insertion.
+        void *Allocate () noexcept;
+
+        /// Assigning allocators looks counter intuitive.
+        Allocator &operator = (const Allocator &_other) = delete;
+
+        /// Assigning allocators looks counter intuitive.
+        Allocator &operator = (Allocator &&_other) = delete;
 
     private:
-        /// Collection constructs inserters.
+        /// Collection constructs allocators.
         friend class Collection;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-        explicit Inserter (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
-        /// \brief Iterator implementation-specific data.
+        /// \brief Allocator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
@@ -216,20 +223,20 @@ public:
 
     ~Collection () noexcept;
 
-    /// \brief Starts insertion transaction.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    Inserter Insert () noexcept;
+    /// \brief Starts allocation transaction.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its resolvers.
+    Allocator AllocateAndInsert () noexcept;
 
     /// \brief Adds LinearResolver to Collection, which sorts records by value of given _keyField.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its resolvers.
     LinearResolver CreateLinearResolver (StandardLayout::FieldId _keyField) const noexcept;
 
     /// \brief Adds PointResolver to Collection, that uses given _keyFields as point position.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its resolvers.
     PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
 
     /// \brief Adds VolumetricResolver to Collection, that uses given _dimensions.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its resolvers.
     VolumetricResolver CreateVolumetricResolver (const std::vector <DimensionDescription> _dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear resolvers range.

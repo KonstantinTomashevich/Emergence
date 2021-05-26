@@ -45,9 +45,11 @@ public:
         /// \return Does cursor point to interval beginning?
         bool IsInBeginning () const noexcept;
 
-        ReadCursor &operator = (const ReadCursor &_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        ReadCursor &operator = (const ReadCursor &_other) = delete;
 
-        ReadCursor &operator = (ReadCursor &&_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        ReadCursor &operator = (ReadCursor &&_other) = delete;
 
     private:
         /// LinearResolver constructs its cursors.
@@ -102,9 +104,11 @@ public:
         /// \return Does cursor point to interval beginning?
         bool IsInBeginning () const noexcept;
 
+        /// Assigning cursors looks counter intuitive.
         EditCursor &operator = (const EditCursor &_other) = delete;
 
-        EditCursor &operator = (EditCursor &&_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        EditCursor &operator = (EditCursor &&_other) = delete;
 
     private:
         /// LinearResolver constructs its cursors.
@@ -135,14 +139,14 @@ public:
     /// \brief Finds interval, described by given borders, and allows user to read records from it.
     ///
     /// \details Complexity -- O(lgN), where N is count of records in Collection.
-    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and edit cursors in Collection.
     ReadCursor ReadInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
     /// \brief Finds interval, described by given borders,
     ///        and allows user to edit and delete records from this interval.
     ///
     /// \details Complexity -- O(lgN), where N is count of records in Collection.
-    /// \invariant There is no active insertion transactions and read or edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and read or edit cursors in Collection.
     EditCursor EditInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
     /// \return Field, by which records are sorted in this linear resolver.

@@ -32,9 +32,11 @@ public:
         /// \invariant Cursor should not point to ending.
         ReadCursor &operator ++ () noexcept;
 
-        ReadCursor &operator = (const ReadCursor &_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        ReadCursor &operator = (const ReadCursor &_other) = delete;
 
-        ReadCursor &operator = (ReadCursor &&_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        ReadCursor &operator = (ReadCursor &&_other) = delete;
 
     private:
         /// PointResolver constructs its cursors.
@@ -80,9 +82,11 @@ public:
         /// \invariant Cursor should not point to ending.
         EditCursor &operator ++ () noexcept;
 
+        /// Assigning cursors looks counter intuitive.
         EditCursor &operator = (const EditCursor &_other) = delete;
 
-        EditCursor &operator = (EditCursor &&_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        EditCursor &operator = (EditCursor &&_other) = delete;
 
     private:
         /// PointResolver constructs its cursors.
@@ -158,13 +162,13 @@ public:
     /// \brief Finds point, described by given values, and allows user to read records from it.
     ///
     /// \details Complexity -- O(C*N), where C is amortized constant and N is total size of key fields in bytes.
-    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and edit cursors in Collection.
     ReadCursor ReadPoint (Point _point) noexcept;
 
     /// \brief Finds point, described by given values, and allows user to edit and delete records from this point.
     ///
     /// \details Complexity -- O(C*N), where C is amortized constant and N is total size of key fields in bytes.
-    /// \invariant There is no active insertion transactions and read or edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and read or edit cursors in Collection.
     EditCursor EditPoint (Point _point) noexcept;
 
     /// \return Iterator, that points to beginning of key fields sequence.

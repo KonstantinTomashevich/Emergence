@@ -35,9 +35,11 @@ public:
         /// \invariant Cursor should not point to ending.
         ReadCursor &operator ++ () noexcept;
 
-        ReadCursor &operator = (const ReadCursor &_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        ReadCursor &operator = (const ReadCursor &_other) = delete;
 
-        ReadCursor &operator = (ReadCursor &&_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        ReadCursor &operator = (ReadCursor &&_other) = delete;
 
     private:
         /// VolumetricResolver constructs its cursors.
@@ -79,9 +81,11 @@ public:
         /// \invariant Cursor should not point to ending.
         EditCursor &operator ++ () noexcept;
 
+        /// Assigning cursors looks counter intuitive.
         EditCursor &operator = (const EditCursor &_other) = delete;
 
-        EditCursor &operator = (EditCursor &&_other) noexcept;
+        /// Assigning cursors looks counter intuitive.
+        EditCursor &operator = (EditCursor &&_other) = delete;
 
     private:
         /// VolumetricResolver constructs its cursors.
@@ -192,7 +196,7 @@ public:
     ///
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
-    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and edit cursors in Collection.
     ReadCursor ReadShapeIntersections (Shape _shape) noexcept;
 
     /// \brief Finds records, which shape representations intersect
@@ -200,7 +204,7 @@ public:
     ///
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
-    /// \invariant There is no active insertion transactions and read or edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and read or edit cursors in Collection.
     EditCursor EditShapeIntersections (Shape _shape) noexcept;
 
     /// \brief Finds records, which shape representations intersect
@@ -208,7 +212,7 @@ public:
     ///
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
-    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and edit cursors in Collection.
     ReadCursor ReadRayIntersections (Ray _ray, float _rayLength) noexcept;
 
     /// \brief Finds records, which shape representations intersect
@@ -216,7 +220,7 @@ public:
     ///
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
-    /// \invariant There is no active insertion transactions and edit cursors in Collection.
+    /// \invariant There is no active allocation transactions and edit cursors in Collection.
     EditCursor EditRayIntersections (Ray _ray, float _rayLength) noexcept;
 
     /// \return Iterator, that points to beginning of dimensions sequence.

@@ -41,6 +41,11 @@ const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept
     return "UNKNOWN";
 }
 
+Field::Field () noexcept
+    : handle (nullptr)
+{
+}
+
 Field::Field (const Field &_other) noexcept
     : Field (_other.handle)
 {

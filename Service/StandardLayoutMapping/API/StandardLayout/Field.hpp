@@ -54,6 +54,9 @@ const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept;
 class Field final
 {
 public:
+    /// \brief Constructs field with invalid handle. Used to create temporary placeholder, for example to fill array.
+    Field () noexcept;
+
     Field (const Field &_other) noexcept;
 
     Field (Field &&_other) noexcept;

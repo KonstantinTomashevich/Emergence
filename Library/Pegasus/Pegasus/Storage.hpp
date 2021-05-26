@@ -2,9 +2,8 @@
 
 #include <array>
 #include <atomic>
+#include <memory>
 #include <vector>
-
-#include <Handling/Handle.hpp>
 
 #include <Memory/Pool.hpp>
 
@@ -19,16 +18,56 @@ namespace Emergence::Pegasus
 class Storage final
 {
 public:
+    class Allocator final
+    {
+    public:
+        Allocator (const Allocator &_other) = delete;
+
+        Allocator (Allocator &&_other) noexcept;
+
+        ~Allocator () noexcept;
+
+        void *Next () noexcept;
+
+        Allocator &operator = (const Allocator &_other) = delete;
+
+        Allocator &operator = (Allocator &&_other) = delete;
+
+    private:
+        friend class Storage;
+
+        explicit Allocator (Storage *_owner);
+
+        Storage *owner;
+        void *current = nullptr;
+    };
+
+    explicit Storage (StandardLayout::Mapping _recordMapping) noexcept;
+
+    Storage (const Storage &_other) = delete;
+
+    Storage (Storage &&_other) noexcept;
+
     ~Storage () noexcept;
 
-    const std::vector <Handling::Handle <HashIndex>> &GetHashIndices () noexcept;
+    const std::vector <std::unique_ptr <HashIndex>> &GetHashIndices () noexcept;
 
-    const std::vector <Handling::Handle <HashIndex>> &GetOrderedIndices () noexcept;
+    const std::vector <std::unique_ptr <OrderedIndex>> &GetOrderedIndices () noexcept;
 
-    const std::vector <Handling::Handle <HashIndex>> &GetVolumetricIndices () noexcept;
+    const std::vector <std::unique_ptr <VolumetricIndex>> &GetVolumetricIndices () noexcept;
 
 private:
+    friend class Allocator;
+
     static constexpr std::size_t MAX_INDEXED_FIELDS = 32u;
+
+    void RegisterReader () noexcept;
+
+    void RegisterWriter () noexcept;
+
+    void *AllocateRecord () noexcept;
+
+    void InsertRecord (const void *record) noexcept;
 
     void BeginRecordEdition (const void *record) noexcept;
 
@@ -47,14 +86,13 @@ private:
 
         static_assert (sizeof (changedIndexedFields) * 8u >= MAX_INDEXED_FIELDS);
     };
-
     Memory::Pool records;
 
     struct
     {
-        std::vector <Handling::Handle <HashIndex>> hash;
-        std::vector <Handling::Handle <OrderedIndex>> ordered;
-        std::vector <Handling::Handle <VolumetricIndex>> volumetric;
+        std::vector <std::unique_ptr <HashIndex>> hash;
+        std::vector <std::unique_ptr <OrderedIndex>> ordered;
+        std::vector <std::unique_ptr <VolumetricIndex>> volumetric;
     } indices;
 
     struct
@@ -72,9 +110,6 @@ private:
 
     struct
     {
-    private:
-        friend class Storage;
-
         std::vector <ChangedRecord> changedRecords;
         void *recordBuffer = nullptr;
     } editionState;
