@@ -16,9 +16,14 @@ Storage::Allocator::Allocator (Storage::Allocator &&_other) noexcept
 
 Storage::Allocator::~Allocator () noexcept
 {
-    if (owner && current)
+    if (owner)
     {
-        owner->InsertRecord (current);
+        if (current)
+        {
+            owner->InsertRecord (current);
+        }
+
+        owner->UnregisterWriter ();
     }
 }
 
@@ -45,6 +50,7 @@ Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
     : records (_recordMapping.GetObjectSize ()),
       reflection {.recordMapping = std::move (_recordMapping)}
 {
+    editionState.recordBuffer = malloc (reflection.recordMapping.GetObjectSize ());
 }
 
 Storage::Storage (Storage &&_other) noexcept
@@ -55,7 +61,9 @@ Storage::Storage (Storage &&_other) noexcept
       editionState (std::move (_other.editionState))
 {
     _other.reflection.indexedFieldsCount = 0u;
-    _other.editionState.recordBuffer = nullptr;
+    // Allocate new record buffer for source storage. We capture its record buffer instead
+    // of allocating new for us to preserve correct record edition routine state.
+    _other.editionState.recordBuffer = malloc (reflection.recordMapping.GetObjectSize ());
 
     accessCounter.writers = _other.accessCounter.writers;
     _other.accessCounter.writers = 0u;
@@ -70,9 +78,7 @@ Storage::~Storage () noexcept
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
-
     assert (editionState.changedRecords.empty ());
-    assert (editionState.recordBuffer == nullptr);
 
     // Assert that there are only self-references on indices.
 #ifndef NDEBUG
@@ -112,6 +118,7 @@ const std::vector <std::unique_ptr <VolumetricIndex>> &Storage::GetVolumetricInd
 
 void Storage::RegisterReader () noexcept
 {
+    // TODO: This method might be called from multiple threads. Remove this assert?
     assert (accessCounter.writers == 0u);
     ++accessCounter.readers;
 }
@@ -121,6 +128,20 @@ void Storage::RegisterWriter () noexcept
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
     ++accessCounter.writers;
+}
+
+void Storage::UnregisterReader () noexcept
+{
+    // TODO: This method might be called from multiple threads. Remove this assert?
+    assert (accessCounter.readers > 0u);
+    --accessCounter.readers;
+}
+
+void Storage::UnregisterWriter () noexcept
+{
+    assert (accessCounter.writers == 1u);
+    // TODO: Record edition routine must be closed. How to assert that?
+    --accessCounter.writers;
 }
 
 void *Storage::AllocateRecord () noexcept
@@ -151,6 +172,9 @@ void Storage::InsertRecord (const void *record) noexcept
 
 void Storage::BeginRecordEdition (const void *record) noexcept
 {
+    // TODO: Possible optimization. If indexed fields coverage is high
+    //       (more than 50% of object size), just copy full object instead?
+
     assert (record);
     assert (editionState.recordBuffer);
 

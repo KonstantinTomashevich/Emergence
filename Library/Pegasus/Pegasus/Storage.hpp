@@ -65,6 +65,10 @@ private:
 
     void RegisterWriter () noexcept;
 
+    void UnregisterReader () noexcept;
+
+    void UnregisterWriter () noexcept;
+
     void *AllocateRecord () noexcept;
 
     void InsertRecord (const void *record) noexcept;
