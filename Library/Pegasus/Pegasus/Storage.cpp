@@ -47,6 +47,54 @@ Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
 {
 }
 
+Storage::Storage (Storage &&_other) noexcept
+    : records (std::move (_other.records)),
+      indices (std::move (_other.indices)),
+    // Copy reflection, since we want source Storage to become valid empty storage for the same record type.
+      reflection (_other.reflection),
+      editionState (std::move (_other.editionState))
+{
+    _other.reflection.indexedFieldsCount = 0u;
+    _other.editionState.recordBuffer = nullptr;
+
+    accessCounter.writers = _other.accessCounter.writers;
+    _other.accessCounter.writers = 0u;
+
+    // Move constructor does not declared thread safe, therefore we can copy value like that.
+    std::size_t otherReaders = _other.accessCounter.readers;
+    accessCounter.readers = otherReaders;
+    _other.accessCounter.readers = 0u;
+}
+
+Storage::~Storage () noexcept
+{
+    assert (accessCounter.writers == 0u);
+    assert (accessCounter.readers == 0u);
+
+    assert (editionState.changedRecords.empty ());
+    assert (editionState.recordBuffer == nullptr);
+
+    // Assert that there are only self-references on indices.
+#ifndef NDEBUG
+    for (std::unique_ptr <HashIndex> &index : indices.hash)
+    {
+        assert (index->GetReferenceCount () == 1u);
+    }
+
+    for (std::unique_ptr <OrderedIndex> &index : indices.ordered)
+    {
+        assert (index->GetReferenceCount () == 1u);
+    }
+
+    for (std::unique_ptr <VolumetricIndex> &index : indices.volumetric)
+    {
+        assert (index->GetReferenceCount () == 1u);
+    }
+#endif
+
+    free (editionState.recordBuffer);
+}
+
 const std::vector <std::unique_ptr <HashIndex>> &Storage::GetHashIndices () noexcept
 {
     return indices.hash;
@@ -83,20 +131,22 @@ void *Storage::AllocateRecord () noexcept
 void Storage::InsertRecord (const void *record) noexcept
 {
     assert (record);
-    for (std::unique_ptr <HashIndex> &index : indices.hash)
-    {
-        // index->InsertRecord (record);
-    }
-
-    for (std::unique_ptr <OrderedIndex> &index : indices.ordered)
-    {
-        // index->InsertRecord (record);
-    }
-
-    for (std::unique_ptr <VolumetricIndex> &index : indices.volumetric)
-    {
-        // index->InsertRecord (record);
-    }
+    // Suppress unused warning.
+    record = nullptr;
+//    for (std::unique_ptr <HashIndex> &index : indices.hash)
+//    {
+//        index->InsertRecord (record);
+//    }
+//
+//    for (std::unique_ptr <OrderedIndex> &index : indices.ordered)
+//    {
+//        index->InsertRecord (record);
+//    }
+//
+//    for (std::unique_ptr <VolumetricIndex> &index : indices.volumetric)
+//    {
+//        index->InsertRecord (record);
+//    }
 }
 
 void Storage::BeginRecordEdition (const void *record) noexcept

@@ -86,6 +86,7 @@ private:
 
         static_assert (sizeof (changedIndexedFields) * 8u >= MAX_INDEXED_FIELDS);
     };
+
     Memory::Pool records;
 
     struct
@@ -105,7 +106,7 @@ private:
     struct
     {
         std::atomic_size_t readers = 0u;
-        std::atomic_size_t writers = 0u;
+        std::size_t writers = 0u;
     } accessCounter;
 
     struct
