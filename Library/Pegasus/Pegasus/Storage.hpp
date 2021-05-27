@@ -3,7 +3,8 @@
 #include <array>
 #include <atomic>
 #include <memory>
-#include <vector>
+
+#include <Handling/Handle.hpp>
 
 #include <Memory/Pool.hpp>
 
@@ -17,6 +18,20 @@ namespace Emergence::Pegasus
 {
 class Storage final
 {
+private:
+    static constexpr std::size_t MAX_INDEXED_FIELDS = 32u;
+
+    using IndexedFieldMask = uint32_t;
+
+    static_assert (sizeof (IndexedFieldMask) * 8u >= MAX_INDEXED_FIELDS);
+
+    template <typename Index>
+    struct IndexHolder
+    {
+        std::unique_ptr <Index> index;
+        IndexedFieldMask indexedFieldMask = 0u;
+    };
+
 public:
     class Allocator final
     {
@@ -42,6 +57,81 @@ public:
         void *current = nullptr;
     };
 
+    class HashIndexIterator final
+    {
+    public:
+        Handling::Handle <HashIndex> operator * () const noexcept;
+
+        HashIndexIterator &operator ++ () noexcept;
+
+        HashIndexIterator operator ++ (int) noexcept;
+
+        HashIndexIterator &operator -- () noexcept;
+
+        HashIndexIterator operator -- (int) noexcept;
+
+        bool operator == (const HashIndexIterator &_other) const noexcept;
+
+        bool operator != (const HashIndexIterator &_other) const noexcept;
+
+    private:
+        friend class Storage;
+
+        explicit HashIndexIterator (const Storage::IndexHolder<HashIndex> *_pointer) noexcept;
+
+        const Storage::IndexHolder<HashIndex> *pointer;
+    };
+
+    class OrderedIndexIterator final
+    {
+    public:
+        Handling::Handle <OrderedIndex> operator * () const noexcept;
+
+        OrderedIndexIterator &operator ++ () noexcept;
+
+        OrderedIndexIterator operator ++ (int) noexcept;
+
+        OrderedIndexIterator &operator -- () noexcept;
+
+        OrderedIndexIterator operator -- (int) noexcept;
+
+        bool operator == (const OrderedIndexIterator &_other) const noexcept;
+
+        bool operator != (const OrderedIndexIterator &_other) const noexcept;
+
+    private:
+        friend class Storage;
+
+        explicit OrderedIndexIterator (const Storage::IndexHolder<OrderedIndex> *_pointer) noexcept;
+
+        const Storage::IndexHolder<OrderedIndex> *pointer;
+    };
+
+    class VolumetricIndexIterator final
+    {
+    public:
+        Handling::Handle <VolumetricIndex> operator * () const noexcept;
+
+        VolumetricIndexIterator &operator ++ () noexcept;
+
+        VolumetricIndexIterator operator ++ (int) noexcept;
+
+        VolumetricIndexIterator &operator -- () noexcept;
+
+        VolumetricIndexIterator operator -- (int) noexcept;
+
+        bool operator == (const VolumetricIndexIterator &_other) const noexcept;
+
+        bool operator != (const VolumetricIndexIterator &_other) const noexcept;
+
+    private:
+        friend class Storage;
+
+        explicit VolumetricIndexIterator (const Storage::IndexHolder<VolumetricIndex> *_pointer) noexcept;
+
+        const Storage::IndexHolder<VolumetricIndex> *pointer;
+    };
+
     explicit Storage (StandardLayout::Mapping _recordMapping) noexcept;
 
     Storage (const Storage &_other) = delete;
@@ -50,16 +140,24 @@ public:
 
     ~Storage () noexcept;
 
-    const std::vector <std::unique_ptr <HashIndex>> &GetHashIndices () noexcept;
+    HashIndexIterator BeginHashIndices () const noexcept;
 
-    const std::vector <std::unique_ptr <OrderedIndex>> &GetOrderedIndices () noexcept;
+    HashIndexIterator EndHashIndices () const noexcept;
 
-    const std::vector <std::unique_ptr <VolumetricIndex>> &GetVolumetricIndices () noexcept;
+    OrderedIndexIterator BeginOrderedIndices () const noexcept;
+
+    OrderedIndexIterator EndOrderedIndices () const noexcept;
+
+    VolumetricIndexIterator BeginVolumetricIndices () const noexcept;
+
+    VolumetricIndexIterator EndVolumetricIndices () const noexcept;
 
 private:
     friend class Allocator;
+    
+    friend class HashIndexIterator;
 
-    static constexpr std::size_t MAX_INDEXED_FIELDS = 32u;
+    static constexpr std::size_t MAX_INDICES_OF_SAME_TYPE = 8u;
 
     void RegisterReader () noexcept;
 
@@ -80,30 +178,27 @@ private:
     struct IndexedField final
     {
         StandardLayout::Field field;
-        uintptr_t usages = 0u;
-    };
-
-    struct ChangedRecord final
-    {
-        const void *record = nullptr;
-        uint32_t changedIndexedFields = 0u;
-
-        static_assert (sizeof (changedIndexedFields) * 8u >= MAX_INDEXED_FIELDS);
+        std::size_t usages = 0u;
     };
 
     Memory::Pool records;
 
     struct
     {
-        std::vector <std::unique_ptr <HashIndex>> hash;
-        std::vector <std::unique_ptr <OrderedIndex>> ordered;
-        std::vector <std::unique_ptr <VolumetricIndex>> volumetric;
+        std::size_t hashCount = 0u;
+        std::array <IndexHolder <HashIndex>, MAX_INDICES_OF_SAME_TYPE> hash;
+
+        std::size_t orderedCount = 0u;
+        std::array <IndexHolder <OrderedIndex>, MAX_INDICES_OF_SAME_TYPE> ordered;
+
+        std::size_t volumetricCount = 0u;
+        std::array <IndexHolder <VolumetricIndex>, MAX_INDICES_OF_SAME_TYPE> volumetric;
     } indices;
 
     struct
     {
         StandardLayout::Mapping recordMapping;
-        uintptr_t indexedFieldsCount = 0u;
+        std::size_t indexedFieldsCount = 0u;
         std::array <IndexedField, MAX_INDEXED_FIELDS> indexedFields;
     } reflection;
 
@@ -113,10 +208,6 @@ private:
         std::size_t writers = 0u;
     } accessCounter;
 
-    struct
-    {
-        std::vector <ChangedRecord> changedRecords;
-        void *recordBuffer = nullptr;
-    } editionState;
+    void *editedRecordBackup = nullptr;
 };
 } // namespace Emergence::Pegasus
