@@ -1,0 +1,1 @@
+add_subdirectory (xxhash_cpp)
