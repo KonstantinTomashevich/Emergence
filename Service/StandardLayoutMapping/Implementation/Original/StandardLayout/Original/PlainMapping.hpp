@@ -127,8 +127,11 @@ private:
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
 
-    // inplace_dynamic_array <FieldMeta> fields (fieldCount);
-    // unused_memory additionalFieldPlaceholder (0u, infinity);
+    /// \brief Memory, reserved to store mapping fields.
+    ///
+    /// \details Byte type is used instead of FieldData because FieldData can contain handle to PlainMapping,
+    ///          therefore it's impossible to declare FieldData before PlainMapping.
+    uint8_t fieldPlaceholder[0u];
 };
 
 class FieldData final

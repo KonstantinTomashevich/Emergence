@@ -133,7 +133,7 @@ const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
 {
     if (_field < fieldCount)
     {
-        return reinterpret_cast <const FieldData *> (this + 1u) + _field;
+        return reinterpret_cast <const FieldData *> (fieldPlaceholder) + _field;
     }
     else
     {
@@ -148,7 +148,7 @@ FieldData *PlainMapping::GetField (FieldId _field) noexcept
 
 PlainMapping::ConstIterator PlainMapping::Begin () const noexcept
 {
-    return PlainMapping::ConstIterator (reinterpret_cast <const FieldData *> (this + 1u));
+    return PlainMapping::ConstIterator (reinterpret_cast <const FieldData *> (fieldPlaceholder));
 }
 
 PlainMapping::ConstIterator PlainMapping::End () const noexcept

@@ -41,7 +41,7 @@ void *UnorderedPool::Acquire () noexcept
         Page *newPage = static_cast <Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         newPage->next = topPage;
         topPage = newPage;
-        Chunk *currentChunk = GetFirstChunk (newPage);
+        Chunk *currentChunk = &newPage->chunks[0u];
 
         for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
@@ -51,7 +51,7 @@ void *UnorderedPool::Acquire () noexcept
         }
 
         currentChunk->nextFree = nullptr;
-        topFreeChunk = GetFirstChunk (newPage);
+        topFreeChunk = &newPage->chunks[0u];
         assert (pageCount + 1u > pageCount);
         ++pageCount;
     }
@@ -173,22 +173,10 @@ size_t UnorderedPool::GetAllocatedSpace () const noexcept
     return pageCount * pageCapacity * chunkSize;
 }
 
-UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (UnorderedPool::Page *_page) noexcept
-{
-    return const_cast <Chunk *> (GetFirstChunk (const_cast <const Page *> (_page)));
-}
-
-const UnorderedPool::Chunk *UnorderedPool::GetFirstChunk (const UnorderedPool::Page *_page) const noexcept
-{
-    return reinterpret_cast <const Chunk *> (_page + 1u);
-}
-
 bool UnorderedPool::IsInside (const UnorderedPool::Page *_page, const UnorderedPool::Chunk *_chunk) const noexcept
 {
-    const Chunk *first = GetFirstChunk (_page);
-    const auto *last = reinterpret_cast <const Chunk *> (
-        reinterpret_cast <const uint8_t *> (first) + chunkSize * (pageCapacity - 1u));
-
+    const Chunk *first = &_page->chunks[0u];
+    const auto *last = reinterpret_cast <const Chunk *> (&first->bytes[0u] + chunkSize * (pageCapacity - 1u));
     return _chunk >= first && _chunk <= last;
 }
 } // namespace Emergence::Memory
