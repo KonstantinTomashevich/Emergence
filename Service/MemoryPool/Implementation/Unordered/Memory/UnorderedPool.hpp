@@ -32,7 +32,7 @@ private:
         {
             Chunk *nextFree;
 
-            // inplace_dynamic_array <Chunk> bytes (UnorderedPool::chunkSize);
+            uint8_t bytes[0u];
         };
     };
 
@@ -40,12 +40,8 @@ private:
     {
         Page *next;
 
-        // inplace_dynamic_array <Chunk> chunks (UnorderedPool::pageCapacity);
+        Chunk chunks[0u];
     };
-
-    Chunk *GetFirstChunk (Page *_page) noexcept;
-
-    const Chunk *GetFirstChunk (const Page *_page) const noexcept;
 
     bool IsInside (const Page *_page, const Chunk *_chunk) const noexcept;
 
