@@ -9,12 +9,12 @@ namespace Emergence::RecordCollection
 {
 /// \brief Represents records as sequence, in which records are sorted by value of given field in ascending order.
 ///
-/// \details Works as handle to real linear resolver instance.
+/// \details Works as handle to real linear representation instance.
 ///          Prevents destruction unless there is only one reference to instance.
-class LinearResolver final
+class LinearRepresentation final
 {
 public:
-    /// \brief Allows user to read records, that match criteria, specified in LinearResolver::ReadInterval.
+    /// \brief Allows user to read records, that match criteria, specified in LinearRepresentation::ReadInterval.
     /// \details All ReadCursor operations are thread safe.
     class ReadCursor final
     {
@@ -52,8 +52,8 @@ public:
         ReadCursor &operator = (ReadCursor &&_other) = delete;
 
     private:
-        /// LinearResolver constructs its cursors.
-        friend class LinearResolver;
+        /// LinearRepresentation constructs its cursors.
+        friend class LinearRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
@@ -64,7 +64,7 @@ public:
     };
 
     /// \brief Allows user to read, modify and delete records, that
-    ///        match criteria, specified in LinearResolver::EditInterval.
+    ///        match criteria, specified in LinearRepresentation::EditInterval.
     class EditCursor final
     {
     public:
@@ -111,8 +111,8 @@ public:
         EditCursor &operator = (EditCursor &&_other) = delete;
 
     private:
-        /// LinearResolver constructs its cursors.
-        friend class LinearResolver;
+        /// LinearRepresentation constructs its cursors.
+        friend class LinearRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
@@ -130,11 +130,11 @@ public:
     /// \warning Due to runtime-only nature of values, logically incorrect pointers can not be caught.
     using KeyFieldValue = const uint8_t *;
 
-    LinearResolver (const LinearResolver &_other) noexcept;
+    LinearRepresentation (const LinearRepresentation &_other) noexcept;
 
-    LinearResolver (LinearResolver &&_other) noexcept;
+    LinearRepresentation (LinearRepresentation &&_other) noexcept;
 
-    ~LinearResolver () noexcept;
+    ~LinearRepresentation () noexcept;
 
     /// \brief Finds interval, described by given borders, and allows user to read records from it.
     ///
@@ -149,26 +149,26 @@ public:
     /// \invariant There is no active allocation transactions and read or edit cursors in Collection.
     EditCursor EditInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
-    /// \return Field, by which records are sorted in this linear resolver.
+    /// \return Field, by which records are sorted in this linear representation.
     StandardLayout::Field GetKeyField () const noexcept;
 
-    /// \return Can this resolver be safely dropped?
-    /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
+    /// \return Can this representation be safely dropped?
+    /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const noexcept;
 
-    /// \brief Deletes this linear resolver from Collection.
+    /// \brief Deletes this linear representation from Collection.
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    LinearResolver &operator = (const LinearResolver &_other) noexcept;
+    LinearRepresentation &operator = (const LinearRepresentation &_other) noexcept;
 
-    LinearResolver &operator = (LinearResolver &&_other) noexcept;
+    LinearRepresentation &operator = (LinearRepresentation &&_other) noexcept;
 
 private:
-    /// Collection constructs resolvers.
+    /// Collection constructs representations.
     friend class Collection;
 
-    explicit LinearResolver (void *_handle) noexcept;
+    explicit LinearRepresentation (void *_handle) noexcept;
 
     /// \brief Implementation handle.
     void *handle;

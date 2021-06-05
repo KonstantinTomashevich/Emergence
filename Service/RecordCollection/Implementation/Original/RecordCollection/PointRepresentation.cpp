@@ -1,4 +1,4 @@
-#include <RecordCollection/LinearResolver.hpp>
+#include <RecordCollection/PointRepresentation.hpp>
 
 namespace Emergence::RecordCollection
 {

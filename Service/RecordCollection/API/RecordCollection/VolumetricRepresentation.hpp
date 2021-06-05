@@ -9,15 +9,15 @@ namespace Emergence::RecordCollection
 {
 /// \brief Represents records as axis aligned bounded shapes in given dimensions.
 ///
-/// \details For example, volumetric resolver with 3 dimensions can be
+/// \details For example, volumetric representation with 3 dimensions can be
 ///          implemented as octree with axis aligned bounding boxes.
-///          Works as handle to real point resolver instance.
+///          Works as handle to real point representation instance.
 ///          Prevents destruction unless there is only one reference to instance.
-class VolumetricResolver final
+class VolumetricRepresentation final
 {
 public:
     /// \brief Allows user to read records, that match criteria, specified in
-    ///        VolumetricResolver::ReadShapeIntersections or VolumetricResolver::ReadRayIntersections.
+    ///        VolumetricRepresentation::ReadShapeIntersections or VolumetricRepresentation::ReadRayIntersections.
     /// \details All ReadCursor operations are thread safe.
     class ReadCursor final
     {
@@ -42,8 +42,8 @@ public:
         ReadCursor &operator = (ReadCursor &&_other) = delete;
 
     private:
-        /// VolumetricResolver constructs its cursors.
-        friend class VolumetricResolver;
+        /// VolumetricRepresentation constructs its cursors.
+        friend class VolumetricRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
@@ -54,7 +54,7 @@ public:
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria, specified in
-    ///        VolumetricResolver::EditShapeIntersections or VolumetricResolver::EditRayIntersections.
+    ///        VolumetricRepresentation::EditShapeIntersections or VolumetricRepresentation::EditRayIntersections.
     class EditCursor final
     {
     public:
@@ -88,8 +88,8 @@ public:
         EditCursor &operator = (EditCursor &&_other) = delete;
 
     private:
-        /// VolumetricResolver constructs its cursors.
-        friend class VolumetricResolver;
+        /// VolumetricRepresentation constructs its cursors.
+        friend class VolumetricRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
@@ -99,11 +99,11 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Allows iteration over VolumetricResolver dimensions.
+    /// \brief Allows iteration over VolumetricRepresentation dimensions.
     class DimensionIterator final
     {
     public:
-        /// \brief Describes one of resolver dimensions.
+        /// \brief Describes one of representation dimensions.
         struct Dimension
         {
             /// \brief Pointer to minimum possible value of #minField.
@@ -152,8 +152,8 @@ public:
         bool operator != (const DimensionIterator &_other) const noexcept;
 
     private:
-        /// VolumetricResolver constructs dimension iterators.
-        friend class VolumetricResolver;
+        /// VolumetricRepresentation constructs dimension iterators.
+        friend class VolumetricRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
@@ -186,11 +186,11 @@ public:
     /// \invariant Should not be `nullptr`.
     using Ray = const uint8_t *;
 
-    VolumetricResolver (const VolumetricResolver &_other) noexcept;
+    VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept;
 
-    VolumetricResolver (VolumetricResolver &&_other) noexcept;
+    VolumetricRepresentation (VolumetricRepresentation &&_other) noexcept;
 
-    ~VolumetricResolver () noexcept;
+    ~VolumetricRepresentation () noexcept;
 
     /// \brief Finds records, which shape representations intersect with given shape, and allows user to read them.
     ///
@@ -229,23 +229,23 @@ public:
     /// \return Iterator, that points to ending of dimensions sequence.
     DimensionIterator DimensionEnd () const noexcept;
 
-    /// \return Can this resolver be safely dropped?
-    /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
+    /// \return Can this representation be safely dropped?
+    /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const noexcept;
 
-    /// \brief Deletes this volumetric resolver from Collection.
+    /// \brief Deletes this volumetric representation from Collection.
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    VolumetricResolver &operator = (const VolumetricResolver &_other) noexcept;
+    VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) noexcept;
 
-    VolumetricResolver &operator = (VolumetricResolver &&_other) noexcept;
+    VolumetricRepresentation &operator = (VolumetricRepresentation &&_other) noexcept;
 
 private:
-    /// Collection constructs resolvers.
+    /// Collection constructs representations.
     friend class Collection;
 
-    explicit VolumetricResolver (void *_handle) noexcept;
+    explicit VolumetricRepresentation (void *_handle) noexcept;
 
     /// \brief Implementation handle.
     void *handle;

@@ -1,4 +1,4 @@
-#include <RecordCollection/VolumetricResolver.hpp>
+#include <RecordCollection/LinearRepresentation.hpp>
 
 namespace Emergence::RecordCollection
 {

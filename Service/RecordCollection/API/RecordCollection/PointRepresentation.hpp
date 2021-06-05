@@ -9,12 +9,12 @@ namespace Emergence::RecordCollection
 {
 /// \brief Projects records to set of points, where point is a vector of values from given fields.
 ///
-/// \details Works as handle to real point resolver instance.
+/// \details Works as handle to real point representation instance.
 ///          Prevents destruction unless there is only one reference to instance.
-class PointResolver final
+class PointRepresentation final
 {
 public:
-    /// \brief Allows user to read records, that match criteria, specified in PointResolver::ReadPoint.
+    /// \brief Allows user to read records, that match criteria, specified in PointRepresentation::ReadPoint.
     /// \details All ReadCursor operations are thread safe.
     class ReadCursor final
     {
@@ -39,8 +39,8 @@ public:
         ReadCursor &operator = (ReadCursor &&_other) = delete;
 
     private:
-        /// PointResolver constructs its cursors.
-        friend class PointResolver;
+        /// PointRepresentation constructs its cursors.
+        friend class PointRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
@@ -51,7 +51,7 @@ public:
     };
 
     /// \brief Allows user to read, modify and delete records, that
-    ///        match criteria, specified in PointResolver::EditPoint.
+    ///        match criteria, specified in PointRepresentation::EditPoint.
     class EditCursor final
     {
     public:
@@ -89,8 +89,8 @@ public:
         EditCursor &operator = (EditCursor &&_other) = delete;
 
     private:
-        /// PointResolver constructs its cursors.
-        friend class PointResolver;
+        /// PointRepresentation constructs its cursors.
+        friend class PointRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
@@ -100,7 +100,7 @@ public:
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Allows iteration over PointResolver key fields.
+    /// \brief Allows iteration over PointRepresentation key fields.
     class KeyFieldIterator final
     {
     public:
@@ -133,8 +133,8 @@ public:
         bool operator != (const KeyFieldIterator &_other) const noexcept;
 
     private:
-        /// PointResolver constructs iterators for key fields.
-        friend class PointResolver;
+        /// PointRepresentation constructs iterators for key fields.
+        friend class PointRepresentation;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
@@ -153,11 +153,11 @@ public:
     /// \invariant Should not be `nullptr`.
     using Point = const uint8_t *;
 
-    PointResolver (const PointResolver &_other) noexcept;
+    PointRepresentation (const PointRepresentation &_other) noexcept;
 
-    PointResolver (PointResolver &&_other) noexcept;
+    PointRepresentation (PointRepresentation &&_other) noexcept;
 
-    ~PointResolver () noexcept;
+    ~PointRepresentation () noexcept;
 
     /// \brief Finds point, described by given values, and allows user to read records from it.
     ///
@@ -177,23 +177,23 @@ public:
     /// \return Iterator, that points to ending of key fields sequence.
     KeyFieldIterator KeyFieldEnd () const noexcept;
 
-    /// \return Can this resolver be safely dropped?
-    /// \details Resolver can be safely dropped if there is only one reference to it and there is no active cursors.
+    /// \return Can this representation be safely dropped?
+    /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const noexcept;
 
-    /// \brief Deletes this point resolver from Collection.
+    /// \brief Deletes this point representation from Collection.
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    PointResolver &operator = (const PointResolver &_other) noexcept;
+    PointRepresentation &operator = (const PointRepresentation &_other) noexcept;
 
-    PointResolver &operator = (PointResolver &&_other) noexcept;
+    PointRepresentation &operator = (PointRepresentation &&_other) noexcept;
 
 private:
-    /// Collection constructs resolvers.
+    /// Collection constructs representations.
     friend class Collection;
 
-    explicit PointResolver (void *_handle) noexcept;
+    explicit PointRepresentation (void *_handle) noexcept;
 
     /// \brief Implementation handle.
     void *handle;
