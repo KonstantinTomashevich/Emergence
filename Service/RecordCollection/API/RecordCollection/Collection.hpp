@@ -233,11 +233,11 @@ public:
 
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    PointRepresentation CreatePointRepresentation (const std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
+    PointRepresentation CreatePointRepresentation (std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    VolumetricRepresentation CreateVolumetricRepresentation (const std::vector <DimensionDescription> _dimensions) const noexcept;
+    VolumetricRepresentation CreateVolumetricRepresentation (std::vector <DimensionDescription> _dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
     LinearRepresentationIterator LinearRepresentationBegin () noexcept;
