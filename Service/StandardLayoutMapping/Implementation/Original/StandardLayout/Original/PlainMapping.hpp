@@ -11,7 +11,80 @@
 
 namespace Emergence::StandardLayout
 {
-class FieldData;
+class PlainMapping;
+
+class FieldData final
+{
+public:
+    /// \brief Used to register fields with archetypes other than
+    ///        FieldArchetype::BIT and FieldArchetype::NESTED_OBJECT.
+    ///
+    /// \details If FieldData::archetype is FieldArchetype::NESTED_OBJECT, FieldData must manage nestedObjectMapping as
+    //           counted reference. It's much easier to correctly implement this behaviour if FieldData construction
+    //           and destruction is done only in particular places (currently in PlainMappingBuilder and PlainMapping),
+    //           otherwise custom copy and move constructors will be required. Also, addition of custom move constructor
+    //           would violate realloc-movable requirement and create ambiguity.
+    struct StandardSeed final
+    {
+        FieldArchetype archetype;
+
+        std::size_t offset;
+
+        std::size_t size;
+    };
+
+    /// \brief Used to register fields with FieldArchetype::BIT.
+    struct BitSeed
+    {
+        std::size_t offset;
+
+        uint_fast8_t bitOffset;
+    };
+
+    /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
+    struct NestedObjectSeed
+    {
+        std::size_t offset;
+
+        Handling::Handle <PlainMapping> nestedObjectMapping;
+    };
+
+    FieldArchetype GetArchetype () const;
+
+    size_t GetOffset () const;
+
+    size_t GetSize () const;
+
+    uint_fast8_t GetBitOffset () const;
+
+    Handling::Handle <PlainMapping> GetNestedObjectMapping () const;
+
+private:
+    /// PlainMapping deletes FieldData's.
+    friend class PlainMapping;
+
+    /// PlainMappingBuilder constructs FieldData's.
+    friend class PlainMappingBuilder;
+
+    explicit FieldData (StandardSeed _seed) noexcept;
+
+    explicit FieldData (BitSeed _seed) noexcept;
+
+    explicit FieldData (NestedObjectSeed _seed) noexcept;
+
+    ~FieldData ();
+
+    FieldArchetype archetype;
+    std::size_t offset;
+    std::size_t size;
+
+    union
+    {
+        std::uint_fast8_t bitOffset;
+
+        Handling::Handle <PlainMapping> nestedObjectMapping;
+    };
+};
 
 class PlainMapping final : public Handling::HandleableBase
 {
@@ -98,7 +171,7 @@ private:
     friend class PlainMappingBuilder;
 
     /// Handle calls PlainMapping destructor.
-    template <Handling::Handleable Type>
+    template <typename>
     friend class Handling::Handle;
 
     /// \return Size of mapping object, that can hold up to _fieldCapacity fields.
@@ -126,85 +199,7 @@ private:
 
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
-
-    /// \brief Memory, reserved to store mapping fields.
-    ///
-    /// \details Byte type is used instead of FieldData because FieldData can contain handle to PlainMapping,
-    ///          therefore it's impossible to declare FieldData before PlainMapping.
-    uint8_t fieldPlaceholder[0u];
-};
-
-class FieldData final
-{
-public:
-    /// \brief Used to register fields with archetypes other than
-    ///        FieldArchetype::BIT and FieldArchetype::NESTED_OBJECT.
-    ///
-    /// \details If FieldData::archetype is FieldArchetype::NESTED_OBJECT, FieldData must manage nestedObjectMapping as
-    //           counted reference. It's much easier to correctly implement this behaviour if FieldData construction
-    //           and destruction is done only in particular places (currently in PlainMappingBuilder and PlainMapping),
-    //           otherwise custom copy and move constructors will be required. Also, addition of custom move constructor
-    //           would violate realloc-movable requirement and create ambiguity.
-    struct StandardSeed final
-    {
-        FieldArchetype archetype;
-
-        std::size_t offset;
-
-        std::size_t size;
-    };
-
-    /// \brief Used to register fields with FieldArchetype::BIT.
-    struct BitSeed
-    {
-        std::size_t offset;
-
-        uint_fast8_t bitOffset;
-    };
-
-    /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
-    struct NestedObjectSeed
-    {
-        std::size_t offset;
-
-        Handling::Handle <PlainMapping> nestedObjectMapping;
-    };
-
-    FieldArchetype GetArchetype () const;
-
-    size_t GetOffset () const;
-
-    size_t GetSize () const;
-
-    uint_fast8_t GetBitOffset () const;
-
-    Handling::Handle <PlainMapping> GetNestedObjectMapping () const;
-
-private:
-    /// PlainMapping deletes FieldData's.
-    friend class PlainMapping;
-
-    /// PlainMappingBuilder constructs FieldData's.
-    friend class PlainMappingBuilder;
-
-    explicit FieldData (StandardSeed _seed) noexcept;
-
-    explicit FieldData (BitSeed _seed) noexcept;
-
-    explicit FieldData (NestedObjectSeed _seed) noexcept;
-
-    ~FieldData ();
-
-    FieldArchetype archetype;
-    std::size_t offset;
-    std::size_t size;
-
-    union
-    {
-        std::uint_fast8_t bitOffset;
-
-        Handling::Handle <PlainMapping> nestedObjectMapping;
-    };
+    FieldData fields[0u];
 };
 
 PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept;

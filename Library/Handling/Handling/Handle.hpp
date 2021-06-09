@@ -6,7 +6,8 @@ namespace Emergence::Handling
 {
 /// \brief Describes Handle requirements for its parameter Type.
 template <typename Type>
-concept Handleable = requires (Type _object)
+concept Handleable =
+requires (Type _object)
 {
     /// \brief Increments reference counter.
     { _object.RegisterReference () } noexcept;
@@ -19,7 +20,10 @@ concept Handleable = requires (Type _object)
 };
 
 /// \brief Strong reference to given object.
-template <Handleable Type>
+/// \details ::Type must be Handleable, but requirement is expressed using static asserts in methods that directly use
+///          Handleable methods. Static asserts are used instead of usual requirements because it allows to use Handle
+///          with incomplete types.
+template <typename Type>
 class Handle final
 {
 public:
@@ -50,32 +54,34 @@ private:
     Type *instance;
 };
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type>::Handle (Type *_instance) noexcept
     : instance (_instance)
 {
+    static_assert (Handleable <Type>);
     if (instance)
     {
         instance->RegisterReference ();
     }
 }
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type>::Handle (const Handle &_other) noexcept
     : Handle (_other.instance)
 {
 }
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type>::Handle (Handle &&_other) noexcept
     : instance (_other.instance)
 {
     _other.instance = nullptr;
 }
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type>::~Handle () noexcept
 {
+    static_assert (Handleable <Type>);
     if (instance)
     {
         instance->UnregisterReference ();
@@ -87,7 +93,7 @@ Handle <Type>::~Handle () noexcept
     }
 }
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type> &Handle <Type>::operator = (const Handle &_other) noexcept
 {
     if (this != &_other)
@@ -99,7 +105,7 @@ Handle <Type> &Handle <Type>::operator = (const Handle &_other) noexcept
     return *this;
 }
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type> &Handle <Type>::operator = (Handle &&_other) noexcept
 {
     if (this != &_other)
@@ -111,19 +117,19 @@ Handle <Type> &Handle <Type>::operator = (Handle &&_other) noexcept
     return *this;
 }
 
-template <Handleable Type>
+template <typename Type>
 Type *Handle <Type>::Get () const noexcept
 {
     return instance;
 }
 
-template <Handleable Type>
+template <typename Type>
 Type *Handle <Type>::operator -> () const noexcept
 {
     return Get ();
 }
 
-template <Handleable Type>
+template <typename Type>
 Handle <Type>::operator bool () const noexcept
 {
     return instance;
