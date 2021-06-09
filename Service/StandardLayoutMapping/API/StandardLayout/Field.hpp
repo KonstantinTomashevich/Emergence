@@ -94,6 +94,10 @@ public:
     /// \brief Const version of ::GetValue(void *).
     const void *GetValue (const void *_object) const noexcept;
 
+    /// \return Is given field handle points to the same field of the same mapping as this field handle?
+    /// \invariant Handle must be valid.
+    bool IsSame (const Field &_other) const noexcept;
+
     /// \return Is field ::handle valid?
     bool IsHandleValid () const noexcept;
 

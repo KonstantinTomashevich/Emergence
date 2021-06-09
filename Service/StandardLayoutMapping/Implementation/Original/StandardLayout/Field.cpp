@@ -102,6 +102,12 @@ const void *Field::GetValue (const void *_object) const noexcept
     return static_cast <const uint8_t *> (_object) + GetOffset ();
 }
 
+bool Field::IsSame (const Field &_other) const noexcept
+{
+    assert (IsHandleValid ());
+    return handle == _other.handle;
+}
+
 bool Field::IsHandleValid () const noexcept
 {
     return handle;
