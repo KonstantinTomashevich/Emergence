@@ -14,11 +14,15 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <SyntaxSugar/InplaceVector.hpp>
+
 namespace Emergence::Pegasus
 {
 class Storage final
 {
 private:
+    static constexpr std::size_t MAX_INDICES_OF_SAME_TYPE = 8u;
+
     static constexpr std::size_t MAX_INDEXED_FIELDS = 32u;
 
     using IndexedFieldMask = uint32_t;
@@ -76,10 +80,12 @@ public:
 
     private:
         friend class Storage;
+        
+        using BaseIterator = InplaceVector <Storage::IndexHolder <HashIndex>, MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
-        explicit HashIndexIterator (const Storage::IndexHolder<HashIndex> *_pointer) noexcept;
+        explicit HashIndexIterator (BaseIterator _iterator) noexcept;
 
-        const Storage::IndexHolder<HashIndex> *pointer;
+        BaseIterator iterator;
     };
 
     class OrderedIndexIterator final
@@ -102,9 +108,11 @@ public:
     private:
         friend class Storage;
 
-        explicit OrderedIndexIterator (const Storage::IndexHolder<OrderedIndex> *_pointer) noexcept;
+        using BaseIterator = InplaceVector <Storage::IndexHolder <OrderedIndex>, MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
-        const Storage::IndexHolder<OrderedIndex> *pointer;
+        explicit OrderedIndexIterator (BaseIterator _iterator) noexcept;
+
+        BaseIterator iterator;
     };
 
     class VolumetricIndexIterator final
@@ -127,9 +135,11 @@ public:
     private:
         friend class Storage;
 
-        explicit VolumetricIndexIterator (const Storage::IndexHolder<VolumetricIndex> *_pointer) noexcept;
+        using BaseIterator = InplaceVector <Storage::IndexHolder <VolumetricIndex>, MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
-        const Storage::IndexHolder<VolumetricIndex> *pointer;
+        explicit VolumetricIndexIterator (BaseIterator _iterator) noexcept;
+
+        BaseIterator iterator;
     };
 
     explicit Storage (StandardLayout::Mapping _recordMapping) noexcept;
@@ -152,12 +162,18 @@ public:
 
     VolumetricIndexIterator EndVolumetricIndices () const noexcept;
 
-private:
-    friend class Allocator;
-    
-    friend class HashIndexIterator;
+    // TODO: Do not forget to insert all existing records to newly created indices.
 
-    static constexpr std::size_t MAX_INDICES_OF_SAME_TYPE = 8u;
+private:
+    friend class HashIndex;
+    friend class OrderedIndex;
+    friend class VolumetricIndex;
+
+    struct IndexedField final
+    {
+        StandardLayout::Field field;
+        std::size_t usages = 0u;
+    };
 
     void RegisterReader () noexcept;
 
@@ -169,37 +185,41 @@ private:
 
     void *AllocateRecord () noexcept;
 
-    void InsertRecord (const void *record) noexcept;
+    void InsertRecord (const void *_record) noexcept;
 
-    void BeginRecordEdition (const void *record) noexcept;
+    void BeginRecordEdition (const void *_record) noexcept;
 
-    void EndRecordEdition (const void *record) noexcept;
+    void EndRecordEdition (const void *_record) noexcept;
 
-    struct IndexedField final
-    {
-        StandardLayout::Field field;
-        std::size_t usages = 0u;
-    };
+    void DropIndex (const HashIndex &_index) noexcept;
+
+    void DropIndex (const OrderedIndex &_index) noexcept;
+
+    void DropIndex (const VolumetricIndex &_index) noexcept;
+
+    void RebuildIndexMasks () noexcept;
+
+    IndexedFieldMask BuildIndexMask (const HashIndex &_index) noexcept;
+
+    IndexedFieldMask BuildIndexMask (const OrderedIndex &_index) noexcept;
+
+    IndexedFieldMask BuildIndexMask (const VolumetricIndex &_index) noexcept;
+
+    void UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
     Memory::Pool records;
 
     struct
     {
-        std::size_t hashCount = 0u;
-        std::array <IndexHolder <HashIndex>, MAX_INDICES_OF_SAME_TYPE> hash;
-
-        std::size_t orderedCount = 0u;
-        std::array <IndexHolder <OrderedIndex>, MAX_INDICES_OF_SAME_TYPE> ordered;
-
-        std::size_t volumetricCount = 0u;
-        std::array <IndexHolder <VolumetricIndex>, MAX_INDICES_OF_SAME_TYPE> volumetric;
+        InplaceVector <IndexHolder <HashIndex>, MAX_INDICES_OF_SAME_TYPE> hash;
+        InplaceVector <IndexHolder <OrderedIndex>, MAX_INDICES_OF_SAME_TYPE> ordered;
+        InplaceVector <IndexHolder <VolumetricIndex>, MAX_INDICES_OF_SAME_TYPE> volumetric;
     } indices;
 
     struct
     {
         StandardLayout::Mapping recordMapping;
-        std::size_t indexedFieldsCount = 0u;
-        std::array <IndexedField, MAX_INDEXED_FIELDS> indexedFields;
+        InplaceVector <IndexedField, MAX_INDEXED_FIELDS> indexedFields;
     } reflection;
 
     struct

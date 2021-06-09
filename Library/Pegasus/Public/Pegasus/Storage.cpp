@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
 
 namespace Emergence::Pegasus
@@ -48,38 +49,38 @@ Storage::Allocator::Allocator (Storage *_owner)
 
 Handling::Handle <HashIndex> Storage::HashIndexIterator::operator * () const noexcept
 {
-    return pointer->index.get ();
+    return iterator->index.get ();
 }
 
 Storage::HashIndexIterator &Storage::HashIndexIterator::operator ++ () noexcept
 {
-    ++pointer;
+    ++iterator;
     return *this;
 }
 
 Storage::HashIndexIterator Storage::HashIndexIterator::operator ++ (int) noexcept
 {
-    const IndexHolder <HashIndex> *oldPointer = pointer;
-    ++pointer;
-    return Storage::HashIndexIterator (oldPointer);
+    auto oldIterator = iterator;
+    ++iterator;
+    return Storage::HashIndexIterator (oldIterator);
 }
 
 Storage::HashIndexIterator &Storage::HashIndexIterator::operator -- () noexcept
 {
-    --pointer;
+    --iterator;
     return *this;
 }
 
 Storage::HashIndexIterator Storage::HashIndexIterator::operator -- (int) noexcept
 {
-    const IndexHolder <HashIndex> *oldPointer = pointer;
-    --pointer;
-    return Storage::HashIndexIterator (oldPointer);
+    auto oldIterator = iterator;
+    --iterator;
+    return Storage::HashIndexIterator (oldIterator);
 }
 
 bool Storage::HashIndexIterator::operator == (const Storage::HashIndexIterator &_other) const noexcept
 {
-    return pointer == _other.pointer;
+    return iterator == _other.iterator;
 }
 
 bool Storage::HashIndexIterator::operator != (const Storage::HashIndexIterator &_other) const noexcept
@@ -87,45 +88,45 @@ bool Storage::HashIndexIterator::operator != (const Storage::HashIndexIterator &
     return !(*this == _other);
 }
 
-Storage::HashIndexIterator::HashIndexIterator (const Storage::IndexHolder <HashIndex> *_pointer) noexcept
-    : pointer (_pointer)
+Storage::HashIndexIterator::HashIndexIterator (HashIndexIterator::BaseIterator _iterator) noexcept
+    : iterator (std::move (_iterator))
 {
 }
 
 Handling::Handle <OrderedIndex> Storage::OrderedIndexIterator::operator * () const noexcept
 {
-    return pointer->index.get ();
+    return iterator->index.get ();
 }
 
 Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator ++ () noexcept
 {
-    ++pointer;
+    ++iterator;
     return *this;
 }
 
 Storage::OrderedIndexIterator Storage::OrderedIndexIterator::operator ++ (int) noexcept
 {
-    const IndexHolder <OrderedIndex> *oldPointer = pointer;
-    ++pointer;
-    return Storage::OrderedIndexIterator (oldPointer);
+    auto oldIterator = iterator;
+    ++iterator;
+    return Storage::OrderedIndexIterator (oldIterator);
 }
 
 Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator -- () noexcept
 {
-    --pointer;
+    --iterator;
     return *this;
 }
 
 Storage::OrderedIndexIterator Storage::OrderedIndexIterator::operator -- (int) noexcept
 {
-    const IndexHolder <OrderedIndex> *oldPointer = pointer;
-    --pointer;
-    return Storage::OrderedIndexIterator (oldPointer);
+    auto oldIterator = iterator;
+    --iterator;
+    return Storage::OrderedIndexIterator (oldIterator);
 }
 
 bool Storage::OrderedIndexIterator::operator == (const Storage::OrderedIndexIterator &_other) const noexcept
 {
-    return pointer == _other.pointer;
+    return iterator == _other.iterator;
 }
 
 bool Storage::OrderedIndexIterator::operator != (const Storage::OrderedIndexIterator &_other) const noexcept
@@ -133,45 +134,45 @@ bool Storage::OrderedIndexIterator::operator != (const Storage::OrderedIndexIter
     return !(*this == _other);
 }
 
-Storage::OrderedIndexIterator::OrderedIndexIterator (const Storage::IndexHolder <OrderedIndex> *_pointer) noexcept
-    : pointer (_pointer)
+Storage::OrderedIndexIterator::OrderedIndexIterator (OrderedIndexIterator::BaseIterator _iterator) noexcept
+    : iterator (std::move (_iterator))
 {
 }
 
 Handling::Handle <VolumetricIndex> Storage::VolumetricIndexIterator::operator * () const noexcept
 {
-    return pointer->index.get ();
+    return iterator->index.get ();
 }
 
 Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator ++ () noexcept
 {
-    ++pointer;
+    ++iterator;
     return *this;
 }
 
 Storage::VolumetricIndexIterator Storage::VolumetricIndexIterator::operator ++ (int) noexcept
 {
-    const IndexHolder <VolumetricIndex> *oldPointer = pointer;
-    ++pointer;
-    return Storage::VolumetricIndexIterator (oldPointer);
+    auto oldIterator = iterator;
+    ++iterator;
+    return Storage::VolumetricIndexIterator (oldIterator);
 }
 
 Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator -- () noexcept
 {
-    --pointer;
+    --iterator;
     return *this;
 }
 
 Storage::VolumetricIndexIterator Storage::VolumetricIndexIterator::operator -- (int) noexcept
 {
-    const IndexHolder <VolumetricIndex> *oldPointer = pointer;
-    --pointer;
-    return Storage::VolumetricIndexIterator (oldPointer);
+    auto oldIterator = iterator;
+    --iterator;
+    return Storage::VolumetricIndexIterator (oldIterator);
 }
 
 bool Storage::VolumetricIndexIterator::operator == (const Storage::VolumetricIndexIterator &_other) const noexcept
 {
-    return pointer == _other.pointer;
+    return iterator == _other.iterator;
 }
 
 bool Storage::VolumetricIndexIterator::operator != (const Storage::VolumetricIndexIterator &_other) const noexcept
@@ -179,8 +180,8 @@ bool Storage::VolumetricIndexIterator::operator != (const Storage::VolumetricInd
     return !(*this == _other);
 }
 
-Storage::VolumetricIndexIterator::VolumetricIndexIterator (const Storage::IndexHolder <VolumetricIndex> *_pointer) noexcept
-    : pointer (_pointer)
+Storage::VolumetricIndexIterator::VolumetricIndexIterator (VolumetricIndexIterator::BaseIterator _iterator) noexcept
+    : iterator (std::move (_iterator))
 {
 }
 
@@ -198,10 +199,10 @@ Storage::Storage (Storage &&_other) noexcept
       reflection (_other.reflection),
       editedRecordBackup (_other.editedRecordBackup)
 {
-    _other.indices.hashCount = 0u;
-    _other.indices.orderedCount = 0u;
-    _other.indices.volumetricCount = 0u;
-    _other.reflection.indexedFieldsCount = 0u;
+    _other.indices.hash.Clear ();
+    _other.indices.ordered.Clear ();
+    _other.indices.volumetric.Clear ();
+    _other.reflection.indexedFields.Clear ();
 
     // Allocate new record buffer for source storage. We capture its record buffer instead
     // of allocating new for us to preserve correct record edition routine state.
@@ -244,32 +245,32 @@ Storage::~Storage () noexcept
 
 Storage::HashIndexIterator Storage::BeginHashIndices () const noexcept
 {
-    return Storage::HashIndexIterator (&*indices.hash.begin ());
+    return Storage::HashIndexIterator (indices.hash.Begin ());
 }
 
 Storage::HashIndexIterator Storage::EndHashIndices () const noexcept
 {
-    return Storage::HashIndexIterator (&*(indices.hash.begin () + indices.hashCount));
+    return Storage::HashIndexIterator (indices.hash.End ());
 }
 
 Storage::OrderedIndexIterator Storage::BeginOrderedIndices () const noexcept
 {
-    return Storage::OrderedIndexIterator (&*indices.ordered.begin ());
+    return Storage::OrderedIndexIterator (indices.ordered.Begin ());
 }
 
 Storage::OrderedIndexIterator Storage::EndOrderedIndices () const noexcept
 {
-    return Storage::OrderedIndexIterator (&*(indices.ordered.begin () + indices.orderedCount));
+    return Storage::OrderedIndexIterator (indices.ordered.End ());
 }
 
 Storage::VolumetricIndexIterator Storage::BeginVolumetricIndices () const noexcept
 {
-    return Storage::VolumetricIndexIterator (&*indices.volumetric.begin ());
+    return Storage::VolumetricIndexIterator (indices.volumetric.Begin ());
 }
 
 Storage::VolumetricIndexIterator Storage::EndVolumetricIndices () const noexcept
 {
-    return Storage::VolumetricIndexIterator (&*(indices.volumetric.begin () + indices.volumetricCount));
+    return Storage::VolumetricIndexIterator (indices.volumetric.End ());
 }
 
 void Storage::RegisterReader () noexcept
@@ -298,22 +299,40 @@ void Storage::UnregisterWriter () noexcept
     assert (accessCounter.writers == 1u);
     // TODO: Record edition routine must be closed. How to assert that?
     --accessCounter.writers;
+
+    for (auto &[index, mask] : indices.hash)
+    {
+        index->OnWriterClosed ();
+    }
+//
+//    for (auto &[index, mask] : indices.ordered)
+//    {
+//        index->OnWriterClosed ();
+//    }
+//
+//    for (auto &[index, mask] : indices.volumetric)
+//    {
+//        index->OnWriterClosed ();
+//    }
 }
 
 void *Storage::AllocateRecord () noexcept
 {
+    assert (accessCounter.readers == 0u);
+    assert (accessCounter.writers == 1u);
     return records.Acquire ();
 }
 
-void Storage::InsertRecord (const void *record) noexcept
+void Storage::InsertRecord (const void *_record) noexcept
 {
-    assert (record);
-    // Suppress unused warning.
-    record = nullptr;
-//    for (auto &[index, mask] : indices.hash)
-//    {
-//        index->InsertRecord (record);
-//    }
+    assert (_record);
+    assert (accessCounter.readers == 0u);
+    assert (accessCounter.writers == 1u);
+
+    for (auto &[index, mask] : indices.hash)
+    {
+        index->InsertRecord (_record);
+    }
 //
 //    for (auto &[index, mask] : indices.ordered)
 //    {
@@ -326,21 +345,18 @@ void Storage::InsertRecord (const void *record) noexcept
 //    }
 }
 
-void Storage::BeginRecordEdition (const void *record) noexcept
+void Storage::BeginRecordEdition (const void *_record) noexcept
 {
     // TODO: Possible optimization. If indexed fields coverage is high
     //       (more than 50% of object size), just copy full object instead?
 
-    assert (record);
+    assert (_record);
     assert (editedRecordBackup);
+    assert (accessCounter.readers == 0u);
+    assert (accessCounter.writers == 1u);
 
-    auto iterator = reflection.indexedFields.begin ();
-    auto end = reflection.indexedFields.begin () + reflection.indexedFieldsCount;
-
-    while (iterator != end)
+    for (const IndexedField &indexedField : reflection.indexedFields)
     {
-        const IndexedField &indexedField = *iterator;
-
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
         assert (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
@@ -348,16 +364,14 @@ void Storage::BeginRecordEdition (const void *record) noexcept
         {
             case StandardLayout::FieldArchetype::BIT:
             {
-                std::size_t offset = indexedField.field.GetOffset ();
                 uint8_t mask = 1u << indexedField.field.GetBitOffset ();
-
-                if (*(static_cast <const uint8_t *> (record) + offset) & mask)
+                if (*static_cast <const uint8_t *> (indexedField.field.GetValue (_record)) & mask)
                 {
-                    *(static_cast <uint8_t *> (editedRecordBackup) + offset) |= mask;
+                    *static_cast <uint8_t *> (indexedField.field.GetValue (editedRecordBackup)) |= mask;
                 }
                 else
                 {
-                    *(static_cast <uint8_t *> (editedRecordBackup) + offset) &= ~mask;
+                    *static_cast <uint8_t *> (indexedField.field.GetValue (editedRecordBackup)) &= ~mask;
                 }
 
                 break;
@@ -369,102 +383,53 @@ void Storage::BeginRecordEdition (const void *record) noexcept
             case StandardLayout::FieldArchetype::BLOCK:
             case StandardLayout::FieldArchetype::NESTED_OBJECT:
             {
-                std::size_t offset = indexedField.field.GetOffset ();
-                memcpy (static_cast <uint8_t *> (editedRecordBackup) + offset,
-                        static_cast <const uint8_t *> (record) + offset,
+                memcpy (indexedField.field.GetValue (editedRecordBackup),
+                        indexedField.field.GetValue (_record),
                         indexedField.field.GetSize ());
                 break;
             }
 
             case StandardLayout::FieldArchetype::STRING:
             {
-                std::size_t offset = indexedField.field.GetOffset ();
-                strncpy (static_cast <char *> (editedRecordBackup) + offset,
-                         static_cast <const char *> (record) + offset,
+                strncpy (static_cast <char *> (indexedField.field.GetValue (editedRecordBackup)),
+                         static_cast <const char *> (indexedField.field.GetValue (_record)),
                          indexedField.field.GetSize () / sizeof (char));
                 break;
             }
         }
-
-        ++iterator;
     }
 }
 
-void Storage::EndRecordEdition (const void *record) noexcept
+void Storage::EndRecordEdition (const void *_record) noexcept
 {
-    assert (record);
+    assert (_record);
     assert (editedRecordBackup);
+    assert (accessCounter.readers == 0u);
+    assert (accessCounter.writers == 1u);
 
     IndexedFieldMask changedIndexedFields = 0u;
     IndexedFieldMask fieldMask = 1u;
 
-    auto iterator = reflection.indexedFields.begin ();
-    auto end = reflection.indexedFields.begin () + reflection.indexedFieldsCount;
-
-    while (iterator != end)
+    for (const IndexedField &indexedField : reflection.indexedFields)
     {
-        const IndexedField &indexedField = *iterator;
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
         assert (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
-        switch (indexedField.field.GetArchetype ())
+        if (!AreFieldValuesEqual (editedRecordBackup, _record, indexedField.field))
         {
-            case StandardLayout::FieldArchetype::BIT:
-            {
-                std::size_t offset = indexedField.field.GetOffset ();
-                uint8_t mask = 1u << indexedField.field.GetBitOffset ();
-
-                if ((*(static_cast <const uint8_t *> (record) + offset) & mask) !=
-                    (*(static_cast <const uint8_t *> (editedRecordBackup) + offset) & mask))
-                {
-                    changedIndexedFields |= fieldMask;
-                }
-
-                break;
-            }
-
-            case StandardLayout::FieldArchetype::INT:
-            case StandardLayout::FieldArchetype::UINT:
-            case StandardLayout::FieldArchetype::FLOAT:
-            case StandardLayout::FieldArchetype::BLOCK:
-            case StandardLayout::FieldArchetype::NESTED_OBJECT:
-            {
-                std::size_t offset = indexedField.field.GetOffset ();
-                if (memcmp (static_cast <const uint8_t *> (editedRecordBackup) + offset,
-                            static_cast <const uint8_t *> (record) + offset,
-                            indexedField.field.GetSize ()) != 0u)
-                {
-                    changedIndexedFields |= fieldMask;
-                }
-
-                break;
-            }
-
-            case StandardLayout::FieldArchetype::STRING:
-            {
-                std::size_t offset = indexedField.field.GetOffset ();
-                if (strncmp (static_cast <const char *> (editedRecordBackup) + offset,
-                             static_cast <const char *> (record) + offset,
-                             indexedField.field.GetSize () / sizeof (char)) != 0u)
-                {
-                    changedIndexedFields |= fieldMask;
-                }
-
-                break;
-            }
+            changedIndexedFields |= fieldMask;
         }
 
-        ++iterator;
         fieldMask <<= 1u;
     }
 
-//    for (auto &[index, mask] : indices.hash)
-//    {
-//        if (changedIndexedFields & mask)
-//        {
-//            index->OnRecordChanged (record, editedRecordBackup);
-//        }
-//    }
+    for (auto &[index, mask] : indices.hash)
+    {
+        if (changedIndexedFields & mask)
+        {
+            index->OnRecordChanged (_record, editedRecordBackup);
+        }
+    }
 //
 //    for (auto &[index, mask] : indices.ordered)
 //    {
@@ -481,5 +446,120 @@ void Storage::EndRecordEdition (const void *record) noexcept
 //            index->OnRecordChanged (record, editedRecordBackup);
 //        }
 //    }
+}
+
+void Storage::DropIndex (const HashIndex &_index) noexcept
+{
+    for (const StandardLayout::Field &indexedField : _index.GetIndexedFields ())
+    {
+        UnregisterIndexedFieldUsage (indexedField);
+    }
+
+    indices.hash.EraseExchangingWithLast (
+        std::find_if (indices.hash.Begin (), indices.hash.End (),
+                      [&_index] (const IndexHolder <HashIndex> &_indexHolder) -> bool
+                      {
+                          return _indexHolder.index.get () == &_index;
+                      }));
+
+    RebuildIndexMasks ();
+}
+
+void Storage::DropIndex (const OrderedIndex &_index) noexcept
+{
+    // TODO: Remove indexed fields.
+    indices.ordered.EraseExchangingWithLast (
+        std::find_if (indices.ordered.Begin (), indices.ordered.End (),
+                      [&_index] (const IndexHolder <OrderedIndex> &_indexHolder) -> bool
+                      {
+                          return _indexHolder.index.get () == &_index;
+                      }));
+
+    RebuildIndexMasks ();
+}
+
+void Storage::DropIndex (const VolumetricIndex &_index) noexcept
+{
+    // TODO: Remove indexed fields.
+    indices.volumetric.EraseExchangingWithLast (
+        std::find_if (indices.volumetric.Begin (), indices.volumetric.End (),
+                      [&_index] (const IndexHolder <VolumetricIndex> &_indexHolder) -> bool
+                      {
+                          return _indexHolder.index.get () == &_index;
+                      }));
+
+    RebuildIndexMasks ();
+}
+
+void Storage::RebuildIndexMasks () noexcept
+{
+    for (auto &[index, mask] : indices.hash)
+    {
+        assert (index);
+        mask = BuildIndexMask (*index);
+    }
+
+    for (auto &[index, mask] : indices.ordered)
+    {
+        assert (index);
+        mask = BuildIndexMask (*index);
+    }
+
+    for (auto &[index, mask] : indices.volumetric)
+    {
+        assert (index);
+        mask = BuildIndexMask (*index);
+    }
+}
+
+Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_index) noexcept
+{
+    IndexedFieldMask indexMask = 0u;
+    IndexedFieldMask currentFieldMask = 1u;
+
+    for (const IndexedField &indexedField : reflection.indexedFields)
+    {
+        auto indexIterator = std::find_if (
+            _index.GetIndexedFields ().Begin (), _index.GetIndexedFields ().End (),
+            [&indexedField] (const StandardLayout::Field &_field) -> bool
+            {
+                return indexedField.field.IsSame (_field);
+            });
+
+        if (indexIterator != _index.GetIndexedFields ().End ())
+        {
+            indexMask |= currentFieldMask;
+        }
+
+        currentFieldMask <<= 1u;
+    }
+
+    return indexMask;
+}
+
+Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) noexcept
+{
+    // TODO: Implement.
+    // Suppress unused warning.
+    _index.GetReferenceCount ();
+    return 0u;
+}
+
+Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIndex &_index) noexcept
+{
+    // TODO: Implement.
+    // Suppress unused warning.
+    _index.GetReferenceCount ();
+    return 0u;
+}
+
+void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept
+{
+    reflection.indexedFields.EraseExchangingWithLast (
+        std::find_if (reflection.indexedFields.Begin (), reflection.indexedFields.End (),
+                      [&_field] (const IndexedField &_indexedField) -> bool
+                      {
+                          return _indexedField.field.IsSame (_field);
+                      }));
 }
 } // namespace Emergence::Pegasus
