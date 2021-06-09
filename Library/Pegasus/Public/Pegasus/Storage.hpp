@@ -187,6 +187,12 @@ private:
 
     void InsertRecord (const void *_record) noexcept;
 
+    /// \brief Deletes record by request of given internal index.
+    /// \details Index, that requested deletion, already has iterator that points to requested
+    ///          record and can do deletion faster. Therefore we identify this index by given
+    ///          pointer and do not call OnRecordDeleted for this index.
+    void DeleteRecord (const void *_record, const void *_requestedByIndex) noexcept;
+
     void BeginRecordEdition (const void *_record) noexcept;
 
     void EndRecordEdition (const void *_record) noexcept;

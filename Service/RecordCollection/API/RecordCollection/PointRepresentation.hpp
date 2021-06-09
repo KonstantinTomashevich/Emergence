@@ -63,10 +63,6 @@ public:
 
         ~EditCursor () noexcept;
 
-        // TODO: /reminder We can check for changes in indexed fields in MoveToNextRecord and ~WriteCursor.
-        //                 Usually indexed fields are quite small and there is not a lot of such fields,
-        //                 therefore it's okay to copy them and check for equality later.
-
         /// \return Pointer to current record or nullptr if there is no more records.
         void *operator * () noexcept;
 

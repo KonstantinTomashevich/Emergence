@@ -99,6 +99,7 @@ void *Field::GetValue (void *_object) const noexcept
 
 const void *Field::GetValue (const void *_object) const noexcept
 {
+    assert (_object);
     return static_cast <const uint8_t *> (_object) + GetOffset ();
 }
 

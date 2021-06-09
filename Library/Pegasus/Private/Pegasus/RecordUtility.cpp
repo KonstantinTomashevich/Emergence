@@ -5,7 +5,13 @@
 
 namespace Emergence::Pegasus
 {
-bool AreFieldValuesEqual (const void *_firstRecord, const void *_secondRecord,
+bool AreRecordValuesEqual (const void *_firstRecord, const void *_secondRecord,
+                           const StandardLayout::Field &_field) noexcept
+{
+    return AreFieldValuesEqual (_field.GetValue (_firstRecord), _field.GetValue (_secondRecord), _field);
+}
+
+bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondRecordValue,
                           const StandardLayout::Field &_field) noexcept
 {
     // _field should be leaf-field, not intermediate nested object.
@@ -16,8 +22,8 @@ bool AreFieldValuesEqual (const void *_firstRecord, const void *_secondRecord,
         case StandardLayout::FieldArchetype::BIT:
         {
             uint8_t mask = 1u << _field.GetBitOffset ();
-            if ((*static_cast <const uint8_t *> (_field.GetValue (_firstRecord)) & mask) !=
-                (*static_cast <const uint8_t *> (_field.GetValue (_secondRecord)) & mask))
+            if ((*static_cast <const uint8_t *> (_firstRecordValue) & mask) !=
+                (*static_cast <const uint8_t *> (_secondRecordValue) & mask))
             {
                 return false;
             }
@@ -31,7 +37,7 @@ bool AreFieldValuesEqual (const void *_firstRecord, const void *_secondRecord,
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
         {
-            if (memcmp (_field.GetValue (_firstRecord), _field.GetValue (_secondRecord), _field.GetSize ()) != 0u)
+            if (memcmp (_firstRecordValue, _secondRecordValue, _field.GetSize ()) != 0u)
             {
                 return false;
             }
@@ -41,8 +47,8 @@ bool AreFieldValuesEqual (const void *_firstRecord, const void *_secondRecord,
 
         case StandardLayout::FieldArchetype::STRING:
         {
-            if (strncmp (static_cast <const char *> (_field.GetValue (_firstRecord)),
-                         static_cast <const char *> (_field.GetValue (_secondRecord)),
+            if (strncmp (static_cast <const char *> (_firstRecordValue),
+                         static_cast <const char *> (_secondRecordValue),
                          _field.GetSize () / sizeof (char)) != 0u)
             {
                 return false;

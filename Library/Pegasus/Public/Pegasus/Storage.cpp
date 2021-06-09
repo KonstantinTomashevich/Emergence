@@ -336,12 +336,43 @@ void Storage::InsertRecord (const void *_record) noexcept
 //
 //    for (auto &[index, mask] : indices.ordered)
 //    {
-//        index->InsertRecord (record);
+//        index->InsertRecord (_record);
 //    }
 //
 //    for (auto &[index, mask] : indices.volumetric)
 //    {
-//        index->InsertRecord (record);
+//        index->InsertRecord (_record);
+//    }
+}
+
+void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) noexcept
+{
+    assert (_record);
+    assert (accessCounter.readers == 0u);
+    assert (accessCounter.writers == 1u);
+
+    for (auto &[index, mask] : indices.hash)
+    {
+        if (index.get() != _requestedByIndex)
+        {
+            index->OnRecordDeleted (_record, editedRecordBackup);
+        }
+    }
+//
+//    for (auto &[index, mask] : indices.ordered)
+//    {
+//        if (index.get() != _requestedByIndex)
+//        {
+//            index->OnRecordDeleted (_record, editedRecordBackup);
+//        }
+//    }
+//
+//    for (auto &[index, mask] : indices.volumetric)
+//    {
+//        if (index.get() != _requestedByIndex)
+//        {
+//            index->OnRecordDeleted (_record, editedRecordBackup);
+//        }
 //    }
 }
 
@@ -415,7 +446,7 @@ void Storage::EndRecordEdition (const void *_record) noexcept
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
         assert (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
-        if (!AreFieldValuesEqual (editedRecordBackup, _record, indexedField.field))
+        if (!AreRecordValuesEqual (editedRecordBackup, _record, indexedField.field))
         {
             changedIndexedFields |= fieldMask;
         }
