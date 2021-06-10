@@ -20,7 +20,7 @@ Mapping::FieldIterator &Mapping::FieldIterator::operator ++ () noexcept
 
 Mapping::FieldIterator Mapping::FieldIterator::operator ++ (int) noexcept
 {
-    PlainMapping::ConstIterator result = ++block_cast <PlainMapping::ConstIterator> (data);
+    PlainMapping::ConstIterator result = block_cast <PlainMapping::ConstIterator> (data)++;
     return Mapping::FieldIterator (reinterpret_cast <decltype (data) *> (&result));
 }
 
@@ -32,7 +32,7 @@ Mapping::FieldIterator &Mapping::FieldIterator::operator -- () noexcept
 
 Mapping::FieldIterator Mapping::FieldIterator::operator -- (int) noexcept
 {
-    PlainMapping::ConstIterator result = --block_cast <PlainMapping::ConstIterator> (data);
+    PlainMapping::ConstIterator result = block_cast <PlainMapping::ConstIterator> (data)--;
     return Mapping::FieldIterator (reinterpret_cast <decltype (data) *> (&result));
 }
 
