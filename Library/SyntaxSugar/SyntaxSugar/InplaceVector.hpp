@@ -43,9 +43,10 @@ public:
     std::size_t GetCount () const noexcept;
 
     /// \brief Constructs new item in next free slot.
+    /// \return Reference to constructed item.
     /// \invariant ::GetCount is less that ::Capacity.
     template <typename... Args>
-    void EmplaceBack (Args &&... _constructorArgs) noexcept;
+    Item &EmplaceBack (Args &&... _constructorArgs) noexcept;
 
     /// \brief Resets vector to empty state.
     void Clear () noexcept
@@ -128,12 +129,13 @@ std::size_t InplaceVector <Item, Capacity>::GetCount () const noexcept
 
 template <typename Item, std::size_t Capacity>
 template <typename... Args>
-void InplaceVector <Item, Capacity>::EmplaceBack (Args &&... _constructorArgs) noexcept
+Item &InplaceVector <Item, Capacity>::EmplaceBack (Args &&... _constructorArgs) noexcept
 {
     assert (count < Capacity);
     values[count].~Item ();
-    new (&values[count]) Item (std::forward <Args> (_constructorArgs)...);
+    Item *item = new (&values[count]) Item (std::forward <Args> (_constructorArgs)...);
     ++count;
+    return *item;
 }
 
 template <typename Item, std::size_t Capacity>

@@ -243,6 +243,35 @@ Storage::~Storage () noexcept
     free (editedRecordBackup);
 }
 
+Handling::Handle <HashIndex>
+Storage::CreateHashIndex (const std::vector <StandardLayout::Field> &_indexedFields) noexcept
+{
+    assert (accessCounter.writers == 0u);
+    assert (accessCounter.readers == 0u);
+    constexpr std::size_t defaultInitialBuckets = 32u;
+
+    IndexHolder <HashIndex> &holder = indices.hash.EmplaceBack (
+        IndexHolder <HashIndex> {
+            std::unique_ptr <HashIndex> (new HashIndex (this, defaultInitialBuckets, _indexedFields)),
+            0u
+        });
+
+    for (const StandardLayout::Field &indexedField : holder.index->GetIndexedFields ())
+    {
+        RegisterIndexedFieldUsage (indexedField);
+    }
+
+    holder.indexedFieldMask = BuildIndexMask (*holder.index);
+    // TODO: Optimization. If there is ordered index, extract records from it instead of pool.
+
+    for (const void *record : records)
+    {
+        holder.index->InsertRecord (record);
+    }
+
+    return holder.index.get ();
+}
+
 Storage::HashIndexIterator Storage::BeginHashIndices () const noexcept
 {
     return Storage::HashIndexIterator (indices.hash.Begin ());
@@ -353,7 +382,7 @@ void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) 
 
     for (auto &[index, mask] : indices.hash)
     {
-        if (index.get() != _requestedByIndex)
+        if (index.get () != _requestedByIndex)
         {
             index->OnRecordDeleted (_record, editedRecordBackup);
         }
@@ -582,6 +611,20 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIn
     // Suppress unused warning.
     _index.GetReferenceCount ();
     return 0u;
+}
+
+void Storage::RegisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept
+{
+    for (IndexedField &indexedField : reflection.indexedFields)
+    {
+        if (indexedField.field.IsSame (_field))
+        {
+            ++indexedField.usages;
+            return;
+        }
+    }
+
+    reflection.indexedFields.EmplaceBack (IndexedField {_field, 1u});
 }
 
 void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept

@@ -146,6 +146,8 @@ public:
 
     ~Storage () noexcept;
 
+    Handling::Handle<HashIndex> CreateHashIndex (const std::vector <StandardLayout::Field> &_indexedFields) noexcept;
+
     HashIndexIterator BeginHashIndices () const noexcept;
 
     HashIndexIterator EndHashIndices () const noexcept;
@@ -158,8 +160,6 @@ public:
 
     VolumetricIndexIterator EndVolumetricIndices () const noexcept;
 
-    // TODO: Do not forget to insert all existing records to newly created indices.
-
 private:
     friend class HashIndex;
 
@@ -170,7 +170,7 @@ private:
     struct IndexedField final
     {
         StandardLayout::Field field;
-        std::size_t usages = 0u;
+        std::size_t usages;
     };
 
     void RegisterReader () noexcept;
@@ -208,6 +208,8 @@ private:
     Constants::Storage::IndexedFieldMask BuildIndexMask (const OrderedIndex &_index) noexcept;
 
     Constants::Storage::IndexedFieldMask BuildIndexMask (const VolumetricIndex &_index) noexcept;
+
+    void RegisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
     void UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
