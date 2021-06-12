@@ -438,8 +438,8 @@ void Storage::EndRecordEdition (const void *_record) noexcept
     assert (accessCounter.readers == 0u);
     assert (accessCounter.writers == 1u);
 
-    IndexedFieldMask changedIndexedFields = 0u;
-    IndexedFieldMask fieldMask = 1u;
+    Constants::Storage::IndexedFieldMask changedIndexedFields = 0u;
+    Constants::Storage::IndexedFieldMask fieldMask = 1u;
 
     for (const IndexedField &indexedField : reflection.indexedFields)
     {
@@ -543,10 +543,10 @@ void Storage::RebuildIndexMasks () noexcept
     }
 }
 
-Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_index) noexcept
+Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_index) noexcept
 {
-    IndexedFieldMask indexMask = 0u;
-    IndexedFieldMask currentFieldMask = 1u;
+    Constants::Storage::IndexedFieldMask indexMask = 0u;
+    Constants::Storage::IndexedFieldMask currentFieldMask = 1u;
 
     for (const IndexedField &indexedField : reflection.indexedFields)
     {
@@ -568,7 +568,7 @@ Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_index) noex
     return indexMask;
 }
 
-Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) noexcept
+Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) noexcept
 {
     // TODO: Implement.
     // Suppress unused warning.
@@ -576,7 +576,7 @@ Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) n
     return 0u;
 }
 
-Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIndex &_index) noexcept
+Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIndex &_index) noexcept
 {
     // TODO: Implement.
     // Suppress unused warning.

@@ -8,7 +8,7 @@
 
 namespace Emergence::Pegasus
 {
-const InplaceVector <StandardLayout::Field, HashIndex::MAX_INDEXED_FIELDS> &
+const InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &
 HashIndex::GetIndexedFields () const noexcept
 {
     return indexedFields;
@@ -216,9 +216,9 @@ HashIndex::HashIndex (Emergence::Pegasus::Storage *_owner, std::size_t _initialB
 
     assert (_owner);
     assert (!_indexedFields.empty ());
-    assert (_indexedFields.size () < MAX_INDEXED_FIELDS);
+    assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);
 
-    std::size_t indexedFieldsCount = std::min (MAX_INDEXED_FIELDS, _indexedFields.size ());
+    std::size_t indexedFieldsCount = std::min (Constants::HashIndex::MAX_INDEXED_FIELDS, _indexedFields.size ());
     for (std::size_t index = 0u; index < indexedFieldsCount; ++index)
     {
         indexedFields.EmplaceBack (_indexedFields[index]);

@@ -7,6 +7,8 @@
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
+#include <Pegasus/Constants/HashIndex.hpp>
+
 #include <StandardLayout/Field.hpp>
 
 #include <SyntaxSugar/InplaceVector.hpp>
@@ -15,9 +17,6 @@ namespace Emergence::Pegasus
 {
 class HashIndex final : public Handling::HandleableBase
 {
-private:
-    static constexpr std::size_t MAX_INDEXED_FIELDS = 8u;
-
 public:
     struct LookupRequest final
     {
@@ -36,7 +35,8 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     HashIndex (HashIndex &&_other) = delete;
 
-    const InplaceVector <StandardLayout::Field, MAX_INDEXED_FIELDS> &GetIndexedFields () const noexcept;
+    const InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &
+    GetIndexedFields () const noexcept;
 
     bool CanBeDropped () const noexcept;
 
@@ -97,7 +97,7 @@ private:
     void OnWriterClosed () noexcept;
 
     Storage *storage;
-    InplaceVector <StandardLayout::Field, MAX_INDEXED_FIELDS> indexedFields;
+    InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
     RecordHashSet records;
     std::vector <std::unordered_multiset <const void *, Hasher, Comparator>::node_type> changedNodes;
 

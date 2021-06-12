@@ -8,6 +8,7 @@
 
 #include <Memory/Pool.hpp>
 
+#include <Pegasus/Constants/Storage.hpp>
 #include <Pegasus/HashIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
@@ -21,19 +22,11 @@ namespace Emergence::Pegasus
 class Storage final
 {
 private:
-    static constexpr std::size_t MAX_INDICES_OF_SAME_TYPE = 8u;
-
-    static constexpr std::size_t MAX_INDEXED_FIELDS = 32u;
-
-    using IndexedFieldMask = uint32_t;
-
-    static_assert (sizeof (IndexedFieldMask) * 8u >= MAX_INDEXED_FIELDS);
-
     template <typename Index>
     struct IndexHolder
     {
         std::unique_ptr <Index> index;
-        IndexedFieldMask indexedFieldMask = 0u;
+        Constants::Storage::IndexedFieldMask indexedFieldMask = 0u;
     };
 
 public:
@@ -80,8 +73,9 @@ public:
 
     private:
         friend class Storage;
-        
-        using BaseIterator = InplaceVector <Storage::IndexHolder <HashIndex>, MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+
+        using BaseIterator = InplaceVector <Storage::IndexHolder <HashIndex>,
+                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit HashIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -108,7 +102,8 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <Storage::IndexHolder <OrderedIndex>, MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector <Storage::IndexHolder <OrderedIndex>,
+                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit OrderedIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -135,7 +130,8 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <Storage::IndexHolder <VolumetricIndex>, MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector <Storage::IndexHolder <VolumetricIndex>,
+                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit VolumetricIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -166,7 +162,9 @@ public:
 
 private:
     friend class HashIndex;
+
     friend class OrderedIndex;
+
     friend class VolumetricIndex;
 
     struct IndexedField final
@@ -205,11 +203,11 @@ private:
 
     void RebuildIndexMasks () noexcept;
 
-    IndexedFieldMask BuildIndexMask (const HashIndex &_index) noexcept;
+    Constants::Storage::IndexedFieldMask BuildIndexMask (const HashIndex &_index) noexcept;
 
-    IndexedFieldMask BuildIndexMask (const OrderedIndex &_index) noexcept;
+    Constants::Storage::IndexedFieldMask BuildIndexMask (const OrderedIndex &_index) noexcept;
 
-    IndexedFieldMask BuildIndexMask (const VolumetricIndex &_index) noexcept;
+    Constants::Storage::IndexedFieldMask BuildIndexMask (const VolumetricIndex &_index) noexcept;
 
     void UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
@@ -217,15 +215,15 @@ private:
 
     struct
     {
-        InplaceVector <IndexHolder <HashIndex>, MAX_INDICES_OF_SAME_TYPE> hash;
-        InplaceVector <IndexHolder <OrderedIndex>, MAX_INDICES_OF_SAME_TYPE> ordered;
-        InplaceVector <IndexHolder <VolumetricIndex>, MAX_INDICES_OF_SAME_TYPE> volumetric;
+        InplaceVector <IndexHolder <HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> hash;
+        InplaceVector <IndexHolder <OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> ordered;
+        InplaceVector <IndexHolder <VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> volumetric;
     } indices;
 
     struct
     {
         StandardLayout::Mapping recordMapping;
-        InplaceVector <IndexedField, MAX_INDEXED_FIELDS> indexedFields;
+        InplaceVector <IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
     } reflection;
 
     struct

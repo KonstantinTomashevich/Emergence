@@ -2,6 +2,8 @@
 
 #include <Handling/HandleableBase.hpp>
 
+#include <Pegasus/Constants/VolumetricIndex.hpp>
+
 namespace Emergence::Pegasus
 {
 // TODO: Add self reference to prevent Handling from deleting objects.
