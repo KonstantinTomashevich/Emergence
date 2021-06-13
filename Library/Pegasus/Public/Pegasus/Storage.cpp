@@ -41,7 +41,8 @@ void *Storage::Allocator::Next () noexcept
 }
 
 Storage::Allocator::Allocator (Storage *_owner)
-    : owner (_owner)
+    : owner (_owner),
+      current (nullptr)
 {
     assert (owner);
     owner->RegisterWriter ();
@@ -243,8 +244,18 @@ Storage::~Storage () noexcept
     free (editedRecordBackup);
 }
 
+const StandardLayout::Mapping &Storage::GetRecordMapping () const noexcept
+{
+    return reflection.recordMapping;
+}
+
+Storage::Allocator Storage::AllocateAndInsert () noexcept
+{
+    return Allocator (this);
+}
+
 Handling::Handle <HashIndex>
-Storage::CreateHashIndex (const std::vector <StandardLayout::Field> &_indexedFields) noexcept
+Storage::CreateHashIndex (const std::vector <StandardLayout::FieldId> &_indexedFields) noexcept
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);

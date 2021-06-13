@@ -146,7 +146,11 @@ public:
 
     ~Storage () noexcept;
 
-    Handling::Handle<HashIndex> CreateHashIndex (const std::vector <StandardLayout::Field> &_indexedFields) noexcept;
+    const StandardLayout::Mapping &GetRecordMapping () const noexcept;
+
+    Allocator AllocateAndInsert () noexcept;
+
+    Handling::Handle <HashIndex> CreateHashIndex (const std::vector <StandardLayout::FieldId> &_indexedFields) noexcept;
 
     HashIndexIterator BeginHashIndices () const noexcept;
 

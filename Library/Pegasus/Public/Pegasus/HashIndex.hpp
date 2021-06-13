@@ -84,7 +84,7 @@ private:
     using RecordHashSet = std::unordered_multiset <const void *, Hasher, Comparator>;
 
     explicit HashIndex (Storage *_owner, std::size_t _initialBuckets,
-                        const std::vector <StandardLayout::Field> &_indexedFields);
+                        const std::vector <StandardLayout::FieldId> &_indexedFields);
 
     void InsertRecord (const void *_record) noexcept;
 
@@ -131,6 +131,7 @@ public:
                     RecordHashSet::const_iterator _begin,
                     RecordHashSet::const_iterator _end) noexcept;
 
+        // TODO: Is using handles there thread-safe? It should be in this case because of self-reference.
         Handling::Handle <HashIndex> index;
         RecordHashSet::const_iterator current;
         RecordHashSet::const_iterator end;

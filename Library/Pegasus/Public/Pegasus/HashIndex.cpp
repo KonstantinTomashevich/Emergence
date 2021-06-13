@@ -205,7 +205,7 @@ bool HashIndex::Comparator::operator () (const HashIndex::LookupRequest &_reques
 }
 
 HashIndex::HashIndex (Emergence::Pegasus::Storage *_owner, std::size_t _initialBuckets,
-                      const std::vector <StandardLayout::Field> &_indexedFields)
+                      const std::vector <StandardLayout::FieldId> &_indexedFields)
     : Handling::HandleableBase (),
       storage (_owner),
       records (_initialBuckets, Hasher {this}, Comparator {this})
@@ -219,9 +219,13 @@ HashIndex::HashIndex (Emergence::Pegasus::Storage *_owner, std::size_t _initialB
     assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);
 
     std::size_t indexedFieldsCount = std::min (Constants::HashIndex::MAX_INDEXED_FIELDS, _indexedFields.size ());
+    const StandardLayout::Mapping &recordMapping = storage->GetRecordMapping ();
+
     for (std::size_t index = 0u; index < indexedFieldsCount; ++index)
     {
-        indexedFields.EmplaceBack (_indexedFields[index]);
+        StandardLayout::Field indexedField = recordMapping.GetField (_indexedFields[index]);
+        assert (indexedField.IsHandleValid ());
+        indexedFields.EmplaceBack (indexedField);
     }
 }
 
