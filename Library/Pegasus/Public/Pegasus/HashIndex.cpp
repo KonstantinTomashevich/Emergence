@@ -215,7 +215,7 @@ HashIndex::HashIndex (Emergence::Pegasus::Storage *_owner, std::size_t _initialB
     // Storage owns indices and Handling is used only to check if dropping index is safe.
     RegisterReference ();
 
-    assert (_owner);
+    assert (storage);
     assert (!_indexedFields.empty ());
     assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);
 
@@ -315,8 +315,8 @@ HashIndex::ReadCursor::ReadCursor (Handling::Handle <HashIndex> _index,
       current (_begin),
       end (_end)
 {
-    assert (_index);
-    _index->storage->RegisterReader ();
+    assert (index);
+    index->storage->RegisterReader ();
 }
 
 HashIndex::EditCursor::EditCursor (HashIndex::EditCursor &&_other) noexcept
