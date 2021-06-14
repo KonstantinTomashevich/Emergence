@@ -47,9 +47,9 @@ struct ExecutionContext
 
     void ExecuteTask (const HashIndexLookupToEdit &_task);
 
-    void ExecuteTask (const CursorCheck &_cursor);
+    void ExecuteTask (const CursorCheck &_task);
 
-    void ExecuteTask (const CursorCheckAllUnordered &_cursor);
+    void ExecuteTask (const CursorCheckAllUnordered &_task);
 
     void ExecuteTask (const CursorEdit &_task);
 
@@ -526,13 +526,120 @@ std::string ExecutionContext::RecordToString (const void *_record) const
     return result;
 }
 
+std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
+{
+    _output << "Create hash index \"" << _task.name << "\" on fields:";
+    for (StandardLayout::FieldId fieldId : _task.indexedFields)
+    {
+        _output << " " << fieldId;
+    }
+
+    return _output << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CopyIndexReference &_task)
+{
+    return _output << "Copy index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const RemoveIndexReference &_task)
+{
+    return _output << "Remove index reference \"" << _task.name << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CheckIndexCanBeDropped &_task)
+{
+    return _output << "Check is index \"" << _task.name << "\" can be dropped, expected result: \"" <<
+                   (_task.expectedResult ? "yes" : "no") << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const DropIndex &_task)
+{
+    return _output << "Drop index \"" << _task.name << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const OpenAllocator &)
+{
+    return _output << "Open allocator.";
+}
+
+std::ostream &operator << (std::ostream &_output, const AllocateAndInit &_task)
+{
+    return _output << "Allocate record and init from " << _task.copyFrom << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
+{
+    return _output << "Close allocator.";
+}
+
+std::ostream &operator << (std::ostream &_output, const HashIndexLookupToRead &_task)
+{
+    return _output << "Execute hash index \"" << _task.indexName << "\" read-only lookup using request " <<
+                   _task.request << " and save cursor as \"" << _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const HashIndexLookupToEdit &_task)
+{
+    return _output << "Execute hash index \"" << _task.indexName << "\" editable lookup using request " <<
+                   _task.request << " and save cursor as \"" << _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CursorCheck &_task)
+{
+    return _output << "Check that cursor \"" << _task.name << "\" points to record, equal to " <<
+                   _task.expectedRecord << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllUnordered &_task)
+{
+    _output << "Check that cursor \"" << _task.name << "\" points to set of records equal to:";
+    for (const void *record : _task.expectedRecords)
+    {
+        _output << " " << record;
+    }
+
+    return _output << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CursorEdit &_task)
+{
+    return _output << "Replace value of record, to which cursor \"" << _task.name <<
+                   "\" points with value of " << _task.copyFrom << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CursorIncrement &_task)
+{
+    return _output << "Increment cursor \"" << _task.name << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CursorDeleteRecord &_task)
+{
+    return _output << "Delete record, to which cursor \"" << _task.name << "\" points.";
+}
+
+std::ostream &operator << (std::ostream &_output, const CopyCursor &_task)
+{
+    return _output << "Copy cursor \"" << _task.sourceName << "\" as \"" << _task.targetName << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const MoveCursor &_task)
+{
+    return _output << "Move cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CloseCursor &_task)
+{
+    return _output << "Close cursor \"" << _task.name << "\".";
+}
+
 Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
     : mapping (std::move (_mapping)),
       tasks (std::move (_tasks))
 {
 }
 
-void Scenario::Execute ()
+void Scenario::Execute () const
 {
     ExecutionContext context (mapping);
     for (const Task &wrappedTask : tasks)
@@ -544,5 +651,24 @@ void Scenario::Execute ()
             },
             wrappedTask);
     }
+}
+
+std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
+{
+    _output << "Scenario: " << std::endl;
+    for (const Task &wrappedTask : _scenario.tasks)
+    {
+        _output << " - ";
+        std::visit (
+            [&_output] (const auto &_unwrappedTask)
+            {
+                _output << _unwrappedTask;
+            },
+            wrappedTask);
+
+        _output << std::endl;
+    }
+
+    return _output;
 }
 } // namespace Emergence::Pegasus::Test

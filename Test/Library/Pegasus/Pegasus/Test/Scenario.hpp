@@ -135,9 +135,11 @@ class Scenario final
 public:
     Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks);
 
-    void Execute ();
+    void Execute () const;
 
 private:
+    friend std::ostream &operator << (std::ostream &_output, const Scenario &_seed);
+
     StandardLayout::Mapping mapping;
     std::vector <Task> tasks;
 };

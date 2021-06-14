@@ -16,7 +16,8 @@ HashIndex::GetIndexedFields () const noexcept
 
 bool HashIndex::CanBeDropped () const noexcept
 {
-    return GetReferenceCount () == 0u;
+    // Self reference is always here.
+    return GetReferenceCount () == 1u;
 }
 
 void HashIndex::Drop () noexcept
