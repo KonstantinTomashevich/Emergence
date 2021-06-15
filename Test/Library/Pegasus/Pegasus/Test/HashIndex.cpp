@@ -154,6 +154,46 @@ BOOST_DATA_TEST_CASE(
                     AllocateAndInit {&firstRecord},
                     AllocateAndInit {&secondRecord},
                     CloseAllocator {},
+
+                    CheckIndexCanBeDropped {"entity", true},
+                    HashIndexLookupToRead {{"entity", "entity0", &Requests::entity0}},
+                    CheckIndexCanBeDropped {"entity", false},
+
+                    CursorCheck {"entity0", &firstRecord},
+                    CopyCursor {"entity0", "entity0Copy"},
+
+                    CursorIncrement {"entity0"},
+                    CursorCheck {"entity0", nullptr},
+                    CursorCheck {"entity0Copy", &firstRecord},
+
+                    MoveCursor {"entity0Copy", "entity0Move"},
+                    CursorCheck {"entity0Move", &firstRecord},
+                    CheckIndexCanBeDropped {"entity", false},
+
+                    CloseCursor {"entity0"},
+                    CheckIndexCanBeDropped {"entity", false},
+                    CloseCursor {"entity0Move"},
+                    CheckIndexCanBeDropped {"entity", true},
+
+                    HashIndexLookupToEdit {{"entity", "entity0", &Requests::entity0}},
+                    CheckIndexCanBeDropped {"entity", false},
+                    CursorCheck {"entity0", &firstRecord},
+                    MoveCursor {"entity0", "entity0Move"},
+                    CheckIndexCanBeDropped {"entity", false},
+
+                    CursorCheck {"entity0Move", &firstRecord},
+                    CloseCursor {"entity0Move"},
+                    CheckIndexCanBeDropped {"entity", true},
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                    OpenAllocator {},
+                    AllocateAndInit {&firstRecord},
+                    AllocateAndInit {&secondRecord},
+                    CloseAllocator {},
                     HashIndexLookupToRead {{"entity", "entity0", &Requests::entity0}},
                     CursorCheck {"entity0", &firstRecord},
                     HashIndexLookupToRead {{"entity", "entity1", &Requests::entity1}},
@@ -225,10 +265,15 @@ BOOST_DATA_TEST_CASE(
                     CloseAllocator {},
                     CreateHashIndex {"nicknameAndEntityId",
                                      {Record::Reflection::nickname, Record::Reflection::entityId}},
-                    HashIndexLookupToRead {{"nicknameAndEntityId", "karlEntity1", &Requests::karlEntity1}},
-                    CursorCheck {"karlEntity1", &secondRecord},
                     HashIndexLookupToRead {{"nicknameAndEntityId", "hugoEntity1", &Requests::hugoEntity1}},
                     CursorCheck {"hugoEntity1", nullptr},
+                    CloseCursor {"hugoEntity1"},
+                    HashIndexLookupToEdit {{"nicknameAndEntityId", "karlEntity1", &Requests::karlEntity1}},
+                    CursorCheck {"karlEntity1", &secondRecord},
+                    CursorEdit {"karlEntity1", &secondRecordWithEntity0},
+                    CloseCursor {"karlEntity1"},
+                    HashIndexLookupToRead {{"nicknameAndEntityId", "karlEntity1", &Requests::karlEntity1}},
+                    CursorCheck {"karlEntity1", nullptr},
                 }
             },
         }))
