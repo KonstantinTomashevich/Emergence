@@ -189,7 +189,7 @@ bool HashIndex::Comparator::operator () (const void *_record, const HashIndex::L
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
         assert (indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
-        if (!AreRecordValuesEqual (indexedField.GetValue (_record), currentFieldBegin, indexedField))
+        if (!AreFieldValuesEqual (indexedField.GetValue (_record), currentFieldBegin, indexedField))
         {
             return false;
         }

@@ -428,7 +428,7 @@ void ExecutionContext::ExecuteTask (const CloseCursor &_task)
 Handling::Handle <HashIndex> ExecutionContext::PrepareForLookup (const HashIndexLookupBase &_task) const
 {
     BOOST_REQUIRE_MESSAGE (
-        indexReferences.find (_task.cursorName) == indexReferences.end (),
+        activeCursors.find (_task.cursorName) == activeCursors.end (),
         boost::format ("There should be no cursor with name \"%1%\"") % _task.cursorName);
 
     auto iterator = indexReferences.find (_task.indexName);

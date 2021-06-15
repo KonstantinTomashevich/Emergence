@@ -22,6 +22,17 @@ struct NicknameAndEntityIdLookupRequest
     decltype (Record::entityId) entityId;
 };
 
+struct AliveLookupRequest
+{
+    uint8_t aliveFlag;
+};
+
+struct AliveAndStunnedLookupRequest
+{
+    uint8_t aliveFlag;
+    uint8_t stunnedFlag;
+};
+
 constexpr Record ChangeEntityId (Record _record, uint32_t _newEntityId)
 {
     _record.entityId = _newEntityId;
@@ -111,6 +122,14 @@ NicknameLookupRequest karl {{"karl"}};
 NicknameAndEntityIdLookupRequest karlEntity1 {{"karl"}, 1u};
 
 NicknameAndEntityIdLookupRequest hugoEntity1 {{"hugo"}, 1u};
+
+AliveLookupRequest alive {Record::Status::FLAG_ALIVE};
+
+AliveLookupRequest dead {0u};
+
+AliveAndStunnedLookupRequest aliveAndStunned {Record::Status::FLAG_ALIVE, Record::Status::FLAG_STUNNED};
+
+AliveAndStunnedLookupRequest aliveAndNotStunned {Record::Status::FLAG_ALIVE, 0u};
 };
 
 BOOST_AUTO_TEST_SUITE (HashIndex)
@@ -267,13 +286,36 @@ BOOST_DATA_TEST_CASE(
                                      {Record::Reflection::nickname, Record::Reflection::entityId}},
                     HashIndexLookupToRead {{"nicknameAndEntityId", "hugoEntity1", &Requests::hugoEntity1}},
                     CursorCheck {"hugoEntity1", nullptr},
-                    CloseCursor {"hugoEntity1"},
-                    HashIndexLookupToEdit {{"nicknameAndEntityId", "karlEntity1", &Requests::karlEntity1}},
-                    CursorCheck {"karlEntity1", &secondRecord},
-                    CursorEdit {"karlEntity1", &secondRecordWithEntity0},
-                    CloseCursor {"karlEntity1"},
                     HashIndexLookupToRead {{"nicknameAndEntityId", "karlEntity1", &Requests::karlEntity1}},
-                    CursorCheck {"karlEntity1", nullptr},
+                    CursorCheck {"karlEntity1", &secondRecord},
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    OpenAllocator {},
+                    AllocateAndInit {&firstRecord},
+                    AllocateAndInit {&secondRecord},
+                    CloseAllocator {},
+                    CreateHashIndex {"alive", {Record::Reflection::alive}},
+                    HashIndexLookupToRead {{"alive", "alive", &Requests::alive}},
+                    CursorCheckAllUnordered {"alive", {&firstRecord, &secondRecord}},
+                    HashIndexLookupToRead {{"alive", "dead", &Requests::dead}},
+                    CursorCheck {"dead", nullptr},
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    OpenAllocator {},
+                    AllocateAndInit {&firstRecord},
+                    AllocateAndInit {&secondRecord},
+                    CloseAllocator {},
+                    CreateHashIndex {"aliveAndStunned", {Record::Reflection::alive, Record::Reflection::stunned}},
+                    HashIndexLookupToRead {{"aliveAndStunned", "aliveAndStunned", &Requests::aliveAndStunned}},
+                    CursorCheck {"aliveAndStunned", &firstRecord},
+                    HashIndexLookupToRead {{"aliveAndStunned", "aliveAndNotStunned", &Requests::aliveAndNotStunned}},
+                    CursorCheck {"aliveAndNotStunned", &secondRecord},
                 }
             },
         }))
