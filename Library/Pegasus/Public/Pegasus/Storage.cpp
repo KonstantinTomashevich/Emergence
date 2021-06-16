@@ -414,6 +414,8 @@ void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) 
 //            index->OnRecordDeleted (_record, editedRecordBackup);
 //        }
 //    }
+
+    records.Release (const_cast <void *> (_record));
 }
 
 void Storage::BeginRecordEdition (const void *_record) noexcept
