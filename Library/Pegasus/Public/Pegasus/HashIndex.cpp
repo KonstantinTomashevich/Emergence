@@ -247,7 +247,7 @@ void HashIndex::DeleteRecordMyself (RecordHashSet::iterator _position) noexcept
     assert (_position != records.end ());
     const void *record = *_position;
     records.erase (_position);
-    storage->DeleteRecord (record, this);
+    storage->DeleteRecord (const_cast <void *> (record), this);
 }
 
 void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept

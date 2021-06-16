@@ -193,7 +193,7 @@ private:
     /// \details Index, that requested deletion, already has iterator that points to requested
     ///          record and can do deletion faster. Therefore we identify this index by given
     ///          pointer and do not call OnRecordDeleted for this index.
-    void DeleteRecord (const void *_record, const void *_requestedByIndex) noexcept;
+    void DeleteRecord (void *_record, const void *_requestedByIndex) noexcept;
 
     void BeginRecordEdition (const void *_record) noexcept;
 

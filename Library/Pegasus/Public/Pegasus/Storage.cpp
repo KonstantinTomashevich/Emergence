@@ -385,7 +385,7 @@ void Storage::InsertRecord (const void *_record) noexcept
 //    }
 }
 
-void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) noexcept
+void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexcept
 {
     assert (_record);
     assert (accessCounter.readers == 0u);
@@ -395,7 +395,7 @@ void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) 
     {
         if (index.get () != _requestedByIndex)
         {
-            index->OnRecordDeleted (_record, editedRecordBackup);
+            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
         }
     }
 //
@@ -403,7 +403,7 @@ void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) 
 //    {
 //        if (index.get() != _requestedByIndex)
 //        {
-//            index->OnRecordDeleted (_record, editedRecordBackup);
+//            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
 //        }
 //    }
 //
@@ -411,11 +411,11 @@ void Storage::DeleteRecord (const void *_record, const void *_requestedByIndex) 
 //    {
 //        if (index.get() != _requestedByIndex)
 //        {
-//            index->OnRecordDeleted (_record, editedRecordBackup);
+//            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
 //        }
 //    }
 
-    records.Release (const_cast <void *> (_record));
+    records.Release (_record);
 }
 
 void Storage::BeginRecordEdition (const void *_record) noexcept
