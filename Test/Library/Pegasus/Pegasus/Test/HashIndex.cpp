@@ -356,6 +356,34 @@ BOOST_DATA_TEST_CASE(
                     CursorCheck {"karlEntity0", &secondRecordWithEntity0},
                 }
             },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                    CreateHashIndex {"nickname", {Record::Reflection::nickname}},
+                    OpenAllocator {},
+                    AllocateAndInit {&firstRecord},
+                    AllocateAndInit {&secondRecord},
+                    CloseAllocator {},
+
+                    HashIndexLookupToEdit {{"entity", "entity1", &Requests::entity1}},
+                    CursorCheck {"entity1", &secondRecord},
+                    CursorDeleteRecord {"entity1"},
+                    CloseCursor {"entity1"},
+
+                    HashIndexLookupToRead {{"entity", "entity0", &Requests::entity0}},
+                    CursorCheck {"entity0", &firstRecord},
+
+                    HashIndexLookupToRead {{"entity", "entity1", &Requests::entity1}},
+                    CursorCheck {"entity1", nullptr},
+
+                    HashIndexLookupToRead {{"nickname", "karl", &Requests::karl}},
+                    CursorCheck {"karl", nullptr},
+
+                    HashIndexLookupToRead {{"nickname", "hugo", &Requests::hugo}},
+                    CursorCheck {"hugo", &firstRecord},
+                }
+            },
         }))
 {
     sample.Execute ();
