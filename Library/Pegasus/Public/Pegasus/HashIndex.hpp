@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <unordered_set>
 #include <vector>
@@ -100,6 +101,7 @@ private:
     InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
     RecordHashSet records;
     std::vector <std::unordered_multiset <const void *, Hasher, Comparator>::node_type> changedNodes;
+    std::atomic <std::size_t> activeCursors = 0u;
 
 public:
     class ReadCursor final
@@ -127,12 +129,11 @@ public:
     private:
         friend class HashIndex;
 
-        ReadCursor (Handling::Handle <HashIndex> _index,
+        ReadCursor (HashIndex *_index,
                     RecordHashSet::const_iterator _begin,
                     RecordHashSet::const_iterator _end) noexcept;
 
-        // TODO: Is using handles there thread-safe? It should be in this case because of self-reference.
-        Handling::Handle <HashIndex> index;
+        HashIndex *index;
         RecordHashSet::const_iterator current;
         RecordHashSet::const_iterator end;
     };
@@ -170,7 +171,7 @@ public:
     private:
         friend class HashIndex;
 
-        EditCursor (Handling::Handle <HashIndex> _index,
+        EditCursor (HashIndex *_index,
                     RecordHashSet::iterator _begin,
                     RecordHashSet::iterator _end) noexcept;
 
@@ -178,7 +179,7 @@ public:
 
         void EndRecordEdition () const noexcept;
 
-        Handling::Handle <HashIndex> index;
+        HashIndex *index;
         RecordHashSet::iterator current;
         RecordHashSet::iterator end;
     };

@@ -17,7 +17,7 @@ HashIndex::GetIndexedFields () const noexcept
 bool HashIndex::CanBeDropped () const noexcept
 {
     // Self reference is always here.
-    return GetReferenceCount () == 1u;
+    return GetReferenceCount () == 1u && activeCursors == 0u;
 }
 
 void HashIndex::Drop () noexcept
@@ -275,21 +275,24 @@ HashIndex::ReadCursor::ReadCursor (const HashIndex::ReadCursor &_other) noexcept
       end (_other.end)
 {
     assert (index);
+    ++index->activeCursors;
     index->storage->RegisterReader ();
 }
 
 HashIndex::ReadCursor::ReadCursor (HashIndex::ReadCursor &&_other) noexcept
-    : index (std::move (_other.index)),
+    : index (_other.index),
       current (_other.current),
       end (_other.end)
 {
     assert (index);
+    _other.index = nullptr;
 }
 
 HashIndex::ReadCursor::~ReadCursor () noexcept
 {
     if (index)
     {
+        --index->activeCursors;
         index->storage->UnregisterReader ();
     }
 }
@@ -309,23 +312,25 @@ HashIndex::ReadCursor &HashIndex::ReadCursor::operator ++ () noexcept
     return *this;
 }
 
-HashIndex::ReadCursor::ReadCursor (Handling::Handle <HashIndex> _index,
+HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
                                    RecordHashSet::const_iterator _begin,
                                    RecordHashSet::const_iterator _end) noexcept
-    : index (std::move (_index)),
+    : index (_index),
       current (_begin),
       end (_end)
 {
     assert (index);
+    ++index->activeCursors;
     index->storage->RegisterReader ();
 }
 
 HashIndex::EditCursor::EditCursor (HashIndex::EditCursor &&_other) noexcept
-    : index (std::move (_other.index)),
+    : index (_other.index),
       current (_other.current),
       end (_other.end)
 {
     assert (index);
+    _other.index = nullptr;
 }
 
 HashIndex::EditCursor::~EditCursor () noexcept
@@ -333,6 +338,7 @@ HashIndex::EditCursor::~EditCursor () noexcept
     if (index)
     {
         EndRecordEdition ();
+        --index->activeCursors;
         index->storage->UnregisterWriter ();
     }
 }
@@ -366,14 +372,15 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator ++ () noexcept
     return *this;
 }
 
-HashIndex::EditCursor::EditCursor (Handling::Handle <HashIndex> _index,
+HashIndex::EditCursor::EditCursor (HashIndex *_index,
                                    RecordHashSet::iterator _begin,
                                    RecordHashSet::iterator _end) noexcept
-    : index (std::move (_index)),
+    : index (_index),
       current (_begin),
       end (_end)
 {
     assert (index);
+    ++index->activeCursors;
     index->storage->RegisterWriter ();
     BeginRecordEdition ();
 }
