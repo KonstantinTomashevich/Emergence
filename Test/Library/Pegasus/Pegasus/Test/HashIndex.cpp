@@ -121,6 +121,8 @@ NicknameLookupRequest karl {{"karl"}};
 
 NicknameAndEntityIdLookupRequest karlEntity1 {{"karl"}, 1u};
 
+NicknameAndEntityIdLookupRequest karlEntity0 {{"karl"}, 0u};
+
 NicknameAndEntityIdLookupRequest hugoEntity1 {{"hugo"}, 1u};
 
 AliveLookupRequest alive {Record::Status::FLAG_ALIVE};
@@ -316,6 +318,42 @@ BOOST_DATA_TEST_CASE(
                     CursorCheck {"aliveAndStunned", &firstRecord},
                     HashIndexLookupToRead {{"aliveAndStunned", "aliveAndNotStunned", &Requests::aliveAndNotStunned}},
                     CursorCheck {"aliveAndNotStunned", &secondRecord},
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    OpenAllocator {},
+                    AllocateAndInit {&firstRecord},
+                    AllocateAndInit {&secondRecord},
+                    CloseAllocator {},
+                    CreateHashIndex {"entityId", {Record::Reflection::entityId}},
+                    CreateHashIndex {"nickname", {Record::Reflection::nickname}},
+                    CreateHashIndex {"nicknameAndEntityId",
+                                     {Record::Reflection::nickname, Record::Reflection::entityId}},
+
+                    HashIndexLookupToEdit {{"entityId", "entity1", &Requests::entity1}},
+                    CursorCheck {"entity1", &secondRecord},
+                    CursorEdit {"entity1", &secondRecordWithEntity0},
+                    CloseCursor {"entity1"},
+
+                    HashIndexLookupToRead {{"entityId", "entity0", &Requests::entity0}},
+                    CursorCheckAllUnordered {"entity0", {&firstRecord, &secondRecordWithEntity0}},
+
+                    HashIndexLookupToRead {{"entityId", "entity1", &Requests::entity1}},
+                    CursorCheck {"entity1", nullptr},
+
+                    HashIndexLookupToRead {{"nickname", "karl", &Requests::karl}},
+                    CursorCheck {"karl", &secondRecordWithEntity0},
+
+                    HashIndexLookupToRead {{"nickname", "hugo", &Requests::hugo}},
+                    CursorCheck {"hugo", &firstRecord},
+
+                    HashIndexLookupToRead {{"nicknameAndEntityId", "karlEntity1", &Requests::karlEntity1}},
+                    CursorCheck {"karlEntity1", nullptr},
+
+                    HashIndexLookupToRead {{"nicknameAndEntityId", "karlEntity0", &Requests::karlEntity0}},
+                    CursorCheck {"karlEntity0", &secondRecordWithEntity0},
                 }
             },
         }))
