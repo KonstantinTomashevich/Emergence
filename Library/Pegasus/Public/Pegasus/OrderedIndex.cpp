@@ -78,9 +78,9 @@ OrderedIndex::EditCursor::~EditCursor () noexcept
 {
     if (index)
     {
-        if (current != end)
+        if (current != end && index->storage->EndRecordEdition (*current, index))
         {
-            index->storage->EndRecordEdition (*current);
+            index->OnRecordChangedByMeFromForwardCursor (current);
         }
 
         --index->activeCursors;
@@ -99,7 +99,7 @@ OrderedIndex::EditCursor &OrderedIndex::EditCursor::operator ~ ()
     assert (index);
     assert (current != end);
 
-    index->DeleteRecordMyself (current);
+    index->DeleteRecordMyselfFromForwardCursor (current);
     ++current;
     BeginRecordEdition ();
     return *this;
@@ -109,7 +109,11 @@ OrderedIndex::EditCursor &OrderedIndex::EditCursor::operator ++ () noexcept
 {
     assert (index);
     assert (current != end);
-    index->storage->EndRecordEdition (*current);
+
+    if (index->storage->EndRecordEdition (*current, index))
+    {
+        index->OnRecordChangedByMeFromForwardCursor (current);
+    }
 
     ++current;
     BeginRecordEdition ();
@@ -181,9 +185,9 @@ OrderedIndex::ReversedEditCursor::~ReversedEditCursor () noexcept
 {
     if (index)
     {
-        if (current != predecessor)
+        if (current != predecessor && index->storage->EndRecordEdition (*current, index))
         {
-            index->storage->EndRecordEdition (*current);
+            index->OnRecordChangedByMeFromReversedCursor (current);
         }
 
         --index->activeCursors;
@@ -201,7 +205,7 @@ OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ~ (
     assert (index);
     assert (current != predecessor);
 
-    index->DeleteRecordMyself (current);
+    index->DeleteRecordMyselfFromReversedCursor (current);
     --current;
     BeginRecordEdition ();
     return *this;
@@ -211,7 +215,11 @@ OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ++ 
 {
     assert (index);
     assert (current != predecessor);
-    index->storage->EndRecordEdition (*current);
+
+    if (index->storage->EndRecordEdition (*current, index))
+    {
+        index->OnRecordChangedByMeFromReversedCursor (current);
+    }
 
     ++current;
     BeginRecordEdition ();
@@ -361,6 +369,21 @@ OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (
     return result;
 }
 
+std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
+    const void *_record, const void *_recordBackup) const noexcept
+{
+    auto iterator = std::lower_bound (records.begin (), records.end (), _recordBackup);
+    assert (iterator != records.end ());
+
+    while (*iterator != _record)
+    {
+        ++iterator;
+        assert (iterator != records.end ());
+    }
+
+    return iterator;
+}
+
 void OrderedIndex::InsertRecord (const void *_record) noexcept
 {
     // TODO: Assert that record is not inserted already? Is there any way to check this fast?
@@ -371,30 +394,143 @@ void OrderedIndex::InsertRecord (const void *_record) noexcept
 
 void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
 {
-    // TODO: Implement.
-    // Suppress unused.
-    _record = nullptr;
-    _recordBackup = nullptr;
+    auto iterator = LocateRecord (_record, _recordBackup);
+    std::size_t recordIndex = iterator - records.begin ();
+
+    auto insertionPoint = std::lower_bound (
+        deletedRecordIndices.begin (), deletedRecordIndices.end (), recordIndex);
+
+    assert (insertionPoint == deletedRecordIndices.end () || *insertionPoint != recordIndex);
+    deletedRecordIndices.emplace (insertionPoint, recordIndex);
 }
 
-void OrderedIndex::DeleteRecordMyself (std::vector <const void *>::iterator _position) noexcept
+void OrderedIndex::DeleteRecordMyselfFromForwardCursor (const std::vector <const void *>::iterator &_position) noexcept
 {
-    // TODO: Implement.
-    // Suppress unused.
-    const void *ptr = *_position;
-    ptr = nullptr;
+    assert (_position != records.end ());
+    std::size_t index = _position - records.begin ();
+
+    assert (deletedRecordIndices.empty () || index > deletedRecordIndices.back ());
+    deletedRecordIndices.emplace_back (index);
+    storage->DeleteRecord (const_cast <void *> (*_position), this);
+}
+
+void OrderedIndex::DeleteRecordMyselfFromReversedCursor (const std::vector <const void *>::iterator &_position) noexcept
+{
+    assert (_position != records.end ());
+    std::size_t index = _position - records.begin ();
+
+    assert (deletedRecordIndices.empty () || index < deletedRecordIndices.front ());
+    deletedRecordIndices.emplace (deletedRecordIndices.begin (), index);
+    storage->DeleteRecord (const_cast <void *> (*_position), this);
 }
 
 void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
-    // TODO: Implement.
-    // Suppress unused.
-    _record = nullptr;
-    _recordBackup = nullptr;
+    auto iterator = LocateRecord (_record, _recordBackup);
+    std::size_t recordIndex = iterator - records.begin ();
+
+    auto insertionPoint = std::lower_bound (
+        changedRecords.begin (), changedRecords.end (), recordIndex,
+        [] (const ChangedRecordInfo &_changedRecordInfo, size_t _indexToInsert) -> bool
+        {
+            return _changedRecordInfo.originalIndex < _indexToInsert;
+        });
+
+    assert (insertionPoint == changedRecords.end () || insertionPoint->originalIndex != recordIndex);
+    changedRecords.emplace (insertionPoint, ChangedRecordInfo {recordIndex, (_record)});
+}
+
+void OrderedIndex::OnRecordChangedByMeFromForwardCursor (
+    const std::vector <const void *>::iterator &_position) noexcept
+{
+    assert (_position != records.end ());
+    std::size_t index = _position - records.begin ();
+
+    assert (changedRecords.empty () || index > changedRecords.back ().originalIndex);
+    changedRecords.emplace_back (ChangedRecordInfo {index, *_position});
+}
+
+void OrderedIndex::OnRecordChangedByMeFromReversedCursor (
+    const std::vector <const void *>::iterator &_position) noexcept
+{
+    assert (_position != records.end ());
+    std::size_t index = _position - records.begin ();
+    assert (changedRecords.empty () || index < changedRecords.front ().originalIndex);
+    changedRecords.emplace (changedRecords.begin (), ChangedRecordInfo {index, *_position});
 }
 
 void OrderedIndex::OnWriterClosed () noexcept
 {
-    // TODO: Implement.
+    if (!changedRecords.empty () || !deletedRecordIndices.empty ())
+    {
+        auto changedRecordsIterator = changedRecords.begin ();
+        const auto changedRecordsEnd = changedRecords.end ();
+
+        auto deletedRecordsIterator = deletedRecordIndices.begin ();
+        const auto deletedRecordsEnd = deletedRecordIndices.end ();
+
+        auto AdvanceToNextCheckpoint =
+            [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator, &deletedRecordsEnd] () -> std::size_t
+            {
+                std::size_t nextCheckpoint;
+                if (changedRecordsIterator != changedRecordsEnd)
+                {
+                    if (deletedRecordsIterator != deletedRecordsEnd &&
+                        *deletedRecordsIterator < changedRecordsIterator->originalIndex)
+                    {
+                        nextCheckpoint = *deletedRecordsIterator;
+                        ++deletedRecordsIterator;
+                    }
+                    else
+                    {
+                        nextCheckpoint = changedRecordsIterator->originalIndex;
+                        ++changedRecordsIterator;
+                    }
+                }
+                else
+                {
+                    assert (deletedRecordsIterator != deletedRecordsEnd);
+                    nextCheckpoint = *deletedRecordsIterator;
+                    ++deletedRecordsIterator;
+                }
+
+                return nextCheckpoint;
+            };
+
+        std::size_t offset = 0u;
+        std::size_t intervalBegin = AdvanceToNextCheckpoint ();
+        std::size_t intervalEnd;
+
+        auto OffsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
+        {
+            std::size_t realBegin = intervalBegin - offset;
+            memcpy (&records[realBegin], &records[realBegin + 1u],
+                    (intervalEnd - intervalBegin - 1u) * sizeof (void *));
+            ++offset;
+        };
+
+        while (changedRecordsIterator != changedRecordsEnd || deletedRecordsIterator != deletedRecordsEnd)
+        {
+            intervalEnd = AdvanceToNextCheckpoint ();
+            OffsetInterval ();
+            intervalBegin = intervalEnd;
+        }
+
+        intervalEnd = records.size ();
+        OffsetInterval ();
+        records.resize (intervalEnd - offset);
+        deletedRecordIndices.clear ();
+    }
+
+    if (!changedRecords.empty ())
+    {
+        // TODO: If there is a lot of changed records, use emplace back and full resort?
+        for (const ChangedRecordInfo &info : changedRecords)
+        {
+            InsertRecord (info.record);
+        }
+
+        changedRecords.clear ();
+    }
 }
 } // namespace Emergence::Pegasus

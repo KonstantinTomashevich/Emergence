@@ -197,7 +197,7 @@ private:
 
     void BeginRecordEdition (const void *_record) noexcept;
 
-    void EndRecordEdition (const void *_record) noexcept;
+    bool EndRecordEdition (const void *_record, const void *_requestedByIndex) noexcept;
 
     const void *GetEditedRecordBackup () const noexcept;
 

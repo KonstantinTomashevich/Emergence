@@ -190,9 +190,18 @@ private:
         std::vector <const void *>::iterator end;
     };
 
+    struct ChangedRecordInfo
+    {
+        std::size_t originalIndex;
+        const void *record;
+    };
+
     explicit OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField);
 
     InternalLookupResult InternalLookup (const Bound &_min, const Bound &_max) noexcept;
+
+    std::vector <const void *>::const_iterator LocateRecord (
+        const void *_record, const void *_recordBackup) const noexcept;
 
     // TODO: Effective initial insertion of several records using pushes + std::sort?
 
@@ -200,16 +209,21 @@ private:
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
 
-    // TODO: Different methods for forward and reversed iterators?
-    void DeleteRecordMyself (std::vector <const void *>::iterator _position) noexcept;
+    void DeleteRecordMyselfFromForwardCursor (const std::vector <const void *>::iterator &_position) noexcept;
+
+    void DeleteRecordMyselfFromReversedCursor (const std::vector <const void *>::iterator &_position) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
+
+    void OnRecordChangedByMeFromForwardCursor (const std::vector <const void *>::iterator& _position) noexcept;
+
+    void OnRecordChangedByMeFromReversedCursor (const std::vector <const void *>::iterator& _position) noexcept;
 
     void OnWriterClosed () noexcept;
 
     StandardLayout::Field indexedField;
     std::vector <const void *> records;
-    std::vector <std::size_t> changedRecordIndices;
+    std::vector <ChangedRecordInfo> changedRecords;
     std::vector <std::size_t> deletedRecordIndices;
 };
 } // namespace Emergence::Pegasus

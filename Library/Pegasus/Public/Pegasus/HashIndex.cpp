@@ -274,6 +274,20 @@ void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup)
     changedNodes.emplace_back (records.extract (iterator)).value () = _record;
 }
 
+void HashIndex::OnRecordChangedByMe (RecordHashSet::iterator _position) noexcept
+{
+    const void *record = *_position;
+    // To extract record using iterator unordered multiset must calculate hash once more.
+    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
+    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
+    // This adhok could be eliminated by addition of alternative queries support (like find with
+    // RecordWithBackup) to extract operation.
+    const_cast <void const *&> (*_position) = storage->GetEditedRecordBackup ();
+
+    // After extraction we must restore node value, because this node will be reinserted later.
+    changedNodes.emplace_back (records.extract (_position)).value () = record;
+}
+
 void HashIndex::OnWriterClosed () noexcept
 {
     // Reinsert extracted changed nodes back into index.
@@ -354,9 +368,9 @@ HashIndex::EditCursor::~EditCursor () noexcept
 {
     if (index)
     {
-        if (current != end)
+        if (current != end && index->storage->EndRecordEdition (*current, index))
         {
-            index->storage->EndRecordEdition (*current);
+            index->OnRecordChangedByMe (current);
         }
 
         --index->activeCursors;
@@ -386,8 +400,12 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator ++ () noexcept
     assert (current != end);
 
     const void *record = *current;
-    ++current;
-    index->storage->EndRecordEdition (record);
+    auto previous = current++;
+
+    if (index->storage->EndRecordEdition (record, index))
+    {
+        index->OnRecordChangedByMe (previous);
+    }
 
     BeginRecordEdition ();
     return *this;

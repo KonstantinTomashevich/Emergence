@@ -95,6 +95,8 @@ private:
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
+    void OnRecordChangedByMe (RecordHashSet::iterator _position) noexcept;
+
     void OnWriterClosed () noexcept;
 
     InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;

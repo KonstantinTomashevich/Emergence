@@ -478,7 +478,7 @@ const void *Storage::GetEditedRecordBackup () const noexcept
     return editedRecordBackup;
 }
 
-void Storage::EndRecordEdition (const void *_record) noexcept
+bool Storage::EndRecordEdition (const void *_record, const void *_requestedByIndex) noexcept
 {
     assert (_record);
     assert (editedRecordBackup);
@@ -501,11 +501,19 @@ void Storage::EndRecordEdition (const void *_record) noexcept
         fieldMask <<= 1u;
     }
 
+    bool requesterAffected = false;
     for (auto &[index, mask] : indices.hash)
     {
         if (changedIndexedFields & mask)
         {
-            index->OnRecordChanged (_record, editedRecordBackup);
+            if (index.get () != _requestedByIndex)
+            {
+                index->OnRecordChanged (_record, editedRecordBackup);
+            }
+            else
+            {
+                requesterAffected = true;
+            }
         }
     }
 
@@ -513,17 +521,33 @@ void Storage::EndRecordEdition (const void *_record) noexcept
     {
         if (changedIndexedFields & mask)
         {
-            index->OnRecordChanged (_record, editedRecordBackup);
+            if (index.get () != _requestedByIndex)
+            {
+                index->OnRecordChanged (_record, editedRecordBackup);
+            }
+            else
+            {
+                requesterAffected = true;
+            }
         }
     }
-//
+
 //    for (auto &[index, mask] : indices.volumetric)
 //    {
 //        if (changedIndexedFields & mask)
 //        {
-//            index->OnRecordChanged (record, editedRecordBackup);
+//            if (index.get () != _requestedByIndex)
+//            {
+//                index->OnRecordChanged (_record, editedRecordBackup);
+//            }
+//            else
+//            {
+//                requesterAffected = true;
+//            }
 //        }
 //    }
+
+    return requesterAffected;
 }
 
 void Storage::DropIndex (const HashIndex &_index) noexcept
