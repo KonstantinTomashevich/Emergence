@@ -14,6 +14,11 @@ namespace Emergence::RecordCollection
 class LinearRepresentation final
 {
 public:
+    // TODO: Maybe it's better to create reversed cursors, that to add operator-- and MoveTo methods?
+    //       These methods introduce additional cursor behaviour complexity because of scenarios like this:
+    //           ~cursor; // Delete current record and move to the next.
+    //           --cursor; // Move to the previous record. This record must not be deleted record.
+
     /// \brief Allows user to read records, that match criteria, specified in LinearRepresentation::ReadInterval.
     /// \details All ReadCursor operations are thread safe.
     class ReadCursor final
@@ -141,6 +146,8 @@ public:
     /// \details Complexity -- O(lgN), where N is count of records in Collection.
     /// \invariant There is no active allocation transactions and edit cursors in Collection.
     ReadCursor ReadInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
+
+    // TODO: Should border values be included?
 
     /// \brief Finds interval, described by given borders,
     ///        and allows user to edit and delete records from this interval.

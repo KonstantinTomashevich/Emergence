@@ -9,6 +9,7 @@
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/HashIndex.hpp>
+#include <Pegasus/IndexBase.hpp>
 
 #include <StandardLayout/Field.hpp>
 
@@ -16,7 +17,7 @@
 
 namespace Emergence::Pegasus
 {
-class HashIndex final : public Handling::HandleableBase
+class HashIndex final : public IndexBase
 {
 public:
     struct LookupRequest final
@@ -38,8 +39,6 @@ public:
 
     const InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &
     GetIndexedFields () const noexcept;
-
-    bool CanBeDropped () const noexcept;
 
     void Drop () noexcept;
 
@@ -82,6 +81,7 @@ private:
         HashIndex *owner;
     };
 
+    // TODO: Custom allocator?
     using RecordHashSet = std::unordered_multiset <const void *, Hasher, Comparator>;
 
     explicit HashIndex (Storage *_owner, std::size_t _initialBuckets,
@@ -91,17 +91,15 @@ private:
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
 
-    void DeleteRecordMyself (RecordHashSet::iterator _position) noexcept;
+    RecordHashSet::iterator DeleteRecordMyself (const RecordHashSet::iterator &_position) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
     void OnWriterClosed () noexcept;
 
-    Storage *storage;
     InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
     RecordHashSet records;
     std::vector <std::unordered_multiset <const void *, Hasher, Comparator>::node_type> changedNodes;
-    std::atomic <std::size_t> activeCursors = 0u;
 
 public:
     class ReadCursor final
@@ -176,8 +174,6 @@ public:
                     RecordHashSet::iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
-
-        void EndRecordEdition () const noexcept;
 
         HashIndex *index;
         RecordHashSet::iterator current;

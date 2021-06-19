@@ -344,11 +344,11 @@ void Storage::UnregisterWriter () noexcept
     {
         index->OnWriterClosed ();
     }
-//
-//    for (auto &[index, mask] : indices.ordered)
-//    {
-//        index->OnWriterClosed ();
-//    }
+
+    for (auto &[index, mask] : indices.ordered)
+    {
+        index->OnWriterClosed ();
+    }
 //
 //    for (auto &[index, mask] : indices.volumetric)
 //    {
@@ -373,11 +373,11 @@ void Storage::InsertRecord (const void *_record) noexcept
     {
         index->InsertRecord (_record);
     }
-//
-//    for (auto &[index, mask] : indices.ordered)
-//    {
-//        index->InsertRecord (_record);
-//    }
+
+    for (auto &[index, mask] : indices.ordered)
+    {
+        index->InsertRecord (_record);
+    }
 //
 //    for (auto &[index, mask] : indices.volumetric)
 //    {
@@ -398,14 +398,14 @@ void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexce
             index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
         }
     }
-//
-//    for (auto &[index, mask] : indices.ordered)
-//    {
-//        if (index.get() != _requestedByIndex)
-//        {
-//            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
-//        }
-//    }
+
+    for (auto &[index, mask] : indices.ordered)
+    {
+        if (index.get () != _requestedByIndex)
+        {
+            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
+        }
+    }
 //
 //    for (auto &[index, mask] : indices.volumetric)
 //    {
@@ -473,6 +473,11 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
     }
 }
 
+const void *Storage::GetEditedRecordBackup () const noexcept
+{
+    return editedRecordBackup;
+}
+
 void Storage::EndRecordEdition (const void *_record) noexcept
 {
     assert (_record);
@@ -503,14 +508,14 @@ void Storage::EndRecordEdition (const void *_record) noexcept
             index->OnRecordChanged (_record, editedRecordBackup);
         }
     }
-//
-//    for (auto &[index, mask] : indices.ordered)
-//    {
-//        if (changedIndexedFields & mask)
-//        {
-//            index->OnRecordChanged (record, editedRecordBackup);
-//        }
-//    }
+
+    for (auto &[index, mask] : indices.ordered)
+    {
+        if (changedIndexedFields & mask)
+        {
+            index->OnRecordChanged (_record, editedRecordBackup);
+        }
+    }
 //
 //    for (auto &[index, mask] : indices.volumetric)
 //    {
@@ -540,7 +545,7 @@ void Storage::DropIndex (const HashIndex &_index) noexcept
 
 void Storage::DropIndex (const OrderedIndex &_index) noexcept
 {
-    // TODO: Remove indexed fields.
+    UnregisterIndexedFieldUsage (_index.GetIndexedField ());
     indices.ordered.EraseExchangingWithLast (
         std::find_if (indices.ordered.Begin (), indices.ordered.End (),
                       [&_index] (const IndexHolder <OrderedIndex> &_indexHolder) -> bool
@@ -612,10 +617,15 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_
 
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) noexcept
 {
-    // TODO: Implement.
-    // Suppress unused warning.
-    _index.GetReferenceCount ();
-    return 0u;
+    auto fieldIterator = std::find_if (
+        reflection.indexedFields.Begin (), reflection.indexedFields.End (),
+        [&_index] (const IndexedField &_field) -> bool
+        {
+            return _field.field.IsSame (_index.GetIndexedField ());
+        });
+
+    assert (fieldIterator != reflection.indexedFields.End ());
+    return 1u << (fieldIterator - reflection.indexedFields.Begin ());
 }
 
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIndex &_index) noexcept

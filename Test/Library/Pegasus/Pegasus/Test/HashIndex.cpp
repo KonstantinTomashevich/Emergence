@@ -368,6 +368,7 @@ BOOST_DATA_TEST_CASE(
 
                     HashIndexLookupToEdit {{"entity", "entity1", &Requests::entity1}},
                     CursorCheck {"entity1", &secondRecord},
+                    CursorEdit {"entity1", &secondRecordWithEntity0},
                     CursorDeleteRecord {"entity1"},
                     CloseCursor {"entity1"},
 

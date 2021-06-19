@@ -4,12 +4,6 @@
 
 namespace Emergence::Pegasus
 {
-bool Pegasus::VolumetricIndex::CanBeDropped () const noexcept
-{
-    // TODO: Implement.
-    return false;
-}
-
 void Pegasus::VolumetricIndex::Drop () noexcept
 {
     // TODO: Implement.

@@ -3,15 +3,13 @@
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/VolumetricIndex.hpp>
+#include <Pegasus/IndexBase.hpp>
 
 namespace Emergence::Pegasus
 {
-// TODO: Add self reference to prevent Handling from deleting objects.
-class VolumetricIndex final : public Handling::HandleableBase
+class VolumetricIndex final : public IndexBase
 {
 public:
-    bool CanBeDropped () const noexcept;
-
     void Drop () noexcept;
 };
 } // namespace Emergence::Pegasus

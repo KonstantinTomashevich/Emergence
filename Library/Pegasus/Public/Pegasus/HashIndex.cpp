@@ -5,6 +5,7 @@
 #include <Pegasus/HashIndex.hpp>
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
+#include <utility>
 
 namespace Emergence::Pegasus
 {
@@ -12,12 +13,6 @@ const InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FI
 HashIndex::GetIndexedFields () const noexcept
 {
     return indexedFields;
-}
-
-bool HashIndex::CanBeDropped () const noexcept
-{
-    // Self reference is always here.
-    return GetReferenceCount () == 1u && activeCursors == 0u;
 }
 
 void HashIndex::Drop () noexcept
@@ -207,15 +202,9 @@ bool HashIndex::Comparator::operator () (const HashIndex::LookupRequest &_reques
 
 HashIndex::HashIndex (Emergence::Pegasus::Storage *_owner, std::size_t _initialBuckets,
                       const std::vector <StandardLayout::FieldId> &_indexedFields)
-    : Handling::HandleableBase (),
-      storage (_owner),
+    : IndexBase (_owner),
       records (_initialBuckets, Hasher {this}, Comparator {this})
 {
-    // Add self reference to prevent Handling from deleting this object.
-    // Storage owns indices and Handling is used only to check if dropping index is safe.
-    RegisterReference ();
-
-    assert (storage);
     assert (!_indexedFields.empty ());
     assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);
 
@@ -239,22 +228,50 @@ void HashIndex::OnRecordDeleted (const void *_record, const void *_recordBackup)
 {
     auto iterator = records.find (RecordWithBackup {_record, _recordBackup});
     assert (iterator != records.end ());
+
+    // To erase record using iterator unordered multiset must calculate hash once more.
+    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
+    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
+    // This adhok could be eliminated by addition of alternative queries support (like find with 
+    // RecordWithBackup) to erase operation.
+    const_cast <void const *&> (*iterator) = _recordBackup;
+
     records.erase (iterator);
 }
 
-void HashIndex::DeleteRecordMyself (RecordHashSet::iterator _position) noexcept
+HashIndex::RecordHashSet::iterator HashIndex::DeleteRecordMyself (const RecordHashSet::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     const void *record = *_position;
-    records.erase (_position);
+
+    // To erase record using iterator unordered multiset must calculate hash once more.
+    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
+    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
+    // This adhok could be eliminated by addition of alternative queries support (like find with 
+    // RecordWithBackup) to erase operation.
+    const_cast <void const *&> (*_position) = storage->GetEditedRecordBackup ();
+
+    auto next = records.erase (_position);
     storage->DeleteRecord (const_cast <void *> (record), this);
+    return next;
 }
 
 void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
+    // TODO: Now all indices assume that OnRecordChanged and OnRecordDeleted can not be called for the same
+    //       record and that OnRecordChanged can not be called twice for one record during one edition cycle.
     auto iterator = records.find (RecordWithBackup {_record, _recordBackup});
     assert (iterator != records.end ());
-    changedNodes.emplace_back (records.extract (iterator));
+
+    // To extract record using iterator unordered multiset must calculate hash once more.
+    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
+    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
+    // This adhok could be eliminated by addition of alternative queries support (like find with 
+    // RecordWithBackup) to extract operation.
+    const_cast <void const *&> (*iterator) = _recordBackup;
+
+    // After extraction we must restore node value, because this node will be reinserted later.
+    changedNodes.emplace_back (records.extract (iterator)).value () = _record;
 }
 
 void HashIndex::OnWriterClosed () noexcept
@@ -281,8 +298,8 @@ HashIndex::ReadCursor::ReadCursor (const HashIndex::ReadCursor &_other) noexcept
 
 HashIndex::ReadCursor::ReadCursor (HashIndex::ReadCursor &&_other) noexcept
     : index (_other.index),
-      current (_other.current),
-      end (_other.end)
+      current (std::move (_other.current)),
+      end (std::move (_other.end))
 {
     assert (index);
     _other.index = nullptr;
@@ -316,8 +333,8 @@ HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
                                    RecordHashSet::const_iterator _begin,
                                    RecordHashSet::const_iterator _end) noexcept
     : index (_index),
-      current (_begin),
-      end (_end)
+      current (std::move (_begin)),
+      end (std::move (_end))
 {
     assert (index);
     ++index->activeCursors;
@@ -326,8 +343,8 @@ HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
 
 HashIndex::EditCursor::EditCursor (HashIndex::EditCursor &&_other) noexcept
     : index (_other.index),
-      current (_other.current),
-      end (_other.end)
+      current (std::move (_other.current)),
+      end (std::move (_other.end))
 {
     assert (index);
     _other.index = nullptr;
@@ -337,7 +354,11 @@ HashIndex::EditCursor::~EditCursor () noexcept
 {
     if (index)
     {
-        EndRecordEdition ();
+        if (current != end)
+        {
+            index->storage->EndRecordEdition (*current);
+        }
+
         --index->activeCursors;
         index->storage->UnregisterWriter ();
     }
@@ -353,10 +374,9 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator ~ ()
 {
     assert (index);
     assert (current != end);
-    auto next = std::next (current);
 
-    index->DeleteRecordMyself (current);
-    current = next;
+    current = index->DeleteRecordMyself (current);
+    BeginRecordEdition ();
     return *this;
 }
 
@@ -364,10 +384,11 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator ++ () noexcept
 {
     assert (index);
     assert (current != end);
-    auto next = std::next (current);
-    EndRecordEdition ();
 
-    current = next;
+    const void *record = *current;
+    ++current;
+    index->storage->EndRecordEdition (record);
+
     BeginRecordEdition ();
     return *this;
 }
@@ -376,8 +397,8 @@ HashIndex::EditCursor::EditCursor (HashIndex *_index,
                                    RecordHashSet::iterator _begin,
                                    RecordHashSet::iterator _end) noexcept
     : index (_index),
-      current (_begin),
-      end (_end)
+      current (std::move (_begin)),
+      end (std::move (_end))
 {
     assert (index);
     ++index->activeCursors;
@@ -391,15 +412,6 @@ void HashIndex::EditCursor::BeginRecordEdition () const noexcept
     if (current != end)
     {
         index->storage->BeginRecordEdition (*current);
-    }
-}
-
-void HashIndex::EditCursor::EndRecordEdition () const noexcept
-{
-    assert (index);
-    if (current != end)
-    {
-        index->storage->EndRecordEdition (*current);
     }
 }
 

@@ -199,6 +199,8 @@ private:
 
     void EndRecordEdition (const void *_record) noexcept;
 
+    const void *GetEditedRecordBackup () const noexcept;
+
     void DropIndex (const HashIndex &_index) noexcept;
 
     void DropIndex (const OrderedIndex &_index) noexcept;
