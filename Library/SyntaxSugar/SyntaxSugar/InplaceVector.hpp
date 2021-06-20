@@ -44,6 +44,9 @@ public:
     /// \return ::count.
     std::size_t GetCount () const noexcept;
 
+    /// \return is vector empty?
+    bool Empty () const noexcept;
+
     /// \brief Constructs new item in next free slot.
     /// \return Reference to constructed item.
     /// \invariant ::GetCount is less that ::Capacity.
@@ -127,6 +130,12 @@ template <typename Item, std::size_t Capacity>
 std::size_t InplaceVector <Item, Capacity>::GetCount () const noexcept
 {
     return count;
+}
+
+template <typename Item, std::size_t Capacity>
+bool InplaceVector <Item, Capacity>::Empty () const noexcept
+{
+    return count == 0u;
 }
 
 template <typename Item, std::size_t Capacity>

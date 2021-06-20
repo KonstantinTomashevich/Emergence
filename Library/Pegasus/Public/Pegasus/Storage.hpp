@@ -152,6 +152,8 @@ public:
 
     Handling::Handle <HashIndex> CreateHashIndex (const std::vector <StandardLayout::FieldId> &_indexedFields) noexcept;
 
+    Handling::Handle <OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
+
     HashIndexIterator BeginHashIndices () const noexcept;
 
     HashIndexIterator EndHashIndices () const noexcept;

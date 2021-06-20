@@ -273,11 +273,62 @@ Storage::CreateHashIndex (const std::vector <StandardLayout::FieldId> &_indexedF
     }
 
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
-    // TODO: Optimization. If there is ordered index, extract records from it instead of pool.
-
-    for (const void *record : records)
+    if (!indices.ordered.Empty ())
     {
-        holder.index->InsertRecord (record);
+        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
+        OrderedIndex::ReadCursor cursor = indices.ordered.Begin ()->index->LookupToRead (
+            {nullptr}, {nullptr});
+
+        while (const void *record = *cursor)
+        {
+            holder.index->InsertRecord (record);
+            ++cursor;
+        }
+    }
+    else
+    {
+        for (const void *record : records)
+        {
+            holder.index->InsertRecord (record);
+        }
+    }
+
+    return holder.index.get ();
+}
+
+Handling::Handle <OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept
+{
+    assert (accessCounter.writers == 0u);
+    assert (accessCounter.readers == 0u);
+
+    IndexHolder <OrderedIndex> &holder = indices.ordered.EmplaceBack (
+        IndexHolder <OrderedIndex> {
+            std::unique_ptr <OrderedIndex> (new OrderedIndex (this, _indexedField)),
+            0u
+        });
+
+    RegisterIndexedFieldUsage (holder.index->GetIndexedField ());
+    holder.indexedFieldMask = BuildIndexMask (*holder.index);
+    OrderedIndex::MassInsertionExecutor inserter = holder.index->StartMassInsertion ();
+
+    if (indices.ordered.GetCount () > 1u)
+    {
+        // If there is another ordered index, fetch records from it, because it's faster than fetching them from pool.
+        OrderedIndex::ReadCursor cursor = indices.ordered.Begin ()->index->LookupToRead (
+            {nullptr}, {nullptr});
+
+        while (const void *record = *cursor)
+        {
+            inserter.InsertRecord (record);
+            ++cursor;
+        }
+    }
+    else
+    {
+        for (const void *record : records)
+        {
+            inserter.InsertRecord (record);
+        }
     }
 
     return holder.index.get ();
