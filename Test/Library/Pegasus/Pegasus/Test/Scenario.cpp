@@ -18,16 +18,25 @@ using IndexReference = std::variant <
 
 using Cursor = std::variant <
     HashIndex::ReadCursor,
-    HashIndex::EditCursor>;
+    HashIndex::EditCursor,
+    OrderedIndex::ReadCursor,
+    OrderedIndex::EditCursor,
+    OrderedIndex::ReversedReadCursor,
+    OrderedIndex::ReversedEditCursor>;
 
 template <typename CursorType>
-constexpr bool isEditCursor = std::is_same_v <CursorType, HashIndex::EditCursor>;
+constexpr bool isEditCursor =
+    std::is_same_v <CursorType, HashIndex::EditCursor> ||
+    std::is_same_v <CursorType, OrderedIndex::EditCursor> ||
+    std::is_same_v <CursorType, OrderedIndex::ReversedEditCursor>;
 
 struct ExecutionContext
 {
     explicit ExecutionContext (StandardLayout::Mapping _recordMapping);
 
     void ExecuteTask (const CreateHashIndex &_task);
+
+    void ExecuteTask (const CreateOrderedIndex &_task);
 
     void ExecuteTask (const CopyIndexReference &_task);
 
@@ -47,7 +56,17 @@ struct ExecutionContext
 
     void ExecuteTask (const HashIndexLookupToEdit &_task);
 
+    void ExecuteTask (const OrderedIndexLookupToRead &_task);
+
+    void ExecuteTask (const OrderedIndexLookupToEdit &_task);
+
+    void ExecuteTask (const OrderedIndexLookupToReadReversed &_task);
+
+    void ExecuteTask (const OrderedIndexLookupToEditReversed &_task);
+
     void ExecuteTask (const CursorCheck &_task);
+
+    void ExecuteTask (const CursorCheckAllOrdered &_task);
 
     void ExecuteTask (const CursorCheckAllUnordered &_task);
 
@@ -63,7 +82,7 @@ struct ExecutionContext
 
     void ExecuteTask (const CloseCursor &_task);
 
-    Handling::Handle <HashIndex> PrepareForLookup (const HashIndexLookupBase &_task) const;
+    const IndexReference &PrepareForLookup (const IndexLookupBase &_task) const;
 
     void IterateOverIndices () const;
 
@@ -104,6 +123,20 @@ void ExecutionContext::ExecuteTask (const CreateHashIndex &_task)
     BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
 
     knownHashIndices.emplace_back (index.Get ());
+    indexReferences.emplace (_task.name, index);
+    IterateOverIndices ();
+}
+
+void ExecutionContext::ExecuteTask (const CreateOrderedIndex &_task)
+{
+    BOOST_REQUIRE_MESSAGE (
+        indexReferences.find (_task.name) == indexReferences.end (),
+        boost::format ("There should be no index reference with name \"%1%\"") % _task.name);
+
+    Handling::Handle <OrderedIndex> index = storage.CreateOrderedIndex (_task.indexedField);
+    BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
+
+    knownOrderedIndices.emplace_back (index.Get ());
     indexReferences.emplace (_task.name, index);
     IterateOverIndices ();
 }
@@ -198,14 +231,38 @@ void ExecutionContext::ExecuteTask (const CloseAllocator &)
 
 void ExecutionContext::ExecuteTask (const HashIndexLookupToRead &_task)
 {
-    Handling::Handle <HashIndex> indexHandle = PrepareForLookup (_task);
-    activeCursors.emplace (_task.cursorName, indexHandle->LookupToRead ({_task.request}));
+    HashIndex *index = std::get <Handling::Handle <HashIndex>> (PrepareForLookup (_task)).Get ();
+    activeCursors.emplace (_task.cursorName, index->LookupToRead ({_task.request}));
 }
 
 void ExecutionContext::ExecuteTask (const HashIndexLookupToEdit &_task)
 {
-    Handling::Handle <HashIndex> indexHandle = PrepareForLookup (_task);
-    activeCursors.emplace (_task.cursorName, indexHandle->LookupToEdit ({_task.request}));
+    HashIndex *index = std::get <Handling::Handle <HashIndex>> (PrepareForLookup (_task)).Get ();
+    activeCursors.emplace (_task.cursorName, index->LookupToEdit ({_task.request}));
+}
+
+void ExecutionContext::ExecuteTask (const OrderedIndexLookupToRead &_task)
+{
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_task)).Get ();
+    activeCursors.emplace (_task.cursorName, index->LookupToRead ({_task.minValue}, {_task.maxValue}));
+}
+
+void ExecutionContext::ExecuteTask (const OrderedIndexLookupToEdit &_task)
+{
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_task)).Get ();
+    activeCursors.emplace (_task.cursorName, index->LookupToEdit ({_task.minValue}, {_task.maxValue}));
+}
+
+void ExecutionContext::ExecuteTask (const OrderedIndexLookupToReadReversed &_task)
+{
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_task)).Get ();
+    activeCursors.emplace (_task.cursorName, index->LookupToReadReversed ({_task.minValue}, {_task.maxValue}));
+}
+
+void ExecutionContext::ExecuteTask (const OrderedIndexLookupToEditReversed &_task)
+{
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_task)).Get ();
+    activeCursors.emplace (_task.cursorName, index->LookupToEditReversed ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheck &_task)
@@ -243,6 +300,64 @@ void ExecutionContext::ExecuteTask (const CursorCheck &_task)
             else if (record)
             {
                 BOOST_CHECK_MESSAGE (false, "Cursor should be empty!");
+            }
+        },
+        iterator->second);
+}
+
+void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
+{
+    auto iterator = activeCursors.find (_task.name);
+    BOOST_REQUIRE_MESSAGE (
+        iterator != activeCursors.end (),
+        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+
+    std::visit (
+        [this, &_task] (auto &_cursor)
+        {
+            std::size_t position = 0u;
+            const void *record;
+
+            while ((record = *_cursor) || position < _task.expectedRecords.size ())
+            {
+                const void *expected;
+                if (position < _task.expectedRecords.size ())
+                {
+                    expected = _task.expectedRecords[position];
+                }
+                else
+                {
+                    expected = nullptr;
+                }
+
+                if (record && expected)
+                {
+                    bool equal = memcmp (record, expected, storage.GetRecordMapping ().GetObjectSize ());
+                    BOOST_CHECK_MESSAGE (
+                        equal, boost::format (
+                        "Checking tha received record %1% and expected record %2% at position %3% are equal.") %
+                        record % expected % position);
+                }
+                else if (record)
+                {
+                    BOOST_CHECK_MESSAGE (
+                        false,
+                        boost::format ("Expecting nothing at position %1%, receiving %2%.") % position % record);
+                }
+                else
+                {
+                    BOOST_CHECK_MESSAGE (
+                        false,
+                        boost::format ("Expecting %1% at position %2%, but receiving nothing") %
+                        expected % position);
+                }
+
+                if (record)
+                {
+                    ++_cursor;
+                }
+
+                ++position;
             }
         },
         iterator->second);
@@ -425,7 +540,7 @@ void ExecutionContext::ExecuteTask (const CloseCursor &_task)
     activeCursors.erase (iterator);
 }
 
-Handling::Handle <HashIndex> ExecutionContext::PrepareForLookup (const HashIndexLookupBase &_task) const
+const IndexReference &ExecutionContext::PrepareForLookup (const IndexLookupBase &_task) const
 {
     BOOST_REQUIRE_MESSAGE (
         activeCursors.find (_task.cursorName) == activeCursors.end (),
@@ -436,9 +551,7 @@ Handling::Handle <HashIndex> ExecutionContext::PrepareForLookup (const HashIndex
         iterator != indexReferences.end (),
         boost::format ("There should be index reference with name \"%1%\".") % _task.indexName);
 
-    auto &indexHandle = std::get <Handling::Handle <HashIndex>> (iterator->second);
-    BOOST_REQUIRE (indexHandle);
-    return indexHandle;
+    return iterator->second;
 }
 
 void ExecutionContext::IterateOverIndices () const
@@ -537,6 +650,11 @@ std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
     return _output << ".";
 }
 
+std::ostream &operator << (std::ostream &_output, const CreateOrderedIndex &_task)
+{
+    return _output << "Create ordered index \"" << _task.name << "\" on field " << _task.indexedField << ".";
+}
+
 std::ostream &operator << (std::ostream &_output, const CopyIndexReference &_task)
 {
     return _output << "Copy index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
@@ -585,10 +703,53 @@ std::ostream &operator << (std::ostream &_output, const HashIndexLookupToEdit &_
                    _task.request << " and save cursor as \"" << _task.cursorName << "\".";
 }
 
+std::ostream &operator << (std::ostream &_output, const OrderedIndexLookupToRead &_task)
+{
+    return _output << "Execute ordered index \"" << _task.indexName <<
+                   "\" read-only lookup using request {min = " << _task.minValue <<
+                   ", max = " << _task.maxValue << "} and save cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const OrderedIndexLookupToEdit &_task)
+{
+    return _output << "Execute ordered index \"" << _task.indexName <<
+                   "\" editable lookup using request {min = " << _task.minValue <<
+                   ", max = " << _task.maxValue << "} and save cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const OrderedIndexLookupToReadReversed &_task)
+{
+    return _output << "Execute ordered index \"" << _task.indexName <<
+                   "\" read-only lookup with reversed order using request {min = " << _task.minValue <<
+                   ", max = " << _task.maxValue << "} and save cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const OrderedIndexLookupToEditReversed &_task)
+{
+    return _output << "Execute ordered index \"" << _task.indexName <<
+                   "\" editable lookup with reversed order using request {min = " << _task.minValue <<
+                   ", max = " << _task.maxValue << "} and save cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const CursorCheck &_task)
 {
     return _output << "Check that cursor \"" << _task.name << "\" points to record, equal to " <<
                    _task.expectedRecord << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllOrdered &_task)
+{
+    _output << "Check that cursor \"" << _task.name << "\" points to ordered sequence of records equal to:";
+    for (const void *record : _task.expectedRecords)
+    {
+        _output << " " << record;
+    }
+
+    return _output << ".";
 }
 
 std::ostream &operator << (std::ostream &_output, const CursorCheckAllUnordered &_task)

@@ -15,6 +15,12 @@ struct CreateHashIndex
     std::vector <StandardLayout::FieldId> indexedFields;
 };
 
+struct CreateOrderedIndex
+{
+    std::string name;
+    StandardLayout::FieldId indexedField;
+};
+
 struct CopyIndexReference
 {
     std::string sourceName;
@@ -50,10 +56,14 @@ struct CloseAllocator
 {
 };
 
-struct HashIndexLookupBase
+struct IndexLookupBase
 {
     std::string indexName;
     std::string cursorName;
+};
+
+struct HashIndexLookupBase : public IndexLookupBase
+{
     const void *request;
 };
 
@@ -65,10 +75,38 @@ struct HashIndexLookupToEdit : public HashIndexLookupBase
 {
 };
 
+struct OrderedIndexLookupBase : public IndexLookupBase
+{
+    const void *minValue;
+    const void *maxValue;
+};
+
+struct OrderedIndexLookupToRead : public OrderedIndexLookupBase
+{
+};
+
+struct OrderedIndexLookupToEdit : public OrderedIndexLookupBase
+{
+};
+
+struct OrderedIndexLookupToReadReversed : public OrderedIndexLookupBase
+{
+};
+
+struct OrderedIndexLookupToEditReversed : public OrderedIndexLookupBase
+{
+};
+
 struct CursorCheck
 {
     std::string name;
     const void *expectedRecord;
+};
+
+struct CursorCheckAllOrdered
+{
+    std::string name;
+    std::vector <const void *> expectedRecords;
 };
 
 struct CursorCheckAllUnordered
@@ -112,6 +150,7 @@ struct CloseCursor
 
 using Task = std::variant <
     CreateHashIndex,
+    CreateOrderedIndex,
     CopyIndexReference,
     RemoveIndexReference,
     CheckIndexCanBeDropped,
@@ -121,7 +160,12 @@ using Task = std::variant <
     CloseAllocator,
     HashIndexLookupToRead,
     HashIndexLookupToEdit,
+    OrderedIndexLookupToRead,
+    OrderedIndexLookupToEdit,
+    OrderedIndexLookupToReadReversed,
+    OrderedIndexLookupToEditReversed,
     CursorCheck,
+    CursorCheckAllOrdered,
     CursorCheckAllUnordered,
     CursorEdit,
     CursorIncrement,
