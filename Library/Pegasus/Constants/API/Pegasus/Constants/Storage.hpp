@@ -6,9 +6,9 @@
 
 namespace Emergence::Pegasus::Constants::Storage
 {
-static constexpr std::size_t MAX_INDICES_OF_SAME_TYPE = Implementation::Storage::MAX_INDICES_OF_SAME_TYPE;
+constexpr std::size_t MAX_INDICES_OF_SAME_TYPE = Implementation::Storage::MAX_INDICES_OF_SAME_TYPE;
 
-static constexpr std::size_t MAX_INDEXED_FIELDS = Implementation::Storage::MAX_INDEXED_FIELDS;
+constexpr std::size_t MAX_INDEXED_FIELDS = Implementation::Storage::MAX_INDEXED_FIELDS;
 
 using IndexedFieldMask = Implementation::Storage::IndexedFieldMask;
 

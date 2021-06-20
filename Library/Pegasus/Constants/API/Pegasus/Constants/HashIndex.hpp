@@ -6,5 +6,5 @@
 
 namespace Emergence::Pegasus::Constants::HashIndex
 {
-static constexpr std::size_t MAX_INDEXED_FIELDS = Implementation::HashIndex::MAX_INDEXED_FIELDS;
+constexpr std::size_t MAX_INDEXED_FIELDS = Implementation::HashIndex::MAX_INDEXED_FIELDS;
 } // namespace Emergence::Pegasus::Constants::HashIndex
