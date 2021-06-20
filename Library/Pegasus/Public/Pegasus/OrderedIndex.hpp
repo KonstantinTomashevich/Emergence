@@ -5,7 +5,6 @@
 
 #include <Handling/HandleableBase.hpp>
 
-#include <Pegasus/Constants/OrderedIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
 #include <StandardLayout/Field.hpp>
@@ -196,6 +195,22 @@ private:
         const void *record;
     };
 
+    // TODO: There should be no more than one mass insertion executor at one moment of time. How to assert than?
+    class MassInsertionExecutor final
+    {
+    public:
+        ~MassInsertionExecutor () noexcept;
+
+        void InsertRecord (const void *_record) noexcept;
+
+    private:
+        friend class OrderedIndex;
+
+        explicit MassInsertionExecutor (OrderedIndex *_owner) noexcept;
+
+        OrderedIndex *owner;
+    };
+
     explicit OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField);
 
     InternalLookupResult InternalLookup (const Bound &_min, const Bound &_max) noexcept;
@@ -203,9 +218,9 @@ private:
     std::vector <const void *>::const_iterator LocateRecord (
         const void *_record, const void *_recordBackup) const noexcept;
 
-    // TODO: Effective initial insertion of several records using pushes + std::sort?
-
     void InsertRecord (const void *_record) noexcept;
+
+    MassInsertionExecutor StartMassInsertion () noexcept;
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
 
@@ -215,9 +230,9 @@ private:
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
-    void OnRecordChangedByMeFromForwardCursor (const std::vector <const void *>::iterator& _position) noexcept;
+    void OnRecordChangedByMeFromForwardCursor (const std::vector <const void *>::iterator &_position) noexcept;
 
-    void OnRecordChangedByMeFromReversedCursor (const std::vector <const void *>::iterator& _position) noexcept;
+    void OnRecordChangedByMeFromReversedCursor (const std::vector <const void *>::iterator &_position) noexcept;
 
     void OnWriterClosed () noexcept;
 

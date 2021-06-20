@@ -1,10 +1,10 @@
 #include <algorithm>
 #include <cassert>
 
+#include <Pegasus/Constants/OrderedIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
-#include <utility>
 
 namespace Emergence::Pegasus
 {
@@ -343,6 +343,25 @@ bool OrderedIndex::Comparator::operator () (const void *_record, const OrderedIn
     return IsFieldValueLesser (field.GetValue (_record), _bound.boundValue, field);
 }
 
+OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
+{
+    assert (owner);
+    std::sort (owner->records.begin (), owner->records.end (), Comparator {owner});
+}
+
+void OrderedIndex::MassInsertionExecutor::InsertRecord (const void *_record) noexcept
+{
+    assert (owner);
+    assert (_record);
+    owner->records.emplace_back (_record);
+}
+
+OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner) noexcept
+    : owner (_owner)
+{
+    assert (owner);
+}
+
 OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField)
     : IndexBase (_owner),
       indexedField (_owner->GetRecordMapping ().GetField (_indexedField))
@@ -390,6 +409,11 @@ void OrderedIndex::InsertRecord (const void *_record) noexcept
     assert (_record);
     auto place = std::upper_bound (records.begin (), records.end (), _record);
     records.insert (place, _record);
+}
+
+OrderedIndex::MassInsertionExecutor OrderedIndex::StartMassInsertion () noexcept
+{
+    return MassInsertionExecutor (this);
 }
 
 void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
@@ -524,10 +548,21 @@ void OrderedIndex::OnWriterClosed () noexcept
 
     if (!changedRecords.empty ())
     {
-        // TODO: If there is a lot of changed records, use emplace back and full resort?
-        for (const ChangedRecordInfo &info : changedRecords)
+        if (changedRecords.size () * Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT >=
+            records.size ())
         {
-            InsertRecord (info.record);
+            MassInsertionExecutor executor = StartMassInsertion ();
+            for (const ChangedRecordInfo &info : changedRecords)
+            {
+                executor.InsertRecord (info.record);
+            }
+        }
+        else
+        {
+            for (const ChangedRecordInfo &info : changedRecords)
+            {
+                InsertRecord (info.record);
+            }
         }
 
         changedRecords.clear ();
