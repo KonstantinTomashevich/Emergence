@@ -108,12 +108,12 @@ public:
         friend class OrderedIndex;
 
         ReversedReadCursor (OrderedIndex *_index,
-                            std::vector <const void *>::const_iterator _predecessor,
-                            std::vector <const void *>::const_iterator _last) noexcept;
+                            std::vector <const void *>::const_reverse_iterator _begin,
+                            std::vector <const void *>::const_reverse_iterator _end) noexcept;
 
         OrderedIndex *index;
-        std::vector <const void *>::const_iterator predecessor;
-        std::vector <const void *>::const_iterator current;
+        std::vector <const void *>::const_reverse_iterator current;
+        std::vector <const void *>::const_reverse_iterator end;
     };
 
     class ReversedEditCursor final
@@ -141,14 +141,14 @@ public:
         friend class OrderedIndex;
 
         ReversedEditCursor (OrderedIndex *_index,
-                            std::vector <const void *>::iterator _predecessor,
-                            std::vector <const void *>::iterator _last) noexcept;
+                            std::vector <const void *>::reverse_iterator _begin,
+                            std::vector <const void *>::reverse_iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
         OrderedIndex *index;
-        std::vector <const void *>::iterator predecessor;
-        std::vector <const void *>::iterator current;
+        std::vector <const void *>::reverse_iterator current;
+        std::vector <const void *>::reverse_iterator end;
     };
 
     /// There is no sense to copy indices.
@@ -180,7 +180,7 @@ private:
 
         bool operator () (const void *_record, const Bound &_bound) const noexcept;
 
-        OrderedIndex *owner;
+        const OrderedIndex *owner;
     };
 
     struct InternalLookupResult
@@ -224,15 +224,15 @@ private:
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
 
-    void DeleteRecordMyselfFromForwardCursor (const std::vector <const void *>::iterator &_position) noexcept;
+    void DeleteRecordMyself (const std::vector <const void *>::iterator &_position) noexcept;
 
-    void DeleteRecordMyselfFromReversedCursor (const std::vector <const void *>::iterator &_position) noexcept;
+    void DeleteRecordMyself (const std::vector <const void *>::reverse_iterator &_position) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
-    void OnRecordChangedByMeFromForwardCursor (const std::vector <const void *>::iterator &_position) noexcept;
+    void OnRecordChangedByMe (const std::vector <const void *>::iterator &_position) noexcept;
 
-    void OnRecordChangedByMeFromReversedCursor (const std::vector <const void *>::iterator &_position) noexcept;
+    void OnRecordChangedByMe (const std::vector <const void *>::reverse_iterator &_position) noexcept;
 
     void OnWriterClosed () noexcept;
 

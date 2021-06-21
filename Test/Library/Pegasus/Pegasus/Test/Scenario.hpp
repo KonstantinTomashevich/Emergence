@@ -187,4 +187,6 @@ private:
     StandardLayout::Mapping mapping;
     std::vector <Task> tasks;
 };
+
+std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
 } // namespace Emergence::Pegasus::Test

@@ -1,6 +1,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <Pegasus/Test/Shortcuts.hpp>
 #include <Pegasus/Test/Record.hpp>
 #include <Pegasus/Test/Scenario.hpp>
 
@@ -142,16 +143,11 @@ BOOST_DATA_TEST_CASE(
         {
             {
                 Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"source", {Record::Reflection::entityId}},
-                    CheckIndexCanBeDropped {"source", true},
-                    CopyIndexReference {"source", "duplicate"},
-                    CheckIndexCanBeDropped {"source", false},
-                    CheckIndexCanBeDropped {"duplicate", false},
-                    RemoveIndexReference {"source"},
-                    CheckIndexCanBeDropped {"duplicate", true},
-                    DropIndex {"duplicate"},
-                }
+                std::vector <Task>
+                    {
+                        CreateHashIndex {"source", {Record::Reflection::entityId}},
+                    } +
+                Shortcuts::TestIsCanBeDropped ("source")
             },
             {
                 Record::Reflection::GetMapping (),
@@ -169,43 +165,18 @@ BOOST_DATA_TEST_CASE(
             },
             {
                 Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-
-                    CheckIndexCanBeDropped {"entity", true},
+                std::vector <Task>
+                    {
+                        CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                        OpenAllocator {},
+                        AllocateAndInit {&firstRecord},
+                        AllocateAndInit {&secondRecord},
+                        CloseAllocator {},
+                    } +
+                Shortcuts::TestCursorCopyAndMove (
                     HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CheckIndexCanBeDropped {"entity", false},
-
-                    CursorCheck {"entity0", &firstRecord},
-                    CopyCursor {"entity0", "entity0Copy"},
-
-                    CursorIncrement {"entity0"},
-                    CursorCheck {"entity0", nullptr},
-                    CursorCheck {"entity0Copy", &firstRecord},
-
-                    MoveCursor {"entity0Copy", "entity0Move"},
-                    CursorCheck {"entity0Move", &firstRecord},
-                    CheckIndexCanBeDropped {"entity", false},
-
-                    CloseCursor {"entity0"},
-                    CheckIndexCanBeDropped {"entity", false},
-                    CloseCursor {"entity0Move"},
-                    CheckIndexCanBeDropped {"entity", true},
-
                     HashIndexLookupToEdit {{{"entity", "entity0"}, &Requests::entity0}},
-                    CheckIndexCanBeDropped {"entity", false},
-                    CursorCheck {"entity0", &firstRecord},
-                    MoveCursor {"entity0", "entity0Move"},
-                    CheckIndexCanBeDropped {"entity", false},
-
-                    CursorCheck {"entity0Move", &firstRecord},
-                    CloseCursor {"entity0Move"},
-                    CheckIndexCanBeDropped {"entity", true},
-                }
+                    &firstRecord, nullptr, &firstRecord)
             },
             {
                 Record::Reflection::GetMapping (),

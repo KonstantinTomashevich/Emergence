@@ -288,7 +288,7 @@ void ExecutionContext::ExecuteTask (const CursorCheck &_task)
                     {
                         BOOST_CHECK_MESSAGE (
                             false, boost::format (
-                            "Expected and pointed records should be equal!\nRecord: %1%\n\nExpected record: %2%") %
+                            "Expected and pointed records should be equal!\nRecord: %1%\nExpected record: %2%") %
                             RecordToString (record) % RecordToString (_task.expectedRecord));
                     }
                 }
@@ -332,11 +332,17 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
 
                 if (record && expected)
                 {
-                    bool equal = memcmp (record, expected, storage.GetRecordMapping ().GetObjectSize ());
-                    BOOST_CHECK_MESSAGE (
-                        equal, boost::format (
-                        "Checking tha received record %1% and expected record %2% at position %3% are equal.") %
-                        record % expected % position);
+                    bool equal = memcmp (record, expected, storage.GetRecordMapping ().GetObjectSize ()) == 0;
+
+                    // Do not print check message unless check failed, because check message generation is quite slow.
+                    if (!equal)
+                    {
+                        BOOST_CHECK_MESSAGE (
+                            equal, boost::format (
+                            "Checking tha received record %1% and expected record %2% at position %3% are equal.\n"
+                            "Received: %4%\nExpected: %5%") %
+                            record % expected % position % RecordToString (record) % RecordToString (expected));
+                    }
                 }
                 else if (record)
                 {
@@ -831,5 +837,11 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
     }
 
     return _output;
+}
+
+std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept
+{
+    first.insert (first.end (), second.begin (), second.end ());
+    return first;
 }
 } // namespace Emergence::Pegasus::Test

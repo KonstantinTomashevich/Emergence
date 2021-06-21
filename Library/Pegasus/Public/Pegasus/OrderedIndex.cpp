@@ -80,7 +80,7 @@ OrderedIndex::EditCursor::~EditCursor () noexcept
     {
         if (current != end && index->storage->EndRecordEdition (*current, index))
         {
-            index->OnRecordChangedByMeFromForwardCursor (current);
+            index->OnRecordChangedByMe (current);
         }
 
         --index->activeCursors;
@@ -99,7 +99,7 @@ OrderedIndex::EditCursor &OrderedIndex::EditCursor::operator ~ ()
     assert (index);
     assert (current != end);
 
-    index->DeleteRecordMyselfFromForwardCursor (current);
+    index->DeleteRecordMyself (current);
     ++current;
     BeginRecordEdition ();
     return *this;
@@ -112,7 +112,7 @@ OrderedIndex::EditCursor &OrderedIndex::EditCursor::operator ++ () noexcept
 
     if (index->storage->EndRecordEdition (*current, index))
     {
-        index->OnRecordChangedByMeFromForwardCursor (current);
+        index->OnRecordChangedByMe (current);
     }
 
     ++current;
@@ -146,8 +146,8 @@ void OrderedIndex::EditCursor::BeginRecordEdition () const noexcept
 
 OrderedIndex::ReversedReadCursor::ReversedReadCursor (const OrderedIndex::ReversedReadCursor &_other) noexcept
     : index (_other.index),
-      predecessor (_other.predecessor),
-      current (_other.current)
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     ++index->activeCursors;
@@ -156,8 +156,8 @@ OrderedIndex::ReversedReadCursor::ReversedReadCursor (const OrderedIndex::Revers
 
 OrderedIndex::ReversedReadCursor::ReversedReadCursor (OrderedIndex::ReversedReadCursor &&_other) noexcept
     : index (_other.index),
-      predecessor (std::move (_other.predecessor)),
-      current (std::move (_other.current))
+      current (std::move (_other.current)),
+      end (std::move (_other.end))
 {
     assert (index);
     _other.index = nullptr;
@@ -172,10 +172,39 @@ OrderedIndex::ReversedReadCursor::~ReversedReadCursor () noexcept
     }
 }
 
+const void *OrderedIndex::ReversedReadCursor::operator * () const noexcept
+{
+    assert (index);
+    return current != end ? *current : nullptr;
+}
+
+OrderedIndex::ReversedReadCursor &OrderedIndex::ReversedReadCursor::operator ++ () noexcept
+{
+    assert (index);
+    assert (current != end);
+
+    ++current;
+    return *this;
+}
+
+OrderedIndex::ReversedReadCursor::ReversedReadCursor (
+    OrderedIndex *_index, std::vector <const void *>::const_reverse_iterator _begin,
+    std::vector <const void *>::const_reverse_iterator _end) noexcept
+    : index (_index),
+      current (std::move (_begin)),
+      end (std::move (_end))
+{
+    assert (index);
+    assert (current <= end);
+
+    ++index->activeCursors;
+    index->storage->RegisterReader ();
+}
+
 OrderedIndex::ReversedEditCursor::ReversedEditCursor (OrderedIndex::ReversedEditCursor &&_other) noexcept
     : index (_other.index),
-      predecessor (std::move (_other.predecessor)),
-      current (std::move (_other.current))
+      current (std::move (_other.current)),
+      end (std::move (_other.end))
 {
     assert (index);
     _other.index = nullptr;
@@ -185,9 +214,9 @@ OrderedIndex::ReversedEditCursor::~ReversedEditCursor () noexcept
 {
     if (index)
     {
-        if (current != predecessor && index->storage->EndRecordEdition (*current, index))
+        if (current != end && index->storage->EndRecordEdition (*current, index))
         {
-            index->OnRecordChangedByMeFromReversedCursor (current);
+            index->OnRecordChangedByMe (current);
         }
 
         --index->activeCursors;
@@ -197,16 +226,17 @@ OrderedIndex::ReversedEditCursor::~ReversedEditCursor () noexcept
 
 void *OrderedIndex::ReversedEditCursor::operator * () noexcept
 {
-    return nullptr;
+    assert (index);
+    return current != end ? const_cast <void *> (*current) : nullptr;
 }
 
 OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ~ ()
 {
     assert (index);
-    assert (current != predecessor);
+    assert (current != end);
 
-    index->DeleteRecordMyselfFromReversedCursor (current);
-    --current;
+    index->DeleteRecordMyself (current);
+    ++current;
     BeginRecordEdition ();
     return *this;
 }
@@ -214,11 +244,11 @@ OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ~ (
 OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ++ () noexcept
 {
     assert (index);
-    assert (current != predecessor);
+    assert (current != end);
 
     if (index->storage->EndRecordEdition (*current, index))
     {
-        index->OnRecordChangedByMeFromReversedCursor (current);
+        index->OnRecordChangedByMe (current);
     }
 
     ++current;
@@ -227,14 +257,14 @@ OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ++ 
 }
 
 OrderedIndex::ReversedEditCursor::ReversedEditCursor (
-    OrderedIndex *_index, std::vector <const void *>::iterator _predecessor,
-    std::vector <const void *>::iterator _last) noexcept
+    OrderedIndex *_index, std::vector <const void *>::reverse_iterator _begin,
+    std::vector <const void *>::reverse_iterator _end) noexcept
     : index (_index),
-      predecessor (std::move (_predecessor)),
-      current (std::move (_last))
+      current (std::move (_begin)),
+      end (std::move (_end))
 {
     assert (index);
-    assert (predecessor <= current);
+    assert (current <= end);
 
     ++index->activeCursors;
     index->storage->RegisterWriter ();
@@ -244,39 +274,10 @@ OrderedIndex::ReversedEditCursor::ReversedEditCursor (
 void OrderedIndex::ReversedEditCursor::BeginRecordEdition () const noexcept
 {
     assert (index);
-    if (current != predecessor)
+    if (current != end)
     {
         index->storage->BeginRecordEdition (*current);
     }
-}
-
-const void *OrderedIndex::ReversedReadCursor::operator * () const noexcept
-{
-    assert (index);
-    return current != predecessor ? *current : nullptr;
-}
-
-OrderedIndex::ReversedReadCursor &OrderedIndex::ReversedReadCursor::operator ++ () noexcept
-{
-    assert (index);
-    assert (current != predecessor);
-
-    --current;
-    return *this;
-}
-
-OrderedIndex::ReversedReadCursor::ReversedReadCursor (
-    OrderedIndex *_index, std::vector <const void *>::const_iterator _predecessor,
-    std::vector <const void *>::const_iterator _last) noexcept
-    : index (_index),
-      predecessor (std::move (_predecessor)),
-      current (std::move (_last))
-{
-    assert (index);
-    assert (predecessor >= current);
-
-    ++index->activeCursors;
-    index->storage->RegisterReader ();
 }
 
 OrderedIndex::ReadCursor OrderedIndex::LookupToRead (
@@ -290,7 +291,9 @@ OrderedIndex::ReversedReadCursor OrderedIndex::LookupToReadReversed (
     const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::ReversedReadCursor (this, result.begin - 1u, result.end - 1u);
+    return OrderedIndex::ReversedReadCursor (
+        this, std::vector <const void *>::const_reverse_iterator (result.end),
+        std::vector <const void *>::const_reverse_iterator (result.begin));
 }
 
 OrderedIndex::EditCursor OrderedIndex::LookupToEdit (
@@ -304,7 +307,9 @@ OrderedIndex::ReversedEditCursor OrderedIndex::LookupToEditReversed (
     const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::ReversedEditCursor (this, result.begin - 1u, result.end - 1u);
+    return OrderedIndex::ReversedEditCursor (
+        this, std::vector <const void *>::reverse_iterator (result.end),
+        std::vector <const void *>::reverse_iterator (result.begin));
 }
 
 StandardLayout::Field OrderedIndex::GetIndexedField () const noexcept
@@ -391,7 +396,8 @@ OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (
 std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
     const void *_record, const void *_recordBackup) const noexcept
 {
-    auto iterator = std::lower_bound (records.begin (), records.end (), _recordBackup);
+    auto iterator = std::lower_bound (records.begin (), records.end (),
+                                      _recordBackup, Comparator {this});
     assert (iterator != records.end ());
 
     while (*iterator != _record)
@@ -407,7 +413,8 @@ void OrderedIndex::InsertRecord (const void *_record) noexcept
 {
     // TODO: Assert that record is not inserted already? Is there any way to check this fast?
     assert (_record);
-    auto place = std::upper_bound (records.begin (), records.end (), _record);
+    auto place = std::upper_bound (records.begin (), records.end (),
+                                   _record, Comparator {this});
     records.insert (place, _record);
 }
 
@@ -428,7 +435,7 @@ void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBack
     deletedRecordIndices.emplace (insertionPoint, recordIndex);
 }
 
-void OrderedIndex::DeleteRecordMyselfFromForwardCursor (const std::vector <const void *>::iterator &_position) noexcept
+void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     std::size_t index = _position - records.begin ();
@@ -438,10 +445,10 @@ void OrderedIndex::DeleteRecordMyselfFromForwardCursor (const std::vector <const
     storage->DeleteRecord (const_cast <void *> (*_position), this);
 }
 
-void OrderedIndex::DeleteRecordMyselfFromReversedCursor (const std::vector <const void *>::iterator &_position) noexcept
+void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::reverse_iterator &_position) noexcept
 {
-    assert (_position != records.end ());
-    std::size_t index = _position - records.begin ();
+    assert (_position.base () != records.end ());
+    std::size_t index = _position.base () - records.begin ();
 
     assert (deletedRecordIndices.empty () || index < deletedRecordIndices.front ());
     deletedRecordIndices.emplace (deletedRecordIndices.begin (), index);
@@ -464,8 +471,7 @@ void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBack
     changedRecords.emplace (insertionPoint, ChangedRecordInfo {recordIndex, (_record)});
 }
 
-void OrderedIndex::OnRecordChangedByMeFromForwardCursor (
-    const std::vector <const void *>::iterator &_position) noexcept
+void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     std::size_t index = _position - records.begin ();
@@ -474,11 +480,10 @@ void OrderedIndex::OnRecordChangedByMeFromForwardCursor (
     changedRecords.emplace_back (ChangedRecordInfo {index, *_position});
 }
 
-void OrderedIndex::OnRecordChangedByMeFromReversedCursor (
-    const std::vector <const void *>::iterator &_position) noexcept
+void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::reverse_iterator &_position) noexcept
 {
-    assert (_position != records.end ());
-    std::size_t index = _position - records.begin ();
+    assert (_position.base () != records.end ());
+    std::size_t index = _position.base () - records.begin ();
     assert (changedRecords.empty () || index < changedRecords.front ().originalIndex);
     changedRecords.emplace (changedRecords.begin (), ChangedRecordInfo {index, *_position});
 }
