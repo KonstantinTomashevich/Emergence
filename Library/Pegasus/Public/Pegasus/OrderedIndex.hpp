@@ -159,10 +159,12 @@ public:
 
     ReadCursor LookupToRead (const Bound &_min, const Bound &_max) noexcept;
 
+    // \brief Executes ::LookupToRead, but returns cursor with reversed iteration order.
     ReversedReadCursor LookupToReadReversed (const Bound &_min, const Bound &_max) noexcept;
 
     EditCursor LookupToEdit (const Bound &_min, const Bound &_max) noexcept;
 
+    // \brief Executes ::LookupToEdit, but returns cursor with reversed iteration order.
     ReversedEditCursor LookupToEditReversed (const Bound &_min, const Bound &_max) noexcept;
 
     StandardLayout::Field GetIndexedField () const noexcept;

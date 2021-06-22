@@ -377,7 +377,10 @@ OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedFie
 OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (
     const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
 {
+    assert (!_min.boundValue || !_max.boundValue ||
+            !IsFieldValueLesser (_max.boundValue, _min.boundValue, indexedField));
     InternalLookupResult result {records.begin (), records.end ()};
+
     if (_min.boundValue)
     {
         result.begin = std::lower_bound (records.begin (), records.end (),
@@ -447,8 +450,8 @@ void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::iterato
 
 void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::reverse_iterator &_position) noexcept
 {
-    assert (_position.base () != records.end ());
-    std::size_t index = _position.base () - records.begin ();
+    assert (_position != records.rend ());
+    std::size_t index = records.rend () - _position - 1u;
 
     assert (deletedRecordIndices.empty () || index < deletedRecordIndices.front ());
     deletedRecordIndices.emplace (deletedRecordIndices.begin (), index);
@@ -482,8 +485,8 @@ void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::iterat
 
 void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::reverse_iterator &_position) noexcept
 {
-    assert (_position.base () != records.end ());
-    std::size_t index = _position.base () - records.begin ();
+    assert (_position != records.rend ());
+    std::size_t index = records.rend () - _position - 1u;
     assert (changedRecords.empty () || index < changedRecords.front ().originalIndex);
     changedRecords.emplace (changedRecords.begin (), ChangedRecordInfo {index, *_position});
 }
@@ -532,9 +535,22 @@ void OrderedIndex::OnWriterClosed () noexcept
 
         auto OffsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
         {
-            std::size_t realBegin = intervalBegin - offset;
-            memcpy (&records[realBegin], &records[realBegin + 1u],
-                    (intervalEnd - intervalBegin - 1u) * sizeof (void *));
+            std::size_t intervalSize = intervalEnd - intervalBegin - 1u;
+            assert (intervalSize == 0u || intervalBegin + 1u < records.size ());
+
+#ifndef NDEBUG
+            // Interval begin can be out of bounds only if interval size is zero. It's ok, because memcpy skips
+            // zero-size intervals. But debug version of std::vector throws out of bounds exception, therefore
+            // we add this `if` in debug build. In release build it's skipped to improve performance.
+            if (intervalBegin + 1u < records.size ())
+            {
+#endif
+                memcpy (&records[intervalBegin - offset], &records[intervalBegin + 1u],
+                        intervalSize * sizeof (void *));
+#ifndef NDEBUG
+            }
+#endif
+
             ++offset;
         };
 

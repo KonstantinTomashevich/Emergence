@@ -37,7 +37,7 @@ bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondReco
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
         {
-            if (memcmp (_firstRecordValue, _secondRecordValue, _field.GetSize ()) != 0u)
+            if (memcmp (_firstRecordValue, _secondRecordValue, _field.GetSize ()) != 0)
             {
                 return false;
             }
@@ -49,7 +49,7 @@ bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondReco
         {
             if (strncmp (static_cast <const char *> (_firstRecordValue),
                          static_cast <const char *> (_secondRecordValue),
-                         _field.GetSize () / sizeof (char)) != 0u)
+                         _field.GetSize () / sizeof (char)) != 0)
             {
                 return false;
             }
@@ -156,14 +156,14 @@ bool IsFieldValueLesser (const void *_firstValue, const void *_secondValue,
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
         {
-            return memcmp (_firstValue, _secondValue, _field.GetSize ()) < 0u;
+            return memcmp (_firstValue, _secondValue, _field.GetSize ()) < 0;
         }
 
         case StandardLayout::FieldArchetype::STRING:
         {
             return strncmp (static_cast <const char *> (_firstValue),
                             static_cast <const char *> (_secondValue),
-                            _field.GetSize () / sizeof (char)) < 0u;
+                            _field.GetSize () / sizeof (char)) < 0;
         }
     }
 
