@@ -8,6 +8,61 @@
 
 namespace Emergence::Pegasus
 {
+template <typename BaseComparator>
+struct Comparator
+{
+    Comparator (const OrderedIndex *_index, BaseComparator _baseComparator) noexcept;
+
+    bool operator () (const void *_firstRecord, const void *_secondRecord) const noexcept;
+
+    bool operator () (const OrderedIndex::Bound &_bound, const void *_record) const noexcept;
+
+    bool operator () (const void *_record, const OrderedIndex::Bound &_bound) const noexcept;
+
+private:
+    const void *GetValue (const void *_record) const noexcept;
+
+    std::size_t fieldOffset;
+    const BaseComparator baseComparator;
+};
+
+template <typename BaseComparator>
+Comparator <BaseComparator>::Comparator (const OrderedIndex *_index, BaseComparator _baseComparator) noexcept
+    : fieldOffset (_index->GetIndexedField ().GetOffset ()),
+      baseComparator (std::move (_baseComparator))
+{
+}
+
+template <typename BaseComparator>
+bool Comparator <BaseComparator>::operator () (const void *_firstRecord, const void *_secondRecord) const noexcept
+{
+    assert (_firstRecord);
+    assert (_secondRecord);
+    return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord)) < 0;
+}
+
+template <typename BaseComparator>
+bool Comparator <BaseComparator>::operator () (const OrderedIndex::Bound &_bound, const void *_record) const noexcept
+{
+    assert (_bound.boundValue);
+    assert (_record);
+    return baseComparator.Compare (_bound.boundValue, GetValue (_record)) < 0;
+}
+
+template <typename BaseComparator>
+bool Comparator <BaseComparator>::operator () (const void *_record, const OrderedIndex::Bound &_bound) const noexcept
+{
+    assert (_record);
+    assert (_bound.boundValue);
+    return baseComparator.Compare (GetValue (_record), _bound.boundValue) < 0;
+}
+
+template <typename BaseComparator>
+const void *Comparator <BaseComparator>::GetValue (const void *_record) const noexcept
+{
+    return static_cast <const uint8_t *> (_record) + fieldOffset;
+}
+
 OrderedIndex::ReadCursor::ReadCursor (const OrderedIndex::ReadCursor &_other) noexcept
     : index (_other.index),
       current (_other.current),
@@ -324,34 +379,15 @@ void OrderedIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
-bool OrderedIndex::Comparator::operator () (const void *_firstRecord, const void *_secondRecord) const noexcept
-{
-    assert (_firstRecord);
-    assert (_secondRecord);
-    const StandardLayout::Field &field = owner->indexedField;
-    return IsFieldValueLesser (field.GetValue (_firstRecord), field.GetValue (_secondRecord), field);
-}
-
-bool OrderedIndex::Comparator::operator () (const OrderedIndex::Bound &_bound, const void *_record) const noexcept
-{
-    assert (_bound.boundValue);
-    assert (_record);
-    const StandardLayout::Field &field = owner->indexedField;
-    return IsFieldValueLesser (_bound.boundValue, field.GetValue (_record), field);
-}
-
-bool OrderedIndex::Comparator::operator () (const void *_record, const OrderedIndex::Bound &_bound) const noexcept
-{
-    assert (_record);
-    assert (_bound.boundValue);
-    const StandardLayout::Field &field = owner->indexedField;
-    return IsFieldValueLesser (field.GetValue (_record), _bound.boundValue, field);
-}
-
 OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
 {
     assert (owner);
-    std::sort (owner->records.begin (), owner->records.end (), Comparator {owner});
+    DoWithCorrectComparator (
+        owner->indexedField,
+        [this] (auto _comparator) -> void
+        {
+            std::sort (owner->records.begin (), owner->records.end (), Comparator (owner, _comparator));
+        });
 }
 
 void OrderedIndex::MassInsertionExecutor::InsertRecord (const void *_record) noexcept
@@ -377,30 +413,41 @@ OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedFie
 OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (
     const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
 {
-    assert (!_min.boundValue || !_max.boundValue ||
-            !IsFieldValueLesser (_max.boundValue, _min.boundValue, indexedField));
-    InternalLookupResult result {records.begin (), records.end ()};
+    return DoWithCorrectComparator (
+        indexedField,
+        [this, &_min, &_max] (auto _comparator)
+        {
+            assert (!_min.boundValue || !_max.boundValue ||
+                    _comparator.Compare (_min.boundValue, _max.boundValue) <= 0);
+            InternalLookupResult result {records.begin (), records.end ()};
 
-    if (_min.boundValue)
-    {
-        result.begin = std::lower_bound (records.begin (), records.end (),
-                                         _min, Comparator {this});
-    }
+            if (_min.boundValue)
+            {
+                result.begin = std::lower_bound (records.begin (), records.end (),
+                                                 _min, Comparator (this, _comparator));
+            }
 
-    if (_max.boundValue)
-    {
-        result.end = std::upper_bound (result.begin, records.end (),
-                                       _max, Comparator {this});
-    }
+            if (_max.boundValue)
+            {
+                result.end = std::upper_bound (result.begin, records.end (),
+                                               _max, Comparator (this, _comparator));
+            }
 
-    return result;
+            return result;
+        });
 }
 
 std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
     const void *_record, const void *_recordBackup) const noexcept
 {
-    auto iterator = std::lower_bound (records.begin (), records.end (),
-                                      _recordBackup, Comparator {this});
+    auto iterator = DoWithCorrectComparator (
+        indexedField,
+        [this, _recordBackup] (auto _comparator)
+        {
+            return std::lower_bound (records.begin (), records.end (),
+                                     _recordBackup, Comparator (this, _comparator));
+        });
+
     assert (iterator != records.end ());
 
     while (*iterator != _record)
@@ -416,9 +463,14 @@ void OrderedIndex::InsertRecord (const void *_record) noexcept
 {
     // TODO: Assert that record is not inserted already? Is there any way to check this fast?
     assert (_record);
-    auto place = std::upper_bound (records.begin (), records.end (),
-                                   _record, Comparator {this});
-    records.insert (place, _record);
+    DoWithCorrectComparator (
+        indexedField,
+        [this, _record] (auto _comparator)
+        {
+            auto place = std::upper_bound (records.begin (), records.end (),
+                                           _record, Comparator (this, _comparator));
+            records.insert (place, _record);
+        });
 }
 
 OrderedIndex::MassInsertionExecutor OrderedIndex::StartMassInsertion () noexcept

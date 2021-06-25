@@ -174,17 +174,6 @@ public:
 private:
     friend class Storage;
 
-    struct Comparator final
-    {
-        bool operator () (const void *_firstRecord, const void *_secondRecord) const noexcept;
-
-        bool operator () (const Bound &_bound, const void *_record) const noexcept;
-
-        bool operator () (const void *_record, const Bound &_bound) const noexcept;
-
-        const OrderedIndex *owner;
-    };
-
     struct InternalLookupResult
     {
         std::vector <const void *>::iterator begin;

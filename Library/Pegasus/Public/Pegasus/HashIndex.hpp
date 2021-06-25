@@ -82,6 +82,7 @@ private:
     };
 
     // TODO: Custom allocator?
+    // TODO: Any way to optimize comparison and hashing using similar mechanism to DoWithCorrectComparator?
     using RecordHashSet = std::unordered_multiset <const void *, Hasher, Comparator>;
 
     explicit HashIndex (Storage *_owner, std::size_t _initialBuckets,
@@ -101,7 +102,7 @@ private:
 
     InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
     RecordHashSet records;
-    std::vector <std::unordered_multiset <const void *, Hasher, Comparator>::node_type> changedNodes;
+    std::vector <RecordHashSet::node_type> changedNodes;
 
 public:
     class ReadCursor final
