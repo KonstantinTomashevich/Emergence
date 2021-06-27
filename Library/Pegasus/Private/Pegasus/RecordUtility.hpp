@@ -19,7 +19,7 @@ template <typename Callback>
 auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callback &_callback) noexcept;
 
 template <typename Type>
-struct NumericValueComparator final
+struct NumericValueComparator
 {
     int Compare (const void *_firstValue, const void *_secondValue) const noexcept;
 };

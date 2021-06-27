@@ -5,7 +5,6 @@
 #include <Pegasus/HashIndex.hpp>
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
-#include <utility>
 
 namespace Emergence::Pegasus
 {
@@ -200,7 +199,7 @@ bool HashIndex::Comparator::operator () (const HashIndex::LookupRequest &_reques
     return (*this) (_record, _request);
 }
 
-HashIndex::HashIndex (Emergence::Pegasus::Storage *_owner, std::size_t _initialBuckets,
+HashIndex::HashIndex (Storage *_owner, std::size_t _initialBuckets,
                       const std::vector <StandardLayout::FieldId> &_indexedFields)
     : IndexBase (_owner),
       records (_initialBuckets, Hasher {this}, Comparator {this})

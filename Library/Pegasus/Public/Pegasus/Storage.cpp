@@ -633,7 +633,12 @@ void Storage::DropIndex (const OrderedIndex &_index) noexcept
 
 void Storage::DropIndex (const VolumetricIndex &_index) noexcept
 {
-    // TODO: Remove indexed fields.
+    for (const VolumetricIndex::Dimension &dimension : _index.GetDimensions ())
+    {
+        UnregisterIndexedFieldUsage (dimension.minBorderField);
+        UnregisterIndexedFieldUsage (dimension.maxBorderField);
+    }
+
     indices.volumetric.EraseExchangingWithLast (
         std::find_if (indices.volumetric.Begin (), indices.volumetric.End (),
                       [&_index] (const IndexHolder <VolumetricIndex> &_indexHolder) -> bool
@@ -705,10 +710,34 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex
 
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIndex &_index) noexcept
 {
-    // TODO: Implement.
-    // Suppress unused warning.
-    _index.GetReferenceCount ();
-    return 0u;
+    Constants::Storage::IndexedFieldMask indexMask = 0u;
+
+    for (const VolumetricIndex::Dimension &dimension : _index.GetDimensions ())
+    {
+        auto findField = [this] (const StandardLayout::Field &_field)
+        {
+            return std::find_if (
+                reflection.indexedFields.Begin (), reflection.indexedFields.End (),
+                [&_field] (const IndexedField &_indexedField) -> bool
+                {
+                    return _indexedField.field.IsSame (_field);
+                });
+        };
+
+        auto minIterator = findField (dimension.minBorderField);
+        if (minIterator != reflection.indexedFields.End ())
+        {
+            indexMask |= 1u << (minIterator - reflection.indexedFields.Begin ());
+        }
+
+        auto maxIterator = findField (dimension.maxBorderField);
+        if (maxIterator != reflection.indexedFields.End ())
+        {
+            indexMask |= 1u << (maxIterator - reflection.indexedFields.Begin ());
+        }
+    }
+
+    return indexMask;
 }
 
 void Storage::RegisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept
