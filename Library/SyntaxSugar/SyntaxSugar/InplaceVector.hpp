@@ -72,6 +72,10 @@ public:
 
     InplaceVector &operator = (InplaceVector &&_other) noexcept;
 
+    const Item &operator [] (std::size_t _index) const noexcept;
+
+    Item &operator [] (std::size_t _index) noexcept;
+
 private:
     std::size_t count;
     std::array <Item, Capacity> values;
@@ -229,6 +233,20 @@ InplaceVector <Item, Capacity> &InplaceVector <Item, Capacity>::operator = (Inpl
     }
 
     return *this;
+}
+
+template <typename Item, std::size_t Capacity>
+const Item &InplaceVector <Item, Capacity>::operator [] (std::size_t _index) const noexcept
+{
+    assert (_index < GetCount ());
+    return values[_index];
+}
+
+template <typename Item, std::size_t Capacity>
+Item &InplaceVector <Item, Capacity>::operator [] (std::size_t _index) noexcept
+{
+    assert (_index < GetCount ());
+    return values[_index];
 }
 
 template <typename Item, std::size_t Capacity>
