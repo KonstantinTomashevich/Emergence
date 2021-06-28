@@ -334,6 +334,49 @@ Handling::Handle <OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fie
     return holder.index.get ();
 }
 
+Handling::Handle <VolumetricIndex>
+Storage::CreateVolumetricIndex (const std::vector <VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
+{
+    assert (accessCounter.writers == 0u);
+    assert (accessCounter.readers == 0u);
+
+    IndexHolder <VolumetricIndex> &holder = indices.volumetric.EmplaceBack (
+        IndexHolder <VolumetricIndex> {
+            std::unique_ptr <VolumetricIndex> (new VolumetricIndex (this, _dimensions)),
+            0u
+        });
+
+    for (const VolumetricIndex::Dimension &dimension : holder.index->GetDimensions ())
+    {
+        RegisterIndexedFieldUsage (dimension.minBorderField);
+        RegisterIndexedFieldUsage (dimension.maxBorderField);
+    }
+
+    holder.indexedFieldMask = BuildIndexMask (*holder.index);
+    // TODO: This part is common for VolumetricIndex and HashIndex. Hide under template helper method?
+    if (!indices.ordered.Empty ())
+    {
+        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
+        OrderedIndex::ReadCursor cursor = indices.ordered.Begin ()->index->LookupToRead (
+            {nullptr}, {nullptr});
+
+        while (const void *record = *cursor)
+        {
+            holder.index->InsertRecord (record);
+            ++cursor;
+        }
+    }
+    else
+    {
+        for (const void *record : records)
+        {
+            holder.index->InsertRecord (record);
+        }
+    }
+
+    return holder.index.get ();
+}
+
 Storage::HashIndexIterator Storage::BeginHashIndices () const noexcept
 {
     return Storage::HashIndexIterator (indices.hash.Begin ());
@@ -763,4 +806,4 @@ void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) 
                           return _indexedField.field.IsSame (_field);
                       }));
 }
-} // namespace Emergence::Pegasus
+} // namespace Emergence::Pegasus                                                        

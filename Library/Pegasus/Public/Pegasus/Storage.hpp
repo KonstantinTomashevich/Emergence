@@ -154,6 +154,9 @@ public:
 
     Handling::Handle <OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
 
+    Handling::Handle <VolumetricIndex> CreateVolumetricIndex (
+        const std::vector <VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
+
     HashIndexIterator BeginHashIndices () const noexcept;
 
     HashIndexIterator EndHashIndices () const noexcept;

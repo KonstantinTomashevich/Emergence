@@ -164,6 +164,7 @@ VolumetricIndex::CursorBase::CursorBase (const VolumetricIndex::CursorBase &_oth
       visitedRecords (_other.visitedRecords)
 {
     assert (index);
+    ++index->activeCursors;
 }
 
 VolumetricIndex::CursorBase::CursorBase (VolumetricIndex::CursorBase &&_other) noexcept
@@ -196,6 +197,7 @@ VolumetricIndex::CursorBase::CursorBase (
 {
     assert (index);
     assert (index->IsInsideSector (sector, currentCoordinate));
+    ++index->activeCursors;
 }
 
 bool VolumetricIndex::CursorBase::IsFinished () const noexcept
@@ -269,6 +271,67 @@ void VolumetricIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
+std::vector <VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (const void *_record) noexcept
+{
+    return std::find_if (
+        records.begin (), records.end (),
+        [_record] (const RecordData &_data)
+        {
+            return _record == _data.record;
+        });
+}
+
+void VolumetricIndex::LeafData::DeleteRecord (
+    const std::vector <VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
+{
+    assert (_recordIterator != records.end ());
+    if (_recordIterator + 1 != records.end ())
+    {
+        *_recordIterator = records.back ();
+    }
+
+    records.pop_back ();
+}
+
+VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <DimensionDescriptor> &_dimensions) noexcept
+    : IndexBase (_storage),
+      dimensions (),
+      leaves (),
+      freeRecordIds (),
+      nextRecordId (0u)
+{
+    assert (!_dimensions.empty ());
+    assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
+    std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+
+#ifndef NDEBUG
+    // Current implementation expects that all fields have same archetype and size.
+    StandardLayout::Field firstDimensionMinField = _storage->GetRecordMapping ().GetField (
+        _dimensions[0u].minBorderField);
+
+    assert (firstDimensionMinField.IsHandleValid ());
+    StandardLayout::FieldArchetype expectedArchetype = firstDimensionMinField.GetArchetype ();
+    std::size_t expectedSize = firstDimensionMinField.GetSize ();
+#endif
+
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensionCount; ++dimensionIndex)
+    {
+        const DimensionDescriptor &descriptor = _dimensions[dimensionIndex];
+        StandardLayout::Field minField = _storage->GetRecordMapping ().GetField (descriptor.minBorderField);
+        StandardLayout::Field maxField = _storage->GetRecordMapping ().GetField (descriptor.maxBorderField);
+
+        assert (minField.GetArchetype () == expectedArchetype);
+        assert (minField.GetSize () == expectedSize);
+
+        assert (maxField.GetArchetype () == expectedArchetype);
+        assert (maxField.GetSize () == expectedSize);
+
+        dimensions.EmplaceBack (Dimension {
+            minField, *static_cast <const SupportedAxisValue *> (descriptor.globalMinBorder),
+            maxField, *static_cast <const SupportedAxisValue *> (descriptor.globalMaxBorder)});
+    }
+}
+
 template <typename Operations>
 VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     const void *_record, const Operations &_operations) const noexcept
@@ -299,6 +362,25 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     }
 
     return sector;
+}
+
+template <typename Callback>
+void VolumetricIndex::ForEachCoordinate (
+    const VolumetricIndex::LeafSector &_sector, const Callback &_callback) const noexcept
+{
+    LeafCoordinate coordinate = _sector.min;
+    while (true)
+    {
+        _callback (coordinate);
+        if (AreEqual (coordinate, _sector.max))
+        {
+            break;
+        }
+        else
+        {
+            coordinate = NextInsideSector (_sector, coordinate);
+        }
+    }
 }
 
 std::size_t VolumetricIndex::GetLeafIndex (const VolumetricIndex::LeafCoordinate &_coordinate) const noexcept
@@ -365,6 +447,21 @@ VolumetricIndex::LeafCoordinate VolumetricIndex::NextInsideSector (
     return _coordinate;
 }
 
+bool VolumetricIndex::AreEqual (
+    const VolumetricIndex::LeafSector &_left, const VolumetricIndex::LeafSector &_right) const noexcept
+{
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
+    {
+        if (_left.min[dimensionIndex] != _right.min[dimensionIndex] ||
+            _left.max[dimensionIndex] != _right.max[dimensionIndex])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void VolumetricIndex::InsertRecord (const void *_record) noexcept
 {
     // TODO: Is there a quick way to assert that record is not already inserted?
@@ -388,21 +485,13 @@ void VolumetricIndex::InsertRecord (const void *_record) noexcept
             return CalculateSector (_record, _operations);
         });
 
-    LeafCoordinate coordinate = sector.min;
-    while (true)
-    {
-        std::size_t index = GetLeafIndex (coordinate);
-        leaves[index].records.emplace_back (RecordData {_record, recordId});
-
-        if (coordinate == sector.max)
+    ForEachCoordinate (
+        sector,
+        [this, _record, recordId] (const LeafCoordinate &_coordinate)
         {
-            break;
-        }
-        else
-        {
-            coordinate = NextInsideSector (sector, coordinate);
-        }
-    }
+            std::size_t index = GetLeafIndex (_coordinate);
+            leaves[index].records.emplace_back (RecordData {_record, recordId});
+        });
 }
 
 void VolumetricIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
@@ -415,39 +504,18 @@ void VolumetricIndex::OnRecordDeleted (const void *_record, const void *_recordB
             return CalculateSector (_recordBackup, _operations);
         });
 
-    LeafCoordinate coordinate = sector.min;
     std::size_t recordId;
-
-    while (true)
-    {
-        std::size_t index = GetLeafIndex (coordinate);
-        std::vector <RecordData> &records = leaves[index].records;
-
-        auto iterator = std::find_if (
-            records.begin (), records.end (),
-            [_record] (const RecordData &_data)
-            {
-                return _record == _data.record;
-            });
-
-        assert (iterator != records.end ());
-        recordId = iterator->recordId;
-
-        if (iterator + 1 != records.end ())
+    ForEachCoordinate (
+        sector,
+        [this, _record, &recordId] (const LeafCoordinate &_coordinate)
         {
-            *iterator = records.back ();
-        }
+            LeafData &leaf = leaves[GetLeafIndex (_coordinate)];
+            auto recordIterator = leaf.FindRecord (_record);
+            assert (recordIterator != leaf.records.end ());
 
-        records.pop_back ();
-        if (coordinate == sector.max)
-        {
-            break;
-        }
-        else
-        {
-            coordinate = NextInsideSector (sector, coordinate);
-        }
-    }
+            recordId = recordIterator->recordId;
+            leaf.DeleteRecord (recordIterator);
+        });
 
     freeRecordIds.emplace_back (recordId);
 }
@@ -456,8 +524,68 @@ void VolumetricIndex::DeleteRecordMyself (VolumetricIndex::CursorBase &_cursor) 
 {
     const void *record = _cursor.GetRecord ();
     assert (record);
-    storage->DeleteRecord (const_cast <void *> (record), this);
+
+    // One record could reside in multiple leaves, therefore we pass nullptr as
+    // source index to ensure that storage will call default record deletion routine.
+    storage->DeleteRecord (const_cast <void *> (record), nullptr);
     _cursor.FixCurrentRecordIndex ();
+}
+
+void VolumetricIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
+{
+    DoWithCorrectTypeOperations (
+        dimensions[0u].minBorderField,
+        [this, _record, _recordBackup] (const auto &_operations)
+        {
+            const LeafSector oldSector = CalculateSector (_recordBackup, _operations);
+            const LeafSector newSector = CalculateSector (_record, _operations);
+
+            if (!AreEqual (oldSector, newSector))
+            {
+                // TODO: For now we use simple logic, because complex optimizations for large objects
+                //       could harm performance with small objects, because these optimizations require
+                //       additional sector checks. Revisit it later.
+
+                // Write invalid initial value into recordId, so we could check if recordId is already
+                // found and skip unnecessary record search in coordinates that are not excluded.
+                std::size_t recordId = nextRecordId;
+
+                ForEachCoordinate (
+                    oldSector,
+                    [this, _record, &recordId, &newSector] (const LeafCoordinate &_coordinate)
+                    {
+                        bool excluded = IsInsideSector (newSector, _coordinate);
+                        if (excluded || recordId == nextRecordId)
+                        {
+                            LeafData &leaf = leaves[GetLeafIndex (_coordinate)];
+                            auto recordIterator = leaf.FindRecord (_record);
+                            assert (recordIterator != leaf.records.end ());
+
+                            recordId = recordIterator->recordId;
+                            if (excluded)
+                            {
+                                leaf.DeleteRecord (recordIterator);
+                            }
+                        }
+                    });
+
+                ForEachCoordinate (
+                    newSector,
+                    [this, _record, &recordId, &oldSector] (const LeafCoordinate &_coordinate)
+                    {
+                        if (!IsInsideSector (oldSector, _coordinate))
+                        {
+                            std::size_t index = GetLeafIndex (_coordinate);
+                            leaves[index].records.emplace_back (RecordData {_record, recordId});
+                        }
+                    });
+            }
+        });
+}
+
+void VolumetricIndex::OnWriterClosed () noexcept
+{
+    // All changes and deletions should be processed on the spot.
 }
 
 template <typename Type>

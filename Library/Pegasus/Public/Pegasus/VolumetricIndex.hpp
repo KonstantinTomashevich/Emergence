@@ -61,11 +61,23 @@ public:
     {
         StandardLayout::Field minBorderField;
 
-        SupportedAxisValue globalMinBorder;
+        SupportedAxisValue globalMinBorder = 0u;
 
         StandardLayout::Field maxBorderField;
 
-        SupportedAxisValue globalMaxBorder;
+        SupportedAxisValue globalMaxBorder = 0u;
+    };
+
+    /// Used only for index construction. ::Dimension is according dimension representation of constructed index.
+    struct DimensionDescriptor
+    {
+        StandardLayout::FieldId minBorderField;
+
+        const void *globalMinBorder;
+
+        StandardLayout::FieldId maxBorderField;
+
+        const void *globalMaxBorder;
     };
 
     class CursorBase
@@ -107,6 +119,8 @@ public:
     void Drop () noexcept;
 
 private:
+    friend class Storage;
+
     struct RecordData
     {
         const void *record;
@@ -116,10 +130,20 @@ private:
     struct LeafData
     {
         std::vector <RecordData> records;
+
+        std::vector <RecordData>::iterator FindRecord (const void *_record) noexcept;
+
+        /// \brief Deletes record from leaf using "exchange with last" strategy.
+        void DeleteRecord (const std::vector <RecordData>::iterator &_recordIterator) noexcept;
     };
+
+    VolumetricIndex (Storage *_storage, const std::vector <DimensionDescriptor> &_dimensions) noexcept;
 
     template <typename Operations>
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
+
+    template <typename Callback>
+    void ForEachCoordinate (const LeafSector &_sector, const Callback &_callback) const noexcept;
 
     std::size_t GetLeafIndex (const LeafCoordinate &_coordinate) const noexcept;
 
@@ -130,6 +154,8 @@ private:
     VolumetricIndex::LeafCoordinate NextInsideSector (
         const LeafSector &_sector, LeafCoordinate _coordinate) const noexcept;
 
+    bool AreEqual (const LeafSector &_left, const LeafSector &_right) const noexcept;
+
     void InsertRecord (const void *_record) noexcept;
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
@@ -137,8 +163,6 @@ private:
     void DeleteRecordMyself (CursorBase &_cursor) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
-
-    void OnRecordChangedByMe (CursorBase &_cursor) noexcept;
 
     void OnWriterClosed () noexcept;
 
@@ -149,10 +173,5 @@ private:
     std::vector <LeafData> leaves;
     std::vector <std::size_t> freeRecordIds;
     std::size_t nextRecordId;
-
-    // TODO: I think we can apply changes on the spot, because cursors use sets
-    //       (or something like them) to avoid returning same node several times.
-    // TODO: Record deletion by swapping with last vector element is safe to be done on the spot, I think.
-    // TODO: We can not really optimize deletion by self, because one record can exists in several nodes.
 };
 } // namespace Emergence::Pegasus
