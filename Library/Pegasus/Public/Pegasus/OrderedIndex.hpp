@@ -61,7 +61,7 @@ public:
 
         void *operator * () noexcept;
 
-        EditCursor &operator ~ ();
+        EditCursor &operator ~ () noexcept;
 
         EditCursor &operator ++ () noexcept;
 
@@ -127,7 +127,7 @@ public:
 
         void *operator * () noexcept;
 
-        ReversedEditCursor &operator ~ ();
+        ReversedEditCursor &operator ~ () noexcept;
 
         ReversedEditCursor &operator ++ () noexcept;
 

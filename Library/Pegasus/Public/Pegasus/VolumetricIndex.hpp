@@ -73,27 +73,32 @@ public:
     {
         StandardLayout::FieldId minBorderField;
 
-        const void *globalMinBorder;
+        SupportedAxisValue globalMinBorder;
 
         StandardLayout::FieldId maxBorderField;
 
-        const void *globalMaxBorder;
+        SupportedAxisValue globalMaxBorder;
     };
 
-    class CursorBase
+    /// Axis aligned shape description for shape intersection lookups.
+    struct AxisAlignedShape
+    {
+        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> min;
+        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> max;
+    };
+
+    class ShapeIntersectionCursorBase
     {
     public:
-        CursorBase (const CursorBase &_other) noexcept;
+        ShapeIntersectionCursorBase (const ShapeIntersectionCursorBase &_other) noexcept;
 
-        CursorBase (CursorBase &&_other) noexcept;
+        ShapeIntersectionCursorBase (ShapeIntersectionCursorBase &&_other) noexcept;
 
-        ~CursorBase () noexcept;
+        ~ShapeIntersectionCursorBase () noexcept;
 
     protected:
-        friend class VolumetricIndex;
-
-        CursorBase (VolumetricIndex *_index, LeafSector _sector,
-                    LeafCoordinate _currentCoordinate, size_t _currentRecordIndex) noexcept;
+        ShapeIntersectionCursorBase (
+            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShape &_shape) noexcept;
 
         bool IsFinished () const noexcept;
 
@@ -101,20 +106,93 @@ public:
 
         const void *GetRecord () const noexcept;
 
-    private:
-        // Record deletion is done using "exchange with last" strategy, therefore ::currentRecordIndex
-        // can be invalidated only if it pointed to last record in leaf. This method fixes ::currentRecordIndex
-        // if this situation is detected.
+        VolumetricIndex *GetIndex () const noexcept;
+
+        /// If cursor is not finished and as a result of record deletion, record edition or cursor construction
+        /// ::currentRecordIndex is invalid, current record is already visited or does not intersect with cursor
+        /// shape, we should execute ::MoveToNextRecord.
         void FixCurrentRecordIndex () noexcept;
 
+        template <typename Operations>
+        bool CheckShapeIntersection (const void *_record, const Operations &_operations) const noexcept;
+
+    private:
         VolumetricIndex *index;
-        LeafSector sector;
+        const LeafSector sector;
+        const AxisAlignedShape shape;
+
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
         std::vector <bool> visitedRecords;
     };
 
+    class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
+    {
+    public:
+        ShapeIntersectionReadCursor (const ShapeIntersectionReadCursor &_other) noexcept;
+
+        ShapeIntersectionReadCursor (ShapeIntersectionReadCursor &&_other) noexcept;
+
+        ~ShapeIntersectionReadCursor () noexcept;
+
+        const void *operator * () const noexcept;
+
+        ShapeIntersectionReadCursor &operator ++ () noexcept;
+
+        /// Assigning cursors looks counter intuitive.
+        ShapeIntersectionReadCursor &operator = (const ShapeIntersectionReadCursor &_other) = delete;
+
+        /// Assigning cursors looks counter intuitive.
+        ShapeIntersectionReadCursor &operator = (ShapeIntersectionReadCursor &&_other) = delete;
+
+    private:
+        friend class VolumetricIndex;
+
+        ShapeIntersectionReadCursor (
+            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShape &_shape) noexcept;
+    };
+
+    class ShapeIntersectionEditCursor final : private ShapeIntersectionCursorBase
+    {
+    public:
+        ShapeIntersectionEditCursor (const ShapeIntersectionEditCursor &_other) = delete;
+
+        ShapeIntersectionEditCursor (ShapeIntersectionEditCursor &&_other) noexcept;
+
+        ~ShapeIntersectionEditCursor () noexcept;
+
+        void *operator * () noexcept;
+
+        ShapeIntersectionEditCursor &operator ~ () noexcept;
+
+        ShapeIntersectionEditCursor &operator ++ () noexcept;
+
+        /// Assigning cursors looks counter intuitive.
+        ShapeIntersectionEditCursor &operator = (const ShapeIntersectionEditCursor &_other) = delete;
+
+        /// Assigning cursors looks counter intuitive.
+        ShapeIntersectionEditCursor &operator = (ShapeIntersectionEditCursor &&_other) = delete;
+
+    private:
+        friend class VolumetricIndex;
+
+        ShapeIntersectionEditCursor (VolumetricIndex *_index, const LeafSector &_sector,
+                                     const AxisAlignedShape &_shape) noexcept;
+
+        void BeginRecordEdition () const noexcept;
+    };
+
+    /// There is no sense to copy indices.
+    VolumetricIndex (const VolumetricIndex &_other) = delete;
+
+    /// Moving indices is forbidden, because otherwise user can move index out of Storage.
+    VolumetricIndex (VolumetricIndex &&_other) = delete;
+
     const InplaceVector <Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
+
+    ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShape &_shape) noexcept;
+
+    ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShape &_shape) noexcept;
 
     void Drop () noexcept;
 
@@ -142,6 +220,18 @@ private:
     template <typename Operations>
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
 
+    template <typename Operations>
+    LeafSector CalculateSector (const AxisAlignedShape &_shape, const Operations &_operations) const noexcept;
+
+    template <typename Operations>
+    SupportedAxisValue CalculateLeafSize (
+        const Dimension &_dimension, const Operations &_operations) const noexcept;
+
+    template <typename Operations>
+    std::size_t CalculateCoordinate (
+        const SupportedAxisValue &_value, const Dimension &_dimension,
+        const SupportedAxisValue &_leafSize, const Operations &_operations) const noexcept;
+
     template <typename Callback>
     void ForEachCoordinate (const LeafSector &_sector, const Callback &_callback) const noexcept;
 
@@ -159,8 +249,6 @@ private:
     void InsertRecord (const void *_record) noexcept;
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
-
-    void DeleteRecordMyself (CursorBase &_cursor) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 

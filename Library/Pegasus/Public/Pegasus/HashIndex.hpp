@@ -157,7 +157,7 @@ public:
         ///
         /// \warning Record type is unknown during compile time, therefore appropriate
         ///          destructor should be called before record deletion.
-        EditCursor &operator ~ ();
+        EditCursor &operator ~ () noexcept;
 
         /// \brief Checks current record for key values changes. Then moves cursor to next record.
         /// \invariant Cursor should not point to ending.

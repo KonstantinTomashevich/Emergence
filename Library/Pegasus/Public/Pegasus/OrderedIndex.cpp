@@ -149,7 +149,7 @@ void *OrderedIndex::EditCursor::operator * () noexcept
     return current != end ? const_cast <void *> (*current) : nullptr;
 }
 
-OrderedIndex::EditCursor &OrderedIndex::EditCursor::operator ~ ()
+OrderedIndex::EditCursor &OrderedIndex::EditCursor::operator ~ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -285,7 +285,7 @@ void *OrderedIndex::ReversedEditCursor::operator * () noexcept
     return current != end ? const_cast <void *> (*current) : nullptr;
 }
 
-OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ~ ()
+OrderedIndex::ReversedEditCursor &OrderedIndex::ReversedEditCursor::operator ~ () noexcept
 {
     assert (index);
     assert (current != end);

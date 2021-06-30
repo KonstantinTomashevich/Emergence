@@ -18,6 +18,8 @@ struct TypeOperations final
     int Compare (const VolumetricIndex::SupportedAxisValue &_left,
                  const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
+    int Compare (const void *_left, const void *_right) const noexcept;
+
     VolumetricIndex::SupportedAxisValue Subtract (
         const VolumetricIndex::SupportedAxisValue &_left,
         const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
@@ -156,9 +158,11 @@ VolumetricIndex::SupportedAxisValue::SupportedAxisValue (double _value) noexcept
 {
 }
 
-VolumetricIndex::CursorBase::CursorBase (const VolumetricIndex::CursorBase &_other) noexcept
+VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
+    const VolumetricIndex::ShapeIntersectionCursorBase &_other) noexcept
     : index (_other.index),
       sector (_other.sector),
+      shape (_other.shape),
       currentCoordinate (_other.currentCoordinate),
       currentRecordIndex (_other.currentRecordIndex),
       visitedRecords (_other.visitedRecords)
@@ -167,18 +171,20 @@ VolumetricIndex::CursorBase::CursorBase (const VolumetricIndex::CursorBase &_oth
     ++index->activeCursors;
 }
 
-VolumetricIndex::CursorBase::CursorBase (VolumetricIndex::CursorBase &&_other) noexcept
+VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
+    VolumetricIndex::ShapeIntersectionCursorBase &&_other) noexcept
     : index (_other.index),
-      sector (std::move (_other.sector)),
-      currentCoordinate (std::move (_other.currentCoordinate)),
-      currentRecordIndex (std::move (_other.currentRecordIndex)),
+      sector (_other.sector),
+      shape (_other.shape),
+      currentCoordinate (_other.currentCoordinate),
+      currentRecordIndex (_other.currentRecordIndex),
       visitedRecords (std::move (_other.visitedRecords))
 {
     assert (index);
     _other.index = nullptr;
 }
 
-VolumetricIndex::CursorBase::~CursorBase () noexcept
+VolumetricIndex::ShapeIntersectionCursorBase::~ShapeIntersectionCursorBase () noexcept
 {
     if (index)
     {
@@ -186,75 +192,222 @@ VolumetricIndex::CursorBase::~CursorBase () noexcept
     }
 }
 
-VolumetricIndex::CursorBase::CursorBase (
-    VolumetricIndex *_index, VolumetricIndex::LeafSector _sector,
-    VolumetricIndex::LeafCoordinate _currentCoordinate, size_t _currentRecordIndex) noexcept
+VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
+    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector, const AxisAlignedShape &_shape) noexcept
     : index (_index),
-      sector (std::move (_sector)),
-      currentCoordinate (std::move (_currentCoordinate)),
-      currentRecordIndex (std::move (_currentRecordIndex)),
+      sector (_sector),
+      shape (_shape),
+      currentCoordinate (sector.min),
+      currentRecordIndex (0u),
       visitedRecords (index->nextRecordId, false)
 {
     assert (index);
-    assert (index->IsInsideSector (sector, currentCoordinate));
     ++index->activeCursors;
+    FixCurrentRecordIndex ();
 }
 
-bool VolumetricIndex::CursorBase::IsFinished () const noexcept
+bool VolumetricIndex::ShapeIntersectionCursorBase::IsFinished () const noexcept
 {
     assert (index);
     return index->AreEqual (currentCoordinate, sector.max) &&
            currentRecordIndex >= index->leaves[index->GetLeafIndex (currentCoordinate)].records.size ();
 }
 
-void VolumetricIndex::CursorBase::MoveToNextRecord () noexcept
+void VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextRecord () noexcept
 {
-    assert (index);
-    assert (!IsFinished ());
-
-    ++currentRecordIndex;
-    const LeafData *leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
-    bool overflow;
-
-    while ((overflow = currentRecordIndex >= leaf->records.size ()) ||
-           visitedRecords[leaf->records[currentRecordIndex].recordId])
-    {
-        if (overflow)
+    DoWithCorrectTypeOperations (
+        index->dimensions[0u].minBorderField,
+        [this] (const auto &_operations)
         {
-            if (currentCoordinate == sector.max)
+            assert (index);
+            assert (!IsFinished ());
+
+            ++currentRecordIndex;
+            const LeafData *leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
+            bool overflow;
+
+            while ((overflow = currentRecordIndex >= leaf->records.size ()) ||
+                   visitedRecords[leaf->records[currentRecordIndex].recordId] ||
+                   !CheckShapeIntersection (leaf->records[currentRecordIndex].record, _operations))
             {
-                break;
+                if (overflow)
+                {
+                    if (currentCoordinate == sector.max)
+                    {
+                        break;
+                    }
+
+                    currentRecordIndex = 0u;
+                    currentCoordinate = index->NextInsideSector (sector, currentCoordinate);
+                    leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
+                }
+                else
+                {
+                    ++currentRecordIndex;
+                }
             }
 
-            currentRecordIndex = 0u;
-            currentCoordinate = index->NextInsideSector (sector, currentCoordinate);
-            leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
-        }
-        else
-        {
-            ++currentRecordIndex;
-        }
-    }
-
-    if (!overflow)
-    {
-        visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
-    }
+            if (!overflow)
+            {
+                visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
+            }
+        });
 }
 
-const void *VolumetricIndex::CursorBase::GetRecord () const noexcept
+const void *VolumetricIndex::ShapeIntersectionCursorBase::GetRecord () const noexcept
 {
     assert (index);
+    // TODO: Check GetLeafIndex performance. Maybe it makes sense to cache index?
     const LeafData &leaf = index->leaves[index->GetLeafIndex (currentCoordinate)];
     assert (currentRecordIndex < leaf.records.size () || IsFinished ());
     return currentRecordIndex < leaf.records.size () ? leaf.records[currentRecordIndex].record : nullptr;
 }
 
-void VolumetricIndex::CursorBase::FixCurrentRecordIndex () noexcept
+VolumetricIndex *VolumetricIndex::ShapeIntersectionCursorBase::GetIndex () const noexcept
 {
-    if (!IsFinished () && currentRecordIndex > index->leaves[index->GetLeafIndex (currentCoordinate)].records.size ())
+    return index;
+}
+
+void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noexcept
+{
+    DoWithCorrectTypeOperations (
+        index->dimensions[0u].minBorderField,
+        [this] (const auto &_operations)
+        {
+            if (!IsFinished ())
+            {
+                const LeafData &leaf = index->leaves[index->GetLeafIndex (currentCoordinate)];
+
+                if (currentRecordIndex > leaf.records.size () ||
+                    visitedRecords[leaf.records[currentRecordIndex].recordId] ||
+                    !CheckShapeIntersection (leaf.records[currentRecordIndex].record, _operations))
+                {
+                    MoveToNextRecord ();
+                }
+            }
+        });
+}
+
+template <typename Operations>
+bool VolumetricIndex::ShapeIntersectionCursorBase::CheckShapeIntersection (
+    const void *_record, const Operations &_operations) const noexcept
+{
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
-        MoveToNextRecord ();
+        const Dimension &dimension = index->dimensions[dimensionIndex];
+        if (_operations.Compare (&shape.max[dimensionIndex], dimension.minBorderField.GetValue (_record)) < 0 ||
+            _operations.Compare (&shape.min[dimensionIndex], dimension.maxBorderField.GetValue (_record)) > 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
+    const VolumetricIndex::ShapeIntersectionReadCursor &_other) noexcept
+    : ShapeIntersectionCursorBase (_other)
+{
+    assert (GetIndex ());
+    GetIndex ()->storage->RegisterReader ();
+}
+
+VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
+    VolumetricIndex::ShapeIntersectionReadCursor &&_other) noexcept
+    : ShapeIntersectionCursorBase (std::move (_other))
+{
+}
+
+VolumetricIndex::ShapeIntersectionReadCursor::~ShapeIntersectionReadCursor () noexcept
+{
+    if (GetIndex ())
+    {
+        GetIndex ()->storage->UnregisterReader ();
+    }
+}
+
+const void *VolumetricIndex::ShapeIntersectionReadCursor::operator * () const noexcept
+{
+    return GetRecord ();
+}
+
+VolumetricIndex::ShapeIntersectionReadCursor &VolumetricIndex::ShapeIntersectionReadCursor::operator ++ () noexcept
+{
+    MoveToNextRecord ();
+    return *this;
+}
+
+VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
+    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
+    const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+    : ShapeIntersectionCursorBase (_index, _sector, _shape)
+{
+    assert (GetIndex ());
+    GetIndex ()->storage->RegisterReader ();
+}
+
+VolumetricIndex::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
+    VolumetricIndex::ShapeIntersectionEditCursor &&_other) noexcept
+    : ShapeIntersectionCursorBase (std::move (_other))
+{
+}
+
+VolumetricIndex::ShapeIntersectionEditCursor::~ShapeIntersectionEditCursor () noexcept
+{
+    if (GetIndex ())
+    {
+        if (!IsFinished ())
+        {
+            GetIndex ()->storage->EndRecordEdition (GetRecord (), nullptr);
+        }
+
+        GetIndex ()->storage->UnregisterWriter ();
+    }
+}
+
+void *VolumetricIndex::ShapeIntersectionEditCursor::operator * () noexcept
+{
+    return const_cast <void *> (GetRecord ());
+}
+
+VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator ~ () noexcept
+{
+    assert (!IsFinished ());
+    // Record can be stored in many coordinates, therefore deletion by cursor can not be optimized for owner index.
+    GetIndex ()->storage->DeleteRecord (**this, nullptr);
+
+    FixCurrentRecordIndex ();
+    BeginRecordEdition ();
+    return *this;
+}
+
+VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator ++ () noexcept
+{
+    assert (!IsFinished ());
+    // Record can be stored in many coordinates, therefore edition by cursor can not be optimized for owner index.
+    GetIndex ()->storage->EndRecordEdition (GetRecord (), nullptr);
+    FixCurrentRecordIndex ();
+    BeginRecordEdition ();
+    return *this;
+}
+
+VolumetricIndex::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
+    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
+    const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+    : ShapeIntersectionCursorBase (_index, _sector, _shape)
+{
+    assert (GetIndex ());
+    GetIndex ()->storage->RegisterWriter ();
+    BeginRecordEdition ();
+}
+
+void VolumetricIndex::ShapeIntersectionEditCursor::BeginRecordEdition () const noexcept
+{
+    assert (GetIndex ());
+    if (!IsFinished ())
+    {
+        GetIndex ()->storage->BeginRecordEdition (GetRecord ());
     }
 }
 
@@ -262,6 +415,28 @@ const InplaceVector <VolumetricIndex::Dimension, Constants::VolumetricIndex::MAX
 VolumetricIndex::GetDimensions () const noexcept
 {
     return dimensions;
+}
+
+VolumetricIndex::ShapeIntersectionReadCursor
+VolumetricIndex::LookupShapeIntersectionToRead (const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+{
+    return DoWithCorrectTypeOperations (
+        dimensions[0u].minBorderField,
+        [this, &_shape] (const auto &_operations)
+        {
+            return ShapeIntersectionReadCursor (this, CalculateSector (_shape, _operations), _shape);
+        });
+}
+
+VolumetricIndex::ShapeIntersectionEditCursor
+VolumetricIndex::LookupShapeIntersectionToEdit (const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+{
+    return DoWithCorrectTypeOperations (
+        dimensions[0u].minBorderField,
+        [this, &_shape] (const auto &_operations)
+        {
+            return ShapeIntersectionEditCursor (this, CalculateSector (_shape, _operations), _shape);
+        });
 }
 
 void VolumetricIndex::Drop () noexcept
@@ -327,8 +502,8 @@ VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <Dimensio
         assert (maxField.GetSize () == expectedSize);
 
         dimensions.EmplaceBack (Dimension {
-            minField, *static_cast <const SupportedAxisValue *> (descriptor.globalMinBorder),
-            maxField, *static_cast <const SupportedAxisValue *> (descriptor.globalMaxBorder)});
+            minField, descriptor.globalMinBorder,
+            maxField, descriptor.globalMaxBorder});
     }
 }
 
@@ -337,8 +512,6 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     const void *_record, const Operations &_operations) const noexcept
 {
     LeafSector sector;
-    const std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (dimensions.GetCount ());
-
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];
@@ -349,19 +522,52 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
             dimension.minBorderField.GetValue (_record));
 
         assert (_operations.Compare (min, max) <= 0);
-        const SupportedAxisValue leafSize = _operations.Divide (
-            _operations.Subtract (dimension.globalMaxBorder, dimension.globalMinBorder), maxCoordinate);
-
-        sector.min[dimensionIndex] = std::clamp <std::size_t> (
-            0u, maxCoordinate - 1u, _operations.TruncateToSizeType (_operations.Divide (
-                _operations.Subtract (min, dimension.globalMinBorder), leafSize)));
-
-        sector.max[dimensionIndex] = std::clamp <std::size_t> (
-            0u, maxCoordinate - 1u, _operations.TruncateToSizeType (_operations.Divide (
-                _operations.Subtract (max, dimension.globalMinBorder), leafSize)));
+        const SupportedAxisValue leafSize = CalculateLeafSize (dimension, _operations);
+        sector.min[dimensionIndex] = CalculateCoordinate (min, dimension, leafSize, _operations);
+        sector.min[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
     }
 
     return sector;
+}
+
+template <typename Operations>
+VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
+    const VolumetricIndex::AxisAlignedShape &_shape, const Operations &_operations) const noexcept
+{
+    LeafSector sector;
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
+    {
+        const Dimension &dimension = dimensions[dimensionIndex];
+        const SupportedAxisValue &min = _shape.min[dimensionIndex];
+        const SupportedAxisValue &max = _shape.max[dimensionIndex];
+
+        assert (_operations.Compare (min, max) <= 0);
+        const SupportedAxisValue leafSize = CalculateLeafSize (dimension, _operations);
+        sector.min[dimensionIndex] = CalculateCoordinate (min, dimension, leafSize, _operations);
+        sector.min[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
+    }
+
+    return sector;
+}
+
+template <typename Operations>
+VolumetricIndex::SupportedAxisValue VolumetricIndex::CalculateLeafSize (
+    const VolumetricIndex::Dimension &_dimension, const Operations &_operations) const noexcept
+{
+    return _operations.Divide (
+        _operations.Subtract (_dimension.globalMaxBorder, _dimension.globalMinBorder),
+        GetMaxLeafCoordinateOnAxis (dimensions.GetCount ()));
+}
+
+template <typename Operations>
+std::size_t VolumetricIndex::CalculateCoordinate (
+    const VolumetricIndex::SupportedAxisValue &_value, const VolumetricIndex::Dimension &_dimension,
+    const VolumetricIndex::SupportedAxisValue &_leafSize, const Operations &_operations) const noexcept
+{
+    const std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (dimensions.GetCount ());
+    return std::clamp <std::size_t> (
+        0u, maxCoordinate - 1u, _operations.TruncateToSizeType (_operations.Divide (
+            _operations.Subtract (_value, _dimension.globalMinBorder), _leafSize)));
 }
 
 template <typename Callback>
@@ -520,17 +726,6 @@ void VolumetricIndex::OnRecordDeleted (const void *_record, const void *_recordB
     freeRecordIds.emplace_back (recordId);
 }
 
-void VolumetricIndex::DeleteRecordMyself (VolumetricIndex::CursorBase &_cursor) noexcept
-{
-    const void *record = _cursor.GetRecord ();
-    assert (record);
-
-    // One record could reside in multiple leaves, therefore we pass nullptr as
-    // source index to ensure that storage will call default record deletion routine.
-    storage->DeleteRecord (const_cast <void *> (record), nullptr);
-    _cursor.FixCurrentRecordIndex ();
-}
-
 void VolumetricIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
     DoWithCorrectTypeOperations (
@@ -593,6 +788,12 @@ int TypeOperations <Type>::Compare (
     const VolumetricIndex::SupportedAxisValue &_left, const VolumetricIndex::SupportedAxisValue &_right) const noexcept
 {
     return comparator.Compare (&_left, &_right);
+}
+
+template <typename Type>
+int TypeOperations <Type>::Compare (const void *_left, const void *_right) const noexcept
+{
+    return comparator.Compare (_left, _right);
 }
 
 template <typename Type>
