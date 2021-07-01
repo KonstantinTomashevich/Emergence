@@ -23,6 +23,8 @@ private:
 public:
     union SupportedAxisValue
     {
+        SupportedAxisValue () noexcept;
+
         SupportedAxisValue (int8_t _value) noexcept;
 
         SupportedAxisValue (int16_t _value) noexcept;
@@ -85,6 +87,16 @@ public:
     {
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> min;
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> max;
+
+        // TODO: This format differs from service format. Think which is better.
+    };
+
+    struct Ray
+    {
+        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> origin;
+        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
+
+        // TODO: This format differs from service format. Think which is better.
     };
 
     class ShapeIntersectionCursorBase
@@ -182,6 +194,103 @@ public:
         void BeginRecordEdition () const noexcept;
     };
 
+    class RayIntersectionCursorBase
+    {
+    public:
+        RayIntersectionCursorBase (const RayIntersectionCursorBase &_other) noexcept;
+
+        RayIntersectionCursorBase (RayIntersectionCursorBase &&_other) noexcept;
+
+        ~RayIntersectionCursorBase () noexcept;
+
+    protected:
+        RayIntersectionCursorBase (VolumetricIndex *_index, const Ray &_ray) noexcept;
+
+        bool IsFinished () const noexcept;
+
+        void MoveToNextRecord () noexcept;
+
+        const void *GetRecord () const noexcept;
+
+        VolumetricIndex *GetIndex () const noexcept;
+
+        /// If cursor is not finished and as a result of record deletion, record edition or cursor construction
+        /// ::currentRecordIndex is invalid, current record is already visited or does not intersect with cursor
+        /// ray, we should execute ::MoveToNextRecord.
+        void FixCurrentRecordIndex () noexcept;
+
+        template <typename Operations>
+        bool CheckRayIntersection (const void *_record, const Operations &_operations) const noexcept;
+
+    private:
+        VolumetricIndex *index;
+
+        /// Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
+        std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> currentPoint;
+
+        /// Ray direction, converted into leaf coordinates.
+        std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
+
+        const Ray ray;
+        LeafCoordinate currentCoordinate;
+        std::size_t currentRecordIndex;
+        std::vector <bool> visitedRecords;
+    };
+
+    class RayIntersectionReadCursor final : private RayIntersectionCursorBase
+    {
+    public:
+        RayIntersectionReadCursor (const RayIntersectionReadCursor &_other) noexcept;
+
+        RayIntersectionReadCursor (RayIntersectionReadCursor &&_other) noexcept;
+
+        ~RayIntersectionReadCursor () noexcept;
+
+        const void *operator * () const noexcept;
+
+        RayIntersectionReadCursor &operator ++ () noexcept;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionReadCursor &operator = (const RayIntersectionReadCursor &_other) = delete;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionReadCursor &operator = (RayIntersectionReadCursor &&_other) = delete;
+
+    private:
+        friend class VolumetricIndex;
+
+        RayIntersectionReadCursor (VolumetricIndex *_index, const Ray &_ray) noexcept;
+    };
+
+    class RayIntersectionEditCursor final : private RayIntersectionCursorBase
+    {
+    public:
+        RayIntersectionEditCursor (const RayIntersectionEditCursor &_other) = delete;
+
+        RayIntersectionEditCursor (RayIntersectionEditCursor &&_other) noexcept;
+
+        ~RayIntersectionEditCursor () noexcept;
+
+        void *operator * () noexcept;
+
+        RayIntersectionEditCursor &operator ~ () noexcept;
+
+        RayIntersectionEditCursor &operator ++ () noexcept;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionEditCursor &operator = (const RayIntersectionEditCursor &_other) = delete;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionEditCursor &operator = (RayIntersectionEditCursor &&_other) = delete;
+
+    private:
+        friend class VolumetricIndex;
+
+        RayIntersectionEditCursor (VolumetricIndex *_index, const Ray &_ray) noexcept;
+
+        void BeginRecordEdition () const noexcept;
+    };
+
     /// There is no sense to copy indices.
     VolumetricIndex (const VolumetricIndex &_other) = delete;
 
@@ -193,6 +302,10 @@ public:
     ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShape &_shape) noexcept;
 
     ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShape &_shape) noexcept;
+
+    RayIntersectionReadCursor LookupRayIntersectionToRead (const Ray &_ray) noexcept;
+
+    RayIntersectionEditCursor LookupRayIntersectionToEdit (const Ray &_ray) noexcept;
 
     void Drop () noexcept;
 
@@ -231,6 +344,12 @@ private:
     std::size_t CalculateCoordinate (
         const SupportedAxisValue &_value, const Dimension &_dimension,
         const SupportedAxisValue &_leafSize, const Operations &_operations) const noexcept;
+
+    template <typename Operations>
+    bool CheckRayShapeIntersection (
+        const Ray &_ray, const AxisAlignedShape &_shape,
+        std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
+        const Operations &_operations) const noexcept;
 
     template <typename Callback>
     void ForEachCoordinate (const LeafSector &_sector, const Callback &_callback) const noexcept;

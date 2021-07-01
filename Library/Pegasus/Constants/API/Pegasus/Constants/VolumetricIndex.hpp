@@ -10,5 +10,7 @@ constexpr std::size_t MAX_DIMENSIONS = Implementation::VolumetricIndex::MAX_DIME
 
 constexpr std::array <std::size_t, MAX_DIMENSIONS> LEVELS = Implementation::VolumetricIndex::LEVELS;
 
+constexpr float EPSILON = Implementation::VolumetricIndex::EPSILON;
+
 static_assert (MAX_DIMENSIONS > 0u);
 } // namespace Emergence::Pegasus::Constants::VolumetricIndex
