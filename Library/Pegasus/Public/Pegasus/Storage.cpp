@@ -254,8 +254,8 @@ Storage::Allocator Storage::AllocateAndInsert () noexcept
     return Allocator (this);
 }
 
-Handling::Handle <HashIndex>
-Storage::CreateHashIndex (const std::vector <StandardLayout::FieldId> &_indexedFields) noexcept
+Handling::Handle <HashIndex> Storage::CreateHashIndex (
+    const std::vector <StandardLayout::FieldId> &_indexedFields) noexcept
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
@@ -334,8 +334,8 @@ Handling::Handle <OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fie
     return holder.index.get ();
 }
 
-Handling::Handle <VolumetricIndex>
-Storage::CreateVolumetricIndex (const std::vector <VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
+Handling::Handle <VolumetricIndex> Storage::CreateVolumetricIndex (
+    const std::vector <VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
@@ -443,11 +443,11 @@ void Storage::UnregisterWriter () noexcept
     {
         index->OnWriterClosed ();
     }
-//
-//    for (auto &[index, mask] : indices.volumetric)
-//    {
-//        index->OnWriterClosed ();
-//    }
+
+    for (auto &[index, mask] : indices.volumetric)
+    {
+        index->OnWriterClosed ();
+    }
 }
 
 void *Storage::AllocateRecord () noexcept
@@ -472,11 +472,11 @@ void Storage::InsertRecord (const void *_record) noexcept
     {
         index->InsertRecord (_record);
     }
-//
-//    for (auto &[index, mask] : indices.volumetric)
-//    {
-//        index->InsertRecord (_record);
-//    }
+
+    for (auto &[index, mask] : indices.volumetric)
+    {
+        index->InsertRecord (_record);
+    }
 }
 
 void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexcept
@@ -500,14 +500,14 @@ void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexce
             index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
         }
     }
-//
-//    for (auto &[index, mask] : indices.volumetric)
-//    {
-//        if (index.get() != _requestedByIndex)
-//        {
-//            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
-//        }
-//    }
+
+    for (auto &[index, mask] : indices.volumetric)
+    {
+        if (index.get() != _requestedByIndex)
+        {
+            index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
+        }
+    }
 
     records.Release (_record);
 }
@@ -626,20 +626,20 @@ bool Storage::EndRecordEdition (const void *_record, const void *_requestedByInd
         }
     }
 
-//    for (auto &[index, mask] : indices.volumetric)
-//    {
-//        if (changedIndexedFields & mask)
-//        {
-//            if (index.get () != _requestedByIndex)
-//            {
-//                index->OnRecordChanged (_record, editedRecordBackup);
-//            }
-//            else
-//            {
-//                requesterAffected = true;
-//            }
-//        }
-//    }
+    for (auto &[index, mask] : indices.volumetric)
+    {
+        if (changedIndexedFields & mask)
+        {
+            if (index.get () != _requestedByIndex)
+            {
+                index->OnRecordChanged (_record, editedRecordBackup);
+            }
+            else
+            {
+                requesterAffected = true;
+            }
+        }
+    }
 
     return requesterAffected;
 }
@@ -806,4 +806,4 @@ void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) 
                           return _indexedField.field.IsSame (_field);
                       }));
 }
-} // namespace Emergence::Pegasus                                                        
+} // namespace Emergence::Pegasus

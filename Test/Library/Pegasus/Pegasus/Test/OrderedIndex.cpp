@@ -1,9 +1,9 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <Pegasus/Test/Shortcuts.hpp>
 #include <Pegasus/Test/Record.hpp>
 #include <Pegasus/Test/Scenario.hpp>
+#include <Pegasus/Test/Shortcuts.hpp>
 
 using namespace Emergence::Pegasus::Test;
 
@@ -17,7 +17,7 @@ struct NicknameBound
     decltype (Record::nickname) nickname;
 };
 
-static Record entity0Hugo
+static const Record entity0Hugo
     {
         0u,
         {
@@ -34,12 +34,15 @@ static Record entity0Hugo
         {
             3.0f,
             7.0f,
-            49.0f,
+            0.0f,
+            4.0f,
+            8.0f,
+            0.0f,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_STUNNED,
     };
 
-static Record entity1Karl
+static const Record entity1Karl
     {
         1u,
         {
@@ -56,12 +59,15 @@ static Record entity1Karl
         {
             5.0f,
             4.0f,
-            11.0f,
+            0.0f,
+            6.0f,
+            5.0f,
+            0.0f,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_POISONED,
     };
 
-static Record entity2Xavier
+static const Record entity2Xavier
     {
         2u,
         {
@@ -78,30 +84,33 @@ static Record entity2Xavier
         {
             9.0f,
             7.0f,
-            82.0f,
+            0.0f,
+            10.0f,
+            8.0f,
+            0.0f,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };
 
 namespace Bounds
 {
-EntityIdBound entity0 {0u};
+static const EntityIdBound entity0 {0u};
 
-EntityIdBound entity1 {1u};
+static const EntityIdBound entity1 {1u};
 
-EntityIdBound entity2 {2u};
+static const EntityIdBound entity2 {2u};
 
-EntityIdBound entity3 {3u};
+static const EntityIdBound entity3 {3u};
 
-NicknameBound hugo {{"hugo"}};
+static const NicknameBound hugo {{"hugo"}};
 
-NicknameBound ioran {{"ioran"}};
+static const NicknameBound ioran {{"ioran"}};
 
-NicknameBound karl {{"karl"}};
+static const NicknameBound karl {{"karl"}};
 
-NicknameBound xavier {{"xavier"}};
+static const NicknameBound xavier {{"xavier"}};
 
-NicknameBound zanek {{"zanek"}};
+static const NicknameBound zanek {{"zanek"}};
 };
 
 BOOST_AUTO_TEST_SUITE (OrderedIndex)

@@ -24,14 +24,18 @@ static StandardLayout::Mapping RegisterAvatarRuntime ()
     return builder.End ();
 }
 
-static StandardLayout::Mapping RegisterTransform ()
+static StandardLayout::Mapping RegisterBoundingBox ()
 {
     StandardLayout::MappingBuilder builder;
-    builder.Begin (sizeof (Transform));
+    builder.Begin (sizeof (BoundingBox));
 
-    Transform::Reflection::x = builder.RegisterFloat (offsetof (Transform, x));
-    Transform::Reflection::y = builder.RegisterFloat (offsetof (Transform, y));
-    Transform::Reflection::rotationDeg = builder.RegisterFloat (offsetof (Transform, rotationDeg));
+    BoundingBox::Reflection::minX = builder.RegisterFloat (offsetof (BoundingBox, minX));
+    BoundingBox::Reflection::minY = builder.RegisterFloat (offsetof (BoundingBox, minY));
+    BoundingBox::Reflection::minZ = builder.RegisterFloat (offsetof (BoundingBox, minZ));
+
+    BoundingBox::Reflection::maxX = builder.RegisterFloat (offsetof (BoundingBox, maxX));
+    BoundingBox::Reflection::maxY = builder.RegisterFloat (offsetof (BoundingBox, maxY));
+    BoundingBox::Reflection::maxZ = builder.RegisterFloat (offsetof (BoundingBox, maxZ));
     return builder.End ();
 }
 
@@ -49,8 +53,8 @@ static StandardLayout::Mapping RegisterRecord ()
     Record::Reflection::runtime = builder.RegisterNestedObject (
         offsetof (Record, runtime), AvatarRuntime::Reflection::GetMapping ());
 
-    Record::Reflection::transform = builder.RegisterNestedObject (
-        offsetof (Record, transform), Transform::Reflection::GetMapping ());
+    Record::Reflection::boundingBox = builder.RegisterNestedObject (
+        offsetof (Record, boundingBox), BoundingBox::Reflection::GetMapping ());
 
     Record::Reflection::alive = builder.RegisterBit (offsetof (Record, status), Record::Status::FLAG_ALIVE_OFFSET);
     Record::Reflection::stunned = builder.RegisterBit (offsetof (Record, status), Record::Status::FLAG_STUNNED_OFFSET);
@@ -71,11 +75,17 @@ StandardLayout::FieldId AvatarRuntime::Reflection::ammoLeft;
 
 StandardLayout::FieldId AvatarRuntime::Reflection::health;
 
-StandardLayout::FieldId Transform::Reflection::x;
+StandardLayout::FieldId BoundingBox::Reflection::minX;
 
-StandardLayout::FieldId Transform::Reflection::y;
+StandardLayout::FieldId BoundingBox::Reflection::minY;
 
-StandardLayout::FieldId Transform::Reflection::rotationDeg;
+StandardLayout::FieldId BoundingBox::Reflection::minZ;
+
+StandardLayout::FieldId BoundingBox::Reflection::maxX;
+
+StandardLayout::FieldId BoundingBox::Reflection::maxY;
+
+StandardLayout::FieldId BoundingBox::Reflection::maxZ;
 
 StandardLayout::FieldId Record::Reflection::entityId;
 
@@ -85,7 +95,7 @@ StandardLayout::FieldId Record::Reflection::info;
 
 StandardLayout::FieldId Record::Reflection::runtime;
 
-StandardLayout::FieldId Record::Reflection::transform;
+StandardLayout::FieldId Record::Reflection::boundingBox;
 
 StandardLayout::FieldId Record::Reflection::alive;
 
@@ -107,9 +117,9 @@ StandardLayout::Mapping AvatarRuntime::Reflection::GetMapping ()
     return mapping;
 }
 
-StandardLayout::Mapping Transform::Reflection::GetMapping ()
+StandardLayout::Mapping BoundingBox::Reflection::GetMapping ()
 {
-    static StandardLayout::Mapping mapping = RegisterTransform ();
+    static StandardLayout::Mapping mapping = RegisterBoundingBox ();
     return mapping;
 }
 

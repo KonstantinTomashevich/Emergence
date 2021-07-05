@@ -7,9 +7,9 @@
 
 namespace Emergence::Pegasus
 {
-constexpr std::size_t GetMaxLeafCoordinateOnAxis (std::size_t _subdivisions)
+constexpr std::size_t GetMaxLeafCoordinateOnAxis (std::size_t _dimensions)
 {
-    return 1u << Constants::VolumetricIndex::LEVELS[_subdivisions - 1u];
+    return 1u << (Constants::VolumetricIndex::LEVELS[_dimensions - 1u] - 1u);
 }
 
 template <typename Type>
@@ -209,6 +209,16 @@ VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
       visitedRecords (index->nextRecordId, false)
 {
     assert (index);
+#ifndef NDEBUG
+    std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (index->dimensions.GetCount ());
+
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+    {
+        assert (_sector.min[dimensionIndex] < sector.max[dimensionIndex]);
+        assert (sector.max[dimensionIndex] < maxCoordinate);
+    }
+#endif
+
     ++index->activeCursors;
     FixCurrentRecordIndex ();
 }
@@ -239,7 +249,7 @@ void VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextRecord () noexcept
             {
                 if (overflow)
                 {
-                    if (currentCoordinate == sector.max)
+                    if (index->AreEqual (currentCoordinate, sector.max))
                     {
                         break;
                     }
@@ -286,7 +296,7 @@ void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noex
             {
                 const LeafData &leaf = index->leaves[index->GetLeafIndex (currentCoordinate)];
 
-                if (currentRecordIndex > leaf.records.size () ||
+                if (currentRecordIndex >= leaf.records.size () ||
                     visitedRecords[leaf.records[currentRecordIndex].recordId] ||
                     !CheckShapeIntersection (leaf.records[currentRecordIndex].record, _operations))
                 {
@@ -560,7 +570,7 @@ void VolumetricIndex::RayIntersectionCursorBase::MoveToNextRecord () noexcept
                         {
                             const float step = direction[dimensionIndex] > 0.0f ? 1.0f : 0.0f;
                             const float target = static_cast <float> (currentCoordinate[dimensionIndex]) + step;
-                            const float t = (currentPoint[dimensionIndex] - target) / direction[dimensionIndex];
+                            const float t = (target - currentPoint[dimensionIndex]) / direction[dimensionIndex];
 
                             if (t < minT)
                             {
@@ -643,7 +653,7 @@ void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexce
             {
                 const LeafData &leaf = index->leaves[index->GetLeafIndex (currentCoordinate)];
 
-                if (currentRecordIndex > leaf.records.size () ||
+                if (currentRecordIndex >= leaf.records.size () ||
                     visitedRecords[leaf.records[currentRecordIndex].recordId] ||
                     !CheckRayIntersection (leaf.records[currentRecordIndex].record, _operations))
                 {
@@ -860,6 +870,7 @@ VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <Dimensio
     assert (!_dimensions.empty ());
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
     std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+    leaves.resize (1u << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
 
 #ifndef NDEBUG
     // Current implementation expects that all fields have same archetype and size.
@@ -901,12 +912,12 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
             dimension.minBorderField.GetValue (_record));
 
         const SupportedAxisValue max = *reinterpret_cast <const SupportedAxisValue *> (
-            dimension.minBorderField.GetValue (_record));
+            dimension.maxBorderField.GetValue (_record));
 
         assert (_operations.Compare (min, max) <= 0);
         const SupportedAxisValue leafSize = CalculateLeafSize (dimension, _operations);
         sector.min[dimensionIndex] = CalculateCoordinate (min, dimension, leafSize, _operations);
-        sector.min[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
+        sector.max[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
     }
 
     return sector;
@@ -926,7 +937,7 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
         assert (_operations.Compare (min, max) <= 0);
         const SupportedAxisValue leafSize = CalculateLeafSize (dimension, _operations);
         sector.min[dimensionIndex] = CalculateCoordinate (min, dimension, leafSize, _operations);
-        sector.min[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
+        sector.max[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
     }
 
     return sector;
@@ -948,8 +959,9 @@ std::size_t VolumetricIndex::CalculateCoordinate (
 {
     const std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (dimensions.GetCount ());
     return std::clamp <std::size_t> (
-        0u, maxCoordinate - 1u, _operations.TruncateToSizeType (_operations.Divide (
-            _operations.Subtract (_value, _dimension.globalMinBorder), _leafSize)));
+        _operations.TruncateToSizeType (_operations.Divide (
+            _operations.Subtract (_value, _dimension.globalMinBorder), _leafSize)),
+        0u, maxCoordinate - 1u);
 }
 
 template <typename Operations>
@@ -1056,6 +1068,7 @@ std::size_t VolumetricIndex::GetLeafIndex (const VolumetricIndex::LeafCoordinate
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
+        assert (_coordinate[dimensionIndex] < maxCoordinate);
         result = result * maxCoordinate + _coordinate[dimensionIndex];
     }
 

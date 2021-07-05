@@ -22,13 +22,19 @@ using Cursor = std::variant <
     OrderedIndex::ReadCursor,
     OrderedIndex::EditCursor,
     OrderedIndex::ReversedReadCursor,
-    OrderedIndex::ReversedEditCursor>;
+    OrderedIndex::ReversedEditCursor,
+    VolumetricIndex::ShapeIntersectionReadCursor,
+    VolumetricIndex::ShapeIntersectionEditCursor,
+    VolumetricIndex::RayIntersectionReadCursor,
+    VolumetricIndex::RayIntersectionEditCursor>;
 
 template <typename CursorType>
 constexpr bool isEditCursor =
     std::is_same_v <CursorType, HashIndex::EditCursor> ||
     std::is_same_v <CursorType, OrderedIndex::EditCursor> ||
-    std::is_same_v <CursorType, OrderedIndex::ReversedEditCursor>;
+    std::is_same_v <CursorType, OrderedIndex::ReversedEditCursor> ||
+    std::is_same_v <CursorType, VolumetricIndex::ShapeIntersectionEditCursor> ||
+    std::is_same_v <CursorType, VolumetricIndex::RayIntersectionEditCursor>;
 
 struct ExecutionContext
 {
@@ -37,6 +43,8 @@ struct ExecutionContext
     void ExecuteTask (const CreateHashIndex &_task);
 
     void ExecuteTask (const CreateOrderedIndex &_task);
+
+    void ExecuteTask (const CreateVolumetricIndex &_task);
 
     void ExecuteTask (const CopyIndexReference &_task);
 
@@ -63,6 +71,14 @@ struct ExecutionContext
     void ExecuteTask (const OrderedIndexLookupToReadReversed &_task);
 
     void ExecuteTask (const OrderedIndexLookupToEditReversed &_task);
+
+    void ExecuteTask (const VolumetricIndexShapeIntersectionLookupToRead &_task);
+
+    void ExecuteTask (const VolumetricIndexShapeIntersectionLookupToEdit &_task);
+
+    void ExecuteTask (const VolumetricIndexRayIntersectionLookupToRead &_task);
+
+    void ExecuteTask (const VolumetricIndexRayIntersectionLookupToEdit &_task);
 
     void ExecuteTask (const CursorCheck &_task);
 
@@ -93,6 +109,10 @@ struct ExecutionContext
     void OnIndexDropped (VolumetricIndex *_index);
 
     std::string RecordToString (const void *_record) const;
+
+    VolumetricIndex::AxisAlignedShape ExtractShape (const VolumetricIndexShapeIntersectionLookupBase &_task) const;
+
+    VolumetricIndex::Ray ExtractRay (const VolumetricIndexRayIntersectionLookupBase &_task) const;
 
     Storage storage;
     std::vector <HashIndex *> knownHashIndices;
@@ -137,6 +157,35 @@ void ExecutionContext::ExecuteTask (const CreateOrderedIndex &_task)
     BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
 
     knownOrderedIndices.emplace_back (index.Get ());
+    indexReferences.emplace (_task.name, index);
+    IterateOverIndices ();
+}
+
+void ExecutionContext::ExecuteTask (const CreateVolumetricIndex &_task)
+{
+    BOOST_REQUIRE_MESSAGE (
+        indexReferences.find (_task.name) == indexReferences.end (),
+        boost::format ("There should be no index reference with name \"%1%\"") % _task.name);
+
+    std::vector <VolumetricIndex::DimensionDescriptor> convertedDescriptors;
+    convertedDescriptors.reserve (_task.dimensions.size ());
+
+    for (const DimensionDescriptor &dimension : _task.dimensions)
+    {
+        convertedDescriptors.emplace_back (
+            VolumetricIndex::DimensionDescriptor
+                {
+                    dimension.minBorderField,
+                    *static_cast <const VolumetricIndex::SupportedAxisValue *> (dimension.globalMinBorderValue),
+                    dimension.maxBorderField,
+                    *static_cast <const VolumetricIndex::SupportedAxisValue *> (dimension.globalMaxBorderValue)
+                });
+    }
+
+    Handling::Handle <VolumetricIndex> index = storage.CreateVolumetricIndex (convertedDescriptors);
+    BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
+
+    knownVolumetricIndices.emplace_back (index.Get ());
     indexReferences.emplace (_task.name, index);
     IterateOverIndices ();
 }
@@ -256,13 +305,43 @@ void ExecutionContext::ExecuteTask (const OrderedIndexLookupToEdit &_task)
 void ExecutionContext::ExecuteTask (const OrderedIndexLookupToReadReversed &_task)
 {
     OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_task)).Get ();
-    activeCursors.emplace (_task.cursorName, index->LookupToReadReversed ({_task.minValue}, {_task.maxValue}));
+    activeCursors.emplace (
+        _task.cursorName, index->LookupToReadReversed ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecutionContext::ExecuteTask (const OrderedIndexLookupToEditReversed &_task)
 {
     OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_task)).Get ();
-    activeCursors.emplace (_task.cursorName, index->LookupToEditReversed ({_task.minValue}, {_task.maxValue}));
+    activeCursors.emplace (
+        _task.cursorName, index->LookupToEditReversed ({_task.minValue}, {_task.maxValue}));
+}
+
+void ExecutionContext::ExecuteTask (const VolumetricIndexShapeIntersectionLookupToRead &_task)
+{
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
+    BOOST_REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
+    activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToRead (ExtractShape (_task)));
+}
+
+void ExecutionContext::ExecuteTask (const VolumetricIndexShapeIntersectionLookupToEdit &_task)
+{
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
+    BOOST_REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
+    activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToEdit (ExtractShape (_task)));
+}
+
+void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToRead &_task)
+{
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
+    BOOST_REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
+    activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToRead (ExtractRay (_task)));
+}
+
+void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToEdit &_task)
+{
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
+    BOOST_REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
+    activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToEdit (ExtractRay (_task)));
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheck &_task)
@@ -645,6 +724,39 @@ std::string ExecutionContext::RecordToString (const void *_record) const
     return result;
 }
 
+VolumetricIndex::AxisAlignedShape ExecutionContext::ExtractShape (
+    const VolumetricIndexShapeIntersectionLookupBase &_task) const
+{
+    BOOST_REQUIRE_EQUAL (_task.min.size (), _task.max.size ());
+    BOOST_REQUIRE_GT (_task.min.size (), 0u);
+    BOOST_REQUIRE_LE (_task.min.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+    VolumetricIndex::AxisAlignedShape shape;
+
+    for (std::size_t index = 0u; index < _task.min.size (); ++index)
+    {
+        shape.min[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.min[index]);
+        shape.max[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.max[index]);
+    }
+
+    return shape;
+}
+
+VolumetricIndex::Ray ExecutionContext::ExtractRay (const VolumetricIndexRayIntersectionLookupBase &_task) const
+{
+    BOOST_REQUIRE_EQUAL (_task.origin.size (), _task.direction.size ());
+    BOOST_REQUIRE_GT (_task.origin.size (), 0u);
+    BOOST_REQUIRE_LE (_task.origin.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+    VolumetricIndex::Ray ray;
+
+    for (std::size_t index = 0u; index < _task.origin.size (); ++index)
+    {
+        ray.origin[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.origin[index]);
+        ray.direction[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.direction[index]);
+    }
+
+    return ray;
+}
+
 std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
 {
     _output << "Create hash index \"" << _task.name << "\" on fields:";
@@ -659,6 +771,19 @@ std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
 std::ostream &operator << (std::ostream &_output, const CreateOrderedIndex &_task)
 {
     return _output << "Create ordered index \"" << _task.name << "\" on field " << _task.indexedField << ".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_task)
+{
+    _output << "Create volumetric index \"" << _task.name << "\" on dimensions:";
+    for (const DimensionDescriptor &dimension : _task.dimensions)
+    {
+        _output << " { minField: " << dimension.minBorderField << ", globalMinPointer: " <<
+                dimension.globalMinBorderValue << ", maxField: " << dimension.maxBorderField <<
+                ", globalMaxPointer: " << dimension.globalMaxBorderValue << " }";
+    }
+
+    return _output << ".";
 }
 
 std::ostream &operator << (std::ostream &_output, const CopyIndexReference &_task)
@@ -739,6 +864,66 @@ std::ostream &operator << (std::ostream &_output, const OrderedIndexLookupToEdit
                    "\" editable lookup with reversed order using request {min = " << _task.minValue <<
                    ", max = " << _task.maxValue << "} and save cursor as \"" <<
                    _task.cursorName << "\".";
+}
+
+std::ostream &PrintShapeIntersectionLookupRequest (
+    const VolumetricIndexShapeIntersectionLookupBase &_lookup, bool _editable, std::ostream &_output)
+{
+    _output << "Execute volumetric index \"" << _lookup.indexName << "\" " << (_editable ? "editable" : "readonly") <<
+            "lookup using shape { minPointers: { ";
+
+    for (const void *pointer : _lookup.min)
+    {
+        _output << pointer << " ";
+    }
+
+    _output << "}, maxPointers: { ";
+    for (const void *pointer : _lookup.max)
+    {
+        _output << pointer << " ";
+    }
+
+    return _output << "} } and save cursor as \"" << _lookup.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const VolumetricIndexShapeIntersectionLookupToRead &_task)
+{
+    return PrintShapeIntersectionLookupRequest (_task, false, _output);
+}
+
+std::ostream &operator << (std::ostream &_output, const VolumetricIndexShapeIntersectionLookupToEdit &_task)
+{
+    return PrintShapeIntersectionLookupRequest (_task, true, _output);
+}
+
+std::ostream &PrintRayIntersectionLookupRequest (
+    const VolumetricIndexRayIntersectionLookupBase &_lookup, bool _editable, std::ostream &_output)
+{
+    _output << "Execute volumetric index \"" << _lookup.indexName << "\" " << (_editable ? "editable" : "readonly") <<
+            "lookup using ray { originPointers: { ";
+
+    for (const void *pointer : _lookup.origin)
+    {
+        _output << pointer << " ";
+    }
+
+    _output << "}, directionPointers: { ";
+    for (const void *pointer : _lookup.direction)
+    {
+        _output << pointer << " ";
+    }
+
+    return _output << "} } and save cursor as \"" << _lookup.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const VolumetricIndexRayIntersectionLookupToRead &_task)
+{
+    return PrintRayIntersectionLookupRequest (_task, false, _output);
+}
+
+std::ostream &operator << (std::ostream &_output, const VolumetricIndexRayIntersectionLookupToEdit &_task)
+{
+    return PrintRayIntersectionLookupRequest (_task, true, _output);
 }
 
 std::ostream &operator << (std::ostream &_output, const CursorCheck &_task)

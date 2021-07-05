@@ -1,9 +1,9 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <Pegasus/Test/Shortcuts.hpp>
 #include <Pegasus/Test/Record.hpp>
 #include <Pegasus/Test/Scenario.hpp>
+#include <Pegasus/Test/Shortcuts.hpp>
 
 using namespace Emergence::Pegasus::Test;
 
@@ -34,13 +34,13 @@ struct AliveAndStunnedLookupRequest
     uint8_t stunnedFlag;
 };
 
-constexpr Record ChangeEntityId (Record _record, uint32_t _newEntityId)
+constexpr Record ChangeEntityId (Record _record, uint32_t _newEntityId) noexcept
 {
     _record.entityId = _newEntityId;
     return _record;
 }
 
-static Record firstRecord
+static const Record firstRecord
     {
         0u,
         {
@@ -57,12 +57,15 @@ static Record firstRecord
         {
             3.0f,
             7.0f,
-            49.0f,
+            0.0f,
+            4.0f,
+            8.0f,
+            0.0f,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_STUNNED,
     };
 
-static Record anotherRecordForEntity0
+static const Record anotherRecordForEntity0
     {
         0u,
         {
@@ -80,11 +83,14 @@ static Record anotherRecordForEntity0
             5.0f,
             1.0f,
             0.0f,
+            6.0f,
+            2.0f,
+            0.0f,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };
 
-static Record secondRecord
+static const Record secondRecord
     {
         1u,
         {
@@ -101,38 +107,41 @@ static Record secondRecord
         {
             11.0f,
             12.0f,
-            79.0f,
+            0.0f,
+            12.0f,
+            13.0f,
+            0.0f,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };
 
-static Record secondRecordWithEntity0 = ChangeEntityId (secondRecord, 0u);
+static const Record secondRecordWithEntity0 = ChangeEntityId (secondRecord, 0u);
 
 namespace Requests
 {
-EntityIdLookupRequest entity0 {0u};
+static const EntityIdLookupRequest entity0 {0u};
 
-EntityIdLookupRequest entity1 {1u};
+static const EntityIdLookupRequest entity1 {1u};
 
-EntityIdLookupRequest entity2 {2u};
+static const EntityIdLookupRequest entity2 {2u};
 
-NicknameLookupRequest hugo {{"hugo"}};
+static const NicknameLookupRequest hugo {{"hugo"}};
 
-NicknameLookupRequest karl {{"karl"}};
+static const NicknameLookupRequest karl {{"karl"}};
 
-NicknameAndEntityIdLookupRequest karlEntity1 {{"karl"}, 1u};
+static const NicknameAndEntityIdLookupRequest karlEntity1 {{"karl"}, 1u};
 
-NicknameAndEntityIdLookupRequest karlEntity0 {{"karl"}, 0u};
+static const NicknameAndEntityIdLookupRequest karlEntity0 {{"karl"}, 0u};
 
-NicknameAndEntityIdLookupRequest hugoEntity1 {{"hugo"}, 1u};
+static const NicknameAndEntityIdLookupRequest hugoEntity1 {{"hugo"}, 1u};
 
-AliveLookupRequest alive {Record::Status::FLAG_ALIVE};
+static const AliveLookupRequest alive {Record::Status::FLAG_ALIVE};
 
-AliveLookupRequest dead {0u};
+static const AliveLookupRequest dead {0u};
 
-AliveAndStunnedLookupRequest aliveAndStunned {Record::Status::FLAG_ALIVE, Record::Status::FLAG_STUNNED};
+static const AliveAndStunnedLookupRequest aliveAndStunned {Record::Status::FLAG_ALIVE, Record::Status::FLAG_STUNNED};
 
-AliveAndStunnedLookupRequest aliveAndNotStunned {Record::Status::FLAG_ALIVE, 0u};
+static const AliveAndStunnedLookupRequest aliveAndNotStunned {Record::Status::FLAG_ALIVE, 0u};
 };
 
 BOOST_AUTO_TEST_SUITE (HashIndex)

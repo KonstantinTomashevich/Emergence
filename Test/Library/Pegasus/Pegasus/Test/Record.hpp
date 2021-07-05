@@ -38,7 +38,7 @@ struct AvatarRuntime
     float health = 0u;
 };
 
-struct Transform final
+struct BoundingBox final
 {
     struct Reflection final
     {
@@ -46,15 +46,25 @@ struct Transform final
 
         static StandardLayout::Mapping GetMapping ();
 
-        static StandardLayout::FieldId x;
-        static StandardLayout::FieldId y;
-        static StandardLayout::FieldId rotationDeg;
+        static StandardLayout::FieldId minX;
+        static StandardLayout::FieldId minY;
+        static StandardLayout::FieldId minZ;
+
+        static StandardLayout::FieldId maxX;
+        static StandardLayout::FieldId maxY;
+        static StandardLayout::FieldId maxZ;
     };
 
-    float x = 0.0f;
-    float y = 0.0f;
-    float rotationDeg = 0.0f;
+    float minX = 0.0f;
+    float minY = 0.0f;
+    float minZ = 0.0f;
+
+    float maxX = 0.0f;
+    float maxY = 0.0f;
+    float maxZ = 0.0f;
 };
+
+// TODO: Delete unused fields.
 
 struct Record final
 {
@@ -68,7 +78,7 @@ struct Record final
         static StandardLayout::FieldId nickname;
         static StandardLayout::FieldId info;
         static StandardLayout::FieldId runtime;
-        static StandardLayout::FieldId transform;
+        static StandardLayout::FieldId boundingBox;
         static StandardLayout::FieldId alive;
         static StandardLayout::FieldId stunned;
         static StandardLayout::FieldId poisoned;
@@ -99,7 +109,7 @@ struct Record final
 
     AvatarInfo info;
     AvatarRuntime runtime;
-    Transform transform;
+    BoundingBox boundingBox;
     uint8_t status = 0u;
 };
 } // namespace Emergence::Pegasus::Test

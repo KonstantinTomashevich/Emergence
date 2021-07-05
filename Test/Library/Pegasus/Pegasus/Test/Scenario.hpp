@@ -21,6 +21,21 @@ struct CreateOrderedIndex
     StandardLayout::FieldId indexedField;
 };
 
+struct DimensionDescriptor
+{
+    StandardLayout::FieldId minBorderField;
+    const void *globalMinBorderValue;
+
+    StandardLayout::FieldId maxBorderField;
+    const void *globalMaxBorderValue;
+};
+
+struct CreateVolumetricIndex
+{
+    std::string name;
+    std::vector <DimensionDescriptor> dimensions;
+};
+
 struct CopyIndexReference
 {
     std::string sourceName;
@@ -97,6 +112,38 @@ struct OrderedIndexLookupToEditReversed : public OrderedIndexLookupBase
 {
 };
 
+struct VolumetricIndexShapeIntersectionLookupBase : public IndexLookupBase
+{
+    std::vector <const void *> min;
+    std::vector <const void *> max;
+};
+
+struct VolumetricIndexShapeIntersectionLookupToRead :
+    public VolumetricIndexShapeIntersectionLookupBase
+{
+};
+
+struct VolumetricIndexShapeIntersectionLookupToEdit :
+    public VolumetricIndexShapeIntersectionLookupBase
+{
+};
+
+struct VolumetricIndexRayIntersectionLookupBase : public IndexLookupBase
+{
+    std::vector <const void *> origin;
+    std::vector <const void *> direction;
+};
+
+struct VolumetricIndexRayIntersectionLookupToRead :
+    public VolumetricIndexRayIntersectionLookupBase
+{
+};
+
+struct VolumetricIndexRayIntersectionLookupToEdit :
+    public VolumetricIndexRayIntersectionLookupBase
+{
+};
+
 struct CursorCheck
 {
     std::string name;
@@ -151,6 +198,7 @@ struct CloseCursor
 using Task = std::variant <
     CreateHashIndex,
     CreateOrderedIndex,
+    CreateVolumetricIndex,
     CopyIndexReference,
     RemoveIndexReference,
     CheckIndexCanBeDropped,
@@ -164,6 +212,10 @@ using Task = std::variant <
     OrderedIndexLookupToEdit,
     OrderedIndexLookupToReadReversed,
     OrderedIndexLookupToEditReversed,
+    VolumetricIndexShapeIntersectionLookupToRead,
+    VolumetricIndexShapeIntersectionLookupToEdit,
+    VolumetricIndexRayIntersectionLookupToRead,
+    VolumetricIndexRayIntersectionLookupToEdit,
     CursorCheck,
     CursorCheckAllOrdered,
     CursorCheckAllUnordered,
