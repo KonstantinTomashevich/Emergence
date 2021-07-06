@@ -214,7 +214,7 @@ VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
-        assert (_sector.min[dimensionIndex] < sector.max[dimensionIndex]);
+        assert (_sector.min[dimensionIndex] <= sector.max[dimensionIndex]);
         assert (sector.max[dimensionIndex] < maxCoordinate);
     }
 #endif
@@ -260,6 +260,8 @@ void VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextRecord () noexcept
                 }
                 else
                 {
+                    // Mark record as visited to avoid unnecessary checks in other leaves.
+                    visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
                     ++currentRecordIndex;
                 }
             }
@@ -301,6 +303,12 @@ void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noex
                     !CheckShapeIntersection (leaf.records[currentRecordIndex].record, _operations))
                 {
                     MoveToNextRecord ();
+                }
+                else
+                {
+                    // Ensure that current record is visited. Visitation marks are added during cursor movement,
+                    // therefore after cursor construction or record deletion current record could be unvisited.
+                    visitedRecords[leaf.records[currentRecordIndex].recordId] = true;
                 }
             }
         });
@@ -509,6 +517,21 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
                         _operations.ToFloat (ray.direction[dimensionIndex]) / _operations.ToFloat (leafSize);
                 }
 
+#ifndef NDEBUG
+                // Assert that at least one direction has non zero value.
+                std::size_t nonZeroDirections = 0u;
+
+                for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+                {
+                    if (fabs (direction[dimensionIndex]) > Constants::VolumetricIndex::EPSILON)
+                    {
+                        ++nonZeroDirections;
+                    }
+                }
+
+                assert (nonZeroDirections > 0u);
+#endif
+
                 FixCurrentRecordIndex ();
             }
             else
@@ -609,6 +632,8 @@ void VolumetricIndex::RayIntersectionCursorBase::MoveToNextRecord () noexcept
                 }
                 else
                 {
+                    // Mark record as visited to avoid unnecessary checks in other leaves.
+                    visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
                     ++currentRecordIndex;
                 }
             }
@@ -658,6 +683,12 @@ void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexce
                     !CheckRayIntersection (leaf.records[currentRecordIndex].record, _operations))
                 {
                     MoveToNextRecord ();
+                }
+                else
+                {
+                    // Ensure that current record is visited. Visitation marks are added during cursor movement,
+                    // therefore after cursor construction or record deletion current record could be unvisited.
+                    visitedRecords[leaf.records[currentRecordIndex].recordId] = true;
                 }
             }
         });
