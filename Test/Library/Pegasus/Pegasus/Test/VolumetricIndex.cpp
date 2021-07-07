@@ -13,13 +13,13 @@ static const float minX = -100.0f;
 
 static const float minY = -100.0f;
 
-//static const float minZ = -100.0f;
+static const float minZ = -100.0f;
 
 static const float maxX = 100.0f;
 
 static const float maxY = 100.0f;
 
-//static const float maxZ = 100.0f;
+static const float maxZ = 100.0f;
 
 static const float _m3 = -3.0f;
 
@@ -28,6 +28,8 @@ static const float _m1 = -1.0f;
 static const float _0 = 0.0f;
 
 static const float _2 = 2.0f;
+
+static const float _4$5 = 4.5f;
 
 static const float _7 = 7.0f;
 
@@ -38,6 +40,8 @@ static const float _8$5 = 8.5f;
 static const float _9 = 9.0f;
 
 static const float _10$5 = 10.5f;
+
+static const float _20 = 20.0f;
 
 static const float _50 = 50.0f;
 };
@@ -61,6 +65,21 @@ static const std::vector <DimensionDescriptor> dimensions2d =
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::maxY),
             &Constants::maxY,
+        }
+    };
+
+static const std::vector <DimensionDescriptor> dimensions3d =
+    {
+        dimensions2d[0u],
+        dimensions2d[1u],
+        {
+            Emergence::StandardLayout::ProjectNestedField (
+                Record::Reflection::boundingBox, BoundingBox::Reflection::minZ),
+            &Constants::minZ,
+
+            Emergence::StandardLayout::ProjectNestedField (
+                Record::Reflection::boundingBox, BoundingBox::Reflection::maxZ),
+            &Constants::maxZ,
         }
     };
 
@@ -413,7 +432,305 @@ BOOST_DATA_TEST_CASE(
                         },
                     CursorCheckAllOrdered {"x = [-3, 0], y = [0, 50]", {}},
                 }
-            }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateVolumetricIndex {"2d", dimensions2d},
+                    OpenAllocator {},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_xm2_0_y1_4_z0_2},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    CloseAllocator {},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "x = [2, 50], y = [2, 50]"},
+                                {&Constants::_2, &Constants::_2}, {&Constants::_50, &Constants::_50}
+                            }
+                        },
+                    CursorCheckAllOrdered
+                        {
+                            "x = [2, 50], y = [2, 50]",
+                            {&record_x10_11_y8_9_z4_5, &record_x10_11_y8_9_z4_5, &record_x10_11_y8_9_z4_5}
+                        },
+
+                    VolumetricIndexRayIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "origin = (7, 9), direction = (2, 0)"},
+                                {&Constants::_7, &Constants::_9}, {&Constants::_2, &Constants::_0}
+                            }
+                        },
+                    CursorCheckAllOrdered
+                        {
+                            "origin = (7, 9), direction = (2, 0)",
+                            {&record_x10_11_y8_9_z4_5, &record_x10_11_y8_9_z4_5, &record_x10_11_y8_9_z4_5}
+                        },
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateVolumetricIndex {"2d", dimensions2d},
+                    OpenAllocator {},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_x15_19_y8_11_z50_60},
+                    CloseAllocator {},
+
+                    VolumetricIndexShapeIntersectionLookupToEdit
+                        {
+                            {
+                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
+                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheck {"x = [2, 10.5], y = [2, 10.5]", &record_x10_11_y8_9_z4_5},
+                    CursorEdit {"x = [2, 10.5], y = [2, 10.5]", &record_xm2_0_y1_4_z0_2},
+                    CloseCursor {"x = [2, 10.5], y = [2, 10.5]"},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
+                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5]", {}},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "x = [-3, 10.5], y = [0, 10.5]"},
+                                {&Constants::_m3, &Constants::_0}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [-3, 10.5], y = [0, 10.5]", {&record_xm2_0_y1_4_z0_2}},
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateVolumetricIndex {"3d", dimensions3d},
+                    OpenAllocator {},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_xm2_0_y1_4_z0_2},
+                    AllocateAndInit {&record_x15_19_y8_11_z50_60},
+                    CloseAllocator {},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [-3, 50], y = [-3, 50], z = [-3, 50]"},
+                                {&Constants::_m3, &Constants::_m3, &Constants::_m3},
+                                {&Constants::_50, &Constants::_50, &Constants::_50}
+                            }
+                        },
+                    CursorCheckAllUnordered
+                        {
+                            "x = [-3, 50], y = [-3, 50], z = [-3, 50]",
+                            {&record_x10_11_y8_9_z4_5, &record_xm2_0_y1_4_z0_2, &record_x15_19_y8_11_z50_60}
+                        },
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [9, 20], y = [7, 10.5], z = [0, 50]"},
+                                {&Constants::_9, &Constants::_7, &Constants::_0},
+                                {&Constants::_20, &Constants::_10$5, &Constants::_50}
+                            }
+                        },
+                    CursorCheckAllUnordered
+                        {
+                            "x = [9, 20], y = [7, 10.5], z = [0, 50]",
+                            {&record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60}
+                        },
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [9, 20], y = [7, 10.5], z = [0, 20]"},
+                                {&Constants::_9, &Constants::_7, &Constants::_0},
+                                {&Constants::_20, &Constants::_10$5, &Constants::_20}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [9, 20], y = [7, 10.5], z = [0, 20]", {&record_x10_11_y8_9_z4_5}},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [9, 20], y = [7, 10.5], z = [20, 50]"},
+                                {&Constants::_9, &Constants::_7, &Constants::_20},
+                                {&Constants::_20, &Constants::_10$5, &Constants::_50}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [9, 20], y = [7, 10.5], z = [20, 50]", {&record_x15_19_y8_11_z50_60}},
+
+                    VolumetricIndexRayIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "origin = (7, 8.5, 4.5), direction = (2, 0, 0)"},
+                                {&Constants::_7, &Constants::_8$5, &Constants::_4$5},
+                                {&Constants::_2, &Constants::_0, &Constants::_0}
+                            }
+                        },
+                    CursorCheckAllOrdered {"origin = (7, 8.5, 4.5), direction = (2, 0, 0)", {&record_x10_11_y8_9_z4_5}},
+
+                    VolumetricIndexRayIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "origin = (7, 8.5, 4.5), direction = (2, 0, 9)"},
+                                {&Constants::_7, &Constants::_8$5, &Constants::_4$5},
+                                {&Constants::_2, &Constants::_0, &Constants::_9}
+                            }
+                        },
+                    CursorCheckAllOrdered
+                        {
+                            "origin = (7, 8.5, 4.5), direction = (2, 0, 9)",
+                            {&record_x15_19_y8_11_z50_60}
+                        },
+
+                    VolumetricIndexRayIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "origin = (10.5, 8.5, 4.5), direction = (2, 0, 20)"},
+                                {&Constants::_10$5, &Constants::_8$5, &Constants::_4$5},
+                                {&Constants::_2, &Constants::_0, &Constants::_20}
+                            }
+                        },
+                    CursorCheckAllOrdered
+                        {
+                            "origin = (10.5, 8.5, 4.5), direction = (2, 0, 20)",
+                            {&record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60}
+                        },
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateVolumetricIndex {"2d", dimensions2d},
+                    CreateVolumetricIndex {"3d", dimensions3d},
+                    OpenAllocator {},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_x15_19_y8_11_z50_60},
+                    CloseAllocator {},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+                                {&Constants::_2, &Constants::_2, &Constants::_0},
+                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]", {&record_x10_11_y8_9_z4_5}},
+                    CloseCursor {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+
+                    VolumetricIndexShapeIntersectionLookupToEdit
+                        {
+                            {
+                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
+                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheck {"x = [2, 10.5], y = [2, 10.5]", &record_x10_11_y8_9_z4_5},
+                    CursorEdit {"x = [2, 10.5], y = [2, 10.5]", &record_xm2_0_y1_4_z0_2},
+                    CloseCursor {"x = [2, 10.5], y = [2, 10.5]"},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
+                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5]", {}},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "x = [-3, 10.5], y = [0, 10.5]"},
+                                {&Constants::_m3, &Constants::_0}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [-3, 10.5], y = [0, 10.5]", {&record_xm2_0_y1_4_z0_2}},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+                                {&Constants::_2, &Constants::_2, &Constants::_0},
+                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]", {}},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [-3, 10.5], y = [0, 10.5], z = [0, 4.5]"},
+                                {&Constants::_m3, &Constants::_0, &Constants::_0},
+                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [-3, 10.5], y = [0, 10.5], z = [0, 4.5]", {&record_xm2_0_y1_4_z0_2}},
+                }
+            },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateVolumetricIndex {"2d", dimensions2d},
+                    CreateVolumetricIndex {"3d", dimensions3d},
+                    OpenAllocator {},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_x15_19_y8_11_z50_60},
+                    CloseAllocator {},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+                                {&Constants::_2, &Constants::_2, &Constants::_0},
+                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]", {&record_x10_11_y8_9_z4_5}},
+                    CloseCursor {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+
+                    VolumetricIndexShapeIntersectionLookupToEdit
+                        {
+                            {
+                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
+                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheck {"x = [2, 10.5], y = [2, 10.5]", &record_x10_11_y8_9_z4_5},
+                    CursorEdit {"x = [2, 10.5], y = [2, 10.5]", &record_xm2_0_y1_4_z0_2},
+                    CursorDeleteRecord {"x = [2, 10.5], y = [2, 10.5]"},
+                    CloseCursor {"x = [2, 10.5], y = [2, 10.5]"},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"2d", "x = [-3, 20], y = [2, 10.5]"},
+                                {&Constants::_m3, &Constants::_2}, {&Constants::_20, &Constants::_10$5}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [-3, 20], y = [2, 10.5]", {&record_x15_19_y8_11_z50_60}},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"3d", "x = [-3, 20], y = [0, 10.5], z = [0, 50]"},
+                                {&Constants::_m3, &Constants::_0, &Constants::_0},
+                                {&Constants::_20, &Constants::_10$5, &Constants::_50}
+                            }
+                        },
+                    CursorCheckAllOrdered {"x = [-3, 20], y = [0, 10.5], z = [0, 50]", {&record_x15_19_y8_11_z50_60}},
+                }
+            },
         }))
 {
     sample.Execute ();
