@@ -1030,7 +1030,7 @@ bool VolumetricIndex::CheckRayShapeIntersection (
             inside = false;
             t = calculateT (dimensionIndex, _shape.min[dimensionIndex]);
         }
-        else if (_operations.Compare (_ray.origin[dimensionIndex], _shape.min[dimensionIndex]) < 0)
+        else if (_operations.Compare (_ray.origin[dimensionIndex], _shape.max[dimensionIndex]) > 0)
         {
             inside = false;
             t = calculateT (dimensionIndex, _shape.max[dimensionIndex]);

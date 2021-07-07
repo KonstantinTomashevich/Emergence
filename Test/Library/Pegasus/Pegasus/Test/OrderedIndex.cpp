@@ -31,6 +31,12 @@ static const Record entity0Hugo
             8.0f,
             0.0f,
         },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
+        },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_STUNNED,
     };
 
@@ -48,6 +54,12 @@ static const Record entity1Karl
             5.0f,
             0.0f,
         },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
+        },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_POISONED,
     };
 
@@ -64,6 +76,12 @@ static const Record entity2Xavier
             10.0f,
             8.0f,
             0.0f,
+        },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };

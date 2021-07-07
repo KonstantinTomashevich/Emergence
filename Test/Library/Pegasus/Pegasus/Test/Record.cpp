@@ -19,6 +19,19 @@ static StandardLayout::Mapping RegisterBoundingBox ()
     return builder.End ();
 }
 
+StandardLayout::Mapping RegisterScreenRect ()
+{
+    StandardLayout::MappingBuilder builder;
+    builder.Begin (sizeof (ScreenRect));
+
+    ScreenRect::Reflection::minX = builder.RegisterUInt16 (offsetof(ScreenRect, minX));
+    ScreenRect::Reflection::minY = builder.RegisterUInt16 (offsetof(ScreenRect, minY));
+
+    ScreenRect::Reflection::maxX = builder.RegisterUInt16 (offsetof(ScreenRect, maxX));
+    ScreenRect::Reflection::maxY = builder.RegisterUInt16 (offsetof(ScreenRect, maxY));
+    return builder.End ();
+}
+
 static StandardLayout::Mapping RegisterRecord ()
 {
     StandardLayout::MappingBuilder builder;
@@ -26,8 +39,12 @@ static StandardLayout::Mapping RegisterRecord ()
 
     Record::Reflection::entityId = builder.RegisterUInt32 (offsetof (Record, entityId));
     Record::Reflection::nickname = builder.RegisterString (offsetof (Record, nickname), Record::NICKNAME_MAX_SIZE);
+
     Record::Reflection::boundingBox = builder.RegisterNestedObject (
         offsetof (Record, boundingBox), BoundingBox::Reflection::GetMapping ());
+
+    Record::Reflection::screenRect = builder.RegisterNestedObject (
+        offsetof (Record, screenRect), ScreenRect::Reflection::GetMapping ());
 
     Record::Reflection::alive = builder.RegisterBit (offsetof (Record, status), Record::Status::FLAG_ALIVE_OFFSET);
     Record::Reflection::stunned = builder.RegisterBit (offsetof (Record, status), Record::Status::FLAG_STUNNED_OFFSET);
@@ -52,11 +69,21 @@ StandardLayout::FieldId BoundingBox::Reflection::maxY;
 
 StandardLayout::FieldId BoundingBox::Reflection::maxZ;
 
+StandardLayout::FieldId ScreenRect::Reflection::minX;
+
+StandardLayout::FieldId ScreenRect::Reflection::minY;
+
+StandardLayout::FieldId ScreenRect::Reflection::maxX;
+
+StandardLayout::FieldId ScreenRect::Reflection::maxY;
+
 StandardLayout::FieldId Record::Reflection::entityId;
 
 StandardLayout::FieldId Record::Reflection::nickname;
 
 StandardLayout::FieldId Record::Reflection::boundingBox;
+
+StandardLayout::FieldId Record::Reflection::screenRect;
 
 StandardLayout::FieldId Record::Reflection::alive;
 
@@ -69,6 +96,12 @@ StandardLayout::FieldId Record::Reflection::immobilized;
 StandardLayout::Mapping BoundingBox::Reflection::GetMapping ()
 {
     static StandardLayout::Mapping mapping = RegisterBoundingBox ();
+    return mapping;
+}
+
+StandardLayout::Mapping ScreenRect::Reflection::GetMapping ()
+{
+    static StandardLayout::Mapping mapping = RegisterScreenRect ();
     return mapping;
 }
 

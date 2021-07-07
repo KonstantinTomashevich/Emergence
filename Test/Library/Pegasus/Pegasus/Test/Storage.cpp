@@ -74,6 +74,12 @@ static const Record entity0Hugo
             9.0f,
             5.0f,
         },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
+        },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_STUNNED,
     };
 
@@ -91,6 +97,12 @@ static const Record entity1Karl
             4.0f,
             2.0f,
         },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
+        },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_POISONED,
     };
 
@@ -107,6 +119,12 @@ static const Record entity2Xavier
             19.0f,
             11.0f,
             60.0f,
+        },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };
@@ -171,12 +189,12 @@ static const std::vector <Task> setup =
         VolumetricIndexShapeIntersectionLookupToRead
             {
                 {
-                    {"2d", "x = [12, 20], y = [0, 11]"},
+                    {"2d", "min = (12, 0), max = (20, 11)"},
                     {&$12, &$0}, {&$20, &$11}
                 }
             },
-        CursorCheckAllUnordered {"x = [12, 20], y = [0, 11]", {&entity2Xavier}},
-        CloseCursor {"x = [12, 20], y = [0, 11]"},
+        CursorCheckAllUnordered {"min = (12, 0), max = (20, 11)", {&entity2Xavier}},
+        CloseCursor {"min = (12, 0), max = (20, 11)"},
     };
 
 static const std::vector <Task> finalize =
@@ -205,11 +223,11 @@ static const std::vector <Task> finalize =
         VolumetricIndexShapeIntersectionLookupToRead
             {
                 {
-                    {"2d", "x = [12, 20], y = [0, 11]"},
+                    {"2d", "min = (12, 0), max = (20, 11)"},
                     {&$12, &$0}, {&$20, &$11}
                 }
             },
-        CursorCheckAllUnordered {"x = [12, 20], y = [0, 11]", {}},
+        CursorCheckAllUnordered {"min = (12, 0), max = (20, 11)", {}},
     };
 
 BOOST_AUTO_TEST_SUITE (Storage)

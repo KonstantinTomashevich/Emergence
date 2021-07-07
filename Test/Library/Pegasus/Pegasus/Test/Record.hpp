@@ -32,7 +32,27 @@ struct BoundingBox final
     float maxZ = 0.0f;
 };
 
-// TODO: Delete unused fields.
+struct ScreenRect final
+{
+    struct Reflection final
+    {
+        Reflection () = delete;
+
+        static StandardLayout::Mapping GetMapping ();
+
+        static StandardLayout::FieldId minX;
+        static StandardLayout::FieldId minY;
+
+        static StandardLayout::FieldId maxX;
+        static StandardLayout::FieldId maxY;
+    };
+
+    uint16_t minX = 0;
+    uint16_t minY = 0;
+
+    uint16_t maxX = 0;
+    uint16_t maxY = 0;
+};
 
 struct Record final
 {
@@ -45,6 +65,7 @@ struct Record final
         static StandardLayout::FieldId entityId;
         static StandardLayout::FieldId nickname;
         static StandardLayout::FieldId boundingBox;
+        static StandardLayout::FieldId screenRect;
         static StandardLayout::FieldId alive;
         static StandardLayout::FieldId stunned;
         static StandardLayout::FieldId poisoned;
@@ -74,6 +95,7 @@ struct Record final
     std::array <char, NICKNAME_MAX_SIZE> nickname = {0u};
 
     BoundingBox boundingBox;
+    ScreenRect screenRect;
     uint8_t status = 0u;
 };
 } // namespace Emergence::Pegasus::Test

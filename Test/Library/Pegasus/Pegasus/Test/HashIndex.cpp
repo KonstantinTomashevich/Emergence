@@ -54,6 +54,12 @@ static const Record firstRecord
             8.0f,
             0.0f,
         },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
+        },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_STUNNED,
     };
 
@@ -71,6 +77,12 @@ static const Record anotherRecordForEntity0
             2.0f,
             0.0f,
         },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
+        },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };
 
@@ -87,6 +99,12 @@ static const Record secondRecord
             12.0f,
             13.0f,
             0.0f,
+        },
+        {
+            0u,
+            0u,
+            0u,
+            0u,
         },
         Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
     };

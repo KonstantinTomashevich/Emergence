@@ -7,8 +7,6 @@
 
 using namespace Emergence::Pegasus::Test;
 
-namespace Constants
-{
 static const float minX = -100.0f;
 
 static const float minY = -100.0f;
@@ -21,50 +19,67 @@ static const float maxY = 100.0f;
 
 static const float maxZ = 100.0f;
 
-static const float _m3 = -3.0f;
+static const uint16_t screenRectMinX = 0u;
 
-static const float _m1 = -1.0f;
+static const uint16_t screenRectMinY = 0u;
 
-static const float _0 = 0.0f;
+static const uint16_t screenRectMaxX = 4096u;
 
-static const float _2 = 2.0f;
+static const uint16_t screenRectMaxY = 4096u;
 
-static const float _4$5 = 4.5f;
+static const float f_m3 = -3.0f;
 
-static const float _7 = 7.0f;
+static const float f_m1 = -1.0f;
 
-static const float _8 = 8.0f;
+static const float f_0 = 0.0f;
 
-static const float _8$5 = 8.5f;
+static const float f_2 = 2.0f;
 
-static const float _9 = 9.0f;
+static const float f_4$5 = 4.5f;
 
-static const float _10$5 = 10.5f;
+static const float f_7 = 7.0f;
 
-static const float _20 = 20.0f;
+static const float f_8 = 8.0f;
 
-static const float _50 = 50.0f;
-};
+static const float f_8$5 = 8.5f;
+
+static const float f_9 = 9.0f;
+
+static const float f_10$5 = 10.5f;
+
+static const float f_20 = 20.0f;
+
+static const float f_50 = 50.0f;
+
+static const uint16_t u_50 = 50u;
+
+static const uint16_t u_100 = 100u;
+
+static const uint16_t u_250 = 250u;
+
+static const uint16_t u_300 = 300u;
+
+static const uint16_t u_1000 = 1000u;
 
 static const std::vector <DimensionDescriptor> dimensions2d =
     {
         {
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::minX),
-            &Constants::minX,
+            &minX,
 
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::maxX),
-            &Constants::maxX,
+            &maxX,
         },
         {
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::minY),
-            &Constants::minY,
+            &minY,
 
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::maxY),
-            &Constants::maxY,
+            &maxY,
         }
     };
 
@@ -75,11 +90,33 @@ static const std::vector <DimensionDescriptor> dimensions3d =
         {
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::minZ),
-            &Constants::minZ,
+            &minZ,
 
             Emergence::StandardLayout::ProjectNestedField (
                 Record::Reflection::boundingBox, BoundingBox::Reflection::maxZ),
-            &Constants::maxZ,
+            &maxZ,
+        }
+    };
+
+static const std::vector <DimensionDescriptor> dimensionsScreenRect =
+    {
+        {
+            Emergence::StandardLayout::ProjectNestedField (
+                Record::Reflection::screenRect, ScreenRect::Reflection::minX),
+            &screenRectMinX,
+
+            Emergence::StandardLayout::ProjectNestedField (
+                Record::Reflection::screenRect, ScreenRect::Reflection::maxX),
+            &screenRectMaxX,
+        },
+        {
+            Emergence::StandardLayout::ProjectNestedField (
+                Record::Reflection::screenRect, ScreenRect::Reflection::minY),
+            &screenRectMinY,
+
+            Emergence::StandardLayout::ProjectNestedField (
+                Record::Reflection::screenRect, ScreenRect::Reflection::maxY),
+            &screenRectMaxY,
         }
     };
 
@@ -96,6 +133,12 @@ static const Record record_x10_11_y8_9_z4_5
             11.0f,
             9.0f,
             5.0f,
+        },
+        {
+            200u,
+            300u,
+            300u,
+            400u,
         },
         Record::Status::FLAG_ALIVE,
     };
@@ -114,6 +157,12 @@ static const Record record_xm2_0_y1_4_z0_2
             4.0f,
             2.0f,
         },
+        {
+            0u,
+            0u,
+            500u,
+            200u,
+        },
         Record::Status::FLAG_ALIVE,
     };
 
@@ -130,6 +179,12 @@ static const Record record_x15_19_y8_11_z50_60
             19.0f,
             11.0f,
             60.0f,
+        },
+        {
+            700u,
+            400u,
+            1000u,
+            600u,
         },
         Record::Status::FLAG_ALIVE,
     };
@@ -163,15 +218,15 @@ BOOST_DATA_TEST_CASE(
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"2d", "x = [8, 10.5], y = [7, 9]"},
-                                {&Constants::_8, &Constants::_7}, {&Constants::_10$5, &Constants::_9}
+                                {"2d", "min = (8, 7), max = (10.5, 9)"},
+                                {&f_8, &f_7}, {&f_10$5, &f_9}
                             }
                         },
                     VolumetricIndexShapeIntersectionLookupToEdit
                         {
                             {
-                                {"2d", "x = [-3, -1], y = [0, 2]"},
-                                {&Constants::_m3, &Constants::_m1}, {&Constants::_0, &Constants::_2}
+                                {"2d", "min = (-3, 0), max = (-1, 2)"},
+                                {&f_m3, &f_m1}, {&f_0, &f_2}
                             }
                         },
                     &record_x10_11_y8_9_z4_5, nullptr, &record_xm2_0_y1_4_z0_2)
@@ -190,18 +245,11 @@ BOOST_DATA_TEST_CASE(
                 Shortcuts::TestCursorCopyAndMove (
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 9), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_9},
-                                {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (7, 9), direction = (2, 0)"}, {&f_7, &f_9}, {&f_2, &f_0}}
                         },
                     VolumetricIndexRayIntersectionLookupToEdit
                         {
-                            {
-                                {"2d", "origin = (-1, -3), direction = (0, 2)"},
-                                {&Constants::_m1, &Constants::_m3}, {&Constants::_0, &Constants::_2}
-                            }
+                            {{"2d", "origin = (-1, -3), direction = (0, 2)"}, {&f_m1, &f_m3}, {&f_0, &f_2}}
                         },
                     &record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60, &record_xm2_0_y1_4_z0_2)
             },
@@ -217,10 +265,7 @@ BOOST_DATA_TEST_CASE(
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 9), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_9}, {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (7, 9), direction = (2, 0)"}, {&f_7, &f_9}, {&f_2, &f_0}}
                         },
                     CursorCheckAllOrdered
                         {
@@ -230,12 +275,9 @@ BOOST_DATA_TEST_CASE(
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [-3, -1], y = [0, 2]"},
-                                {&Constants::_m3, &Constants::_m1}, {&Constants::_0, &Constants::_2}
-                            }
+                            {{"2d", "min = (-3, 0), max = (-1, 2)"}, {&f_m3, &f_m1}, {&f_0, &f_2}}
                         },
-                    CursorCheckAllOrdered {"x = [-3, -1], y = [0, 2]", {&record_xm2_0_y1_4_z0_2}},
+                    CursorCheckAllOrdered {"min = (-3, 0), max = (-1, 2)", {&record_xm2_0_y1_4_z0_2}},
                 },
             },
             {
@@ -250,98 +292,68 @@ BOOST_DATA_TEST_CASE(
                         {
                             {
                                 {"2d", "origin = (7, 9), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_9}, {&Constants::_2, &Constants::_0}
+                                {&f_7, &f_9}, {&f_2, &f_0}
                             }
                         },
                     CursorCheckAllOrdered {"origin = (7, 9), direction = (2, 0)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 8.5), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_8$5}, {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (7, 8.5), direction = (2, 0)"}, {&f_7, &f_8$5}, {&f_2, &f_0}}
                         },
                     CursorCheckAllOrdered {"origin = (7, 8.5), direction = (2, 0)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 8), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_8}, {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (7, 8), direction = (2, 0)"}, {&f_7, &f_8}, {&f_2, &f_0}}
                         },
                     CursorCheckAllOrdered {"origin = (7, 8), direction = (2, 0)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (10.5, 8.5), direction = (2, 0)"},
-                                {&Constants::_10$5, &Constants::_8$5}, {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (10.5, 8.5), direction = (2, 0)"}, {&f_10$5, &f_8$5}, {&f_2, &f_0}}
                         },
                     CursorCheckAllOrdered {"origin = (10.5, 8.5), direction = (2, 0)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 7), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_7}, {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (7, 7), direction = (2, 0)"}, {&f_7, &f_7}, {&f_2, &f_0}}
                         },
                     CursorCheckAllOrdered {"origin = (7, 7), direction = (2, 0)", {}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (10.5, 0), direction = (0, 2)"},
-                                {&Constants::_10$5, &Constants::_0}, {&Constants::_0, &Constants::_2}
-                            }
+                            {{"2d", "origin = (10.5, 0), direction = (0, 2)"}, {&f_10$5, &f_0}, {&f_0, &f_2}}
                         },
                     CursorCheckAllOrdered {"origin = (10.5, 0), direction = (0, 2)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (10.5, 50), direction = (0, 2)"},
-                                {&Constants::_10$5, &Constants::_50}, {&Constants::_0, &Constants::_2}
-                            }
+                            {{"2d", "origin = (10.5, 50), direction = (0, 2)"}, {&f_10$5, &f_50}, {&f_0, &f_2}}
                         },
                     CursorCheckAllOrdered {"origin = (10.5, 50), direction = (0, 2)", {}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (10.5, 0), direction = (0, -1)"},
-                                {&Constants::_10$5, &Constants::_0}, {&Constants::_0, &Constants::_m1}
-                            }
+                            {{"2d", "origin = (10.5, 0), direction = (0, -1)"}, {&f_10$5, &f_0}, {&f_0, &f_m1}}
                         },
                     CursorCheckAllOrdered {"origin = (10.5, 0), direction = (0, -1)", {}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (10.5, 50), direction = (0, -1)"},
-                                {&Constants::_10$5, &Constants::_50}, {&Constants::_0, &Constants::_m1}
-                            }
+                            {{"2d", "origin = (10.5, 50), direction = (0, -1)"}, {&f_10$5, &f_50}, {&f_0, &f_m1}}
                         },
                     CursorCheckAllOrdered {"origin = (10.5, 50), direction = (0, -1)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 9), direction = (2, -1)"},
-                                {&Constants::_7, &Constants::_9}, {&Constants::_2, &Constants::_m1}
-                            }
+                            {{"2d", "origin = (7, 9), direction = (2, -1)"}, {&f_7, &f_9}, {&f_2, &f_m1}}
                         },
                     CursorCheckAllOrdered {"origin = (7, 9), direction = (2, -1)", {}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (9, 9), direction = (2, -1)"},
-                                {&Constants::_9, &Constants::_9}, {&Constants::_2, &Constants::_m1}
-                            }
+                            {{"2d", "origin = (9, 9), direction = (2, -1)"}, {&f_9, &f_9}, {&f_2, &f_m1}}
                         },
                     CursorCheckAllOrdered {"origin = (9, 9), direction = (2, -1)", {&record_x10_11_y8_9_z4_5}},
                 },
@@ -356,57 +368,39 @@ BOOST_DATA_TEST_CASE(
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [8, 10.5], y = [7, 9]"},
-                                {&Constants::_8, &Constants::_7}, {&Constants::_10$5, &Constants::_9}
-                            }
+                            {{"2d", "min = (8, 7), max = (10.5, 9)"}, {&f_8, &f_7}, {&f_10$5, &f_9}}
                         },
-                    CursorCheckAllOrdered {"x = [8, 10.5], y = [7, 9]", {&record_x10_11_y8_9_z4_5}},
+                    CursorCheckAllOrdered {"min = (8, 7), max = (10.5, 9)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [8, 9], y = [7, 9]"},
-                                {&Constants::_8, &Constants::_7}, {&Constants::_9, &Constants::_9}
-                            }
+                            {{"2d", "min = (8, 7), max = (9, 9)"}, {&f_8, &f_7}, {&f_9, &f_9}}
                         },
-                    CursorCheckAllOrdered {"x = [8, 9], y = [7, 9]", {}},
+                    CursorCheckAllOrdered {"min = (8, 7), max = (9, 9)", {}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [10.5, 10.5], y = [9, 9]"},
-                                {&Constants::_10$5, &Constants::_9}, {&Constants::_10$5, &Constants::_9}
-                            }
+                            {{"2d", "min = (10.5, 9), max = (10.5, 9)"}, {&f_10$5, &f_9}, {&f_10$5, &f_9}}
                         },
-                    CursorCheckAllOrdered {"x = [10.5, 10.5], y = [9, 9]", {&record_x10_11_y8_9_z4_5}},
+                    CursorCheckAllOrdered {"min = (10.5, 9), max = (10.5, 9)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [8, 10.5], y = [7, 8]"},
-                                {&Constants::_8, &Constants::_7}, {&Constants::_10$5, &Constants::_8}
-                            }
+                            {{"2d", "min = (8, 7), max = (10.5, 8)"}, {&f_8, &f_7}, {&f_10$5, &f_8}}
                         },
-                    CursorCheckAllOrdered {"x = [8, 10.5], y = [7, 8]", {&record_x10_11_y8_9_z4_5}},
+                    CursorCheckAllOrdered {"min = (8, 7), max = (10.5, 8)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [0, 50], y = [0, 50]"},
-                                {&Constants::_0, &Constants::_0}, {&Constants::_50, &Constants::_50}
-                            }
+                            {{"2d", "min = (0, 0), max = (50, 50)"}, {&f_0, &f_0}, {&f_50, &f_50}}
                         },
-                    CursorCheckAllOrdered {"x = [0, 50], y = [0, 50]", {&record_x10_11_y8_9_z4_5}},
+                    CursorCheckAllOrdered {"min = (0, 0), max = (50, 50)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [-3, 0], y = [0, 50]"},
-                                {&Constants::_m3, &Constants::_0}, {&Constants::_0, &Constants::_50}
-                            }
+                            {{"2d", "min = (-3, 0), max = (0, 50)"}, {&f_m3, &f_0}, {&f_0, &f_50}}
                         },
-                    CursorCheckAllOrdered {"x = [-3, 0], y = [0, 50]", {}},
+                    CursorCheckAllOrdered {"min = (-3, 0), max = (0, 50)", {}},
                 }
             },
             {
@@ -422,23 +416,17 @@ BOOST_DATA_TEST_CASE(
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [2, 50], y = [2, 50]"},
-                                {&Constants::_2, &Constants::_2}, {&Constants::_50, &Constants::_50}
-                            }
+                            {{"2d", "min = (2, 2), max = (50, 50)"}, {&f_2, &f_2}, {&f_50, &f_50}}
                         },
                     CursorCheckAllOrdered
                         {
-                            "x = [2, 50], y = [2, 50]",
+                            "min = (2, 2), max = (50, 50)",
                             {&record_x10_11_y8_9_z4_5, &record_x10_11_y8_9_z4_5, &record_x10_11_y8_9_z4_5}
                         },
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "origin = (7, 9), direction = (2, 0)"},
-                                {&Constants::_7, &Constants::_9}, {&Constants::_2, &Constants::_0}
-                            }
+                            {{"2d", "origin = (7, 9), direction = (2, 0)"}, {&f_7, &f_9}, {&f_2, &f_0}}
                         },
                     CursorCheckAllOrdered
                         {
@@ -458,32 +446,23 @@ BOOST_DATA_TEST_CASE(
 
                     VolumetricIndexShapeIntersectionLookupToEdit
                         {
-                            {
-                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
-                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
-                            }
+                            {{"2d", "min = (2, 2), max = (10.5, 10.5)"}, {&f_2, &f_2}, {&f_10$5, &f_10$5}}
                         },
-                    CursorCheck {"x = [2, 10.5], y = [2, 10.5]", &record_x10_11_y8_9_z4_5},
-                    CursorEdit {"x = [2, 10.5], y = [2, 10.5]", &record_xm2_0_y1_4_z0_2},
-                    CloseCursor {"x = [2, 10.5], y = [2, 10.5]"},
+                    CursorCheck {"min = (2, 2), max = (10.5, 10.5)", &record_x10_11_y8_9_z4_5},
+                    CursorEdit {"min = (2, 2), max = (10.5, 10.5)", &record_xm2_0_y1_4_z0_2},
+                    CloseCursor {"min = (2, 2), max = (10.5, 10.5)"},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
-                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
-                            }
+                            {{"2d", "min = (2, 2), max = (10.5, 10.5)"}, {&f_2, &f_2}, {&f_10$5, &f_10$5}}
                         },
-                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5]", {}},
+                    CursorCheckAllOrdered {"min = (2, 2), max = (10.5, 10.5)", {}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
-                            {
-                                {"2d", "x = [-3, 10.5], y = [0, 10.5]"},
-                                {&Constants::_m3, &Constants::_0}, {&Constants::_10$5, &Constants::_10$5}
-                            }
+                            {{"2d", "min = (-3, 0), max = (10.5, 10.5)"}, {&f_m3, &f_0}, {&f_10$5, &f_10$5}}
                         },
-                    CursorCheckAllOrdered {"x = [-3, 10.5], y = [0, 10.5]", {&record_xm2_0_y1_4_z0_2}},
+                    CursorCheckAllOrdered {"min = (-3, 0), max = (10.5, 10.5)", {&record_xm2_0_y1_4_z0_2}},
                 }
             },
             {
@@ -499,57 +478,52 @@ BOOST_DATA_TEST_CASE(
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [-3, 50], y = [-3, 50], z = [-3, 50]"},
-                                {&Constants::_m3, &Constants::_m3, &Constants::_m3},
-                                {&Constants::_50, &Constants::_50, &Constants::_50}
+                                {"3d", "min = (-3, -3, -3), max = (50, 50, 50)"},
+                                {&f_m3, &f_m3, &f_m3}, {&f_50, &f_50, &f_50}
                             }
                         },
                     CursorCheckAllUnordered
                         {
-                            "x = [-3, 50], y = [-3, 50], z = [-3, 50]",
+                            "min = (-3, -3, -3), max = (50, 50, 50)",
                             {&record_x10_11_y8_9_z4_5, &record_xm2_0_y1_4_z0_2, &record_x15_19_y8_11_z50_60}
                         },
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [9, 20], y = [7, 10.5], z = [0, 50]"},
-                                {&Constants::_9, &Constants::_7, &Constants::_0},
-                                {&Constants::_20, &Constants::_10$5, &Constants::_50}
+                                {"3d", "min = (9, 7, 0), max = (20, 10.5, 50)"},
+                                {&f_9, &f_7, &f_0}, {&f_20, &f_10$5, &f_50}
                             }
                         },
                     CursorCheckAllUnordered
                         {
-                            "x = [9, 20], y = [7, 10.5], z = [0, 50]",
+                            "min = (9, 7, 0), max = (20, 10.5, 50)",
                             {&record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60}
                         },
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [9, 20], y = [7, 10.5], z = [0, 20]"},
-                                {&Constants::_9, &Constants::_7, &Constants::_0},
-                                {&Constants::_20, &Constants::_10$5, &Constants::_20}
+                                {"3d", "min = (9, 7, 0), max = (20, 10.5, 20)"},
+                                {&f_9, &f_7, &f_0}, {&f_20, &f_10$5, &f_20}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [9, 20], y = [7, 10.5], z = [0, 20]", {&record_x10_11_y8_9_z4_5}},
+                    CursorCheckAllOrdered {"min = (9, 7, 0), max = (20, 10.5, 20)", {&record_x10_11_y8_9_z4_5}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [9, 20], y = [7, 10.5], z = [20, 50]"},
-                                {&Constants::_9, &Constants::_7, &Constants::_20},
-                                {&Constants::_20, &Constants::_10$5, &Constants::_50}
+                                {"3d", "min = (9, 7, 20), max = (20, 10.5, 50)"},
+                                {&f_9, &f_7, &f_20}, {&f_20, &f_10$5, &f_50}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [9, 20], y = [7, 10.5], z = [20, 50]", {&record_x15_19_y8_11_z50_60}},
+                    CursorCheckAllOrdered {"min = (9, 7, 20), max = (20, 10.5, 50)", {&record_x15_19_y8_11_z50_60}},
 
                     VolumetricIndexRayIntersectionLookupToRead
                         {
                             {
                                 {"3d", "origin = (7, 8.5, 4.5), direction = (2, 0, 0)"},
-                                {&Constants::_7, &Constants::_8$5, &Constants::_4$5},
-                                {&Constants::_2, &Constants::_0, &Constants::_0}
+                                {&f_7, &f_8$5, &f_4$5}, {&f_2, &f_0, &f_0}
                             }
                         },
                     CursorCheckAllOrdered {"origin = (7, 8.5, 4.5), direction = (2, 0, 0)", {&record_x10_11_y8_9_z4_5}},
@@ -558,8 +532,7 @@ BOOST_DATA_TEST_CASE(
                         {
                             {
                                 {"3d", "origin = (7, 8.5, 4.5), direction = (2, 0, 9)"},
-                                {&Constants::_7, &Constants::_8$5, &Constants::_4$5},
-                                {&Constants::_2, &Constants::_0, &Constants::_9}
+                                {&f_7, &f_8$5, &f_4$5}, {&f_2, &f_0, &f_9}
                             }
                         },
                     CursorCheckAllOrdered
@@ -572,8 +545,7 @@ BOOST_DATA_TEST_CASE(
                         {
                             {
                                 {"3d", "origin = (10.5, 8.5, 4.5), direction = (2, 0, 20)"},
-                                {&Constants::_10$5, &Constants::_8$5, &Constants::_4$5},
-                                {&Constants::_2, &Constants::_0, &Constants::_20}
+                                {&f_10$5, &f_8$5, &f_4$5}, {&f_2, &f_0, &f_20}
                             }
                         },
                     CursorCheckAllOrdered
@@ -596,62 +568,59 @@ BOOST_DATA_TEST_CASE(
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
-                                {&Constants::_2, &Constants::_2, &Constants::_0},
-                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                                {"3d", "min = (2, 2, 0), max = (10.5, 10.5, 4.5)"},
+                                {&f_2, &f_2, &f_0}, {&f_10$5, &f_10$5, &f_4$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]", {&record_x10_11_y8_9_z4_5}},
-                    CloseCursor {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+                    CursorCheckAllOrdered {"min = (2, 2, 0), max = (10.5, 10.5, 4.5)", {&record_x10_11_y8_9_z4_5}},
+                    CloseCursor {"min = (2, 2, 0), max = (10.5, 10.5, 4.5)"},
 
                     VolumetricIndexShapeIntersectionLookupToEdit
                         {
                             {
-                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
-                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                                {"2d", "min = (2, 2), max = (10.5, 10.5)"},
+                                {&f_2, &f_2}, {&f_10$5, &f_10$5}
                             }
                         },
-                    CursorCheck {"x = [2, 10.5], y = [2, 10.5]", &record_x10_11_y8_9_z4_5},
-                    CursorEdit {"x = [2, 10.5], y = [2, 10.5]", &record_xm2_0_y1_4_z0_2},
-                    CloseCursor {"x = [2, 10.5], y = [2, 10.5]"},
+                    CursorCheck {"min = (2, 2), max = (10.5, 10.5)", &record_x10_11_y8_9_z4_5},
+                    CursorEdit {"min = (2, 2), max = (10.5, 10.5)", &record_xm2_0_y1_4_z0_2},
+                    CloseCursor {"min = (2, 2), max = (10.5, 10.5)"},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
-                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                                {"2d", "min = (2, 2), max = (10.5, 10.5)"},
+                                {&f_2, &f_2}, {&f_10$5, &f_10$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5]", {}},
+                    CursorCheckAllOrdered {"min = (2, 2), max = (10.5, 10.5)", {}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"2d", "x = [-3, 10.5], y = [0, 10.5]"},
-                                {&Constants::_m3, &Constants::_0}, {&Constants::_10$5, &Constants::_10$5}
+                                {"2d", "min = (-3, 0), max = (10.5, 10.5)"},
+                                {&f_m3, &f_0}, {&f_10$5, &f_10$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [-3, 10.5], y = [0, 10.5]", {&record_xm2_0_y1_4_z0_2}},
+                    CursorCheckAllOrdered {"min = (-3, 0), max = (10.5, 10.5)", {&record_xm2_0_y1_4_z0_2}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
-                                {&Constants::_2, &Constants::_2, &Constants::_0},
-                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                                {"3d", "min = (2, 2, 0), max = (10.5, 10.5, 4.5)"},
+                                {&f_2, &f_2, &f_0}, {&f_10$5, &f_10$5, &f_4$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]", {}},
+                    CursorCheckAllOrdered {"min = (2, 2, 0), max = (10.5, 10.5, 4.5)", {}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [-3, 10.5], y = [0, 10.5], z = [0, 4.5]"},
-                                {&Constants::_m3, &Constants::_0, &Constants::_0},
-                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                                {"3d", "min = (-3, 0, 0), max = (10.5, 10.5, 4.5)"},
+                                {&f_m3, &f_0, &f_0}, {&f_10$5, &f_10$5, &f_4$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [-3, 10.5], y = [0, 10.5], z = [0, 4.5]", {&record_xm2_0_y1_4_z0_2}},
+                    CursorCheckAllOrdered {"min = (-3, 0, 0), max = (10.5, 10.5, 4.5)", {&record_xm2_0_y1_4_z0_2}},
                 }
             },
             {
@@ -667,49 +636,109 @@ BOOST_DATA_TEST_CASE(
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
-                                {&Constants::_2, &Constants::_2, &Constants::_0},
-                                {&Constants::_10$5, &Constants::_10$5, &Constants::_4$5}
+                                {"3d", "min = (2, 2, 0), max = (10.5, 10.5, 4.5)"},
+                                {&f_2, &f_2, &f_0}, {&f_10$5, &f_10$5, &f_4$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]", {&record_x10_11_y8_9_z4_5}},
-                    CloseCursor {"x = [2, 10.5], y = [2, 10.5], z = [0, 4.5]"},
+                    CursorCheckAllOrdered {"min = (2, 2, 0), max = (10.5, 10.5, 4.5)", {&record_x10_11_y8_9_z4_5}},
+                    CloseCursor {"min = (2, 2, 0), max = (10.5, 10.5, 4.5)"},
 
                     VolumetricIndexShapeIntersectionLookupToEdit
                         {
                             {
-                                {"2d", "x = [2, 10.5], y = [2, 10.5]"},
-                                {&Constants::_2, &Constants::_2}, {&Constants::_10$5, &Constants::_10$5}
+                                {"2d", "min = (2, 2), max = (10.5, 10.5)"},
+                                {&f_2, &f_2}, {&f_10$5, &f_10$5}
                             }
                         },
-                    CursorCheck {"x = [2, 10.5], y = [2, 10.5]", &record_x10_11_y8_9_z4_5},
-                    CursorEdit {"x = [2, 10.5], y = [2, 10.5]", &record_xm2_0_y1_4_z0_2},
-                    CursorDeleteRecord {"x = [2, 10.5], y = [2, 10.5]"},
-                    CloseCursor {"x = [2, 10.5], y = [2, 10.5]"},
+                    CursorCheck {"min = (2, 2), max = (10.5, 10.5)", &record_x10_11_y8_9_z4_5},
+                    CursorEdit {"min = (2, 2), max = (10.5, 10.5)", &record_xm2_0_y1_4_z0_2},
+                    CursorDeleteRecord {"min = (2, 2), max = (10.5, 10.5)"},
+                    CloseCursor {"min = (2, 2), max = (10.5, 10.5)"},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"2d", "x = [-3, 20], y = [2, 10.5]"},
-                                {&Constants::_m3, &Constants::_2}, {&Constants::_20, &Constants::_10$5}
+                                {"2d", "min = (-3, 2), max = (20, 10.5)"},
+                                {&f_m3, &f_2}, {&f_20, &f_10$5}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [-3, 20], y = [2, 10.5]", {&record_x15_19_y8_11_z50_60}},
+                    CursorCheckAllOrdered {"min = (-3, 2), max = (20, 10.5)", {&record_x15_19_y8_11_z50_60}},
 
                     VolumetricIndexShapeIntersectionLookupToRead
                         {
                             {
-                                {"3d", "x = [-3, 20], y = [0, 10.5], z = [0, 50]"},
-                                {&Constants::_m3, &Constants::_0, &Constants::_0},
-                                {&Constants::_20, &Constants::_10$5, &Constants::_50}
+                                {"3d", "min = (-3, 0, 0), max = (20, 10.5, 50)"},
+                                {&f_m3, &f_0, &f_0}, {&f_20, &f_10$5, &f_50}
                             }
                         },
-                    CursorCheckAllOrdered {"x = [-3, 20], y = [0, 10.5], z = [0, 50]", {&record_x15_19_y8_11_z50_60}},
+                    CursorCheckAllOrdered {"min = (-3, 0, 0), max = (20, 10.5, 50)", {&record_x15_19_y8_11_z50_60}},
                 }
             },
+            {
+                Record::Reflection::GetMapping (),
+                {
+                    CreateVolumetricIndex {"screenRect", dimensionsScreenRect},
+                    OpenAllocator {},
+                    AllocateAndInit {&record_x10_11_y8_9_z4_5},
+                    AllocateAndInit {&record_xm2_0_y1_4_z0_2},
+                    AllocateAndInit {&record_x15_19_y8_11_z50_60},
+                    CloseAllocator {},
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"screenRect", "min = (300, 300), max = (1000, 1000)"},
+                                {&u_300, &u_300}, {&u_1000, &u_1000}
+                            }
+                        },
+                    CursorCheckAllUnordered
+                        {
+                            "min = (300, 300), max = (1000, 1000)",
+                            {&record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60}
+                        },
+
+                    VolumetricIndexShapeIntersectionLookupToRead
+                        {
+                            {
+                                {"screenRect", "min = (100, 100), max = (1000, 300)"},
+                                {&u_100, &u_100}, {&u_1000, &u_300}
+                            }
+                        },
+                    CursorCheckAllUnordered
+                        {
+                            "min = (100, 100), max = (1000, 300)",
+                            {&record_x10_11_y8_9_z4_5, &record_xm2_0_y1_4_z0_2}
+                        },
+
+                    VolumetricIndexRayIntersectionLookupToRead
+                        {
+                            {
+                                {"screenRect", "origin = (100, 250), direction = (100, 50)"},
+                                {&u_100, &u_250}, {&u_100, &u_50}
+                            }
+                        },
+                    CursorCheckAllOrdered
+                        {
+                            "origin = (100, 250), direction = (100, 50)",
+                            {&record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60}
+                        },
+
+                    VolumetricIndexRayIntersectionLookupToRead
+                        {
+                            {
+                                {"screenRect", "origin = (300, 50), direction = (100, 100)"},
+                                {&u_300, &u_50}, {&u_100, &u_100}
+                            }
+                        },
+                    CursorCheckAllOrdered
+                        {
+                            "origin = (300, 50), direction = (100, 100)",
+                            {&record_xm2_0_y1_4_z0_2, &record_x15_19_y8_11_z50_60}
+                        },
+                }
+            }
         }))
 {
-    // TODO: Test for non-float values.
     sample.Execute ();
 }
 
