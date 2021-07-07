@@ -182,7 +182,9 @@ private:
 
     struct ChangedRecordInfo
     {
+        /// \warning Correct only if edition was done using cursor from this index, see ::hasEditCursor.
         std::size_t originalIndex;
+
         const void *record;
     };
 
@@ -229,6 +231,17 @@ private:
 
     StandardLayout::Field indexedField;
     std::vector <const void *> records;
+
+    /// If edition is done by cursor from this index, we should execute deletion and reinsertion after cursor is closed,
+    /// because it allows to save time on ::records vector content shifts. It is safe, because edition by own cursor
+    /// does not trigger any lookups.
+    ///
+    /// Edition by cursors from other indices will trigger lookup for each deletion or edition, therefore we need to
+    /// keep ::records order correct and execute deletions right away. Edited records are deleted right away too, but
+    /// reinserted only after edit cursor is closed. This behaviour allows us to use mass insertion optimization
+    /// even if edition was done using cursor from other index.
+    bool hasEditCursor = false;
+
     std::vector <ChangedRecordInfo> changedRecords;
     std::vector <std::size_t> deletedRecordIndices;
 };

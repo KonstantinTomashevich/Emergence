@@ -8,12 +8,26 @@
 
 namespace Emergence::Pegasus
 {
+/// Indicates that ::record could be changed and that ::backup should be used to get value, used to insert this record
+/// into ordered vector. When record is changed using cursor from other index, we need to pass this structure instead
+/// of just ::backup, because otherwise ::backup could be compared to changed record and that comparison will lead to
+/// incorrect lookup result.
+struct RecordWithBackup
+{
+    const void *record;
+    const void *backup;
+};
+
 template <typename BaseComparator>
 struct Comparator
 {
     Comparator (const OrderedIndex *_index, BaseComparator _baseComparator) noexcept;
 
     bool operator () (const void *_firstRecord, const void *_secondRecord) const noexcept;
+
+    bool operator () (const RecordWithBackup &_firstRecord, const void *_secondRecord) const noexcept;
+
+    bool operator () (const void *_firstRecord, const RecordWithBackup &_secondRecord) const noexcept;
 
     bool operator () (const OrderedIndex::Bound &_bound, const void *_record) const noexcept;
 
@@ -39,6 +53,38 @@ bool Comparator <BaseComparator>::operator () (const void *_firstRecord, const v
     assert (_firstRecord);
     assert (_secondRecord);
     return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord)) < 0;
+}
+
+template <typename BaseComparator>
+bool Comparator <BaseComparator>::operator () (
+    const RecordWithBackup &_firstRecord, const void *_secondRecord) const noexcept
+{
+    assert (_secondRecord);
+    if (_firstRecord.record == _secondRecord)
+    {
+        return false;
+    }
+    else
+    {
+        assert (_firstRecord.backup);
+        return baseComparator.Compare (GetValue (_firstRecord.backup), GetValue (_secondRecord)) < 0;
+    }
+}
+
+template <typename BaseComparator>
+bool Comparator <BaseComparator>::operator () (
+    const void *_firstRecord, const RecordWithBackup &_secondRecord) const noexcept
+{
+    assert (_firstRecord);
+    if (_secondRecord.record == _firstRecord)
+    {
+        return false;
+    }
+    else
+    {
+        assert (_secondRecord.backup);
+        return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord.backup)) < 0;
+    }
 }
 
 template <typename BaseComparator>
@@ -354,6 +400,7 @@ OrderedIndex::ReversedReadCursor OrderedIndex::LookupToReadReversed (
 OrderedIndex::EditCursor OrderedIndex::LookupToEdit (
     const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
 {
+    hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
     return OrderedIndex::EditCursor (this, result.begin, result.end);
 }
@@ -361,6 +408,7 @@ OrderedIndex::EditCursor OrderedIndex::LookupToEdit (
 OrderedIndex::ReversedEditCursor OrderedIndex::LookupToEditReversed (
     const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
 {
+    hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
     return OrderedIndex::ReversedEditCursor (
         this, std::vector <const void *>::reverse_iterator (result.end),
@@ -442,10 +490,11 @@ std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
 {
     auto iterator = DoWithCorrectComparator (
         indexedField,
-        [this, _recordBackup] (auto _comparator)
+        [this, _record, _recordBackup] (auto _comparator)
         {
-            return std::lower_bound (records.begin (), records.end (),
-                                     _recordBackup, Comparator (this, _comparator));
+            return std::lower_bound (
+                records.begin (), records.end (),
+                RecordWithBackup {_record, _recordBackup}, Comparator (this, _comparator));
         });
 
     assert (iterator != records.end ());
@@ -480,14 +529,10 @@ OrderedIndex::MassInsertionExecutor OrderedIndex::StartMassInsertion () noexcept
 
 void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
 {
+    assert (!hasEditCursor);
     auto iterator = LocateRecord (_record, _recordBackup);
-    std::size_t recordIndex = iterator - records.begin ();
-
-    auto insertionPoint = std::lower_bound (
-        deletedRecordIndices.begin (), deletedRecordIndices.end (), recordIndex);
-
-    assert (insertionPoint == deletedRecordIndices.end () || *insertionPoint != recordIndex);
-    deletedRecordIndices.emplace (insertionPoint, recordIndex);
+    assert (iterator != records.end ());
+    records.erase (iterator);
 }
 
 void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::iterator &_position) noexcept
@@ -512,18 +557,12 @@ void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::reverse
 
 void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
+    assert (!hasEditCursor);
     auto iterator = LocateRecord (_record, _recordBackup);
-    std::size_t recordIndex = iterator - records.begin ();
+    assert (iterator != records.end ());
 
-    auto insertionPoint = std::lower_bound (
-        changedRecords.begin (), changedRecords.end (), recordIndex,
-        [] (const ChangedRecordInfo &_changedRecordInfo, size_t _indexToInsert) -> bool
-        {
-            return _changedRecordInfo.originalIndex < _indexToInsert;
-        });
-
-    assert (insertionPoint == changedRecords.end () || insertionPoint->originalIndex != recordIndex);
-    changedRecords.emplace (insertionPoint, ChangedRecordInfo {recordIndex, (_record)});
+    changedRecords.emplace_back (ChangedRecordInfo {std::numeric_limits <std::size_t>::max (), (_record)});
+    records.erase (iterator);
 }
 
 void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::iterator &_position) noexcept
@@ -545,7 +584,7 @@ void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::revers
 
 void OrderedIndex::OnWriterClosed () noexcept
 {
-    if (!changedRecords.empty () || !deletedRecordIndices.empty ())
+    if (hasEditCursor && (!changedRecords.empty () || !deletedRecordIndices.empty ()))
     {
         auto changedRecordsIterator = changedRecords.begin ();
         const auto changedRecordsEnd = changedRecords.end ();
@@ -640,5 +679,7 @@ void OrderedIndex::OnWriterClosed () noexcept
 
         changedRecords.clear ();
     }
+
+    hasEditCursor = false;
 }
 } // namespace Emergence::Pegasus
