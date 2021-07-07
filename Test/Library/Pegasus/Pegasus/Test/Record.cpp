@@ -4,26 +4,6 @@
 
 namespace Emergence::Pegasus::Test
 {
-static StandardLayout::Mapping RegisterAvatarInfo ()
-{
-    StandardLayout::MappingBuilder builder;
-    builder.Begin (sizeof (AvatarInfo));
-
-    AvatarInfo::Reflection::teamId = builder.RegisterInt8 (offsetof (AvatarInfo, teamId));
-    AvatarInfo::Reflection::classId = builder.RegisterInt8 (offsetof (AvatarInfo, classId));
-    return builder.End ();
-}
-
-static StandardLayout::Mapping RegisterAvatarRuntime ()
-{
-    StandardLayout::MappingBuilder builder;
-    builder.Begin (sizeof (AvatarRuntime));
-
-    AvatarRuntime::Reflection::ammoLeft = builder.RegisterInt16 (offsetof (AvatarRuntime, ammoLeft));
-    AvatarRuntime::Reflection::health = builder.RegisterFloat (offsetof (AvatarRuntime, health));
-    return builder.End ();
-}
-
 static StandardLayout::Mapping RegisterBoundingBox ()
 {
     StandardLayout::MappingBuilder builder;
@@ -46,13 +26,6 @@ static StandardLayout::Mapping RegisterRecord ()
 
     Record::Reflection::entityId = builder.RegisterUInt32 (offsetof (Record, entityId));
     Record::Reflection::nickname = builder.RegisterString (offsetof (Record, nickname), Record::NICKNAME_MAX_SIZE);
-
-    Record::Reflection::info = builder.RegisterNestedObject (
-        offsetof (Record, info), AvatarInfo::Reflection::GetMapping ());
-
-    Record::Reflection::runtime = builder.RegisterNestedObject (
-        offsetof (Record, runtime), AvatarRuntime::Reflection::GetMapping ());
-
     Record::Reflection::boundingBox = builder.RegisterNestedObject (
         offsetof (Record, boundingBox), BoundingBox::Reflection::GetMapping ());
 
@@ -66,14 +39,6 @@ static StandardLayout::Mapping RegisterRecord ()
         offsetof (Record, status), Record::Status::FLAG_IMMOBILIZED_OFFSET);
     return builder.End ();
 }
-
-StandardLayout::FieldId AvatarInfo::Reflection::teamId;
-
-StandardLayout::FieldId AvatarInfo::Reflection::classId;
-
-StandardLayout::FieldId AvatarRuntime::Reflection::ammoLeft;
-
-StandardLayout::FieldId AvatarRuntime::Reflection::health;
 
 StandardLayout::FieldId BoundingBox::Reflection::minX;
 
@@ -91,10 +56,6 @@ StandardLayout::FieldId Record::Reflection::entityId;
 
 StandardLayout::FieldId Record::Reflection::nickname;
 
-StandardLayout::FieldId Record::Reflection::info;
-
-StandardLayout::FieldId Record::Reflection::runtime;
-
 StandardLayout::FieldId Record::Reflection::boundingBox;
 
 StandardLayout::FieldId Record::Reflection::alive;
@@ -104,18 +65,6 @@ StandardLayout::FieldId Record::Reflection::stunned;
 StandardLayout::FieldId Record::Reflection::poisoned;
 
 StandardLayout::FieldId Record::Reflection::immobilized;
-
-StandardLayout::Mapping AvatarInfo::Reflection::GetMapping ()
-{
-    static StandardLayout::Mapping mapping = RegisterAvatarInfo ();
-    return mapping;
-}
-
-StandardLayout::Mapping AvatarRuntime::Reflection::GetMapping ()
-{
-    static StandardLayout::Mapping mapping = RegisterAvatarRuntime ();
-    return mapping;
-}
 
 StandardLayout::Mapping BoundingBox::Reflection::GetMapping ()
 {

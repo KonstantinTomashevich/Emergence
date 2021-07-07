@@ -6,38 +6,6 @@
 
 namespace Emergence::Pegasus::Test
 {
-struct AvatarInfo final
-{
-    struct Reflection final
-    {
-        Reflection () = delete;
-
-        static StandardLayout::Mapping GetMapping ();
-
-        static StandardLayout::FieldId teamId;
-        static StandardLayout::FieldId classId;
-    };
-
-    uint8_t teamId = 0u;
-    uint8_t classId = 0u;
-};
-
-struct AvatarRuntime
-{
-    struct Reflection final
-    {
-        Reflection () = delete;
-
-        static StandardLayout::Mapping GetMapping ();
-
-        static StandardLayout::FieldId ammoLeft;
-        static StandardLayout::FieldId health;
-    };
-
-    uint16_t ammoLeft = 0u;
-    float health = 0u;
-};
-
 struct BoundingBox final
 {
     struct Reflection final
@@ -76,8 +44,6 @@ struct Record final
 
         static StandardLayout::FieldId entityId;
         static StandardLayout::FieldId nickname;
-        static StandardLayout::FieldId info;
-        static StandardLayout::FieldId runtime;
         static StandardLayout::FieldId boundingBox;
         static StandardLayout::FieldId alive;
         static StandardLayout::FieldId stunned;
@@ -107,8 +73,6 @@ struct Record final
     uint32_t entityId = 0u;
     std::array <char, NICKNAME_MAX_SIZE> nickname = {0u};
 
-    AvatarInfo info;
-    AvatarRuntime runtime;
     BoundingBox boundingBox;
     uint8_t status = 0u;
 };

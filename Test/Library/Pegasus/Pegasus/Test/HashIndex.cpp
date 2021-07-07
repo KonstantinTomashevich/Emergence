@@ -47,14 +47,6 @@ static const Record firstRecord
             "hugo"
         },
         {
-            1u,
-            0u,
-        },
-        {
-            47u,
-            96.0f,
-        },
-        {
             3.0f,
             7.0f,
             0.0f,
@@ -72,14 +64,6 @@ static const Record anotherRecordForEntity0
             "duplicate"
         },
         {
-            2u,
-            1u,
-        },
-        {
-            49u,
-            91.0f,
-        },
-        {
             5.0f,
             1.0f,
             0.0f,
@@ -95,14 +79,6 @@ static const Record secondRecord
         1u,
         {
             "karl"
-        },
-        {
-            2u,
-            1u,
-        },
-        {
-            53u,
-            111.0f,
         },
         {
             11.0f,

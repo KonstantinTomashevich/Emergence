@@ -24,14 +24,6 @@ static const Record entity0Hugo
             "hugo"
         },
         {
-            1u,
-            0u,
-        },
-        {
-            47u,
-            96.0f,
-        },
-        {
             3.0f,
             7.0f,
             0.0f,
@@ -49,14 +41,6 @@ static const Record entity1Karl
             "karl"
         },
         {
-            5u,
-            1u,
-        },
-        {
-            25u,
-            71.0f,
-        },
-        {
             5.0f,
             4.0f,
             0.0f,
@@ -72,14 +56,6 @@ static const Record entity2Xavier
         2u,
         {
             "xavier"
-        },
-        {
-            3u,
-            2u,
-        },
-        {
-            67u,
-            65.0f,
         },
         {
             9.0f,

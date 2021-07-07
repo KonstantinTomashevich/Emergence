@@ -90,14 +90,6 @@ static const Record record_x10_11_y8_9_z4_5
             "hugo"
         },
         {
-            1u,
-            0u,
-        },
-        {
-            47u,
-            96.0f,
-        },
-        {
             10.0f,
             8.0f,
             4.0f,
@@ -115,14 +107,6 @@ static const Record record_xm2_0_y1_4_z0_2
             "karl"
         },
         {
-            1u,
-            0u,
-        },
-        {
-            47u,
-            96.0f,
-        },
-        {
             -2.0f,
             1.0f,
             0.0f,
@@ -138,14 +122,6 @@ static const Record record_x15_19_y8_11_z50_60
         2u,
         {
             "xavier"
-        },
-        {
-            1u,
-            0u,
-        },
-        {
-            47u,
-            96.0f,
         },
         {
             15.0f,
@@ -733,6 +709,7 @@ BOOST_DATA_TEST_CASE(
             },
         }))
 {
+    // TODO: Test for non-float values.
     sample.Execute ();
 }
 
