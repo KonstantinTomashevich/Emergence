@@ -1,2 +1,3 @@
+add_subdirectory (Hashing)
 add_subdirectory (MemoryPool)
 add_subdirectory (StandardLayoutMapping)

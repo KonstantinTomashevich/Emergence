@@ -4,189 +4,196 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-#include <RecordCollection/LinearResolver.hpp>
-#include <RecordCollection/PointResolver.hpp>
-#include <RecordCollection/VolumetricResolver.hpp>
+#include <RecordCollection/LinearRepresentation.hpp>
+#include <RecordCollection/PointRepresentation.hpp>
+#include <RecordCollection/VolumetricRepresentation.hpp>
 
 namespace Emergence::RecordCollection
 {
-/// \brief Stores records of the same type and provides fast lookup using resolvers.
+/// \brief Stores records of the same type and provides fast lookup using representations.
 class Collection final
 {
 public:
-    /// \brief Wraps insertion of several records into one transaction.
-    class Inserter final
+    /// \brief Wraps allocation and insertion of several records into one transaction.
+    class Allocator final
     {
     public:
-        Inserter (const Inserter &_other) = delete;
+        Allocator (const Allocator &_other) = delete;
 
-        Inserter (Inserter &&_other);
+        Allocator (Allocator &&_other) noexcept;
 
-        /// \brief Inserts all allocated records into collection and ends transaction.
-        ~Inserter ();
+        /// \brief Ends transaction. Inserts all allocated records, that are not inserted yet.
+        ~Allocator () noexcept;
 
         /// \brief Allocates new record for insertion.
         /// \warning Record type is unknown during compile time, therefore
         ///          appropriate constructor should be called after allocation.
-        void *AllocateRecord ();
+        /// \invariant Previous allocated recorded must be initialized and ready for insertion.
+        void *Allocate () noexcept;
+
+        /// Assigning allocators looks counter intuitive.
+        Allocator &operator = (const Allocator &_other) = delete;
+
+        /// Assigning allocators looks counter intuitive.
+        Allocator &operator = (Allocator &&_other) = delete;
 
     private:
-        /// Collection constructs inserters.
+        /// Collection constructs allocators.
         friend class Collection;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-        explicit Inserter (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
-        /// \brief Iterator implementation-specific data.
+        /// \brief Allocator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Allows iteration over Collection linear resolvers.
+    /// \brief Allows iteration over Collection linear representations.
     ///
-    /// \warning Collection::CreateLinearResolver invalidates these iterators.
-    class LinearResolverIterator final
+    /// \warning Collection::CreateLinearRepresentation invalidates these iterators.
+    class LinearRepresentationIterator final
     {
     public:
-        ~LinearResolverIterator () noexcept;
+        ~LinearRepresentationIterator () noexcept;
 
-        /// \return LinearResolver, to which iterator points.
+        /// \return LinearRepresentation, to which iterator points.
         /// \invariant Inside valid bounds, but not in the ending.
-        LinearResolver operator * () const noexcept;
+        LinearRepresentation operator * () const noexcept;
 
         /// \brief Move to next field.
         /// \invariant Inside valid bounds, but not in the ending.
-        LinearResolverIterator &operator ++ () noexcept;
+        LinearRepresentationIterator &operator ++ () noexcept;
 
         /// \brief Move to next field.
         /// \return Unchanged instance of iterator.
         /// \invariant Inside valid bounds, but not in the ending.
-        LinearResolverIterator operator ++ (int) noexcept;
+        LinearRepresentationIterator operator ++ (int) noexcept;
 
         /// \brief Move to previous field.
         /// \invariant Inside valid bounds, but not in the beginning.
-        LinearResolverIterator &operator -- () noexcept;
+        LinearRepresentationIterator &operator -- () noexcept;
 
         /// \brief Move to previous field.
         /// \return Unchanged instance of iterator.
         /// \invariant Inside valid bounds, but not in the beginning.
-        LinearResolverIterator operator -- (int) noexcept;
+        LinearRepresentationIterator operator -- (int) noexcept;
 
-        bool operator == (const LinearResolverIterator &_other) const noexcept;
+        bool operator == (const LinearRepresentationIterator &_other) const noexcept;
 
-        bool operator != (const LinearResolverIterator &_other) const noexcept;
+        bool operator != (const LinearRepresentationIterator &_other) const noexcept;
 
     private:
-        /// Collection constructs iterators for linear resolvers.
+        /// Collection constructs iterators for linear representations.
         friend class Collection;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-        explicit LinearResolverIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit LinearRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Allows iteration over Collection point resolvers.
+    /// \brief Allows iteration over Collection point representations.
     ///
-    /// \warning Collection::CreatePointResolver invalidates these iterators.
-    class PointResolverIterator final
+    /// \warning Collection::CreatePointRepresentation invalidates these iterators.
+    class PointRepresentationIterator final
     {
     public:
-        ~PointResolverIterator () noexcept;
+        ~PointRepresentationIterator () noexcept;
 
-        /// \return PointResolver, to which iterator points.
+        /// \return PointRepresentation, to which iterator points.
         /// \invariant Inside valid bounds, but not in the ending.
-        PointResolver operator * () const noexcept;
+        PointRepresentation operator * () const noexcept;
 
         /// \brief Move to next field.
         /// \invariant Inside valid bounds, but not in the ending.
-        PointResolverIterator &operator ++ () noexcept;
+        PointRepresentationIterator &operator ++ () noexcept;
 
         /// \brief Move to next field.
         /// \return Unchanged instance of iterator.
         /// \invariant Inside valid bounds, but not in the ending.
-        PointResolverIterator operator ++ (int) noexcept;
+        PointRepresentationIterator operator ++ (int) noexcept;
 
         /// \brief Move to previous field.
         /// \invariant Inside valid bounds, but not in the beginning.
-        PointResolverIterator &operator -- () noexcept;
+        PointRepresentationIterator &operator -- () noexcept;
 
         /// \brief Move to previous field.
         /// \return Unchanged instance of iterator.
         /// \invariant Inside valid bounds, but not in the beginning.
-        PointResolverIterator operator -- (int) noexcept;
+        PointRepresentationIterator operator -- (int) noexcept;
 
-        bool operator == (const PointResolverIterator &_other) const noexcept;
+        bool operator == (const PointRepresentationIterator &_other) const noexcept;
 
-        bool operator != (const PointResolverIterator &_other) const noexcept;
+        bool operator != (const PointRepresentationIterator &_other) const noexcept;
 
     private:
-        /// Collection constructs iterators for point resolvers.
+        /// Collection constructs iterators for point representations.
         friend class Collection;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-        explicit PointResolverIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit PointRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Allows iteration over Collection volumetric resolvers.
+    /// \brief Allows iteration over Collection volumetric representations.
     ///
-    /// \warning Collection::CreateVolumetricResolver invalidates these iterators.
-    class VolumetricResolverIterator final
+    /// \warning Collection::CreateVolumetricRepresentation invalidates these iterators.
+    class VolumetricRepresentationIterator final
     {
     public:
-        ~VolumetricResolverIterator () noexcept;
+        ~VolumetricRepresentationIterator () noexcept;
 
-        /// \return VolumetricResolver, to which iterator points.
+        /// \return VolumetricRepresentation, to which iterator points.
         /// \invariant Inside valid bounds, but not in the ending.
-        VolumetricResolver operator * () const noexcept;
+        VolumetricRepresentation operator * () const noexcept;
 
         /// \brief Move to next field.
         /// \invariant Inside valid bounds, but not in the ending.
-        VolumetricResolverIterator &operator ++ () noexcept;
+        VolumetricRepresentationIterator &operator ++ () noexcept;
 
         /// \brief Move to next field.
         /// \return Unchanged instance of iterator.
         /// \invariant Inside valid bounds, but not in the ending.
-        VolumetricResolverIterator operator ++ (int) noexcept;
+        VolumetricRepresentationIterator operator ++ (int) noexcept;
 
         /// \brief Move to previous field.
         /// \invariant Inside valid bounds, but not in the beginning.
-        VolumetricResolverIterator &operator -- () noexcept;
+        VolumetricRepresentationIterator &operator -- () noexcept;
 
         /// \brief Move to previous field.
         /// \return Unchanged instance of iterator.
         /// \invariant Inside valid bounds, but not in the beginning.
-        VolumetricResolverIterator operator -- (int) noexcept;
+        VolumetricRepresentationIterator operator -- (int) noexcept;
 
-        bool operator == (const VolumetricResolverIterator &_other) const noexcept;
+        bool operator == (const VolumetricRepresentationIterator &_other) const noexcept;
 
-        bool operator != (const VolumetricResolverIterator &_other) const noexcept;
+        bool operator != (const VolumetricRepresentationIterator &_other) const noexcept;
 
     private:
-        /// Collection constructs iterators for volumetric resolvers.
+        /// Collection constructs iterators for volumetric representations.
         friend class Collection;
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
 
-        explicit VolumetricResolverIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit VolumetricRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Describes one of the VolumetricResolver dimensions, used for VolumetricResolver creation.
+    /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
     struct DimensionDescription
     {
         /// \brief Pointer to minimum possible value of #minBorderField.
         ///
         /// \details Values, that are less than this value will be processed as this value.
-        ///          Guarantied to be copied during resolver creation, therefore can point to stack memory.
+        ///          Guarantied to be copied during representation creation, therefore can point to stack memory.
         const void *globalMinBorder;
 
         /// \brief Id of field, that holds record minimum border value for this dimension.
@@ -197,7 +204,7 @@ public:
         /// \brief Pointer to maximum possible value of #maxBorderField.
         ///
         /// \details Values, that are greater than this value will be processed as this value.
-        ///          Guarantied to be copied during resolver creation, therefore can point to stack memory.
+        ///          Guarantied to be copied during representation creation, therefore can point to stack memory.
         const void *globalMaxBorder;
 
         /// \brief Id of field, that holds record maximum border value for this dimension.
@@ -216,39 +223,39 @@ public:
 
     ~Collection () noexcept;
 
-    /// \brief Starts insertion transaction.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    Inserter Insert () noexcept;
+    /// \brief Starts allocation transaction.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
+    Allocator AllocateAndInsert () noexcept;
 
-    /// \brief Adds LinearResolver to Collection, which sorts records by value of given _keyField.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    LinearResolver CreateLinearResolver (StandardLayout::FieldId _keyField) const noexcept;
+    /// \brief Adds LinearRepresentation to Collection, which sorts records by value of given _keyField.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
+    LinearRepresentation CreateLinearRepresentation (StandardLayout::FieldId _keyField) const noexcept;
 
-    /// \brief Adds PointResolver to Collection, that uses given _keyFields as point position.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    PointResolver CreatePointResolver (const std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
+    /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
+    PointRepresentation CreatePointRepresentation (std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
 
-    /// \brief Adds VolumetricResolver to Collection, that uses given _dimensions.
-    /// \invariant There is no active insertion transactions in this collection and cursors in its resolvers.
-    VolumetricResolver CreateVolumetricResolver (const std::vector <DimensionDescription> _dimensions) const noexcept;
+    /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
+    VolumetricRepresentation CreateVolumetricRepresentation (std::vector <DimensionDescription> _dimensions) const noexcept;
 
-    /// \return Iterator, that points to beginning of linear resolvers range.
-    LinearResolverIterator LinearResolverBegin () noexcept;
+    /// \return Iterator, that points to beginning of linear representations range.
+    LinearRepresentationIterator LinearRepresentationBegin () noexcept;
 
-    /// \return Iterator, that points to ending of linear resolvers range.
-    LinearResolverIterator LinearResolverEnd () noexcept;
+    /// \return Iterator, that points to ending of linear representations range.
+    LinearRepresentationIterator LinearRepresentationEnd () noexcept;
 
-    /// \return Iterator, that points to beginning of point resolvers range.
-    PointResolverIterator PointResolverBegin () noexcept;
+    /// \return Iterator, that points to beginning of point representations range.
+    PointRepresentationIterator PointRepresentationBegin () noexcept;
 
-    /// \return Iterator, that points to ending of point resolvers range.
-    PointResolverIterator PointResolverEnd () noexcept;
+    /// \return Iterator, that points to ending of point representations range.
+    PointRepresentationIterator PointRepresentationEnd () noexcept;
 
-    /// \return Iterator, that points to beginning of volumetric resolvers range.
-    VolumetricResolverIterator VolumetricResolverBegin () noexcept;
+    /// \return Iterator, that points to beginning of volumetric representations range.
+    VolumetricRepresentationIterator VolumetricRepresentationBegin () noexcept;
 
-    /// \return Iterator, that points to ending of volumetric resolvers range.
-    VolumetricResolverIterator VolumetricResolverEnd () noexcept;
+    /// \return Iterator, that points to ending of volumetric representations range.
+    VolumetricRepresentationIterator VolumetricRepresentationEnd () noexcept;
 
     Collection &operator = (const Collection &_other) = delete;
 

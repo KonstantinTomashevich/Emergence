@@ -1,3 +1,6 @@
 [submodule "CMake/Sober"]
 	path = CMake/Sober
 	url = https://github.com/KonstantinTomashevich/Sober
+[submodule "ThirdParty/xxhash_cpp"]
+	path = ThirdParty/xxhash_cpp
+	url = https://github.com/RedSpah/xxhash_cpp

@@ -41,6 +41,11 @@ const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept
     return "UNKNOWN";
 }
 
+Field::Field () noexcept
+    : handle (nullptr)
+{
+}
+
 Field::Field (const Field &_other) noexcept
     : Field (_other.handle)
 {
@@ -94,7 +99,14 @@ void *Field::GetValue (void *_object) const noexcept
 
 const void *Field::GetValue (const void *_object) const noexcept
 {
+    assert (_object);
     return static_cast <const uint8_t *> (_object) + GetOffset ();
+}
+
+bool Field::IsSame (const Field &_other) const noexcept
+{
+    assert (IsHandleValid ());
+    return handle == _other.handle;
 }
 
 bool Field::IsHandleValid () const noexcept

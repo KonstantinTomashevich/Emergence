@@ -9,13 +9,18 @@ Currently in development.
 
 ### Services
 
-- **StandardLayoutMapping**: fast field-only reflection 
-  for standard layout structures.
+- **Hashing**: allows to hash byte sequences.
 - **MemoryPool**: paged memory allocator, inspired by **Boost.Pool**.
+- **StandardLayoutMapping**: fast field-only reflection for 
+  standard layout structures.
 
 ### Libraries
 
 - **Handling**: compact handle-based ownership implementation.
+- **Pegasus**: base library for one of the **RecordCollection** implementations.
+  Optimized for collections with small count of representations. **Warning:** 
+  prototype implementation is finished, but without **RecordCollection**
+  adapter implementation.
 
 ## Modules under development
 
@@ -27,9 +32,9 @@ Currently in development.
 ### Libraries
 
 - **SyntaxSugar**: contains syntax sugar for other libraries 
-   and service implementations.
-- **Pegasus**: base library for one of the **RecordCollection** implementations.
-  Optimized for collections with small count of representations.
+  and service implementations. It's sort of always under development,
+  because need for the new syntax sugar helpers could arise during 
+  development of other modules.
 
 ## Planed modules
 

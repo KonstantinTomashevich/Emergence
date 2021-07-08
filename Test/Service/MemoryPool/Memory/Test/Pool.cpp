@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
 
 #include <Memory/Pool.hpp>
 #include <Memory/Test/Pool.hpp>
@@ -55,6 +56,38 @@ BOOST_AUTO_TEST_CASE (MemoryReused)
 
     void *anotherItem = pool.Acquire ();
     BOOST_CHECK_EQUAL (item, anotherItem);
+}
+
+void CheckPoolItemVectorsEquality (const std::vector <void *> &_first, const std::vector <void *> &_second)
+{
+    BOOST_CHECK_EQUAL (_first.size (), _second.size ());
+
+    // Items order is not guaranteed.
+    for (void *item : _first)
+    {
+        auto iterator = std::find (_second.begin (), _second.end (), item);
+        BOOST_CHECK_MESSAGE (iterator != _second.end (),
+                             boost::format ("Searching for item %1%.") % item);
+    }
+}
+
+void CheckPoolIteration (Emergence::Memory::Pool &_pool, const std::vector <void *> &_expectedItems)
+{
+    std::vector <void *> itemsFromIteration;
+    for (void *item : _pool)
+    {
+        itemsFromIteration.emplace_back (item);
+    }
+
+    CheckPoolItemVectorsEquality (_expectedItems, itemsFromIteration);
+    itemsFromIteration.clear ();
+
+    for (const void *item : const_cast <const Emergence::Memory::Pool &> (_pool))
+    {
+        itemsFromIteration.emplace_back (const_cast <void *> (item));
+    }
+
+    CheckPoolItemVectorsEquality (_expectedItems, itemsFromIteration);
 }
 
 struct FullPoolContext
@@ -133,6 +166,94 @@ BOOST_AUTO_TEST_CASE (Move)
     // Acquire one item from each pool to ensure that they are in working state.
     BOOST_CHECK (context.pool.Acquire ());
     BOOST_CHECK (newPool.Acquire ());
+}
+
+BOOST_AUTO_TEST_CASE (IterateEmpty)
+{
+    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    BOOST_CHECK (pool.BeginAcquired () == pool.EndAcquired ());
+}
+
+BOOST_AUTO_TEST_CASE (IterationFirstItem)
+{
+    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    void *first = pool.Acquire ();
+    void *second = pool.Acquire ();
+
+    BOOST_CHECK_EQUAL (first, *pool.BeginAcquired ());
+    pool.Release (first);
+    BOOST_CHECK_EQUAL (second, *pool.BeginAcquired ());
+
+    first = pool.Acquire ();
+    pool.Release (second);
+    BOOST_CHECK_EQUAL (first, *pool.BeginAcquired ());
+}
+
+BOOST_AUTO_TEST_CASE (IterateFull)
+{
+    FullPoolContext context;
+    CheckPoolIteration (context.pool, context.items);
+}
+
+BOOST_AUTO_TEST_CASE (IterateFullWithGaps)
+{
+    FullPoolContext context;
+    auto iterator = context.items.begin ();
+    std::size_t index = 0u;
+
+    while (iterator != context.items.end ())
+    {
+        if (index % 2u)
+        {
+            context.pool.Release (*iterator);
+            iterator = context.items.erase (iterator);
+        }
+        else
+        {
+            ++iterator;
+        }
+
+        ++index;
+    }
+
+    CheckPoolIteration (context.pool, context.items);
+}
+
+BOOST_AUTO_TEST_CASE (ReleaseDoesNotInvalidateIterator)
+{
+    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    std::vector <void *> items;
+
+    // Must be greater than 1. If it's greater than 1, value should not matter.
+    constexpr std::size_t itemsToAcquire = 5u;
+
+    for (std::size_t index = 0u; index < itemsToAcquire; ++index)
+    {
+        items.emplace_back (pool.Acquire ());
+    }
+
+    std::vector <void *> itemsFromIteration;
+    auto iterator = pool.BeginAcquired ();
+    auto end = pool.EndAcquired ();
+
+    // Release first item, that is not pointed by iterator.
+    for (auto iteratorToDelete = items.begin (); iteratorToDelete != items.end (); ++iteratorToDelete)
+    {
+        if (*iteratorToDelete != *iterator)
+        {
+            pool.Release (*iteratorToDelete);
+            items.erase (iteratorToDelete);
+            break;
+        }
+    }
+
+    while (iterator != end)
+    {
+        itemsFromIteration.emplace_back (*iterator);
+        ++iterator;
+    }
+
+    CheckPoolItemVectorsEquality (items, itemsFromIteration);
 }
 
 BOOST_AUTO_TEST_SUITE_END ()

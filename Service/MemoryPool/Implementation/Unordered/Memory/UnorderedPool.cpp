@@ -6,6 +6,110 @@
 
 namespace Emergence::Memory
 {
+const void *UnorderedPool::AcquiredChunkConstIterator::operator * () const noexcept
+{
+    assert (page);
+    assert (chunk);
+    return chunk;
+}
+
+UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIterator::operator ++ () noexcept
+{
+    assert (pool);
+    assert (page);
+    assert (chunk);
+
+    do
+    {
+        const auto *next = reinterpret_cast <const Chunk *> (&chunk->bytes[0u] + pool->chunkSize);
+        if (&next->bytes[0u] < &page->chunks[0u].bytes[0u] + pool->chunkSize * pool->pageCapacity)
+        {
+            chunk = next;
+        }
+        else
+        {
+            page = page->next;
+            if (page)
+            {
+                chunk = &page->chunks[0u];
+            }
+            else
+            {
+                chunk = nullptr;
+                break;
+            }
+        }
+    }
+    while (pool->IsFree (chunk));
+
+    return *this;
+}
+
+UnorderedPool::AcquiredChunkConstIterator UnorderedPool::AcquiredChunkConstIterator::operator ++ (int) noexcept
+{
+    AcquiredChunkConstIterator previousValue (pool, page, chunk);
+    ++*this;
+    return previousValue;
+}
+
+UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
+    const UnorderedPool *_pool,
+    const Page *_page) noexcept
+    : AcquiredChunkConstIterator (_pool, _page, _page ? &_page->chunks[0u] : nullptr)
+{
+    if (chunk)
+    {
+        // If first chunk of the top page is already free, use increment to find first acquired chunk.
+        if (pool->IsFree (chunk))
+        {
+            ++*this;
+        }
+    }
+}
+
+UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
+    const UnorderedPool *_pool, const Page *_page, const Chunk *_chunk) noexcept
+    : pool (_pool),
+      page (_page),
+      chunk (_chunk)
+{
+    assert (pool);
+#ifndef NDEBUG
+    if (page)
+    {
+        assert (chunk);
+        assert (pool->IsInside (page, chunk));
+    }
+    else
+    {
+        assert (!chunk);
+    }
+#endif
+}
+
+void *UnorderedPool::AcquiredChunkIterator::operator * () const noexcept
+{
+    return const_cast <void *> (*coreIterator);
+}
+
+UnorderedPool::AcquiredChunkIterator &UnorderedPool::AcquiredChunkIterator::operator ++ () noexcept
+{
+    ++coreIterator;
+    return *this;
+}
+
+UnorderedPool::AcquiredChunkIterator UnorderedPool::AcquiredChunkIterator::operator ++ (int) noexcept
+{
+    AcquiredChunkIterator previousValue (coreIterator);
+    ++*this;
+    return previousValue;
+}
+
+UnorderedPool::AcquiredChunkIterator::AcquiredChunkIterator (const AcquiredChunkConstIterator &_coreIterator) noexcept
+    : coreIterator (_coreIterator)
+{
+}
+
 UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept
     : pageCapacity (_pageCapacity),
       chunkSize (_chunkSize),
@@ -178,5 +282,41 @@ bool UnorderedPool::IsInside (const UnorderedPool::Page *_page, const UnorderedP
     const Chunk *first = &_page->chunks[0u];
     const auto *last = reinterpret_cast <const Chunk *> (&first->bytes[0u] + chunkSize * (pageCapacity - 1u));
     return _chunk >= first && _chunk <= last;
+}
+
+bool UnorderedPool::IsFree (const UnorderedPool::Chunk *_chunk) const noexcept
+{
+    const Chunk *currentFreeChunk = topFreeChunk;
+    while (currentFreeChunk)
+    {
+        if (currentFreeChunk == _chunk)
+        {
+            return true;
+        }
+
+        currentFreeChunk = currentFreeChunk->nextFree;
+    }
+
+    return false;
+}
+
+UnorderedPool::AcquiredChunkConstIterator UnorderedPool::BeginAcquired () const noexcept
+{
+    return AcquiredChunkConstIterator (this, topPage);
+}
+
+UnorderedPool::AcquiredChunkConstIterator UnorderedPool::EndAcquired () const noexcept
+{
+    return AcquiredChunkConstIterator (this, nullptr);
+}
+
+UnorderedPool::AcquiredChunkIterator UnorderedPool::BeginAcquired () noexcept
+{
+    return AcquiredChunkIterator (static_cast <const UnorderedPool *> (this)->BeginAcquired ());
+}
+
+UnorderedPool::AcquiredChunkIterator UnorderedPool::EndAcquired () noexcept
+{
+    return AcquiredChunkIterator (static_cast <const UnorderedPool *> (this)->EndAcquired ());
 }
 } // namespace Emergence::Memory
