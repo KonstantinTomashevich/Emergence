@@ -353,7 +353,6 @@ Handling::Handle <VolumetricIndex> Storage::CreateVolumetricIndex (
     }
 
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
-    // TODO: This part is common for VolumetricIndex and HashIndex. Hide under template helper method?
     if (!indices.ordered.Empty ())
     {
         // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
@@ -423,15 +422,12 @@ void Storage::RegisterWriter () noexcept
 
 void Storage::UnregisterReader () noexcept
 {
-    // TODO: This method might be called from multiple threads. Remove this assert?
-    assert (accessCounter.readers > 0u);
     --accessCounter.readers;
 }
 
 void Storage::UnregisterWriter () noexcept
 {
     assert (accessCounter.writers == 1u);
-    // TODO: Record edition routine must be closed. How to assert that?
     --accessCounter.writers;
 
     for (auto &[index, mask] : indices.hash)

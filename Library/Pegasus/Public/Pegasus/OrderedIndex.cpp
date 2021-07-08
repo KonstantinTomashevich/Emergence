@@ -436,6 +436,11 @@ OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
         {
             std::sort (owner->records.begin (), owner->records.end (), Comparator (owner, _comparator));
         });
+
+#ifndef NDEBUG
+    assert (owner->massInsertionInProgress);
+    owner->massInsertionInProgress = false;
+#endif
 }
 
 void OrderedIndex::MassInsertionExecutor::InsertRecord (const void *_record) noexcept
@@ -449,6 +454,11 @@ OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner
     : owner (_owner)
 {
     assert (owner);
+    assert (!owner->massInsertionInProgress);
+
+#ifndef NDEBUG
+    owner->massInsertionInProgress = true;
+#endif
 }
 
 OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField)
@@ -510,7 +520,6 @@ std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
 
 void OrderedIndex::InsertRecord (const void *_record) noexcept
 {
-    // TODO: Assert that record is not inserted already? Is there any way to check this fast?
     assert (_record);
     DoWithCorrectComparator (
         indexedField,

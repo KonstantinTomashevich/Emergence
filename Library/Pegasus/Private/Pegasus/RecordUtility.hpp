@@ -7,11 +7,15 @@
 
 namespace Emergence::Pegasus
 {
-// TODO: Next two methods are helpers for cases, when comparator from DoWithCorrectComparator
-//       can not be applied several values. Revisit this cases and think about optimizations.
+/// \brief Wrapper for ::DoWithCorrectComparator, that applies comparator to fields of two given records.
+///
+/// \details If you have more than two records to compare, consider using ::DoWithCorrectComparator.
 bool AreRecordValuesEqual (const void *_firstRecord, const void *_secondRecord,
                            const StandardLayout::Field &_field) noexcept;
 
+/// \brief Wrapper for ::DoWithCorrectComparator, that applies comparator to two given values.
+///
+/// \details If you have more than two values to compare, consider using ::DoWithCorrectComparator.
 bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondRecordValue,
                           const StandardLayout::Field &_field) noexcept;
 

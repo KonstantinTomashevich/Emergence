@@ -17,7 +17,7 @@ if (EMERGENCE_COMPILE_TIME_TRACE)
     if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
         add_compile_options (-ftime-trace)
     else ()
-        # TODO: Support for other compilers?
+        # TODO: Alternatives for other compilers?
         message (FATAL_ERROR "Currently time tracing is supported only for CLang.")
     endif ()
 endif ()

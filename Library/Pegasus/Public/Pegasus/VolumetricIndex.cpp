@@ -1174,10 +1174,9 @@ bool VolumetricIndex::AreEqual (
 
 void VolumetricIndex::InsertRecord (const void *_record) noexcept
 {
-    // TODO: Is there a quick way to assert that record is not already inserted?
     assert (_record);
-
     std::size_t recordId;
+
     if (!freeRecordIds.empty ())
     {
         recordId = freeRecordIds.back ();

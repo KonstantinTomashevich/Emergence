@@ -81,8 +81,7 @@ private:
         HashIndex *owner;
     };
 
-    // TODO: Custom allocator?
-    // TODO: Any way to optimize comparison and hashing using similar mechanism to DoWithCorrectComparator?
+    // TODO: Custom allocator for better performance?
     using RecordHashSet = std::unordered_multiset <const void *, Hasher, Comparator>;
 
     explicit HashIndex (Storage *_owner, std::size_t _initialBuckets,

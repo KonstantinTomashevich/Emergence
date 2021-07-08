@@ -188,7 +188,6 @@ private:
         const void *record;
     };
 
-    // TODO: There should be no more than one mass insertion executor at one moment of time. How to assert than?
     class MassInsertionExecutor final
     {
     public:
@@ -231,6 +230,9 @@ private:
 
     StandardLayout::Field indexedField;
     std::vector <const void *> records;
+
+    /// \brief Debug-only, used to assert that there is always not more than one MassInsertionExecutor.
+    bool massInsertionInProgress = false;
 
     /// If edition is done by cursor from this index, we should execute deletion and reinsertion after cursor is closed,
     /// because it allows to save time on ::records vector content shifts. It is safe, because edition by own cursor

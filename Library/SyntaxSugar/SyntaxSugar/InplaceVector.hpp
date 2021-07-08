@@ -6,7 +6,7 @@
 
 namespace Emergence
 {
-// TODO: Should this class be tested?
+// TODO: Add tests for InplaceVector?
 
 /// \brief Allows to use std::array as inplace vector with fixed capacity.
 template <typename Item, std::size_t Capacity>
