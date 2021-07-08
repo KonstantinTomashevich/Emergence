@@ -165,8 +165,8 @@ bool HashIndex::Comparator::operator () (const void *_firstRecord, const void *_
     return true;
 }
 
-bool HashIndex::Comparator::operator () (const void *_record,
-                                         const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
+bool HashIndex::Comparator::operator () (
+    const void *_record, const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
 {
     return _record == _recordWithBackup.record;
 }
@@ -257,8 +257,6 @@ HashIndex::RecordHashSet::iterator HashIndex::DeleteRecordMyself (const RecordHa
 
 void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
-    // TODO: Now all indices assume that OnRecordChanged and OnRecordDeleted can not be called for the same
-    //       record and that OnRecordChanged can not be called twice for one record during one edition cycle.
     auto iterator = records.find (RecordWithBackup {_record, _recordBackup});
     assert (iterator != records.end ());
 

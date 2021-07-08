@@ -454,9 +454,9 @@ OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner
     : owner (_owner)
 {
     assert (owner);
-    assert (!owner->massInsertionInProgress);
 
 #ifndef NDEBUG
+    assert (!owner->massInsertionInProgress);
     owner->massInsertionInProgress = true;
 #endif
 }
@@ -669,8 +669,8 @@ void OrderedIndex::OnWriterClosed () noexcept
 
     if (!changedRecords.empty ())
     {
-        if (changedRecords.size () * Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT >=
-            records.size ())
+        if (changedRecords.size () >= static_cast <float> (changedRecords.size () + records.size ()) *
+                                      Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
         {
             MassInsertionExecutor executor = StartMassInsertion ();
             for (const ChangedRecordInfo &info : changedRecords)

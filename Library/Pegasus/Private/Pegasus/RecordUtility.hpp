@@ -19,6 +19,7 @@ bool AreRecordValuesEqual (const void *_firstRecord, const void *_secondRecord,
 bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondRecordValue,
                           const StandardLayout::Field &_field) noexcept;
 
+/// \brief Select appropriate value comparator for given field and passes it as argument to callback.
 template <typename Callback>
 auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callback &_callback) noexcept;
 
@@ -52,6 +53,7 @@ struct StringValueComparator final
 template <typename Callback>
 auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callback &_callback) noexcept
 {
+    assert (_field.IsHandleValid ());
     // _field should be leaf-field, not intermediate nested object.
     assert (_field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
@@ -135,6 +137,6 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
 template <typename Type>
 int NumericValueComparator <Type>::Compare (const void *_firstValue, const void *_secondValue) const noexcept
 {
-    return (*static_cast<const Type *>(_firstValue) <=> *static_cast<const Type *>(_secondValue))._Value;
+    return (*static_cast <const Type *> (_firstValue) <=> *static_cast <const Type *> (_secondValue))._Value;
 }
 } // namespace Emergence::Pegasus

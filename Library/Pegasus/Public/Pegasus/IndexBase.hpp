@@ -6,6 +6,7 @@
 
 namespace Emergence::Pegasus
 {
+/// \brief Minimal base class for all Pegasus indices.
 class IndexBase : public Handling::HandleableBase
 {
 public:
@@ -15,6 +16,6 @@ protected:
     explicit IndexBase (class Storage *_storage) noexcept;
 
     class Storage *storage;
-    std::atomic_size_t activeCursors = 0u;
+    std::atomic_size_t activeCursors;
 };
 } // namespace Emergence::Pegasus

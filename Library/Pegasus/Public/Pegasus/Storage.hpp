@@ -19,6 +19,13 @@
 
 namespace Emergence::Pegasus
 {
+// TODO: There is no class-to-class for some Pegasus and RecordCollection classes. Also, there could be some other
+//       minor differences between Pegasus library and RecordCollection service. Review them during adapters
+//       implementation and fix them either in RecordCollection service or in Pegasus adapter implementation.
+
+// TODO: Now all indices assume that OnRecordChanged and OnRecordDeleted can not be called for the same
+//       record and that OnRecordChanged can not be called twice for one record during one edition cycle.
+
 class Storage final
 {
 private:
@@ -74,8 +81,8 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <Storage::IndexHolder <HashIndex>,
-                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector <
+            Storage::IndexHolder <HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit HashIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -102,8 +109,8 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <Storage::IndexHolder <OrderedIndex>,
-                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector <
+            Storage::IndexHolder <OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit OrderedIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -130,8 +137,8 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <Storage::IndexHolder <VolumetricIndex>,
-                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector <
+            Storage::IndexHolder <VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit VolumetricIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -195,13 +202,18 @@ private:
     void InsertRecord (const void *_record) noexcept;
 
     /// \brief Deletes record by request of given internal index.
-    /// \details Index, that requested deletion, already has iterator that points to requested
+    /// \details Index, that requested deletion, usually already has iterator that points to requested
     ///          record and can do deletion faster. Therefore we identify this index by given
     ///          pointer and do not call OnRecordDeleted for this index.
     void DeleteRecord (void *_record, const void *_requestedByIndex) noexcept;
 
     void BeginRecordEdition (const void *_record) noexcept;
 
+    /// \brief Ends record edition and informs indices about changed indexed fields.
+    /// \details Index, that requested edition, usually already has iterator that points to edited
+    //           record and can do deletion faster. Therefore we identify this index by given
+    //           pointer and do not call OnRecordChanged for this index.
+    // \return Are requester indexed fields changed?
     bool EndRecordEdition (const void *_record, const void *_requestedByIndex) noexcept;
 
     const void *GetEditedRecordBackup () const noexcept;

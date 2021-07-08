@@ -26,7 +26,7 @@ struct TypeOperations final
 
     VolumetricIndex::SupportedAxisValue Divide (
         const VolumetricIndex::SupportedAxisValue &_value,
-        const VolumetricIndex::SupportedAxisValue &divider) const noexcept;
+        const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
 
     VolumetricIndex::SupportedAxisValue Divide (
         const VolumetricIndex::SupportedAxisValue &_value, std::size_t divider) const noexcept;
@@ -483,7 +483,7 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
                 }
 
 #ifndef NDEBUG
-                // Assert that at least one direction has non zero value.
+                // Assert that at least for one axis direction has non zero value.
                 std::size_t nonZeroDirections = 0u;
 
                 for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
@@ -1149,7 +1149,7 @@ void VolumetricIndex::OnRecordChanged (const void *_record, const void *_recordB
             if (!AreEqual (oldSector, newSector))
             {
                 // TODO: For now we use simple logic, because complex optimizations for large objects
-                //       could harm performance with small objects, because these optimizations require
+                //       could harm performance for small objects, because these optimizations require
                 //       additional sector checks. Revisit it later.
 
                 // Write invalid initial value into recordId, so we could check if recordId is already

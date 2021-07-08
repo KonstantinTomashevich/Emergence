@@ -200,11 +200,6 @@ Storage::Storage (Storage &&_other) noexcept
       reflection (_other.reflection),
       editedRecordBackup (_other.editedRecordBackup)
 {
-    _other.indices.hash.Clear ();
-    _other.indices.ordered.Clear ();
-    _other.indices.volumetric.Clear ();
-    _other.reflection.indexedFields.Clear ();
-
     // Allocate new record buffer for source storage. We capture its record buffer instead
     // of allocating new for us to preserve correct record edition routine state.
     _other.editedRecordBackup = malloc (reflection.recordMapping.GetObjectSize ());
@@ -223,21 +218,21 @@ Storage::~Storage () noexcept
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
 
-    // Assert that there are only self-references on indices.
+    // Assert that all indices can be safely dropped.
 #ifndef NDEBUG
     for (auto &[index, mask] : indices.hash)
     {
-        assert (index->GetReferenceCount () == 1u);
+        assert (index->CanBeDropped ());
     }
 
     for (auto &[index, mask] : indices.ordered)
     {
-        assert (index->GetReferenceCount () == 1u);
+        assert (index->CanBeDropped ());
     }
 
     for (auto &[index, mask] : indices.volumetric)
     {
-        assert (index->GetReferenceCount () == 1u);
+        assert (index->CanBeDropped ());
     }
 #endif
 
@@ -499,7 +494,7 @@ void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexce
 
     for (auto &[index, mask] : indices.volumetric)
     {
-        if (index.get() != _requestedByIndex)
+        if (index.get () != _requestedByIndex)
         {
             index->OnRecordDeleted (const_cast <const void *> (_record), editedRecordBackup);
         }
@@ -764,16 +759,12 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIn
         };
 
         auto minIterator = findField (dimension.minBorderField);
-        if (minIterator != reflection.indexedFields.End ())
-        {
-            indexMask |= 1u << (minIterator - reflection.indexedFields.Begin ());
-        }
+        assert (minIterator != reflection.indexedFields.End ());
+        indexMask |= 1u << (minIterator - reflection.indexedFields.Begin ());
 
         auto maxIterator = findField (dimension.maxBorderField);
-        if (maxIterator != reflection.indexedFields.End ())
-        {
-            indexMask |= 1u << (maxIterator - reflection.indexedFields.Begin ());
-        }
+        assert (maxIterator != reflection.indexedFields.End ());
+        indexMask |= 1u << (maxIterator - reflection.indexedFields.Begin ());
     }
 
     return indexMask;

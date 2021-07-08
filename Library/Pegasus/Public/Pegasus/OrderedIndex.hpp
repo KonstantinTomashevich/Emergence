@@ -16,6 +16,7 @@ class OrderedIndex final : public IndexBase
 public:
     struct Bound final
     {
+        /// \brief Pointer to value, that has same type as ::indexedField, and will be used as lookup bound.
         const void *boundValue;
     };
 

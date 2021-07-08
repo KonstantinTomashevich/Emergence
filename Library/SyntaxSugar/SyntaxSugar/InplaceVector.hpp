@@ -27,7 +27,6 @@ public:
     requires std::is_nothrow_copy_constructible_v <Item>;
 
     /// \brief Moves values from given inplace vector and leaves it empty.
-    /// \warning Destructors are not called for moved out items.
     InplaceVector (InplaceVector &&_other) noexcept
     requires std::is_nothrow_move_constructible_v <Item>;
 
@@ -61,7 +60,7 @@ public:
     /// \return New ::End iterator.
     /// \invariant _iterator < ::End.
     Iterator EraseExchangingWithLast (const Iterator &_iterator) noexcept
-    requires std::is_nothrow_move_assignable_v <Item>;
+    requires std::is_nothrow_move_assignable_v <Item> && std::is_nothrow_default_constructible_v <Item>;
 
     bool operator == (const InplaceVector &_other) const noexcept
     requires std::equality_comparable <Item>;
@@ -109,7 +108,7 @@ requires std::is_nothrow_move_constructible_v <Item>
     : count (_other.count),
       values (std::move (_other.values))
 {
-    _other.count = 0u;
+    _other.Clear ();
 }
 
 template <typename Item, std::size_t Capacity>
@@ -164,7 +163,7 @@ requires std::is_nothrow_default_constructible_v <Item>
 template <typename Item, std::size_t Capacity>
 typename InplaceVector <Item, Capacity>::Iterator
 InplaceVector <Item, Capacity>::EraseExchangingWithLast (const InplaceVector::Iterator &_iterator) noexcept
-requires std::is_nothrow_move_assignable_v <Item>
+requires std::is_nothrow_move_assignable_v <Item> && std::is_nothrow_default_constructible_v <Item>
 {
     assert (_iterator < End ());
     auto last = End () - 1u;
@@ -172,6 +171,11 @@ requires std::is_nothrow_move_assignable_v <Item>
     if (_iterator != last)
     {
         *_iterator = std::move (*last);
+    }
+    else
+    {
+        // Reassign last item to default values, so it will not hold any real resources.
+        *_iterator = Item ();
     }
 
     --count;

@@ -91,6 +91,7 @@ public:
         // TODO: This format differs from service format. Think which is better.
     };
 
+    /// Ray description for ray intersection lookups.
     struct Ray final
     {
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> origin;
