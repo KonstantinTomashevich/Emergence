@@ -14,14 +14,14 @@ class VolumetricIndex final : public IndexBase
 private:
     using LeafCoordinate = std::array <std::size_t, Constants::VolumetricIndex::MAX_DIMENSIONS>;
 
-    struct LeafSector
+    struct LeafSector final
     {
         LeafCoordinate min;
         LeafCoordinate max;
     };
 
 public:
-    union SupportedAxisValue
+    union SupportedAxisValue final
     {
         SupportedAxisValue () noexcept;
 
@@ -71,7 +71,7 @@ public:
     };
 
     /// Used only for index construction. ::Dimension is according dimension representation of constructed index.
-    struct DimensionDescriptor
+    struct DimensionDescriptor final
     {
         StandardLayout::FieldId minBorderField;
 
@@ -83,7 +83,7 @@ public:
     };
 
     /// Axis aligned shape description for shape intersection lookups.
-    struct AxisAlignedShape
+    struct AxisAlignedShape final
     {
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> min;
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> max;
@@ -91,7 +91,7 @@ public:
         // TODO: This format differs from service format. Think which is better.
     };
 
-    struct Ray
+    struct Ray final
     {
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> origin;
         std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
@@ -120,15 +120,18 @@ public:
 
         VolumetricIndex *GetIndex () const noexcept;
 
-        /// If cursor is not finished and as a result of record deletion, record edition or cursor construction
-        /// ::currentRecordIndex is invalid, current record is already visited or does not intersect with cursor
-        /// shape, we should execute ::MoveToNextRecord.
+        /// Check CursorCommons::FixCurrentRecordIndex for explanation.
         void FixCurrentRecordIndex () noexcept;
 
-        template <typename Operations>
-        bool CheckShapeIntersection (const void *_record, const Operations &_operations) const noexcept;
-
     private:
+        template <typename>
+        friend struct CursorCommons;
+
+        bool MoveToNextCoordinate () noexcept;
+
+        template <typename Operations>
+        bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
+
         VolumetricIndex *index;
         const LeafSector sector;
         const AxisAlignedShape shape;
@@ -214,15 +217,18 @@ public:
 
         VolumetricIndex *GetIndex () const noexcept;
 
-        /// If cursor is not finished and as a result of record deletion, record edition or cursor construction
-        /// ::currentRecordIndex is invalid, current record is already visited or does not intersect with cursor
-        /// ray, we should execute ::MoveToNextRecord.
+        /// Check CursorCommons::FixCurrentRecordIndex for explanation.
         void FixCurrentRecordIndex () noexcept;
 
-        template <typename Operations>
-        bool CheckRayIntersection (const void *_record, const Operations &_operations) const noexcept;
-
     private:
+        template <typename>
+        friend struct CursorCommons;
+
+        bool MoveToNextCoordinate () noexcept;
+
+        template <typename Operations>
+        bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
+
         VolumetricIndex *index;
 
         /// Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
@@ -312,13 +318,16 @@ public:
 private:
     friend class Storage;
 
-    struct RecordData
+    template <typename>
+    friend struct CursorCommons;
+
+    struct RecordData final
     {
         const void *record;
         std::size_t recordId;
     };
 
-    struct LeafData
+    struct LeafData final
     {
         std::vector <RecordData> records;
 

@@ -39,6 +39,17 @@ private:
     NumericValueComparator <Type> comparator {};
 };
 
+template <typename Cursor>
+struct CursorCommons final
+{
+    static void MoveToNextRecord (Cursor &_cursor) noexcept;
+
+    /// If cursor is not finished and as a result of record deletion, record edition or cursor construction
+    /// ::currentRecordIndex is invalid, current record is already visited or does not intersect with cursor
+    /// primitive, we should execute ::MoveToNextRecord.
+    static void FixCurrentRecordIndex (Cursor &_cursor) noexcept;
+};
+
 template <typename Callback>
 auto DoWithCorrectTypeOperations (const StandardLayout::Field &_field, const Callback &_callback)
 {
@@ -232,45 +243,7 @@ bool VolumetricIndex::ShapeIntersectionCursorBase::IsFinished () const noexcept
 
 void VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextRecord () noexcept
 {
-    DoWithCorrectTypeOperations (
-        index->dimensions[0u].minBorderField,
-        [this] (const auto &_operations)
-        {
-            assert (index);
-            assert (!IsFinished ());
-
-            ++currentRecordIndex;
-            const LeafData *leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
-            bool overflow;
-
-            while ((overflow = currentRecordIndex >= leaf->records.size ()) ||
-                   visitedRecords[leaf->records[currentRecordIndex].recordId] ||
-                   !CheckShapeIntersection (leaf->records[currentRecordIndex].record, _operations))
-            {
-                if (overflow)
-                {
-                    if (index->AreEqual (currentCoordinate, sector.max))
-                    {
-                        break;
-                    }
-
-                    currentRecordIndex = 0u;
-                    currentCoordinate = index->NextInsideSector (sector, currentCoordinate);
-                    leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
-                }
-                else
-                {
-                    // Mark record as visited to avoid unnecessary checks in other leaves.
-                    visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
-                    ++currentRecordIndex;
-                }
-            }
-
-            if (!overflow)
-            {
-                visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
-            }
-        });
+    CursorCommons <ShapeIntersectionCursorBase>::MoveToNextRecord (*this);
 }
 
 const void *VolumetricIndex::ShapeIntersectionCursorBase::GetRecord () const noexcept
@@ -289,33 +262,25 @@ VolumetricIndex *VolumetricIndex::ShapeIntersectionCursorBase::GetIndex () const
 
 void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noexcept
 {
-    assert (index);
-    DoWithCorrectTypeOperations (
-        index->dimensions[0u].minBorderField,
-        [this] (const auto &_operations)
-        {
-            if (!IsFinished ())
-            {
-                const LeafData &leaf = index->leaves[index->GetLeafIndex (currentCoordinate)];
+    CursorCommons <ShapeIntersectionCursorBase>::FixCurrentRecordIndex (*this);
+}
 
-                if (currentRecordIndex >= leaf.records.size () ||
-                    visitedRecords[leaf.records[currentRecordIndex].recordId] ||
-                    !CheckShapeIntersection (leaf.records[currentRecordIndex].record, _operations))
-                {
-                    MoveToNextRecord ();
-                }
-                else
-                {
-                    // Ensure that current record is visited. Visitation marks are added during cursor movement,
-                    // therefore after cursor construction or record deletion current record could be unvisited.
-                    visitedRecords[leaf.records[currentRecordIndex].recordId] = true;
-                }
-            }
-        });
+bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate () noexcept
+{
+    if (!index->AreEqual (currentCoordinate, sector.max))
+    {
+        currentRecordIndex = 0u;
+        currentCoordinate = index->NextInsideSector (sector, currentCoordinate);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 template <typename Operations>
-bool VolumetricIndex::ShapeIntersectionCursorBase::CheckShapeIntersection (
+bool VolumetricIndex::ShapeIntersectionCursorBase::CheckIntersection (
     const void *_record, const Operations &_operations) const noexcept
 {
     assert (index);
@@ -565,84 +530,7 @@ bool VolumetricIndex::RayIntersectionCursorBase::IsFinished () const noexcept
 
 void VolumetricIndex::RayIntersectionCursorBase::MoveToNextRecord () noexcept
 {
-    DoWithCorrectTypeOperations (
-        index->dimensions[0u].minBorderField,
-        [this] (const auto &_operations)
-        {
-            assert (index);
-            assert (!IsFinished ());
-
-            ++currentRecordIndex;
-            const LeafData *leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
-            bool overflow;
-
-            while ((overflow = currentRecordIndex >= leaf->records.size ()) ||
-                   visitedRecords[leaf->records[currentRecordIndex].recordId] ||
-                   !CheckRayIntersection (leaf->records[currentRecordIndex].record, _operations))
-            {
-                if (overflow)
-                {
-                    // Find next closest coordinate.
-                    std::size_t closestDimension = std::numeric_limits <std::size_t>::max ();
-                    float minT = std::numeric_limits <float>::max ();
-
-                    for (std::size_t dimensionIndex = 0u;
-                         dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
-                    {
-                        if (fabs (direction[dimensionIndex]) > Constants::VolumetricIndex::EPSILON)
-                        {
-                            const float step = direction[dimensionIndex] > 0.0f ? 1.0f : 0.0f;
-                            const float target = static_cast <float> (currentCoordinate[dimensionIndex]) + step;
-                            const float t = (target - currentPoint[dimensionIndex]) / direction[dimensionIndex];
-
-                            if (t < minT)
-                            {
-                                minT = t;
-                                closestDimension = dimensionIndex;
-                            }
-                        }
-                    }
-
-                    assert (closestDimension < index->dimensions.GetCount ());
-                    currentRecordIndex = 0u;
-
-                    if (direction[closestDimension] > 0.0f)
-                    {
-                        ++currentCoordinate[closestDimension];
-                    }
-                    else
-                    {
-                        --currentCoordinate[closestDimension];
-                    }
-
-                    for (std::size_t dimensionIndex = 0u;
-                         dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
-                    {
-                        currentPoint[dimensionIndex] += minT * direction[dimensionIndex];
-                    }
-
-                    if (IsFinished ())
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        leaf = &index->leaves[index->GetLeafIndex (currentCoordinate)];
-                    }
-                }
-                else
-                {
-                    // Mark record as visited to avoid unnecessary checks in other leaves.
-                    visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
-                    ++currentRecordIndex;
-                }
-            }
-
-            if (!overflow)
-            {
-                visitedRecords[leaf->records[currentRecordIndex].recordId] = true;
-            }
-        });
+    CursorCommons <RayIntersectionCursorBase>::MoveToNextRecord (*this);
 }
 
 const void *VolumetricIndex::RayIntersectionCursorBase::GetRecord () const noexcept
@@ -668,34 +556,54 @@ VolumetricIndex *VolumetricIndex::RayIntersectionCursorBase::GetIndex () const n
 
 void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexcept
 {
-    assert (index);
-    // TODO: There is substantial code duplication between ray and shape base cursors. Think how to reduce it.
-    DoWithCorrectTypeOperations (
-        index->dimensions[0u].minBorderField,
-        [this] (const auto &_operations)
-        {
-            if (!IsFinished ())
-            {
-                const LeafData &leaf = index->leaves[index->GetLeafIndex (currentCoordinate)];
+    CursorCommons <RayIntersectionCursorBase>::FixCurrentRecordIndex (*this);
+}
 
-                if (currentRecordIndex >= leaf.records.size () ||
-                    visitedRecords[leaf.records[currentRecordIndex].recordId] ||
-                    !CheckRayIntersection (leaf.records[currentRecordIndex].record, _operations))
-                {
-                    MoveToNextRecord ();
-                }
-                else
-                {
-                    // Ensure that current record is visited. Visitation marks are added during cursor movement,
-                    // therefore after cursor construction or record deletion current record could be unvisited.
-                    visitedRecords[leaf.records[currentRecordIndex].recordId] = true;
-                }
+bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate () noexcept
+{
+    std::size_t closestDimension = std::numeric_limits <std::size_t>::max ();
+    float minT = std::numeric_limits <float>::max ();
+
+    for (std::size_t dimensionIndex = 0u;
+         dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+    {
+        if (fabs (direction[dimensionIndex]) > Constants::VolumetricIndex::EPSILON)
+        {
+            const float step = direction[dimensionIndex] > 0.0f ? 1.0f : 0.0f;
+            const float target = static_cast <float> (currentCoordinate[dimensionIndex]) + step;
+            const float t = (target - currentPoint[dimensionIndex]) / direction[dimensionIndex];
+
+            if (t < minT)
+            {
+                minT = t;
+                closestDimension = dimensionIndex;
             }
-        });
+        }
+    }
+
+    assert (closestDimension < index->dimensions.GetCount ());
+    currentRecordIndex = 0u;
+
+    if (direction[closestDimension] > 0.0f)
+    {
+        ++currentCoordinate[closestDimension];
+    }
+    else
+    {
+        --currentCoordinate[closestDimension];
+    }
+
+    for (std::size_t dimensionIndex = 0u;
+         dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+    {
+        currentPoint[dimensionIndex] += minT * direction[dimensionIndex];
+    }
+
+    return !IsFinished ();
 }
 
 template <typename Operations>
-bool VolumetricIndex::RayIntersectionCursorBase::CheckRayIntersection (
+bool VolumetricIndex::RayIntersectionCursorBase::CheckIntersection (
     const void *_record, const Operations &_operations) const noexcept
 {
     assert (index);
@@ -1333,5 +1241,79 @@ template <typename Type>
 float TypeOperations <Type>::ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept
 {
     return static_cast <float> (*reinterpret_cast <const Type *> (&_value));
+}
+
+template <typename Cursor>
+void CursorCommons <Cursor>::MoveToNextRecord (Cursor &_cursor) noexcept
+{
+    DoWithCorrectTypeOperations (
+        _cursor.index->dimensions[0u].minBorderField,
+        [&_cursor] (const auto &_operations)
+        {
+            assert (_cursor.index);
+            assert (!_cursor.IsFinished ());
+
+            ++_cursor.currentRecordIndex;
+            const VolumetricIndex::LeafData *leaf = &_cursor.index->leaves[
+                _cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
+            bool overflow;
+
+            while ((overflow = _cursor.currentRecordIndex >= leaf->records.size ()) ||
+                   _cursor.visitedRecords[leaf->records[_cursor.currentRecordIndex].recordId] ||
+                   !_cursor.CheckIntersection (leaf->records[_cursor.currentRecordIndex].record, _operations))
+            {
+                if (overflow)
+                {
+                    if (_cursor.MoveToNextCoordinate ())
+                    {
+                        leaf = &_cursor.index->leaves[_cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    // Mark record as visited to avoid unnecessary checks in other leaves.
+                    _cursor.visitedRecords[leaf->records[_cursor.currentRecordIndex].recordId] = true;
+                    ++_cursor.currentRecordIndex;
+                }
+            }
+
+            if (!overflow)
+            {
+                _cursor.visitedRecords[leaf->records[_cursor.currentRecordIndex].recordId] = true;
+            }
+        });
+}
+
+template <typename Cursor>
+void CursorCommons <Cursor>::FixCurrentRecordIndex (Cursor &_cursor) noexcept
+{
+    assert (_cursor.index);
+    DoWithCorrectTypeOperations (
+        _cursor.index->dimensions[0u].minBorderField,
+        [&_cursor] (const auto &_operations)
+        {
+            if (!_cursor.IsFinished ())
+            {
+                const VolumetricIndex::LeafData &leaf = _cursor.index->leaves[
+                    _cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
+
+                if (_cursor.currentRecordIndex >= leaf.records.size () ||
+                    _cursor.visitedRecords[leaf.records[_cursor.currentRecordIndex].recordId] ||
+                    !_cursor.CheckIntersection (leaf.records[_cursor.currentRecordIndex].record, _operations))
+                {
+                    _cursor.MoveToNextRecord ();
+                }
+                else
+                {
+                    // Ensure that current record is visited. Visitation marks are added during cursor movement,
+                    // therefore after cursor construction or record deletion current record could be unvisited.
+                    _cursor.visitedRecords[leaf.records[_cursor.currentRecordIndex].recordId] = true;
+                }
+            }
+        });
 }
 } // namespace Emergence::Pegasus
