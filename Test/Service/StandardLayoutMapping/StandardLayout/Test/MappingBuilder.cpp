@@ -3,11 +3,9 @@
 #include <utility>
 #include <variant>
 
-#include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
-#include <boost/format.hpp>
-
 #include <StandardLayout/MappingBuilder.hpp>
+
+#include <Testing/Testing.hpp>
 
 namespace Emergence::StandardLayout::Test
 {
@@ -20,20 +18,20 @@ static void CheckMappingEquality (const Mapping &_first, const Mapping &_second)
 
 static void CheckFieldEquality (const Field &_first, const Field &_second, bool _requireOffsetEquality = true) noexcept
 {
-    BOOST_CHECK (_first.IsHandleValid ());
-    BOOST_CHECK (_second.IsHandleValid ());
-    BOOST_CHECK_EQUAL (_first.GetArchetype (), _second.GetArchetype ());
+    CHECK (_first.IsHandleValid ());
+    CHECK (_second.IsHandleValid ());
+    CHECK_EQUAL (_first.GetArchetype (), _second.GetArchetype ());
 
     if (_requireOffsetEquality)
     {
-        BOOST_CHECK_EQUAL (_first.GetOffset (), _second.GetOffset ());
+        CHECK_EQUAL (_first.GetOffset (), _second.GetOffset ());
     }
 
-    BOOST_CHECK_EQUAL (_first.GetSize (), _second.GetSize ());
+    CHECK_EQUAL (_first.GetSize (), _second.GetSize ());
     switch (_first.GetArchetype ())
     {
         case FieldArchetype::BIT:
-            BOOST_CHECK_EQUAL (_first.GetBitOffset (), _second.GetBitOffset ());
+            CHECK_EQUAL (_first.GetBitOffset (), _second.GetBitOffset ());
             return;
 
         case FieldArchetype::INT:
@@ -48,8 +46,9 @@ static void CheckFieldEquality (const Field &_first, const Field &_second, bool 
             return;
     }
 
-    BOOST_CHECK_MESSAGE (false, boost::format ("Found unknown archetype value %1%. Possible memory corruption.") %
-                                static_cast <uint64_t> (_first.GetArchetype ()));
+    CHECK_WITH_MESSAGE (
+        false, "Found unknown archetype value ",
+        static_cast <uint64_t> (_first.GetArchetype ()), ". Possible memory corruption.");
 }
 
 static void CheckMappingEquality (const Mapping &_first, const Mapping &_second) noexcept
@@ -67,20 +66,19 @@ static void CheckMappingEquality (const Mapping &_first, const Mapping &_second)
     {
         if (secondIterator == secondEnd)
         {
-            BOOST_CHECK_MESSAGE (false, "Second mapping has less fields than first!");
+            CHECK_WITH_MESSAGE (false, "Second mapping has less fields than first!");
             return;
         }
 
-        BOOST_TEST_MESSAGE (boost::format ("Checking fields with ids %1% and %2%.") %
-                            static_cast <uint64_t> (_first.GetFieldId (firstIterator)) %
-                            static_cast <uint64_t> (_second.GetFieldId (secondIterator)));
+        LOG ("Checking fields with ids ", static_cast <uint64_t> (_first.GetFieldId (firstIterator)),
+             " and ", static_cast <uint64_t> (_second.GetFieldId (secondIterator)), ".");
 
         CheckFieldEquality (*firstIterator, *secondIterator);
         ++firstIterator;
         ++secondIterator;
     }
 
-    BOOST_CHECK_MESSAGE (secondIterator == secondEnd, "Second mapping has more fields than first!");
+    CHECK_WITH_MESSAGE (secondIterator == secondEnd, "Second mapping has more fields than first!");
 }
 
 struct FieldSeedBase
@@ -248,7 +246,8 @@ public:
                     else if constexpr (std::is_same_v <Seed, NestedObjectFieldSeed>)
                     {
                         unwrappedSeed.recordedId = _builder.RegisterNestedObject (
-                            unwrappedSeed.offset, static_cast <NestedObjectFieldSeed &> (unwrappedSeed).typeMapping);
+                            unwrappedSeed.offset,
+                            static_cast <NestedObjectFieldSeed &> (unwrappedSeed).typeMapping);
                     }
                 },
                 seed);
@@ -257,10 +256,16 @@ public:
         return _builder.End ();
     }
 
+    void GrowAndTest ()
+    {
+        MappingBuilder builder;
+        GrowAndTest (builder);
+    }
+
     void GrowAndTest (MappingBuilder &_builder)
     {
         Mapping mapping = Grow (_builder);
-        std::unordered_set <FieldId> idsFound;
+        std::unordered_set < FieldId > idsFound;
 
         for (FieldSeed &seed : fields)
         {
@@ -268,89 +273,89 @@ public:
                 [&mapping, &idsFound] (auto &unwrappedSeed)
                 {
                     using Seed = std::decay_t <decltype (unwrappedSeed)>;
-                    BOOST_TEST_MESSAGE (boost::format ("Checking field %1%...") % unwrappedSeed.recordedId);
+                    LOG ("Checking field ", unwrappedSeed.recordedId, "...");
                     Field field = mapping.GetField (unwrappedSeed.recordedId);
-                    BOOST_CHECK (field.IsHandleValid ());
+                    CHECK (field.IsHandleValid ());
 
                     if (field.IsHandleValid ())
                     {
-                        BOOST_CHECK_EQUAL (field.GetOffset (), unwrappedSeed.offset);
+                        CHECK_EQUAL (field.GetOffset (), unwrappedSeed.offset);
 
                         if constexpr (std::is_same_v <Seed, BitFieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), 1u);
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BIT);
+                            CHECK_EQUAL (field.GetSize (), 1u);
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BIT);
 
-                            BOOST_CHECK_EQUAL (
+                            CHECK_EQUAL (
                                 field.GetBitOffset (), static_cast <BitFieldSeed &> (unwrappedSeed).bitOffset);
                         }
                         else if constexpr (std::is_same_v <Seed, Int8FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int8_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (int8_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
                         }
                         else if constexpr (std::is_same_v <Seed, Int16FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int16_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (int16_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
                         }
                         else if constexpr (std::is_same_v <Seed, Int32FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int32_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (int32_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
                         }
                         else if constexpr (std::is_same_v <Seed, Int64FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (int64_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (int64_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
                         }
                         else if constexpr (std::is_same_v <Seed, UInt8FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint8_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (uint8_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         }
                         else if constexpr (std::is_same_v <Seed, UInt16FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint16_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (uint16_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         }
                         else if constexpr (std::is_same_v <Seed, UInt32FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint32_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (uint32_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         }
                         else if constexpr (std::is_same_v <Seed, UInt64FieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (uint64_t));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (uint64_t));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         }
                         else if constexpr (std::is_same_v <Seed, FloatFieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (float));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (float));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
                         }
                         else if constexpr (std::is_same_v <Seed, DoubleFieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (field.GetSize (), sizeof (double));
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
+                            CHECK_EQUAL (field.GetSize (), sizeof (double));
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
                         }
                         else if constexpr (std::is_same_v <Seed, StringFieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (
+                            CHECK_EQUAL (
                                 field.GetSize (), static_cast <StringFieldSeed &> (unwrappedSeed).maxSize);
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::STRING);
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::STRING);
                         }
                         else if constexpr (std::is_same_v <Seed, BlockFieldSeed>)
                         {
-                            BOOST_CHECK_EQUAL (
+                            CHECK_EQUAL (
                                 field.GetSize (), static_cast <BlockFieldSeed &> (unwrappedSeed).size);
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BLOCK);
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BLOCK);
                         }
                         else if constexpr (std::is_same_v <Seed, NestedObjectFieldSeed>)
                         {
                             auto &castedSeed = static_cast <NestedObjectFieldSeed &> (unwrappedSeed);
-                            BOOST_CHECK_EQUAL (field.GetSize (), castedSeed.typeMapping.GetObjectSize ());
-                            BOOST_CHECK_EQUAL (field.GetArchetype (), FieldArchetype::NESTED_OBJECT);
+                            CHECK_EQUAL (field.GetSize (), castedSeed.typeMapping.GetObjectSize ());
+                            CHECK_EQUAL (field.GetArchetype (), FieldArchetype::NESTED_OBJECT);
                             CheckMappingEquality (field.GetNestedObjectMapping (), castedSeed.typeMapping);
 
                             Mapping::FieldIterator iterator = castedSeed.typeMapping.Begin ();
@@ -363,17 +368,17 @@ public:
                                     ProjectNestedField (castedSeed.recordedId,
                                                         castedSeed.typeMapping.GetFieldId (iterator)));
 
-                                BOOST_CHECK (projectedField.IsHandleValid ());
+                                CHECK (projectedField.IsHandleValid ());
                                 CheckFieldEquality (nestedField, projectedField, false);
 
-                                BOOST_CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (),
-                                                   projectedField.GetOffset ());
+                                CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (),
+                                             projectedField.GetOffset ());
                                 ++iterator;
                             }
                         }
                     }
 
-                    BOOST_CHECK_EQUAL (idsFound.count (unwrappedSeed.recordedId), 0u);
+                    CHECK_EQUAL (idsFound.count (unwrappedSeed.recordedId), 0u);
                     idsFound.insert (unwrappedSeed.recordedId);
 
                     if constexpr (std::is_same_v <Seed, NestedObjectFieldSeed>)
@@ -387,7 +392,7 @@ public:
                             FieldId projectedId = ProjectNestedField (
                                 castedSeed.recordedId, castedSeed.typeMapping.GetFieldId (iterator));
 
-                            BOOST_CHECK_EQUAL (idsFound.count (projectedId), 0u);
+                            CHECK_EQUAL (idsFound.count (projectedId), 0u);
                             idsFound.insert (projectedId);
                             ++iterator;
                         }
@@ -402,7 +407,7 @@ public:
         while (iterator != end)
         {
             FieldId fieldId = mapping.GetFieldId (iterator);
-            BOOST_CHECK_EQUAL (idsFound.count (fieldId), 1u);
+            CHECK_EQUAL (idsFound.count (fieldId), 1u);
             ++iterator;
         }
     }
@@ -549,7 +554,8 @@ static MappingSeed nestedInUnionOneSublevel (
     {
         UInt64FieldSeed {{offsetof (NestedInUnionOneSublevelTest, uint64)}},
         NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, firstNested)}, twoIntsCorrectOrder.Grow ()},
-        NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, secondNested)}, twoIntsReversedOrder.Grow ()},
+        NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, secondNested)},
+                               twoIntsReversedOrder.Grow ()},
         BlockFieldSeed {{offsetof (NestedInUnionOneSublevelTest, block)}, sizeof (NestedOneSublevelTest::block)},
     });
 
@@ -571,63 +577,44 @@ static MappingSeed nestedTwoSublevels (
     });
 } // namespace Emergence::StandardLayout::Test
 
-// Inject output implementations into boost test details.
-namespace boost::test_tools::tt_detail
+BEGIN_SUITE (MappingBuilder)
+
+TEST_CASE (TwoIntsCorrectOrder)
 {
-template <>
-struct print_log_value <Emergence::StandardLayout::FieldArchetype>
-{
-    void operator () (std::ostream &_output, Emergence::StandardLayout::FieldArchetype const &_value)
-    {
-        _output << Emergence::StandardLayout::GetFieldArchetypeName (_value);
-    }
-};
-} // namespace boost::test_tools::tt_detail
-
-BOOST_AUTO_TEST_SUITE (MappingBuilder)
-
-struct GenerationDataset
-{
-    Emergence::StandardLayout::Test::MappingSeed *seed;
-    std::string name;
-
-    friend std::ostream &operator << (std::ostream &_output, const GenerationDataset &_dataset)
-    {
-        return _output << _dataset.name;
-    }
-};
-
-BOOST_DATA_TEST_CASE (
-    GenerateMapping, boost::unit_test::data::monomorphic::collection (
-    std::vector <GenerationDataset> {
-        {&Emergence::StandardLayout::Test::twoIntsCorrectOrder,
-            "struct with two ints, correct registration order"},
-
-        {&Emergence::StandardLayout::Test::twoIntsReversedOrder,
-            "struct with two ints, reversed registration order"},
-
-        {&Emergence::StandardLayout::Test::allBasicTypes,
-            "struct with all basic types"},
-
-        {&Emergence::StandardLayout::Test::unionWithBasicTypes,
-            "struct with unions with basic types"},
-
-        {&Emergence::StandardLayout::Test::nestedOneSublevel,
-            "struct with two nested objects, that have no nested objects inside"},
-
-        {&Emergence::StandardLayout::Test::nestedInUnionOneSublevel,
-            "struct with two nested objects inside union, that have no nested objects inside"},
-
-        {&Emergence::StandardLayout::Test::nestedTwoSublevels,
-            "struct with two nested objects, that have other nested objects inside"},
-    }))
-{
-    BOOST_REQUIRE_NE (sample.seed, nullptr);
-    Emergence::StandardLayout::MappingBuilder builder;
-    sample.seed->GrowAndTest (builder);
+    Emergence::StandardLayout::Test::twoIntsCorrectOrder.GrowAndTest ();
 }
 
-BOOST_AUTO_TEST_CASE (BuildMultipleMappings)
+TEST_CASE (TwoIntsReversedOrder)
+{
+    Emergence::StandardLayout::Test::twoIntsReversedOrder.GrowAndTest ();
+}
+
+TEST_CASE (AllBasicTypes)
+{
+    Emergence::StandardLayout::Test::allBasicTypes.GrowAndTest ();
+}
+
+TEST_CASE (UnionsWithBasicTypes)
+{
+    Emergence::StandardLayout::Test::unionWithBasicTypes.GrowAndTest ();
+}
+
+TEST_CASE (NestedOneSublevel)
+{
+    Emergence::StandardLayout::Test::nestedOneSublevel.GrowAndTest ();
+}
+
+TEST_CASE (NestedInUnionOneSublevel)
+{
+    Emergence::StandardLayout::Test::nestedInUnionOneSublevel.GrowAndTest ();
+}
+
+TEST_CASE (NestedTwoSublevels)
+{
+    Emergence::StandardLayout::Test::nestedTwoSublevels.GrowAndTest ();
+}
+
+TEST_CASE (BuildMultipleMappings)
 {
     Emergence::StandardLayout::MappingBuilder builder;
     Emergence::StandardLayout::Test::twoIntsCorrectOrder.GrowAndTest (builder);
@@ -635,4 +622,4 @@ BOOST_AUTO_TEST_CASE (BuildMultipleMappings)
     Emergence::StandardLayout::Test::nestedTwoSublevels.GrowAndTest (builder);
 }
 
-BOOST_AUTO_TEST_SUITE_END ()
+END_SUITE
