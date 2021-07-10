@@ -1,10 +1,11 @@
+#include <ctime>
 #include <variant>
 #include <vector>
 
-#include <boost/test/unit_test.hpp>
-
 #include <Hashing/ByteHasher.hpp>
 #include <Hashing/Test/ByteHasher.hpp>
+
+#include <Testing/Testing.hpp>
 
 namespace Emergence::Hashing::Test
 {
@@ -45,7 +46,7 @@ uint64_t ExecuteScenario (ByteHasher &_hasher, const Scenario &_scenario)
                 else if constexpr (std::is_same_v <Type, AppendMany>)
                 {
                     const auto &operation = static_cast <const AppendMany &> (unwrappedOperation);
-                    BOOST_REQUIRE (operation.bytes);
+                    REQUIRE (operation.bytes);
                     _hasher.Append (operation.bytes, operation.count);
                 }
                 else if constexpr (std::is_same_v <Type, Clear>)
@@ -66,26 +67,26 @@ uint64_t ExecuteScenario (const Scenario &_scenario)
 }
 } // namespace Emergence::Hashing::Test
 
-BOOST_AUTO_TEST_SUITE (ByteHasher)
+BEGIN_SUITE (ByteHasher)
 
 static const uint8_t firstSequence[] = {126u, 74u, 243u, 12u, 63u, 187u};
 
 static const uint8_t secondSequence[] = {11u, 6u, 221u, 154u, 37u};
 
-BOOST_AUTO_TEST_CASE (OneByte)
+TEST_CASE (OneByte)
 {
     Emergence::Hashing::Test::Scenario scenario =
         {
             Emergence::Hashing::Test::AppendOne {34u},
         };
 
-    BOOST_CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
+    CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
                        Emergence::Hashing::Test::ExecuteScenario (scenario));
 }
 
-BOOST_AUTO_TEST_CASE (OneByteSequences)
+TEST_CASE (OneByteSequences)
 {
-    BOOST_CHECK_EQUAL (
+    CHECK_EQUAL (
         Emergence::Hashing::Test::ExecuteScenario (
             {
                 Emergence::Hashing::Test::AppendOne {42u},
@@ -98,18 +99,18 @@ BOOST_AUTO_TEST_CASE (OneByteSequences)
             }));
 }
 
-BOOST_AUTO_TEST_CASE (OneSequence)
+TEST_CASE (OneSequence)
 {
     Emergence::Hashing::Test::Scenario scenario =
         {
             Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
         };
 
-    BOOST_CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
+    CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
                        Emergence::Hashing::Test::ExecuteScenario (scenario));
 }
 
-BOOST_AUTO_TEST_CASE (OneCompositeSequence)
+TEST_CASE (OneCompositeSequence)
 {
     Emergence::Hashing::Test::Scenario scenario =
         {
@@ -117,13 +118,13 @@ BOOST_AUTO_TEST_CASE (OneCompositeSequence)
             Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
         };
 
-    BOOST_CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
+    CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
                        Emergence::Hashing::Test::ExecuteScenario (scenario));
 }
 
-BOOST_AUTO_TEST_CASE (DifferentBytes)
+TEST_CASE (DifferentBytes)
 {
-    BOOST_CHECK_NE (
+    CHECK_NOT_EQUAL (
         Emergence::Hashing::Test::ExecuteScenario (
             {
                 Emergence::Hashing::Test::AppendOne {34u},
@@ -134,9 +135,9 @@ BOOST_AUTO_TEST_CASE (DifferentBytes)
             }));
 }
 
-BOOST_AUTO_TEST_CASE (DifferentByteSequences)
+TEST_CASE (DifferentByteSequences)
 {
-    BOOST_CHECK_NE (
+    CHECK_NOT_EQUAL (
         Emergence::Hashing::Test::ExecuteScenario (
             {
                 Emergence::Hashing::Test::AppendOne {34u},
@@ -149,9 +150,9 @@ BOOST_AUTO_TEST_CASE (DifferentByteSequences)
             }));
 }
 
-BOOST_AUTO_TEST_CASE (DifferentSequences)
+TEST_CASE (DifferentSequences)
 {
-    BOOST_CHECK_NE (
+    CHECK_NOT_EQUAL (
         Emergence::Hashing::Test::ExecuteScenario (
             {
                 Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
@@ -162,9 +163,9 @@ BOOST_AUTO_TEST_CASE (DifferentSequences)
             }));
 }
 
-BOOST_AUTO_TEST_CASE (DifferentCompositeSequences)
+TEST_CASE (DifferentCompositeSequences)
 {
-    BOOST_CHECK_NE (
+    CHECK_NOT_EQUAL (
         Emergence::Hashing::Test::ExecuteScenario (
             {
                 Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
@@ -177,9 +178,9 @@ BOOST_AUTO_TEST_CASE (DifferentCompositeSequences)
             }));
 }
 
-BOOST_AUTO_TEST_CASE (Clear)
+TEST_CASE (Clear)
 {
-    BOOST_CHECK_EQUAL (
+    CHECK_EQUAL (
         Emergence::Hashing::Test::ExecuteScenario (
             {
                 Emergence::Hashing::Test::AppendOne {34u},
@@ -194,7 +195,7 @@ BOOST_AUTO_TEST_CASE (Clear)
             }));
 }
 
-BOOST_AUTO_TEST_CASE (DifferentSequencesThroughOneHasher)
+TEST_CASE (DifferentSequencesThroughOneHasher)
 {
     Emergence::Hashing::ByteHasher hasher;
     uint64_t firstResult = Emergence::Hashing::Test::ExecuteScenario (
@@ -210,10 +211,10 @@ BOOST_AUTO_TEST_CASE (DifferentSequencesThroughOneHasher)
             Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
         });
 
-    BOOST_CHECK_NE (firstResult, secondResult);
+    CHECK_NOT_EQUAL (firstResult, secondResult);
 }
 
-BOOST_AUTO_TEST_CASE (VeryCloseBigRandomSequences)
+TEST_CASE (VeryCloseBigRandomSequences)
 {
     srand (time (nullptr));
     std::array <uint8_t, 512u> sequence;
@@ -239,7 +240,7 @@ BOOST_AUTO_TEST_CASE (VeryCloseBigRandomSequences)
             Emergence::Hashing::Test::AppendMany {&sequence[0], sequence.size ()},
         });
 
-    BOOST_CHECK_NE (firstResult, secondResult);
+    CHECK_NOT_EQUAL (firstResult, secondResult);
 }
 
-BOOST_AUTO_TEST_SUITE_END ()
+END_SUITE

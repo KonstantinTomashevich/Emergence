@@ -23,6 +23,12 @@
 /// \brief Check that given values are equal and abort test on failure.
 #define REQUIRE_EQUAL(...) IMPLEMENTATION_REQUIRE_EQUAL (__VA_ARGS__)
 
+/// \brief Check that given values are not equal and log on failure.
+#define CHECK_NOT_EQUAL(...) IMPLEMENTATION_CHECK_NOT_EQUAL (__VA_ARGS__)
+
+/// \brief Check that given values are not equal and abort test on failure.
+#define REQUIRE_NOT_EQUAL(...) IMPLEMENTATION_REQUIRE_NOT_EQUAL (__VA_ARGS__)
+
 /// \brief Check assertion and log given message on failure..
 #define CHECK_WITH_MESSAGE(...) IMPLEMENTATION_CHECK_WITH_MESSAGE (__VA_ARGS__)
 
