@@ -28,7 +28,7 @@ jobs:
             toolchain: GCC
           # TODO: Temporary
           - os: windows-latest
-              toolchain: CLang
+            toolchain: CLang
 
     defaults:
       run:
