@@ -84,6 +84,7 @@ jobs:
         run: cmake --build . --target test
 
       - name: Upload logs
+        if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: Test logs
