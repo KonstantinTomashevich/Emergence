@@ -151,13 +151,13 @@ Scenario::Scenario (std::vector <Task> _tasks)
     : tasks (std::move (_tasks)),
       handles ()
 {
-    INFO (GetFullDescription ());
+    LOG (GetFullDescription ());
     for (const Task &packedTask : tasks)
     {
         std::visit (
             [this] (const auto &task)
             {
-                INFO (ToString (task));
+                LOG (ToString (task));
                 ExecuteTask (task);
             },
             packedTask);
