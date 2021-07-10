@@ -89,5 +89,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Test logs
-          # TODO: Upload only logs (/Testing/Temporary).
-          path: ${{env.BUILD_DIRECTORY}}
+          path: ${{env.BUILD_DIRECTORY}}/Testing/Temporary
