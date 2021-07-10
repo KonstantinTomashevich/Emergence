@@ -26,8 +26,9 @@ bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondReco
 
 int BitValueComparator::Compare (const void *_firstValue, const void *_secondValue) const noexcept
 {
-    return ((*static_cast <const uint8_t *> (_firstValue) & mask) <=>
-            (*static_cast <const uint8_t *> (_secondValue) & mask))._Value;
+    uint8_t first = *static_cast <const uint8_t *> (_firstValue) & mask;
+    uint8_t second = *static_cast <const uint8_t *> (_secondValue) & mask;
+    return NumericValueComparator <uint8_t> {}.Compare (&first, &second);
 }
 
 int BlockValueComparator::Compare (const void *_firstValue, const void *_secondValue) const noexcept

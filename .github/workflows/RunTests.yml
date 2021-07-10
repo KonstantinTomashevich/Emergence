@@ -17,16 +17,17 @@ jobs:
 
       matrix:
         build_type: [ Release, Debug ]
-        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        # TODO: No macos, Apple Clang does not have concepts?
+        os: [ windows-latest, ubuntu-latest ]
         toolchain: [ GCC, Clang, MSVC ]
         exclude:
           - os: ubuntu-latest
             toolchain: MSVC
-          - os: macos-latest
-            toolchain: MSVC
+          #- os: macos-latest
+          #  toolchain: MSVC
           - os: windows-latest
             toolchain: GCC
-          # TODO: Temporary
+          # TODO: Temporary, it seems CLang is not installed here.
           - os: windows-latest
             toolchain: CLang
 
@@ -46,8 +47,13 @@ jobs:
 
       # "Setup * toolchain" tasks pass CC and CXX variables values to environment.
       - name: Setup GCC toolchain
-        if: matrix.toolchain == 'GCC'
+        if: matrix.toolchain == 'GCC' && matrix.os != 'ubuntu-latest'
         run: echo 'CC=gcc' >> $Env:GITHUB_ENV && echo 'CXX=g++' >> $Env:GITHUB_ENV
+
+      # GCC 9.30 is default on Ubuntu 20.04, but it doesn't support concepts.
+      - name: Setup GCC toolchain
+        if: matrix.toolchain == 'GCC' && matrix.os == 'ubuntu-latest'
+        run: echo 'CC=gcc-10' >> $Env:GITHUB_ENV && echo 'CXX=g++-10' >> $Env:GITHUB_ENV
 
       - name: Setup MSVC toolchain
         if: matrix.toolchain == 'MSVC'

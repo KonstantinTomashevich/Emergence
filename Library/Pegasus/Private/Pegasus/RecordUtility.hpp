@@ -137,6 +137,17 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
 template <typename Type>
 int NumericValueComparator <Type>::Compare (const void *_firstValue, const void *_secondValue) const noexcept
 {
-    return (*static_cast <const Type *> (_firstValue) <=> *static_cast <const Type *> (_secondValue))._Value;
+    if (*static_cast <const Type *> (_firstValue) < *static_cast <const Type *> (_secondValue))
+    {
+        return -1;
+    }
+    else if (*static_cast <const Type *> (_firstValue) > *static_cast <const Type *> (_secondValue))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 } // namespace Emergence::Pegasus
