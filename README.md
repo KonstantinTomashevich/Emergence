@@ -13,6 +13,8 @@ Currently in development.
 - **MemoryPool**: paged memory allocator, inspired by **Boost.Pool**.
 - **StandardLayoutMapping**: fast field-only reflection for 
   standard layout structures.
+- **Testing**: hides selected testing framework under minimal set of 
+  framework-agnostic macros.
 
 ### Libraries
 
