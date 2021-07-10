@@ -1,9 +1,8 @@
-#include <boost/test/data/test_case.hpp>
-#include <boost/test/unit_test.hpp>
-
 #include <Pegasus/Test/Record.hpp>
 #include <Pegasus/Test/Scenario.hpp>
 #include <Pegasus/Test/Shortcuts.hpp>
+
+#include <Testing/Testing.hpp>
 
 using namespace Emergence::Pegasus::Test;
 
@@ -138,230 +137,286 @@ static const AliveAndStunnedLookupRequest aliveAndStunned {Record::Status::FLAG_
 static const AliveAndStunnedLookupRequest aliveAndNotStunned {Record::Status::FLAG_ALIVE, 0u};
 };
 
-BOOST_AUTO_TEST_SUITE (HashIndex)
+BEGIN_SUITE (HashIndex)
 
-BOOST_DATA_TEST_CASE(
-    TestRoutine, boost::unit_test::data::monomorphic::collection (
-    std::vector <Scenario>
-        {
-            {
-                Record::Reflection::GetMapping (),
-                std::vector <Task>
-                    {
-                        CreateHashIndex {"source", {Record::Reflection::entityId}},
-                    } +
-                Shortcuts::TestIsCanBeDropped ("source")
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CursorCheck {"entity0", &firstRecord},
-                    CursorIncrement {"entity0"},
-                    CursorCheck {"entity0", nullptr},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                std::vector <Task>
-                    {
-                        CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                        OpenAllocator {},
-                        AllocateAndInit {&firstRecord},
-                        AllocateAndInit {&secondRecord},
-                        CloseAllocator {},
-                    } +
-                Shortcuts::TestCursorCopyAndMove (
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    HashIndexLookupToEdit {{{"entity", "entity0"}, &Requests::entity0}},
-                    &firstRecord, nullptr, &firstRecord)
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CursorCheckAllUnordered {"entity0", {&firstRecord}},
-                    HashIndexLookupToRead {{{"entity", "entity1"}, &Requests::entity1}},
-                    CursorCheckAllUnordered {"entity1", {&secondRecord}},
-                    HashIndexLookupToRead {{{"entity", "entity2"}, &Requests::entity2}},
-                    CursorCheck {"entity2", nullptr},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    CloseAllocator {},
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CursorCheckAllUnordered {"entity0", {&firstRecord}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    AllocateAndInit {&anotherRecordForEntity0},
-                    CloseAllocator {},
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CursorCheckAllUnordered {"entity0", {&firstRecord, &anotherRecordForEntity0}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    HashIndexLookupToEdit {{{"entity", "entity1"}, &Requests::entity1}},
-                    CursorCheck {"entity1", &secondRecord},
-                    CursorEdit {"entity1", &secondRecordWithEntity0},
-                    CloseCursor {"entity1"},
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CursorCheckAllUnordered {"entity0", {&firstRecord, &secondRecordWithEntity0}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    CreateHashIndex {"nickname", {Record::Reflection::nickname}},
-                    HashIndexLookupToRead {{{"nickname", "karl"}, &Requests::karl}},
-                    CursorCheckAllUnordered {"karl", {&secondRecord}},
-                    HashIndexLookupToRead {{{"nickname", "hugo"}, &Requests::hugo}},
-                    CursorCheckAllUnordered {"hugo", {&firstRecord}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    CreateHashIndex {"nicknameAndEntityId",
-                                     {Record::Reflection::nickname, Record::Reflection::entityId}},
-                    HashIndexLookupToRead {{{"nicknameAndEntityId", "hugoEntity1"}, &Requests::hugoEntity1}},
-                    CursorCheck {"hugoEntity1", nullptr},
-                    HashIndexLookupToRead {{{"nicknameAndEntityId", "karlEntity1"}, &Requests::karlEntity1}},
-                    CursorCheckAllUnordered {"karlEntity1", {&secondRecord}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    CreateHashIndex {"alive", {Record::Reflection::alive}},
-                    HashIndexLookupToRead {{{"alive", "alive"}, &Requests::alive}},
-                    CursorCheckAllUnordered {"alive", {&firstRecord, &secondRecord}},
-                    HashIndexLookupToRead {{{"alive", "dead"}, &Requests::dead}},
-                    CursorCheck {"dead", nullptr},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    CreateHashIndex {"aliveAndStunned", {Record::Reflection::alive, Record::Reflection::stunned}},
-                    HashIndexLookupToRead {{{"aliveAndStunned", "aliveAndStunned"}, &Requests::aliveAndStunned}},
-                    CursorCheckAllUnordered {"aliveAndStunned", {&firstRecord}},
-                    HashIndexLookupToRead {{{"aliveAndStunned", "aliveAndNotStunned"}, &Requests::aliveAndNotStunned}},
-                    CursorCheckAllUnordered {"aliveAndNotStunned", {&secondRecord}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-                    CreateHashIndex {"entityId", {Record::Reflection::entityId}},
-                    CreateHashIndex {"nickname", {Record::Reflection::nickname}},
-                    CreateHashIndex {"nicknameAndEntityId",
-                                     {Record::Reflection::nickname, Record::Reflection::entityId}},
-
-                    HashIndexLookupToEdit {{{"entityId", "entity1"}, &Requests::entity1}},
-                    CursorCheck {"entity1", &secondRecord},
-                    CursorEdit {"entity1", &secondRecordWithEntity0},
-                    CloseCursor {"entity1"},
-
-                    HashIndexLookupToRead {{{"entityId", "entity0"}, &Requests::entity0}},
-                    CursorCheckAllUnordered {"entity0", {&firstRecord, &secondRecordWithEntity0}},
-
-                    HashIndexLookupToRead {{{"entityId", "entity1"}, &Requests::entity1}},
-                    CursorCheck {"entity1", nullptr},
-
-                    HashIndexLookupToRead {{{"nickname", "karl"}, &Requests::karl}},
-                    CursorCheckAllUnordered {"karl", {&secondRecordWithEntity0}},
-
-                    HashIndexLookupToRead {{{"nickname", "hugo"}, &Requests::hugo}},
-                    CursorCheckAllUnordered {"hugo", {&firstRecord}},
-
-                    HashIndexLookupToRead {{{"nicknameAndEntityId", "karlEntity1"}, &Requests::karlEntity1}},
-                    CursorCheck {"karlEntity1", nullptr},
-
-                    HashIndexLookupToRead {{{"nicknameAndEntityId", "karlEntity0"}, &Requests::karlEntity0}},
-                    CursorCheckAllUnordered {"karlEntity0", {&secondRecordWithEntity0}},
-                }
-            },
-            {
-                Record::Reflection::GetMapping (),
-                {
-                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
-                    CreateHashIndex {"nickname", {Record::Reflection::nickname}},
-                    OpenAllocator {},
-                    AllocateAndInit {&firstRecord},
-                    AllocateAndInit {&secondRecord},
-                    CloseAllocator {},
-
-                    HashIndexLookupToEdit {{{"entity", "entity1"}, &Requests::entity1}},
-                    CursorCheck {"entity1", &secondRecord},
-                    CursorEdit {"entity1", &secondRecordWithEntity0},
-                    CursorDeleteRecord {"entity1"},
-                    CloseCursor {"entity1"},
-
-                    HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
-                    CursorCheckAllUnordered {"entity0", {&firstRecord}},
-
-                    HashIndexLookupToRead {{{"entity", "entity1"}, &Requests::entity1}},
-                    CursorCheck {"entity1", nullptr},
-
-                    HashIndexLookupToRead {{{"nickname", "karl"}, &Requests::karl}},
-                    CursorCheck {"karl", nullptr},
-
-                    HashIndexLookupToRead {{{"nickname", "hugo"}, &Requests::hugo}},
-                    CursorCheckAllUnordered {"hugo", {&firstRecord}},
-                }
-            },
-        }))
+TEST_CASE (ReferenceManipulations)
 {
-    sample.Execute ();
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            std::vector <Task>
+                {
+                    CreateHashIndex {"source", {Record::Reflection::entityId}},
+                } +
+            Shortcuts::TestIsCanBeDropped ("source")
+        };
 }
 
-BOOST_AUTO_TEST_SUITE_END ()
+TEST_CASE (SimpleLookup)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                CursorCheck {"entity0", &firstRecord},
+                CursorIncrement {"entity0"},
+                CursorCheck {"entity0", nullptr},
+            }
+        };
+}
+
+TEST_CASE (CursorManipulations)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            std::vector <Task>
+                {
+                    CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                    OpenAllocator {},
+                    AllocateAndInit {&firstRecord},
+                    AllocateAndInit {&secondRecord},
+                    CloseAllocator {},
+                } +
+            Shortcuts::TestCursorCopyAndMove (
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                HashIndexLookupToEdit {{{"entity", "entity0"}, &Requests::entity0}},
+                &firstRecord, nullptr, &firstRecord)
+        };
+}
+
+TEST_CASE (LookupForNonExistentRecord)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                CursorCheckAllUnordered {"entity0", {&firstRecord}},
+                HashIndexLookupToRead {{{"entity", "entity1"}, &Requests::entity1}},
+                CursorCheckAllUnordered {"entity1", {&secondRecord}},
+                HashIndexLookupToRead {{{"entity", "entity2"}, &Requests::entity2}},
+                CursorCheck {"entity2", nullptr},
+            }
+        };
+}
+
+TEST_CASE (InsertBeforeCreation)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                CloseAllocator {},
+                CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                CursorCheckAllUnordered {"entity0", {&firstRecord}},
+            }
+        };
+}
+
+TEST_CASE (LookupForMany)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                AllocateAndInit {&anotherRecordForEntity0},
+                CloseAllocator {},
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                CursorCheckAllUnordered {"entity0", {&firstRecord, &anotherRecordForEntity0}},
+            }
+        };
+}
+
+TEST_CASE (LookupAndEdit)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                HashIndexLookupToEdit {{{"entity", "entity1"}, &Requests::entity1}},
+                CursorCheck {"entity1", &secondRecord},
+                CursorEdit {"entity1", &secondRecordWithEntity0},
+                CloseCursor {"entity1"},
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                CursorCheckAllUnordered {"entity0", {&firstRecord, &secondRecordWithEntity0}},
+            }
+        };
+}
+
+TEST_CASE (OnStringField)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                CreateHashIndex {"nickname", {Record::Reflection::nickname}},
+                HashIndexLookupToRead {{{"nickname", "karl"}, &Requests::karl}},
+                CursorCheckAllUnordered {"karl", {&secondRecord}},
+                HashIndexLookupToRead {{{"nickname", "hugo"}, &Requests::hugo}},
+                CursorCheckAllUnordered {"hugo", {&firstRecord}},
+            }
+        };
+}
+
+TEST_CASE (OnTwoFields)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                CreateHashIndex {"nicknameAndEntityId",
+                                 {Record::Reflection::nickname, Record::Reflection::entityId}},
+                HashIndexLookupToRead {{{"nicknameAndEntityId", "hugoEntity1"}, &Requests::hugoEntity1}},
+                CursorCheck {"hugoEntity1", nullptr},
+                HashIndexLookupToRead {{{"nicknameAndEntityId", "karlEntity1"}, &Requests::karlEntity1}},
+                CursorCheckAllUnordered {"karlEntity1", {&secondRecord}},
+            }
+        };
+}
+
+TEST_CASE (OnBitField)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                CreateHashIndex {"alive", {Record::Reflection::alive}},
+                HashIndexLookupToRead {{{"alive", "alive"}, &Requests::alive}},
+                CursorCheckAllUnordered {"alive", {&firstRecord, &secondRecord}},
+                HashIndexLookupToRead {{{"alive", "dead"}, &Requests::dead}},
+                CursorCheck {"dead", nullptr},
+            }
+        };
+}
+
+TEST_CASE (OnTwoBitFields)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                CreateHashIndex {"aliveAndStunned", {Record::Reflection::alive, Record::Reflection::stunned}},
+                HashIndexLookupToRead {{{"aliveAndStunned", "aliveAndStunned"}, &Requests::aliveAndStunned}},
+                CursorCheckAllUnordered {"aliveAndStunned", {&firstRecord}},
+                HashIndexLookupToRead {{{"aliveAndStunned", "aliveAndNotStunned"}, &Requests::aliveAndNotStunned}},
+                CursorCheckAllUnordered {"aliveAndNotStunned", {&secondRecord}},
+            }
+        };
+}
+
+TEST_CASE (MultipleIndicesEdition)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+                CreateHashIndex {"entityId", {Record::Reflection::entityId}},
+                CreateHashIndex {"nickname", {Record::Reflection::nickname}},
+                CreateHashIndex {"nicknameAndEntityId",
+                                 {Record::Reflection::nickname, Record::Reflection::entityId}},
+
+                HashIndexLookupToEdit {{{"entityId", "entity1"}, &Requests::entity1}},
+                CursorCheck {"entity1", &secondRecord},
+                CursorEdit {"entity1", &secondRecordWithEntity0},
+                CloseCursor {"entity1"},
+
+                HashIndexLookupToRead {{{"entityId", "entity0"}, &Requests::entity0}},
+                CursorCheckAllUnordered {"entity0", {&firstRecord, &secondRecordWithEntity0}},
+
+                HashIndexLookupToRead {{{"entityId", "entity1"}, &Requests::entity1}},
+                CursorCheck {"entity1", nullptr},
+
+                HashIndexLookupToRead {{{"nickname", "karl"}, &Requests::karl}},
+                CursorCheckAllUnordered {"karl", {&secondRecordWithEntity0}},
+
+                HashIndexLookupToRead {{{"nickname", "hugo"}, &Requests::hugo}},
+                CursorCheckAllUnordered {"hugo", {&firstRecord}},
+
+                HashIndexLookupToRead {{{"nicknameAndEntityId", "karlEntity1"}, &Requests::karlEntity1}},
+                CursorCheck {"karlEntity1", nullptr},
+
+                HashIndexLookupToRead {{{"nicknameAndEntityId", "karlEntity0"}, &Requests::karlEntity0}},
+                CursorCheckAllUnordered {"karlEntity0", {&secondRecordWithEntity0}},
+            }
+        };
+}
+
+TEST_CASE (MultipleIndicesDeletion)
+{
+    Scenario
+        {
+            Record::Reflection::GetMapping (),
+            {
+                CreateHashIndex {"entity", {Record::Reflection::entityId}},
+                CreateHashIndex {"nickname", {Record::Reflection::nickname}},
+                OpenAllocator {},
+                AllocateAndInit {&firstRecord},
+                AllocateAndInit {&secondRecord},
+                CloseAllocator {},
+
+                HashIndexLookupToEdit {{{"entity", "entity1"}, &Requests::entity1}},
+                CursorCheck {"entity1", &secondRecord},
+                CursorEdit {"entity1", &secondRecordWithEntity0},
+                CursorDeleteRecord {"entity1"},
+                CloseCursor {"entity1"},
+
+                HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
+                CursorCheckAllUnordered {"entity0", {&firstRecord}},
+
+                HashIndexLookupToRead {{{"entity", "entity1"}, &Requests::entity1}},
+                CursorCheck {"entity1", nullptr},
+
+                HashIndexLookupToRead {{{"nickname", "karl"}, &Requests::karl}},
+                CursorCheck {"karl", nullptr},
+
+                HashIndexLookupToRead {{{"nickname", "hugo"}, &Requests::hugo}},
+                CursorCheckAllUnordered {"hugo", {&firstRecord}},
+            }
+        };
+}
+
+END_SUITE
