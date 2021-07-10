@@ -1,0 +1,77 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        build_type: [ Release, Debug ]
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        toolchain: [ GCC, Clang, MSVC ]
+        exclude:
+          - os: ubuntu-latest
+            toolchain: MSVC
+          - os: macos-latest
+            toolchain: MSVC
+          - os: windows-latest
+            toolchain: GCC
+
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      BUILD_DIRECTORY: ${{github.workspace}}/Build
+
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      # "Setup * toolchain" tasks pass CC and CXX variables values to environment.
+      - name: Setup GCC toolchain
+        if: matrix.toolchain == 'GCC'
+        run: echo 'CC=gcc' >> $Env:GITHUB_ENV && echo 'CXX=g++' >> $Env:GITHUB_ENV
+
+      - name: Setup MSVC toolchain
+        if: matrix.toolchain == 'MSVC'
+        run: echo 'CC=cl' >> $Env:GITHUB_ENV && echo 'CXX=cl' >> $Env:GITHUB_ENV
+
+      - name: Setup Clang toolchain on Unix
+        if: matrix.toolchain == 'Clang' && matrix.os != 'windows-latest'
+        run: echo 'CC=clang' >> $Env:GITHUB_ENV && echo 'CXX=clang++' >> $Env:GITHUB_ENV
+
+      # Clang on Windows should be specified using -T instead of CC/CXX.
+      - name: Setup Clang toolchain on Windows
+        if: matrix.toolchain == 'Clang' && matrix.os == 'windows-latest'
+        run: echo "CMAKE_TOOLSET=-T clangcl" >> $Env:GITHUB_ENV
+
+      - name: Create build directory
+        run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
+
+      - name: Configure
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build_type}} $Env:CMAKE_TOOLSET
+
+      - name: Build
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: cmake --build . --target EmergenceTests
+
+      - name: Test
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: cmake --build . --target test
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test logs
+          path: ${{env.BUILD_DIRECTORY}}/Testing/Temporary
