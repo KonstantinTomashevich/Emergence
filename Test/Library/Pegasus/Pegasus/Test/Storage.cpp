@@ -15,6 +15,11 @@ struct EntityIdLookupRequest
     decltype (Record::entityId) entityId;
 };
 
+struct AliveLookupRequest
+{
+    uint8_t aliveFlag;
+};
+
 static const float minX = -100.0f;
 
 static const float minY = -100.0f;
@@ -139,6 +144,10 @@ static const EntityIdLookupRequest entity0 {0u};
 static const EntityIdLookupRequest entity1 {1u};
 
 static const EntityIdLookupRequest entity2 {2u};
+
+static const AliveLookupRequest alive {Record::Status::FLAG_ALIVE};
+
+static const AliveLookupRequest dead {0u};
 }
 
 namespace Bounds
@@ -161,8 +170,8 @@ static std::vector <Task> GetSetupTasks ()
             AllocateAndInit {&entity2Xavier},
             CloseAllocator {},
 
-            CreateHashIndex {"entity", {Record::Reflection::entityId}},
             CreateOrderedIndex {"nickname", Record::Reflection::nickname},
+            CreateHashIndex {"entity", {Record::Reflection::entityId}},
             CreateVolumetricIndex {"2d", GetDimensions2D ()},
 
             HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
@@ -310,6 +319,44 @@ TEST_CASE (EditAndDeleteFromVolumetricIndex)
             CloseCursor {"origin = (-3, 0), direction = (2, 1)"},
         } +
         GetFinalizeTasks ()
+    };
+}
+
+TEST_CASE (DropIndex)
+{
+    Scenario {
+        Record::Reflection::GetMapping (),
+        {
+            OpenAllocator {},
+            AllocateAndInit {&entity0Hugo},
+            AllocateAndInit {&entity1Karl},
+            AllocateAndInit {&entity2Xavier},
+            CloseAllocator {},
+
+            CreateOrderedIndex {"nickname", Record::Reflection::nickname},
+            CreateHashIndex {"entity", {Record::Reflection::entityId}},
+            CreateHashIndex {"alive", {Record::Reflection::alive}},
+            CreateVolumetricIndex {"2d", GetDimensions2D ()},
+
+            DropIndex {"entity"},
+            HashIndexLookupToRead {{{"alive", "alive"}, &Requests::alive}},
+            CursorCheckAllUnordered {"alive", {&entity0Hugo, &entity1Karl, &entity2Xavier}},
+
+            HashIndexLookupToRead {{{"alive", "dead"}, &Requests::dead}},
+            CursorCheckAllUnordered {"dead", {}},
+
+            OrderedIndexLookupToRead {{{"nickname", "nicknames"}, nullptr, nullptr}},
+            CursorCheckAllOrdered {"nicknames", {&entity0Hugo, &entity1Karl, &entity2Xavier}},
+
+            VolumetricIndexShapeIntersectionLookupToRead
+                {
+                    {
+                        {"2d", "x = [-3, 11], y = [0, 11]"},
+                        {&$m3, &$0}, {&$11, &$11}
+                    }
+                },
+            CursorCheckAllUnordered {"x = [-3, 11], y = [0, 11]", {&entity0Hugo, &entity1Karl}},
+        }
     };
 }
 

@@ -82,7 +82,7 @@ static const Record anotherRecordForEntity0
             0u,
             0u,
         },
-        Record::Status::FLAG_ALIVE | Record::Status::FLAG_IMMOBILIZED,
+        Record::Status::FLAG_IMMOBILIZED,
     };
 
 static const Record secondRecord
@@ -260,6 +260,8 @@ TEST_CASE (LookupAndEdit)
                 HashIndexLookupToEdit {{{"entity", "entity1"}, &Requests::entity1}},
                 CursorCheck {"entity1", &secondRecord},
                 CursorEdit {"entity1", &secondRecordWithEntity0},
+                CursorIncrement {"entity1"},
+                CursorCheck {"entity1", nullptr},
                 CloseCursor {"entity1"},
                 HashIndexLookupToRead {{{"entity", "entity0"}, &Requests::entity0}},
                 CursorCheckAllUnordered {"entity0", {&firstRecord, &secondRecordWithEntity0}},
@@ -315,10 +317,24 @@ TEST_CASE (OnBitField)
                 OpenAllocator {},
                 AllocateAndInit {&firstRecord},
                 AllocateAndInit {&secondRecord},
+                AllocateAndInit {&anotherRecordForEntity0},
                 CloseAllocator {},
                 CreateHashIndex {"alive", {Record::Reflection::alive}},
+
                 HashIndexLookupToRead {{{"alive", "alive"}, &Requests::alive}},
                 CursorCheckAllUnordered {"alive", {&firstRecord, &secondRecord}},
+                CloseCursor {"alive"},
+
+                HashIndexLookupToEdit {{{"alive", "dead"}, &Requests::dead}},
+                CursorCheck {"dead", &anotherRecordForEntity0},
+                CursorEdit {"dead", &secondRecordWithEntity0},
+                CursorIncrement {"dead"},
+                CursorCheck {"dead", nullptr},
+                CloseCursor {"dead"},
+
+                HashIndexLookupToRead {{{"alive", "alive"}, &Requests::alive}},
+                CursorCheckAllUnordered {"alive", {&firstRecord, &secondRecord, &secondRecordWithEntity0}},
+
                 HashIndexLookupToRead {{{"alive", "dead"}, &Requests::dead}},
                 CursorCheck {"dead", nullptr},
             }
