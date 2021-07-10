@@ -274,7 +274,7 @@ void Scenario::ExecuteTask (const MoveAssignHandle &_task)
 
 BEGIN_SUITE (HandleManagement)
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -282,7 +282,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -291,7 +291,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -302,7 +302,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -312,7 +312,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -322,7 +322,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -332,7 +332,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -342,7 +342,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -352,7 +352,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -363,7 +363,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -374,7 +374,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -385,7 +385,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -394,7 +394,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -403,7 +403,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -414,7 +414,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -425,7 +425,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -436,7 +436,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -449,7 +449,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (Anonymous)
 {
     Emergence::Handling::Test::Scenario (
         {
