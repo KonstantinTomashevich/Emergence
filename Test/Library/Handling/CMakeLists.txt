@@ -3,6 +3,7 @@ file (GLOB_RECURSE HEADERS *.hpp)
 
 add_executable (TestHandlingOriginal ${SOURCES} ${HEADERS})
 add_test (NAME "TestHandlingOriginal" COMMAND TestHandlingOriginal)
+add_dependencies (LibraryTests TestHandlingOriginal)
 target_include_directories (TestHandlingOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)

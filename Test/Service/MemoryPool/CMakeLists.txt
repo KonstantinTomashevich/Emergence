@@ -20,3 +20,6 @@ sober_test_begin (MemoryPool)
     sober_test_variant_begin (Unordered)
     sober_test_variant_end ()
 sober_test_end ()
+
+sober_naming_test_collection (MemoryPool COLLECTION_NAME)
+add_dependencies (ServiceTests "${COLLECTION_NAME}")

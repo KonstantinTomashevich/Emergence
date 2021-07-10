@@ -4,6 +4,7 @@ file (GLOB_RECURSE HEADERS *.hpp)
 # We test only Pegasus Original variant, because only internal constants are different.
 add_executable (TestPegasusOriginal ${SOURCES} ${HEADERS})
 add_test (NAME "TestPegasusOriginal" COMMAND TestPegasusOriginal)
+add_dependencies (LibraryTests TestPegasusOriginal)
 target_include_directories (TestPegasusOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_variant_target (Pegasus Original PEGASUS_LIBRARY_TARGET)

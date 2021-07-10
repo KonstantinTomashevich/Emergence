@@ -20,3 +20,6 @@ sober_test_begin (StandardLayoutMapping)
     sober_test_variant_begin (Original)
     sober_test_variant_end ()
 sober_test_end ()
+
+sober_naming_test_collection (StandardLayoutMapping COLLECTION_NAME)
+add_dependencies (ServiceTests "${COLLECTION_NAME}")
