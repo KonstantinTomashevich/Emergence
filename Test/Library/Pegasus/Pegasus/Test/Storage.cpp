@@ -327,16 +327,16 @@ TEST_CASE (DropIndex)
     Scenario {
         Record::Reflection::GetMapping (),
         {
+            CreateOrderedIndex {"nickname", Record::Reflection::nickname},
+            CreateHashIndex {"entity", {Record::Reflection::entityId}},
+            CreateHashIndex {"alive", {Record::Reflection::alive}},
+            CreateVolumetricIndex {"2d", GetDimensions2D ()},
+
             OpenAllocator {},
             AllocateAndInit {&entity0Hugo},
             AllocateAndInit {&entity1Karl},
             AllocateAndInit {&entity2Xavier},
             CloseAllocator {},
-
-            CreateOrderedIndex {"nickname", Record::Reflection::nickname},
-            CreateHashIndex {"entity", {Record::Reflection::entityId}},
-            CreateHashIndex {"alive", {Record::Reflection::alive}},
-            CreateVolumetricIndex {"2d", GetDimensions2D ()},
 
             DropIndex {"entity"},
             HashIndexLookupToRead {{{"alive", "alive"}, &Requests::alive}},

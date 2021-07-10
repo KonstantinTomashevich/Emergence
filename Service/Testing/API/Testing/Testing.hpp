@@ -29,7 +29,7 @@
 /// \brief Check that given values are not equal and abort test on failure.
 #define REQUIRE_NOT_EQUAL(...) IMPLEMENTATION_REQUIRE_NOT_EQUAL (__VA_ARGS__)
 
-/// \brief Check assertion and log given message on failure..
+/// \brief Check assertion and log given message on failure.
 #define CHECK_WITH_MESSAGE(...) IMPLEMENTATION_CHECK_WITH_MESSAGE (__VA_ARGS__)
 
 /// \brief Check assertion, log given message and abort test on failure.
