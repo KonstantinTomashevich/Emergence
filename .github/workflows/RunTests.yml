@@ -88,5 +88,5 @@ jobs:
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: Test logs
+          name: Test logs (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
           path: ${{env.BUILD_DIRECTORY}}/Testing/Temporary
