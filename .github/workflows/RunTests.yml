@@ -82,11 +82,12 @@ jobs:
 
       - name: Test
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake --build . --target test
+        run: ctest
 
       - name: Upload logs
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: Test logs
+          # TODO: Upload only logs (/Testing/Temporary).
           path: ${{env.BUILD_DIRECTORY}}
