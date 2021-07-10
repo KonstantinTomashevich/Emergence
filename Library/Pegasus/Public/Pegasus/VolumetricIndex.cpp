@@ -9,7 +9,7 @@ namespace Emergence::Pegasus
 {
 constexpr std::size_t GetMaxLeafCoordinateOnAxis (std::size_t _dimensions)
 {
-    return static_cast <uint64_t> (1u) << (Constants::VolumetricIndex::LEVELS[_dimensions - 1u] - 1u);
+    return static_cast <std::size_t> (1u) << (Constants::VolumetricIndex::LEVELS[_dimensions - 1u] - 1u);
 }
 
 template <typename Type>
@@ -810,7 +810,7 @@ VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <Dimensio
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
 
     std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
-    leaves.resize (static_cast <uint64_t> (1u) << (
+    leaves.resize (static_cast <std::size_t> (1u) << (
         dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
 
 #ifndef NDEBUG
