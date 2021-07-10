@@ -524,7 +524,7 @@ struct NestedOneSublevelTest
 {
     uint64_t uint64;
     TwoIntsTest firstNested;
-    TwoIntsTest secondNested;
+    AllBasicTypesTest secondNested;
     char block[32u];
 };
 
@@ -534,7 +534,7 @@ static const MappingSeed nestedOneSublevel
         {
             UInt64FieldSeed {{offsetof (NestedOneSublevelTest, uint64)}},
             NestedObjectFieldSeed {{offsetof (NestedOneSublevelTest, firstNested)}, Grow (twoIntsCorrectOrder)},
-            NestedObjectFieldSeed {{offsetof (NestedOneSublevelTest, secondNested)}, Grow (twoIntsReversedOrder)},
+            NestedObjectFieldSeed {{offsetof (NestedOneSublevelTest, secondNested)}, Grow (allBasicTypes)},
             BlockFieldSeed {{offsetof (NestedOneSublevelTest, block)}, sizeof (NestedOneSublevelTest::block)},
         }
     };
@@ -545,7 +545,7 @@ struct NestedInUnionOneSublevelTest
     union
     {
         TwoIntsTest firstNested;
-        TwoIntsTest secondNested;
+        AllBasicTypesTest secondNested;
     };
 
     char block[32u];
@@ -557,8 +557,7 @@ static MappingSeed nestedInUnionOneSublevel
         {
             UInt64FieldSeed {{offsetof (NestedInUnionOneSublevelTest, uint64)}},
             NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, firstNested)}, Grow (twoIntsCorrectOrder)},
-            NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, secondNested)},
-                                   Grow (twoIntsReversedOrder)},
+            NestedObjectFieldSeed {{offsetof (NestedInUnionOneSublevelTest, secondNested)}, Grow (allBasicTypes)},
             BlockFieldSeed {{offsetof (NestedInUnionOneSublevelTest, block)}, sizeof (NestedOneSublevelTest::block)},
         }
     };
@@ -583,49 +582,93 @@ static MappingSeed nestedTwoSublevels
     };
 } // namespace Emergence::StandardLayout::Test
 
+using namespace Emergence::StandardLayout::Test;
+
 BEGIN_SUITE (MappingBuilder)
 
 TEST_CASE (TwoIntsCorrectOrder)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::twoIntsCorrectOrder);
+    GrowAndTest (twoIntsCorrectOrder);
 }
 
 TEST_CASE (TwoIntsReversedOrder)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::twoIntsReversedOrder);
+    GrowAndTest (twoIntsReversedOrder);
 }
 
 TEST_CASE (AllBasicTypes)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::allBasicTypes);
+    GrowAndTest (allBasicTypes);
 }
 
 TEST_CASE (UnionsWithBasicTypes)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::unionWithBasicTypes);
+    GrowAndTest (unionWithBasicTypes);
 }
 
 TEST_CASE (NestedOneSublevel)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::nestedOneSublevel);
+    GrowAndTest (nestedOneSublevel);
 }
 
 TEST_CASE (NestedInUnionOneSublevel)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::nestedInUnionOneSublevel);
+    GrowAndTest (nestedInUnionOneSublevel);
 }
 
 TEST_CASE (NestedTwoSublevels)
 {
-    GrowAndTest (Emergence::StandardLayout::Test::nestedTwoSublevels);
+    GrowAndTest (nestedTwoSublevels);
 }
 
 TEST_CASE (BuildMultipleMappings)
 {
     Emergence::StandardLayout::MappingBuilder builder;
-    GrowAndTest (Emergence::StandardLayout::Test::twoIntsCorrectOrder, builder);
-    GrowAndTest (Emergence::StandardLayout::Test::unionWithBasicTypes, builder);
-    GrowAndTest (Emergence::StandardLayout::Test::nestedTwoSublevels, builder);
+    GrowAndTest (twoIntsCorrectOrder, builder);
+    GrowAndTest (unionWithBasicTypes, builder);
+    GrowAndTest (nestedTwoSublevels, builder);
+}
+
+TEST_CASE (BuildMultipleMappingsWhileMovingBuilder)
+{
+    Emergence::StandardLayout::MappingBuilder firstBuilder;
+    GrowAndTest (twoIntsCorrectOrder, firstBuilder);
+
+    Emergence::StandardLayout::MappingBuilder secondBuilder (std::move (firstBuilder));
+    GrowAndTest (unionWithBasicTypes, secondBuilder);
+
+    firstBuilder = std::move (secondBuilder);
+    GrowAndTest (nestedTwoSublevels, firstBuilder);
+}
+
+TEST_CASE (FieldManipulations)
+{
+    Emergence::StandardLayout::Mapping mapping = Grow (twoIntsCorrectOrder);
+    auto iterator = mapping.Begin ();
+
+    REQUIRE (iterator != mapping.End ());
+    Emergence::StandardLayout::Field firstField = *iterator;
+    ++iterator;
+
+    REQUIRE (iterator != mapping.End ());
+    Emergence::StandardLayout::Field secondField = *iterator;
+
+    Emergence::StandardLayout::Field emptyField;
+
+    CHECK (firstField.IsSame (firstField));
+    CHECK (!firstField.IsSame (secondField));
+    CHECK (!firstField.IsSame (emptyField));
+
+    CHECK (firstField);
+    CHECK (!emptyField);
+
+    emptyField = std::move (firstField);
+    CHECK (!firstField);
+    CHECK (emptyField);
+
+    CHECK (!emptyField.IsSame (secondField));
+    emptyField = secondField;
+    CHECK (emptyField.IsSame (secondField));
 }
 
 END_SUITE
