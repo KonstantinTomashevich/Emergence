@@ -5,7 +5,6 @@ sober_test_begin (StandardLayoutMapping)
 
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-    sober_library_link_library (PRIVATE Boost::unit_test_framework)
 
     # Testing backend requires implementation headers, therefore it's usage as service would trigger separate
     # compilation for all variants. But there is no sense to use different testing backends for each variant,
