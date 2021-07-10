@@ -197,9 +197,15 @@ private:
     /// \return Pointer to new location of this mapping object.
     PlainMapping *ChangeCapacity (std::size_t _newFieldCapacity) noexcept;
 
+    const FieldData *GetFields () const noexcept;
+
+    FieldData *GetFields () noexcept;
+
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
-    FieldData fields[0u];
+
+    // Can not be a field, because zero size arrays are not standard. Use ::GetFields instead.
+    // FieldData fields[0u];
 };
 
 PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept;

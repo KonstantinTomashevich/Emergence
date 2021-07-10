@@ -194,7 +194,7 @@ const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
 {
     if (_field < fieldCount)
     {
-        return &fields[_field];
+        return &GetFields ()[_field];
     }
     else
     {
@@ -209,12 +209,12 @@ FieldData *PlainMapping::GetField (FieldId _field) noexcept
 
 PlainMapping::ConstIterator PlainMapping::Begin () const noexcept
 {
-    return PlainMapping::ConstIterator (&fields[0u]);
+    return PlainMapping::ConstIterator (&GetFields ()[0u]);
 }
 
 PlainMapping::ConstIterator PlainMapping::End () const noexcept
 {
-    return PlainMapping::ConstIterator (&fields[fieldCount]);
+    return PlainMapping::ConstIterator (&GetFields ()[fieldCount]);
 }
 
 FieldId PlainMapping::GetFieldId (const PlainMapping::ConstIterator &_iterator) const
@@ -262,6 +262,16 @@ PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexc
 {
     assert (_newFieldCapacity >= fieldCount);
     return static_cast <PlainMapping *> (realloc (this, CalculateMappingSize (_newFieldCapacity)));
+}
+
+const FieldData *PlainMapping::GetFields () const noexcept
+{
+    return reinterpret_cast <const FieldData *> (reinterpret_cast <const uint8_t *> (this) + sizeof (*this));
+}
+
+FieldData *PlainMapping::GetFields () noexcept
+{
+    return const_cast <FieldData *> (const_cast <const PlainMapping *> (this)->GetFields ());
 }
 
 PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept

@@ -11,7 +11,10 @@ on:
 jobs:
   run_tests:
     strategy:
+
+      # TODO: Temporary
       fail-fast: false
+
       matrix:
         build_type: [ Release, Debug ]
         os: [ windows-latest, ubuntu-latest, macos-latest ]
@@ -23,6 +26,9 @@ jobs:
             toolchain: MSVC
           - os: windows-latest
             toolchain: GCC
+          # TODO: Temporary
+          - os: windows-latest
+              toolchain: CLang
 
     defaults:
       run:

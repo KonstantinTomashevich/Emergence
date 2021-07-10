@@ -98,7 +98,9 @@ private:
         {
             Chunk *nextFree;
 
-            uint8_t bytes[0u];
+            // There could be more bytes. This array is used because it increases readability in algorithms.
+            // It should be zero size array, but zero size arrays are not standard.
+            uint8_t bytes[sizeof (void *)];
         };
     };
 
@@ -106,7 +108,12 @@ private:
     {
         Page *next;
 
-        Chunk chunks[0u];
+        // Can not be a field, because zero size arrays are not standard. Use ::GetChunks instead.
+        // FieldData fields[0u];
+
+        const Chunk *GetChunks () const noexcept;
+
+        Chunk *GetChunks () noexcept;
     };
 
     bool IsInside (const Page *_page, const Chunk *_chunk) const noexcept;
