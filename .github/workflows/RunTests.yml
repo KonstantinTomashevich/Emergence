@@ -11,6 +11,7 @@ on:
 jobs:
   run_tests:
     strategy:
+      fail-fast: false
       matrix:
         build_type: [ Release, Debug ]
         os: [ windows-latest, ubuntu-latest, macos-latest ]
