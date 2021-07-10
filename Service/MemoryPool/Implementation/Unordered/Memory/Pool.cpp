@@ -12,7 +12,7 @@ Pool::AcquiredChunkConstIterator::~AcquiredChunkConstIterator () noexcept
 
 const void *Pool::AcquiredChunkConstIterator::operator * () const noexcept
 {
-    return *block_cast <UnorderedPool::AcquiredChunkConstIterator> (data);;
+    return *block_cast <UnorderedPool::AcquiredChunkConstIterator> (data);
 }
 
 Pool::AcquiredChunkConstIterator &Pool::AcquiredChunkConstIterator::operator ++ () noexcept
@@ -52,7 +52,7 @@ Pool::AcquiredChunkIterator::~AcquiredChunkIterator () noexcept
 
 void *Pool::AcquiredChunkIterator::operator * () const noexcept
 {
-    return *block_cast <UnorderedPool::AcquiredChunkIterator> (data);;
+    return *block_cast <UnorderedPool::AcquiredChunkIterator> (data);
 }
 
 Pool::AcquiredChunkIterator &Pool::AcquiredChunkIterator::operator ++ () noexcept

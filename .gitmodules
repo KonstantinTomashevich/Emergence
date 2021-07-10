@@ -4,3 +4,6 @@
 [submodule "ThirdParty/xxhash_cpp"]
 	path = ThirdParty/xxhash_cpp
 	url = https://github.com/RedSpah/xxhash_cpp
+[submodule "ThirdParty/doctest"]
+	path = ThirdParty/doctest
+	url = https://github.com/onqtam/doctest

@@ -1,8 +1,9 @@
-#include <boost/test/unit_test.hpp>
-#include <boost/format.hpp>
+#include <vector>
 
 #include <Memory/Pool.hpp>
 #include <Memory/Test/Pool.hpp>
+
+#include <Testing/Testing.hpp>
 
 namespace Emergence::Memory::Test
 {
@@ -12,7 +13,7 @@ bool PoolTestIncludeMarker () noexcept
 }
 } // namespace Emergence::Memory::Test
 
-BOOST_AUTO_TEST_SUITE (Pool)
+BEGIN_SUITE (Pool)
 
 struct TestItem
 {
@@ -21,13 +22,13 @@ struct TestItem
     bool flag;
 };
 
-BOOST_AUTO_TEST_CASE (AcquireNotNull)
+TEST_CASE (AcquireNotNull)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
-    BOOST_CHECK (pool.Acquire ());
+    CHECK (pool.Acquire ());
 }
 
-BOOST_AUTO_TEST_CASE (MultipleAcquiresDoNotOverlap)
+TEST_CASE (MultipleAcquiresDoNotOverlap)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
     auto *first = static_cast <TestItem *> (pool.Acquire ());
@@ -39,35 +40,34 @@ BOOST_AUTO_TEST_CASE (MultipleAcquiresDoNotOverlap)
     *first = firstValue;
     *second = secondValue;
 
-    BOOST_CHECK_EQUAL (firstValue.integer, first->integer);
-    BOOST_CHECK_EQUAL (firstValue.floating, first->floating);
-    BOOST_CHECK_EQUAL (firstValue.flag, first->flag);
+    CHECK_EQUAL (firstValue.integer, first->integer);
+    CHECK_EQUAL (firstValue.floating, first->floating);
+    CHECK_EQUAL (firstValue.flag, first->flag);
 
-    BOOST_CHECK_EQUAL (secondValue.integer, second->integer);
-    BOOST_CHECK_EQUAL (secondValue.floating, second->floating);
-    BOOST_CHECK_EQUAL (secondValue.flag, second->flag);
+    CHECK_EQUAL (secondValue.integer, second->integer);
+    CHECK_EQUAL (secondValue.floating, second->floating);
+    CHECK_EQUAL (secondValue.flag, second->flag);
 }
 
-BOOST_AUTO_TEST_CASE (MemoryReused)
+TEST_CASE (MemoryReused)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
     void *anotherItem = pool.Acquire ();
-    BOOST_CHECK_EQUAL (item, anotherItem);
+    CHECK_EQUAL (item, anotherItem);
 }
 
 void CheckPoolItemVectorsEquality (const std::vector <void *> &_first, const std::vector <void *> &_second)
 {
-    BOOST_CHECK_EQUAL (_first.size (), _second.size ());
+    CHECK_EQUAL (_first.size (), _second.size ());
 
     // Items order is not guaranteed.
     for (void *item : _first)
     {
         auto iterator = std::find (_second.begin (), _second.end (), item);
-        BOOST_CHECK_MESSAGE (iterator != _second.end (),
-                             boost::format ("Searching for item %1%.") % item);
+        CHECK_WITH_MESSAGE (iterator != _second.end (), "Searching for item ", item, ".");
     }
 }
 
@@ -102,14 +102,14 @@ struct FullPoolContext
             items.emplace_back (pool.Acquire ());
         }
 
-        BOOST_CHECK_EQUAL (pool.GetAllocatedSpace (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
+        CHECK_EQUAL (pool.GetAllocatedSpace (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
     }
 
     Emergence::Memory::Pool pool {sizeof (TestItem), PAGE_CAPACITY};
     std::vector <void *> items;
 };
 
-BOOST_AUTO_TEST_CASE (SuccessfullShrink)
+TEST_CASE (SuccessfullShrink)
 {
     static_assert (FullPoolContext::PAGES_TO_FILL >= 2u);
     FullPoolContext context;
@@ -120,14 +120,14 @@ BOOST_AUTO_TEST_CASE (SuccessfullShrink)
     }
 
     context.pool.Shrink ();
-    BOOST_CHECK_EQUAL (context.pool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocatedSpace (),
                        (FullPoolContext::PAGES_TO_FILL - 1u) * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item to ensure that pool is in working state.
-    BOOST_CHECK (context.pool.Acquire ());
+    CHECK (context.pool.Acquire ());
 }
 
-BOOST_AUTO_TEST_CASE (UnsuccessfullShrink)
+TEST_CASE (UnsuccessfullShrink)
 {
     FullPoolContext context;
 
@@ -137,65 +137,65 @@ BOOST_AUTO_TEST_CASE (UnsuccessfullShrink)
     }
 
     context.pool.Shrink ();
-    BOOST_CHECK_EQUAL (context.pool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocatedSpace (),
                        FullPoolContext::PAGES_TO_FILL * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item to ensure that pool is in working state.
-    BOOST_CHECK (context.pool.Acquire ());
+    CHECK (context.pool.Acquire ());
 }
 
-BOOST_AUTO_TEST_CASE (Clear)
+TEST_CASE (Clear)
 {
     FullPoolContext context;
     context.pool.Clear ();
-    BOOST_CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
+    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
 
     // Acquire one item to ensure that pool is in working state.
-    BOOST_CHECK (context.pool.Acquire ());
+    CHECK (context.pool.Acquire ());
 }
 
-BOOST_AUTO_TEST_CASE (Move)
+TEST_CASE (Move)
 {
     FullPoolContext context;
     Emergence::Memory::Pool newPool (std::move (context.pool));
 
-    BOOST_CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
-    BOOST_CHECK_EQUAL (newPool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
+    CHECK_EQUAL (newPool.GetAllocatedSpace (),
                        FullPoolContext::PAGES_TO_FILL * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item from each pool to ensure that they are in working state.
-    BOOST_CHECK (context.pool.Acquire ());
-    BOOST_CHECK (newPool.Acquire ());
+    CHECK (context.pool.Acquire ());
+    CHECK (newPool.Acquire ());
 }
 
-BOOST_AUTO_TEST_CASE (IterateEmpty)
+TEST_CASE (IterateEmpty)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
-    BOOST_CHECK (pool.BeginAcquired () == pool.EndAcquired ());
+    CHECK (pool.BeginAcquired () == pool.EndAcquired ());
 }
 
-BOOST_AUTO_TEST_CASE (IterationFirstItem)
+TEST_CASE (IterationFirstItem)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
     void *first = pool.Acquire ();
     void *second = pool.Acquire ();
 
-    BOOST_CHECK_EQUAL (first, *pool.BeginAcquired ());
+    CHECK_EQUAL (first, *pool.BeginAcquired ());
     pool.Release (first);
-    BOOST_CHECK_EQUAL (second, *pool.BeginAcquired ());
+    CHECK_EQUAL (second, *pool.BeginAcquired ());
 
     first = pool.Acquire ();
     pool.Release (second);
-    BOOST_CHECK_EQUAL (first, *pool.BeginAcquired ());
+    CHECK_EQUAL (first, *pool.BeginAcquired ());
 }
 
-BOOST_AUTO_TEST_CASE (IterateFull)
+TEST_CASE (IterateFull)
 {
     FullPoolContext context;
     CheckPoolIteration (context.pool, context.items);
 }
 
-BOOST_AUTO_TEST_CASE (IterateFullWithGaps)
+TEST_CASE (IterateFullWithGaps)
 {
     FullPoolContext context;
     auto iterator = context.items.begin ();
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE (IterateFullWithGaps)
     CheckPoolIteration (context.pool, context.items);
 }
 
-BOOST_AUTO_TEST_CASE (ReleaseDoesNotInvalidateIterator)
+TEST_CASE (ReleaseDoesNotInvalidateIterator)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
     std::vector <void *> items;
@@ -256,4 +256,4 @@ BOOST_AUTO_TEST_CASE (ReleaseDoesNotInvalidateIterator)
     CheckPoolItemVectorsEquality (items, itemsFromIteration);
 }
 
-BOOST_AUTO_TEST_SUITE_END ()
+END_SUITE

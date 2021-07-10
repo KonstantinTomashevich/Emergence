@@ -26,7 +26,7 @@ public:
     uint64_t GetCurrentValue () const noexcept;
 
 private:
-    static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 10u;
+    static constexpr std::size_t DATA_MAX_SIZE = sizeof (uint64_t) * 10u;
 
     /// \brief Implementation-specific data.
     std::array <uint8_t, DATA_MAX_SIZE> data;

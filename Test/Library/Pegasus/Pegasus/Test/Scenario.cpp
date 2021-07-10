@@ -1,13 +1,11 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <optional>
+#include <sstream>
 #include <unordered_map>
-
-#include <boost/test/unit_test.hpp>
-#include <boost/format.hpp>
 
 #include <Pegasus/Storage.hpp>
 #include <Pegasus/Test/Scenario.hpp>
+
+#include <Testing/Testing.hpp>
 
 namespace Emergence::Pegasus::Test
 {
@@ -135,12 +133,12 @@ ExecutionContext::ExecutionContext (StandardLayout::Mapping _recordMapping)
 
 void ExecutionContext::ExecuteTask (const CreateHashIndex &_task)
 {
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         indexReferences.find (_task.name) == indexReferences.end (),
-        boost::format ("There should be no index reference with name \"%1%\"") % _task.name);
+        "There should be no index reference with name \"", _task.name, "\".");
 
     Handling::Handle <HashIndex> index = storage.CreateHashIndex (_task.indexedFields);
-    BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
+    REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     knownHashIndices.emplace_back (index.Get ());
     indexReferences.emplace (_task.name, index);
@@ -149,12 +147,12 @@ void ExecutionContext::ExecuteTask (const CreateHashIndex &_task)
 
 void ExecutionContext::ExecuteTask (const CreateOrderedIndex &_task)
 {
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         indexReferences.find (_task.name) == indexReferences.end (),
-        boost::format ("There should be no index reference with name \"%1%\"") % _task.name);
+        "There should be no index reference with name \"", _task.name, "\".");
 
     Handling::Handle <OrderedIndex> index = storage.CreateOrderedIndex (_task.indexedField);
-    BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
+    REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     knownOrderedIndices.emplace_back (index.Get ());
     indexReferences.emplace (_task.name, index);
@@ -163,9 +161,9 @@ void ExecutionContext::ExecuteTask (const CreateOrderedIndex &_task)
 
 void ExecutionContext::ExecuteTask (const CreateVolumetricIndex &_task)
 {
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         indexReferences.find (_task.name) == indexReferences.end (),
-        boost::format ("There should be no index reference with name \"%1%\"") % _task.name);
+        "There should be no index reference with name \"", _task.name, "\".");
 
     std::vector <VolumetricIndex::DimensionDescriptor> convertedDescriptors;
     convertedDescriptors.reserve (_task.dimensions.size ());
@@ -183,7 +181,7 @@ void ExecutionContext::ExecuteTask (const CreateVolumetricIndex &_task)
     }
 
     Handling::Handle <VolumetricIndex> index = storage.CreateVolumetricIndex (convertedDescriptors);
-    BOOST_REQUIRE_MESSAGE (index, "Returned index should not be null.");
+    REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     knownVolumetricIndices.emplace_back (index.Get ());
     indexReferences.emplace (_task.name, index);
@@ -193,9 +191,9 @@ void ExecutionContext::ExecuteTask (const CreateVolumetricIndex &_task)
 void ExecutionContext::ExecuteTask (const CopyIndexReference &_task)
 {
     auto iterator = indexReferences.find (_task.sourceName);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != indexReferences.end (),
-        boost::format ("There should be index reference with name \"%1%\".") % _task.sourceName);
+        "There should be index reference with name \"", _task.sourceName, "\".");
 
     // Copying reference into itself is ok and may even be used as part of special test scenario.
     indexReferences.emplace (_task.targetName, iterator->second);
@@ -204,9 +202,9 @@ void ExecutionContext::ExecuteTask (const CopyIndexReference &_task)
 void ExecutionContext::ExecuteTask (const RemoveIndexReference &_task)
 {
     auto iterator = indexReferences.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != indexReferences.end (),
-        boost::format ("There should be index reference with name \"%1%\".") % _task.name);
+        "There should be index reference with name \"", _task.name, "\".");
 
     indexReferences.erase (iterator);
 }
@@ -214,9 +212,9 @@ void ExecutionContext::ExecuteTask (const RemoveIndexReference &_task)
 void ExecutionContext::ExecuteTask (const CheckIndexCanBeDropped &_task)
 {
     auto iterator = indexReferences.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != indexReferences.end (),
-        boost::format ("There should be index reference with name \"%1%\".") % _task.name);
+        "There should be index reference with name \"", _task.name, "\".");
 
     std::visit (
         [&_task] (auto &_handle)
@@ -224,7 +222,7 @@ void ExecutionContext::ExecuteTask (const CheckIndexCanBeDropped &_task)
             auto *handleValue = _handle.Get ();
             // Temporary make handle free. Otherwise CanBeDropped check will always return false.
             _handle = nullptr;
-            BOOST_CHECK_EQUAL (handleValue->CanBeDropped (), _task.expectedResult);
+            CHECK_EQUAL (handleValue->CanBeDropped (), _task.expectedResult);
             _handle = handleValue;
         },
         iterator->second);
@@ -233,9 +231,9 @@ void ExecutionContext::ExecuteTask (const CheckIndexCanBeDropped &_task)
 void ExecutionContext::ExecuteTask (const DropIndex &_task)
 {
     auto iterator = indexReferences.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != indexReferences.end (),
-        boost::format ("There should be index reference with name \"%1%\".") % _task.name);
+        "There should be index reference with name \"", _task.name, "\".");
 
     std::visit (
         [this] (auto &_handle)
@@ -244,7 +242,7 @@ void ExecutionContext::ExecuteTask (const DropIndex &_task)
             // Firstly make handle free. Otherwise CanBeDropped check will always return false.
             _handle = nullptr;
 
-            BOOST_REQUIRE (handleValue->CanBeDropped ());
+            REQUIRE (handleValue->CanBeDropped ());
             handleValue->Drop ();
             OnIndexDropped (handleValue);
         },
@@ -256,15 +254,15 @@ void ExecutionContext::ExecuteTask (const DropIndex &_task)
 
 void ExecutionContext::ExecuteTask (const OpenAllocator &)
 {
-    BOOST_REQUIRE_MESSAGE (!storageAllocator, "There should be no active allocator.");
+    REQUIRE_WITH_MESSAGE (!storageAllocator, "There should be no active allocator.");
     storageAllocator.emplace (storage.AllocateAndInsert ());
 }
 
 void ExecutionContext::ExecuteTask (const AllocateAndInit &_task)
 {
-    BOOST_REQUIRE_MESSAGE (storageAllocator, "There should be active allocator.");
+    REQUIRE_WITH_MESSAGE (storageAllocator, "There should be active allocator.");
     void *record = storageAllocator.value ().Next ();
-    BOOST_CHECK_NE (record, nullptr);
+    CHECK (record != nullptr);
 
     if (record)
     {
@@ -274,7 +272,7 @@ void ExecutionContext::ExecuteTask (const AllocateAndInit &_task)
 
 void ExecutionContext::ExecuteTask (const CloseAllocator &)
 {
-    BOOST_REQUIRE_MESSAGE (storageAllocator, "There should be active allocator.");
+    REQUIRE_WITH_MESSAGE (storageAllocator, "There should be active allocator.");
     storageAllocator.reset ();
 }
 
@@ -319,37 +317,37 @@ void ExecutionContext::ExecuteTask (const OrderedIndexLookupToEditReversed &_tas
 void ExecutionContext::ExecuteTask (const VolumetricIndexShapeIntersectionLookupToRead &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
-    BOOST_REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
+    REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
     activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToRead (ExtractShape (_task)));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexShapeIntersectionLookupToEdit &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
-    BOOST_REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
+    REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
     activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToEdit (ExtractShape (_task)));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToRead &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
-    BOOST_REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
+    REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToRead (ExtractRay (_task)));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToEdit &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
-    BOOST_REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
+    REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToEdit (ExtractRay (_task)));
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheck &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     std::visit (
         [this, &_task] (auto &_cursor)
@@ -362,23 +360,19 @@ void ExecutionContext::ExecuteTask (const CursorCheck &_task)
                     bool equal = memcmp (record, _task.expectedRecord,
                                          storage.GetRecordMapping ().GetObjectSize ()) == 0u;
 
-                    // Do not print check message unless check failed, because check message generation is quite slow.
-                    if (!equal)
-                    {
-                        BOOST_CHECK_MESSAGE (
-                            false, boost::format (
-                            "Expected and pointed records should be equal!\nRecord: %1%\nExpected record: %2%") %
-                            RecordToString (record) % RecordToString (_task.expectedRecord));
-                    }
+                    CHECK_WITH_MESSAGE (
+                        equal,
+                        "Expected and pointed records should be equal!\nRecord: ", RecordToString (record),
+                        "\nExpected record: ", RecordToString (_task.expectedRecord));
                 }
                 else
                 {
-                    BOOST_CHECK_MESSAGE (false, "Cursor should not be empty!");
+                    CHECK_WITH_MESSAGE (false, "Cursor should not be empty!");
                 }
             }
             else if (record)
             {
-                BOOST_CHECK_MESSAGE (false, "Cursor should be empty!");
+                CHECK_WITH_MESSAGE (false, "Cursor should be empty!");
             }
         },
         iterator->second);
@@ -387,9 +381,9 @@ void ExecutionContext::ExecuteTask (const CursorCheck &_task)
 void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     std::visit (
         [this, &_task] (auto &_cursor)
@@ -412,29 +406,20 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
                 if (record && expected)
                 {
                     bool equal = memcmp (record, expected, storage.GetRecordMapping ().GetObjectSize ()) == 0;
-
-                    // Do not print check message unless check failed, because check message generation is quite slow.
-                    if (!equal)
-                    {
-                        BOOST_CHECK_MESSAGE (
-                            equal, boost::format (
-                            "Checking tha received record %1% and expected record %2% at position %3% are equal.\n"
-                            "Received: %4%\nExpected: %5%") %
-                            record % expected % position % RecordToString (record) % RecordToString (expected));
-                    }
+                    CHECK_WITH_MESSAGE (
+                        equal, "Checking that received record ", record, " and expected record ", expected,
+                        " at position ", position, " are equal.\nReceived: ", RecordToString (record),
+                        "\nExpected: ", RecordToString (expected));
                 }
                 else if (record)
                 {
-                    BOOST_CHECK_MESSAGE (
-                        false,
-                        boost::format ("Expecting nothing at position %1%, receiving %2%.") % position % record);
+                    CHECK_WITH_MESSAGE (
+                        false, "Expecting nothing at position ", position, ", receiving ", RecordToString (record));
                 }
                 else
                 {
-                    BOOST_CHECK_MESSAGE (
-                        false,
-                        boost::format ("Expecting %1% at position %2%, but receiving nothing") %
-                        expected % position);
+                    CHECK_WITH_MESSAGE (
+                        false, "Expecting ", expected, " at position ", position, ", but receiving nothing");
                 }
 
                 if (record)
@@ -451,9 +436,9 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
 void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     std::visit (
         [this, &_task] (auto &_cursor)
@@ -465,7 +450,7 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
                 ++_cursor;
             }
 
-            BOOST_CHECK_EQUAL (records.size (), _task.expectedRecords.size ());
+            CHECK_EQUAL (records.size (), _task.expectedRecords.size ());
             auto Search = [this] (const std::vector <const void *> &_records, const void *_recordToSearch)
             {
                 return std::find_if (_records.begin (), _records.end (),
@@ -481,9 +466,8 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
                 auto iterator = Search (_task.expectedRecords, recordFromCursor);
                 if (iterator == _task.expectedRecords.end ())
                 {
-                    BOOST_CHECK_MESSAGE(
-                        false,
-                        boost::format ("Searching for record from cursor in expected records list. Record: %1%") %
+                    CHECK_WITH_MESSAGE (
+                        false, "Searching for record from cursor in expected records list. Record: ",
                         RecordToString (recordFromCursor));
                 }
             }
@@ -493,9 +477,8 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
                 auto iterator = Search (records, expectedRecord);
                 if (iterator == records.end ())
                 {
-                    BOOST_CHECK_MESSAGE(
-                        false,
-                        boost::format ("Searching for expected record in received records list. Record: %1%") %
+                    CHECK_WITH_MESSAGE (
+                        false, "Searching for expected record in received records list. Record: ",
                         RecordToString (expectedRecord));
                 }
             }
@@ -506,9 +489,9 @@ void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
 void ExecutionContext::ExecuteTask (const CursorEdit &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     std::visit (
         [this, &_task] (auto &_cursor)
@@ -516,8 +499,8 @@ void ExecutionContext::ExecuteTask (const CursorEdit &_task)
             if constexpr (isEditCursor <std::decay_t <decltype (_cursor)>>)
             {
                 void *record = *_cursor;
-                BOOST_CHECK_MESSAGE (record, "Cursor should not be empty.");
-                BOOST_REQUIRE_MESSAGE (_task.copyFrom, "New value source must not be null pointer!");
+                CHECK_WITH_MESSAGE (record, "Cursor should not be empty.");
+                REQUIRE_WITH_MESSAGE (_task.copyFrom, "New value source must not be null pointer!");
 
                 if (record)
                 {
@@ -526,7 +509,7 @@ void ExecutionContext::ExecuteTask (const CursorEdit &_task)
             }
             else
             {
-                BOOST_REQUIRE_MESSAGE (false, boost::format ("Cursor %1% should be editable.") % _task.name);
+                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.name, " should be editable.");
             }
         },
         iterator->second);
@@ -535,9 +518,9 @@ void ExecutionContext::ExecuteTask (const CursorEdit &_task)
 void ExecutionContext::ExecuteTask (const CursorIncrement &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     std::visit (
         [] (auto &_cursor)
@@ -550,9 +533,9 @@ void ExecutionContext::ExecuteTask (const CursorIncrement &_task)
 void ExecutionContext::ExecuteTask (const CursorDeleteRecord &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     std::visit (
         [&_task] (auto &_cursor)
@@ -563,7 +546,7 @@ void ExecutionContext::ExecuteTask (const CursorDeleteRecord &_task)
             }
             else
             {
-                BOOST_REQUIRE_MESSAGE (false, boost::format ("Cursor %1% should be editable.") % _task.name);
+                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.name, " should be editable.");
             }
         },
         iterator->second);
@@ -572,13 +555,13 @@ void ExecutionContext::ExecuteTask (const CursorDeleteRecord &_task)
 void ExecutionContext::ExecuteTask (const CopyCursor &_task)
 {
     auto iterator = activeCursors.find (_task.sourceName);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.sourceName);
+        "There should be active cursor with name \"", _task.sourceName, "\".");
 
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         activeCursors.find (_task.targetName) == activeCursors.end (),
-        boost::format ("There should be no active cursor with name \"%1%\".") % _task.targetName);
+        "There should be no active cursor with name \"", _task.targetName, "\".");
 
     std::visit (
         [this, &_task] (auto &_cursor)
@@ -589,8 +572,8 @@ void ExecutionContext::ExecuteTask (const CopyCursor &_task)
             }
             else
             {
-                BOOST_REQUIRE_MESSAGE (false,
-                                       boost::format ("Cursor %1% should not be editable.") % _task.sourceName);
+                REQUIRE_WITH_MESSAGE (false,
+                                      "Cursor ", _task.sourceName, " should not be editable.");
             }
         },
         iterator->second);
@@ -599,13 +582,13 @@ void ExecutionContext::ExecuteTask (const CopyCursor &_task)
 void ExecutionContext::ExecuteTask (const MoveCursor &_task)
 {
     auto iterator = activeCursors.find (_task.sourceName);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.sourceName);
+        "There should be active cursor with name \"", _task.sourceName, "\".");
 
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         activeCursors.find (_task.targetName) == activeCursors.end (),
-        boost::format ("There should be no active cursor with name \"%1%\".") % _task.targetName);
+        "There should be no active cursor with name \"", _task.targetName, "\".");
 
     std::visit (
         [this, &_task] (auto &_cursor)
@@ -618,23 +601,23 @@ void ExecutionContext::ExecuteTask (const MoveCursor &_task)
 void ExecutionContext::ExecuteTask (const CloseCursor &_task)
 {
     auto iterator = activeCursors.find (_task.name);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != activeCursors.end (),
-        boost::format ("There should be active cursor with name \"%1%\".") % _task.name);
+        "There should be active cursor with name \"", _task.name, "\".");
 
     activeCursors.erase (iterator);
 }
 
 const IndexReference &ExecutionContext::PrepareForLookup (const IndexLookupBase &_task) const
 {
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         activeCursors.find (_task.cursorName) == activeCursors.end (),
-        boost::format ("There should be no cursor with name \"%1%\"") % _task.cursorName);
+        "There should be no cursor with name \"", _task.cursorName, "\"");
 
     auto iterator = indexReferences.find (_task.indexName);
-    BOOST_REQUIRE_MESSAGE (
+    REQUIRE_WITH_MESSAGE (
         iterator != indexReferences.end (),
-        boost::format ("There should be index reference with name \"%1%\".") % _task.indexName);
+        "There should be index reference with name \"", _task.indexName, "\".");
 
     return iterator->second;
 }
@@ -650,36 +633,34 @@ void ExecutionContext::IterateOverIndices () const
             ++_current;
         }
 
-        BOOST_CHECK_EQUAL (found.size (), _known.size ());
+        CHECK_EQUAL (found.size (), _known.size ());
         for (const auto &index : found)
         {
-            BOOST_CHECK_MESSAGE (std::find (_known.begin (), _known.end (), index) != _known.end (),
-                                 boost::format ("Searching received index with address %1% in known list.") %
-                                 index);
+            CHECK_WITH_MESSAGE (std::find (_known.begin (), _known.end (), index) != _known.end (),
+                                "Searching received index with address ", index, " in known list.");
         }
 
         for (const auto &index : _known)
         {
-            BOOST_CHECK_MESSAGE (std::find (found.begin (), found.end (), index) != found.end (),
-                                 boost::format ("Searching known index with address %1% in received list.") %
-                                 index);
+            CHECK_WITH_MESSAGE (std::find (found.begin (), found.end (), index) != found.end (),
+                                "Searching known index with address ", index, " in received list.");
         }
     };
 
-    BOOST_TEST_MESSAGE ("Checking hash indices.");
+    LOG ("Checking hash indices.");
     Iterate (storage.BeginHashIndices (), storage.EndHashIndices (), knownHashIndices);
 
-    BOOST_TEST_MESSAGE ("Checking ordered indices.");
+    LOG ("Checking ordered indices.");
     Iterate (storage.BeginOrderedIndices (), storage.EndOrderedIndices (), knownOrderedIndices);
 
-    BOOST_TEST_MESSAGE ("Checking volumetric indices.");
+    LOG ("Checking volumetric indices.");
     Iterate (storage.BeginVolumetricIndices (), storage.EndVolumetricIndices (), knownVolumetricIndices);
 }
 
 void ExecutionContext::OnIndexDropped (HashIndex *_index)
 {
     auto iterator = std::find (knownHashIndices.begin (), knownHashIndices.end (), _index);
-    BOOST_CHECK (iterator != knownHashIndices.end ());
+    CHECK (iterator != knownHashIndices.end ());
 
     if (iterator != knownHashIndices.end ())
     {
@@ -690,7 +671,7 @@ void ExecutionContext::OnIndexDropped (HashIndex *_index)
 void ExecutionContext::OnIndexDropped (OrderedIndex *_index)
 {
     auto iterator = std::find (knownOrderedIndices.begin (), knownOrderedIndices.end (), _index);
-    BOOST_CHECK (iterator != knownOrderedIndices.end ());
+    CHECK (iterator != knownOrderedIndices.end ());
 
     if (iterator != knownOrderedIndices.end ())
     {
@@ -701,7 +682,7 @@ void ExecutionContext::OnIndexDropped (OrderedIndex *_index)
 void ExecutionContext::OnIndexDropped (VolumetricIndex *_index)
 {
     auto iterator = std::find (knownVolumetricIndices.begin (), knownVolumetricIndices.end (), _index);
-    BOOST_CHECK (iterator != knownVolumetricIndices.end ());
+    CHECK (iterator != knownVolumetricIndices.end ());
 
     if (iterator != knownVolumetricIndices.end ())
     {
@@ -727,9 +708,9 @@ std::string ExecutionContext::RecordToString (const void *_record) const
 VolumetricIndex::AxisAlignedShape ExecutionContext::ExtractShape (
     const VolumetricIndexShapeIntersectionLookupBase &_task) const
 {
-    BOOST_REQUIRE_EQUAL (_task.min.size (), _task.max.size ());
-    BOOST_REQUIRE_GT (_task.min.size (), 0u);
-    BOOST_REQUIRE_LE (_task.min.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+    REQUIRE_EQUAL (_task.min.size (), _task.max.size ());
+    REQUIRE (_task.min.size () > 0u);
+    REQUIRE (_task.min.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
     VolumetricIndex::AxisAlignedShape shape;
 
     for (std::size_t index = 0u; index < _task.min.size (); ++index)
@@ -743,9 +724,9 @@ VolumetricIndex::AxisAlignedShape ExecutionContext::ExtractShape (
 
 VolumetricIndex::Ray ExecutionContext::ExtractRay (const VolumetricIndexRayIntersectionLookupBase &_task) const
 {
-    BOOST_REQUIRE_EQUAL (_task.origin.size (), _task.direction.size ());
-    BOOST_REQUIRE_GT (_task.origin.size (), 0u);
-    BOOST_REQUIRE_LE (_task.origin.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+    REQUIRE_EQUAL (_task.origin.size (), _task.direction.size ());
+    REQUIRE (_task.origin.size () > 0u);
+    REQUIRE (_task.origin.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
     VolumetricIndex::Ray ray;
 
     for (std::size_t index = 0u; index < _task.origin.size (); ++index)
@@ -989,16 +970,15 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
     : mapping (std::move (_mapping)),
       tasks (std::move (_tasks))
 {
-}
-
-void Scenario::Execute () const
-{
     ExecutionContext context (mapping);
+    LOG ((std::stringstream () << *this).str ());
+
     for (const Task &wrappedTask : tasks)
     {
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
+                LOG ((std::stringstream () << _unwrappedTask).str ());
                 context.ExecuteTask (_unwrappedTask);
             },
             wrappedTask);
