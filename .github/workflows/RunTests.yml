@@ -72,11 +72,11 @@ jobs:
         if: env.ENABLE_COVERAGE == 'yes'
         run: .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
-      - name: Upload logs
+      - name: Test logs and coverage reports
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: Test logs (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
+          name: Test logs and coverage reports (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
           path: |
             ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
             ${{env.BUILD_DIRECTORY}}/Testing/Temporary
