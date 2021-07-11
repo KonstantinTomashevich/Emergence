@@ -27,9 +27,6 @@ jobs:
           #  toolchain: MSVC
           - os: windows-latest
             toolchain: GCC
-          # TODO: Temporary, it seems CLang is not installed here.
-          - os: windows-latest
-            toolchain: CLang
 
     defaults:
       run:
