@@ -56,8 +56,6 @@ function Find-Coverage-Data
         $Item = Join-Path $Directory $Child
         $Extension = [IO.Path]::GetExtension($Item)
 
-        echo "Debug. Item: `"$Item`". Extension: `"$Extension`"."
-
         if (Test-Path $Item -PathType Container)
         {
             $ChildResult = Find-Coverage-Data $Item
