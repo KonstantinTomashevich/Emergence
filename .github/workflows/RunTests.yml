@@ -39,11 +39,11 @@ jobs:
 
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
-        run: echo "TOOLSET=clangcl"
+        run: echo "TOOLSET=clangcl" >> $Env:GITHUB_ENV
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
-        run: echo "TOOLSET=msvc"
+        run: echo "TOOLSET=msvc" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
