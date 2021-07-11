@@ -73,7 +73,7 @@ jobs:
 
       - name: Setup single config builds
         if: matrix.os == 'ubuntu-latest'
-        echo "CMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${{matrix.build_type}}" >> $Env:GITHUB_ENV
+        run: echo "CMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${{matrix.build_type}}" >> $Env:GITHUB_ENV
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
