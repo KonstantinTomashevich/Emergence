@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup Clang toolchain on Unix
         if: matrix.toolchain == 'Clang' && matrix.os != 'windows-latest'
-        run: echo 'CC=clang' >> $Env:GITHUB_ENV && echo 'CXX=clang++' >> $Env:GITHUB_ENV
+        run: echo 'CC=clang-12' >> $Env:GITHUB_ENV && echo 'CXX=clang++-12' >> $Env:GITHUB_ENV
 
       # Clang on Windows should be specified using -T instead of CC/CXX.
       - name: Setup Clang toolchain on Windows
