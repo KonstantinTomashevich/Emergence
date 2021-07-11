@@ -65,21 +65,30 @@ jobs:
         if: matrix.toolchain == 'Clang' && matrix.os == 'windows-latest'
         run: echo "CMAKE_TOOLSET=-T clangcl" >> $Env:GITHUB_ENV
 
+      - name: Setup multiconfig builds
+        if: matrix.os == 'windows-latest' || matrix.os == 'macos-latest'
+        run: |
+          echo "CMAKE_CONFIG=--config ${{matrix.build_type}}" >> $Env:GITHUB_ENV &&
+          echo "CTEST_CONFIG=-C ${{matrix.build_type}}" >> $Env:GITHUB_ENV
+
+      - name: Setup single config builds
+        if: matrix.os == 'ubuntu-latest'
+        echo "CMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${{matrix.build_type}}" >> $Env:GITHUB_ENV
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        # CMAKE_BUILD_TYPE ignored by multiconfig generators
-        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_TOOLSET
+        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_BUILD_TYPE $Env:CMAKE_TOOLSET
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}}
+        run: cmake --build . --target EmergenceTests $Env:CMAKE_CONFIG
 
       - name: Test
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: ctest -C ${{matrix.build_type}}
+        run: ctest $Env:CTEST_CONFIG
 
       - name: Upload logs
         if: ${{ success() }} || ${{ failure() }}
