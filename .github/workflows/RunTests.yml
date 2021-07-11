@@ -17,16 +17,8 @@ jobs:
 
       matrix:
         build_type: [ Release, Debug ]
-        # TODO: No macos, Apple Clang does not have concepts?
-        os: [ windows-latest, ubuntu-latest ]
-        toolchain: [ GCC, Clang, MSVC ]
-        exclude:
-          - os: ubuntu-latest
-            toolchain: MSVC
-          #- os: macos-latest
-          #  toolchain: MSVC
-          - os: windows-latest
-            toolchain: GCC
+        os: [ windows-latest ]
+        toolchain: [ Clang, MSVC ]
 
     defaults:
       run:
@@ -42,66 +34,28 @@ jobs:
         with:
           submodules: true
 
-      # "Setup * toolchain" tasks pass CC and CXX variables values to environment.
-      - name: Setup GCC toolchain
-        if: matrix.toolchain == 'GCC' && matrix.os != 'ubuntu-latest'
-        run: echo 'CC=gcc' >> $Env:GITHUB_ENV && echo 'CXX=g++' >> $Env:GITHUB_ENV
-
-      # GCC 9.30 is default on Ubuntu 20.04, but it doesn't support concepts.
-      - name: Setup GCC toolchain
-        if: matrix.toolchain == 'GCC' && matrix.os == 'ubuntu-latest'
-        run: echo 'CC=gcc-10' >> $Env:GITHUB_ENV && echo 'CXX=g++-10' >> $Env:GITHUB_ENV
-
-      - name: Setup MSVC toolchain
-        if: matrix.toolchain == 'MSVC'
-        run: echo 'CC=cl' >> $Env:GITHUB_ENV && echo 'CXX=cl' >> $Env:GITHUB_ENV
-
-      - name: Setup Clang toolchain on Unix
-        if: matrix.toolchain == 'Clang' && matrix.os != 'windows-latest'
-        run: echo 'CC=clang-12' >> $Env:GITHUB_ENV && echo 'CXX=clang++-12' >> $Env:GITHUB_ENV
-
-      - name: Setup multiconfig builds
-        if: matrix.os == 'windows-latest' || matrix.os == 'macos-latest'
-        run: echo "MULTICONFIG=yes" >> $Env:GITHUB_ENV
-
-      - name: Setup single config builds
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "CMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${{matrix.build_type}}" >> $Env:GITHUB_ENV
-          echo "MULTICONFIG=no" >> $Env:GITHUB_ENV
-
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
-      - name: Configure
-        if: matrix.os != 'windows-latest' || matrix.toolchain != 'CLang'
-        working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_BUILD_TYPE
-
-      - name: Configure (Windows, CLang)
+      - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
-        working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_BUILD_TYPE -T clangcl
+        run: echo "TOOLSET=clangcl"
 
-      - name: Build (Multiconfig)
+      - name: Select MSVC toolset
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
+        run: echo "TOOLSET=msvc"
+
+      - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        if: env.MULTICONFIG == 'yes'
+        run: cmake $Env:GITHUB_WORKSPACE -T $Env:TOOLSET
+
+      - name: Build
+        working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}}
 
-      - name: Build (Singleconfig)
+      - name: Test
         working-directory: ${{env.BUILD_DIRECTORY}}
-        if: env.MULTICONFIG == 'no'
-        run: cmake --build . --target EmergenceTests
-
-      - name: Test (Multiconfig)
-        working-directory: ${{env.BUILD_DIRECTORY}}
-        if: env.MULTICONFIG == 'yes'
         run: ctest -C ${{matrix.build_type}}
-
-      - name: Test (Singleconfig)
-        working-directory: ${{env.BUILD_DIRECTORY}}
-        if: env.MULTICONFIG == 'no'
-        run: ctest
 
       - name: Upload logs
         if: ${{ success() }} || ${{ failure() }}
