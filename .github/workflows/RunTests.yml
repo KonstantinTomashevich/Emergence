@@ -67,10 +67,17 @@ jobs:
         if: env.ENABLE_COVERAGE == 'yes'
         run: .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
-      - name: Collect coverage data
+      - name: Collect and check coverage data
         working-directory: ${{env.GITHUB_WORKSPACE}}
         if: env.ENABLE_COVERAGE == 'yes'
-        run: .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
+
+        # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
+        # Visual Studio environment, which is currently possible only through standard command line.
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"
+          powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
+          powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
       - name: Test logs and coverage reports
         if: ${{ success() }} || ${{ failure() }}
