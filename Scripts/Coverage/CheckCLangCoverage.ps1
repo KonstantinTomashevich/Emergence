@@ -1,13 +1,29 @@
 #!/usr/bin/env pwsh
 
-if ($args.Count -lt 2)
+if ($args.Count -ne 1)
 {
-    echo "Usage: <script> <clang json summary report> <minimum line coverage per file in percents> [excludes]..."
+    echo "Usage: <script> <path to binary dir>"
     exit 1
 }
 
-$Report = $args[0]
-$MinimumCoveragePercent = [convert]::ToDouble($args[1])
+$BinaryDir = $args[0]
+if (-Not(Test-Path $BinaryDir -PathType Container))
+{
+    echo "Unable to find given binary directory `"$BinaryDir`"!"
+    exit 2
+}
+
+$ConfigurationFile = "Coverage.json"
+if (-Not(Test-Path $ConfigurationFile -PathType Leaf))
+{
+    echo "Coverage configuration file `"$ConfigurationFile`" must exist in working directory!"
+    exit 3
+}
+
+$Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
+$OutputDirectory = Join-Path $BinaryDir $Configuration.OutputDirectory
+$Report = Join-Path $OutputDirectory $Configuration.JsonReportFileName
+$MinimumCoveragePercent = $Configuration.MinimumLinesCoveragePerFilePercent
 
 echo "Checking line coverage in report `"$Report`". Minimum approved coverage per file: $MinimumCoveragePercent%."
 if (-Not(Test-Path $Report -PathType Leaf))
@@ -19,56 +35,74 @@ if (-Not(Test-Path $Report -PathType Leaf))
 echo "Excluded:"
 $Excludes = @()
 
-for ($index = 2; $index -lt $args.Count; ++$index)
+foreach ($Exclude in $Configuration.Excludes)
 {
-    $Resolved = Resolve-Path $args[$index]
+    $Resolved = Resolve-Path $Exclude.Prefix
+    $ExclusionReason = $Exclude.Reason
     $Excludes += $Resolved
+
     echo " - $Resolved"
+    echo "   $ExclusionReason"
 }
 
 $CoverageSummary = Get-Content $Report | ConvertFrom-Json
-$Errors = 0
+$Files = $CoverageSummary.data.files
+$FilesCount = $Files.Count
+$Errors = @()
 
-foreach ($File in $CoverageSummary.data.files)
+for ($Index = 0; $Index -lt $Files.Count; ++$Index)
 {
-    $LinesTotal = $File.summary.lines.count
-    $LineCoverage = $File.summary.lines.percent
-    $Filename = $File.filename
+    $File = $Files[$Index]
+    $FileName = $File.filename
+    $Excluded = 0
 
-    $Empty = $LinesTotal -eq 0
-    $Uncovered = $LineCoverage -lt $MinimumCoveragePercent
-
-    if ($Empty -or $Uncovered)
+    foreach ($Exclusion in $Excludes)
     {
-        $Excluded = 0
-        foreach ($Exclusion in $Excludes)
+        if ( $FileName.StartsWith($Exclusion))
         {
-            if ($Filename.StartsWith($Exclusion))
-            {
-                $Excluded = 1
-                break
-            }
+            $Excluded = 1
+            break
+        }
+    }
+
+    $ReadableIndex = $Index + 1
+    if (-Not$Excluded)
+    {
+        $LinesTotal = $File.summary.lines.count
+        $LineCoverage = $File.summary.lines.percent
+
+        if ($LineCoverage)
+        {
+            $FormattedCoverage = $LineCoverage.ToString("#.##")
+            $CoverageToProgress = ", " + $LineCoverage.ToString("#.##") + "% coverage"
+        }
+        else
+        {
+            $CoverageToProgress = ""
         }
 
-        if(-Not$Excluded)
+        echo "[$ReadableIndex/$FilesCount] $FileName ($LinesTotal executable lines$CoverageToProgress)"
+        if ($LinesTotal -gt 0 -and $LineCoverage -lt $MinimumCoveragePercent)
         {
-            if ($Empty)
-            {
-                echo "Info: no coverable lines in `"$Filename`"!"
-            }
-            elseif ($Uncovered)
-            {
-                $FormattedCoverage = $LineCoverage.ToString("#.##")
-                echo "Error: Not enough lines covered in `"$Filename`": $FormattedCoverage%."
-                ++$Errors
-            }
+            $Errors += "File `"$FileName`" low coverage: $FormattedCoverage%."
         }
+    }
+    else
+    {
+        echo "[$ReadableIndex/$FilesCount] $FileName (excluded)"
     }
 }
 
-if ($Errors -gt 0)
+if ($Errors.Count -gt 0)
 {
-    echo "Total errors: $Errors."
+    $ErrorsCount = $Errors.Count
+    echo "Found $ErrorsCount errors:"
+
+    foreach ($CoverageError in $Errors)
+    {
+        echo " - $CoverageError"
+    }
+
     exit 3
 }
 else

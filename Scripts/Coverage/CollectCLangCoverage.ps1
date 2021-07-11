@@ -9,20 +9,34 @@ if ($args.Count -ne 1)
     exit 1
 }
 
+$BinaryDir = $args[0]
+if(-Not(Test-Path $BinaryDir -PathType Container))
+{
+    echo "Unable to find given binary directory `"$BinaryDir`"!"
+    exit 2
+}
+
+$ConfigurationFile = "Coverage.json"
+if(-Not(Test-Path $ConfigurationFile -PathType Leaf))
+{
+    echo "Coverage configuration file `"$ConfigurationFile`" must exist in working directory!"
+    exit 3
+}
+
 if (-Not(Get-Command llvm-profdata))
 {
     echo "Unable to find llvm-profdata in path!"
-    exit 2
+    exit 4
 }
 
 if (-Not(Get-Command llvm-cov))
 {
     echo "Unable to find llvm-cov in path!"
-    exit 3
+    exit 5
 }
 
-$BinaryDir = $args[0]
-echo "Collecting CLang coverage information for `"$binaryDir`"."
+$Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
+echo "Scanning `"$BinaryDir`" for CLang coverage information."
 
 function Find-Coverage-Data
 {
@@ -69,15 +83,31 @@ function Find-Coverage-Data
 
 $ScanResult = Find-Coverage-Data $BinaryDir
 $Reports = $ScanResult.Reports
-$OutputDirectory = Join-Path $BinaryDir "Coverage\Temporary"
+$Executables = $ScanResult.Executables
+
+echo "Found raw profile data:"
+foreach ($File in $Reports)
+{
+    echo " - $File"
+}
+
+echo "Found associated executables:"
+foreach ($File in $Executables)
+{
+    echo " - $File"
+}
+
+echo "Creating output directory."
+$OutputDirectory = Join-Path $BinaryDir $Configuration.OutputDirectory
 
 if (-Not(Test-Path $OutputDirectory))
 {
     New-Item -ItemType Directory -Path $OutputDirectory
 }
 
-$MergedProfdata = Join-Path $OutputDirectory "Emergence.profdata"
-llvm-profdata merge $Reports -o "$MergedProfdata"
+echo "Merging found profile data."
+$MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
+llvm-profdata merge $Reports -o $MergedProfdata
 
 $ExecutablesAsArguments = ""
 foreach ($Executable in $ScanResult.Executables)
@@ -87,11 +117,14 @@ foreach ($Executable in $ScanResult.Executables)
 
 # TODO: Expression invokations are used below, because otherwise all executable are merged into one argument.
 
-$FullSourceCoverage = Join-Path $OutputDirectory "SourceCoverage.txt"
+echo "Exporting full source coverage."
+$FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName
 Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
 
-$FullReport = Join-Path $OutputDirectory "Report.txt"
+echo "Exporting textual coverage report."
+$FullReport = Join-Path $OutputDirectory $Configuration.TextualReportFileName
 Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
 
-$FullReportJson = Join-Path $OutputDirectory "Report.json"
+echo "Exporting json coverage report."
+$FullReportJson = Join-Path $OutputDirectory $Configuration.JsonReportFileName
 Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"

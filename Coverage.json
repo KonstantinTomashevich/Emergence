@@ -1,0 +1,14 @@
+{
+  "OutputDirectory": "./Coverage/Temporary/",
+  "MergedProfileDataFilename": "Emergence.profdata",
+  "FullSourceCoverageFileName": "SourceCoverage.txt",
+  "TextualReportFileName": "Report.txt",
+  "JsonReportFileName": "Report.json",
+  "MinimumLinesCoveragePerFilePercent": 70.0,
+  "Excludes": [
+    {
+      "Prefix": "./ThirdParty/",
+      "Reason": "There is no sense to scan third party libraries coverage."
+    }
+  ]
+}

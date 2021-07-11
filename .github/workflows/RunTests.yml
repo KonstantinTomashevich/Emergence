@@ -35,6 +35,13 @@ jobs:
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
+      - name: Enable coverage check
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        run: |
+          echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
+          echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
+          echo "LLVM_PROFILE_FILE=%m.profraw" >> $Env:GITHUB_ENV
+
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
         run: echo "TOOLSET=clangcl" >> $Env:GITHUB_ENV
@@ -45,7 +52,7 @@ jobs:
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake $Env:GITHUB_WORKSPACE -T $Env:TOOLSET
+        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE -T $Env:TOOLSET
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
@@ -55,9 +62,21 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: ctest -C ${{matrix.build_type}}
 
+      - name: Collect coverage data
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        if: env.ENABLE_COVERAGE == 'yes'
+        run: .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
+
+      - name: Collect coverage data
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        if: env.ENABLE_COVERAGE == 'yes'
+        run: .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
+
       - name: Upload logs
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: Test logs (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
-          path: ${{env.BUILD_DIRECTORY}}/Testing/Temporary
+          path: |
+            ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
+            ${{env.BUILD_DIRECTORY}}/Testing/Temporary
