@@ -78,6 +78,7 @@ function Find-Coverage-Data
         if ($Executables.Count -eq 0)
         {
             echo "Unable to find any executables in directory `"$Directory`", which has reports!"
+            echo "Executable files are expected to be in the same directory as their profile data."
             exit 6
         }
         else
