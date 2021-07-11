@@ -98,7 +98,9 @@ private:
         {
             Chunk *nextFree;
 
-            uint8_t bytes[0u];
+            // It should be zero-length array, but we use 1-byte array because
+            // not all compilers support nested zero-length arrays.
+            uint8_t bytes[1u];
         };
     };
 
