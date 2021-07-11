@@ -68,8 +68,8 @@ jobs:
       - name: Setup multiconfig builds
         if: matrix.os == 'windows-latest' || matrix.os == 'macos-latest'
         run: |
-          echo "CMAKE_CONFIG=--config \`"${{matrix.build_type}}\`"" >> $Env:GITHUB_ENV &&
-          echo "CTEST_CONFIG=-C \`"${{matrix.build_type}}\`"" >> $Env:GITHUB_ENV
+          echo "CMAKE_CONFIG=--config `"${{matrix.build_type}}`"" >> $Env:GITHUB_ENV &&
+          echo "CTEST_CONFIG=-C `"${{matrix.build_type}}`"" >> $Env:GITHUB_ENV
 
       - name: Setup single config builds
         if: matrix.os == 'ubuntu-latest'
