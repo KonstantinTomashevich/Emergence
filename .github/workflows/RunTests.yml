@@ -43,7 +43,7 @@ jobs:
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
-        run: echo "TOOLSET=msvc" >> $Env:GITHUB_ENV
+        run: echo "TOOLSET=v142" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
