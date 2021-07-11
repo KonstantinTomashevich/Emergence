@@ -67,13 +67,13 @@ jobs:
 
       - name: Setup multiconfig builds
         if: matrix.os == 'windows-latest' || matrix.os == 'macos-latest'
-        run: |
-          echo "CMAKE_CONFIG=--config `"${{matrix.build_type}}`"" >> $Env:GITHUB_ENV &&
-          echo "CTEST_CONFIG=-C `"${{matrix.build_type}}`"" >> $Env:GITHUB_ENV
+        run: echo "MULTICONFIG=yes" >> $Env:GITHUB_ENV
 
       - name: Setup single config builds
         if: matrix.os == 'ubuntu-latest'
-        run: echo "CMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${{matrix.build_type}}" >> $Env:GITHUB_ENV
+        run: |
+          echo "CMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${{matrix.build_type}}" >> $Env:GITHUB_ENV
+          echo "MULTICONFIG=no" >> $Env:GITHUB_ENV
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
@@ -82,13 +82,25 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_BUILD_TYPE $Env:CMAKE_TOOLSET
 
-      - name: Build
+      - name: Build (Multiconfig)
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake --build . --target EmergenceTests $Env:CMAKE_CONFIG
+        if: env.MULTICONFIG == 'yes'
+        run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}}
 
-      - name: Test
+      - name: Build (Singleconfig)
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: ctest $Env:CTEST_CONFIG
+        if: env.MULTICONFIG == 'no'
+        run: cmake --build . --target EmergenceTests
+
+      - name: Test (Multiconfig)
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        if: env.MULTICONFIG == 'yes'
+        run: ctest -C ${{matrix.build_type}}
+
+      - name: Test (Singleconfig)
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        if: env.MULTICONFIG == 'no'
+        run: ctest
 
       - name: Upload logs
         if: ${{ success() }} || ${{ failure() }}

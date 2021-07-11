@@ -10,14 +10,19 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
     if (MSVC)
         add_compile_options (/W4 /WX)
     else ()
-        add_compile_options (
-                -Wall -Wextra -pedantic -Werror
-                # Anonymous structs are supported not only by GCC and therefore allowed.
-                -Wno-gnu-anonymous-struct
-                # Nested anonymous types are allowed, because they are useful with unions.
-                -Wno-nested-anon-types
-                # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
-                -Wno-zero-length-array)
+        add_compile_options (-Wall -Wextra -Werror)
+
+        # Exceptions can be added to pedantic mode only on CLang.
+        if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
+            add_compile_options (
+                    -pedantic
+                    # Anonymous structs are supported not only by GCC and therefore allowed.
+                    -Wno-gnu-anonymous-struct
+                    # Nested anonymous types are allowed, because they are useful with unions.
+                    -Wno-nested-anon-types
+                    # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
+                    -Wno-zero-length-array)
+        endif ()
     endif ()
 endif ()
 
