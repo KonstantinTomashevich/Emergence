@@ -10,7 +10,10 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
     if (MSVC)
         add_compile_options (/W4 /WX)
     else ()
-        add_compile_options (-Wall -Wextra -Werror)
+        add_compile_options (
+                -Wall -Wextra -Werror
+                # Allow raw memory access for classes. It's need for some low level optimizations in reflection.
+                -Wno-error=class-memaccess)
 
         # Exceptions can be added to pedantic mode only on CLang.
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
