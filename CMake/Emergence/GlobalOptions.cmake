@@ -8,7 +8,12 @@ option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable 
 
 if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
     if (MSVC)
-        add_compile_options (/W4 /WX)
+        add_compile_options (
+                /W4 /WX
+                # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
+                /wd4200
+                # Anonymous structs increase readability in some cases.
+                /wd4201)
     else ()
         add_compile_options (
                 -Wall -Wextra -Werror
@@ -19,7 +24,7 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
             add_compile_options (
                     -pedantic
-                    # Anonymous structs are supported not only by GCC and therefore allowed.
+                    # Anonymous structs increase readability in some cases.
                     -Wno-gnu-anonymous-struct
                     # Nested anonymous types are allowed, because they are useful with unions.
                     -Wno-nested-anon-types
