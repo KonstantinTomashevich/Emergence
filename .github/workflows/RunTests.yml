@@ -11,12 +11,10 @@ on:
 jobs:
   run_tests:
     strategy:
-
-      # TODO: Temporary
-      fail-fast: false
-
       matrix:
         build_type: [ Release, Debug ]
+        # Only windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
+        # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-latest ]
         toolchain: [ Clang, MSVC ]
 
