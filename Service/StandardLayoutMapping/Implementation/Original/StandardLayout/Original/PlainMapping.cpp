@@ -33,6 +33,13 @@ Handling::Handle <PlainMapping> FieldData::GetNestedObjectMapping () const
     return nestedObjectMapping;
 }
 
+FieldData::FieldData () noexcept
+    : archetype (FieldArchetype::INT),
+      offset (0u),
+      size (0u)
+{
+}
+
 FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
     : archetype (_seed.archetype),
       offset (_seed.offset),

@@ -15,13 +15,11 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
                 # Anonymous structs increase readability in some cases.
                 /wd4201)
     else ()
-        add_compile_options (
-                -Wall -Wextra -Werror
-                # Allow raw memory access for classes. It's need for some low level optimizations in reflection.
-                -Wno-error=class-memaccess)
+        add_compile_options (-Wall -Wextra -Werror)
 
-        # Exceptions can be added to pedantic mode only on CLang.
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
+            # Exceptions in CLang format. Also, pedantic is enabled only on CLang,
+            # because there is no pedantic exceptions on GCC.
             add_compile_options (
                     -pedantic
                     # Anonymous structs increase readability in some cases.
@@ -30,6 +28,13 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
                     -Wno-nested-anon-types
                     # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
                     -Wno-zero-length-array)
+        else ()
+            # Exceptions in GCC format.
+            add_compile_options (
+                    # Allow raw memory access for classes. It's need for some low level optimizations in reflection.
+                    -Wno-error=class-memaccess
+                    # Used by XXHash.
+                    -Wno-error=array-bounds)
         endif ()
     endif ()
 endif ()
