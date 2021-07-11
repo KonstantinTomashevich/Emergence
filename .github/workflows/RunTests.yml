@@ -62,11 +62,6 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: ctest -C ${{matrix.build_type}}
 
-      - name: Collect coverage data
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        if: env.ENABLE_COVERAGE == 'yes'
-        run: .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
-
       - name: Collect and check coverage data
         working-directory: ${{env.GITHUB_WORKSPACE}}
         if: env.ENABLE_COVERAGE == 'yes'
