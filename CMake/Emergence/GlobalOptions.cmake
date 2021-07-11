@@ -13,7 +13,9 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
                 # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
                 /wd4200
                 # Anonymous structs increase readability in some cases.
-                /wd4201)
+                /wd4201
+                # Assignments inside conditional statements increase readability in some cases.
+                /wd4706)
     else ()
         add_compile_options (-Wall -Wextra -Werror)
 
