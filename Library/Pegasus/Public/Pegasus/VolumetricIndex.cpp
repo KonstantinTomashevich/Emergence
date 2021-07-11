@@ -845,7 +845,7 @@ template <typename Operations>
 VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     const void *_record, const Operations &_operations) const noexcept
 {
-    LeafSector sector;
+    LeafSector sector {};
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];
@@ -868,7 +868,7 @@ template <typename Operations>
 VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     const VolumetricIndex::AxisAlignedShape &_shape, const Operations &_operations) const noexcept
 {
-    LeafSector sector;
+    LeafSector sector {};
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];
