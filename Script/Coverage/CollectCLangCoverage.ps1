@@ -56,6 +56,8 @@ function Find-Coverage-Data
         $Item = Join-Path $Directory $Child
         $Extension = [IO.Path]::GetExtension($Item)
 
+        echo "Debug. Item: `"$Item`". Extension: `"$Extension`"."
+
         if (Test-Path $Item -PathType Container)
         {
             $ChildResult = Find-Coverage-Data $Item
@@ -75,7 +77,15 @@ function Find-Coverage-Data
     if ($CoverageReports.Count -gt 0)
     {
         $ScanResult.Reports += $CoverageReports
-        $ScanResult.Executables += $Executables
+        if ($Executables.Count -eq 0)
+        {
+            echo "Unable to find any executables in directory `"$Directory`", which has reports!"
+            exit 6
+        }
+        else
+        {
+            $ScanResult.Executables += $Executables
+        }
     }
 
     $ScanResult
