@@ -487,9 +487,11 @@ struct UnionWithBasicTypesTest
 
     union
     {
-        int64_t union2Int64;
-
-        float union2Float;
+        struct
+        {
+            int64_t union2Int64;
+            float union2Float;
+        };
 
         double union2Double;
     };

@@ -8,8 +8,7 @@ option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable 
 
 if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
     if (MSVC)
-        # TODO: Temporary switched to W3. W4 seems too strong (forbidding = in while, for example).
-        add_compile_options (/W3 /WX)
+        add_compile_options (/W4 /WX)
     else ()
         add_compile_options (-Wall -Wextra -pedantic -Werror)
     endif ()

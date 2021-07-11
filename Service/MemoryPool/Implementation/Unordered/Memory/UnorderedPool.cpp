@@ -22,7 +22,7 @@ UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIter
     do
     {
         const auto *next = reinterpret_cast <const Chunk *> (&chunk->bytes[0u] + pool->chunkSize);
-        if (&next->bytes[0u] < &page->GetChunks ()[0u].bytes[0u] + pool->chunkSize * pool->pageCapacity)
+        if (&next->bytes[0u] < &page->chunks[0u].bytes[0u] + pool->chunkSize * pool->pageCapacity)
         {
             chunk = next;
         }
@@ -31,7 +31,7 @@ UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIter
             page = page->next;
             if (page)
             {
-                chunk = &page->GetChunks ()[0u];
+                chunk = &page->chunks[0u];
             }
             else
             {
@@ -55,7 +55,7 @@ UnorderedPool::AcquiredChunkConstIterator UnorderedPool::AcquiredChunkConstItera
 UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
     const UnorderedPool *_pool,
     const Page *_page) noexcept
-    : AcquiredChunkConstIterator (_pool, _page, _page ? &_page->GetChunks ()[0u] : nullptr)
+    : AcquiredChunkConstIterator (_pool, _page, _page ? &_page->chunks[0u] : nullptr)
 {
     if (chunk)
     {
@@ -145,7 +145,7 @@ void *UnorderedPool::Acquire () noexcept
         Page *newPage = static_cast <Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         newPage->next = topPage;
         topPage = newPage;
-        Chunk *currentChunk = &newPage->GetChunks ()[0u];
+        Chunk *currentChunk = &newPage->chunks[0u];
 
         for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
@@ -155,7 +155,7 @@ void *UnorderedPool::Acquire () noexcept
         }
 
         currentChunk->nextFree = nullptr;
-        topFreeChunk = &newPage->GetChunks ()[0u];
+        topFreeChunk = &newPage->chunks[0u];
         assert (pageCount + 1u > pageCount);
         ++pageCount;
     }
@@ -277,19 +277,9 @@ size_t UnorderedPool::GetAllocatedSpace () const noexcept
     return pageCount * pageCapacity * chunkSize;
 }
 
-const UnorderedPool::Chunk *UnorderedPool::Page::GetChunks () const noexcept
-{
-    return reinterpret_cast <const Chunk *> (reinterpret_cast <const uint8_t *> (this) + sizeof (*this));
-}
-
-UnorderedPool::Chunk *UnorderedPool::Page::GetChunks () noexcept
-{
-    return const_cast <Chunk *> (const_cast <const UnorderedPool::Page *> (this)->GetChunks ());
-}
-
 bool UnorderedPool::IsInside (const UnorderedPool::Page *_page, const UnorderedPool::Chunk *_chunk) const noexcept
 {
-    const Chunk *first = &_page->GetChunks ()[0u];
+    const Chunk *first = &_page->chunks[0u];
     const auto *last = reinterpret_cast <const Chunk *> (&first->bytes[0u] + chunkSize * (pageCapacity - 1u));
     return _chunk >= first && _chunk <= last;
 }
