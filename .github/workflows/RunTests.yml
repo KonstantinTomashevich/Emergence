@@ -74,10 +74,12 @@ jobs:
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
+        if: matrix.os != 'windows-latest' || matrix.toolchain != 'CLang'
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_BUILD_TYPE
 
       - name: Configure (Windows, CLang)
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_BUILD_TYPE -T clangcl
 
