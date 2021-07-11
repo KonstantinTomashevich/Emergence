@@ -74,9 +74,11 @@ jobs:
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
-      - name: Test logs and coverage reports
+      - name: Test and coverage results
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: Test logs and coverage reports (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
-          path: ${{env.BUILD_DIRECTORY}}
+          name: Test and coverage results (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
+          path: |
+            ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
+            ${{env.BUILD_DIRECTORY}}/Testing/Temporary
