@@ -36,7 +36,7 @@ jobs:
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Enable coverage check
-        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang' && matrix.build_type == 'Debug'
         run: |
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
