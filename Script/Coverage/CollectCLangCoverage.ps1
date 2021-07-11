@@ -9,15 +9,15 @@ if ($args.Count -ne 1)
     exit 1
 }
 
-$BinaryDir = $args[0]
-if(-Not(Test-Path $BinaryDir -PathType Container))
+$BinaryDirectory = $args[0]
+if (-Not(Test-Path $BinaryDirectory -PathType Container))
 {
-    echo "Unable to find given binary directory `"$BinaryDir`"!"
+    echo "Unable to find given binary directory `"$BinaryDirectory`"!"
     exit 2
 }
 
 $ConfigurationFile = "Coverage.json"
-if(-Not(Test-Path $ConfigurationFile -PathType Leaf))
+if (-Not(Test-Path $ConfigurationFile -PathType Leaf))
 {
     echo "Coverage configuration file `"$ConfigurationFile`" must exist in working directory!"
     exit 3
@@ -36,7 +36,8 @@ if (-Not(Get-Command llvm-cov))
 }
 
 $Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
-echo "Scanning `"$BinaryDir`" for CLang coverage information."
+$InputDirectory = Join-Path $BinaryDirectory $Configuration.InputDirectory
+echo "Scanning `"$InputDirectory`" for CLang coverage information."
 
 function Find-Coverage-Data
 {
@@ -64,40 +65,37 @@ function Find-Coverage-Data
         }
         elseif ($Extension -eq ".profraw")
         {
-            $CoverageReports += $Item
+            $ScanResult.Reports += $Item
         }
         elseif ($Extension -eq ".exe")
         {
-            $Executables += $Item
-        }
-    }
-
-    if ($CoverageReports.Count -gt 0)
-    {
-        $ScanResult.Reports += $CoverageReports
-        if ($Executables.Count -eq 0)
-        {
-            echo "Unable to find any executables in directory `"$Directory`", which has reports!"
-            echo "Executable files are expected to be in the same directory as their profile data."
-            exit 6
-        }
-        else
-        {
-            $ScanResult.Executables += $Executables
+            $ScanResult.Executables += $Item
         }
     }
 
     $ScanResult
 }
 
-$ScanResult = Find-Coverage-Data $BinaryDir
+$ScanResult = Find-Coverage-Data $InputDirectory
 $Reports = $ScanResult.Reports
 $Executables = $ScanResult.Executables
+
+if ($Reports.Count -eq 0)
+{
+    echo "Unable to find any reports!"
+    exit 6
+}
 
 echo "Found raw profile data:"
 foreach ($File in $Reports)
 {
     echo " - $File"
+}
+
+if ($Executables.Count -eq 0)
+{
+    echo "Unable to find any executables!"
+    exit 7
 }
 
 echo "Found associated executables:"
@@ -107,7 +105,7 @@ foreach ($File in $Executables)
 }
 
 echo "Creating output directory."
-$OutputDirectory = Join-Path $BinaryDir $Configuration.OutputDirectory
+$OutputDirectory = Join-Path $BinaryDirectory $Configuration.OutputDirectory
 
 if (-Not(Test-Path $OutputDirectory))
 {

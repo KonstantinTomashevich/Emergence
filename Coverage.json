@@ -1,4 +1,5 @@
 {
+  "InputDirectory": "./Test/",
   "OutputDirectory": "./Coverage/Temporary/",
   "MergedProfileDataFilename": "Emergence.profdata",
   "FullSourceCoverageFileName": "SourceCoverage.txt",

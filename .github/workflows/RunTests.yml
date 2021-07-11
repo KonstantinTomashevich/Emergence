@@ -32,10 +32,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Install Ninja build system for Windows
-        if: matrix.os == 'windows-latest'
-        run: choco install ninja
-
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
@@ -48,27 +44,23 @@ jobs:
 
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
-        run: |
-          echo "CC=clang-cl" >> $Env:GITHUB_ENV
-          echo "CXX=clang-cl" >> $Env:GITHUB_ENV
+        run: echo "TOOLSET=clangcl" >> $Env:GITHUB_ENV
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
-        run: |
-          echo "CC=cl" >> $Env:GITHUB_ENV
-          echo "CXX=cl" >> $Env:GITHUB_ENV
+        run: echo "TOOLSET=v142" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake -G Ninja $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE -T $Env:TOOLSET
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake --build . --target EmergenceTests
+        run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}}
 
       - name: Test
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: ctest
+        run: ctest -C ${{matrix.build_type}}
 
       - name: Collect and check coverage data
         working-directory: ${{env.GITHUB_WORKSPACE}}
