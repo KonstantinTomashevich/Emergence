@@ -13,7 +13,9 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
         add_compile_options (
                 -Wall -Wextra -pedantic -Werror
                 # Anonymous structs are supported not only by GCC and therefore allowed.
-                -Wno-gnu-anonymous-struct)
+                -Wno-gnu-anonymous-struct
+                # Nested anonymous types are allowed, because they are useful with unions.
+                -Wno-nested-anon-types)
     endif ()
 endif ()
 
