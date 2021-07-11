@@ -55,8 +55,8 @@ jobs:
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
         run: |
-          echo "CC=cl >> $Env:GITHUB_ENV
-          echo "CXX=cl >> $Env:GITHUB_ENV
+          echo "CC=cl" >> $Env:GITHUB_ENV
+          echo "CXX=cl" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
