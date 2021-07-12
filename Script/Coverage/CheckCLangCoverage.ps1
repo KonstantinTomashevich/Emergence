@@ -44,7 +44,7 @@ foreach ($Rule in $Configuration.Rules)
     elseif ($Rule.Action -eq "CustomMinimumCoverage")
     {
         $CustomMinimumCoverage = $Rule.MinimumLinesCoveragePerFilePercent
-        $ReadableAction = "Lower coverage barrier to $CustomMinimumCoverage%"
+        $ReadableAction = "Change coverage barrier to $CustomMinimumCoverage%"
     }
     else
     {
