@@ -45,8 +45,6 @@ enum class FieldArchetype
     NESTED_OBJECT,
 };
 
-const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept;
-
 /// \brief Provides read access to information about field.
 ///
 /// \details Mapping of corresponding type should be used to get Field by FieldId.

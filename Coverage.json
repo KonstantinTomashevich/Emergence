@@ -5,7 +5,7 @@
   "FullSourceCoverageFileName": "SourceCoverage.txt",
   "TextualReportFileName": "Report.txt",
   "JsonReportFileName": "Report.json",
-  "MinimumLinesCoveragePerFilePercent": 70.0,
+  "MinimumLinesCoveragePerFilePercent": 75.0,
   "Excludes": [
     {
       "Prefix": "./ThirdParty/",
