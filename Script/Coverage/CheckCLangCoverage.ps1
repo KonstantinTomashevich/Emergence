@@ -23,7 +23,7 @@ if (-Not(Test-Path $ConfigurationFile -PathType Leaf))
 $Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
 $OutputDirectory = Join-Path $BinaryDir $Configuration.OutputDirectory
 $Report = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-$MinimumCoveragePercent = $Configuration.MinimumLinesCoveragePerFilePercent
+[double]$MinimumCoveragePercent = $Configuration.MinimumLinesCoveragePerFilePercent
 
 echo "Checking line coverage in report `"$Report`". Minimum approved coverage per file: $MinimumCoveragePercent%."
 if (-Not(Test-Path $Report -PathType Leaf))
@@ -32,17 +32,47 @@ if (-Not(Test-Path $Report -PathType Leaf))
     exit 2
 }
 
-echo "Excluded:"
-$Excludes = @()
+echo "Rules:"
+$Rules = @()
 
-foreach ($Exclude in $Configuration.Excludes)
+foreach ($Rule in $Configuration.Rules)
 {
-    $Resolved = Resolve-Path $Exclude.Prefix
-    $ExclusionReason = $Exclude.Reason
-    $Excludes += $Resolved
+    if ($Rule.Action -eq "Exclude")
+    {
+        $ReadableAction = "Do not check coverage"
+    }
+    elseif ($Rule.Action -eq "CustomMinimumCoverage")
+    {
+        $CustomMinimumCoverage = $Rule.MinimumLinesCoveragePerFilePercent
+        $ReadableAction = "Lower coverage barrier to $CustomMinimumCoverage%"
+    }
+    else
+    {
+        $Action = $Rule.Action
+        echo "Unknown rule action `"$Action`"!"
+        exit 3
+    }
 
-    echo " - $Resolved"
-    echo "   $ExclusionReason"
+    $Rule.Prefix = Resolve-Path $Rule.Prefix
+    $Prefix = $Rule.Prefix
+    $Reason = $Rule.Reason
+
+    echo " - $ReadableAction in `"$Prefix`""
+    echo "   $Reason"
+
+    foreach ($RegisterRule in $Rules)
+    {
+        [string]$FirstPrefix = $RegisterRule.Prefix
+        [string]$SecondPrefix = $Rule.Prefix
+
+        if ($FirstPrefix.StartsWith($SecondPrefix) -or $SecondPrefix.StartsWith($FirstPrefix))
+        {
+            echo "Found overlapping rules with prefixes `"$FirstPrefix`" and `"$SecondPrefix`"!"
+            exit 4
+        }
+    }
+
+    $Rules += $Rule
 }
 
 $CoverageSummary = Get-Content $Report | ConvertFrom-Json
@@ -55,12 +85,21 @@ for ($Index = 0; $Index -lt $Files.Count; ++$Index)
     $File = $Files[$Index]
     $FileName = $File.filename
     $Excluded = 0
+    [double]$MinimumCoverageForFile = $MinimumCoveragePercent
 
-    foreach ($Exclusion in $Excludes)
+    foreach ($Rule in $Rules)
     {
-        if ( $FileName.StartsWith($Exclusion))
+        if ($FileName.StartsWith($Rule.Prefix))
         {
-            $Excluded = 1
+            if ($Rule.Action -eq "Exclude")
+            {
+                $Excluded = 1
+            }
+            elseif ($Rule.Action -eq "CustomMinimumCoverage")
+            {
+                $MinimumCoverageForFile = $Rule.MinimumLinesCoveragePerFilePercent
+            }
+
             break
         }
     }
@@ -82,7 +121,7 @@ for ($Index = 0; $Index -lt $Files.Count; ++$Index)
         }
 
         echo "[$ReadableIndex/$FilesCount] $FileName ($LinesTotal executable lines$CoverageToProgress)"
-        if ($LinesTotal -gt 0 -and $LineCoverage -lt $MinimumCoveragePercent)
+        if ($LinesTotal -gt 0 -and $LineCoverage -lt $MinimumCoverageForFile)
         {
             $Errors += "File `"$FileName`" low coverage: $FormattedCoverage%."
         }
@@ -103,7 +142,7 @@ if ($Errors.Count -gt 0)
         echo " - $CoverageError"
     }
 
-    exit 3
+    exit 5
 }
 else
 {

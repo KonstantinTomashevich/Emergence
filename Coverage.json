@@ -6,10 +6,17 @@
   "TextualReportFileName": "Report.txt",
   "JsonReportFileName": "Report.json",
   "MinimumLinesCoveragePerFilePercent": 75.0,
-  "Excludes": [
+  "Rules": [
     {
       "Prefix": "./ThirdParty/",
+      "Action": "Exclude",
       "Reason": "There is no sense to scan third party libraries coverage."
+    },
+    {
+      "Prefix": "./Library/Pegasus/Private/Pegasus/RecordUtility.hpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 65.0,
+      "Reason": "It's impossible to fully cover templated comparator getter because of unreachable error processors."
     }
   ]
 }
