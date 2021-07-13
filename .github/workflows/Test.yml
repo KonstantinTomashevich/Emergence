@@ -77,7 +77,7 @@ jobs:
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: Test and coverage results (${{matrix.build_type}, ${{matrix.os}}, ${{matrix.toolchain}}})
+          name: Test and coverage results (${{matrix.build_type}}, ${{matrix.os}}, ${{matrix.toolchain}})
           path: |
             ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
             ${{env.BUILD_DIRECTORY}}/Testing/Temporary
