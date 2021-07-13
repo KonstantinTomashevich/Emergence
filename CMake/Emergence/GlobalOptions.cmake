@@ -10,7 +10,7 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
     if (MSVC)
         add_compile_options (
                 /W4 /WX
-                # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
+                # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
                 /wd4200
                 # Anonymous structs increase readability in some cases.
                 /wd4201
@@ -28,7 +28,7 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
                     -Wno-gnu-anonymous-struct
                     # Nested anonymous types are allowed, because they are useful with unions.
                     -Wno-nested-anon-types
-                    # Zero length arrays greatly increase readability classes and structs with dynamic sizes.
+                    # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
                     -Wno-zero-length-array)
         else ()
             # Exceptions in GCC format.

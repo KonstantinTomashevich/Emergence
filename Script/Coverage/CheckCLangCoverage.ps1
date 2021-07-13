@@ -23,7 +23,7 @@ if (-Not(Test-Path $ConfigurationFile -PathType Leaf))
 $Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
 $OutputDirectory = Join-Path $BinaryDir $Configuration.OutputDirectory
 $Report = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-[double]$MinimumCoveragePercent = $Configuration.MinimumLinesCoveragePerFilePercent
+[Double]$MinimumCoveragePercent = $Configuration.MinimumLinesCoveragePerFilePercent
 
 echo "Checking line coverage in report `"$Report`". Minimum approved coverage per file: $MinimumCoveragePercent%."
 if (-Not(Test-Path $Report -PathType Leaf))
@@ -62,8 +62,8 @@ foreach ($Rule in $Configuration.Rules)
 
     foreach ($RegisterRule in $Rules)
     {
-        [string]$FirstPrefix = $RegisterRule.Prefix
-        [string]$SecondPrefix = $Rule.Prefix
+        [String]$FirstPrefix = $RegisterRule.Prefix
+        [String]$SecondPrefix = $Rule.Prefix
 
         if ($FirstPrefix.StartsWith($SecondPrefix) -or $SecondPrefix.StartsWith($FirstPrefix))
         {
@@ -85,11 +85,11 @@ for ($Index = 0; $Index -lt $Files.Count; ++$Index)
     $File = $Files[$Index]
     $FileName = $File.filename
     $Excluded = 0
-    [double]$MinimumCoverageForFile = $MinimumCoveragePercent
+    [Double]$MinimumCoverageForFile = $MinimumCoveragePercent
 
     foreach ($Rule in $Rules)
     {
-        if ($FileName.StartsWith($Rule.Prefix))
+        if ( $FileName.StartsWith($Rule.Prefix))
         {
             if ($Rule.Action -eq "Exclude")
             {

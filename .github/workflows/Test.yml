@@ -1,4 +1,4 @@
-name: Run tests
+name: Test
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         build_type: [ Release, Debug ]
-        # Only windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
+        # Only Windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-latest ]
         toolchain: [ Clang, MSVC ]
@@ -63,9 +63,8 @@ jobs:
         run: ctest -C ${{matrix.build_type}}
 
       - name: Collect and check coverage data
-        working-directory: ${{env.GITHUB_WORKSPACE}}
         if: env.ENABLE_COVERAGE == 'yes'
-
+        working-directory: ${{env.GITHUB_WORKSPACE}}
         # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
         # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd
@@ -78,7 +77,7 @@ jobs:
         if: ${{ success() }} || ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: Test and coverage results (${{matrix.os}}, ${{matrix.toolchain}}, ${{matrix.build_type}})
+          name: Test and coverage results (${{matrix.build_type}, ${{matrix.os}}, ${{matrix.toolchain}}})
           path: |
             ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
             ${{env.BUILD_DIRECTORY}}/Testing/Temporary

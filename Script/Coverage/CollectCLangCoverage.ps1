@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 
-# TODO: Currently works only on Windows, because there is no
-#       way to check is file executable, except for the extension.
+# TODO: Currently works only on Windows, because only way in powershell
+#       to check that file is executable is to check its extension.
 
 if ($args.Count -ne 1)
 {
@@ -39,16 +39,11 @@ $Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
 $InputDirectory = Join-Path $BinaryDirectory $Configuration.InputDirectory
 echo "Scanning `"$InputDirectory`" for CLang coverage information."
 
-function Find-Coverage-Data
+function Find-Coverage-Data-Recursive([String]$Directory)
 {
-    param ([String]$Directory)
-
     $Children = Get-ChildItem $Directory
-    $CoverageReports = @()
-    $Executables = @()
-
-    $ScanResult = [pscustomobject]@{
-        Reports = @()
+    $ScanResult = [PSCustomObject]@{
+        RawProfileData= @()
         Executables = @()
     }
 
@@ -59,13 +54,13 @@ function Find-Coverage-Data
 
         if (Test-Path $Item -PathType Container)
         {
-            $ChildResult = Find-Coverage-Data $Item
-            $ScanResult.Reports += $ChildResult.Reports
+            $ChildResult = Find-Coverage-Data-Recursive $Item
+            $ScanResult.RawProfileData += $ChildResult.RawProfileData
             $ScanResult.Executables += $ChildResult.Executables
         }
         elseif ($Extension -eq ".profraw")
         {
-            $ScanResult.Reports += $Item
+            $ScanResult.RawProfileData += $Item
         }
         elseif ($Extension -eq ".exe")
         {
@@ -76,18 +71,18 @@ function Find-Coverage-Data
     $ScanResult
 }
 
-$ScanResult = Find-Coverage-Data $InputDirectory
-$Reports = $ScanResult.Reports
+$ScanResult = Find-Coverage-Data-Recursive $InputDirectory
+$RawProfileData = $ScanResult.RawProfileData
 $Executables = $ScanResult.Executables
 
-if ($Reports.Count -eq 0)
+if ($RawProfileData.Count -eq 0)
 {
-    echo "Unable to find any reports!"
+    echo "Unable to find any raw profile data!"
     exit 6
 }
 
 echo "Found raw profile data:"
-foreach ($File in $Reports)
+foreach ($File in $RawProfileData)
 {
     echo " - $File"
 }
@@ -114,7 +109,7 @@ if (-Not(Test-Path $OutputDirectory))
 
 echo "Merging found profile data."
 $MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
-llvm-profdata merge $Reports -o $MergedProfdata
+llvm-profdata merge $RawProfileData -o $MergedProfdata
 
 $ExecutablesAsArguments = ""
 foreach ($Executable in $ScanResult.Executables)

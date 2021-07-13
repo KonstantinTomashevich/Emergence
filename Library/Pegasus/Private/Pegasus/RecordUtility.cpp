@@ -28,7 +28,19 @@ int BitValueComparator::Compare (const void *_firstValue, const void *_secondVal
 {
     uint8_t first = *static_cast <const uint8_t *> (_firstValue) & mask;
     uint8_t second = *static_cast <const uint8_t *> (_secondValue) & mask;
-    return NumericValueComparator <uint8_t> {}.Compare (&first, &second);
+
+    if (first < second)
+    {
+        return -1;
+    }
+    else if (first > second)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int BlockValueComparator::Compare (const void *_firstValue, const void *_secondValue) const noexcept
