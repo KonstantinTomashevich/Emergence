@@ -1,4 +1,6 @@
-# Emergence [WIP]
+# Emergence [WIP]  
+
+[![Test](https://github.com/KonstantinTomashevich/Emergence/actions/workflows/Test.yml/badge.svg?branch=master&event=push)](https://github.com/KonstantinTomashevich/Emergence/actions/workflows/Test.yml)
 
 Emergence is a flexible set of libraries for gameplay development, 
 which modular architecture is inspired by
