@@ -56,7 +56,7 @@ jobs:
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}}
+        run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}} -j 2
 
       - name: Test
         working-directory: ${{env.BUILD_DIRECTORY}}
