@@ -274,7 +274,11 @@ void Scenario::ExecuteTask (const MoveAssignHandle &_task)
 
 BEGIN_SUITE (HandleManagement)
 
-TEST_CASE ()
+/// It's difficult to describe all handle manipulations with short names and there
+/// is not real sense to do it, because scenarios describe these manipulations better.
+/// Therefore we use line numbers to generate unique test case names.
+
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -282,7 +286,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -291,7 +295,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -302,7 +306,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -312,7 +316,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -322,7 +326,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -332,7 +336,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -342,7 +346,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -352,7 +356,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -363,7 +367,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -374,7 +378,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -385,7 +389,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -394,7 +398,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -403,7 +407,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -414,7 +418,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -425,7 +429,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -436,7 +440,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {
@@ -449,7 +453,7 @@ TEST_CASE ()
         });
 }
 
-TEST_CASE ()
+TEST_CASE (__LINE__)
 {
     Emergence::Handling::Test::Scenario (
         {

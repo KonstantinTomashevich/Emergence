@@ -11,36 +11,6 @@ FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept
     return objectField + nestedField + 1u;
 }
 
-const char *GetFieldArchetypeName (FieldArchetype _archetype) noexcept
-{
-    switch (_archetype)
-    {
-        case FieldArchetype::BIT:
-            return "BIT";
-
-        case FieldArchetype::INT:
-            return "INT";
-
-        case FieldArchetype::UINT:
-            return "UINT";
-
-        case FieldArchetype::FLOAT:
-            return "FLOAT";
-
-        case FieldArchetype::STRING:
-            return "STRING";
-
-        case FieldArchetype::BLOCK:
-            return "BLOCK";
-
-        case FieldArchetype::NESTED_OBJECT:
-            return "NESTED_OBJECT";
-    }
-
-    assert (false);
-    return "UNKNOWN";
-}
-
 Field::Field () noexcept
     : handle (nullptr)
 {

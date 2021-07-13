@@ -9,7 +9,7 @@ namespace Emergence::Pegasus
 {
 constexpr std::size_t GetMaxLeafCoordinateOnAxis (std::size_t _dimensions)
 {
-    return 1u << (Constants::VolumetricIndex::LEVELS[_dimensions - 1u] - 1u);
+    return std::size_t (1u) << (Constants::VolumetricIndex::LEVELS[_dimensions - 1u] - 1u);
 }
 
 template <typename Type>
@@ -808,8 +808,10 @@ VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <Dimensio
 {
     assert (!_dimensions.empty ());
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
+
     std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
-    leaves.resize (1u << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
+    leaves.resize (std::size_t (1u) << (
+        dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
 
 #ifndef NDEBUG
     // Current implementation expects that all fields have same archetype and size.
@@ -843,7 +845,7 @@ template <typename Operations>
 VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     const void *_record, const Operations &_operations) const noexcept
 {
-    LeafSector sector;
+    LeafSector sector {};
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];
@@ -866,7 +868,7 @@ template <typename Operations>
 VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
     const VolumetricIndex::AxisAlignedShape &_shape, const Operations &_operations) const noexcept
 {
-    LeafSector sector;
+    LeafSector sector {};
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];

@@ -140,11 +140,17 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
 
     for (const FieldData &field : *nestedPlainMapping.Get ())
     {
-        FieldId nestedFieldId;
+#ifndef NDEBUG
+        FieldId nestedFieldId = 0u;
+#endif
+
         switch (field.GetArchetype ())
         {
             case FieldArchetype::BIT:
-                nestedFieldId = state->AddField (
+#ifndef NDEBUG
+                nestedFieldId =
+#endif
+                state->AddField (
                     {_offset + field.GetOffset (), field.GetBitOffset ()});
                 break;
 
@@ -153,14 +159,20 @@ FieldId MappingBuilder::RegisterNestedObject (std::size_t _offset, const Mapping
             case FieldArchetype::FLOAT:
             case FieldArchetype::STRING:
             case FieldArchetype::BLOCK:
-                nestedFieldId = state->AddField (
+#ifndef NDEBUG
+                nestedFieldId =
+#endif
+                state->AddField (
                     {field.GetArchetype (), _offset + field.GetOffset (), field.GetSize ()});
                 break;
 
             case FieldArchetype::NESTED_OBJECT:
                 // We don't need to recursively add fields, because given nested mapping is finished,
                 // therefore all fields of internal objects are already projected into this mapping.
-                nestedFieldId = state->AddField (
+#ifndef NDEBUG
+                nestedFieldId =
+#endif
+                state->AddField (
                     {_offset + field.GetOffset (), field.GetNestedObjectMapping ().Get ()});
                 break;
         }

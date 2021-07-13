@@ -1,0 +1,83 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  run_tests:
+    strategy:
+      matrix:
+        build_type: [ Release, Debug ]
+        # Only Windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
+        # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
+        os: [ windows-latest ]
+        toolchain: [ Clang, MSVC ]
+
+    defaults:
+      run:
+        shell: pwsh
+
+    env:
+      BUILD_DIRECTORY: ${{github.workspace}}/Build
+
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Create build directory
+        run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
+
+      - name: Enable coverage check
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang' && matrix.build_type == 'Debug'
+        run: |
+          echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
+          echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
+          echo "LLVM_PROFILE_FILE=%m.profraw" >> $Env:GITHUB_ENV
+
+      - name: Select CLangCL toolset
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        run: echo "TOOLSET=clangcl" >> $Env:GITHUB_ENV
+
+      - name: Select MSVC toolset
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
+        run: echo "TOOLSET=v142" >> $Env:GITHUB_ENV
+
+      - name: Configure
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: cmake $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE -T $Env:TOOLSET
+
+      - name: Build
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: cmake --build . --target EmergenceTests --config ${{matrix.build_type}} -j 2
+
+      - name: Test
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: ctest -C ${{matrix.build_type}}
+
+      - name: Collect and check coverage data
+        if: env.ENABLE_COVERAGE == 'yes'
+        working-directory: ${{env.GITHUB_WORKSPACE}}
+        # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
+        # Visual Studio environment, which is currently possible only through standard command line.
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
+          powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
+
+      - name: Upload test and coverage results
+        if: ${{ success() }} || ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test and coverage results (${{matrix.build_type}}, ${{matrix.os}}, ${{matrix.toolchain}})
+          path: |
+            ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
+            ${{env.BUILD_DIRECTORY}}/Testing/Temporary

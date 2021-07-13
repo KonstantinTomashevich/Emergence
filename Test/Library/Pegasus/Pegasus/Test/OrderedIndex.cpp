@@ -2,9 +2,189 @@
 #include <Pegasus/Test/Scenario.hpp>
 #include <Pegasus/Test/Shortcuts.hpp>
 
+#include <StandardLayout/MappingBuilder.hpp>
+
 #include <Testing/Testing.hpp>
 
 using namespace Emergence::Pegasus::Test;
+
+/// Structure with all supported field types, used to check OrderedIndex comparators.
+struct AllFieldTypesStructure
+{
+    struct Reflection final
+    {
+        Reflection () = delete;
+
+        static Emergence::StandardLayout::Mapping GetMapping ();
+
+        static Emergence::StandardLayout::FieldId int8;
+        static Emergence::StandardLayout::FieldId int16;
+        static Emergence::StandardLayout::FieldId int32;
+        static Emergence::StandardLayout::FieldId int64;
+
+        static Emergence::StandardLayout::FieldId uint8;
+        static Emergence::StandardLayout::FieldId uint16;
+        static Emergence::StandardLayout::FieldId uint32;
+        static Emergence::StandardLayout::FieldId uint64;
+
+        static Emergence::StandardLayout::FieldId floating;
+        static Emergence::StandardLayout::FieldId doubleFloating;
+
+        static Emergence::StandardLayout::FieldId block;
+        static Emergence::StandardLayout::FieldId string;
+    };
+
+    int8_t int8 = 0;
+    int16_t int16 = 0;
+    int32_t int32 = 0;
+    int64_t int64 = 0;
+
+    uint8_t uint8 = 0u;
+    uint16_t uint16 = 0u;
+    uint32_t uint32 = 0u;
+    uint64_t uint64 = 0u;
+
+    float floating = 0.0f;
+    double doubleFloating = 0.0;
+
+    std::array <uint8_t, 4> block {};
+    std::array <char, 24> string {};
+};
+
+static Emergence::StandardLayout::Mapping RegisterAllFieldTypesStructure ()
+{
+    Emergence::StandardLayout::MappingBuilder builder;
+    builder.Begin (sizeof (AllFieldTypesStructure));
+
+    AllFieldTypesStructure::Reflection::int8 = builder.RegisterInt8 (offsetof (AllFieldTypesStructure, int8));
+    AllFieldTypesStructure::Reflection::int16 = builder.RegisterInt16 (offsetof (AllFieldTypesStructure, int16));
+    AllFieldTypesStructure::Reflection::int32 = builder.RegisterInt32 (offsetof (AllFieldTypesStructure, int32));
+    AllFieldTypesStructure::Reflection::int64 = builder.RegisterInt64 (offsetof (AllFieldTypesStructure, int64));
+
+    AllFieldTypesStructure::Reflection::uint8 = builder.RegisterUInt8 (offsetof (AllFieldTypesStructure, uint8));
+    AllFieldTypesStructure::Reflection::uint16 = builder.RegisterUInt16 (offsetof (AllFieldTypesStructure, uint16));
+    AllFieldTypesStructure::Reflection::uint32 = builder.RegisterUInt32 (offsetof (AllFieldTypesStructure, uint32));
+    AllFieldTypesStructure::Reflection::uint64 = builder.RegisterUInt64 (offsetof (AllFieldTypesStructure, uint64));
+
+    AllFieldTypesStructure::Reflection::floating = builder.RegisterFloat (offsetof (AllFieldTypesStructure, floating));
+    AllFieldTypesStructure::Reflection::doubleFloating =
+        builder.RegisterDouble (offsetof (AllFieldTypesStructure, doubleFloating));
+
+    AllFieldTypesStructure::Reflection::block = builder.RegisterBlock (
+        offsetof (AllFieldTypesStructure, block), sizeof (AllFieldTypesStructure::block));
+
+    AllFieldTypesStructure::Reflection::string = builder.RegisterString (
+        offsetof (AllFieldTypesStructure, string), sizeof (AllFieldTypesStructure::string));
+    return builder.End ();
+}
+
+Emergence::StandardLayout::Mapping AllFieldTypesStructure::Reflection::GetMapping ()
+{
+    static Emergence::StandardLayout::Mapping mapping = RegisterAllFieldTypesStructure ();
+    return mapping;
+}
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::int8;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::int16;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::int32;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::int64;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::uint8;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::uint16;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::uint32;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::uint64;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::floating;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::doubleFloating;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::block;
+
+Emergence::StandardLayout::FieldId AllFieldTypesStructure::Reflection::string;
+
+static const AllFieldTypesStructure firstRecordWithAllFieldTypes
+    {
+        -3,
+        258,
+        -53400,
+        6,
+
+        1u,
+        13u,
+        79u,
+        1111u,
+
+        89.0f,
+        12.3458,
+
+        {13u, 12u, 15u, 21u},
+        {"hugo"},
+    };
+
+static const AllFieldTypesStructure secondRecordWithAllFieldTypes
+    {
+        1,
+        -233,
+        170,
+        182634,
+
+        13u,
+        1563u,
+        173656u,
+        1234u,
+
+        111.0f,
+        6.2356,
+
+        {67u, 12u, 15u, 21u},
+        {"karl"},
+    };
+
+static const AllFieldTypesStructure thirdRecordWithAllFieldTypes
+    {
+        0,
+        2,
+        -5,
+        63674896,
+
+        4u,
+        37u,
+        12341u,
+        17939471u,
+
+        45.0f,
+        17.3458,
+
+        {13u, 15u, 15u, 21u},
+        {"xavier"},
+    };
+
+Scenario ExecuteOrderingTest (
+    Emergence::StandardLayout::FieldId _field,
+    const std::vector <const void *> &_expectedOrder)
+{
+    return
+        {
+            AllFieldTypesStructure::Reflection::GetMapping (),
+            {
+                CreateOrderedIndex {"ordering", _field},
+                OpenAllocator {},
+                AllocateAndInit {&firstRecordWithAllFieldTypes},
+                AllocateAndInit {&secondRecordWithAllFieldTypes},
+                AllocateAndInit {&thirdRecordWithAllFieldTypes},
+                CloseAllocator {},
+
+                OrderedIndexLookupToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                CursorCheckAllOrdered {"all", _expectedOrder},
+            }
+        };
+}
 
 struct EntityIdBound
 {
@@ -420,6 +600,90 @@ TEST_CASE (MultipleIndicesEditionAndDeletion)
             CursorCheckAllOrdered {"all", {&entity0Hugo, &entity2Xavier, &entity2Xavier}},
         }
     };
+}
+
+TEST_CASE (OrderingInt8)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::int8,
+        {&firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingInt16)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::int16,
+        {&secondRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &firstRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingInt32)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::int32,
+        {&firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingInt64)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::int64,
+        {&firstRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingUInt8)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::uint8,
+        {&firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingUInt16)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::uint16,
+        {&firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingUInt32)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::uint32,
+        {&firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingUInt64)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::uint64,
+        {&firstRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingFloat)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::floating,
+        {&thirdRecordWithAllFieldTypes, &firstRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingDouble)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::doubleFloating,
+        {&secondRecordWithAllFieldTypes, &firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingBlock)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::block,
+        {&firstRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes});
+}
+
+TEST_CASE (OrderingString)
+{
+    ExecuteOrderingTest (
+        AllFieldTypesStructure::Reflection::string,
+        {&firstRecordWithAllFieldTypes, &secondRecordWithAllFieldTypes, &thirdRecordWithAllFieldTypes});
 }
 
 END_SUITE

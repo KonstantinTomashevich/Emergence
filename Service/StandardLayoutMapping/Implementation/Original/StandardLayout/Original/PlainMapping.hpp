@@ -66,6 +66,9 @@ private:
     /// PlainMappingBuilder constructs FieldData's.
     friend class PlainMappingBuilder;
 
+    // Empty constructor, required for arrays.
+    FieldData () noexcept;
+
     explicit FieldData (StandardSeed _seed) noexcept;
 
     explicit FieldData (BitSeed _seed) noexcept;

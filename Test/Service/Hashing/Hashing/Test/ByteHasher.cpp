@@ -216,7 +216,7 @@ TEST_CASE (DifferentSequencesThroughOneHasher)
 
 TEST_CASE (VeryCloseBigRandomSequences)
 {
-    srand (time (nullptr));
+    srand (static_cast <unsigned int> (time (nullptr)));
     std::array <uint8_t, 512u> sequence;
 
     for (uint8_t &byte : sequence)

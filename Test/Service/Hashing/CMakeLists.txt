@@ -20,3 +20,6 @@ sober_test_begin (Hashing)
     sober_test_variant_begin (XXHash)
     sober_test_variant_end ()
 sober_test_end ()
+
+sober_naming_test_collection (Hashing COLLECTION_NAME)
+add_dependencies (ServiceTests "${COLLECTION_NAME}")

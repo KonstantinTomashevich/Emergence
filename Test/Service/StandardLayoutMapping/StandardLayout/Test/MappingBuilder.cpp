@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include <StandardLayout/MappingBuilder.hpp>
 
@@ -669,6 +670,36 @@ TEST_CASE (FieldManipulations)
     CHECK (!emptyField.IsSame (secondField));
     emptyField = secondField;
     CHECK (emptyField.IsSame (secondField));
+}
+
+TEST_CASE (FieldsIteration)
+{
+    Emergence::StandardLayout::Mapping mapping = Grow (twoIntsCorrectOrder);
+    auto iterator = mapping.Begin ();
+
+    Emergence::StandardLayout::Field firstField = *iterator++;
+    Emergence::StandardLayout::Field secondField = *iterator++;
+
+    CHECK (iterator == mapping.End ());
+    CHECK (firstField.IsHandleValid ());
+    CHECK (secondField.IsHandleValid ());
+    CHECK (!firstField.IsSame (secondField));
+
+    CHECK (secondField.IsSame (*--iterator));
+    CHECK (firstField.IsSame (*--iterator));
+
+    auto iteratorCopyAtBegin = iterator++;
+    CHECK (iteratorCopyAtBegin != iterator);
+    CHECK (firstField.IsSame (*iteratorCopyAtBegin));
+    CHECK (secondField.IsSame (*iterator));
+
+    auto iteratorCopyAtSecond = iterator--;
+    CHECK (iterator == iteratorCopyAtBegin);
+    CHECK (iterator != iteratorCopyAtSecond);
+
+    CHECK (firstField.IsSame (*iteratorCopyAtBegin));
+    CHECK (firstField.IsSame (*iterator));
+    CHECK (secondField.IsSame (*iteratorCopyAtSecond));
 }
 
 END_SUITE
