@@ -16,30 +16,30 @@ namespace Emergence::RecordCollection
 class VolumetricRepresentation final
 {
 public:
-    /// \brief Allows user to read records, that match criteria, specified in
-    ///        VolumetricRepresentation::ReadShapeIntersections or VolumetricRepresentation::ReadRayIntersections.
-    /// \details All ReadCursor operations are thread safe.
-    class ReadCursor final
+    /// \brief Allows user to read records, that match criteria, specified
+    ///        in VolumetricRepresentation::ReadShapeIntersections.
+    /// \details All ShapeIntersectionReadCursor operations are thread safe.
+    class ShapeIntersectionReadCursor final
     {
     public:
-        ReadCursor (const ReadCursor &_other) noexcept;
+        ShapeIntersectionReadCursor (const ShapeIntersectionReadCursor &_other) noexcept;
 
-        ReadCursor (ReadCursor &&_other) noexcept;
+        ShapeIntersectionReadCursor (ShapeIntersectionReadCursor &&_other) noexcept;
 
-        ~ReadCursor () noexcept;
+        ~ShapeIntersectionReadCursor () noexcept;
 
         /// \return Pointer to current record or nullptr if there is no more records.
         const void *operator * () const noexcept;
 
         /// \brief Moves cursor to next record.
         /// \invariant Cursor should not point to ending.
-        ReadCursor &operator ++ () noexcept;
+        ShapeIntersectionReadCursor &operator ++ () noexcept;
 
         /// Assigning cursors looks counter intuitive.
-        ReadCursor &operator = (const ReadCursor &_other) = delete;
+        ShapeIntersectionReadCursor &operator = (const ShapeIntersectionReadCursor &_other) = delete;
 
         /// Assigning cursors looks counter intuitive.
-        ReadCursor &operator = (ReadCursor &&_other) = delete;
+        ShapeIntersectionReadCursor &operator = (ShapeIntersectionReadCursor &&_other) = delete;
 
     private:
         /// VolumetricRepresentation constructs its cursors.
@@ -47,24 +47,24 @@ public:
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
-        explicit ReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
-    /// \brief Allows user to read, modify and delete records, that match criteria, specified in
-    ///        VolumetricRepresentation::EditShapeIntersections or VolumetricRepresentation::EditRayIntersections.
-    class EditCursor final
+    /// \brief Allows user to read, modify and delete records, that match criteria,
+    ///        specified in VolumetricRepresentation::EditShapeIntersections.
+    class ShapeIntersectionEditCursor final
     {
     public:
         /// Edit cursors can not be copied, because not more than one edit
         /// cursor can exist inside one Collection at any moment of time.
-        EditCursor (const EditCursor &_other) = delete;
+        ShapeIntersectionEditCursor (const ShapeIntersectionEditCursor &_other) = delete;
 
-        EditCursor (EditCursor &&_other) noexcept;
+        ShapeIntersectionEditCursor (ShapeIntersectionEditCursor &&_other) noexcept;
 
-        ~EditCursor () noexcept;
+        ~ShapeIntersectionEditCursor () noexcept;
 
         /// \return Pointer to current record or nullptr if there is no more records.
         void *operator * () noexcept;
@@ -75,17 +75,17 @@ public:
         ///
         /// \warning Record type is unknown during compile time, therefore appropriate
         ///          destructor should be called before record deletion.
-        EditCursor &operator ~ () noexcept;
+        ShapeIntersectionEditCursor &operator ~ () noexcept;
 
         /// \brief Checks current record for key values changes. Then moves cursor to next record.
         /// \invariant Cursor should not point to ending.
-        EditCursor &operator ++ () noexcept;
+        ShapeIntersectionEditCursor &operator ++ () noexcept;
 
         /// Assigning cursors looks counter intuitive.
-        EditCursor &operator = (const EditCursor &_other) = delete;
+        ShapeIntersectionEditCursor &operator = (const ShapeIntersectionEditCursor &_other) = delete;
 
         /// Assigning cursors looks counter intuitive.
-        EditCursor &operator = (EditCursor &&_other) = delete;
+        ShapeIntersectionEditCursor &operator = (ShapeIntersectionEditCursor &&_other) = delete;
 
     private:
         /// VolumetricRepresentation constructs its cursors.
@@ -93,7 +93,90 @@ public:
 
         static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
-        explicit EditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionEditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+
+        /// \brief Iterator implementation-specific data.
+        std::array <uint8_t, DATA_MAX_SIZE> data;
+    };
+
+    /// \brief Allows user to read records, that match criteria, specified
+    ///        in VolumetricRepresentation::ReadRayIntersections.
+    /// \details All RayIntersectionReadCursor operations are thread safe.
+    class RayIntersectionReadCursor final
+    {
+    public:
+        RayIntersectionReadCursor (const RayIntersectionReadCursor &_other) noexcept;
+
+        RayIntersectionReadCursor (RayIntersectionReadCursor &&_other) noexcept;
+
+        ~RayIntersectionReadCursor () noexcept;
+
+        /// \return Pointer to current record or nullptr if there is no more records.
+        const void *operator * () const noexcept;
+
+        /// \brief Moves cursor to next record.
+        /// \invariant Cursor should not point to ending.
+        RayIntersectionReadCursor &operator ++ () noexcept;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionReadCursor &operator = (const RayIntersectionReadCursor &_other) = delete;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionReadCursor &operator = (RayIntersectionReadCursor &&_other) = delete;
+
+    private:
+        /// VolumetricRepresentation constructs its cursors.
+        friend class VolumetricRepresentation;
+
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+
+        explicit RayIntersectionReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+
+        /// \brief Iterator implementation-specific data.
+        std::array <uint8_t, DATA_MAX_SIZE> data;
+    };
+
+    /// \brief Allows user to read, modify and delete records, that match criteria,
+    ///        specified in VolumetricRepresentation::EditRayIntersections.
+    class RayIntersectionEditCursor final
+    {
+    public:
+        /// Edit cursors can not be copied, because not more than one edit
+        /// cursor can exist inside one Collection at any moment of time.
+        RayIntersectionEditCursor (const RayIntersectionEditCursor &_other) = delete;
+
+        RayIntersectionEditCursor (RayIntersectionEditCursor &&_other) noexcept;
+
+        ~RayIntersectionEditCursor () noexcept;
+
+        /// \return Pointer to current record or nullptr if there is no more records.
+        void *operator * () noexcept;
+
+        /// \brief Deletes current record from collection and moves to next record.
+        ///
+        /// \invariant Cursor should not point to ending.
+        ///
+        /// \warning Record type is unknown during compile time, therefore appropriate
+        ///          destructor should be called before record deletion.
+        RayIntersectionEditCursor &operator ~ () noexcept;
+
+        /// \brief Checks current record for key values changes. Then moves cursor to next record.
+        /// \invariant Cursor should not point to ending.
+        RayIntersectionEditCursor &operator ++ () noexcept;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionEditCursor &operator = (const RayIntersectionEditCursor &_other) = delete;
+
+        /// Assigning cursors looks counter intuitive.
+        RayIntersectionEditCursor &operator = (RayIntersectionEditCursor &&_other) = delete;
+
+    private:
+        /// VolumetricRepresentation constructs its cursors.
+        friend class VolumetricRepresentation;
+
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+
+        explicit RayIntersectionEditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -186,9 +269,11 @@ public:
     /// \invariant Should not be `nullptr`.
     using Ray = const uint8_t *;
 
-    VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept;
+    /// There is no sense to copy representations, because they are part of Collection.
+    VolumetricRepresentation (const VolumetricRepresentation &_other) = delete;
 
-    VolumetricRepresentation (VolumetricRepresentation &&_other) noexcept;
+    /// Moving representations is forbidden, because otherwise user can move representation out of Collection.
+    VolumetricRepresentation (VolumetricRepresentation &&_other) = delete;
 
     ~VolumetricRepresentation () noexcept;
 
@@ -197,7 +282,7 @@ public:
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
     /// \invariant There is no active allocation transactions and edit cursors in Collection.
-    ReadCursor ReadShapeIntersections (Shape _shape) noexcept;
+    ShapeIntersectionReadCursor ReadShapeIntersections (Shape _shape) noexcept;
 
     /// \brief Finds records, which shape representations intersect
     ///        with given shape, and allows user to edit and delete them.
@@ -205,7 +290,7 @@ public:
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
     /// \invariant There is no active allocation transactions and read or edit cursors in Collection.
-    EditCursor EditShapeIntersections (Shape _shape) noexcept;
+    ShapeIntersectionEditCursor EditShapeIntersections (Shape _shape) noexcept;
 
     /// \brief Finds records, which shape representations intersect
     ///        with [0.0, _rayLength] part of given ray, and allows user to read them.
@@ -213,7 +298,7 @@ public:
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
     /// \invariant There is no active allocation transactions and edit cursors in Collection.
-    ReadCursor ReadRayIntersections (Ray _ray, float _rayLength) noexcept;
+    RayIntersectionReadCursor ReadRayIntersections (Ray _ray, float _rayLength) noexcept;
 
     /// \brief Finds records, which shape representations intersect
     ///        with [0.0, _rayLength] part of given ray, and allows user to edit and delete them.
@@ -221,7 +306,7 @@ public:
     /// \details Complexity -- amortized O(F(D)*lgN), where D is count of dimensions, F is
     ///          implementation specific function and N is count of records in Collection.
     /// \invariant There is no active allocation transactions and edit cursors in Collection.
-    EditCursor EditRayIntersections (Ray _ray, float _rayLength) noexcept;
+    RayIntersectionEditCursor EditRayIntersections (Ray _ray, float _rayLength) noexcept;
 
     /// \return Iterator, that points to beginning of dimensions sequence.
     DimensionIterator DimensionBegin () const noexcept;
@@ -237,9 +322,11 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) noexcept;
+    /// There is no sense to copy assign representations, because they are part of Collection.
+    VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) = delete;
 
-    VolumetricRepresentation &operator = (VolumetricRepresentation &&_other) noexcept;
+    /// Move assigning representations is forbidden, because otherwise user can move representation out of Collection.
+    VolumetricRepresentation &operator = (VolumetricRepresentation &&_other) = delete;
 
 private:
     /// Collection constructs representations.

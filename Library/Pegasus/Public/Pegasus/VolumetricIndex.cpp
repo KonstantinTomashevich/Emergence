@@ -15,6 +15,8 @@ constexpr std::size_t GetMaxLeafCoordinateOnAxis (std::size_t _dimensions)
 template <typename Type>
 struct TypeOperations final
 {
+    using ValueType = Type;
+
     int Compare (const VolumetricIndex::SupportedAxisValue &_left,
                  const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
@@ -211,7 +213,8 @@ VolumetricIndex::ShapeIntersectionCursorBase::~ShapeIntersectionCursorBase () no
 }
 
 VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
-    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector, const AxisAlignedShape &_shape) noexcept
+    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
+    const AxisAlignedShapeContainer &_shape) noexcept
     : index (_index),
       sector (_sector),
       shape (_shape),
@@ -284,11 +287,13 @@ bool VolumetricIndex::ShapeIntersectionCursorBase::CheckIntersection (
     const void *_record, const Operations &_operations) const noexcept
 {
     assert (index);
+    const auto *lookupShape = reinterpret_cast <const AxisAlignedShape <typename Operations::ValueType> *> (&shape);
+
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = index->dimensions[dimensionIndex];
-        if (_operations.Compare (&shape.max[dimensionIndex], dimension.minBorderField.GetValue (_record)) < 0 ||
-            _operations.Compare (&shape.min[dimensionIndex], dimension.maxBorderField.GetValue (_record)) > 0)
+        if (_operations.Compare (&lookupShape->Max (dimensionIndex), dimension.minBorderField.GetValue (_record)) < 0 ||
+            _operations.Compare (&lookupShape->Min (dimensionIndex), dimension.maxBorderField.GetValue (_record)) > 0)
         {
             return false;
         }
@@ -332,7 +337,7 @@ VolumetricIndex::ShapeIntersectionReadCursor &VolumetricIndex::ShapeIntersection
 
 VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
     VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
-    const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+    const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
     : ShapeIntersectionCursorBase (_index, _sector, _shape)
 {
     assert (GetIndex ());
@@ -388,7 +393,7 @@ VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersection
 
 VolumetricIndex::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
     VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
-    const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+    const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
     : ShapeIntersectionCursorBase (_index, _sector, _shape)
 {
     assert (GetIndex ());
@@ -442,7 +447,7 @@ VolumetricIndex::RayIntersectionCursorBase::~RayIntersectionCursorBase () noexce
 }
 
 VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
-    VolumetricIndex *_index, const VolumetricIndex::Ray &_ray) noexcept
+    VolumetricIndex *_index, const VolumetricIndex::RayContainer &_ray) noexcept
     : index (_index),
       ray (_ray),
       currentRecordIndex (0u),
@@ -455,17 +460,22 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
         index->dimensions[0u].minBorderField,
         [this] (const auto &_operations)
         {
+            using Operations = std::decay_t <decltype (_operations)>;
+            using ValueType = typename Operations::ValueType;
+
             // TODO: For simplicity, we copy data from dimensions into suitable data structure. Maybe optimize this out?
-            AxisAlignedShape bordersShape;
+            AxisAlignedShape <ValueType> bordersShape;
+            const auto *lookupRay = reinterpret_cast <const Ray <ValueType> *> (&ray);
 
             for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
             {
                 const Dimension &dimension = index->dimensions[dimensionIndex];
-                bordersShape.min[dimensionIndex] = dimension.globalMinBorder;
-                bordersShape.max[dimensionIndex] = dimension.globalMaxBorder;
+                bordersShape.Min (dimensionIndex) = *reinterpret_cast <const ValueType *> (&dimension.globalMinBorder);
+                bordersShape.Max (dimensionIndex) = *reinterpret_cast <const ValueType *> (&dimension.globalMaxBorder);
             }
 
-            if (index->CheckRayShapeIntersection (ray, bordersShape, currentPoint, _operations))
+            if (index->CheckRayShapeIntersection (
+                ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&bordersShape), currentPoint, _operations))
             {
                 for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
                 {
@@ -479,7 +489,8 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
                         _operations.ToFloat (leafSize);
 
                     direction[dimensionIndex] =
-                        _operations.ToFloat (ray.direction[dimensionIndex]) / _operations.ToFloat (leafSize);
+                        static_cast <float> (lookupRay->Direction (dimensionIndex)) /
+                        _operations.ToFloat (leafSize);
                 }
 
 #ifndef NDEBUG
@@ -608,20 +619,21 @@ bool VolumetricIndex::RayIntersectionCursorBase::CheckIntersection (
 {
     assert (index);
     // TODO: For simplicity, we copy data from record into suitable data structure. Maybe optimize this out?
-    AxisAlignedShape recordShape;
+    AxisAlignedShape <typename Operations::ValueType> recordShape;
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = index->dimensions[dimensionIndex];
-        recordShape.min[dimensionIndex] =
-            *reinterpret_cast <const SupportedAxisValue *> (dimension.minBorderField.GetValue (_record));
+        recordShape.Min (dimensionIndex) =
+            *reinterpret_cast <const typename Operations::ValueType *> (dimension.minBorderField.GetValue (_record));
 
-        recordShape.max[dimensionIndex] =
-            *reinterpret_cast <const SupportedAxisValue *> (dimension.maxBorderField.GetValue (_record));
+        recordShape.Max (dimensionIndex) =
+            *reinterpret_cast <const typename Operations::ValueType *> (dimension.maxBorderField.GetValue (_record));
     }
 
     std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> intersectionPoint;
-    return index->CheckRayShapeIntersection (ray, recordShape, intersectionPoint, _operations);
+    return index->CheckRayShapeIntersection (
+        ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&recordShape), intersectionPoint, _operations);
 }
 
 VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
@@ -658,7 +670,7 @@ VolumetricIndex::RayIntersectionReadCursor &VolumetricIndex::RayIntersectionRead
 }
 
 VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
-    VolumetricIndex *_index, const Ray &_ray) noexcept
+    VolumetricIndex *_index, const RayContainer &_ray) noexcept
     : RayIntersectionCursorBase (_index, _ray)
 {
     assert (GetIndex ());
@@ -713,7 +725,7 @@ VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEdit
 }
 
 VolumetricIndex::RayIntersectionEditCursor::RayIntersectionEditCursor (
-    VolumetricIndex *_index, const Ray &_ray) noexcept
+    VolumetricIndex *_index, const RayContainer &_ray) noexcept
     : RayIntersectionCursorBase (_index, _ray)
 {
     assert (GetIndex ());
@@ -737,7 +749,7 @@ VolumetricIndex::GetDimensions () const noexcept
 }
 
 VolumetricIndex::ShapeIntersectionReadCursor VolumetricIndex::LookupShapeIntersectionToRead (
-    const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+    const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
 {
     return DoWithCorrectTypeOperations (
         dimensions[0u].minBorderField,
@@ -748,7 +760,7 @@ VolumetricIndex::ShapeIntersectionReadCursor VolumetricIndex::LookupShapeInterse
 }
 
 VolumetricIndex::ShapeIntersectionEditCursor VolumetricIndex::LookupShapeIntersectionToEdit (
-    const VolumetricIndex::AxisAlignedShape &_shape) noexcept
+    const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
 {
     return DoWithCorrectTypeOperations (
         dimensions[0u].minBorderField,
@@ -759,13 +771,13 @@ VolumetricIndex::ShapeIntersectionEditCursor VolumetricIndex::LookupShapeInterse
 }
 
 VolumetricIndex::RayIntersectionReadCursor VolumetricIndex::LookupRayIntersectionToRead (
-    const VolumetricIndex::Ray &_ray) noexcept
+    const VolumetricIndex::RayContainer &_ray) noexcept
 {
     return RayIntersectionReadCursor (this, _ray);
 }
 
 VolumetricIndex::RayIntersectionEditCursor VolumetricIndex::LookupRayIntersectionToEdit (
-    const VolumetricIndex::Ray &_ray) noexcept
+    const VolumetricIndex::RayContainer &_ray) noexcept
 {
     return RayIntersectionEditCursor (this, _ray);
 }
@@ -866,16 +878,18 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
 
 template <typename Operations>
 VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
-    const VolumetricIndex::AxisAlignedShape &_shape, const Operations &_operations) const noexcept
+    const VolumetricIndex::AxisAlignedShapeContainer &_shape, const Operations &_operations) const noexcept
 {
+    const auto *lookupShape = reinterpret_cast <const AxisAlignedShape <typename Operations::ValueType> *> (&_shape);
     LeafSector sector {};
+
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];
-        const SupportedAxisValue &min = _shape.min[dimensionIndex];
-        const SupportedAxisValue &max = _shape.max[dimensionIndex];
+        const auto &min = lookupShape->Min (dimensionIndex);
+        const auto &max = lookupShape->Max (dimensionIndex);
 
-        assert (_operations.Compare (min, max) <= 0);
+        assert (min <= max);
         const SupportedAxisValue leafSize = CalculateLeafSize (dimension, _operations);
         sector.min[dimensionIndex] = CalculateCoordinate (min, dimension, leafSize, _operations);
         sector.max[dimensionIndex] = CalculateCoordinate (max, dimension, leafSize, _operations);
@@ -907,23 +921,26 @@ std::size_t VolumetricIndex::CalculateCoordinate (
 
 template <typename Operations>
 bool VolumetricIndex::CheckRayShapeIntersection (
-    const VolumetricIndex::Ray &_ray, const VolumetricIndex::AxisAlignedShape &_shape,
+    const VolumetricIndex::RayContainer &_ray, const VolumetricIndex::AxisAlignedShapeContainer &_shape,
     std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
     const Operations &_operations) const noexcept
 {
+    const auto *lookupRay = reinterpret_cast <const Ray <typename Operations::ValueType> *> (&_ray);
+    const auto *lookupShape = reinterpret_cast <const AxisAlignedShape <typename Operations::ValueType> *> (&_shape);
     bool inside = true;
+
     // point = ray.origin + ray.direction * T
     float maxT = 0.0f;
     std::size_t maxTDimension = std::numeric_limits <std::size_t>::max ();
 
     const auto calculateT =
-        [&_ray, &_operations] (std::size_t _dimensionIndex, const SupportedAxisValue &_cornerValue)
+        [&_operations, lookupRay] (std::size_t _dimensionIndex, const SupportedAxisValue &_cornerValue)
         {
-            float direction = _operations.ToFloat (_ray.direction[_dimensionIndex]);
+            const float direction = static_cast <float> (lookupRay->Direction (_dimensionIndex));
             if (fabs (direction) > Constants::VolumetricIndex::EPSILON)
             {
                 float distance = _operations.ToFloat (
-                    _operations.Subtract (_cornerValue, _ray.origin[_dimensionIndex]));
+                    _operations.Subtract (_cornerValue, lookupRay->Origin (_dimensionIndex)));
                 return distance / direction;
             }
             else
@@ -935,15 +952,15 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         float t = 0.0f;
-        if (_operations.Compare (_ray.origin[dimensionIndex], _shape.min[dimensionIndex]) < 0)
+        if (_operations.Compare (lookupRay->Origin (dimensionIndex), lookupShape->Min (dimensionIndex)) < 0)
         {
             inside = false;
-            t = calculateT (dimensionIndex, _shape.min[dimensionIndex]);
+            t = calculateT (dimensionIndex, lookupShape->Min (dimensionIndex));
         }
-        else if (_operations.Compare (_ray.origin[dimensionIndex], _shape.max[dimensionIndex]) > 0)
+        else if (_operations.Compare (lookupRay->Origin (dimensionIndex), lookupShape->Max (dimensionIndex)) > 0)
         {
             inside = false;
-            t = calculateT (dimensionIndex, _shape.max[dimensionIndex]);
+            t = calculateT (dimensionIndex, lookupShape->Max (dimensionIndex));
         }
 
         if (t > maxT)
@@ -957,7 +974,7 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     {
         for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
         {
-            _intersectionPointOutput[dimensionIndex] = _operations.ToFloat (_ray.origin[dimensionIndex]);
+            _intersectionPointOutput[dimensionIndex] = static_cast <float> (lookupRay->Origin (dimensionIndex));
         }
 
         return true;
@@ -967,13 +984,13 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         _intersectionPointOutput[dimensionIndex] =
-            _operations.ToFloat (_ray.origin[dimensionIndex]) +
-            _operations.ToFloat (_ray.direction[dimensionIndex]) * maxT;
+            static_cast <float> (lookupRay->Origin (dimensionIndex)) +
+            static_cast <float> (lookupRay->Direction (dimensionIndex)) * maxT;
 
         if (dimensionIndex != maxTDimension)
         {
-            if (_intersectionPointOutput[dimensionIndex] < _operations.ToFloat (_shape.min[dimensionIndex]) ||
-                _intersectionPointOutput[dimensionIndex] > _operations.ToFloat (_shape.max[dimensionIndex]))
+            if (_intersectionPointOutput[dimensionIndex] < static_cast <float> (lookupShape->Min (dimensionIndex)) ||
+                _intersectionPointOutput[dimensionIndex] > static_cast <float> (lookupShape->Max (dimensionIndex)))
             {
                 return false;
             }

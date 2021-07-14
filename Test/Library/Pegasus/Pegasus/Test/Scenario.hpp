@@ -23,11 +23,11 @@ struct CreateOrderedIndex
 
 struct DimensionDescriptor
 {
-    StandardLayout::FieldId minBorderField;
     const void *globalMinBorderValue;
+    StandardLayout::FieldId minBorderField;
 
-    StandardLayout::FieldId maxBorderField;
     const void *globalMaxBorderValue;
+    StandardLayout::FieldId maxBorderField;
 };
 
 struct CreateVolumetricIndex
@@ -114,6 +114,8 @@ struct OrderedIndexLookupToEditReversed : public OrderedIndexLookupBase
 
 struct VolumetricIndexShapeIntersectionLookupBase : public IndexLookupBase
 {
+    // TODO: Should this be reworked into Pegasus/RecordCollection-like format?
+    //       I think it shouldn't, because it'll transferred into query common tests.
     std::vector <const void *> min;
     std::vector <const void *> max;
 };
@@ -130,6 +132,8 @@ struct VolumetricIndexShapeIntersectionLookupToEdit :
 
 struct VolumetricIndexRayIntersectionLookupBase : public IndexLookupBase
 {
+    // TODO: Should this be reworked into Pegasus/RecordCollection-like format?
+    //       I think it shouldn't, because it'll transferred into query common tests.
     std::vector <const void *> origin;
     std::vector <const void *> direction;
 };

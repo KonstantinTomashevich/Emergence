@@ -172,6 +172,12 @@ public:
 
     void Drop () noexcept;
 
+    /// There is no sense to copy assign indices.
+    OrderedIndex &operator = (const OrderedIndex &_other) = delete;
+
+    /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
+    OrderedIndex &operator = (OrderedIndex &&_other) = delete;
+
 private:
     friend class Storage;
 

@@ -19,10 +19,6 @@
 
 namespace Emergence::Pegasus
 {
-// TODO: There is no class-to-class for some Pegasus and RecordCollection classes. Also, there could be some other
-//       minor differences between Pegasus library and RecordCollection service. Review them during adapters
-//       implementation and fix them either in RecordCollection service or in Pegasus adapter implementation.
-
 // TODO: Now all indices assume that OnRecordChanged and OnRecordDeleted can not be called for the same
 //       record and that OnRecordChanged can not be called twice for one record during one edition cycle.
 
@@ -175,6 +171,10 @@ public:
     VolumetricIndexIterator BeginVolumetricIndices () const noexcept;
 
     VolumetricIndexIterator EndVolumetricIndices () const noexcept;
+
+    Storage &operator = (const Storage &_other) = delete;
+
+    Storage &operator = (Storage &&_other) noexcept;
 
 private:
     friend class HashIndex;

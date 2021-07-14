@@ -48,22 +48,22 @@ static std::vector <DimensionDescriptor> GetDimensions2D ()
     return
         {
             {
+                &minX,
                 Emergence::StandardLayout::ProjectNestedField (
                     Record::Reflection::boundingBox, BoundingBox::Reflection::minX),
-                &minX,
 
+                &maxX,
                 Emergence::StandardLayout::ProjectNestedField (
                     Record::Reflection::boundingBox, BoundingBox::Reflection::maxX),
-                &maxX,
             },
             {
+                &minY,
                 Emergence::StandardLayout::ProjectNestedField (
                     Record::Reflection::boundingBox, BoundingBox::Reflection::minY),
-                &minY,
 
+                &maxY,
                 Emergence::StandardLayout::ProjectNestedField (
                     Record::Reflection::boundingBox, BoundingBox::Reflection::maxY),
-                &maxY,
             }
         };
 }

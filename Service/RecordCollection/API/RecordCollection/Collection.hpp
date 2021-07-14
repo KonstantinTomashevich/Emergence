@@ -237,7 +237,9 @@ public:
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    VolumetricRepresentation CreateVolumetricRepresentation (std::vector <DimensionDescription> _dimensions) const noexcept;
+    /// \invariant All border fields for all dimensions should have same archetype and same size.
+    VolumetricRepresentation CreateVolumetricRepresentation (
+        std::vector <DimensionDescription> _dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
     LinearRepresentationIterator LinearRepresentationBegin () noexcept;
@@ -257,6 +259,7 @@ public:
     /// \return Iterator, that points to ending of volumetric representations range.
     VolumetricRepresentationIterator VolumetricRepresentationEnd () noexcept;
 
+    /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
     Collection &operator = (const Collection &_other) = delete;
 
     Collection &operator = (Collection &&_other) noexcept;

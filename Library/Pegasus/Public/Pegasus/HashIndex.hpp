@@ -42,6 +42,12 @@ public:
 
     void Drop () noexcept;
 
+    /// There is no sense to copy assign indices.
+    HashIndex &operator = (const HashIndex &_other) = delete;
+
+    /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
+    HashIndex &operator = (HashIndex &&_other) = delete;
+
 private:
     friend class Storage;
 

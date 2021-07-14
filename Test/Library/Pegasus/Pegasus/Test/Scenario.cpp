@@ -108,9 +108,11 @@ struct ExecutionContext
 
     std::string RecordToString (const void *_record) const;
 
-    VolumetricIndex::AxisAlignedShape ExtractShape (const VolumetricIndexShapeIntersectionLookupBase &_task) const;
+    VolumetricIndex::AxisAlignedShapeContainer ExtractShape (
+        const VolumetricIndex *_index, const VolumetricIndexShapeIntersectionLookupBase &_task) const;
 
-    VolumetricIndex::Ray ExtractRay (const VolumetricIndexRayIntersectionLookupBase &_task) const;
+    VolumetricIndex::RayContainer ExtractRay (
+        const VolumetricIndex *_index, const VolumetricIndexRayIntersectionLookupBase &_task) const;
 
     Storage storage;
     std::vector <HashIndex *> knownHashIndices;
@@ -173,10 +175,10 @@ void ExecutionContext::ExecuteTask (const CreateVolumetricIndex &_task)
         convertedDescriptors.emplace_back (
             VolumetricIndex::DimensionDescriptor
                 {
-                    dimension.minBorderField,
                     *static_cast <const VolumetricIndex::SupportedAxisValue *> (dimension.globalMinBorderValue),
+                    dimension.minBorderField,
+                    *static_cast <const VolumetricIndex::SupportedAxisValue *> (dimension.globalMaxBorderValue),
                     dimension.maxBorderField,
-                    *static_cast <const VolumetricIndex::SupportedAxisValue *> (dimension.globalMaxBorderValue)
                 });
     }
 
@@ -318,28 +320,32 @@ void ExecutionContext::ExecuteTask (const VolumetricIndexShapeIntersectionLookup
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
     REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
-    activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToRead (ExtractShape (_task)));
+    activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToRead (
+        ExtractShape (index, _task)));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexShapeIntersectionLookupToEdit &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
     REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
-    activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToEdit (ExtractShape (_task)));
+    activeCursors.emplace (_task.cursorName, index->LookupShapeIntersectionToEdit (
+        ExtractShape (index, _task)));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToRead &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
-    activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToRead (ExtractRay (_task)));
+    activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToRead (
+        ExtractRay (index, _task)));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToEdit &_task)
 {
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
-    activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToEdit (ExtractRay (_task)));
+    activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToEdit (
+        ExtractRay (index, _task)));
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheck &_task)
@@ -705,37 +711,130 @@ std::string ExecutionContext::RecordToString (const void *_record) const
     return result;
 }
 
-VolumetricIndex::AxisAlignedShape ExecutionContext::ExtractShape (
-    const VolumetricIndexShapeIntersectionLookupBase &_task) const
+template <typename Callback>
+auto WithPrimitiveFieldType (const StandardLayout::Field &_field, const Callback &_callback)
+{
+    REQUIRE (_field.IsHandleValid ());
+    switch (_field.GetArchetype ())
+    {
+        case StandardLayout::FieldArchetype::INT:
+        {
+            switch (_field.GetSize ())
+            {
+                case sizeof (int8_t):
+                    return _callback (int8_t {});
+
+                case sizeof (int16_t):
+                    return _callback (int16_t {});
+
+                case sizeof (int32_t):
+                    return _callback (int32_t {});
+
+                case sizeof (int64_t):
+                    return _callback (int64_t {});
+            }
+
+            break;
+        }
+        case StandardLayout::FieldArchetype::UINT:
+        {
+            switch (_field.GetSize ())
+            {
+                case sizeof (uint8_t):
+                    return _callback (uint8_t {});
+
+                case sizeof (uint16_t):
+                    return _callback (uint16_t {});
+
+                case sizeof (uint32_t):
+                    return _callback (uint32_t {});
+
+                case sizeof (uint64_t):
+                    return _callback (uint64_t {});
+            }
+
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::FLOAT:
+        {
+            switch (_field.GetSize ())
+            {
+                case sizeof (float):
+                    return _callback (float {});
+
+                case sizeof (double):
+                    return _callback (double {});
+            }
+
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::BIT:
+        case StandardLayout::FieldArchetype::BLOCK:
+        case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::STRING:
+        {
+            break;
+        }
+    }
+
+    REQUIRE_WITH_MESSAGE(false, "Field type should be primitive!");
+    return _callback (float {});
+}
+
+VolumetricIndex::AxisAlignedShapeContainer ExecutionContext::ExtractShape (
+    const VolumetricIndex *_index, const VolumetricIndexShapeIntersectionLookupBase &_task) const
 {
     REQUIRE_EQUAL (_task.min.size (), _task.max.size ());
     REQUIRE (_task.min.size () > 0u);
     REQUIRE (_task.min.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
-    VolumetricIndex::AxisAlignedShape shape;
 
-    for (std::size_t index = 0u; index < _task.min.size (); ++index)
-    {
-        shape.min[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.min[index]);
-        shape.max[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.max[index]);
-    }
+    REQUIRE (_index);
+    REQUIRE (!_index->GetDimensions ().Empty ());
 
-    return shape;
+    return WithPrimitiveFieldType (
+        _index->GetDimensions ()[0u].minBorderField,
+        [&_task] (auto _typeInstance) -> VolumetricIndex::AxisAlignedShapeContainer
+        {
+            using ValueType = std::decay_t <decltype (_typeInstance)>;
+            VolumetricIndex::AxisAlignedShape <ValueType> shape {};
+
+            for (std::size_t dimensionIndex = 0u; dimensionIndex < _task.min.size (); ++dimensionIndex)
+            {
+                shape.Min (dimensionIndex) = *reinterpret_cast<const ValueType *> (_task.min[dimensionIndex]);
+                shape.Max (dimensionIndex) = *reinterpret_cast<const ValueType *> (_task.max[dimensionIndex]);
+            }
+
+            return *reinterpret_cast <VolumetricIndex::AxisAlignedShapeContainer *> (&shape);
+        });
 }
 
-VolumetricIndex::Ray ExecutionContext::ExtractRay (const VolumetricIndexRayIntersectionLookupBase &_task) const
+VolumetricIndex::RayContainer ExecutionContext::ExtractRay (
+    const VolumetricIndex *_index, const VolumetricIndexRayIntersectionLookupBase &_task) const
 {
     REQUIRE_EQUAL (_task.origin.size (), _task.direction.size ());
     REQUIRE (_task.origin.size () > 0u);
     REQUIRE (_task.origin.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
-    VolumetricIndex::Ray ray;
 
-    for (std::size_t index = 0u; index < _task.origin.size (); ++index)
-    {
-        ray.origin[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.origin[index]);
-        ray.direction[index] = *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (_task.direction[index]);
-    }
+    REQUIRE (_index);
+    REQUIRE (!_index->GetDimensions ().Empty ());
 
-    return ray;
+    return WithPrimitiveFieldType (
+        _index->GetDimensions ()[0u].minBorderField,
+        [&_task] (auto _typeInstance) -> VolumetricIndex::RayContainer
+        {
+            using ValueType = std::decay_t <decltype (_typeInstance)>;
+            VolumetricIndex::Ray <ValueType> ray {};
+
+            for (std::size_t dimensionIndex = 0u; dimensionIndex < _task.origin.size (); ++dimensionIndex)
+            {
+                ray.Origin (dimensionIndex) = *reinterpret_cast<const ValueType *> (_task.origin[dimensionIndex]);
+                ray.Direction (dimensionIndex) = *reinterpret_cast<const ValueType *> (_task.direction[dimensionIndex]);
+            }
+
+            return *reinterpret_cast <VolumetricIndex::RayContainer *> (&ray);
+        });
 }
 
 std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
@@ -759,9 +858,9 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_
     _output << "Create volumetric index \"" << _task.name << "\" on dimensions:";
     for (const DimensionDescriptor &dimension : _task.dimensions)
     {
-        _output << " { minField: " << dimension.minBorderField << ", globalMinPointer: " <<
-                dimension.globalMinBorderValue << ", maxField: " << dimension.maxBorderField <<
-                ", globalMaxPointer: " << dimension.globalMaxBorderValue << " }";
+        _output << " { globalMinPointer: " << dimension.globalMinBorderValue << ", minField: " <<
+                dimension.minBorderField << ", globalMaxPointer: " << dimension.globalMaxBorderValue <<
+                ", maxField: " << dimension.maxBorderField << " }";
     }
 
     return _output << ".";
