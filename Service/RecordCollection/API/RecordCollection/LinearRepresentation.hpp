@@ -42,9 +42,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit ReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -88,9 +88,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit EditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -125,9 +125,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit ReversedReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReversedReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -171,9 +171,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit ReversedEditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReversedEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;

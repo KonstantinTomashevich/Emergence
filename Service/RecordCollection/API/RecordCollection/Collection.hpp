@@ -41,9 +41,9 @@ public:
         /// Collection constructs allocators.
         friend class Collection;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
-        explicit Allocator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Allocator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -55,6 +55,10 @@ public:
     class LinearRepresentationIterator final
     {
     public:
+        LinearRepresentationIterator (const LinearRepresentationIterator &_other) noexcept;
+
+        LinearRepresentationIterator (LinearRepresentationIterator &&_other) noexcept;
+
         ~LinearRepresentationIterator () noexcept;
 
         /// \return LinearRepresentation, to which iterator points.
@@ -101,6 +105,10 @@ public:
     class PointRepresentationIterator final
     {
     public:
+        PointRepresentationIterator (const PointRepresentationIterator &_other) noexcept;
+
+        PointRepresentationIterator (PointRepresentationIterator &&_other) noexcept;
+
         ~PointRepresentationIterator () noexcept;
 
         /// \return PointRepresentation, to which iterator points.
@@ -147,6 +155,10 @@ public:
     class VolumetricRepresentationIterator final
     {
     public:
+        VolumetricRepresentationIterator (const VolumetricRepresentationIterator &_other) noexcept;
+
+        VolumetricRepresentationIterator (VolumetricRepresentationIterator &&_other) noexcept;
+
         ~VolumetricRepresentationIterator () noexcept;
 
         /// \return VolumetricRepresentation, to which iterator points.
@@ -233,13 +245,13 @@ public:
 
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    PointRepresentation CreatePointRepresentation (std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
+    PointRepresentation CreatePointRepresentation (const std::vector <StandardLayout::FieldId> &_keyFields) const noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     /// \invariant All border fields for all dimensions should have same archetype and same size.
     VolumetricRepresentation CreateVolumetricRepresentation (
-        std::vector <DimensionDescription> _dimensions) const noexcept;
+        const std::vector <DimensionDescription> &_dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
     LinearRepresentationIterator LinearRepresentationBegin () noexcept;

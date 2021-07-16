@@ -1,11 +1,15 @@
 #pragma once
 
+#include <vector>
+
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
 #include <StandardLayout/Field.hpp>
+
+#include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus
 {
@@ -149,7 +153,8 @@ public:
 
     private:
         template <typename>
-        friend struct CursorCommons;
+        friend
+        struct CursorCommons;
 
         bool MoveToNextCoordinate () noexcept;
 
@@ -246,7 +251,8 @@ public:
 
     private:
         template <typename>
-        friend struct CursorCommons;
+        friend
+        struct CursorCommons;
 
         bool MoveToNextCoordinate () noexcept;
 
@@ -340,16 +346,17 @@ public:
     void Drop () noexcept;
 
     /// There is no sense to copy assign indices.
-    HashIndex &operator = (const HashIndex &_other) = delete;
+    VolumetricIndex &operator = (const VolumetricIndex &_other) = delete;
 
     /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
-    HashIndex &operator = (HashIndex &&_other) = delete;
+    VolumetricIndex &operator = (VolumetricIndex &&_other) = delete;
 
 private:
     friend class Storage;
 
     template <typename>
-    friend struct CursorCommons;
+    friend
+    struct CursorCommons;
 
     struct RecordData final
     {

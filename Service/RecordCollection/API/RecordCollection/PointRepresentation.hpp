@@ -42,9 +42,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit ReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -88,9 +88,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit EditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -100,6 +100,10 @@ public:
     class KeyFieldIterator final
     {
     public:
+        KeyFieldIterator (const KeyFieldIterator &_other) noexcept;
+
+        KeyFieldIterator (KeyFieldIterator &&_other) noexcept;
+
         ~KeyFieldIterator () noexcept;
 
         /// \return Key Field, to which iterator points.

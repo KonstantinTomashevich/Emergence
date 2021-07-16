@@ -45,9 +45,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 21u;
 
-        explicit ShapeIntersectionReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -91,9 +91,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 21u;
 
-        explicit ShapeIntersectionEditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -128,9 +128,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 19u;
 
-        explicit RayIntersectionReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit RayIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -174,9 +174,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 19u;
 
-        explicit RayIntersectionEditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit RayIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Iterator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -205,6 +205,10 @@ public:
             /// \brief Field, that holds record maximum border value for this dimension.
             StandardLayout::Field maxField;
         };
+
+        DimensionIterator (const DimensionIterator &_other) noexcept;
+
+        DimensionIterator (DimensionIterator &&_other) noexcept;
 
         ~DimensionIterator () noexcept;
 
@@ -255,7 +259,7 @@ public:
     ///
     /// \warning Due to runtime-only nature of shapes, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
-    using Shape = const uint8_t *;
+    using Shape = const void *;
 
     /// \brief Defines ray by specifying origin-direction value pair for each dimension.
     ///
@@ -267,7 +271,7 @@ public:
     ///
     /// \warning Due to runtime-only nature of rays, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
-    using Ray = const uint8_t *;
+    using Ray = const void *;
 
     /// There is no sense to copy representations, because they are part of Collection.
     VolumetricRepresentation (const VolumetricRepresentation &_other) = delete;
