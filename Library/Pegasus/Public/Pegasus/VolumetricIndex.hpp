@@ -256,7 +256,7 @@ public:
         struct CursorCommons;
 
         template <typename Operations>
-        bool MoveToNextCoordinate (const Operations &_operations) noexcept;
+        bool MoveToNextCoordinate (const Operations &) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;

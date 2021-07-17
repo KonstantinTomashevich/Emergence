@@ -586,7 +586,7 @@ void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexce
 }
 
 template <typename Operations>
-bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations &_operations) noexcept
+bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
 {
     std::size_t closestDimension = std::numeric_limits <std::size_t>::max ();
     float minT = std::numeric_limits <float>::max ();
