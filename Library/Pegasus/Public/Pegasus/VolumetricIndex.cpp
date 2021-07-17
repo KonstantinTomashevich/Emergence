@@ -629,7 +629,7 @@ bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Ope
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
-        float delta = lookupRay->Direction (dimensionIndex) * minT;
+        float delta = static_cast <float> (lookupRay->Direction (dimensionIndex)) * minT;
         deltaDistance += delta * delta;
     }
 
