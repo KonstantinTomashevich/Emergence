@@ -266,30 +266,24 @@ VolumetricRepresentation::ShapeIntersectionEditCursor VolumetricRepresentation::
 VolumetricRepresentation::RayIntersectionReadCursor VolumetricRepresentation::ReadRayIntersections (
     VolumetricRepresentation::Ray _ray, float _rayLength) noexcept
 {
-    // TODO: Ray length support in Pegasus.
-    _rayLength = 0.0f;
-
     assert (handle);
     Pegasus::VolumetricIndex *index =
         reinterpret_cast <Handling::Handle <Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
     Pegasus::VolumetricIndex::RayIntersectionReadCursor cursor = index->LookupRayIntersectionToRead (
-        *static_cast <const Pegasus::VolumetricIndex::RayContainer *> (_ray));
+        *static_cast <const Pegasus::VolumetricIndex::RayContainer *> (_ray), _rayLength);
     return RayIntersectionReadCursor (reinterpret_cast <decltype (RayIntersectionReadCursor::data) *> (&cursor));
 }
 
 VolumetricRepresentation::RayIntersectionEditCursor VolumetricRepresentation::EditRayIntersections (
     VolumetricRepresentation::Ray _ray, float _rayLength) noexcept
 {
-    // TODO: Ray length support in Pegasus.
-    _rayLength = 0.0f;
-
     assert (handle);
     Pegasus::VolumetricIndex *index =
         reinterpret_cast <Handling::Handle <Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
     Pegasus::VolumetricIndex::RayIntersectionEditCursor cursor = index->LookupRayIntersectionToEdit (
-        *static_cast <const Pegasus::VolumetricIndex::RayContainer *> (_ray));
+        *static_cast <const Pegasus::VolumetricIndex::RayContainer *> (_ray), _rayLength);
     return RayIntersectionEditCursor (reinterpret_cast <decltype (RayIntersectionEditCursor::data) *> (&cursor));
 }
 

@@ -337,7 +337,7 @@ void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupTo
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToRead (
-        ExtractRay (index, _task)));
+        ExtractRay (index, _task), _task.maxDistance));
 }
 
 void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupToEdit &_task)
@@ -345,7 +345,7 @@ void ExecutionContext::ExecuteTask (const VolumetricIndexRayIntersectionLookupTo
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_task)).Get ();
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     activeCursors.emplace (_task.cursorName, index->LookupRayIntersectionToEdit (
-        ExtractRay (index, _task)));
+        ExtractRay (index, _task), _task.maxDistance));
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheck &_task)
@@ -950,7 +950,7 @@ std::ostream &PrintShapeIntersectionLookupRequest (
     const VolumetricIndexShapeIntersectionLookupBase &_lookup, bool _editable, std::ostream &_output)
 {
     _output << "Execute volumetric index \"" << _lookup.indexName << "\" " << (_editable ? "editable" : "readonly") <<
-            "lookup using shape { minPointers: { ";
+            " lookup using shape { minPointers: { ";
 
     for (const void *pointer : _lookup.min)
     {
@@ -980,7 +980,7 @@ std::ostream &PrintRayIntersectionLookupRequest (
     const VolumetricIndexRayIntersectionLookupBase &_lookup, bool _editable, std::ostream &_output)
 {
     _output << "Execute volumetric index \"" << _lookup.indexName << "\" " << (_editable ? "editable" : "readonly") <<
-            "lookup using ray { originPointers: { ";
+            " lookup using ray { originPointers: { ";
 
     for (const void *pointer : _lookup.origin)
     {
@@ -993,7 +993,8 @@ std::ostream &PrintRayIntersectionLookupRequest (
         _output << pointer << " ";
     }
 
-    return _output << "} } and save cursor as \"" << _lookup.cursorName << "\".";
+    return _output << "}, maxDistance " << _lookup.maxDistance <<
+                   " } and save cursor as \"" << _lookup.cursorName << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const VolumetricIndexRayIntersectionLookupToRead &_task)

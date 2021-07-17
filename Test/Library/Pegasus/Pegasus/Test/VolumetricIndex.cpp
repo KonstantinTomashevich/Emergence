@@ -26,6 +26,8 @@ static const uint16_t screenRectMaxX = 4096u;
 
 static const uint16_t screenRectMaxY = 4096u;
 
+static const float f_m200 = -200.0f;
+
 static const float f_m3 = -3.0f;
 
 static const float f_m1 = -1.0f;
@@ -316,11 +318,38 @@ TEST_CASE (RayIntersections2D)
             VolumetricIndexRayIntersectionLookupToRead
                 {
                     {
+                        {"2d", "origin = (7, -200), direction = (2, 0)"},
+                        {&f_7, &f_m200}, {&f_2, &f_0}
+                    }
+                },
+            CursorCheckAllOrdered {"origin = (7, -200), direction = (2, 0)", {}},
+
+            VolumetricIndexRayIntersectionLookupToRead
+                {
+                    {
                         {"2d", "origin = (7, 9), direction = (2, 0)"},
                         {&f_7, &f_9}, {&f_2, &f_0}
                     }
                 },
             CursorCheckAllOrdered {"origin = (7, 9), direction = (2, 0)", {&record_x10_11_y8_9_z4_5}},
+
+            VolumetricIndexRayIntersectionLookupToRead
+                {
+                    {
+                        {"2d", "origin = (7, 9), direction = (2, 0), distance = 1"},
+                        {&f_7, &f_9}, {&f_2, &f_0}, 1.0f
+                    }
+                },
+            CursorCheckAllOrdered {"origin = (7, 9), direction = (2, 0), distance = 1", {}},
+
+            VolumetricIndexRayIntersectionLookupToRead
+                {
+                    {
+                        {"2d", "origin = (7, 9), direction = (2, 0), distance = 3"},
+                        {&f_7, &f_9}, {&f_2, &f_0}, 3.0f
+                    }
+                },
+            CursorCheckAllOrdered {"origin = (7, 9), direction = (2, 0), distance = 3", {&record_x10_11_y8_9_z4_5}},
 
             VolumetricIndexRayIntersectionLookupToRead
                 {
@@ -381,6 +410,24 @@ TEST_CASE (RayIntersections2D)
                     {{"2d", "origin = (9, 9), direction = (2, -1)"}, {&f_9, &f_9}, {&f_2, &f_m1}}
                 },
             CursorCheckAllOrdered {"origin = (9, 9), direction = (2, -1)", {&record_x10_11_y8_9_z4_5}},
+
+            VolumetricIndexRayIntersectionLookupToRead
+                {
+                    {
+                        {"2d", "origin = (9, 9), direction = (2, -1), distance = 1.1"},
+                        {&f_9, &f_9}, {&f_2, &f_m1}, 1.1f
+                    },
+                },
+            CursorCheckAllOrdered {"origin = (9, 9), direction = (2, -1), distance = 1.1", {}},
+
+            VolumetricIndexRayIntersectionLookupToRead
+                {
+                    {
+                        {"2d", "origin = (9, 9), direction = (2, -1), distance = 1.2"},
+                        {&f_9, &f_9}, {&f_2, &f_m1}, 1.2f
+                    },
+                },
+            CursorCheckAllOrdered {"origin = (9, 9), direction = (2, -1), distance = 1.2", {&record_x10_11_y8_9_z4_5}},
         },
     };
 }
@@ -593,6 +640,19 @@ TEST_CASE (Intersections3D)
                 {
                     "origin = (10.5, 8.5, 4.5), direction = (2, 0, 20)",
                     {&record_x10_11_y8_9_z4_5, &record_x15_19_y8_11_z50_60}
+                },
+
+            VolumetricIndexRayIntersectionLookupToRead
+                {
+                    {
+                        {"3d", "origin = (10.5, 8.5, 4.5), direction = (2, 0, 20), distance = 45.0"},
+                        {&f_10$5, &f_8$5, &f_4$5}, {&f_2, &f_0, &f_20}, 45.0
+                    }
+                },
+            CursorCheckAllOrdered
+                {
+                    "origin = (10.5, 8.5, 4.5), direction = (2, 0, 20), distance = 45.0",
+                    {&record_x10_11_y8_9_z4_5}
                 },
         }
     };

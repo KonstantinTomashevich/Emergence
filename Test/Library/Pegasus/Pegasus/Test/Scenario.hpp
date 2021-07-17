@@ -136,6 +136,7 @@ struct VolumetricIndexRayIntersectionLookupBase : public IndexLookupBase
     //       I think it shouldn't, because it'll transferred into query common tests.
     std::vector <const void *> origin;
     std::vector <const void *> direction;
+    float maxDistance = std::numeric_limits <float>::max ();
 };
 
 struct VolumetricIndexRayIntersectionLookupToRead :

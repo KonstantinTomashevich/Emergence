@@ -268,7 +268,8 @@ void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noex
     CursorCommons <ShapeIntersectionCursorBase>::FixCurrentRecordIndex (*this);
 }
 
-bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate () noexcept
+template <typename Operations>
+bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
 {
     if (!index->AreEqual (currentCoordinate, sector.max))
     {
@@ -415,7 +416,9 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
     : index (_other.index),
       currentPoint (_other.currentPoint),
       direction (_other.direction),
+      distanceTraveled (_other.distanceTraveled),
       ray (_other.ray),
+      maxDistance (_other.maxDistance),
       currentCoordinate (_other.currentCoordinate),
       currentRecordIndex (_other.currentRecordIndex),
       visitedRecords (_other.visitedRecords)
@@ -429,7 +432,9 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
     : index (_other.index),
       currentPoint (_other.currentPoint),
       direction (_other.direction),
+      distanceTraveled (_other.distanceTraveled),
       ray (_other.ray),
+      maxDistance (_other.maxDistance),
       currentCoordinate (_other.currentCoordinate),
       currentRecordIndex (_other.currentRecordIndex),
       visitedRecords (std::move (_other.visitedRecords))
@@ -447,13 +452,16 @@ VolumetricIndex::RayIntersectionCursorBase::~RayIntersectionCursorBase () noexce
 }
 
 VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
-    VolumetricIndex *_index, const VolumetricIndex::RayContainer &_ray) noexcept
+    VolumetricIndex *_index, const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
     : index (_index),
+      distanceTraveled (0.0f),
       ray (_ray),
+      maxDistance (_maxDistance),
       currentRecordIndex (0u),
       visitedRecords (index->nextRecordId, false)
 {
     assert (index);
+    assert (maxDistance >= 0.0f);
     ++index->activeCursors;
 
     DoWithCorrectTypeOperations (
@@ -474,9 +482,12 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
                 bordersShape.Max (dimensionIndex) = *reinterpret_cast <const ValueType *> (&dimension.globalMaxBorder);
             }
 
+            float distanceToBorders;
             if (index->CheckRayShapeIntersection (
-                ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&bordersShape), currentPoint, _operations))
+                ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&bordersShape),
+                distanceToBorders, currentPoint, _operations))
             {
+                distanceTraveled += distanceToBorders;
                 for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
                 {
                     const Dimension &dimension = index->dimensions[dimensionIndex];
@@ -526,8 +537,12 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
 bool VolumetricIndex::RayIntersectionCursorBase::IsFinished () const noexcept
 {
     assert (index);
-    const std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (index->dimensions.GetCount ());
+    if (distanceTraveled > maxDistance)
+    {
+        return true;
+    }
 
+    const std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (index->dimensions.GetCount ());
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         if (currentCoordinate[dimensionIndex] >= maxCoordinate)
@@ -570,13 +585,13 @@ void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexce
     CursorCommons <RayIntersectionCursorBase>::FixCurrentRecordIndex (*this);
 }
 
-bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate () noexcept
+template <typename Operations>
+bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations &_operations) noexcept
 {
     std::size_t closestDimension = std::numeric_limits <std::size_t>::max ();
     float minT = std::numeric_limits <float>::max ();
 
-    for (std::size_t dimensionIndex = 0u;
-         dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         if (fabs (direction[dimensionIndex]) > Constants::VolumetricIndex::EPSILON)
         {
@@ -604,12 +619,21 @@ bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate () noexcep
         --currentCoordinate[closestDimension];
     }
 
-    for (std::size_t dimensionIndex = 0u;
-         dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         currentPoint[dimensionIndex] += minT * direction[dimensionIndex];
     }
 
+    const auto *lookupRay = reinterpret_cast <const Ray <typename Operations::ValueType> *> (&ray);
+    float deltaDistance = 0.0f;
+
+    for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
+    {
+        float delta = lookupRay->Direction (dimensionIndex) * minT;
+        deltaDistance += delta * delta;
+    }
+
+    distanceTraveled += sqrt (deltaDistance);
     return !IsFinished ();
 }
 
@@ -631,9 +655,14 @@ bool VolumetricIndex::RayIntersectionCursorBase::CheckIntersection (
             *reinterpret_cast <const typename Operations::ValueType *> (dimension.maxBorderField.GetValue (_record));
     }
 
+    float distanceToShape;
     std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> intersectionPoint;
-    return index->CheckRayShapeIntersection (
-        ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&recordShape), intersectionPoint, _operations);
+
+    bool intersects = index->CheckRayShapeIntersection (
+        ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&recordShape),
+        distanceToShape, intersectionPoint, _operations);
+
+    return intersects && distanceToShape <= maxDistance;
 }
 
 VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
@@ -670,8 +699,8 @@ VolumetricIndex::RayIntersectionReadCursor &VolumetricIndex::RayIntersectionRead
 }
 
 VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
-    VolumetricIndex *_index, const RayContainer &_ray) noexcept
-    : RayIntersectionCursorBase (_index, _ray)
+    VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept
+    : RayIntersectionCursorBase (_index, _ray, _maxDistance)
 {
     assert (GetIndex ());
     GetIndex ()->storage->RegisterReader ();
@@ -725,8 +754,8 @@ VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEdit
 }
 
 VolumetricIndex::RayIntersectionEditCursor::RayIntersectionEditCursor (
-    VolumetricIndex *_index, const RayContainer &_ray) noexcept
-    : RayIntersectionCursorBase (_index, _ray)
+    VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept
+    : RayIntersectionCursorBase (_index, _ray, _maxDistance)
 {
     assert (GetIndex ());
     GetIndex ()->storage->RegisterWriter ();
@@ -771,15 +800,15 @@ VolumetricIndex::ShapeIntersectionEditCursor VolumetricIndex::LookupShapeInterse
 }
 
 VolumetricIndex::RayIntersectionReadCursor VolumetricIndex::LookupRayIntersectionToRead (
-    const VolumetricIndex::RayContainer &_ray) noexcept
+    const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
 {
-    return RayIntersectionReadCursor (this, _ray);
+    return RayIntersectionReadCursor (this, _ray, _maxDistance);
 }
 
 VolumetricIndex::RayIntersectionEditCursor VolumetricIndex::LookupRayIntersectionToEdit (
-    const VolumetricIndex::RayContainer &_ray) noexcept
+    const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
 {
-    return RayIntersectionEditCursor (this, _ray);
+    return RayIntersectionEditCursor (this, _ray, _maxDistance);
 }
 
 void VolumetricIndex::Drop () noexcept
@@ -922,7 +951,7 @@ std::size_t VolumetricIndex::CalculateCoordinate (
 template <typename Operations>
 bool VolumetricIndex::CheckRayShapeIntersection (
     const VolumetricIndex::RayContainer &_ray, const VolumetricIndex::AxisAlignedShapeContainer &_shape,
-    std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
+    float &_distanceOutput, std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
     const Operations &_operations) const noexcept
 {
     const auto *lookupRay = reinterpret_cast <const Ray <typename Operations::ValueType> *> (&_ray);
@@ -977,15 +1006,32 @@ bool VolumetricIndex::CheckRayShapeIntersection (
             _intersectionPointOutput[dimensionIndex] = static_cast <float> (lookupRay->Origin (dimensionIndex));
         }
 
+        _distanceOutput = 0.0f;
         return true;
     }
 
-    assert (maxTDimension < dimensions.GetCount ());
+    // If expression below is true, ray origin is inside on all dimensions except one, in which
+    // ray is parallel to shape. Therefore there is no intersection between ray and shape.
+    if (maxTDimension >= dimensions.GetCount ())
+    {
+        return false;
+    }
+
+    // Ignore backward intersections.
+    if (maxT < 0.0f)
+    {
+        return false;
+    }
+
+    _distanceOutput = 0.0f;
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
-        _intersectionPointOutput[dimensionIndex] =
-            static_cast <float> (lookupRay->Origin (dimensionIndex)) +
-            static_cast <float> (lookupRay->Direction (dimensionIndex)) * maxT;
+        const float origin = static_cast <float> (lookupRay->Origin (dimensionIndex));
+        const float direction = static_cast <float> (lookupRay->Direction (dimensionIndex));
+        const float step = direction * maxT;
+
+        _intersectionPointOutput[dimensionIndex] = origin + step;
+        _distanceOutput += step * step;
 
         if (dimensionIndex != maxTDimension)
         {
@@ -997,6 +1043,7 @@ bool VolumetricIndex::CheckRayShapeIntersection (
         }
     }
 
+    _distanceOutput = sqrt (_distanceOutput);
     return true;
 }
 
@@ -1283,7 +1330,7 @@ void CursorCommons <Cursor>::MoveToNextRecord (Cursor &_cursor) noexcept
             {
                 if (overflow)
                 {
-                    if (_cursor.MoveToNextCoordinate ())
+                    if (_cursor.MoveToNextCoordinate (_operations))
                     {
                         leaf = &_cursor.index->leaves[_cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
                     }

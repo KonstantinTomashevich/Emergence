@@ -156,7 +156,8 @@ public:
         friend
         struct CursorCommons;
 
-        bool MoveToNextCoordinate () noexcept;
+        template <typename Operations>
+        bool MoveToNextCoordinate (const Operations &) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
@@ -236,7 +237,7 @@ public:
         ~RayIntersectionCursorBase () noexcept;
 
     protected:
-        RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray) noexcept;
+        RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
 
         bool IsFinished () const noexcept;
 
@@ -254,20 +255,28 @@ public:
         friend
         struct CursorCommons;
 
-        bool MoveToNextCoordinate () noexcept;
+        template <typename Operations>
+        bool MoveToNextCoordinate (const Operations &_operations) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
 
         VolumetricIndex *index;
 
-        /// Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
+        /// \brief Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
         std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> currentPoint;
 
-        /// Ray direction, converted into leaf coordinates.
+        /// \brief Ray direction, converted into leaf coordinates.
         std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
 
+        /// Distance from ray origin to ::currentPoint border in world coordinates.
+        float distanceTraveled;
+
         const RayContainer ray;
+
+        /// \brief Maximum allowed distance for ray-shape collisions.
+        const float maxDistance;
+
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
         std::vector <bool> visitedRecords;
@@ -295,7 +304,7 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionReadCursor (VolumetricIndex *_index, const RayContainer &_ray) noexcept;
+        RayIntersectionReadCursor (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
     };
 
     class RayIntersectionEditCursor final : private RayIntersectionCursorBase
@@ -322,7 +331,7 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionEditCursor (VolumetricIndex *_index, const RayContainer &_ray) noexcept;
+        RayIntersectionEditCursor (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
 
         void BeginRecordEdition () const noexcept;
     };
@@ -339,9 +348,11 @@ public:
 
     ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShapeContainer &_shape) noexcept;
 
-    RayIntersectionReadCursor LookupRayIntersectionToRead (const RayContainer &_ray) noexcept;
+    RayIntersectionReadCursor LookupRayIntersectionToRead (
+        const RayContainer &_ray, float _maxDistance = std::numeric_limits <float>::max ()) noexcept;
 
-    RayIntersectionEditCursor LookupRayIntersectionToEdit (const RayContainer &_ray) noexcept;
+    RayIntersectionEditCursor LookupRayIntersectionToEdit (
+        const RayContainer &_ray, float _maxDistance = std::numeric_limits <float>::max ()) noexcept;
 
     void Drop () noexcept;
 
@@ -393,7 +404,7 @@ private:
 
     template <typename Operations>
     bool CheckRayShapeIntersection (
-        const RayContainer &_ray, const AxisAlignedShapeContainer &_shape,
+        const RayContainer &_ray, const AxisAlignedShapeContainer &_shape, float &_distanceOutput,
         std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
         const Operations &_operations) const noexcept;
 
