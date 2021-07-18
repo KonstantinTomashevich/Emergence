@@ -92,6 +92,12 @@ struct Storage final
 
 namespace Tasks
 {
+struct CheckIsSourceBusy
+{
+    std::string name;
+    bool expectedValue = false;
+};
+
 struct QueryBase
 {
     std::string sourceName;
@@ -215,6 +221,7 @@ struct CursorClose final
 } // namespace Tasks
 
 using Task = std::variant <
+    Tasks::CheckIsSourceBusy,
     Tasks::QueryValueToRead,
     Tasks::QueryValueToEdit,
     Tasks::QueryRangeToRead,
