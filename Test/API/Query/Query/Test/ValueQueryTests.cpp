@@ -1,12 +1,12 @@
-#include <Query/Test/Data.hpp>
 #include <Query/Test/Common.hpp>
+#include <Query/Test/Data.hpp>
 #include <Query/Test/ValueQueryTests.hpp>
 
 namespace Emergence::Query::Test::ValueQuery
 {
 using namespace Tasks;
 
-Sources::Value PlayerIdSourceWithObjects (const std::vector <const void *> &_objects)
+static Sources::Value PlayerIdSourceWithObjects (const std::vector <const void *> &_objects)
 {
     return Sources::Value
         {
@@ -21,7 +21,7 @@ Sources::Value PlayerIdSourceWithObjects (const std::vector <const void *> &_obj
         };
 }
 
-Sources::Value PlayerNameSourceWithObjects (const std::vector <const void *> &_objects)
+static Sources::Value PlayerNameSourceWithObjects (const std::vector <const void *> &_objects)
 {
     return Sources::Value
         {
@@ -36,7 +36,7 @@ Sources::Value PlayerNameSourceWithObjects (const std::vector <const void *> &_o
         };
 }
 
-Sources::Value PlayerNameAndIdSourceWithObjects (const std::vector <const void *> &_objects)
+static Sources::Value PlayerNameAndIdSourceWithObjects (const std::vector <const void *> &_objects)
 {
     return Sources::Value
         {
@@ -57,11 +57,11 @@ Scenario SimpleLookup () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToRead {{{"playerId", "0"}, &Queries::id0}},
-                CursorCheck {"0", &hugo_0_alive_stunned},
+                QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
+                CursorCheck {"0", &HUGO_0_ALIVE_STUNNED},
                 CursorIncrement {"0"},
                 CursorCheck {"0", nullptr},
             }
@@ -73,12 +73,12 @@ Scenario CursorManipulations () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             TestCursorCopyAndMove (
-                QueryValueToRead {{{"playerId", "0"}, &Queries::id0}},
-                QueryValueToEdit {{{"playerId", "0"}, &Queries::id0}},
-                &hugo_0_alive_stunned, nullptr, &hugo_0_alive_stunned)
+                QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
+                QueryValueToEdit {{{"playerId", "0"}, &Queries::ID_0}},
+                &HUGO_0_ALIVE_STUNNED, nullptr, &HUGO_0_ALIVE_STUNNED)
         };
 }
 
@@ -87,14 +87,14 @@ Scenario LookupForNonExistentRecord () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToRead {{{"playerId", "0"}, &Queries::id0}},
-                CursorCheckAllUnordered {"0", {&hugo_0_alive_stunned}},
-                QueryValueToRead {{{"playerId", "1"}, &Queries::id1}},
-                CursorCheckAllUnordered {"1", {&karl_1_alive_immobilized}},
-                QueryValueToRead {{{"playerId", "2"}, &Queries::id2}},
+                QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
+                CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED}},
+                QueryValueToRead {{{"playerId", "1"}, &Queries::ID_1}},
+                CursorCheckAllUnordered {"1", {&KARL_1_ALIVE_IMMOBILIZED}},
+                QueryValueToRead {{{"playerId", "2"}, &Queries::ID_2}},
                 CursorCheck {"2", nullptr},
             }
         };
@@ -106,11 +106,11 @@ Scenario LookupForMany () noexcept
         {
             {
                 PlayerIdSourceWithObjects (
-                    {&hugo_0_alive_stunned, &karl_1_alive_immobilized, &duplicate_0_immobilized}),
+                    {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED}),
             },
             {
-                QueryValueToRead {{{"playerId", "0"}, &Queries::id0}},
-                CursorCheckAllUnordered {"0", {&hugo_0_alive_stunned, &duplicate_0_immobilized}},
+                QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
+                CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED, &DUPLICATE_0_IMMOBILIZED}},
             }
         };
 }
@@ -120,17 +120,17 @@ Scenario LookupAndEdit () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToEdit {{{"playerId", "1"}, &Queries::id1}},
-                CursorCheck {"1", &karl_1_alive_immobilized},
-                CursorEdit {"1", &karl_0_alive_immobilized},
+                QueryValueToEdit {{{"playerId", "1"}, &Queries::ID_1}},
+                CursorCheck {"1", &KARL_1_ALIVE_IMMOBILIZED},
+                CursorEdit {"1", &KARL_0_ALIVE_IMMOBILIZED},
                 CursorIncrement {"1"},
                 CursorCheck {"1", nullptr},
                 CursorClose {"1"},
-                QueryValueToRead {{{"playerId", "0"}, &Queries::id0}},
-                CursorCheckAllUnordered {"0", {&hugo_0_alive_stunned, &karl_0_alive_immobilized}},
+                QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
+                CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED, &KARL_0_ALIVE_IMMOBILIZED}},
             }
         };
 }
@@ -140,13 +140,13 @@ Scenario OnStringField () noexcept
     return
         {
             {
-                PlayerNameSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerNameSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToRead {{{"playerName", "karl"}, &Queries::karl}},
-                CursorCheckAllUnordered {"karl", {&karl_1_alive_immobilized}},
-                QueryValueToRead {{{"playerName", "hugo"}, &Queries::hugo}},
-                CursorCheckAllUnordered {"hugo", {&hugo_0_alive_stunned}},
+                QueryValueToRead {{{"playerName", "karl"}, &Queries::KARL}},
+                CursorCheckAllUnordered {"karl", {&KARL_1_ALIVE_IMMOBILIZED}},
+                QueryValueToRead {{{"playerName", "hugo"}, &Queries::HUGO}},
+                CursorCheckAllUnordered {"hugo", {&HUGO_0_ALIVE_STUNNED}},
             }
         };
 }
@@ -156,13 +156,13 @@ Scenario OnTwoFields () noexcept
     return
         {
             {
-                PlayerNameAndIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerNameAndIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToRead {{{"playerNameAndId", "hugoEntity1"}, &Queries::hugo_1}},
+                QueryValueToRead {{{"playerNameAndId", "hugoEntity1"}, &Queries::HUGO_1}},
                 CursorCheck {"hugoEntity1", nullptr},
-                QueryValueToRead {{{"playerNameAndId", "karlEntity1"}, &Queries::karl_1}},
-                CursorCheckAllUnordered {"karlEntity1", {&karl_1_alive_immobilized}},
+                QueryValueToRead {{{"playerNameAndId", "karlEntity1"}, &Queries::KARL_1}},
+                CursorCheckAllUnordered {"karlEntity1", {&KARL_1_ALIVE_IMMOBILIZED}},
             }
         };
 }
@@ -178,9 +178,9 @@ Scenario OnBitField () noexcept
                             "playerAlive",
                             Player::Reflection::GetMapping (),
                             {
-                                &hugo_0_alive_stunned,
-                                &karl_1_alive_immobilized,
-                                &duplicate_0_immobilized,
+                                &HUGO_0_ALIVE_STUNNED,
+                                &KARL_1_ALIVE_IMMOBILIZED,
+                                &DUPLICATE_0_IMMOBILIZED,
                             }
                         },
                         {
@@ -189,22 +189,22 @@ Scenario OnBitField () noexcept
                     }
             },
             {
-                QueryValueToRead {{{"playerAlive", "alive"}, &Queries::alive}},
-                CursorCheckAllUnordered {"alive", {&hugo_0_alive_stunned, &karl_1_alive_immobilized}},
+                QueryValueToRead {{{"playerAlive", "alive"}, &Queries::ALIVE}},
+                CursorCheckAllUnordered {"alive", {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}},
                 CursorClose {"alive"},
 
-                QueryValueToEdit {{{"playerAlive", "dead"}, &Queries::dead}},
-                CursorCheck {"dead", &duplicate_0_immobilized},
-                CursorEdit {"dead", &karl_0_alive_immobilized},
+                QueryValueToEdit {{{"playerAlive", "dead"}, &Queries::DEAD}},
+                CursorCheck {"dead", &DUPLICATE_0_IMMOBILIZED},
+                CursorEdit {"dead", &KARL_0_ALIVE_IMMOBILIZED},
                 CursorIncrement {"dead"},
                 CursorCheck {"dead", nullptr},
                 CursorClose {"dead"},
 
-                QueryValueToRead {{{"playerAlive", "alive"}, &Queries::alive}},
+                QueryValueToRead {{{"playerAlive", "alive"}, &Queries::ALIVE}},
                 CursorCheckAllUnordered {
-                    "alive", {&hugo_0_alive_stunned, &karl_1_alive_immobilized, &karl_0_alive_immobilized}},
+                    "alive", {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_0_ALIVE_IMMOBILIZED}},
 
-                QueryValueToRead {{{"playerAlive", "dead"}, &Queries::dead}},
+                QueryValueToRead {{{"playerAlive", "dead"}, &Queries::DEAD}},
                 CursorCheck {"dead", nullptr},
             }
         };
@@ -221,8 +221,8 @@ Scenario OnTwoBitFields () noexcept
                             "playerAliveAndStunned",
                             Player::Reflection::GetMapping (),
                             {
-                                &hugo_0_alive_stunned,
-                                &karl_1_alive_immobilized,
+                                &HUGO_0_ALIVE_STUNNED,
+                                &KARL_1_ALIVE_IMMOBILIZED,
                             }
                         },
                         {
@@ -232,10 +232,10 @@ Scenario OnTwoBitFields () noexcept
                     }
             },
             {
-                QueryValueToRead {{{"playerAliveAndStunned", "aliveAndStunned"}, &Queries::aliveAndStunned}},
-                CursorCheckAllUnordered {"aliveAndStunned", {&hugo_0_alive_stunned}},
-                QueryValueToRead {{{"playerAliveAndStunned", "aliveAndNotStunned"}, &Queries::aliveAndNotStunned}},
-                CursorCheckAllUnordered {"aliveAndNotStunned", {&karl_1_alive_immobilized}},
+                QueryValueToRead {{{"playerAliveAndStunned", "aliveAndStunned"}, &Queries::ALIVE_AND_STUNNED}},
+                CursorCheckAllUnordered {"aliveAndStunned", {&HUGO_0_ALIVE_STUNNED}},
+                QueryValueToRead {{{"playerAliveAndStunned", "aliveAndNotStunned"}, &Queries::ALIVE_AND_NOT_STUNNED}},
+                CursorCheckAllUnordered {"aliveAndNotStunned", {&KARL_1_ALIVE_IMMOBILIZED}},
             }
         };
 }
@@ -245,33 +245,33 @@ Scenario MultipleIndicesEdition () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
-                PlayerNameSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
-                PlayerNameAndIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                PlayerNameSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                PlayerNameAndIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToEdit {{{"entityId", "1"}, &Queries::id1}},
-                CursorCheck {"1", &karl_1_alive_immobilized},
-                CursorEdit {"1", &karl_0_alive_immobilized},
+                QueryValueToEdit {{{"entityId", "1"}, &Queries::ID_1}},
+                CursorCheck {"1", &KARL_1_ALIVE_IMMOBILIZED},
+                CursorEdit {"1", &KARL_0_ALIVE_IMMOBILIZED},
                 CursorClose {"1"},
 
-                QueryValueToRead {{{"entityId", "0"}, &Queries::id0}},
-                CursorCheckAllUnordered {"0", {&hugo_0_alive_stunned, &karl_0_alive_immobilized}},
+                QueryValueToRead {{{"entityId", "0"}, &Queries::ID_0}},
+                CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED, &KARL_0_ALIVE_IMMOBILIZED}},
 
-                QueryValueToRead {{{"entityId", "1"}, &Queries::id1}},
+                QueryValueToRead {{{"entityId", "1"}, &Queries::ID_1}},
                 CursorCheck {"1", nullptr},
 
-                QueryValueToRead {{{"playerName", "karl"}, &Queries::karl}},
-                CursorCheckAllUnordered {"karl", {&karl_0_alive_immobilized}},
+                QueryValueToRead {{{"playerName", "karl"}, &Queries::KARL}},
+                CursorCheckAllUnordered {"karl", {&KARL_0_ALIVE_IMMOBILIZED}},
 
-                QueryValueToRead {{{"playerName", "hugo"}, &Queries::hugo}},
-                CursorCheckAllUnordered {"hugo", {&hugo_0_alive_stunned}},
+                QueryValueToRead {{{"playerName", "hugo"}, &Queries::HUGO}},
+                CursorCheckAllUnordered {"hugo", {&HUGO_0_ALIVE_STUNNED}},
 
-                QueryValueToRead {{{"playerNameAndId", "karlEntity1"}, &Queries::karl_1}},
+                QueryValueToRead {{{"playerNameAndId", "karlEntity1"}, &Queries::KARL_1}},
                 CursorCheck {"karlEntity1", nullptr},
 
-                QueryValueToRead {{{"playerNameAndId", "karlEntity0"}, &Queries::karl_0}},
-                CursorCheckAllUnordered {"karlEntity0", {&karl_0_alive_immobilized}},
+                QueryValueToRead {{{"playerNameAndId", "karlEntity0"}, &Queries::KARL_0}},
+                CursorCheckAllUnordered {"karlEntity0", {&KARL_0_ALIVE_IMMOBILIZED}},
             }
         };
 }
@@ -281,27 +281,27 @@ Scenario MultipleIndicesDeletion () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
-                PlayerNameSourceWithObjects ({&hugo_0_alive_stunned, &karl_1_alive_immobilized}),
+                PlayerIdSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                PlayerNameSourceWithObjects ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
             },
             {
-                QueryValueToEdit {{{"playerId", "1"}, &Queries::id1}},
-                CursorCheck {"1", &karl_1_alive_immobilized},
-                CursorEdit {"1", &karl_0_alive_immobilized},
+                QueryValueToEdit {{{"playerId", "1"}, &Queries::ID_1}},
+                CursorCheck {"1", &KARL_1_ALIVE_IMMOBILIZED},
+                CursorEdit {"1", &KARL_0_ALIVE_IMMOBILIZED},
                 CursorDeleteRecord {"1"},
                 CursorClose {"1"},
 
-                QueryValueToRead {{{"playerId", "0"}, &Queries::id0}},
-                CursorCheckAllUnordered {"0", {&hugo_0_alive_stunned}},
+                QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
+                CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED}},
 
-                QueryValueToRead {{{"playerId", "1"}, &Queries::id1}},
+                QueryValueToRead {{{"playerId", "1"}, &Queries::ID_1}},
                 CursorCheck {"1", nullptr},
 
-                QueryValueToRead {{{"playerName", "karl"}, &Queries::karl}},
+                QueryValueToRead {{{"playerName", "karl"}, &Queries::KARL}},
                 CursorCheck {"karl", nullptr},
 
-                QueryValueToRead {{{"playerName", "hugo"}, &Queries::hugo}},
-                CursorCheckAllUnordered {"hugo", {&hugo_0_alive_stunned}},
+                QueryValueToRead {{{"playerName", "hugo"}, &Queries::HUGO}},
+                CursorCheckAllUnordered {"hugo", {&HUGO_0_ALIVE_STUNNED}},
             }
         };
 }

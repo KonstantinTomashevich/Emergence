@@ -2,6 +2,8 @@
 
 #include <Query/Test/Scenario.hpp>
 
+#include <Testing/Testing.hpp>
+
 namespace Emergence::Query::Test::ValueQuery
 {
 // TODO: Unsupported: ReferenceManipulations
@@ -31,58 +33,21 @@ Scenario MultipleIndicesEdition () noexcept;
 Scenario MultipleIndicesDeletion () noexcept;
 } // namespace Emergence::Query::Test::ValueQuery
 
-#define REGISTER_ALL_VALUE_QUERY_TESTS(Driver)                                          \
-TEST_CASE (SimpleLookup)                                                                \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::SimpleLookup ());                       \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (CursorManipulations)                                                         \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::CursorManipulations ());                \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (LookupForNonExistentRecord)                                                  \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::LookupForNonExistentRecord ());         \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (LookupForMany)                                                               \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::LookupForMany  ());                     \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (LookupAndEdit)                                                               \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::LookupAndEdit());                       \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (OnStringField)                                                               \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::OnStringField ());                      \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (OnTwoFields)                                                                 \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::OnTwoFields ());                        \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (OnBitField)                                                                  \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::OnBitField());                          \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (OnTwoBitFields)                                                              \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::OnTwoBitFields ());                     \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (MultipleIndicesEdition)                                                      \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::MultipleIndicesEdition ());             \
-}                                                                                       \
-                                                                                        \
-TEST_CASE (MultipleIndicesDeletion)                                                     \
-{                                                                                       \
-    Driver (Emergence::Query::Test::ValueQuery::MultipleIndicesDeletion ());            \
-}                                                                                       \
+#define REGISTER_VALUE_QUERY_TEST(Driver, TestName)                            \
+TEST_CASE (TestName)                                                           \
+{                                                                              \
+    Driver (Emergence::Query::Test::ValueQuery::TestName ());                  \
+}                                                                              \
+
+#define REGISTER_ALL_VALUE_QUERY_TESTS(Driver)                                 \
+REGISTER_VALUE_QUERY_TEST (Driver, SimpleLookup)                               \
+REGISTER_VALUE_QUERY_TEST (Driver, CursorManipulations)                        \
+REGISTER_VALUE_QUERY_TEST (Driver, LookupForNonExistentRecord)                 \
+REGISTER_VALUE_QUERY_TEST (Driver, LookupForMany)                              \
+REGISTER_VALUE_QUERY_TEST (Driver, LookupAndEdit)                              \
+REGISTER_VALUE_QUERY_TEST (Driver, OnStringField)                              \
+REGISTER_VALUE_QUERY_TEST (Driver, OnTwoFields)                                \
+REGISTER_VALUE_QUERY_TEST (Driver, OnBitField)                                 \
+REGISTER_VALUE_QUERY_TEST (Driver, OnTwoBitFields)                             \
+REGISTER_VALUE_QUERY_TEST (Driver, MultipleIndicesEdition)                     \
+REGISTER_VALUE_QUERY_TEST (Driver, MultipleIndicesDeletion)                    \
