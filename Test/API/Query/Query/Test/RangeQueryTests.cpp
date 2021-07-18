@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <Query/Test/Common.hpp>
 #include <Query/Test/Data.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
@@ -6,42 +8,47 @@ namespace Emergence::Query::Test::RangeQuery
 {
 using namespace Tasks;
 
-static Sources::Range PlayerIdSourceWithObjects (const std::vector <const void *> &_objects)
+constexpr uint8_t FLAG_PLAYER_ID_SOURCE = 1u;
+
+constexpr uint8_t FLAG_PLAYER_NAME_SOURCE = 1u << 1u;
+
+static Storage RequestPlayerStorage (
+    const std::vector <const void *> &_objects, uint8_t _sources)
 {
-    return Sources::Range
+    Storage storage
         {
-            {
-                "playerId",
-                Player::Reflection::GetMapping (),
-                _objects
-            },
-            Player::Reflection::id
+            Player::Reflection::GetMapping (),
+            _objects,
+            {}
         };
+
+    assert (_sources > 0u);
+    if (_sources & FLAG_PLAYER_ID_SOURCE)
+    {
+        storage.sources.emplace_back (Sources::Range {"playerId", Player::Reflection::id});
+    }
+
+    if (_sources & FLAG_PLAYER_NAME_SOURCE)
+    {
+        storage.sources.emplace_back (Sources::Range {"playerName", Player::Reflection::name});
+    }
+
+    return storage;
 }
 
-static Sources::Range PlayerNameSourceWithObjects (const std::vector <const void *> &_objects)
+static Storage RequestOrderingStorage (StandardLayout::FieldId _field)
 {
-    return Sources::Range
+    return
         {
+            AllFieldTypesStructure::Reflection::GetMapping (),
+            {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2},
             {
-                "playerName",
-                Player::Reflection::GetMapping (),
-                _objects
-            },
-            Player::Reflection::name
-        };
-}
-
-static Sources::Range OrderingSourceOnField (StandardLayout::FieldId _field)
-{
-    return Sources::Range
-        {
-            {
-                "ordering",
-                AllFieldTypesStructure::Reflection::GetMapping (),
-                {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}
-            },
-            _field
+                Sources::Range
+                    {
+                        "ordering",
+                        _field
+                    },
+            }
         };
 }
 
@@ -50,8 +57,9 @@ Scenario CursorManipulations () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                RequestPlayerStorage (
+                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                    FLAG_PLAYER_ID_SOURCE),
             },
             TestCursorCopyAndMove (
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -65,8 +73,9 @@ Scenario ReversedCursorManipulations () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                RequestPlayerStorage (
+                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                    FLAG_PLAYER_ID_SOURCE),
             },
             TestCursorCopyAndMove (
                 QueryReversedRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -80,8 +89,9 @@ Scenario SimpleLookups () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                RequestPlayerStorage (
+                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                    FLAG_PLAYER_ID_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -120,8 +130,9 @@ Scenario OnStringField () noexcept
     return
         {
             {
-                PlayerNameSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                RequestPlayerStorage (
+                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                    FLAG_PLAYER_NAME_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerName", "all"}, nullptr, nullptr}},
@@ -152,11 +163,12 @@ Scenario WithDuplicates () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
+                RequestPlayerStorage (
                     {
                         &XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED,
                         &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED
-                    }),
+                    },
+                    FLAG_PLAYER_ID_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -181,11 +193,12 @@ Scenario Edition () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
+                RequestPlayerStorage (
                     {
                         &XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED,
                         &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED
-                    }),
+                    },
+                    FLAG_PLAYER_ID_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -215,8 +228,9 @@ Scenario Deletion () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                RequestPlayerStorage (
+                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                    FLAG_PLAYER_ID_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -241,8 +255,9 @@ Scenario EditionAndDeletionFromReversedCursor () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}),
+                RequestPlayerStorage (
+                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                    FLAG_PLAYER_ID_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -281,12 +296,10 @@ Scenario MultipleIndicesEditionAndDeletion () noexcept
     return
         {
             {
-                PlayerIdSourceWithObjects (
+                RequestPlayerStorage(
                     {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
-                     &KARL_1_ALIVE_IMMOBILIZED}),
-                PlayerNameSourceWithObjects (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
-                     &KARL_1_ALIVE_IMMOBILIZED}),
+                     &KARL_1_ALIVE_IMMOBILIZED},
+                     FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE),
             },
             {
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
@@ -325,7 +338,7 @@ Scenario OrderingInt8 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::int8),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int8),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -339,7 +352,7 @@ Scenario OrderingInt16 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::int16),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int16),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -353,7 +366,7 @@ Scenario OrderingInt32 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::int32),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int32),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -367,7 +380,7 @@ Scenario OrderingInt64 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::int64),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int64),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -381,7 +394,7 @@ Scenario OrderingUInt8 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::uint8),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint8),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -395,7 +408,7 @@ Scenario OrderingUInt16 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::uint16),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint16),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -409,7 +422,7 @@ Scenario OrderingUInt32 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::uint32),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint32),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -423,7 +436,7 @@ Scenario OrderingUInt64 () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::uint64),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint64),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -437,7 +450,7 @@ Scenario OrderingFloat () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::floating),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::floating),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -451,7 +464,7 @@ Scenario OrderingDouble () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::doubleFloating),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::doubleFloating),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -465,7 +478,7 @@ Scenario OrderingBlock () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::block),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::block),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
@@ -479,7 +492,7 @@ Scenario OrderingString () noexcept
     return
         {
             {
-                OrderingSourceOnField (AllFieldTypesStructure::Reflection::string),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflection::string),
             },
             {
                 QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},

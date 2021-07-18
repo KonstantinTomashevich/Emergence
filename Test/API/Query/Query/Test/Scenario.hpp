@@ -12,27 +12,42 @@ namespace Emergence::Query::Test
 {
 namespace Sources
 {
-struct SourceBase
+struct Value final
 {
     std::string name;
-    StandardLayout::Mapping dataType;
-    std::vector <const void *> objectsToInsert;
-};
-
-struct Value final : public SourceBase
-{
     std::vector <StandardLayout::FieldId> queriedFields;
 };
 
-struct Range final : public SourceBase
+struct Range final
 {
+    std::string name;
     StandardLayout::FieldId queriedField;
 };
 
-struct Volumetric final : public SourceBase
+struct Volumetric final
 {
     union SupportedValue final
     {
+        SupportedValue (int8_t _value) noexcept;
+
+        SupportedValue (int16_t _value) noexcept;
+
+        SupportedValue (int32_t _value) noexcept;
+
+        SupportedValue (int64_t _value) noexcept;
+
+        SupportedValue (uint8_t _value) noexcept;
+
+        SupportedValue (uint16_t _value) noexcept;
+
+        SupportedValue (uint32_t _value) noexcept;
+
+        SupportedValue (uint64_t _value) noexcept;
+
+        SupportedValue (float _value) noexcept;
+
+        SupportedValue (double _value) noexcept;
+
         int8_t int8;
         int16_t int16;
         int32_t int32;
@@ -49,15 +64,16 @@ struct Volumetric final : public SourceBase
 
     struct Dimension final
     {
-        StandardLayout::FieldId minField;
-
         SupportedValue globalMin;
 
-        StandardLayout::FieldId maxField;
+        StandardLayout::FieldId minField;
 
         SupportedValue globalMax;
+
+        StandardLayout::FieldId maxField;
     };
 
+    std::string name;
     std::vector <Dimension> dimensions;
 };
 } // namespace Sources
@@ -66,6 +82,13 @@ using Source = std::variant <
     Sources::Value,
     Sources::Range,
     Sources::Volumetric>;
+
+struct Storage final
+{
+    StandardLayout::Mapping dataType;
+    std::vector <const void *> objectsToInsert;
+    std::vector <Source> sources;
+};
 
 namespace Tasks
 {
@@ -214,7 +237,7 @@ using Task = std::variant <
 
 struct Scenario final
 {
-    std::vector <Source> requiredSources;
+    std::vector <Storage> storages;
     std::vector <Task> tasks;
 };
 } // namespace Emergence::Query::Test

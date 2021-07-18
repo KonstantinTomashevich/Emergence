@@ -1,6 +1,9 @@
 #pragma once
 
+#include <vector>
+
 #include <Query/Test/DataTypes.hpp>
+#include <Query/Test/Scenario.hpp>
 
 namespace Emergence::Query::Test
 {
@@ -95,6 +98,48 @@ inline const AllFieldTypesStructure ALL_FIELD_TYPES_2
         {13u, 15u, 15u, 21u},
         {"xavier"},
     };
+
+inline const BoundingBox BOX_MIN_10_8_4_MAX_11_9_5
+    {
+        10.0f, 8.0f, 4.0f,
+        11.0f, 9.0f, 5.0f
+    };
+
+inline const BoundingBox BOX_MIN_M2_1_0_MAX_0_4_2
+    {
+        -2.0f, 1.0f, 0.0f,
+        0.0f, 4.0f, 2.0f
+    };
+
+inline const BoundingBox BOX_MIN_15_8_50_MAX_19_11_60
+    {
+        15.0f, 8.0f, 50.0f,
+        19.0f, 11.0f, 60.0f
+    };
+
+inline const ScreenRect RECT_MIN_200_300_MAX_300_400
+    {
+        200, 300,
+        300, 400
+    };
+
+inline const ScreenRect RECT_MIN_0_0_MAX_500_200
+    {
+        0, 0,
+        500, 200
+    };
+
+inline const ScreenRect RECT_MIN_700_400_MAX_1000_600
+    {
+        700, 400,
+        1000, 600
+    };
+
+std::vector <Sources::Volumetric::Dimension> GetDimensions2D ();
+
+std::vector <Sources::Volumetric::Dimension> GetDimensions3D ();
+
+std::vector <Sources::Volumetric::Dimension> GetDimensionsScreenRect ();
 
 namespace Queries
 {
