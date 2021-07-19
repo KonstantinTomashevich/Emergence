@@ -481,7 +481,7 @@ TEST_CASE (ShapeIntersections2D)
     };
 }
 
-TEST_CASE (Dupicates)
+TEST_CASE (Duplicates)
 {
     Scenario {
         Record::Reflection::GetMapping (),

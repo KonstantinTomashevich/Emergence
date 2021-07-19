@@ -26,7 +26,7 @@ Scenario Deletion () noexcept;
 
 Scenario EditionAndDeletionFromReversedCursor () noexcept;
 
-Scenario MultipleIndicesEditionAndDeletion () noexcept;
+Scenario MultipleSourcesEditionAndDeletion () noexcept;
 
 Scenario OrderingInt8 () noexcept;
 
@@ -68,7 +68,7 @@ REGISTER_RANGE_QUERY_TEST (Driver, WithDuplicates)                             \
 REGISTER_RANGE_QUERY_TEST (Driver, Edition)                                    \
 REGISTER_RANGE_QUERY_TEST (Driver, Deletion)                                   \
 REGISTER_RANGE_QUERY_TEST (Driver, EditionAndDeletionFromReversedCursor)       \
-REGISTER_RANGE_QUERY_TEST (Driver, MultipleIndicesEditionAndDeletion)          \
+REGISTER_RANGE_QUERY_TEST (Driver, MultipleSourcesEditionAndDeletion)          \
 REGISTER_RANGE_QUERY_TEST (Driver, OrderingInt8)                               \
 REGISTER_RANGE_QUERY_TEST (Driver, OrderingInt16)                              \
 REGISTER_RANGE_QUERY_TEST (Driver, OrderingInt32)                              \

@@ -12,8 +12,7 @@ constexpr uint8_t FLAG_PLAYER_ID_SOURCE = 1u;
 
 constexpr uint8_t FLAG_PLAYER_NAME_SOURCE = 1u << 1u;
 
-static Storage RequestPlayerStorage (
-    const std::vector <const void *> &_objects, uint8_t _sources)
+static Storage RequestPlayerStorage (const std::vector <const void *> &_objects, uint8_t _sources)
 {
     Storage storage
         {
@@ -291,7 +290,7 @@ Scenario EditionAndDeletionFromReversedCursor () noexcept
         };
 }
 
-Scenario MultipleIndicesEditionAndDeletion () noexcept
+Scenario MultipleSourcesEditionAndDeletion () noexcept
 {
     return
         {

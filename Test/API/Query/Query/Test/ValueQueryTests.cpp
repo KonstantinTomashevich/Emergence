@@ -18,8 +18,7 @@ constexpr uint8_t FLAG_PLAYER_ALIVE_SOURCE = 1u << 3u;
 
 constexpr uint8_t FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE = 1u << 4u;
 
-static Storage RequestStorage (
-    const std::vector <const void *> &_objects, uint8_t _sources)
+static Storage RequestStorage (const std::vector <const void *> &_objects, uint8_t _sources)
 {
     Storage storage
         {
@@ -237,7 +236,7 @@ Scenario OnTwoBitFields () noexcept
         };
 }
 
-Scenario MultipleIndicesEdition () noexcept
+Scenario MultipleSourcesEdition () noexcept
 {
     return
         {
@@ -273,7 +272,7 @@ Scenario MultipleIndicesEdition () noexcept
         };
 }
 
-Scenario MultipleIndicesDeletion () noexcept
+Scenario MultipleSourcesDeletion () noexcept
 {
     return
         {

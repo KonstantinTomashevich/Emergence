@@ -28,9 +28,9 @@ Scenario OnBitField () noexcept;
 
 Scenario OnTwoBitFields () noexcept;
 
-Scenario MultipleIndicesEdition () noexcept;
+Scenario MultipleSourcesEdition () noexcept;
 
-Scenario MultipleIndicesDeletion () noexcept;
+Scenario MultipleSourcesDeletion () noexcept;
 } // namespace Emergence::Query::Test::ValueQuery
 
 #define REGISTER_VALUE_QUERY_TEST(Driver, TestName)                            \
@@ -49,5 +49,5 @@ REGISTER_VALUE_QUERY_TEST (Driver, OnStringField)                              \
 REGISTER_VALUE_QUERY_TEST (Driver, OnTwoFields)                                \
 REGISTER_VALUE_QUERY_TEST (Driver, OnBitField)                                 \
 REGISTER_VALUE_QUERY_TEST (Driver, OnTwoBitFields)                             \
-REGISTER_VALUE_QUERY_TEST (Driver, MultipleIndicesEdition)                     \
-REGISTER_VALUE_QUERY_TEST (Driver, MultipleIndicesDeletion)                    \
+REGISTER_VALUE_QUERY_TEST (Driver, MultipleSourcesEdition)                     \
+REGISTER_VALUE_QUERY_TEST (Driver, MultipleSourcesDeletion)                    \
