@@ -24,12 +24,29 @@ static Storage RequestBoundingBoxStorage (const std::vector <const void *> &_obj
     assert (_sources > 0u);
     if (_sources & FLAG_2D_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Volumetric {"2d", GetDimensions2D ()});
+        storage.sources.emplace_back (
+            Sources::Volumetric
+                {
+                    "2d",
+                    {
+                        {-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
+                        {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}
+                    }
+                });
     }
 
     if (_sources & FLAG_3D_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Volumetric {"3d", GetDimensions3D ()});
+        storage.sources.emplace_back (
+            Sources::Volumetric
+                {
+                    "3d",
+                    {
+                        {-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
+                        {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY},
+                        {-100.0f, BoundingBox::Reflection::minZ, 100.0f, BoundingBox::Reflection::maxZ},
+                    }
+                });
     }
 
     return storage;
@@ -41,7 +58,21 @@ static Storage RequestScreenRectStorage (const std::vector <const void *> &_obje
         {
             BoundingBox::Reflection::GetMapping (),
             _objects,
-            {Sources::Volumetric {"screenRect", GetDimensionsScreenRect ()}}
+            {
+                Sources::Volumetric
+                    {
+                        "screenRect",
+                        {
+                            {
+                                int16_t (-4096), ScreenRect::Reflection::minX,
+                                int16_t (4096), ScreenRect::Reflection::maxX
+                            },
+                            {
+                                int16_t (-4096), ScreenRect::Reflection::minY,
+                                int16_t (4096), ScreenRect::Reflection::maxY
+                            },
+                        }
+                    }}
         };
 }
 

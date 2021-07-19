@@ -98,7 +98,7 @@ struct ScreenRect final
 };
 
 /// \brief Data structure for tests, that execute all types of queries on single object type.
-struct MergedRecord final
+struct PlayerWithBoundingBox final
 {
     struct Reflection final
     {
@@ -108,12 +108,10 @@ struct MergedRecord final
 
         static StandardLayout::FieldId player;
         static StandardLayout::FieldId boundingBox;
-        static StandardLayout::FieldId screenRect;
     };
 
     Player player;
     BoundingBox boundingBox;
-    ScreenRect screenRect;
 };
 
 /// \brief Data structure with all supported field archetypes, except bit fields.

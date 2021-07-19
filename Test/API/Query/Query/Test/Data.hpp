@@ -3,7 +3,6 @@
 #include <vector>
 
 #include <Query/Test/DataTypes.hpp>
-#include <Query/Test/Scenario.hpp>
 
 namespace Emergence::Query::Test
 {
@@ -135,11 +134,23 @@ inline const ScreenRect RECT_MIN_700_400_MAX_1000_600
         1000, 600
     };
 
-std::vector <Sources::Volumetric::Dimension> GetDimensions2D ();
+inline const PlayerWithBoundingBox HUGO_0_MIN_10_8_4_MAX_11_9_5
+    {
+        HUGO_0_ALIVE_STUNNED,
+        BOX_MIN_10_8_4_MAX_11_9_5
+    };
 
-std::vector <Sources::Volumetric::Dimension> GetDimensions3D ();
+inline const PlayerWithBoundingBox KARL_1_MIN_M2_1_0_MAX_0_4_2
+    {
+        KARL_1_ALIVE_IMMOBILIZED,
+        BOX_MIN_M2_1_0_MAX_0_4_2
+    };
 
-std::vector <Sources::Volumetric::Dimension> GetDimensionsScreenRect ();
+inline const PlayerWithBoundingBox XAVIER_2_MIN_15_8_50_MAX_19_11_60
+    {
+        XAVIER_2_ALIVE_POISONED,
+        BOX_MIN_15_8_50_MAX_19_11_60
+    };
 
 namespace Queries
 {

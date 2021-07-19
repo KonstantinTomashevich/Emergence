@@ -51,19 +51,17 @@ static StandardLayout::Mapping RegisterScreenRect ()
     return builder.End ();
 }
 
-static StandardLayout::Mapping RegisterMergedRecord ()
+static StandardLayout::Mapping RegisterPlayerWithBoundingBox ()
 {
     StandardLayout::MappingBuilder builder;
-    builder.Begin (sizeof (MergedRecord));
+    builder.Begin (sizeof (PlayerWithBoundingBox));
 
-    MergedRecord::Reflection::player = builder.RegisterNestedObject (
-        offsetof (MergedRecord, player), Player::Reflection::GetMapping ());
+    PlayerWithBoundingBox::Reflection::player = builder.RegisterNestedObject (
+        offsetof (PlayerWithBoundingBox, player), Player::Reflection::GetMapping ());
 
-    MergedRecord::Reflection::boundingBox = builder.RegisterNestedObject (
-        offsetof (MergedRecord, boundingBox), BoundingBox::Reflection::GetMapping ());
+    PlayerWithBoundingBox::Reflection::boundingBox = builder.RegisterNestedObject (
+        offsetof (PlayerWithBoundingBox, boundingBox), BoundingBox::Reflection::GetMapping ());
 
-    MergedRecord::Reflection::screenRect = builder.RegisterNestedObject (
-        offsetof (MergedRecord, screenRect), ScreenRect::Reflection::GetMapping ());
     return builder.End ();
 }
 
@@ -126,11 +124,9 @@ StandardLayout::FieldId ScreenRect::Reflection::maxX;
 
 StandardLayout::FieldId ScreenRect::Reflection::maxY;
 
-StandardLayout::FieldId MergedRecord::Reflection::player;
+StandardLayout::FieldId PlayerWithBoundingBox::Reflection::player;
 
-StandardLayout::FieldId MergedRecord::Reflection::boundingBox;
-
-StandardLayout::FieldId MergedRecord::Reflection::screenRect;
+StandardLayout::FieldId PlayerWithBoundingBox::Reflection::boundingBox;
 
 StandardLayout::FieldId AllFieldTypesStructure::Reflection::int8;
 
@@ -174,9 +170,9 @@ StandardLayout::Mapping ScreenRect::Reflection::GetMapping ()
     return mapping;
 }
 
-StandardLayout::Mapping MergedRecord::Reflection::GetMapping ()
+StandardLayout::Mapping PlayerWithBoundingBox::Reflection::GetMapping ()
 {
-    static StandardLayout::Mapping mapping = RegisterMergedRecord ();
+    static StandardLayout::Mapping mapping = RegisterPlayerWithBoundingBox ();
     return mapping;
 }
 

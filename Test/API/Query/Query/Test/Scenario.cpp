@@ -51,4 +51,10 @@ Sources::Volumetric::SupportedValue::SupportedValue (double _value) noexcept
     : doubleFloating (_value)
 {
 }
+
+std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right)
+{
+    _left.insert (_left.end (), _right.begin (), _right.end ());
+    return _left;
+}
 } // namespace Emergence::Query::Test

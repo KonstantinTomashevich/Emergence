@@ -247,4 +247,6 @@ struct Scenario final
     std::vector <Storage> storages;
     std::vector <Task> tasks;
 };
+
+std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right);
 } // namespace Emergence::Query::Test
