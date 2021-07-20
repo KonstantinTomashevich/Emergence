@@ -56,7 +56,7 @@ static Storage RequestScreenRectStorage (const std::vector <const void *> &_obje
 {
     return
         {
-            BoundingBox::Reflection::GetMapping (),
+            ScreenRect::Reflection::GetMapping (),
             _objects,
             {
                 Sources::Volumetric
@@ -518,7 +518,7 @@ Scenario IntegerIntersections () noexcept
                 CursorCheckAllUnordered
                     {
                         "min = (300, 300), max = (1000, 1000)",
-                        {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_15_8_50_MAX_19_11_60}
+                        {&RECT_MIN_200_300_MAX_300_400, &RECT_MIN_700_400_MAX_1000_600}
                     },
 
                 QueryShapeIntersectionToRead
@@ -531,7 +531,7 @@ Scenario IntegerIntersections () noexcept
                 CursorCheckAllUnordered
                     {
                         "min = (100, 100), max = (1000, 300)",
-                        {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_M2_1_0_MAX_0_4_2}
+                        {&RECT_MIN_0_0_MAX_500_200, &RECT_MIN_200_300_MAX_300_400}
                     },
 
                 QueryRayIntersectionToRead
@@ -544,7 +544,7 @@ Scenario IntegerIntersections () noexcept
                 CursorCheckAllOrdered
                     {
                         "origin = (100, 250), direction = (100, 50)",
-                        {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_15_8_50_MAX_19_11_60}
+                        {&RECT_MIN_200_300_MAX_300_400, &RECT_MIN_700_400_MAX_1000_600}
                     },
 
                 QueryRayIntersectionToRead
@@ -557,7 +557,7 @@ Scenario IntegerIntersections () noexcept
                 CursorCheckAllOrdered
                     {
                         "origin = (300, 50), direction = (100, 100)",
-                        {&BOX_MIN_M2_1_0_MAX_0_4_2, &BOX_MIN_15_8_50_MAX_19_11_60}
+                        {&RECT_MIN_0_0_MAX_500_200, &RECT_MIN_700_400_MAX_1000_600}
                     },
             }
         };

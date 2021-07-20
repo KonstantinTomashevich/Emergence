@@ -9,14 +9,12 @@ Scenario EditAndDeleteUsingValueQuery ();
 Scenario EditAndDeleteUsingRangeQuery ();
 
 Scenario EditAndDeleteUsingVolumetricQuery ();
-
-// TODO: Unsupported: DropIndex
 } // namespace Emergence::Query::Test::AllQueryTypesInOneStorage
 
 #define REGISTER_ALL_QUERY_TYPES_IN_ONE_STORAGE_QUERY_TEST(Driver, TestName)                                           \
 TEST_CASE (TestName)                                                                                                   \
 {                                                                                                                      \
-    Driver (Emergence::Query::Test::VolumetricQuery::TestName ());                                                     \
+    Driver (Emergence::Query::Test::AllQueryTypesInOneStorage::TestName ());                                                     \
 }                                                                                                                      \
 
 #define REGISTER_ALL_TESTS_WITH_ALL_QUERY_TYPES_IN_ONE_STORAGE(Driver)                                                 \

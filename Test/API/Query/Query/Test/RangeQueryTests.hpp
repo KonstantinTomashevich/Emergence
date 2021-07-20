@@ -6,15 +6,11 @@
 
 namespace Emergence::Query::Test::RangeQuery
 {
-// TODO: Unsupported: ReferenceManipulations
-
 Scenario CursorManipulations () noexcept;
 
 Scenario ReversedCursorManipulations () noexcept;
 
 Scenario SimpleLookups () noexcept;
-
-// TODO: Unsupported: InsertBeforeCreation
 
 Scenario OnStringField () noexcept;
 

@@ -60,6 +60,8 @@ struct Volumetric final
 
         float floating;
         double doubleFloating;
+
+        friend std::ostream &operator << (std::ostream &_output, const SupportedValue &_value);
     };
 
     struct Dimension final
@@ -218,6 +220,46 @@ struct CursorClose final
 {
     std::string name;
 };
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheck &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrdered &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllUnordered &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteRecord &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorCopy &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorMove &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_task);
 } // namespace Tasks
 
 using Task = std::variant <
@@ -249,4 +291,6 @@ struct Scenario final
 };
 
 std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right);
+
+std::ostream &operator << (std::ostream &_output, const Task &_task);
 } // namespace Emergence::Query::Test

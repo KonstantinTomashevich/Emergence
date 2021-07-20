@@ -6,15 +6,11 @@
 
 namespace Emergence::Query::Test::ValueQuery
 {
-// TODO: Unsupported: ReferenceManipulations
-
 Scenario SimpleLookup () noexcept;
 
 Scenario CursorManipulations () noexcept;
 
 Scenario LookupForNonExistentRecord () noexcept;
-
-// TODO: Unsupported: InsertBeforeCreation
 
 Scenario LookupForMany () noexcept;
 

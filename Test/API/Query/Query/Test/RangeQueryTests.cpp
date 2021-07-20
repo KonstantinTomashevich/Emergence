@@ -79,7 +79,7 @@ Scenario ReversedCursorManipulations () noexcept
             TestCursorCopyAndMove (
                 QueryReversedRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 QueryReversedRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &HUGO_0_ALIVE_STUNNED)
+                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED)
         };
 }
 
@@ -295,23 +295,23 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
     return
         {
             {
-                RequestPlayerStorage(
+                RequestPlayerStorage (
                     {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
                      &KARL_1_ALIVE_IMMOBILIZED},
-                     FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE),
+                    FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
-                CursorCheckAllOrdered {"all",
+                QueryRangeToRead {{{"playerId", "allIds"}, nullptr, nullptr}},
+                CursorCheckAllOrdered {"allIds",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &XAVIER_2_ALIVE_POISONED}},
-                CursorClose {"all"},
+                CursorClose {"allIds"},
 
-                QueryRangeToRead {{{"playerName", "all"}, nullptr, nullptr}},
-                CursorCheckAllOrdered {"all",
+                QueryRangeToRead {{{"playerName", "allNames"}, nullptr, nullptr}},
+                CursorCheckAllOrdered {"allNames",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &XAVIER_2_ALIVE_POISONED}},
-                CursorClose {"all"},
+                CursorClose {"allNames"},
 
                 QueryRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
@@ -321,12 +321,12 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
                 CursorEdit {"1-1", &XAVIER_2_ALIVE_POISONED},
                 CursorClose {"1-1"},
 
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
-                CursorCheckAllOrdered {"all",
+                QueryRangeToRead {{{"playerId", "allIds"}, nullptr, nullptr}},
+                CursorCheckAllOrdered {"allIds",
                                        {&HUGO_0_ALIVE_STUNNED, &XAVIER_2_ALIVE_POISONED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerName", "all"}, nullptr, nullptr}},
-                CursorCheckAllOrdered {"all",
+                QueryRangeToRead {{{"playerName", "allNames"}, nullptr, nullptr}},
+                CursorCheckAllOrdered {"allNames",
                                        {&HUGO_0_ALIVE_STUNNED, &XAVIER_2_ALIVE_POISONED, &XAVIER_2_ALIVE_POISONED}},
             }
         };

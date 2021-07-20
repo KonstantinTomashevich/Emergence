@@ -6,13 +6,9 @@
 
 namespace Emergence::Query::Test::VolumetricQuery
 {
-// TODO: Unsupported: ReferenceManipulations
-
 Scenario ShapeIntersectionCursorManipulations () noexcept;
 
 Scenario RayIntersectionCursorManipulations () noexcept;
-
-// TODO: Unsupported: InsertBeforeCreation
 
 Scenario RayIntersections2D () noexcept;
 

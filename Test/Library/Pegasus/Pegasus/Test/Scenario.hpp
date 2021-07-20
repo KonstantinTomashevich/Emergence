@@ -5,10 +5,14 @@
 #include <variant>
 #include <vector>
 
+#include <Query/Test/Scenario.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Pegasus::Test
 {
+using namespace Query::Test::Tasks;
+
 struct CreateHashIndex
 {
     std::string name;
@@ -21,19 +25,10 @@ struct CreateOrderedIndex
     StandardLayout::FieldId indexedField;
 };
 
-struct DimensionDescriptor
-{
-    const void *globalMinBorderValue;
-    StandardLayout::FieldId minBorderField;
-
-    const void *globalMaxBorderValue;
-    StandardLayout::FieldId maxBorderField;
-};
-
 struct CreateVolumetricIndex
 {
     std::string name;
-    std::vector <DimensionDescriptor> dimensions;
+    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct CopyIndexReference
@@ -45,12 +40,6 @@ struct CopyIndexReference
 struct RemoveIndexReference
 {
     std::string name;
-};
-
-struct CheckIndexCanBeDropped
-{
-    std::string name;
-    bool expectedResult;
 };
 
 struct DropIndex
@@ -71,165 +60,43 @@ struct CloseAllocator
 {
 };
 
-struct IndexLookupBase
-{
-    std::string indexName;
-    std::string cursorName;
-};
-
-struct HashIndexLookupBase : public IndexLookupBase
-{
-    const void *request;
-};
-
-struct HashIndexLookupToRead : public HashIndexLookupBase
-{
-};
-
-struct HashIndexLookupToEdit : public HashIndexLookupBase
-{
-};
-
-struct OrderedIndexLookupBase : public IndexLookupBase
-{
-    const void *minValue;
-    const void *maxValue;
-};
-
-struct OrderedIndexLookupToRead : public OrderedIndexLookupBase
-{
-};
-
-struct OrderedIndexLookupToEdit : public OrderedIndexLookupBase
-{
-};
-
-struct OrderedIndexLookupToReadReversed : public OrderedIndexLookupBase
-{
-};
-
-struct OrderedIndexLookupToEditReversed : public OrderedIndexLookupBase
-{
-};
-
-struct VolumetricIndexShapeIntersectionLookupBase : public IndexLookupBase
-{
-    // TODO: Should this be reworked into Pegasus/RecordCollection-like format?
-    //       I think it shouldn't, because it'll transferred into query common tests.
-    std::vector <const void *> min;
-    std::vector <const void *> max;
-};
-
-struct VolumetricIndexShapeIntersectionLookupToRead :
-    public VolumetricIndexShapeIntersectionLookupBase
-{
-};
-
-struct VolumetricIndexShapeIntersectionLookupToEdit :
-    public VolumetricIndexShapeIntersectionLookupBase
-{
-};
-
-struct VolumetricIndexRayIntersectionLookupBase : public IndexLookupBase
-{
-    // TODO: Should this be reworked into Pegasus/RecordCollection-like format?
-    //       I think it shouldn't, because it'll transferred into query common tests.
-    std::vector <const void *> origin;
-    std::vector <const void *> direction;
-    float maxDistance = std::numeric_limits <float>::max ();
-};
-
-struct VolumetricIndexRayIntersectionLookupToRead :
-    public VolumetricIndexRayIntersectionLookupBase
-{
-};
-
-struct VolumetricIndexRayIntersectionLookupToEdit :
-    public VolumetricIndexRayIntersectionLookupBase
-{
-};
-
-struct CursorCheck
-{
-    std::string name;
-    const void *expectedRecord;
-};
-
-struct CursorCheckAllOrdered
-{
-    std::string name;
-    std::vector <const void *> expectedRecords;
-};
-
-struct CursorCheckAllUnordered
-{
-    std::string name;
-    std::vector <const void *> expectedRecords;
-};
-
-struct CursorEdit
-{
-    std::string name;
-    const void *copyFrom;
-};
-
-struct CursorIncrement
-{
-    std::string name;
-};
-
-struct CursorDeleteRecord
-{
-    std::string name;
-};
-
-struct CopyCursor
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct MoveCursor
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct CloseCursor
-{
-    std::string name;
-};
-
 using Task = std::variant <
     CreateHashIndex,
     CreateOrderedIndex,
     CreateVolumetricIndex,
     CopyIndexReference,
     RemoveIndexReference,
-    CheckIndexCanBeDropped,
     DropIndex,
     OpenAllocator,
     AllocateAndInit,
     CloseAllocator,
-    HashIndexLookupToRead,
-    HashIndexLookupToEdit,
-    OrderedIndexLookupToRead,
-    OrderedIndexLookupToEdit,
-    OrderedIndexLookupToReadReversed,
-    OrderedIndexLookupToEditReversed,
-    VolumetricIndexShapeIntersectionLookupToRead,
-    VolumetricIndexShapeIntersectionLookupToEdit,
-    VolumetricIndexRayIntersectionLookupToRead,
-    VolumetricIndexRayIntersectionLookupToEdit,
+    CheckIsSourceBusy,
+    QueryValueToRead,
+    QueryValueToEdit,
+    QueryRangeToRead,
+    QueryRangeToEdit,
+    QueryReversedRangeToRead,
+    QueryReversedRangeToEdit,
+    QueryShapeIntersectionToRead,
+    QueryShapeIntersectionToEdit,
+    QueryRayIntersectionToRead,
+    QueryRayIntersectionToEdit,
     CursorCheck,
     CursorCheckAllOrdered,
     CursorCheckAllUnordered,
     CursorEdit,
     CursorIncrement,
     CursorDeleteRecord,
-    CopyCursor,
-    MoveCursor,
-    CloseCursor>;
+    CursorCopy,
+    CursorMove,
+    CursorClose>;
+
+namespace TestQueryApiDrivers
+{
+void CreateIndicesThanInsertRecords (const Query::Test::Scenario &_scenario);
+
+void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario);
+}
 
 class Scenario final
 {
