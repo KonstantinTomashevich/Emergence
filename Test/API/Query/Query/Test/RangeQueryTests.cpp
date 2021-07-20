@@ -35,7 +35,7 @@ static Storage RequestPlayerStorage (const std::vector <const void *> &_objects,
     return storage;
 }
 
-static Storage RequestOrderingStorage (StandardLayout::FieldId _field)
+static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
 {
     return
         {
