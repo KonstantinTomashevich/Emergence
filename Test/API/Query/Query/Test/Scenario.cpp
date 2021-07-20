@@ -54,11 +54,14 @@ Sources::Volumetric::SupportedValue::SupportedValue (double _value) noexcept
 {
 }
 
-std::ostream &Sources::operator << (std::ostream &_output, const Sources::Volumetric::SupportedValue &_value)
+namespace Sources
+{
+std::ostream &operator << (std::ostream &_output, const Sources::Volumetric::SupportedValue &_value)
 {
     // To increase log readability we print only types, that are used by volumetric queries tests.
     return _output << "{" << _value.floating << "f or " << _value.int16 << "i16}";
 }
+} // namespace Sources
 
 namespace Tasks
 {

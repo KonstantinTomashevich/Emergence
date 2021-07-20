@@ -60,8 +60,6 @@ struct Volumetric final
 
         float floating;
         double doubleFloating;
-
-        friend std::ostream &operator << (std::ostream &_output, const SupportedValue &_value);
     };
 
     struct Dimension final
@@ -78,6 +76,8 @@ struct Volumetric final
     std::string name;
     std::vector <Dimension> dimensions;
 };
+
+std::ostream &operator << (std::ostream &_output, const Volumetric::SupportedValue &_value);
 } // namespace Sources
 
 using Source = std::variant <
