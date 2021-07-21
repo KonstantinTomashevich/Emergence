@@ -231,6 +231,18 @@ VolumetricRepresentation::DimensionIterator::DimensionIterator (
     new (&data) DimensionIteratorBaseType (std::move (block_cast <DimensionIteratorBaseType> (*_data)));
 }
 
+VolumetricRepresentation::VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept
+{
+    new (&handle) Handling::Handle <Pegasus::VolumetricIndex> (
+        *reinterpret_cast <const Handling::Handle <Pegasus::VolumetricIndex> *> (&_other.handle));
+}
+
+VolumetricRepresentation::VolumetricRepresentation (VolumetricRepresentation &&_other) noexcept
+{
+    new (&handle) Handling::Handle <Pegasus::VolumetricIndex> (
+        std::move (*reinterpret_cast <Handling::Handle <Pegasus::VolumetricIndex> *> (&_other.handle)));
+}
+
 VolumetricRepresentation::~VolumetricRepresentation () noexcept
 {
     if (handle)
@@ -310,18 +322,58 @@ VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionE
 bool VolumetricRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    return reinterpret_cast <const Handling::Handle <Pegasus::VolumetricIndex> *> (&handle)->Get ()->CanBeDropped ();
+    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::VolumetricIndex> *> (&handle);
+    Pegasus::VolumetricIndex *index = realHandle.Get ();
+
+    // To extract correct result we must temporary unlink index handle.
+    const_cast <Handling::Handle <Pegasus::VolumetricIndex> &> (realHandle) = nullptr;
+    bool canBeDropped = index->CanBeDropped ();
+    const_cast <Handling::Handle <Pegasus::VolumetricIndex> &> (realHandle) = index;
+
+    return canBeDropped;
 }
 
 void VolumetricRepresentation::Drop () noexcept
 {
     assert (handle);
-    reinterpret_cast <Handling::Handle <Pegasus::VolumetricIndex> *> (&handle)->Get ()->Drop ();
+    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::VolumetricIndex> *> (&handle);
+    Pegasus::VolumetricIndex *index = realHandle.Get ();
+
+    // Free handle first, because indices can not be deleted while any handle points to them.
+    const_cast <Handling::Handle <Pegasus::VolumetricIndex> &> (realHandle) = nullptr;
+    index->Drop ();
+}
+
+bool VolumetricRepresentation::operator == (const VolumetricRepresentation &_other) const noexcept
+{
+    return handle == _other.handle;
+}
+
+VolumetricRepresentation &VolumetricRepresentation::operator = (const VolumetricRepresentation &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~VolumetricRepresentation ();
+        new (this) VolumetricRepresentation (_other);
+    }
+
+    return *this;
+}
+
+VolumetricRepresentation &VolumetricRepresentation::operator = (VolumetricRepresentation &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~VolumetricRepresentation ();
+        new (this) VolumetricRepresentation (std::move (_other));
+    }
+
+    return *this;
 }
 
 VolumetricRepresentation::VolumetricRepresentation (void *_handle) noexcept
 {
-    assert (handle);
+    assert (_handle);
     static_assert (sizeof (handle) == sizeof (Handling::Handle <Pegasus::VolumetricIndex>));
     new (&handle) Handling::Handle <Pegasus::VolumetricIndex> (static_cast <Pegasus::VolumetricIndex *> (_handle));
 }

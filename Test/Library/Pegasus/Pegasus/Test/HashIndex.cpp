@@ -1,14 +1,14 @@
-#include <Pegasus/Test/Scenario.hpp>
 #include <Pegasus/Test/Common.hpp>
+#include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/ValueQueryTests.hpp>
 
 #include <Testing/Testing.hpp>
 
-BEGIN_SUITE (HashIndex)
-
 using namespace Emergence::Pegasus::Test;
+
+BEGIN_SUITE (HashIndex)
 
 TEST_CASE (ReferenceManipulations)
 {

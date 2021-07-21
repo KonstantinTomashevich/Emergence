@@ -139,6 +139,18 @@ PointRepresentation::KeyFieldIterator::KeyFieldIterator (const std::array <uint8
     new (&data) KeyFieldIteratorBaseType (block_cast <KeyFieldIteratorBaseType> (*_data));
 }
 
+PointRepresentation::PointRepresentation (const PointRepresentation &_other) noexcept
+{
+    new (&handle) Handling::Handle <Pegasus::HashIndex> (
+        *reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&_other.handle));
+}
+
+PointRepresentation::PointRepresentation (PointRepresentation &&_other) noexcept
+{
+    new (&handle) Handling::Handle <Pegasus::HashIndex> (
+        std::move (*reinterpret_cast <Handling::Handle <Pegasus::HashIndex> *> (&_other.handle)));
+}
+
 PointRepresentation::~PointRepresentation () noexcept
 {
     if (handle)
@@ -182,13 +194,53 @@ PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const 
 bool PointRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    return reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle)->Get ()->CanBeDropped ();
+    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle);
+    Pegasus::HashIndex *index = realHandle.Get ();
+
+    // To extract correct result we must temporary unlink index handle.
+    const_cast <Handling::Handle <Pegasus::HashIndex> &> (realHandle) = nullptr;
+    bool canBeDropped = index->CanBeDropped ();
+    const_cast <Handling::Handle <Pegasus::HashIndex> &> (realHandle) = index;
+
+    return canBeDropped;
 }
 
 void PointRepresentation::Drop () noexcept
 {
     assert (handle);
-    reinterpret_cast <Handling::Handle <Pegasus::HashIndex> *> (&handle)->Get ()->Drop ();
+    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle);
+    Pegasus::HashIndex *index = realHandle.Get ();
+
+    // Free handle first, because indices can not be deleted while any handle points to them.
+    const_cast <Handling::Handle <Pegasus::HashIndex> &> (realHandle) = nullptr;
+    index->Drop ();
+}
+
+bool PointRepresentation::operator == (const PointRepresentation &_other) const noexcept
+{
+    return handle == _other.handle;
+}
+
+PointRepresentation &PointRepresentation::operator = (const PointRepresentation &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~PointRepresentation ();
+        new (this) PointRepresentation (_other);
+    }
+
+    return *this;
+}
+
+PointRepresentation &PointRepresentation::operator = (PointRepresentation &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~PointRepresentation ();
+        new (this) PointRepresentation (std::move (_other));
+    }
+
+    return *this;
 }
 
 PointRepresentation::PointRepresentation (void *_handle) noexcept

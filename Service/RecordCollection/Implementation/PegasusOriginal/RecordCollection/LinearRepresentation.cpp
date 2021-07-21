@@ -148,6 +148,18 @@ LinearRepresentation::ReversedEditCursor::ReversedEditCursor (std::array <uint8_
         std::move (block_cast <Pegasus::OrderedIndex::ReversedEditCursor> (*_data)));
 }
 
+LinearRepresentation::LinearRepresentation (const LinearRepresentation &_other) noexcept
+{
+    new (&handle) Handling::Handle <Pegasus::OrderedIndex> (
+        *reinterpret_cast <const Handling::Handle <Pegasus::OrderedIndex> *> (&_other.handle));
+}
+
+LinearRepresentation::LinearRepresentation (LinearRepresentation &&_other) noexcept
+{
+    new (&handle) Handling::Handle <Pegasus::OrderedIndex> (
+        std::move (*reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&_other.handle)));
+}
+
 LinearRepresentation::~LinearRepresentation () noexcept
 {
     reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->~Handle ();
@@ -202,17 +214,58 @@ StandardLayout::Field LinearRepresentation::GetKeyField () const noexcept
 bool LinearRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    return reinterpret_cast <const Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->Get ()->CanBeDropped ();
+    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::OrderedIndex> *> (&handle);
+    Pegasus::OrderedIndex *index = realHandle.Get ();
+
+    // To extract correct result we must temporary unlink index handle.
+    const_cast <Handling::Handle <Pegasus::OrderedIndex> &> (realHandle) = nullptr;
+    bool canBeDropped = index->CanBeDropped ();
+    const_cast <Handling::Handle <Pegasus::OrderedIndex> &> (realHandle) = index;
+
+    return canBeDropped;
 }
 
 void LinearRepresentation::Drop () noexcept
 {
     assert (handle);
-    return reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->Get ()->Drop ();
+    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::OrderedIndex> *> (&handle);
+    Pegasus::OrderedIndex *index = realHandle.Get ();
+
+    // Free handle first, because indices can not be deleted while any handle points to them.
+    const_cast <Handling::Handle <Pegasus::OrderedIndex> &> (realHandle) = nullptr;
+    index->Drop ();
+}
+
+bool LinearRepresentation::operator == (const LinearRepresentation &_other) const noexcept
+{
+    return handle == _other.handle;
+}
+
+LinearRepresentation &LinearRepresentation::operator = (const LinearRepresentation &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~LinearRepresentation ();
+        new (this) LinearRepresentation (_other);
+    }
+
+    return *this;
+}
+
+LinearRepresentation &LinearRepresentation::operator = (LinearRepresentation &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~LinearRepresentation ();
+        new (this) LinearRepresentation (std::move (_other));
+    }
+
+    return *this;
 }
 
 LinearRepresentation::LinearRepresentation (void *_handle) noexcept
 {
+    assert (_handle);
     static_assert (sizeof (handle) == sizeof (Handling::Handle <Pegasus::OrderedIndex>));
     new (&handle) Handling::Handle <Pegasus::OrderedIndex> (static_cast <Pegasus::OrderedIndex *> (_handle));
 }

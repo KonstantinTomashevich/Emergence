@@ -1,14 +1,20 @@
-#include <Pegasus/Test/Common.hpp>
-#include <Pegasus/Test/Scenario.hpp>
+#include <RecordCollection/Test/Common.hpp>
+#include <RecordCollection/Test/Scenario.hpp>
+#include <RecordCollection/Test/VolumetricRepresentation.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/VolumetricQueryTests.hpp>
 
 #include <Testing/Testing.hpp>
 
-using namespace Emergence::Pegasus::Test;
+using namespace Emergence::RecordCollection::Test;
 
-BEGIN_SUITE (VolumetricIndex)
+bool Emergence::RecordCollection::Test::VolumetricRepresentationTestIncludeMarker () noexcept
+{
+    return true;
+}
+
+BEGIN_SUITE (VolumetricRepresentation)
 
 TEST_CASE (ReferenceManipulations)
 {
@@ -16,7 +22,7 @@ TEST_CASE (ReferenceManipulations)
         Emergence::Query::Test::BoundingBox::Reflection::GetMapping (),
         std::vector <Task>
             {
-                CreateVolumetricIndex {
+                CreateVolumetricRepresentation {
                     "2d",
                     {
                         {
@@ -33,17 +39,17 @@ TEST_CASE (ReferenceManipulations)
     };
 }
 
-REGISTER_ALL_VOLUMETRIC_QUERY_TESTS (TestQueryApiDrivers::CreateIndicesThanInsertRecords)
+REGISTER_ALL_VOLUMETRIC_QUERY_TESTS (TestQueryApiDrivers::CreateRepresentationsThanAllocateRecords)
 
 TEST_CASE (InsertBeforeCreationAndTestRayIntersections)
 {
-    TestQueryApiDrivers::InsertRecordsThanCreateIndices (
+    TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations (
         Emergence::Query::Test::VolumetricQuery::RayIntersections2D ());
 }
 
 TEST_CASE (InsertBeforeCreationAndTestShapeIntersections)
 {
-    TestQueryApiDrivers::InsertRecordsThanCreateIndices (
+    TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations (
         Emergence::Query::Test::VolumetricQuery::ShapeIntersections2D ());
 }
 

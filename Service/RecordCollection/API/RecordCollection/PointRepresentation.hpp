@@ -156,13 +156,11 @@ public:
     ///            StandardLayout::Field::GetSize, even if string length is less than this value.
     /// \invariant Values for fields with StandardLayout::FieldArchetype::BIT must passed as bytes in which all
     ///            bits should be zero's except bit with StandardLayout::Field::GetBitOffset.
-    using Point = const uint8_t *;
+    using Point = const void *;
 
-    /// There is no sense to copy representations, because they are part of Collection.
-    PointRepresentation (const PointRepresentation &_other) = delete;
+    PointRepresentation (const PointRepresentation &_other) noexcept;
 
-    /// Moving representations is forbidden, because otherwise user can move representation out of Collection.
-    PointRepresentation (PointRepresentation &&_other) = delete;
+    PointRepresentation (PointRepresentation &&_other) noexcept;
 
     ~PointRepresentation () noexcept;
 
@@ -192,11 +190,11 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    /// There is no sense to copy assign representations, because they are part of Collection.
-    PointRepresentation &operator = (const PointRepresentation &_other) = delete;
+    bool operator == (const PointRepresentation &_other) const noexcept;
 
-    /// Move assigning representations is forbidden, because otherwise user can move representation out of Collection.
-    PointRepresentation &operator = (PointRepresentation &&_other) = delete;
+    PointRepresentation &operator = (const PointRepresentation &_other) noexcept;
+
+    PointRepresentation &operator = (PointRepresentation &&_other) noexcept;
 
 private:
     /// Collection constructs representations.

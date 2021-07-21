@@ -199,6 +199,7 @@ struct CursorIncrement final
     std::string name;
 };
 
+// TODO: Rename to CursorDeleteObject?
 struct CursorDeleteRecord final
 {
     std::string name;

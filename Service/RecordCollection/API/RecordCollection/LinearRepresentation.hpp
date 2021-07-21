@@ -185,13 +185,11 @@ public:
     ///          block with actual value. `nullptr` values will be interpreted as absence of borders.
     ///
     /// \warning Due to runtime-only nature of values, logically incorrect pointers can not be caught.
-    using KeyFieldValue = const uint8_t *;
+    using KeyFieldValue = const void *;
 
-    /// There is no sense to copy representations, because they are part of Collection.
-    LinearRepresentation (const LinearRepresentation &_other) = delete;
+    LinearRepresentation (const LinearRepresentation &_other) noexcept;
 
-    /// Moving representations is forbidden, because otherwise user can move representation out of Collection.
-    LinearRepresentation (LinearRepresentation &&_other) = delete;
+    LinearRepresentation (LinearRepresentation &&_other) noexcept;
 
     ~LinearRepresentation () noexcept;
 
@@ -227,11 +225,11 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    /// There is no sense to copy assign representations, because they are part of Collection.
-    LinearRepresentation &operator = (const LinearRepresentation &_other) = delete;
+    bool operator == (const LinearRepresentation &_other) const noexcept;
 
-    /// Move assigning representations is forbidden, because otherwise user can move representation out of Collection.
-    LinearRepresentation &operator = (LinearRepresentation &&_other) = delete;
+    LinearRepresentation &operator = (const LinearRepresentation &_other) noexcept;
+
+    LinearRepresentation &operator = (LinearRepresentation &&_other) noexcept;
 
 private:
     /// Collection constructs representations.

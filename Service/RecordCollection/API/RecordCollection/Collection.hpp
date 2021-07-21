@@ -200,7 +200,7 @@ public:
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
-    struct DimensionDescription
+    struct DimensionDescriptor
     {
         /// \brief Pointer to minimum possible value of #minBorderField.
         ///
@@ -245,31 +245,32 @@ public:
 
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    PointRepresentation CreatePointRepresentation (const std::vector <StandardLayout::FieldId> &_keyFields) const noexcept;
+    PointRepresentation CreatePointRepresentation (
+        const std::vector <StandardLayout::FieldId> &_keyFields) const noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     /// \invariant All border fields for all dimensions should have same archetype and same size.
     VolumetricRepresentation CreateVolumetricRepresentation (
-        const std::vector <DimensionDescription> &_dimensions) const noexcept;
+        const std::vector <DimensionDescriptor> &_dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
-    LinearRepresentationIterator LinearRepresentationBegin () noexcept;
+    LinearRepresentationIterator LinearRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of linear representations range.
-    LinearRepresentationIterator LinearRepresentationEnd () noexcept;
+    LinearRepresentationIterator LinearRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of point representations range.
-    PointRepresentationIterator PointRepresentationBegin () noexcept;
+    PointRepresentationIterator PointRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of point representations range.
-    PointRepresentationIterator PointRepresentationEnd () noexcept;
+    PointRepresentationIterator PointRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of volumetric representations range.
-    VolumetricRepresentationIterator VolumetricRepresentationBegin () noexcept;
+    VolumetricRepresentationIterator VolumetricRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of volumetric representations range.
-    VolumetricRepresentationIterator VolumetricRepresentationEnd () noexcept;
+    VolumetricRepresentationIterator VolumetricRepresentationEnd () const noexcept;
 
     /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
     Collection &operator = (const Collection &_other) = delete;

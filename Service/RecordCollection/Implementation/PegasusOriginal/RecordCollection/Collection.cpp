@@ -278,74 +278,82 @@ Collection::CreatePointRepresentation (const std::vector <StandardLayout::FieldI
 }
 
 VolumetricRepresentation
-Collection::CreateVolumetricRepresentation (const std::vector <DimensionDescription> &_dimensions) const noexcept
+Collection::CreateVolumetricRepresentation (const std::vector <DimensionDescriptor> &_dimensions) const noexcept
 {
-    static_assert (sizeof (DimensionDescription) == sizeof (Pegasus::VolumetricIndex::DimensionDescriptor));
-    static_assert (offsetof (DimensionDescription, globalMinBorder) ==
-                   offsetof (Pegasus::VolumetricIndex::DimensionDescriptor, globalMinBorder));
-
-    static_assert (offsetof (DimensionDescription, minBorderField) ==
-                   offsetof (Pegasus::VolumetricIndex::DimensionDescriptor, minBorderField));
-
-    static_assert (offsetof (DimensionDescription, globalMaxBorder) ==
-                   offsetof (Pegasus::VolumetricIndex::DimensionDescriptor, globalMaxBorder));
-
-    static_assert (offsetof (DimensionDescription, maxBorderField) ==
-                   offsetof (Pegasus::VolumetricIndex::DimensionDescriptor, maxBorderField));
-
     assert (handle);
+    // Volumetric representation creation is rare operation, therefore it's ok to dynamically allocate vector here.
+    std::vector <Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions;
+
+    for (const DimensionDescriptor &dimension : _dimensions)
+    {
+        convertedDimensions.emplace_back (
+            Pegasus::VolumetricIndex::DimensionDescriptor
+                {
+                    *reinterpret_cast <const Pegasus::VolumetricIndex::SupportedAxisValue *> (
+                        dimension.globalMinBorder),
+                    dimension.minBorderField,
+
+                    *reinterpret_cast <const Pegasus::VolumetricIndex::SupportedAxisValue *> (
+                        dimension.globalMaxBorder),
+                    dimension.maxBorderField,
+                }
+        );
+    }
+
     Handling::Handle <Pegasus::VolumetricIndex> index =
-        static_cast <Pegasus::Storage *> (handle)->CreateVolumetricIndex (
-            // Currently RecordCollection and Pegasus formats are same, therefore we can just reinterpret vector.
-            *reinterpret_cast<const std::vector <Pegasus::VolumetricIndex::DimensionDescriptor> *> (&_dimensions));
+        static_cast <Pegasus::Storage *> (handle)->CreateVolumetricIndex (convertedDimensions);
     return VolumetricRepresentation (index.Get ());
 }
 
-Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin () noexcept
+Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin () const noexcept
 {
     assert (handle);
-    Pegasus::Storage::OrderedIndexIterator iterator = static_cast <Pegasus::Storage *> (handle)->BeginOrderedIndices ();
+    Pegasus::Storage::OrderedIndexIterator iterator =
+        static_cast <const Pegasus::Storage *> (handle)->BeginOrderedIndices ();
+
     return LinearRepresentationIterator (
         reinterpret_cast <decltype (LinearRepresentationIterator::data) *> (&iterator));
 }
 
-Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () noexcept
+Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () const noexcept
 {
     assert (handle);
-    Pegasus::Storage::OrderedIndexIterator iterator = static_cast <Pegasus::Storage *> (handle)->EndOrderedIndices ();
+    Pegasus::Storage::OrderedIndexIterator iterator =
+        static_cast <const Pegasus::Storage *> (handle)->EndOrderedIndices ();
+
     return LinearRepresentationIterator (
         reinterpret_cast <decltype (LinearRepresentationIterator::data) *> (&iterator));
 }
 
-Collection::PointRepresentationIterator Collection::PointRepresentationBegin () noexcept
+Collection::PointRepresentationIterator Collection::PointRepresentationBegin () const noexcept
 {
     assert (handle);
-    Pegasus::Storage::HashIndexIterator iterator = static_cast <Pegasus::Storage *> (handle)->BeginHashIndices ();
+    Pegasus::Storage::HashIndexIterator iterator = static_cast <const Pegasus::Storage *> (handle)->BeginHashIndices ();
     return PointRepresentationIterator (reinterpret_cast <decltype (PointRepresentationIterator::data) *> (&iterator));
 }
 
-Collection::PointRepresentationIterator Collection::PointRepresentationEnd () noexcept
+Collection::PointRepresentationIterator Collection::PointRepresentationEnd () const noexcept
 {
     assert (handle);
-    Pegasus::Storage::HashIndexIterator iterator = static_cast <Pegasus::Storage *> (handle)->EndHashIndices ();
+    Pegasus::Storage::HashIndexIterator iterator = static_cast <const Pegasus::Storage *> (handle)->EndHashIndices ();
     return PointRepresentationIterator (reinterpret_cast <decltype (PointRepresentationIterator::data) *> (&iterator));
 }
 
-Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () noexcept
+Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () const noexcept
 {
     assert (handle);
     Pegasus::Storage::VolumetricIndexIterator iterator =
-        static_cast <Pegasus::Storage *> (handle)->BeginVolumetricIndices ();
+        static_cast <const Pegasus::Storage *> (handle)->BeginVolumetricIndices ();
 
     return VolumetricRepresentationIterator (
         reinterpret_cast <decltype (VolumetricRepresentationIterator::data) *> (&iterator));
 }
 
-Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationEnd () noexcept
+Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationEnd () const noexcept
 {
     assert (handle);
     Pegasus::Storage::VolumetricIndexIterator iterator =
-        static_cast <Pegasus::Storage *> (handle)->EndVolumetricIndices ();
+        static_cast <const Pegasus::Storage *> (handle)->EndVolumetricIndices ();
 
     return VolumetricRepresentationIterator (
         reinterpret_cast <decltype (VolumetricRepresentationIterator::data) *> (&iterator));

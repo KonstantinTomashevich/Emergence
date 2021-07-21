@@ -273,11 +273,9 @@ public:
     /// \invariant Should not be `nullptr`.
     using Ray = const void *;
 
-    /// There is no sense to copy representations, because they are part of Collection.
-    VolumetricRepresentation (const VolumetricRepresentation &_other) = delete;
+    VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept;
 
-    /// Moving representations is forbidden, because otherwise user can move representation out of Collection.
-    VolumetricRepresentation (VolumetricRepresentation &&_other) = delete;
+    VolumetricRepresentation (VolumetricRepresentation &&_other) noexcept;
 
     ~VolumetricRepresentation () noexcept;
 
@@ -326,11 +324,11 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
-    /// There is no sense to copy assign representations, because they are part of Collection.
-    VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) = delete;
+    bool operator == (const VolumetricRepresentation &_other) const noexcept;
 
-    /// Move assigning representations is forbidden, because otherwise user can move representation out of Collection.
-    VolumetricRepresentation &operator = (VolumetricRepresentation &&_other) = delete;
+    VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) noexcept;
+
+    VolumetricRepresentation &operator = (VolumetricRepresentation &&_other) noexcept;
 
 private:
     /// Collection constructs representations.

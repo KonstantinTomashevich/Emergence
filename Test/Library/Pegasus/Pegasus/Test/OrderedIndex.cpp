@@ -1,5 +1,5 @@
-#include <Pegasus/Test/Scenario.hpp>
 #include <Pegasus/Test/Common.hpp>
+#include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/RangeQueryTests.hpp>

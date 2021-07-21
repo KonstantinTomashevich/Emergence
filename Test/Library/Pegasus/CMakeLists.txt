@@ -8,7 +8,6 @@ add_dependencies (LibraryTests TestPegasusOriginal)
 target_include_directories (TestPegasusOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_variant_target (Pegasus Original PEGASUS_LIBRARY_TARGET)
-sober_naming_variant_target (Testing Doctest TESTING_LIBRARY_TARGET)
 sober_naming_variant_target (TestQueryAPI Original TEST_QUERY_API_LIBRARY_TARGET)
 
 target_link_libraries (
