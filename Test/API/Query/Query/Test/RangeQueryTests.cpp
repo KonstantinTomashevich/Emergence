@@ -239,7 +239,7 @@ Scenario Deletion () noexcept
 
                 QueryRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
-                CursorDeleteRecord {"1-1"},
+                CursorDeleteObject {"1-1"},
                 CursorCheck {"1-1", nullptr},
                 CursorClose {"1-1"},
 
@@ -279,7 +279,7 @@ Scenario EditionAndDeletionFromReversedCursor () noexcept
 
                 QueryReversedRangeToEdit {{{"playerId", "2-2"}, &Queries::ID_2, &Queries::ID_2}},
                 CursorCheck {"2-2", &XAVIER_2_ALIVE_POISONED},
-                CursorDeleteRecord {"2-2"},
+                CursorDeleteObject {"2-2"},
                 CursorCheck {"2-2", &XAVIER_2_ALIVE_POISONED},
                 CursorClose {"2-2"},
 
@@ -316,7 +316,7 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
                 QueryRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorEdit {"1-1", &XAVIER_2_ALIVE_POISONED},
-                CursorDeleteRecord {"1-1"},
+                CursorDeleteObject {"1-1"},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorEdit {"1-1", &XAVIER_2_ALIVE_POISONED},
                 CursorClose {"1-1"},

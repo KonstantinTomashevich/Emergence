@@ -88,7 +88,7 @@ struct ExecutionContext
 
     void ExecuteTask (const CursorIncrement &_task);
 
-    void ExecuteTask (const CursorDeleteRecord &_task);
+    void ExecuteTask (const CursorDeleteObject &_task);
 
     void ExecuteTask (const CursorCopy &_task);
 
@@ -506,7 +506,7 @@ void ExecutionContext::ExecuteTask (const CursorIncrement &_task)
         iterator->second);
 }
 
-void ExecutionContext::ExecuteTask (const CursorDeleteRecord &_task)
+void ExecutionContext::ExecuteTask (const CursorDeleteObject &_task)
 {
     auto iterator = activeCursors.find (_task.name);
     REQUIRE_WITH_MESSAGE (

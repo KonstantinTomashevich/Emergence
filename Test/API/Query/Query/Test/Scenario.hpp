@@ -199,8 +199,7 @@ struct CursorIncrement final
     std::string name;
 };
 
-// TODO: Rename to CursorDeleteObject?
-struct CursorDeleteRecord final
+struct CursorDeleteObject final
 {
     std::string name;
 };
@@ -254,7 +253,7 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorEdit &_task
 
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteRecord &_task);
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObject &_task);
 
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorCopy &_task);
 
@@ -280,7 +279,7 @@ using Task = std::variant <
     Tasks::CursorCheckAllUnordered,
     Tasks::CursorEdit,
     Tasks::CursorIncrement,
-    Tasks::CursorDeleteRecord,
+    Tasks::CursorDeleteObject,
     Tasks::CursorCopy,
     Tasks::CursorMove,
     Tasks::CursorClose>;

@@ -86,7 +86,7 @@ using Task = std::variant <
     CursorCheckAllUnordered,
     CursorEdit,
     CursorIncrement,
-    CursorDeleteRecord,
+    CursorDeleteObject,
     CursorCopy,
     CursorMove,
     CursorClose>;

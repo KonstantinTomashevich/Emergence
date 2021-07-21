@@ -192,7 +192,7 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &
     return _output << "Increment cursor \"" << _task.name << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteRecord &_task)
+std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObject &_task)
 {
     return _output << "Delete object, to which cursor \"" << _task.name << "\" points.";
 }

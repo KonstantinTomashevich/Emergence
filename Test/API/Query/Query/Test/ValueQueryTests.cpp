@@ -285,7 +285,7 @@ Scenario MultipleSourcesDeletion () noexcept
                 QueryValueToEdit {{{"playerId", "1"}, &Queries::ID_1}},
                 CursorCheck {"1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorEdit {"1", &KARL_0_ALIVE_IMMOBILIZED},
-                CursorDeleteRecord {"1"},
+                CursorDeleteObject {"1"},
                 CursorClose {"1"},
 
                 QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
