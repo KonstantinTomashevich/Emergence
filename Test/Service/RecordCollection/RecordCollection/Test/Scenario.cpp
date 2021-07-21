@@ -131,6 +131,30 @@ void ExecutionContext::ExecuteTask (const CreatePointRepresentation &_task)
         "There should be no representation reference with name \"", _task.name, "\".");
 
     PointRepresentation representation = collection.CreatePointRepresentation (_task.keyFields);
+    // Check that representation key fields are equal to expected key fields.
+    std::size_t keyFieldIndex = 0u;
+
+    for (auto iterator = representation.KeyFieldBegin (); iterator != representation.KeyFieldEnd (); ++iterator)
+    {
+        // Do some unnecessary stuff to cover more iterator operations.
+        if (iterator != representation.KeyFieldBegin ())
+        {
+            auto iteratorCopy = iterator;
+            CHECK ((*(iterator--)).IsSame (*iteratorCopy));
+            CHECK (iterator++ != iteratorCopy);
+            CHECK (iterator == iteratorCopy);
+        }
+
+        const bool overflow = keyFieldIndex >= _task.keyFields.size ();
+        CHECK (!overflow);
+
+        if (!overflow)
+        {
+            CHECK (typeMapping.GetField (_task.keyFields[keyFieldIndex]).IsSame (*iterator));
+            ++keyFieldIndex;
+        }
+    }
+
     representationReferences.emplace (_task.name, representation);
     IterateOverRepresentations ();
 }
@@ -142,6 +166,8 @@ void ExecutionContext::ExecuteTask (const CreateLinearRepresentation &_task)
         "There should be no representation reference with name \"", _task.name, "\".");
 
     LinearRepresentation representation = collection.CreateLinearRepresentation (_task.keyField);
+    CHECK (typeMapping.GetField (_task.keyField).IsSame (representation.GetKeyField ()));
+
     representationReferences.emplace (_task.name, representation);
     IterateOverRepresentations ();
 }
@@ -168,6 +194,23 @@ void ExecutionContext::ExecuteTask (const CreateVolumetricRepresentation &_task)
     }
 
     VolumetricRepresentation representation = collection.CreateVolumetricRepresentation (convertedDescriptors);
+    // Check that dimensions key fields are equal to expected key fields.
+    std::size_t dimensionIndex = 0u;
+
+    for (auto iterator = representation.DimensionBegin (); iterator != representation.DimensionEnd (); ++iterator)
+    {
+        const bool overflow = dimensionIndex >= _task.dimensions.size ();
+        CHECK (!overflow);
+
+        if (!overflow)
+        {
+            const auto dimension = *iterator;
+            CHECK (typeMapping.GetField (_task.dimensions[dimensionIndex].minField).IsSame (dimension.minField));
+            CHECK (typeMapping.GetField (_task.dimensions[dimensionIndex].maxField).IsSame (dimension.maxField));
+            ++dimensionIndex;
+        }
+    }
+
     representationReferences.emplace (_task.name, representation);
     IterateOverRepresentations ();
 }
@@ -607,21 +650,48 @@ void ExecutionContext::IterateOverRepresentations () const
     }
 
     std::vector <RepresentationReference> found;
+    // During iterations below we will execute some unnecessary operations
+    // with iterator to cover more iteration-related operations.
+
     for (auto iterator = collection.LinearRepresentationBegin ();
          iterator != collection.LinearRepresentationEnd (); ++iterator)
     {
+        if (iterator != collection.LinearRepresentationBegin ())
+        {
+            const auto iteratorCopy = iterator;
+            CHECK (*(iterator--) == *iteratorCopy);
+            CHECK (RepresentationReference (*(iterator++)) == found.back ());
+            CHECK (iterator == iteratorCopy);
+        }
+
         found.emplace_back (*iterator);
     }
 
     for (auto iterator = collection.PointRepresentationBegin ();
          iterator != collection.PointRepresentationEnd (); ++iterator)
     {
+        if (iterator != collection.PointRepresentationBegin ())
+        {
+            const auto iteratorCopy = iterator;
+            CHECK (*(iterator--) == *iteratorCopy);
+            CHECK (RepresentationReference (*(iterator++)) == found.back ());
+            CHECK (iterator == iteratorCopy);
+        }
+
         found.emplace_back (*iterator);
     }
 
     for (auto iterator = collection.VolumetricRepresentationBegin ();
          iterator != collection.VolumetricRepresentationEnd (); ++iterator)
     {
+        if (iterator != collection.VolumetricRepresentationBegin ())
+        {
+            const auto iteratorCopy = iterator;
+            CHECK (*(iterator--) == *iteratorCopy);
+            CHECK (RepresentationReference (*(iterator++)) == found.back ());
+            CHECK (iterator == iteratorCopy);
+        }
+
         found.emplace_back (*iterator);
     }
 

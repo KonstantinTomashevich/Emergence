@@ -98,7 +98,7 @@ Scenario CursorManipulations () noexcept
             TestCursorCopyAndMove (
                 QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
                 QueryValueToEdit {{{"playerId", "0"}, &Queries::ID_0}},
-                &HUGO_0_ALIVE_STUNNED, nullptr, &HUGO_0_ALIVE_STUNNED)
+                &HUGO_0_ALIVE_STUNNED, nullptr, &HUGO_0_ALIVE_STUNNED, nullptr)
         };
 }
 

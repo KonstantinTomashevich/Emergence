@@ -63,7 +63,8 @@ Scenario CursorManipulations () noexcept
             TestCursorCopyAndMove (
                 QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 QueryRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &HUGO_0_ALIVE_STUNNED)
+                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
+                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED)
         };
 }
 
@@ -79,7 +80,8 @@ Scenario ReversedCursorManipulations () noexcept
             TestCursorCopyAndMove (
                 QueryReversedRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 QueryReversedRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED)
+                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED,
+                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED)
         };
 }
 

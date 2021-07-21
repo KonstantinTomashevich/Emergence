@@ -30,8 +30,9 @@ static std::pair <std::string, std::string> ExtractSourceAndCursorNames (const T
 }
 
 std::vector <Task> TestCursorCopyAndMove (
-    const Task &_readCursorQuery, const Task &_editCursorQuery, const void *_readCursorExpectedFirstObject,
-    const void *_readCursorExpectedSecondObject, const void *_editCursorExpectedFirstObject)
+    const Task &_readCursorQuery, const Task &_editCursorQuery,
+    const void *_readCursorExpectedFirstObject, const void *_readCursorExpectedSecondObject,
+    const void *_editCursorExpectedFirstObject, const void *_editCursorExpectedSecondObject)
 {
     using namespace Tasks;
     auto[sourceName, readCursorName] = ExtractSourceAndCursorNames (_readCursorQuery);
@@ -69,6 +70,8 @@ std::vector <Task> TestCursorCopyAndMove (
             CheckIsSourceBusy {sourceName, true},
 
             CursorCheck {editCursorName + "_move", _editCursorExpectedFirstObject},
+            CursorIncrement {editCursorName + "_move"},
+            CursorCheck {editCursorName + "_move", _editCursorExpectedSecondObject},
             CursorClose {editCursorName + "_move"},
             CheckIsSourceBusy {sourceName, false},
         };

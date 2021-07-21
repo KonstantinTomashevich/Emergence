@@ -7,5 +7,5 @@ namespace Emergence::Query::Test
 std::vector <Task> TestCursorCopyAndMove (
     const Task &_readCursorQuery, const Task &_editCursorQuery,
     const void *_readCursorExpectedFirstObject, const void *_readCursorExpectedSecondObject,
-    const void *_editCursorExpectedFirstObject);
+    const void *_editCursorExpectedFirstObject, const void *_editCursorExpectedSecondObject);
 } // namespace Emergence::Query::Test
