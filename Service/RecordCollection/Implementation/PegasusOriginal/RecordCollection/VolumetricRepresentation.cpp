@@ -225,6 +225,30 @@ bool VolumetricRepresentation::DimensionIterator::operator != (
     return !(*this == _other);
 }
 
+VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator = (
+    const VolumetricRepresentation::DimensionIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~DimensionIterator ();
+        new (this) DimensionIterator (_other);
+    }
+
+    return *this;
+}
+
+VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator = (
+    VolumetricRepresentation::DimensionIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~DimensionIterator ();
+        new (this) DimensionIterator (std::move (_other));
+    }
+
+    return *this;
+}
+
 VolumetricRepresentation::DimensionIterator::DimensionIterator (
     const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {

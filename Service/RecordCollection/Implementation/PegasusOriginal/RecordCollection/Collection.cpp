@@ -89,6 +89,30 @@ bool Collection::LinearRepresentationIterator::operator != (
     return !(*this == _other);
 }
 
+Collection::LinearRepresentationIterator &Collection::LinearRepresentationIterator::operator = (
+    const LinearRepresentationIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~LinearRepresentationIterator ();
+        new (this) LinearRepresentationIterator (_other);
+    }
+
+    return *this;
+}
+
+Collection::LinearRepresentationIterator &Collection::LinearRepresentationIterator::operator = (
+    LinearRepresentationIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~LinearRepresentationIterator ();
+        new (this) LinearRepresentationIterator (std::move (_other));
+    }
+
+    return *this;
+}
+
 Collection::LinearRepresentationIterator::LinearRepresentationIterator (
     const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
@@ -154,6 +178,30 @@ bool Collection::PointRepresentationIterator::operator != (
     const Collection::PointRepresentationIterator &_other) const noexcept
 {
     return !(*this == _other);
+}
+
+Collection::PointRepresentationIterator &Collection::PointRepresentationIterator::operator = (
+    const PointRepresentationIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~PointRepresentationIterator ();
+        new (this) PointRepresentationIterator (_other);
+    }
+
+    return *this;
+}
+
+Collection::PointRepresentationIterator &Collection::PointRepresentationIterator::operator = (
+    PointRepresentationIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~PointRepresentationIterator ();
+        new (this) PointRepresentationIterator (std::move (_other));
+    }
+
+    return *this;
 }
 
 Collection::PointRepresentationIterator::PointRepresentationIterator (
@@ -223,6 +271,30 @@ bool Collection::VolumetricRepresentationIterator::operator != (
     const Collection::VolumetricRepresentationIterator &_other) const noexcept
 {
     return !(*this == _other);
+}
+
+Collection::VolumetricRepresentationIterator &Collection::VolumetricRepresentationIterator::operator = (
+    const VolumetricRepresentationIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~VolumetricRepresentationIterator ();
+        new (this) VolumetricRepresentationIterator (_other);
+    }
+
+    return *this;
+}
+
+Collection::VolumetricRepresentationIterator &Collection::VolumetricRepresentationIterator::operator = (
+    VolumetricRepresentationIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~VolumetricRepresentationIterator ();
+        new (this) VolumetricRepresentationIterator (std::move (_other));
+    }
+
+    return *this;
 }
 
 Collection::VolumetricRepresentationIterator::VolumetricRepresentationIterator (

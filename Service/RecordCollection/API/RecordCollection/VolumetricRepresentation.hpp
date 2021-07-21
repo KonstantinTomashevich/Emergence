@@ -238,6 +238,10 @@ public:
 
         bool operator != (const DimensionIterator &_other) const noexcept;
 
+        DimensionIterator &operator = (const DimensionIterator &_other) noexcept;
+
+        DimensionIterator &operator = (DimensionIterator &&_other) noexcept;
+
     private:
         /// VolumetricRepresentation constructs dimension iterators.
         friend class VolumetricRepresentation;

@@ -134,6 +134,30 @@ bool PointRepresentation::KeyFieldIterator::operator != (
     return !(*this == _other);
 }
 
+PointRepresentation::KeyFieldIterator &PointRepresentation::KeyFieldIterator::operator = (
+    const PointRepresentation::KeyFieldIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~KeyFieldIterator ();
+        new (this) KeyFieldIterator (_other);
+    }
+
+    return *this;
+}
+
+PointRepresentation::KeyFieldIterator &PointRepresentation::KeyFieldIterator::operator = (
+    PointRepresentation::KeyFieldIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~KeyFieldIterator ();
+        new (this) KeyFieldIterator (std::move (_other));
+    }
+
+    return *this;
+}
+
 PointRepresentation::KeyFieldIterator::KeyFieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) KeyFieldIteratorBaseType (block_cast <KeyFieldIteratorBaseType> (*_data));

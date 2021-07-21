@@ -87,7 +87,9 @@ public:
 
         bool operator != (const LinearRepresentationIterator &_other) const noexcept;
 
-        // TODO: Iterator assignment.
+        LinearRepresentationIterator &operator = (const LinearRepresentationIterator &_other) noexcept;
+
+        LinearRepresentationIterator &operator = (LinearRepresentationIterator &&_other) noexcept;
 
     private:
         /// Collection constructs iterators for linear representations.
@@ -139,7 +141,9 @@ public:
 
         bool operator != (const PointRepresentationIterator &_other) const noexcept;
 
-        // TODO: Iterator assignment.
+        PointRepresentationIterator &operator = (const PointRepresentationIterator &_other) noexcept;
+
+        PointRepresentationIterator &operator = (PointRepresentationIterator &&_other) noexcept;
 
     private:
         /// Collection constructs iterators for point representations.
@@ -191,7 +195,9 @@ public:
 
         bool operator != (const VolumetricRepresentationIterator &_other) const noexcept;
 
-        // TODO: Iterator assignment.
+        VolumetricRepresentationIterator &operator = (const VolumetricRepresentationIterator &_other) noexcept;
+
+        VolumetricRepresentationIterator &operator = (VolumetricRepresentationIterator &&_other) noexcept;
 
     private:
         /// Collection constructs iterators for volumetric representations.

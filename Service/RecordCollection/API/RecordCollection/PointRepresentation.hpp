@@ -132,6 +132,10 @@ public:
 
         bool operator != (const KeyFieldIterator &_other) const noexcept;
 
+        KeyFieldIterator &operator = (const KeyFieldIterator &_other) noexcept;
+
+        KeyFieldIterator &operator = (KeyFieldIterator &&_other) noexcept;
+
     private:
         /// PointRepresentation constructs iterators for key fields.
         friend class PointRepresentation;

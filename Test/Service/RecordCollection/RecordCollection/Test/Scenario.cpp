@@ -658,9 +658,14 @@ void ExecutionContext::IterateOverRepresentations () const
     {
         if (iterator != collection.LinearRepresentationBegin ())
         {
-            const auto iteratorCopy = iterator;
+            auto iteratorCopy = iterator;
             CHECK (*(iterator--) == *iteratorCopy);
             CHECK (RepresentationReference (*(iterator++)) == found.back ());
+            CHECK (iterator == iteratorCopy);
+
+            --iteratorCopy;
+            CHECK (iterator != iteratorCopy);
+            iteratorCopy = iterator;
             CHECK (iterator == iteratorCopy);
         }
 
@@ -672,9 +677,14 @@ void ExecutionContext::IterateOverRepresentations () const
     {
         if (iterator != collection.PointRepresentationBegin ())
         {
-            const auto iteratorCopy = iterator;
+            auto iteratorCopy = iterator;
             CHECK (*(iterator--) == *iteratorCopy);
             CHECK (RepresentationReference (*(iterator++)) == found.back ());
+            CHECK (iterator == iteratorCopy);
+
+            --iteratorCopy;
+            CHECK (iterator != iteratorCopy);
+            iteratorCopy = iterator;
             CHECK (iterator == iteratorCopy);
         }
 
@@ -686,9 +696,14 @@ void ExecutionContext::IterateOverRepresentations () const
     {
         if (iterator != collection.VolumetricRepresentationBegin ())
         {
-            const auto iteratorCopy = iterator;
+            auto iteratorCopy = iterator;
             CHECK (*(iterator--) == *iteratorCopy);
             CHECK (RepresentationReference (*(iterator++)) == found.back ());
+            CHECK (iterator == iteratorCopy);
+
+            --iteratorCopy;
+            CHECK (iterator != iteratorCopy);
+            iteratorCopy = iterator;
             CHECK (iterator == iteratorCopy);
         }
 
