@@ -162,9 +162,9 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheck &_tas
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrdered &_task)
 {
     _output << "Check that cursor \"" << _task.name << "\" points to ordered sequence of objects equal to:";
-    for (const void *record : _task.expectedObjects)
+    for (const void *object : _task.expectedObjects)
     {
-        _output << " " << record;
+        _output << " " << object;
     }
 
     return _output << ".";
@@ -173,9 +173,9 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrd
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllUnordered &_task)
 {
     _output << "Check that cursor \"" << _task.name << "\" points to set of objects equal to:";
-    for (const void *record : _task.expectedObjects)
+    for (const void *object : _task.expectedObjects)
     {
-        _output << " " << record;
+        _output << " " << object;
     }
 
     return _output << ".";

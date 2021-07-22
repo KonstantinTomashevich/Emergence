@@ -328,6 +328,7 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
+    /// \return True if this and given instances are handles to the same representation.
     bool operator == (const VolumetricRepresentation &_other) const noexcept;
 
     VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) noexcept;

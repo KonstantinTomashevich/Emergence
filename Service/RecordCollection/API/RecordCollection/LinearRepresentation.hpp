@@ -225,6 +225,7 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
+    /// \return True if this and given instances are handles to the same representation.
     bool operator == (const LinearRepresentation &_other) const noexcept;
 
     LinearRepresentation &operator = (const LinearRepresentation &_other) noexcept;

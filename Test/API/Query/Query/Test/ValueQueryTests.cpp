@@ -102,7 +102,7 @@ Scenario CursorManipulations () noexcept
         };
 }
 
-Scenario LookupForNonExistentRecord () noexcept
+Scenario LookupForNonExistentObject () noexcept
 {
     return
         {
@@ -180,10 +180,10 @@ Scenario OnTwoFields () noexcept
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_NAME_AND_ID_SOURCE),
             },
             {
-                QueryValueToRead {{{"playerNameAndId", "hugoEntity1"}, &Queries::HUGO_1}},
-                CursorCheck {"hugoEntity1", nullptr},
-                QueryValueToRead {{{"playerNameAndId", "karlEntity1"}, &Queries::KARL_1}},
-                CursorCheckAllUnordered {"karlEntity1", {&KARL_1_ALIVE_IMMOBILIZED}},
+                QueryValueToRead {{{"playerNameAndId", "hugo1"}, &Queries::HUGO_1}},
+                CursorCheck {"hugo1", nullptr},
+                QueryValueToRead {{{"playerNameAndId", "karl1"}, &Queries::KARL_1}},
+                CursorCheckAllUnordered {"karl1", {&KARL_1_ALIVE_IMMOBILIZED}},
             }
         };
 }
@@ -263,11 +263,11 @@ Scenario MultipleSourcesEdition () noexcept
                 QueryValueToRead {{{"playerName", "hugo"}, &Queries::HUGO}},
                 CursorCheckAllUnordered {"hugo", {&HUGO_0_ALIVE_STUNNED}},
 
-                QueryValueToRead {{{"playerNameAndId", "karlEntity1"}, &Queries::KARL_1}},
-                CursorCheck {"karlEntity1", nullptr},
+                QueryValueToRead {{{"playerNameAndId", "karl1"}, &Queries::KARL_1}},
+                CursorCheck {"karl1", nullptr},
 
-                QueryValueToRead {{{"playerNameAndId", "karlEntity0"}, &Queries::KARL_0}},
-                CursorCheckAllUnordered {"karlEntity0", {&KARL_0_ALIVE_IMMOBILIZED}},
+                QueryValueToRead {{{"playerNameAndId", "karl0"}, &Queries::KARL_0}},
+                CursorCheckAllUnordered {"karl0", {&KARL_0_ALIVE_IMMOBILIZED}},
             }
         };
 }

@@ -194,6 +194,7 @@ public:
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
 
+    /// \return True if this and given instances are handles to the same representation.
     bool operator == (const PointRepresentation &_other) const noexcept;
 
     PointRepresentation &operator = (const PointRepresentation &_other) noexcept;

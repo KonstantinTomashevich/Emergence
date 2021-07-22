@@ -153,8 +153,7 @@ public:
 
     private:
         template <typename>
-        friend
-        struct CursorCommons;
+        friend struct CursorCommons;
 
         template <typename Operations>
         bool MoveToNextCoordinate (const Operations &) noexcept;
@@ -252,8 +251,7 @@ public:
 
     private:
         template <typename>
-        friend
-        struct CursorCommons;
+        friend struct CursorCommons;
 
         template <typename Operations>
         bool MoveToNextCoordinate (const Operations &) noexcept;
@@ -366,8 +364,7 @@ private:
     friend class Storage;
 
     template <typename>
-    friend
-    struct CursorCommons;
+    friend struct CursorCommons;
 
     struct RecordData final
     {
