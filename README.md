@@ -13,6 +13,8 @@ Currently in development.
 
 - **Hashing**: allows to hash byte sequences.
 - **MemoryPool**: paged memory allocator, inspired by **Boost.Pool**.
+- **RecordCollection**: storage for records of the same type, that provides
+  fast lookups for point, linear and volumetric representations of records.  
 - **StandardLayoutMapping**: fast field-only reflection for 
   standard layout structures.
 - **Testing**: hides selected testing framework under minimal set of 
@@ -21,20 +23,20 @@ Currently in development.
 ### Libraries
 
 - **Handling**: compact handle-based ownership implementation.
-- **Pegasus**: base library for one of the **RecordCollection** implementations.
-  Optimized for collections with small count of representations. **Warning:** 
-  prototype implementation is finished, but without **RecordCollection**
-  adapter implementation.
+- **Pegasus**: provides storage and indexing for records of the same type.
+  Optimized for small count of indices. Used to implement **RecordCollection**.
 
 ## Modules under development
 
 ### Services
 
-- **RecordCollection**: storage for records of the same type, that provides 
-  fast lookups for point, linear and volumetric representations of records.
+- **Warehouse**: allows to store records of different types and effectively
+  modify them through prepared queries using database-like API.
 
 ### Libraries
 
+- **Galleon**: database-like storage for records of different types, which is 
+  built on top of **RecordCollection**. Used to implement **Warehouse**.
 - **SyntaxSugar**: contains syntax sugar for other libraries 
   and service implementations. It's sort of always under development,
   because need for the new syntax sugar helpers could arise during 
@@ -48,10 +50,6 @@ Currently in development.
   well known format, for example DOT. This service helps to visualize complex
   structures, that are created during game execution. For example, 
   task dependency graphs or data processing pipelines.
-- **Warehouse**: allows to store records of different types and effectively 
-  modify them through prepared queries using database-like API. Planned to be 
-  implemented on top of **RecordCollection** service, but will not expose 
-  **RecordCollection** API.
 - **TaskOrganizer**: organizes tasks, that can use resources from 
   shared resources list and can depend on each other, into acyclic directed 
   graph, if it's possible.

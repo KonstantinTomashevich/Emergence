@@ -401,6 +401,17 @@ Storage::VolumetricIndexIterator Storage::EndVolumetricIndices () const noexcept
     return Storage::VolumetricIndexIterator (indices.volumetric.End ());
 }
 
+Storage &Storage::operator = (Storage &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Storage ();
+        new (this) Storage (std::move (_other));
+    }
+
+    return *this;
+}
+
 void Storage::RegisterReader () noexcept
 {
     // Writers counter can not be changed by thread safe operations, therefore it's ok to check it here.

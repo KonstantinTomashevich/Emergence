@@ -1,11 +1,15 @@
 #pragma once
 
+#include <vector>
+
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
 #include <StandardLayout/Field.hpp>
+
+#include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus
 {
@@ -73,32 +77,55 @@ public:
     /// Used only for index construction. ::Dimension is according dimension representation of constructed index.
     struct DimensionDescriptor final
     {
-        StandardLayout::FieldId minBorderField;
-
         SupportedAxisValue globalMinBorder;
 
-        StandardLayout::FieldId maxBorderField;
+        StandardLayout::FieldId minBorderField;
 
         SupportedAxisValue globalMaxBorder;
+
+        StandardLayout::FieldId maxBorderField;
     };
 
-    /// Axis aligned shape description for shape intersection lookups.
+    /// \brief Axis aligned shape with specific value type.
+    template <typename AxisValue>
     struct AxisAlignedShape final
     {
-        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> min;
-        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> max;
+        /// \brief Contains min-max pairs for all dimensions.
+        /// \details It's recommended to use ::Min and ::Max methods to access values of this array.
+        std::array <AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
 
-        // TODO: This format differs from service format. Think which is better.
+        AxisValue &Min (std::size_t _dimensionIndex) noexcept;
+
+        AxisValue &Max (std::size_t _dimensionIndex) noexcept;
+
+        const AxisValue &Min (std::size_t _dimensionIndex) const noexcept;
+
+        const AxisValue &Max (std::size_t _dimensionIndex) const noexcept;
     };
 
-    /// Ray description for ray intersection lookups.
+    /// \brief Memory block, that can fit AxisAlignedShape of any supported type.
+    using AxisAlignedShapeContainer = std::array <uint8_t, sizeof (AxisAlignedShape <SupportedAxisValue>)>;
+
+    /// \brief Ray with specific value type.
+    template <typename AxisValue>
     struct Ray final
     {
-        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> origin;
-        std::array <SupportedAxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
+        /// \brief Contains origin-direction pairs for all dimensions.
+        /// \details It's recommended to use ::Origin and ::Direction methods to access values of this array.
+        std::array <AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
 
-        // TODO: This format differs from service format. Think which is better.
+        AxisValue &Origin (std::size_t _dimensionIndex) noexcept;
+
+        AxisValue &Direction (std::size_t _dimensionIndex) noexcept;
+
+        const AxisValue &Origin (std::size_t _dimensionIndex) const noexcept;
+
+        const AxisValue &Direction (std::size_t _dimensionIndex) const noexcept;
     };
+
+    /// \brief Memory block, that can fit Ray of any supported type.
+    using RayContainer = std::array <
+        uint8_t, sizeof (SupportedAxisValue) * Constants::VolumetricIndex::MAX_DIMENSIONS * 2u>;
 
     class ShapeIntersectionCursorBase
     {
@@ -111,7 +138,7 @@ public:
 
     protected:
         ShapeIntersectionCursorBase (
-            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShape &_shape) noexcept;
+            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShapeContainer &_shape) noexcept;
 
         bool IsFinished () const noexcept;
 
@@ -128,14 +155,15 @@ public:
         template <typename>
         friend struct CursorCommons;
 
-        bool MoveToNextCoordinate () noexcept;
+        template <typename Operations>
+        bool MoveToNextCoordinate (const Operations &) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
 
         VolumetricIndex *index;
         const LeafSector sector;
-        const AxisAlignedShape shape;
+        const AxisAlignedShapeContainer shape;
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
@@ -165,7 +193,7 @@ public:
         friend class VolumetricIndex;
 
         ShapeIntersectionReadCursor (
-            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShape &_shape) noexcept;
+            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShapeContainer &_shape) noexcept;
     };
 
     class ShapeIntersectionEditCursor final : private ShapeIntersectionCursorBase
@@ -193,7 +221,7 @@ public:
         friend class VolumetricIndex;
 
         ShapeIntersectionEditCursor (VolumetricIndex *_index, const LeafSector &_sector,
-                                     const AxisAlignedShape &_shape) noexcept;
+                                     const AxisAlignedShapeContainer &_shape) noexcept;
 
         void BeginRecordEdition () const noexcept;
     };
@@ -208,7 +236,7 @@ public:
         ~RayIntersectionCursorBase () noexcept;
 
     protected:
-        RayIntersectionCursorBase (VolumetricIndex *_index, const Ray &_ray) noexcept;
+        RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
 
         bool IsFinished () const noexcept;
 
@@ -225,20 +253,28 @@ public:
         template <typename>
         friend struct CursorCommons;
 
-        bool MoveToNextCoordinate () noexcept;
+        template <typename Operations>
+        bool MoveToNextCoordinate (const Operations &) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
 
         VolumetricIndex *index;
 
-        /// Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
+        /// \brief Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
         std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> currentPoint;
 
-        /// Ray direction, converted into leaf coordinates.
+        /// \brief Ray direction, converted into leaf coordinates.
         std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
 
-        const Ray ray;
+        /// Distance from ray origin to ::currentPoint border in world coordinates.
+        float distanceTraveled;
+
+        const RayContainer ray;
+
+        /// \brief Maximum allowed distance for ray-shape collisions.
+        const float maxDistance;
+
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
         std::vector <bool> visitedRecords;
@@ -266,7 +302,7 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionReadCursor (VolumetricIndex *_index, const Ray &_ray) noexcept;
+        RayIntersectionReadCursor (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
     };
 
     class RayIntersectionEditCursor final : private RayIntersectionCursorBase
@@ -293,7 +329,7 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionEditCursor (VolumetricIndex *_index, const Ray &_ray) noexcept;
+        RayIntersectionEditCursor (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
 
         void BeginRecordEdition () const noexcept;
     };
@@ -306,15 +342,23 @@ public:
 
     const InplaceVector <Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
 
-    ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShape &_shape) noexcept;
+    ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShapeContainer &_shape) noexcept;
 
-    ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShape &_shape) noexcept;
+    ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShapeContainer &_shape) noexcept;
 
-    RayIntersectionReadCursor LookupRayIntersectionToRead (const Ray &_ray) noexcept;
+    RayIntersectionReadCursor LookupRayIntersectionToRead (
+        const RayContainer &_ray, float _maxDistance = std::numeric_limits <float>::max ()) noexcept;
 
-    RayIntersectionEditCursor LookupRayIntersectionToEdit (const Ray &_ray) noexcept;
+    RayIntersectionEditCursor LookupRayIntersectionToEdit (
+        const RayContainer &_ray, float _maxDistance = std::numeric_limits <float>::max ()) noexcept;
 
     void Drop () noexcept;
+
+    /// There is no sense to copy assign indices.
+    VolumetricIndex &operator = (const VolumetricIndex &_other) = delete;
+
+    /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
+    VolumetricIndex &operator = (VolumetricIndex &&_other) = delete;
 
 private:
     friend class Storage;
@@ -344,7 +388,7 @@ private:
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
 
     template <typename Operations>
-    LeafSector CalculateSector (const AxisAlignedShape &_shape, const Operations &_operations) const noexcept;
+    LeafSector CalculateSector (const AxisAlignedShapeContainer &_shape, const Operations &_operations) const noexcept;
 
     template <typename Operations>
     SupportedAxisValue CalculateLeafSize (
@@ -357,7 +401,7 @@ private:
 
     template <typename Operations>
     bool CheckRayShapeIntersection (
-        const Ray &_ray, const AxisAlignedShape &_shape,
+        const RayContainer &_ray, const AxisAlignedShapeContainer &_shape, float &_distanceOutput,
         std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
         const Operations &_operations) const noexcept;
 
@@ -391,4 +435,52 @@ private:
     std::vector <std::size_t> freeRecordIds;
     std::size_t nextRecordId;
 };
+
+template <typename AxisValue>
+AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Min (std::size_t _dimensionIndex) noexcept
+{
+    return data[_dimensionIndex * 2u];
+}
+
+template <typename AxisValue>
+AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Max (std::size_t _dimensionIndex) noexcept
+{
+    return data[_dimensionIndex * 2u + 1u];
+}
+
+template <typename AxisValue>
+const AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Min (std::size_t _dimensionIndex) const noexcept
+{
+    return data[_dimensionIndex * 2u];
+}
+
+template <typename AxisValue>
+const AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Max (std::size_t _dimensionIndex) const noexcept
+{
+    return data[_dimensionIndex * 2u + 1u];
+}
+
+template <typename AxisValue>
+AxisValue &VolumetricIndex::Ray <AxisValue>::Origin (std::size_t _dimensionIndex) noexcept
+{
+    return data[_dimensionIndex * 2u];
+}
+
+template <typename AxisValue>
+AxisValue &VolumetricIndex::Ray <AxisValue>::Direction (std::size_t _dimensionIndex) noexcept
+{
+    return data[_dimensionIndex * 2u + 1u];
+}
+
+template <typename AxisValue>
+const AxisValue &VolumetricIndex::Ray <AxisValue>::Origin (std::size_t _dimensionIndex) const noexcept
+{
+    return data[_dimensionIndex * 2u];
+}
+
+template <typename AxisValue>
+const AxisValue &VolumetricIndex::Ray <AxisValue>::Direction (std::size_t _dimensionIndex) const noexcept
+{
+    return data[_dimensionIndex * 2u + 1u];
+}
 } // namespace Emergence::Pegasus

@@ -117,6 +117,7 @@ for ($Index = 0; $Index -lt $Files.Count; ++$Index)
         }
         else
         {
+            $FormattedCoverage = "?"
             $CoverageToProgress = ""
         }
 

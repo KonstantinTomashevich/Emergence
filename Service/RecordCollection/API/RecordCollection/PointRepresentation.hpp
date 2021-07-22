@@ -42,9 +42,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit ReadCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -88,9 +88,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
 
-        explicit EditCursor (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -100,6 +100,10 @@ public:
     class KeyFieldIterator final
     {
     public:
+        KeyFieldIterator (const KeyFieldIterator &_other) noexcept;
+
+        KeyFieldIterator (KeyFieldIterator &&_other) noexcept;
+
         ~KeyFieldIterator () noexcept;
 
         /// \return Key Field, to which iterator points.
@@ -128,6 +132,10 @@ public:
 
         bool operator != (const KeyFieldIterator &_other) const noexcept;
 
+        KeyFieldIterator &operator = (const KeyFieldIterator &_other) noexcept;
+
+        KeyFieldIterator &operator = (KeyFieldIterator &&_other) noexcept;
+
     private:
         /// PointRepresentation constructs iterators for key fields.
         friend class PointRepresentation;
@@ -147,7 +155,12 @@ public:
     ///
     /// \warning Due to runtime-only nature of points, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
-    using Point = const uint8_t *;
+    /// \invariant Values must be stored one after another without paddings in the same order as key fields.
+    /// \invariant Value size for fields with StandardLayout::FieldArchetype::STRING must always be equal to
+    ///            StandardLayout::Field::GetSize, even if string length is less than this value.
+    /// \invariant Values for fields with StandardLayout::FieldArchetype::BIT must passed as bytes in which all
+    ///            bits should be zero's except bit with StandardLayout::Field::GetBitOffset.
+    using Point = const void *;
 
     PointRepresentation (const PointRepresentation &_other) noexcept;
 
@@ -180,6 +193,9 @@ public:
     /// \brief Deletes this point representation from Collection.
     /// \invariant ::CanBeDropped
     void Drop () noexcept;
+
+    /// \return True if this and given instances are handles to the same representation.
+    bool operator == (const PointRepresentation &_other) const noexcept;
 
     PointRepresentation &operator = (const PointRepresentation &_other) noexcept;
 

@@ -41,9 +41,9 @@ public:
         /// Collection constructs allocators.
         friend class Collection;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
 
-        explicit Allocator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
         /// \brief Allocator implementation-specific data.
         std::array <uint8_t, DATA_MAX_SIZE> data;
@@ -55,6 +55,10 @@ public:
     class LinearRepresentationIterator final
     {
     public:
+        LinearRepresentationIterator (const LinearRepresentationIterator &_other) noexcept;
+
+        LinearRepresentationIterator (LinearRepresentationIterator &&_other) noexcept;
+
         ~LinearRepresentationIterator () noexcept;
 
         /// \return LinearRepresentation, to which iterator points.
@@ -83,6 +87,10 @@ public:
 
         bool operator != (const LinearRepresentationIterator &_other) const noexcept;
 
+        LinearRepresentationIterator &operator = (const LinearRepresentationIterator &_other) noexcept;
+
+        LinearRepresentationIterator &operator = (LinearRepresentationIterator &&_other) noexcept;
+
     private:
         /// Collection constructs iterators for linear representations.
         friend class Collection;
@@ -101,6 +109,10 @@ public:
     class PointRepresentationIterator final
     {
     public:
+        PointRepresentationIterator (const PointRepresentationIterator &_other) noexcept;
+
+        PointRepresentationIterator (PointRepresentationIterator &&_other) noexcept;
+
         ~PointRepresentationIterator () noexcept;
 
         /// \return PointRepresentation, to which iterator points.
@@ -129,6 +141,10 @@ public:
 
         bool operator != (const PointRepresentationIterator &_other) const noexcept;
 
+        PointRepresentationIterator &operator = (const PointRepresentationIterator &_other) noexcept;
+
+        PointRepresentationIterator &operator = (PointRepresentationIterator &&_other) noexcept;
+
     private:
         /// Collection constructs iterators for point representations.
         friend class Collection;
@@ -147,6 +163,10 @@ public:
     class VolumetricRepresentationIterator final
     {
     public:
+        VolumetricRepresentationIterator (const VolumetricRepresentationIterator &_other) noexcept;
+
+        VolumetricRepresentationIterator (VolumetricRepresentationIterator &&_other) noexcept;
+
         ~VolumetricRepresentationIterator () noexcept;
 
         /// \return VolumetricRepresentation, to which iterator points.
@@ -175,6 +195,10 @@ public:
 
         bool operator != (const VolumetricRepresentationIterator &_other) const noexcept;
 
+        VolumetricRepresentationIterator &operator = (const VolumetricRepresentationIterator &_other) noexcept;
+
+        VolumetricRepresentationIterator &operator = (VolumetricRepresentationIterator &&_other) noexcept;
+
     private:
         /// Collection constructs iterators for volumetric representations.
         friend class Collection;
@@ -188,7 +212,7 @@ public:
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
-    struct DimensionDescription
+    struct DimensionDescriptor
     {
         /// \brief Pointer to minimum possible value of #minBorderField.
         ///
@@ -233,30 +257,34 @@ public:
 
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    PointRepresentation CreatePointRepresentation (std::vector <StandardLayout::FieldId> _keyFields) const noexcept;
+    PointRepresentation CreatePointRepresentation (
+        const std::vector <StandardLayout::FieldId> &_keyFields) const noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    VolumetricRepresentation CreateVolumetricRepresentation (std::vector <DimensionDescription> _dimensions) const noexcept;
+    /// \invariant All border fields for all dimensions should have same archetype and same size.
+    VolumetricRepresentation CreateVolumetricRepresentation (
+        const std::vector <DimensionDescriptor> &_dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
-    LinearRepresentationIterator LinearRepresentationBegin () noexcept;
+    LinearRepresentationIterator LinearRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of linear representations range.
-    LinearRepresentationIterator LinearRepresentationEnd () noexcept;
+    LinearRepresentationIterator LinearRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of point representations range.
-    PointRepresentationIterator PointRepresentationBegin () noexcept;
+    PointRepresentationIterator PointRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of point representations range.
-    PointRepresentationIterator PointRepresentationEnd () noexcept;
+    PointRepresentationIterator PointRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of volumetric representations range.
-    VolumetricRepresentationIterator VolumetricRepresentationBegin () noexcept;
+    VolumetricRepresentationIterator VolumetricRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of volumetric representations range.
-    VolumetricRepresentationIterator VolumetricRepresentationEnd () noexcept;
+    VolumetricRepresentationIterator VolumetricRepresentationEnd () const noexcept;
 
+    /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
     Collection &operator = (const Collection &_other) = delete;
 
     Collection &operator = (Collection &&_other) noexcept;

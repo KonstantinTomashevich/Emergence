@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 
 #include <Pegasus/Constants/Implementation/VolumetricIndex.hpp>

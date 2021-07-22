@@ -58,3 +58,9 @@ if (EMERGENCE_ENABLE_COVERAGE)
         add_link_options (--coverage)
     endif ()
 endif ()
+
+if (MSVC)
+    # MSVC debug iterators are not only slow, but they also eat lots of memory and force service
+    # APIs to request additional memory for service iterators. Therefore they are disabled.
+    add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
+endif ()
