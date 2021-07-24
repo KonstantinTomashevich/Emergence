@@ -217,6 +217,8 @@ public:
     /// \return Field, by which records are sorted in this linear representation.
     StandardLayout::Field GetKeyField () const noexcept;
 
+    // TODO: What about automatic drop feature? It seams quite useful for complex layered systems like Warehouse.
+
     /// \return Can this representation be safely dropped?
     /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
     bool CanBeDropped () const noexcept;
