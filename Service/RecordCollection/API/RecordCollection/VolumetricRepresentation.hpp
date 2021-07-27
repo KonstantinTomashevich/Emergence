@@ -3,6 +3,10 @@
 #include <array>
 #include <cstdint>
 
+#include <API/Commons/Cursor.hpp>
+#include <API/Commons/ImplementationBinding.hpp>
+#include <API/Commons/Iterator.hpp>
+
 #include <StandardLayout/Field.hpp>
 
 namespace Emergence::RecordCollection
@@ -22,35 +26,14 @@ public:
     class ShapeIntersectionReadCursor final
     {
     public:
-        ShapeIntersectionReadCursor (const ShapeIntersectionReadCursor &_other) noexcept;
-
-        ShapeIntersectionReadCursor (ShapeIntersectionReadCursor &&_other) noexcept;
-
-        ~ShapeIntersectionReadCursor () noexcept;
-
-        /// \return Pointer to current record or nullptr if there is no more records.
-        const void *operator * () const noexcept;
-
-        /// \brief Moves cursor to next record.
-        /// \invariant Cursor should not point to ending.
-        ShapeIntersectionReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionReadCursor &operator = (const ShapeIntersectionReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionReadCursor &operator = (ShapeIntersectionReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (ShapeIntersectionReadCursor);
 
     private:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 21u;
-
-        explicit ShapeIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
+            ShapeIntersectionReadCursor, sizeof (uintptr_t) * 21u);
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -58,45 +41,14 @@ public:
     class ShapeIntersectionEditCursor final
     {
     public:
-        /// Edit cursors can not be copied, because not more than one edit
-        /// cursor can exist inside one Collection at any moment of time.
-        ShapeIntersectionEditCursor (const ShapeIntersectionEditCursor &_other) = delete;
-
-        ShapeIntersectionEditCursor (ShapeIntersectionEditCursor &&_other) noexcept;
-
-        ~ShapeIntersectionEditCursor () noexcept;
-
-        /// \return Pointer to current record or nullptr if there is no more records.
-        void *operator * () noexcept;
-
-        /// \brief Deletes current record from collection and moves to next record.
-        ///
-        /// \invariant Cursor should not point to ending.
-        ///
-        /// \warning Record type is unknown during compile time, therefore appropriate
-        ///          destructor should be called before record deletion.
-        ShapeIntersectionEditCursor &operator ~ () noexcept;
-
-        /// \brief Checks current record for key values changes. Then moves cursor to next record.
-        /// \invariant Cursor should not point to ending.
-        ShapeIntersectionEditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionEditCursor &operator = (const ShapeIntersectionEditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionEditCursor &operator = (ShapeIntersectionEditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (ShapeIntersectionEditCursor);
 
     private:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 21u;
-
-        explicit ShapeIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
+            ShapeIntersectionEditCursor, sizeof (uintptr_t) * 21u);
     };
 
     /// \brief Allows user to read records, that match criteria, specified
@@ -105,35 +57,14 @@ public:
     class RayIntersectionReadCursor final
     {
     public:
-        RayIntersectionReadCursor (const RayIntersectionReadCursor &_other) noexcept;
-
-        RayIntersectionReadCursor (RayIntersectionReadCursor &&_other) noexcept;
-
-        ~RayIntersectionReadCursor () noexcept;
-
-        /// \return Pointer to current record or nullptr if there is no more records.
-        const void *operator * () const noexcept;
-
-        /// \brief Moves cursor to next record.
-        /// \invariant Cursor should not point to ending.
-        RayIntersectionReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionReadCursor &operator = (const RayIntersectionReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionReadCursor &operator = (RayIntersectionReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (RayIntersectionReadCursor);
 
     private:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 19u;
-
-        explicit RayIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
+            RayIntersectionReadCursor, sizeof (uintptr_t) * 19u);
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -141,45 +72,14 @@ public:
     class RayIntersectionEditCursor final
     {
     public:
-        /// Edit cursors can not be copied, because not more than one edit
-        /// cursor can exist inside one Collection at any moment of time.
-        RayIntersectionEditCursor (const RayIntersectionEditCursor &_other) = delete;
-
-        RayIntersectionEditCursor (RayIntersectionEditCursor &&_other) noexcept;
-
-        ~RayIntersectionEditCursor () noexcept;
-
-        /// \return Pointer to current record or nullptr if there is no more records.
-        void *operator * () noexcept;
-
-        /// \brief Deletes current record from collection and moves to next record.
-        ///
-        /// \invariant Cursor should not point to ending.
-        ///
-        /// \warning Record type is unknown during compile time, therefore appropriate
-        ///          destructor should be called before record deletion.
-        RayIntersectionEditCursor &operator ~ () noexcept;
-
-        /// \brief Checks current record for key values changes. Then moves cursor to next record.
-        /// \invariant Cursor should not point to ending.
-        RayIntersectionEditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionEditCursor &operator = (const RayIntersectionEditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionEditCursor &operator = (RayIntersectionEditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (RayIntersectionEditCursor);
 
     private:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 19u;
-
-        explicit RayIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
+            RayIntersectionEditCursor, sizeof (uintptr_t) * 19u);
     };
 
     /// \brief Allows iteration over VolumetricRepresentation dimensions.
@@ -206,51 +106,13 @@ public:
             StandardLayout::Field maxField;
         };
 
-        DimensionIterator (const DimensionIterator &_other) noexcept;
-
-        DimensionIterator (DimensionIterator &&_other) noexcept;
-
-        ~DimensionIterator () noexcept;
-
-        /// \return Description of dimension, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        Dimension operator * () const noexcept;
-
-        /// \brief Move to next field.
-        /// \invariant Inside valid bounds, but not in the ending.
-        DimensionIterator &operator ++ () noexcept;
-
-        /// \brief Move to next field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        DimensionIterator operator ++ (int) noexcept;
-
-        /// \brief Move to previous field.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        DimensionIterator &operator -- () noexcept;
-
-        /// \brief Move to previous field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        DimensionIterator operator -- (int) noexcept;
-
-        bool operator == (const DimensionIterator &_other) const noexcept;
-
-        bool operator != (const DimensionIterator &_other) const noexcept;
-
-        DimensionIterator &operator = (const DimensionIterator &_other) noexcept;
-
-        DimensionIterator &operator = (DimensionIterator &&_other) noexcept;
+        EMERGENCE_ITERATOR_OPERATIONS (DimensionIterator, Dimension);
 
     private:
         /// VolumetricRepresentation constructs dimension iterators.
         friend class VolumetricRepresentation;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
-
-        explicit DimensionIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (DimensionIterator, sizeof (uintptr_t));
     };
 
     /// \brief Defines shape by specifying min-max value pair for each dimension.
@@ -339,9 +201,6 @@ private:
     /// Collection constructs representations.
     friend class Collection;
 
-    explicit VolumetricRepresentation (void *_handle) noexcept;
-
-    /// \brief Implementation handle.
-    void *handle;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE_WITH_CONSTRUCTOR (VolumetricRepresentation);
 };
 } // namespace Emergence::RecordCollection

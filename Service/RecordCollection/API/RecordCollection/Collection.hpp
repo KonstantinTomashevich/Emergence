@@ -2,6 +2,11 @@
 
 #include <vector>
 
+#include <API/Commons/Cursor.hpp>
+#include <API/Commons/ImplementationBinding.hpp>
+#include <API/Commons/Iterator.hpp>
+#include <API/Commons/Shortcuts.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 #include <RecordCollection/LinearRepresentation.hpp>
@@ -32,21 +37,13 @@ public:
         void *Allocate () noexcept;
 
         /// Assigning allocators looks counter intuitive.
-        Allocator &operator = (const Allocator &_other) = delete;
-
-        /// Assigning allocators looks counter intuitive.
-        Allocator &operator = (Allocator &&_other) = delete;
+        EMERGENCE_DELETE_ASSIGNMENT (Allocator);
 
     private:
         /// Collection constructs allocators.
         friend class Collection;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 2u;
-
-        explicit Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Allocator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (Allocator, sizeof (uintptr_t) * 2u);
     };
 
     /// \brief Allows iteration over Collection linear representations.
@@ -55,52 +52,14 @@ public:
     class LinearRepresentationIterator final
     {
     public:
-        LinearRepresentationIterator (const LinearRepresentationIterator &_other) noexcept;
-
-        LinearRepresentationIterator (LinearRepresentationIterator &&_other) noexcept;
-
-        ~LinearRepresentationIterator () noexcept;
-
-        /// \return LinearRepresentation, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        LinearRepresentation operator * () const noexcept;
-
-        /// \brief Move to next field.
-        /// \invariant Inside valid bounds, but not in the ending.
-        LinearRepresentationIterator &operator ++ () noexcept;
-
-        /// \brief Move to next field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        LinearRepresentationIterator operator ++ (int) noexcept;
-
-        /// \brief Move to previous field.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        LinearRepresentationIterator &operator -- () noexcept;
-
-        /// \brief Move to previous field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        LinearRepresentationIterator operator -- (int) noexcept;
-
-        bool operator == (const LinearRepresentationIterator &_other) const noexcept;
-
-        bool operator != (const LinearRepresentationIterator &_other) const noexcept;
-
-        LinearRepresentationIterator &operator = (const LinearRepresentationIterator &_other) noexcept;
-
-        LinearRepresentationIterator &operator = (LinearRepresentationIterator &&_other) noexcept;
+        EMERGENCE_ITERATOR_OPERATIONS (LinearRepresentationIterator, LinearRepresentation);
 
     private:
         /// Collection constructs iterators for linear representations.
         friend class Collection;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
-
-        explicit LinearRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (
+            LinearRepresentationIterator, sizeof (uintptr_t));
     };
 
     /// \brief Allows iteration over Collection point representations.
@@ -109,52 +68,14 @@ public:
     class PointRepresentationIterator final
     {
     public:
-        PointRepresentationIterator (const PointRepresentationIterator &_other) noexcept;
-
-        PointRepresentationIterator (PointRepresentationIterator &&_other) noexcept;
-
-        ~PointRepresentationIterator () noexcept;
-
-        /// \return PointRepresentation, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        PointRepresentation operator * () const noexcept;
-
-        /// \brief Move to next field.
-        /// \invariant Inside valid bounds, but not in the ending.
-        PointRepresentationIterator &operator ++ () noexcept;
-
-        /// \brief Move to next field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        PointRepresentationIterator operator ++ (int) noexcept;
-
-        /// \brief Move to previous field.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        PointRepresentationIterator &operator -- () noexcept;
-
-        /// \brief Move to previous field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        PointRepresentationIterator operator -- (int) noexcept;
-
-        bool operator == (const PointRepresentationIterator &_other) const noexcept;
-
-        bool operator != (const PointRepresentationIterator &_other) const noexcept;
-
-        PointRepresentationIterator &operator = (const PointRepresentationIterator &_other) noexcept;
-
-        PointRepresentationIterator &operator = (PointRepresentationIterator &&_other) noexcept;
+        EMERGENCE_ITERATOR_OPERATIONS (PointRepresentationIterator, PointRepresentation);
 
     private:
         /// Collection constructs iterators for point representations.
         friend class Collection;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
-
-        explicit PointRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (
+            PointRepresentationIterator, sizeof (uintptr_t));
     };
 
     /// \brief Allows iteration over Collection volumetric representations.
@@ -163,52 +84,14 @@ public:
     class VolumetricRepresentationIterator final
     {
     public:
-        VolumetricRepresentationIterator (const VolumetricRepresentationIterator &_other) noexcept;
-
-        VolumetricRepresentationIterator (VolumetricRepresentationIterator &&_other) noexcept;
-
-        ~VolumetricRepresentationIterator () noexcept;
-
-        /// \return VolumetricRepresentation, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        VolumetricRepresentation operator * () const noexcept;
-
-        /// \brief Move to next field.
-        /// \invariant Inside valid bounds, but not in the ending.
-        VolumetricRepresentationIterator &operator ++ () noexcept;
-
-        /// \brief Move to next field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        VolumetricRepresentationIterator operator ++ (int) noexcept;
-
-        /// \brief Move to previous field.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        VolumetricRepresentationIterator &operator -- () noexcept;
-
-        /// \brief Move to previous field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        VolumetricRepresentationIterator operator -- (int) noexcept;
-
-        bool operator == (const VolumetricRepresentationIterator &_other) const noexcept;
-
-        bool operator != (const VolumetricRepresentationIterator &_other) const noexcept;
-
-        VolumetricRepresentationIterator &operator = (const VolumetricRepresentationIterator &_other) noexcept;
-
-        VolumetricRepresentationIterator &operator = (VolumetricRepresentationIterator &&_other) noexcept;
+        EMERGENCE_ITERATOR_OPERATIONS (VolumetricRepresentationIterator, VolumetricRepresentation);
 
     private:
         /// Collection constructs iterators for volumetric representations.
         friend class Collection;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
-
-        explicit VolumetricRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (
+            VolumetricRepresentationIterator, sizeof (uintptr_t));
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
@@ -290,7 +173,6 @@ public:
     Collection &operator = (Collection &&_other) noexcept;
 
 private:
-    /// \brief Implementation handle.
-    void *handle;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::RecordCollection
