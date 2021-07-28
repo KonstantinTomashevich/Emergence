@@ -1,5 +1,7 @@
 #pragma once
 
+#include <API/Common/ImplementationBinding.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 #include <Warehouse/SingletonStorage.hpp>
@@ -42,7 +44,6 @@ public:
     Registry &operator = (Registry &&_other) noexcept;
 
 private:
-    /// \brief Implementation handle.
-    void *handle;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::Warehouse

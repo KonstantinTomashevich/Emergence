@@ -2,6 +2,9 @@
 
 #include <array>
 
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Shortcuts.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Warehouse
@@ -33,21 +36,15 @@ public:
             const void *operator * () const noexcept;
 
             /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (const Cursor &_other) = delete;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (Cursor &&_other) = delete;
+            EMERGENCE_DELETE_ASSIGNMENT (Cursor);
 
         private:
             /// Query constructs its cursors.
             friend class FetchQuery;
 
-            static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+            EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-            /// \brief Implementation-specific data.
-            std::array <uint8_t, DATA_MAX_SIZE> data;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept;
@@ -63,10 +60,7 @@ public:
         Cursor Execute () noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        FetchQuery &operator = (const FetchQuery &_other) = delete;
-
-        /// Assigning prepared queries looks counter intuitive.
-        FetchQuery &operator = (FetchQuery &&_other) = delete;
+        EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
 
     private:
         /// Storage constructs prepared queries.
@@ -74,8 +68,7 @@ public:
 
         explicit FetchQuery (void *_handle) noexcept;
 
-        /// \brief Implementation handle.
-        void *handle;
+        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
     /// \brief Prepared query, used to gain readwrite access to singleton instance.
@@ -98,21 +91,15 @@ public:
             void *operator * () const noexcept;
 
             /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (const Cursor &_other) = delete;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (Cursor &&_other) = delete;
+            EMERGENCE_DELETE_ASSIGNMENT (Cursor);
 
         private:
             /// Query constructs its cursors.
             friend class ModifyQuery;
 
-            static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+            EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-            /// \brief Implementation-specific data.
-            std::array <uint8_t, DATA_MAX_SIZE> data;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept;
@@ -127,10 +114,7 @@ public:
         Cursor Execute () noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        ModifyQuery &operator = (const ModifyQuery &_other) = delete;
-
-        /// Assigning prepared queries looks counter intuitive.
-        ModifyQuery &operator = (ModifyQuery &&_other) = delete;
+        EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);
 
     private:
         /// Storage constructs prepared queries.
@@ -138,8 +122,7 @@ public:
 
         explicit ModifyQuery (void *_handle) noexcept;
 
-        /// \brief Implementation handle.
-        void *handle;
+        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
     SingletonStorage (const SingletonStorage &_other) noexcept;
@@ -158,10 +141,7 @@ public:
     ModifyQuery Modify () noexcept;
 
     /// Assigning storage handles looks counter intuitive.
-    SingletonStorage &operator = (const SingletonStorage &_other) = delete;
-
-    /// Assigning storage handles looks counter intuitive.
-    SingletonStorage &operator = (SingletonStorage &&_other) = delete;
+    EMERGENCE_DELETE_ASSIGNMENT (SingletonStorage);
 
 private:
     /// Registry constructs storages.
@@ -169,7 +149,6 @@ private:
 
     explicit SingletonStorage (void *_handle) noexcept;
 
-    /// \brief Implementation handle.
-    void *handle;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::Warehouse

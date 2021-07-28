@@ -2,6 +2,10 @@
 
 #include <array>
 
+#include <API/Common/Cursor.hpp>
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Shortcuts.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Warehouse
@@ -34,21 +38,15 @@ public:
             void *operator ++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (const Cursor &_other) = delete;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (Cursor &&_other) = delete;
+            EMERGENCE_DELETE_ASSIGNMENT (Cursor);
 
         private:
             /// Query constructs its cursors.
             friend class InsertQuery;
 
-            static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+            EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-            /// \brief Implementation-specific data.
-            std::array <uint8_t, DATA_MAX_SIZE> data;
         };
 
         InsertQuery (const InsertQuery &_other) noexcept;
@@ -63,10 +61,7 @@ public:
         Cursor Insert () noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        InsertQuery &operator = (const InsertQuery &_other) = delete;
-
-        /// Assigning prepared queries looks counter intuitive.
-        InsertQuery &operator = (InsertQuery &&_other) = delete;
+        EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
 
     private:
         /// Storage constructs prepared queries.
@@ -74,8 +69,7 @@ public:
 
         explicit InsertQuery (void *_handle) noexcept;
 
-        /// \brief Implementation handle.
-        void *handle;
+        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
     /// \brief Prepared query, used to gain readonly access to stored objects.
@@ -89,35 +83,15 @@ public:
         class Cursor final
         {
         public:
-            Cursor (const Cursor &_other) noexcept;
-
-            Cursor (Cursor &&_other) noexcept;
-
-            ~Cursor () noexcept;
-
-            /// \return Pointer to current object or nullptr if cursor points to ending.
-            const void *operator * () const noexcept;
-
-            /// \brief Moves cursor to next object.
-            /// \invariant Cursor should not point to ending.
-            Cursor &operator ++ () noexcept;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (const Cursor &_other) = delete;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (Cursor &&_other) = delete;
+            EMERGENCE_READ_CURSOR_OPERATIONS (Cursor);
 
         private:
             /// Query constructs its cursors.
             friend class FetchQuery;
 
-            static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+            EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-            /// \brief Implementation-specific data.
-            std::array <uint8_t, DATA_MAX_SIZE> data;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept;
@@ -133,10 +107,7 @@ public:
         Cursor Execute () noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        FetchQuery &operator = (const FetchQuery &_other) = delete;
-
-        /// Assigning prepared queries looks counter intuitive.
-        FetchQuery &operator = (FetchQuery &&_other) = delete;
+        EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
 
     private:
         /// Storage constructs prepared queries.
@@ -144,8 +115,7 @@ public:
 
         explicit FetchQuery (void *_handle) noexcept;
 
-        /// \brief Implementation handle.
-        void *handle;
+        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
     /// \brief Prepared query, used to gain readwrite access to stored objects.
@@ -159,41 +129,15 @@ public:
         class Cursor final
         {
         public:
-            Cursor (const Cursor &_other) = delete;
-
-            Cursor (Cursor &&_other) noexcept;
-
-            ~Cursor () noexcept;
-
-            /// \return Pointer to current object or nullptr if cursor points to ending.
-            void *operator * () const noexcept;
-
-            /// \brief Deletes current object from collection and moves to next record.
-            /// \invariant Cursor should not point to ending.
-            /// \warning Object type is unknown during compile time, therefore appropriate
-            ///          destructor should be called before record deletion.
-            void operator ~ () noexcept;
-
-            /// \brief Moves cursor to next object.
-            /// \invariant Cursor should not point to ending.
-            Cursor &operator ++ () noexcept;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (const Cursor &_other) = delete;
-
-            /// Assigning cursors looks counter intuitive.
-            Cursor &operator = (Cursor &&_other) = delete;
+            EMERGENCE_EDIT_CURSOR_OPERATIONS (Cursor);
 
         private:
             /// Query constructs its cursors.
             friend class ModifyQuery;
 
-            static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+            EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-            /// \brief Implementation-specific data.
-            std::array <uint8_t, DATA_MAX_SIZE> data;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept;
@@ -208,10 +152,7 @@ public:
         Cursor Execute () noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        ModifyQuery &operator = (const ModifyQuery &_other) = delete;
-
-        /// Assigning prepared queries looks counter intuitive.
-        ModifyQuery &operator = (ModifyQuery &&_other) = delete;
+        EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);
 
     private:
         /// Storage constructs prepared queries.
@@ -219,8 +160,7 @@ public:
 
         explicit ModifyQuery (void *_handle) noexcept;
 
-        /// \brief Implementation handle.
-        void *handle;
+        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
     ShortTermStorage (const ShortTermStorage &_other) noexcept;
@@ -242,10 +182,7 @@ public:
     ModifyQuery Modify () noexcept;
 
     /// Assigning storage handles looks counter intuitive.
-    ShortTermStorage &operator = (const ShortTermStorage &_other) = delete;
-
-    /// Assigning storage handles looks counter intuitive.
-    ShortTermStorage &operator = (ShortTermStorage &&_other) = delete;
+    EMERGENCE_DELETE_ASSIGNMENT (ShortTermStorage);
 
 private:
     /// Registry constructs storages.
@@ -253,7 +190,6 @@ private:
 
     explicit ShortTermStorage (void *_handle) noexcept;
 
-    /// \brief Implementation handle.
-    void *handle;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::Warehouse
