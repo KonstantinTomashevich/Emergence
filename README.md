@@ -35,6 +35,10 @@ Currently in development.
 
 ### Libraries
 
+- **APICommon**: contains macros that declare common method and operator sets
+  and implementation binding approaches. It's sort of always under development,
+  because need for new shared API-related macro could arise during development 
+  of new services.
 - **Galleon**: database-like storage for records of different types, which is 
   built on top of **RecordCollection**. Used to implement **Warehouse**.
 - **SyntaxSugar**: contains syntax sugar for other libraries 
