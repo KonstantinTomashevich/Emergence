@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <cstdlib>
+
+#include <API/Common/ImplementationBinding.hpp>
 
 namespace Emergence::StandardLayout
 {
@@ -110,9 +111,8 @@ private:
     /// Fields are constructed inside Mapping.
     friend class Mapping;
 
-    explicit Field (void *_handle) noexcept;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 
-    /// \brief Field implementation handle.
-    void *handle;
+    explicit Field (void *_handle) noexcept;
 };
 } // namespace Emergence::StandardLayout

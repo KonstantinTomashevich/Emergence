@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include <API/Commons/Cursor.hpp>
-#include <API/Commons/ImplementationBinding.hpp>
-#include <API/Commons/Iterator.hpp>
-#include <API/Commons/Shortcuts.hpp>
+#include <API/Common/Cursor.hpp>
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Iterator.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -43,7 +43,9 @@ public:
         /// Collection constructs allocators.
         friend class Collection;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (Allocator, sizeof (uintptr_t) * 2u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+
+        explicit Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection linear representations.
@@ -52,14 +54,15 @@ public:
     class LinearRepresentationIterator final
     {
     public:
-        EMERGENCE_ITERATOR_OPERATIONS (LinearRepresentationIterator, LinearRepresentation);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (LinearRepresentationIterator, LinearRepresentation);
 
     private:
         /// Collection constructs iterators for linear representations.
         friend class Collection;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (
-            LinearRepresentationIterator, sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit LinearRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection point representations.
@@ -68,14 +71,15 @@ public:
     class PointRepresentationIterator final
     {
     public:
-        EMERGENCE_ITERATOR_OPERATIONS (PointRepresentationIterator, PointRepresentation);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (PointRepresentationIterator, PointRepresentation);
 
     private:
         /// Collection constructs iterators for point representations.
         friend class Collection;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (
-            PointRepresentationIterator, sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit PointRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection volumetric representations.
@@ -84,14 +88,15 @@ public:
     class VolumetricRepresentationIterator final
     {
     public:
-        EMERGENCE_ITERATOR_OPERATIONS (VolumetricRepresentationIterator, VolumetricRepresentation);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (VolumetricRepresentationIterator, VolumetricRepresentation);
 
     private:
         /// Collection constructs iterators for volumetric representations.
         friend class Collection;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (
-            VolumetricRepresentationIterator, sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit VolumetricRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.

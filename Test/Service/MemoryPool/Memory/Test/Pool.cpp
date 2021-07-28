@@ -121,7 +121,7 @@ TEST_CASE (SuccessfullShrink)
 
     context.pool.Shrink ();
     CHECK_EQUAL (context.pool.GetAllocatedSpace (),
-                       (FullPoolContext::PAGES_TO_FILL - 1u) * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
+                 (FullPoolContext::PAGES_TO_FILL - 1u) * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item to ensure that pool is in working state.
     CHECK (context.pool.Acquire ());
@@ -138,7 +138,7 @@ TEST_CASE (UnsuccessfullShrink)
 
     context.pool.Shrink ();
     CHECK_EQUAL (context.pool.GetAllocatedSpace (),
-                       FullPoolContext::PAGES_TO_FILL * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
+                 FullPoolContext::PAGES_TO_FILL * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item to ensure that pool is in working state.
     CHECK (context.pool.Acquire ());
@@ -161,7 +161,7 @@ TEST_CASE (Move)
 
     CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
     CHECK_EQUAL (newPool.GetAllocatedSpace (),
-                       FullPoolContext::PAGES_TO_FILL * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
+                 FullPoolContext::PAGES_TO_FILL * FullPoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item from each pool to ensure that they are in working state.
     CHECK (context.pool.Acquire ());
@@ -254,6 +254,33 @@ TEST_CASE (ReleaseDoesNotInvalidateIterator)
     }
 
     CheckPoolItemVectorsEquality (items, itemsFromIteration);
+}
+
+TEST_CASE (CursorConstructionAndAssignment)
+{
+    auto Test = [] (const auto begin)
+    {
+        auto next = begin;
+        auto previous = next++;
+
+        CHECK (begin != next);
+        CHECK (previous != next);
+        CHECK (previous == begin);
+
+        CHECK_NOT_EQUAL (*begin, *next);
+        CHECK_NOT_EQUAL (*previous, *next);
+        CHECK_EQUAL (*previous, *begin);
+
+        next = begin;
+        CHECK (begin == next);
+        CHECK (previous == next);
+        CHECK_EQUAL (*next, *begin);
+    };
+
+    FullPoolContext context;
+    // Test both mutable and const iterators.
+    Test (context.pool.BeginAcquired ());
+    Test (const_cast <const Emergence::Memory::Pool &> (context.pool).BeginAcquired ());
 }
 
 END_SUITE

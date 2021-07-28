@@ -7,6 +7,23 @@
 
 namespace Emergence::StandardLayout
 {
+// TODO: Move trivial iterator binding to macro too?
+
+Mapping::FieldIterator::FieldIterator (const Mapping::FieldIterator &_other) noexcept
+{
+    new (&data) PlainMapping::ConstIterator (block_cast <PlainMapping::ConstIterator> (_other.data));
+}
+
+Mapping::FieldIterator::FieldIterator (Mapping::FieldIterator &&_other) noexcept
+{
+    new (&data) PlainMapping::ConstIterator (std::move (block_cast <PlainMapping::ConstIterator> (_other.data)));
+}
+
+Mapping::FieldIterator::~FieldIterator () noexcept
+{
+    block_cast <PlainMapping::ConstIterator> (data).~ConstIterator ();
+}
+
 Field Mapping::FieldIterator::operator * () const noexcept
 {
     return Field (const_cast <FieldData *> (&*block_cast <const PlainMapping::ConstIterator> (data)));
@@ -46,14 +63,31 @@ bool Mapping::FieldIterator::operator != (const Mapping::FieldIterator &_other) 
     return !(*this == _other);
 }
 
+Mapping::FieldIterator &Mapping::FieldIterator::operator = (const Mapping::FieldIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~FieldIterator ();
+        new (this) FieldIterator (_other);
+    }
+
+    return *this;
+}
+
+Mapping::FieldIterator &Mapping::FieldIterator::operator = (Mapping::FieldIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~FieldIterator ();
+        new (this) FieldIterator (std::move (_other));
+    }
+
+    return *this;
+}
+
 Mapping::FieldIterator::FieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) PlainMapping::ConstIterator (block_cast <PlainMapping::ConstIterator> (*_data));
-}
-
-Mapping::FieldIterator::~FieldIterator () noexcept
-{
-    block_cast <PlainMapping::ConstIterator> (data).~ConstIterator ();
 }
 
 Mapping::Mapping (const Mapping &_other) noexcept

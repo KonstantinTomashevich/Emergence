@@ -3,8 +3,8 @@
 #include <array>
 #include <cstdint>
 
-#include <API/Commons/Cursor.hpp>
-#include <API/Commons/ImplementationBinding.hpp>
+#include <API/Common/Cursor.hpp>
+#include <API/Common/ImplementationBinding.hpp>
 
 #include <StandardLayout/Field.hpp>
 
@@ -28,7 +28,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (ReadCursor, sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+
+        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -42,7 +44,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (EditCursor, sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+
+        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read records, that match criteria, specified in
@@ -57,8 +61,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
-            ReversedReadCursor, sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+
+        explicit ReversedReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -72,8 +77,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
-            ReversedEditCursor, sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+
+        explicit ReversedEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Points to value, that defines one of interval borders.
@@ -135,6 +141,8 @@ private:
     /// Collection constructs representations.
     friend class Collection;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE_WITH_CONSTRUCTOR (LinearRepresentation);
+    explicit LinearRepresentation (void *_handle) noexcept;
+
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::RecordCollection

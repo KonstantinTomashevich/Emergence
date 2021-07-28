@@ -1,4 +1,4 @@
-sober_library_begin (APICommons INTERFACE)
+sober_library_begin (APICommon INTERFACE)
     file (GLOB_RECURSE HEADERS *.hpp)
 
     sober_library_set_sources ("${HEADERS}")

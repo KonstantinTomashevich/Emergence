@@ -3,9 +3,9 @@
 #include <array>
 #include <cstdint>
 
-#include <API/Commons/Cursor.hpp>
-#include <API/Commons/ImplementationBinding.hpp>
-#include <API/Commons/Iterator.hpp>
+#include <API/Common/Cursor.hpp>
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Iterator.hpp>
 
 #include <StandardLayout/Field.hpp>
 
@@ -32,8 +32,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
-            ShapeIntersectionReadCursor, sizeof (uintptr_t) * 21u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
+
+        explicit ShapeIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -47,8 +48,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
-            ShapeIntersectionEditCursor, sizeof (uintptr_t) * 21u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
+
+        explicit ShapeIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read records, that match criteria, specified
@@ -63,8 +65,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
-            RayIntersectionReadCursor, sizeof (uintptr_t) * 19u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
+
+        explicit RayIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -78,8 +81,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (
-            RayIntersectionEditCursor, sizeof (uintptr_t) * 19u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
+
+        explicit RayIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over VolumetricRepresentation dimensions.
@@ -106,13 +110,15 @@ public:
             StandardLayout::Field maxField;
         };
 
-        EMERGENCE_ITERATOR_OPERATIONS (DimensionIterator, Dimension);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (DimensionIterator, Dimension);
 
     private:
         /// VolumetricRepresentation constructs dimension iterators.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (DimensionIterator, sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit DimensionIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Defines shape by specifying min-max value pair for each dimension.
@@ -201,6 +207,8 @@ private:
     /// Collection constructs representations.
     friend class Collection;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE_WITH_CONSTRUCTOR (VolumetricRepresentation);
+    explicit VolumetricRepresentation (void *_handle) noexcept;
+
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::RecordCollection

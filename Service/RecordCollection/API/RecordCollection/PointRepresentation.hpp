@@ -3,9 +3,9 @@
 #include <array>
 #include <cstdint>
 
-#include <API/Commons/Cursor.hpp>
-#include <API/Commons/ImplementationBinding.hpp>
-#include <API/Commons/Iterator.hpp>
+#include <API/Common/Cursor.hpp>
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Iterator.hpp>
 
 #include <StandardLayout/Field.hpp>
 
@@ -29,7 +29,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (ReadCursor, sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+
+        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -43,20 +45,24 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_MOVE_CONSTRUCTION (EditCursor, sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+
+        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over PointRepresentation key fields.
     class KeyFieldIterator final
     {
     public:
-        EMERGENCE_ITERATOR_OPERATIONS (KeyFieldIterator, StandardLayout::Field);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (KeyFieldIterator, StandardLayout::Field);
 
     private:
         /// PointRepresentation constructs iterators for key fields.
         friend class PointRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE_WITH_COPY_CONSTRUCTION (KeyFieldIterator, sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit KeyFieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Defines point by specifying value for each key field.
@@ -116,6 +122,8 @@ private:
     /// Collection constructs representations.
     friend class Collection;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE_WITH_CONSTRUCTOR (PointRepresentation);
+    explicit PointRepresentation (void *_handle) noexcept;
+
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::RecordCollection

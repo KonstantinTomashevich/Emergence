@@ -1,6 +1,6 @@
 sober_service_begin (RecordCollection)
-    sober_naming_variant_target (APICommons Original API_COMMONS_TARGET)
-    sober_service_add_api_dependency (${API_COMMONS_TARGET})
+    sober_naming_variant_target (APICommon Original API_COMMON_TARGET)
+    sober_service_add_api_dependency (${API_COMMON_TARGET})
     sober_service_add_api_dependency (StandardLayoutMapping)
 
     sober_service_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}/API")

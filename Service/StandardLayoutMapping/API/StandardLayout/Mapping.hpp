@@ -3,6 +3,9 @@
 #include <array>
 #include <cstdint>
 
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Iterator.hpp>
+
 #include <StandardLayout/Field.hpp>
 
 namespace Emergence::StandardLayout
@@ -17,44 +20,15 @@ public:
     class FieldIterator final
     {
     public:
-        ~FieldIterator () noexcept;
-
-        /// \return Field, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        Field operator * () const noexcept;
-
-        /// \brief Move to next field.
-        /// \invariant Inside valid bounds, but not in the ending.
-        FieldIterator &operator ++ () noexcept;
-
-        /// \brief Move to next field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        FieldIterator operator ++ (int) noexcept;
-
-        /// \brief Move to previous field.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        FieldIterator &operator -- () noexcept;
-
-        /// \brief Move to previous field.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the beginning.
-        FieldIterator operator -- (int) noexcept;
-
-        bool operator == (const FieldIterator &_other) const noexcept;
-
-        bool operator != (const FieldIterator &_other) const noexcept;
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (FieldIterator, Field);
 
     private:
         /// Mapping constructs iterators.
         friend class Mapping;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
         explicit FieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
     Mapping (const Mapping &_other) noexcept;
@@ -90,16 +64,13 @@ private:
     /// Field::GetNestedObjectMapping() wraps implementation data into Mapping interface.
     friend class Field;
 
-    static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
     /// \brief Copies implementation-specific values from given pointer.
     explicit Mapping (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 
     /// \brief Moves implementation-specific values from given pointer.
     explicit Mapping (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-    /// \brief Mapping implementation-specific data.
-    std::array <uint8_t, DATA_MAX_SIZE> data;
 };
 
 /// \brief Wraps Mapping::Begin for foreach sentences.

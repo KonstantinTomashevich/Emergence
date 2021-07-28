@@ -700,6 +700,14 @@ TEST_CASE (FieldsIteration)
     CHECK (firstField.IsSame (*iteratorCopyAtBegin));
     CHECK (firstField.IsSame (*iterator));
     CHECK (secondField.IsSame (*iteratorCopyAtSecond));
+
+    iterator = iteratorCopyAtSecond;
+    CHECK (iterator != iteratorCopyAtBegin);
+    CHECK (iterator == iteratorCopyAtSecond);
+
+    iterator = std::move (iteratorCopyAtBegin);
+    CHECK (iterator == iteratorCopyAtBegin);
+    CHECK (iterator != iteratorCopyAtSecond);
 }
 
 END_SUITE

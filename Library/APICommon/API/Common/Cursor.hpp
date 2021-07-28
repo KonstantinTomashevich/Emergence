@@ -1,6 +1,6 @@
 #pragma once
 
-#include <API/Commons/Shortcuts.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 /// \brief Adds common read cursor operators, copy constructor, move constructor
 ///        and destructor, deletes assignment operators.
