@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <cstdlib>
+
+#include <API/Common/ImplementationBinding.hpp>
 
 namespace Emergence::StandardLayout
 {
@@ -112,7 +113,6 @@ private:
 
     explicit Field (void *_handle) noexcept;
 
-    /// \brief Field implementation handle.
-    void *handle;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::StandardLayout

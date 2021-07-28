@@ -58,7 +58,7 @@ void *PointRepresentation::EditCursor::operator * () noexcept
     return *block_cast <Pegasus::HashIndex::EditCursor> (data);
 }
 
-PointRepresentation::EditCursor &PointRepresentation::EditCursor::operator ~ ()
+PointRepresentation::EditCursor &PointRepresentation::EditCursor::operator ~ () noexcept
 {
     ~block_cast <Pegasus::HashIndex::EditCursor> (data);
     return *this;

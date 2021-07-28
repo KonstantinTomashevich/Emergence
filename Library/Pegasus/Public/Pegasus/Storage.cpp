@@ -200,6 +200,22 @@ Storage::Storage (Storage &&_other) noexcept
       reflection (_other.reflection),
       editedRecordBackup (_other.editedRecordBackup)
 {
+    // Update storage pointers in all moved indices.
+    for (auto &[index, mask] : indices.hash)
+    {
+        index->storage = this;
+    }
+
+    for (auto &[index, mask] : indices.ordered)
+    {
+        index->storage = this;
+    }
+
+    for (auto &[index, mask] : indices.volumetric)
+    {
+        index->storage = this;
+    }
+
     // Allocate new record buffer for source storage. We capture its record buffer instead
     // of allocating new for us to preserve correct record edition routine state.
     _other.editedRecordBackup = malloc (reflection.recordMapping.GetObjectSize ());

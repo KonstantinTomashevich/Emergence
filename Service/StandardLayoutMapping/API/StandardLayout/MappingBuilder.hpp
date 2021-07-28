@@ -88,7 +88,6 @@ public:
     MappingBuilder &operator = (MappingBuilder &&_other) noexcept;
 
 private:
-    /// \brief MappingBuilder implementation handle.
-    void *handle = nullptr;
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::StandardLayout

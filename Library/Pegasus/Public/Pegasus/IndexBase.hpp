@@ -13,6 +13,8 @@ public:
     bool CanBeDropped () const noexcept;
 
 protected:
+    friend class Storage;
+
     explicit IndexBase (class Storage *_storage) noexcept;
 
     class Storage *storage;

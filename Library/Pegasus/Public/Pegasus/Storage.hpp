@@ -236,6 +236,7 @@ private:
 
     void UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
+    // TODO: Automatically shrink pool from time to time?
     Memory::Pool records;
 
     struct

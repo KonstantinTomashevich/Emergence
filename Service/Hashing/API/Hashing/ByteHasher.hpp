@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 
+#include <API/Common/ImplementationBinding.hpp>
+
 namespace Emergence::Hashing
 {
 /// \brief Stateful hasher for byte sequences.
@@ -26,9 +28,6 @@ public:
     uint64_t GetCurrentValue () const noexcept;
 
 private:
-    static constexpr std::size_t DATA_MAX_SIZE = sizeof (uint64_t) * 10u;
-
-    /// \brief Implementation-specific data.
-    std::array <uint8_t, DATA_MAX_SIZE> data;
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 10u);
 };
 } // namespace Emergence::Hashing

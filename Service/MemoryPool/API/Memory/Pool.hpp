@@ -3,6 +3,9 @@
 #include <array>
 #include <cstdint>
 
+#include <API/Common/ImplementationBinding.hpp>
+#include <API/Common/Iterator.hpp>
+
 namespace Emergence::Memory
 {
 /// \brief Allocator, that manages memory chunks with fixed size. Based on simple segregated storage idea.
@@ -14,35 +17,15 @@ public:
     class AcquiredChunkConstIterator final
     {
     public:
-        ~AcquiredChunkConstIterator () noexcept;
-
-        /// \return Chunk, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        const void *operator * () const noexcept;
-
-        /// \brief Move to next acquired chunk.
-        /// \invariant Inside valid bounds, but not in the ending.
-        AcquiredChunkConstIterator &operator ++ () noexcept;
-
-        /// \brief Move to next acquired chunk.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        AcquiredChunkConstIterator operator ++ (int) noexcept;
-
-        bool operator == (const AcquiredChunkConstIterator &_other) const noexcept;
-
-        bool operator != (const AcquiredChunkConstIterator &_other) const noexcept;
+        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (AcquiredChunkConstIterator, const void *);
 
     private:
         /// Pool constructs iterators.
         friend class Pool;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
         explicit AcquiredChunkConstIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
     /// \brief Allows iteration over acquired chunks.
@@ -50,35 +33,15 @@ public:
     class AcquiredChunkIterator final
     {
     public:
-        ~AcquiredChunkIterator () noexcept;
-
-        /// \return Chunk, to which iterator points.
-        /// \invariant Inside valid bounds, but not in the ending.
-        void *operator * () const noexcept;
-
-        /// \brief Move to next acquired chunk.
-        /// \invariant Inside valid bounds, but not in the ending.
-        AcquiredChunkIterator &operator ++ () noexcept;
-
-        /// \brief Move to next acquired chunk.
-        /// \return Unchanged instance of iterator.
-        /// \invariant Inside valid bounds, but not in the ending.
-        AcquiredChunkIterator operator ++ (int) noexcept;
-
-        bool operator == (const AcquiredChunkIterator &_other) const noexcept;
-
-        bool operator != (const AcquiredChunkIterator &_other) const noexcept;
+        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (AcquiredChunkIterator, void *);
 
     private:
         /// Pool constructs iterators.
         friend class Pool;
 
-        static constexpr std::size_t DATA_MAX_SIZE = sizeof (uintptr_t) * 3u;
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
         explicit AcquiredChunkIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
-
-        /// \brief Iterator implementation-specific data.
-        std::array <uint8_t, DATA_MAX_SIZE> data;
     };
 
     /// \param _chunkSize fixed chunk size.
@@ -136,15 +99,7 @@ public:
     Pool &operator = (Pool &&_other) noexcept;
 
 private:
-    /// \brief Max size of pool implementation object.
-    ///
-    /// \details It could be critical for performance to store pool object, not pool handle, as field of other class.
-    /// Therefore we specify max object size for any implementation and reserve this space using std::array.
-    static constexpr std::size_t MAX_DATA_SIZE = sizeof (uintptr_t) * 5u;
-
-    /// \brief Stub, that reserves space for implementation object.
-    /// \see ::MAX_FIELDS_SIZE.
-    std::array <uint8_t, MAX_DATA_SIZE> data;
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
 };
 
 /// \brief Wraps Pool::BeginAcquired for foreach sentences.

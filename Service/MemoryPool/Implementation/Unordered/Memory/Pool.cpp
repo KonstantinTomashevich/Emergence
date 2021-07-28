@@ -5,6 +5,17 @@
 
 namespace Emergence::Memory
 {
+Pool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const Pool::AcquiredChunkConstIterator &_other) noexcept
+{
+    new (&data) UnorderedPool::AcquiredChunkConstIterator (block_cast <UnorderedPool::AcquiredChunkConstIterator> (_other.data));
+}
+
+Pool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (Pool::AcquiredChunkConstIterator &&_other) noexcept
+{
+    new (&data) UnorderedPool::AcquiredChunkConstIterator (
+        std::move (block_cast <UnorderedPool::AcquiredChunkConstIterator> (_other.data)));
+}
+
 Pool::AcquiredChunkConstIterator::~AcquiredChunkConstIterator () noexcept
 {
     block_cast <UnorderedPool::AcquiredChunkConstIterator> (data).~AcquiredChunkConstIterator ();
@@ -39,10 +50,45 @@ bool Pool::AcquiredChunkConstIterator::operator != (const Pool::AcquiredChunkCon
     return !(*this == _other);
 }
 
+Pool::AcquiredChunkConstIterator &Pool::AcquiredChunkConstIterator::operator = (
+    const Pool::AcquiredChunkConstIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~AcquiredChunkConstIterator ();
+        new (this) AcquiredChunkConstIterator (_other);
+    }
+
+    return *this;
+}
+
+Pool::AcquiredChunkConstIterator &Pool::AcquiredChunkConstIterator::operator = (
+    Pool::AcquiredChunkConstIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~AcquiredChunkConstIterator ();
+        new (this) AcquiredChunkConstIterator (std::move (_other));
+    }
+
+    return *this;
+}
+
 Pool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) UnorderedPool::AcquiredChunkConstIterator (
         block_cast <UnorderedPool::AcquiredChunkConstIterator> (*_data));
+}
+
+Pool::AcquiredChunkIterator::AcquiredChunkIterator (const Pool::AcquiredChunkIterator &_other) noexcept
+{
+    new (&data) UnorderedPool::AcquiredChunkIterator (block_cast <UnorderedPool::AcquiredChunkIterator> (_other.data));
+}
+
+Pool::AcquiredChunkIterator::AcquiredChunkIterator (Pool::AcquiredChunkIterator &&_other) noexcept
+{
+    new (&data) UnorderedPool::AcquiredChunkIterator (
+        std::move (block_cast <UnorderedPool::AcquiredChunkIterator> (_other.data)));
 }
 
 Pool::AcquiredChunkIterator::~AcquiredChunkIterator () noexcept
@@ -76,6 +122,30 @@ bool Pool::AcquiredChunkIterator::operator == (const Pool::AcquiredChunkIterator
 bool Pool::AcquiredChunkIterator::operator != (const Pool::AcquiredChunkIterator &_other) const noexcept
 {
     return !(*this == _other);
+}
+
+Pool::AcquiredChunkIterator &Pool::AcquiredChunkIterator::operator = (
+    const Pool::AcquiredChunkIterator &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~AcquiredChunkIterator ();
+        new (this) AcquiredChunkIterator (_other);
+    }
+
+    return *this;
+}
+
+Pool::AcquiredChunkIterator &Pool::AcquiredChunkIterator::operator = (
+    Pool::AcquiredChunkIterator &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~AcquiredChunkIterator ();
+        new (this) AcquiredChunkIterator (std::move (_other));
+    }
+
+    return *this;
 }
 
 Pool::AcquiredChunkIterator::AcquiredChunkIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
