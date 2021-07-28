@@ -10,7 +10,7 @@
 
 namespace Emergence::Warehouse
 {
-/// \brief Manages storages for different object types.
+/// \brief Performs storage management for different object types.
 /// \details Registry serves as root node for data storages and allows user to create and access storages.
 ///          Registry object is unique-ownership handle for implementation instance.
 /// \warning Registry operations could be quite slow and should not be called often.
@@ -19,11 +19,12 @@ class Registry final
 public:
     Registry () noexcept;
 
-    /// Registry manages lots of storages with lots of records, therefore it's not optimal to copy it.
+    /// Registry manages lots of storages with lots of objects, therefore it's not optimal to copy it.
     Registry (const Registry &_other) = delete;
 
     Registry (Registry &&_other) noexcept;
 
+    /// \invariant There is no prepared query and storage handle instances that belong to this registry.
     ~Registry () noexcept;
 
     /// \return SingletonStorage for given type.
@@ -38,7 +39,7 @@ public:
     /// \details If there is no existing storage for this type, new storage will be allocated.
     LongTermStorage AcquireLongTermStorage (const StandardLayout::Mapping _typeMapping) noexcept;
 
-    /// Registry manages lots of storages with lots of records, therefore it's not optimal to copy assign it.
+    /// Registry manages lots of storages with lots of objects, therefore it's not optimal to copy assign it.
     Registry &operator = (const Registry &_other) = delete;
 
     Registry &operator = (Registry &&_other) noexcept;

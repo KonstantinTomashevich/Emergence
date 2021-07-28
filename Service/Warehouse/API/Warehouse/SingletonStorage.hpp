@@ -11,18 +11,18 @@ namespace Emergence::Warehouse
 {
 /// \brief Stores single instance of given type.
 /// \details SingletonStorage object is shared-ownership handle for implementation instance. Storage will be
-///          automatically destroyed if there are no handles for this storage or its prepared queries.
+///          automatically destroyed if there is no handles for this storage or its prepared queries.
 /// \warning After storage creation singleton instance is allocated, but not initialized. Use ModifyQuery to init it.
 class SingletonStorage final
 {
 public:
-    /// \brief Prepared query, used to gain read only access to singleton instance.
+    /// \brief Prepared query, used to gain thread safe readonly access to singleton instance.
     /// \details Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchQuery final
     {
     public:
-        /// \brief Provides thread safe read only access to singleton instance.
+        /// \brief Provides thread safe readonly access to singleton instance.
         class Cursor final
         {
         public:
@@ -54,7 +54,7 @@ public:
         /// \invariant There is no active cursors for this query.
         ~FetchQuery () noexcept;
 
-        /// \return Cursor, that provides thread safe read only access to singleton instance.
+        /// \return Cursor, that provides thread safe readonly access to singleton instance.
         /// \details Thread safe.
         /// \invariant There is no ModifyQuery cursors in this storage.
         Cursor Execute () noexcept;
@@ -73,7 +73,7 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to singleton instance.
     /// \details Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyQuery final
     {
     public:
@@ -134,7 +134,7 @@ public:
     /// \return Mapping for singleton type.
     StandardLayout::Mapping GetTypeMapping () const noexcept;
 
-    /// \return Prepared query for read only access.
+    /// \return Prepared query for readonly access.
     FetchQuery Fetch () noexcept;
 
     /// \return Prepared query for readwrite access.

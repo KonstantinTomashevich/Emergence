@@ -12,18 +12,18 @@
 namespace Emergence::Warehouse
 {
 /// \brief Storage for objects that are created and destroyed rarely.
-/// \details Provides indexed prepared queries for fast lookups.
+/// \details Prepared queries for this storage are supported by indexation to provide fast parametrized lookups.
 ///          LongTermStorage object is shared-ownership handle for implementation instance. Storage will be
-///          automatically destroyed if there are no handles for this storage or its prepared queries.
+///          automatically destroyed if there is no handles for this storage or its prepared queries.
 class LongTermStorage final
 {
 public:
-    /// \brief Defines sequence of values by specifying value for each key field of FetchByValue or ModifyByValueQuery.
+    /// \brief Defines sequence of values by specifying value for each key field of FetchValue or ModifyValueQuery.
     ///
     /// \details Key field count and types are unknown during compile time, therefore ValueSequence is
     ///          a pointer to memory block, that holds values for each key field in correct order.
-    /// \see ::FetchByValue
-    /// \see ::ModifyByValue
+    /// \see ::FetchValue
+    /// \see ::ModifyValue
     ///
     /// \warning Due to runtime-only nature of sequences, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
@@ -78,7 +78,7 @@ public:
 
     /// \brief Prepared query, used to start insertion transactions.
     /// \details Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class InsertQuery final
     {
     public:
@@ -132,15 +132,15 @@ public:
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
-    /// \brief Prepared query, used to gain readonly access to objects that match criteria:
+    /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        each key field value is equal to according value in given values sequence.
-    /// \details Key fields are selected during prepared query creation using ::FetchByValue.
+    /// \details Key fields are selected during prepared query creation using ::FetchValue.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
-    class FetchByValueQuery final
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
+    class FetchValueQuery final
     {
     public:
-        /// \brief Provides thread safe readonly access objects that match criteria in FetchByValueQuery brief.
+        /// \brief Provides thread safe readonly access objects that match criteria in FetchValueQuery brief.
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
         class Cursor final
         {
@@ -149,47 +149,47 @@ public:
 
         private:
             /// Query constructs its cursors.
-            friend class FetchByValueQuery;
+            friend class FetchValueQuery;
 
             EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
         };
 
-        FetchByValueQuery (const FetchByValueQuery &_other) noexcept;
+        FetchValueQuery (const FetchValueQuery &_other) noexcept;
 
-        FetchByValueQuery (FetchByValueQuery &&_other) noexcept;
+        FetchValueQuery (FetchValueQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchByValueQuery ();
+        ~FetchValueQuery ();
 
-        /// \return Cursor, that provides thread safe read only access to objects
-        ///         that match criteria in FetchByValueQuery brief.
+        /// \return Cursor, that provides thread safe readonly access to objects
+        ///         that match criteria in FetchValueQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
         Cursor Execute (const ValueSequence _values) noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        EMERGENCE_DELETE_ASSIGNMENT (FetchByValueQuery);
+        EMERGENCE_DELETE_ASSIGNMENT (FetchValueQuery);
 
     private:
         /// Storage constructs prepared queries.
         friend class LongTermStorage;
 
-        explicit FetchByValueQuery (void *_handle) noexcept;
+        explicit FetchValueQuery (void *_handle) noexcept;
 
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ///        each key field value is equal to according value in given values sequence.
-    /// \details Key fields are selected during prepared query creation using ::ModifyByValue.
+    /// \details Key fields are selected during prepared query creation using ::ModifyValue.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
-    class ModifyByValueQuery final
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
+    class ModifyValueQuery final
     {
     public:
-        /// \brief Provides readwrite access to objects that match criteria in ModifyByValueQuery brief.
+        /// \brief Provides readwrite access to objects that match criteria in ModifyValueQuery brief.
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
         class Cursor final
         {
@@ -198,41 +198,41 @@ public:
 
         private:
             /// Query constructs its cursors.
-            friend class ModifyByValueQuery;
+            friend class ModifyValueQuery;
 
             EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
             explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
         };
 
-        ModifyByValueQuery (const ModifyByValueQuery &_other) noexcept;
+        ModifyValueQuery (const ModifyValueQuery &_other) noexcept;
 
-        ModifyByValueQuery (ModifyByValueQuery &&_other) noexcept;
+        ModifyValueQuery (ModifyValueQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyByValueQuery ();
+        ~ModifyValueQuery ();
 
-        /// \return Cursor, that provides readwrite access to objects that match criteria in ModifyByValueQuery brief.
+        /// \return Cursor, that provides readwrite access to objects that match criteria in ModifyValueQuery brief.
         /// \invariant There is no other cursors in this storage.
         Cursor Execute (const ValueSequence _values) noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
-        EMERGENCE_DELETE_ASSIGNMENT (ModifyByValueQuery);
+        EMERGENCE_DELETE_ASSIGNMENT (ModifyValueQuery);
 
     private:
         /// Storage constructs prepared queries.
         friend class LongTermStorage;
 
-        explicit ModifyByValueQuery (void *_handle) noexcept;
+        explicit ModifyValueQuery (void *_handle) noexcept;
 
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
-    /// \brief Prepared query, used to gain readonly access to objects that match criteria:
+    /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
     /// \details Key fields are selected during prepared query creation using ::FetchRange.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchRangeQuery final
     {
     public:
@@ -259,7 +259,7 @@ public:
         /// \invariant There is no cursors for this query.
         ~FetchRangeQuery ();
 
-        /// \return Cursor, that provides thread safe read only access to objects
+        /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchRangeQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
@@ -281,7 +281,7 @@ public:
     ////       given min max interval contains key field value.
     /// \details Key fields are selected during prepared query creation using ::ModifyRange.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyRangeQuery final
     {
     public:
@@ -324,11 +324,11 @@ public:
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
-    /// \brief Prepared query, used to gain readonly access to objects that match criteria:
+    /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
     /// \details Key fields are selected during prepared query creation using ::FetchReversedRange.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchReversedRangeQuery final
     {
     public:
@@ -355,7 +355,7 @@ public:
         /// \invariant There is no cursors for this query.
         ~FetchReversedRangeQuery ();
 
-        /// \return Cursor, that provides thread safe read only access to objects
+        /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchReversedRangeQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
@@ -377,7 +377,7 @@ public:
     ////       given min max interval contains key field value.
     /// \details Key fields are selected during prepared query creation using ::ModifyReversedRange.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyReversedRangeQuery final
     {
     public:
@@ -421,11 +421,11 @@ public:
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
-    /// \brief Prepared query, used to gain readonly access to objects that match criteria:
+    /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
     /// \details Key fields are selected during prepared query creation using ::FetchShapeIntersections.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchShapeIntersectionsQuery final
     {
     public:
@@ -453,7 +453,7 @@ public:
         /// \invariant There is no cursors for this query.
         ~FetchShapeIntersectionsQuery ();
 
-        /// \return Cursor, that provides thread safe read only access to objects
+        /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchShapeIntersectionsQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
@@ -475,7 +475,7 @@ public:
     ////       shape, described by values of object key dimensions, intersects with given shape.
     /// \details Key fields are selected during prepared query creation using ::ModifyShapeIntersections.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyShapeIntersectionsQuery final
     {
     public:
@@ -519,11 +519,11 @@ public:
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
-    /// \brief Prepared query, used to gain readonly access to objects that match criteria:
+    /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray.
     /// \details Key fields are selected during prepared query creation using ::FetchRayIntersections.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchRayIntersectionsQuery final
     {
     public:
@@ -551,11 +551,13 @@ public:
         /// \invariant There is no cursors for this query.
         ~FetchRayIntersectionsQuery ();
 
-        /// \return Cursor, that provides thread safe read only access to objects
+        /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchRayIntersectionsQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
         Cursor Execute (const Ray _ray) noexcept;
+
+        // TODO: Fetch/Modify closes intersection query?
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (FetchRayIntersectionsQuery);
@@ -573,7 +575,7 @@ public:
     ////       shape, described by values of object key dimensions, intersects with given ray.
     /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersections.
     ///          Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyRayIntersectionsQuery final
     {
     public:
@@ -655,36 +657,36 @@ public:
     /// \return Prepared query for object insertion.
     InsertQuery Insert () noexcept;
 
-    /// \return FetchByValueQuery prepared query on given key fields.
-    FetchByValueQuery FetchByValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
+    /// \return Readonly select-value prepared query on given key fields.
+    FetchValueQuery FetchValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
 
-    /// \return ModifyByValueQuery prepared query on given key fields.
-    ModifyByValueQuery ModifyByValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
+    /// \return Readwrite select-value prepared query on given key fields.
+    ModifyValueQuery ModifyValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
 
-    /// \return FetchRangeQuery prepared query on given key field.
+    /// \return Readonly select-range prepared query with ascending order on given key field.
     FetchRangeQuery FetchRange (StandardLayout::FieldId _keyField) noexcept;
 
-    /// \return ModifyRangeQuery prepared query on given key field.
+    /// \return Readwrite select-range prepared query with ascending order on given key field.
     ModifyRangeQuery ModifyRange (StandardLayout::FieldId _keyField) noexcept;
 
-    /// \return FetchReversedRangeQuery prepared query on given key field.
+    /// \return Readonly select-range prepared query with descending order on given key field.
     FetchReversedRangeQuery FetchReversedRange (StandardLayout::FieldId _keyField) noexcept;
 
-    /// \return ModifyReversedRangeQuery prepared query on given key field.
+    /// \return Readwrite select-range prepared query with descending order on given key field.
     ModifyReversedRangeQuery ModifyReversedRange (StandardLayout::FieldId _keyField) noexcept;
 
-    /// \return FetchShapeIntersectionsQuery prepared query on given dimensions.
+    /// \return Readonly select-shape-intersections prepared query on given dimensions.
     FetchShapeIntersectionsQuery FetchShapeIntersections (
         const std::vector <DimensionDescriptor> &_dimensions) noexcept;
 
-    /// \return ModifyShapeIntersectionsQuery prepared query on given dimensions.
+    /// \return Readwrite select-shape-intersections prepared query on given dimensions.
     ModifyShapeIntersectionsQuery ModifyShapeIntersections (
         const std::vector <DimensionDescriptor> &_dimensions) noexcept;
 
-    /// \return FetchRayIntersectionsQuery prepared query on given dimensions.
+    /// \return Readonly select-ray-intersections prepared query on given dimensions.
     FetchRayIntersectionsQuery FetchRayIntersections (const std::vector <DimensionDescriptor> &_dimensions) noexcept;
 
-    /// \return ModifyRayIntersectionsQuery prepared query on given dimensions.
+    /// \return Readwrite select-ray-intersections prepared query on given dimensions.
     ModifyRayIntersectionsQuery ModifyRayIntersections (const std::vector <DimensionDescriptor> &_dimensions) noexcept;
 
     /// Assigning storage handles looks counter intuitive.

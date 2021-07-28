@@ -12,13 +12,13 @@ namespace Emergence::Warehouse
 {
 /// \brief Storage for objects that are created and destroyed frequently.
 /// \details ShortTermStorage object is shared-ownership handle for implementation instance. Storage will be
-///          automatically destroyed if there are no handles for this storage or its prepared queries.
+///          automatically destroyed if there is no handles for this storage or its prepared queries.
 class ShortTermStorage final
 {
 public:
     /// \brief Prepared query, used to start insertion transactions.
     /// \details Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class InsertQuery final
     {
     public:
@@ -72,9 +72,9 @@ public:
         EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
     };
 
-    /// \brief Prepared query, used to gain readonly access to stored objects.
+    /// \brief Prepared query, used to gain thread safe readonly access to stored objects.
     /// \details Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchQuery final
     {
     public:
@@ -101,7 +101,7 @@ public:
         /// \invariant There is no cursors for this query.
         ~FetchQuery ();
 
-        /// \return Cursor, that provides thread safe read only access to stored objects.
+        /// \return Cursor, that provides thread safe readonly access to stored objects.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
         Cursor Execute () noexcept;
@@ -120,7 +120,7 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to stored objects.
     /// \details Object of this class is shared-ownership handle for implementation instance.
-    ///          Prepared query will be automatically deallocated if there are no handles for it.
+    ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyQuery final
     {
     public:
@@ -175,7 +175,7 @@ public:
     /// \return Prepared query for object insertion.
     InsertQuery Insert () noexcept;
 
-    /// \return Prepared query for read only access.
+    /// \return Prepared query for readonly access.
     FetchQuery Fetch () noexcept;
 
     /// \return Prepared query for readwrite access.

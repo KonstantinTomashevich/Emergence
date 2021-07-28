@@ -200,7 +200,7 @@ Storage::Storage (Storage &&_other) noexcept
       reflection (_other.reflection),
       editedRecordBackup (_other.editedRecordBackup)
 {
-    // Update storage pointer in all moved indices.
+    // Update storage pointers in all moved indices.
     for (auto &[index, mask] : indices.hash)
     {
         index->storage = this;

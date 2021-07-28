@@ -111,8 +111,8 @@ private:
     /// Fields are constructed inside Mapping.
     friend class Mapping;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
-
     explicit Field (void *_handle) noexcept;
+
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::StandardLayout
