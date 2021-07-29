@@ -5,6 +5,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <API/Common/Cursor.hpp>
+
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
@@ -113,24 +115,7 @@ public:
     class ReadCursor final
     {
     public:
-        ReadCursor (const ReadCursor &_other) noexcept;
-
-        ReadCursor (ReadCursor &&_other) noexcept;
-
-        ~ReadCursor () noexcept;
-
-        /// \return Pointer to current record or nullptr if there is no more records.
-        const void *operator * () const noexcept;
-
-        /// \brief Moves cursor to next record.
-        /// \invariant ::current != ::end.
-        ReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ReadCursor &operator = (const ReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ReadCursor &operator = (ReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (ReadCursor);
 
     private:
         friend class HashIndex;
@@ -147,32 +132,7 @@ public:
     class EditCursor final
     {
     public:
-        EditCursor (const EditCursor &_other) = delete;
-
-        EditCursor (EditCursor &&_other) noexcept;
-
-        ~EditCursor () noexcept;
-
-        /// \return Pointer to current record or nullptr if there is no more records.
-        void *operator * () noexcept;
-
-        /// \brief Deletes current record from collection and moves to next record.
-        ///
-        /// \invariant Cursor should not point to ending.
-        ///
-        /// \warning Record type is unknown during compile time, therefore appropriate
-        ///          destructor should be called before record deletion.
-        EditCursor &operator ~ () noexcept;
-
-        /// \brief Checks current record for key values changes. Then moves cursor to next record.
-        /// \invariant Cursor should not point to ending.
-        EditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        EditCursor &operator = (const EditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        EditCursor &operator = (EditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (EditCursor);
 
     private:
         friend class HashIndex;

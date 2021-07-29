@@ -4,6 +4,8 @@
 #include <atomic>
 #include <memory>
 
+#include <API/Common/Iterator.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Memory/Pool.hpp>
@@ -60,19 +62,7 @@ public:
     class HashIndexIterator final
     {
     public:
-        Handling::Handle <HashIndex> operator * () const noexcept;
-
-        HashIndexIterator &operator ++ () noexcept;
-
-        HashIndexIterator operator ++ (int) noexcept;
-
-        HashIndexIterator &operator -- () noexcept;
-
-        HashIndexIterator operator -- (int) noexcept;
-
-        bool operator == (const HashIndexIterator &_other) const noexcept;
-
-        bool operator != (const HashIndexIterator &_other) const noexcept;
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (HashIndexIterator, Handling::Handle <HashIndex>);
 
     private:
         friend class Storage;
@@ -88,19 +78,7 @@ public:
     class OrderedIndexIterator final
     {
     public:
-        Handling::Handle <OrderedIndex> operator * () const noexcept;
-
-        OrderedIndexIterator &operator ++ () noexcept;
-
-        OrderedIndexIterator operator ++ (int) noexcept;
-
-        OrderedIndexIterator &operator -- () noexcept;
-
-        OrderedIndexIterator operator -- (int) noexcept;
-
-        bool operator == (const OrderedIndexIterator &_other) const noexcept;
-
-        bool operator != (const OrderedIndexIterator &_other) const noexcept;
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (OrderedIndexIterator, Handling::Handle <OrderedIndex>);
 
     private:
         friend class Storage;
@@ -116,19 +94,7 @@ public:
     class VolumetricIndexIterator final
     {
     public:
-        Handling::Handle <VolumetricIndex> operator * () const noexcept;
-
-        VolumetricIndexIterator &operator ++ () noexcept;
-
-        VolumetricIndexIterator operator ++ (int) noexcept;
-
-        VolumetricIndexIterator &operator -- () noexcept;
-
-        VolumetricIndexIterator operator -- (int) noexcept;
-
-        bool operator == (const VolumetricIndexIterator &_other) const noexcept;
-
-        bool operator != (const VolumetricIndexIterator &_other) const noexcept;
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (VolumetricIndexIterator, Handling::Handle <VolumetricIndex>);
 
     private:
         friend class Storage;

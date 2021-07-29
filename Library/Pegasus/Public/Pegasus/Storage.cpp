@@ -48,6 +48,12 @@ Storage::Allocator::Allocator (Storage *_owner)
     owner->RegisterWriter ();
 }
 
+Storage::HashIndexIterator::HashIndexIterator (const Storage::HashIndexIterator &_other) noexcept = default;
+
+Storage::HashIndexIterator::HashIndexIterator (Storage::HashIndexIterator &&_other) noexcept = default;
+
+Storage::HashIndexIterator::~HashIndexIterator () noexcept = default;
+
 Handling::Handle <HashIndex> Storage::HashIndexIterator::operator * () const noexcept
 {
     return iterator->index.get ();
@@ -89,10 +95,22 @@ bool Storage::HashIndexIterator::operator != (const Storage::HashIndexIterator &
     return !(*this == _other);
 }
 
+Storage::HashIndexIterator &Storage::HashIndexIterator::operator = (
+    const Storage::HashIndexIterator &_other) noexcept = default;
+
+Storage::HashIndexIterator &Storage::HashIndexIterator::operator = (
+    Storage::HashIndexIterator &&_other) noexcept = default;
+
 Storage::HashIndexIterator::HashIndexIterator (HashIndexIterator::BaseIterator _iterator) noexcept
     : iterator (std::move (_iterator))
 {
 }
+
+Storage::OrderedIndexIterator::OrderedIndexIterator (const Storage::OrderedIndexIterator &_other) noexcept = default;
+
+Storage::OrderedIndexIterator::OrderedIndexIterator (Storage::OrderedIndexIterator &&_other) noexcept = default;
+
+Storage::OrderedIndexIterator::~OrderedIndexIterator () noexcept = default;
 
 Handling::Handle <OrderedIndex> Storage::OrderedIndexIterator::operator * () const noexcept
 {
@@ -135,10 +153,24 @@ bool Storage::OrderedIndexIterator::operator != (const Storage::OrderedIndexIter
     return !(*this == _other);
 }
 
+Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator = (
+    const Storage::OrderedIndexIterator &_other) noexcept = default;
+
+Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator = (
+    Storage::OrderedIndexIterator &&_other) noexcept = default;
+
 Storage::OrderedIndexIterator::OrderedIndexIterator (OrderedIndexIterator::BaseIterator _iterator) noexcept
     : iterator (std::move (_iterator))
 {
 }
+
+Storage::VolumetricIndexIterator::VolumetricIndexIterator (
+    const Storage::VolumetricIndexIterator &_other) noexcept = default;
+
+Storage::VolumetricIndexIterator::VolumetricIndexIterator (
+    Storage::VolumetricIndexIterator &&_other) noexcept = default;
+
+Storage::VolumetricIndexIterator::~VolumetricIndexIterator () noexcept = default;
 
 Handling::Handle <VolumetricIndex> Storage::VolumetricIndexIterator::operator * () const noexcept
 {
@@ -180,6 +212,12 @@ bool Storage::VolumetricIndexIterator::operator != (const Storage::VolumetricInd
 {
     return !(*this == _other);
 }
+
+Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator = (
+    const Storage::VolumetricIndexIterator &_other) noexcept = default;
+
+Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator = (
+    Storage::VolumetricIndexIterator &&_other) noexcept = default;
 
 Storage::VolumetricIndexIterator::VolumetricIndexIterator (VolumetricIndexIterator::BaseIterator _iterator) noexcept
     : iterator (std::move (_iterator))

@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <API/Common/Cursor.hpp>
+
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/VolumetricIndex.hpp>
@@ -173,21 +175,7 @@ public:
     class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
     {
     public:
-        ShapeIntersectionReadCursor (const ShapeIntersectionReadCursor &_other) noexcept;
-
-        ShapeIntersectionReadCursor (ShapeIntersectionReadCursor &&_other) noexcept;
-
-        ~ShapeIntersectionReadCursor () noexcept;
-
-        const void *operator * () const noexcept;
-
-        ShapeIntersectionReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionReadCursor &operator = (const ShapeIntersectionReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionReadCursor &operator = (ShapeIntersectionReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (ShapeIntersectionReadCursor);
 
     private:
         friend class VolumetricIndex;
@@ -199,23 +187,7 @@ public:
     class ShapeIntersectionEditCursor final : private ShapeIntersectionCursorBase
     {
     public:
-        ShapeIntersectionEditCursor (const ShapeIntersectionEditCursor &_other) = delete;
-
-        ShapeIntersectionEditCursor (ShapeIntersectionEditCursor &&_other) noexcept;
-
-        ~ShapeIntersectionEditCursor () noexcept;
-
-        void *operator * () noexcept;
-
-        ShapeIntersectionEditCursor &operator ~ () noexcept;
-
-        ShapeIntersectionEditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionEditCursor &operator = (const ShapeIntersectionEditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ShapeIntersectionEditCursor &operator = (ShapeIntersectionEditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (ShapeIntersectionEditCursor);
 
     private:
         friend class VolumetricIndex;
@@ -283,21 +255,7 @@ public:
     class RayIntersectionReadCursor final : private RayIntersectionCursorBase
     {
     public:
-        RayIntersectionReadCursor (const RayIntersectionReadCursor &_other) noexcept;
-
-        RayIntersectionReadCursor (RayIntersectionReadCursor &&_other) noexcept;
-
-        ~RayIntersectionReadCursor () noexcept;
-
-        const void *operator * () const noexcept;
-
-        RayIntersectionReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionReadCursor &operator = (const RayIntersectionReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionReadCursor &operator = (RayIntersectionReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (RayIntersectionReadCursor);
 
     private:
         friend class VolumetricIndex;
@@ -308,23 +266,7 @@ public:
     class RayIntersectionEditCursor final : private RayIntersectionCursorBase
     {
     public:
-        RayIntersectionEditCursor (const RayIntersectionEditCursor &_other) = delete;
-
-        RayIntersectionEditCursor (RayIntersectionEditCursor &&_other) noexcept;
-
-        ~RayIntersectionEditCursor () noexcept;
-
-        void *operator * () noexcept;
-
-        RayIntersectionEditCursor &operator ~ () noexcept;
-
-        RayIntersectionEditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionEditCursor &operator = (const RayIntersectionEditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        RayIntersectionEditCursor &operator = (RayIntersectionEditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (RayIntersectionEditCursor);
 
     private:
         friend class VolumetricIndex;

@@ -3,6 +3,8 @@
 #include <atomic>
 #include <vector>
 
+#include <API/Common/Cursor.hpp>
+
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/IndexBase.hpp>
@@ -23,21 +25,7 @@ public:
     class ReadCursor final
     {
     public:
-        ReadCursor (const ReadCursor &_other) noexcept;
-
-        ReadCursor (ReadCursor &&_other) noexcept;
-
-        ~ReadCursor () noexcept;
-
-        const void *operator * () const noexcept;
-
-        ReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ReadCursor &operator = (const ReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ReadCursor &operator = (ReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (ReadCursor);
 
     private:
         friend class OrderedIndex;
@@ -54,23 +42,7 @@ public:
     class EditCursor final
     {
     public:
-        EditCursor (const EditCursor &_other) = delete;
-
-        EditCursor (EditCursor &&_other) noexcept;
-
-        ~EditCursor () noexcept;
-
-        void *operator * () noexcept;
-
-        EditCursor &operator ~ () noexcept;
-
-        EditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        EditCursor &operator = (const EditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        EditCursor &operator = (EditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (EditCursor);
 
     private:
         friend class OrderedIndex;
@@ -89,21 +61,7 @@ public:
     class ReversedReadCursor final
     {
     public:
-        ReversedReadCursor (const ReversedReadCursor &_other) noexcept;
-
-        ReversedReadCursor (ReversedReadCursor &&_other) noexcept;
-
-        ~ReversedReadCursor () noexcept;
-
-        const void *operator * () const noexcept;
-
-        ReversedReadCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ReversedReadCursor &operator = (const ReversedReadCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ReversedReadCursor &operator = (ReversedReadCursor &&_other) = delete;
+        EMERGENCE_READ_CURSOR_OPERATIONS (ReversedReadCursor);
 
     private:
         friend class OrderedIndex;
@@ -120,23 +78,7 @@ public:
     class ReversedEditCursor final
     {
     public:
-        ReversedEditCursor (const ReversedEditCursor &_other) = delete;
-
-        ReversedEditCursor (ReversedEditCursor &&_other) noexcept;
-
-        ~ReversedEditCursor () noexcept;
-
-        void *operator * () noexcept;
-
-        ReversedEditCursor &operator ~ () noexcept;
-
-        ReversedEditCursor &operator ++ () noexcept;
-
-        /// Assigning cursors looks counter intuitive.
-        ReversedEditCursor &operator = (const ReversedEditCursor &_other) = delete;
-
-        /// Assigning cursors looks counter intuitive.
-        ReversedEditCursor &operator = (ReversedEditCursor &&_other) = delete;
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (ReversedEditCursor);
 
     private:
         friend class OrderedIndex;
