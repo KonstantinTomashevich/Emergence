@@ -136,6 +136,17 @@ Mapping &Mapping::operator = (Mapping &&_other) noexcept
     return *this;
 }
 
+bool Mapping::operator == (const Mapping &_other) const noexcept
+{
+    return block_cast <Handling::Handle <PlainMapping>> (data) ==
+           block_cast <Handling::Handle <PlainMapping>> (_other.data);
+}
+
+bool Mapping::operator != (const Mapping &_other) const noexcept
+{
+    return !(*this == _other);
+}
+
 Mapping::FieldIterator Mapping::Begin () const noexcept
 {
     const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);

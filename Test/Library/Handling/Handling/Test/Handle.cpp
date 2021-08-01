@@ -218,13 +218,13 @@ void Scenario::ExecuteTask (const MoveHandle &_task)
     REQUIRE (sourceIterator != handles.end ());
     REQUIRE (handles.find (_task.targetName) == handles.end ());
 
-    bool sourceValid = sourceIterator->second;
+    bool sourceValid {sourceIterator->second};
     auto[iterator, emplaceResult] = handles.emplace (
         _task.targetName, std::move (sourceIterator->second));
 
     REQUIRE (emplaceResult);
     CHECK (!sourceIterator->second);
-    CHECK (iterator->second == sourceValid);
+    CHECK (bool {iterator->second} == sourceValid);
 }
 
 void Scenario::ExecuteTask (const CopyAssignHandle &_task)
@@ -235,7 +235,7 @@ void Scenario::ExecuteTask (const CopyAssignHandle &_task)
     auto targetIterator = handles.find (_task.targetName);
     REQUIRE (targetIterator != handles.end ());
 
-    bool sourceValid = sourceIterator->second;
+    bool sourceValid {sourceIterator->second};
     targetIterator->second = sourceIterator->second;
     CHECK (sourceIterator->second == targetIterator->second);
 
@@ -255,7 +255,7 @@ void Scenario::ExecuteTask (const MoveAssignHandle &_task)
     auto targetIterator = handles.find (_task.targetName);
     REQUIRE (targetIterator != handles.end ());
 
-    bool sourceValid = sourceIterator->second;
+    bool sourceValid {sourceIterator->second};
     targetIterator->second = std::move (sourceIterator->second);
 
     if (sourceIterator == targetIterator)
@@ -267,7 +267,7 @@ void Scenario::ExecuteTask (const MoveAssignHandle &_task)
     else
     {
         CHECK (!sourceIterator->second);
-        CHECK (targetIterator->second == sourceValid);
+        CHECK (bool {targetIterator->second} == sourceValid);
     }
 }
 } // namespace Emergence::Handling::Test
