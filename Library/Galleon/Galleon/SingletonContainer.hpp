@@ -46,7 +46,7 @@ public:
 
         FetchQuery (FetchQuery &&_other) noexcept = default;
 
-        /// \invariant There is no cursors for this query. Otherwise cursor deletion is not thread safe.
+        /// \invariant There is no cursors for this query. Otherwise cursor deletion will not be thread safe.
         ~FetchQuery () noexcept = default;
 
         Cursor Execute () const noexcept;
@@ -69,7 +69,7 @@ public:
         class Cursor final
         {
         public:
-            Cursor (const Cursor &_other) noexcept = default;
+            Cursor (const Cursor &_other) = delete;
 
             Cursor (Cursor &&_other) noexcept = default;
 

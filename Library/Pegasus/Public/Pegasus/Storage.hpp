@@ -222,6 +222,8 @@ private:
     {
         std::atomic_size_t readers = 0u;
         std::size_t writers = 0u;
+
+        static_assert (decltype (readers)::is_always_lock_free);
     } accessCounter;
 
     void *editedRecordBackup = nullptr;

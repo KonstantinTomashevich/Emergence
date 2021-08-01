@@ -114,7 +114,7 @@ public:
         InsertQuery (InsertQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~InsertQuery ();
+        ~InsertQuery () noexcept;
 
         /// \return Cursor, that allows user to insert new objects into storage.
         /// \invariant There is no other cursors in this storage.
@@ -161,7 +161,7 @@ public:
         FetchValueQuery (FetchValueQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchValueQuery ();
+        ~FetchValueQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchValueQuery brief.
@@ -210,7 +210,7 @@ public:
         ModifyValueQuery (ModifyValueQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyValueQuery ();
+        ~ModifyValueQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects that match criteria in ModifyValueQuery brief.
         /// \invariant There is no other cursors in this storage.
@@ -257,7 +257,7 @@ public:
         FetchRangeQuery (FetchRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchRangeQuery ();
+        ~FetchRangeQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchRangeQuery brief.
@@ -306,7 +306,7 @@ public:
         ModifyRangeQuery (ModifyRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyRangeQuery ();
+        ~ModifyRangeQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects that match criteria in ModifyRangeQuery brief.
         /// \invariant There is no other cursors in this storage.
@@ -353,7 +353,7 @@ public:
         FetchReversedRangeQuery (FetchReversedRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchReversedRangeQuery ();
+        ~FetchReversedRangeQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchReversedRangeQuery brief.
@@ -402,7 +402,7 @@ public:
         ModifyReversedRangeQuery (ModifyReversedRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyReversedRangeQuery ();
+        ~ModifyReversedRangeQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyReversedRangeQuery brief.
@@ -451,7 +451,7 @@ public:
         FetchShapeIntersectionsQuery (FetchShapeIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchShapeIntersectionsQuery ();
+        ~FetchShapeIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchShapeIntersectionsQuery brief.
@@ -500,7 +500,7 @@ public:
         ModifyShapeIntersectionsQuery (ModifyShapeIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyShapeIntersectionsQuery ();
+        ~ModifyShapeIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyShapeIntersectionsQuery brief.
@@ -549,7 +549,7 @@ public:
         FetchRayIntersectionsQuery (FetchRayIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchRayIntersectionsQuery ();
+        ~FetchRayIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchRayIntersectionsQuery brief.
@@ -600,7 +600,7 @@ public:
         ModifyRayIntersectionsQuery (ModifyRayIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyRayIntersectionsQuery ();
+        ~ModifyRayIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyRayIntersectionsQuery brief.

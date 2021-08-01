@@ -46,6 +46,8 @@ protected:
 
     std::atomic_size_t readCursorCount;
 
+    static_assert (decltype (readCursorCount)::is_always_lock_free);
+
     std::size_t modificationCursorCount;
 };
 } // namespace Emergence::Galleon
