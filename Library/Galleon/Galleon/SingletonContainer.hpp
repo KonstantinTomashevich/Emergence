@@ -4,6 +4,7 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
 
 namespace Emergence::Galleon
@@ -131,6 +132,8 @@ private:
 
     /// \brief Needed because of custom ::new.
     void operator delete (void *_pointer) noexcept;
+
+    AccessCounter accessCounter;
 
     uint8_t storage[0u];
 };

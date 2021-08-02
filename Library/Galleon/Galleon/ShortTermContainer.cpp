@@ -9,7 +9,7 @@ ShortTermContainer::InsertQuery::Cursor::~Cursor () noexcept
 {
     if (container)
     {
-        container->UnregisterModificationCursor ();
+        container->accessCounter.UnregisterWriteAccess ();
     }
 }
 
@@ -23,7 +23,7 @@ ShortTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle <ShortTermCont
     : container (std::move (_container))
 {
     assert (container);
-    container->RegisterModificationCursor ();
+    container->accessCounter.RegisterWriteAccess ();
 }
 
 ShortTermContainer::InsertQuery::Cursor ShortTermContainer::InsertQuery::Execute () const noexcept
@@ -46,7 +46,7 @@ ShortTermContainer::FetchQuery::Cursor::~Cursor () noexcept
 {
     if (container)
     {
-        container->UnregisterReadCursor ();
+        container->accessCounter.UnregisterReadAccess ();
     }
 }
 
@@ -70,7 +70,7 @@ ShortTermContainer::FetchQuery::Cursor::Cursor (Handling::Handle <ShortTermConta
       end (container->objects.cend ())
 {
     assert (container);
-    container->RegisterReadCursor ();
+    container->accessCounter.RegisterReadAccess ();
 }
 
 ShortTermContainer::FetchQuery::Cursor ShortTermContainer::FetchQuery::Execute () const noexcept
@@ -90,7 +90,7 @@ ShortTermContainer::ModifyQuery::Cursor::~Cursor () noexcept
 {
     if (container)
     {
-        container->UnregisterModificationCursor ();
+        container->accessCounter.UnregisterWriteAccess ();
     }
 }
 
@@ -127,7 +127,7 @@ ShortTermContainer::ModifyQuery::Cursor::Cursor (Handling::Handle <ShortTermCont
       end (container->objects.end ())
 {
     assert (container);
-    container->RegisterModificationCursor ();
+    container->accessCounter.RegisterWriteAccess ();
 }
 
 ShortTermContainer::ModifyQuery::Cursor ShortTermContainer::ModifyQuery::Execute () const noexcept

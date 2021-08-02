@@ -520,7 +520,8 @@ public:
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
-    ////       shape, described by values of object key dimensions, intersects with given ray.
+    ////       shape, described by values of object key dimensions, intersects with given ray and distance
+    ///        from intersection point to ray origin is less or equal to given max distance.
     /// \details Key fields are selected during prepared query creation using ::FetchRayIntersections.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
@@ -555,7 +556,7 @@ public:
         ///         that match criteria in FetchRayIntersectionsQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
-        Cursor Execute (const Ray _ray) noexcept;
+        Cursor Execute (const Ray _ray, float _maxDistance) noexcept;
 
         // TODO: Fetch/Modify closes intersection query?
 
@@ -572,7 +573,8 @@ public:
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
-    ////       shape, described by values of object key dimensions, intersects with given ray.
+    ////       shape, described by values of object key dimensions, intersects with given ray and distance
+    ///        from intersection point to ray origin is less or equal to given max distance.
     /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersections.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
@@ -605,7 +607,7 @@ public:
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyRayIntersectionsQuery brief.
         /// \invariant There is no other cursors in this storage.
-        Cursor Execute (const Ray _ray) noexcept;
+        Cursor Execute (const Ray _ray, float _maxDistance) noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyRayIntersectionsQuery);

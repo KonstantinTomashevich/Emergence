@@ -30,24 +30,8 @@ protected:
 
     ~ContainerBase () noexcept = default;
 
-    /// \details Thread safe.
-    void RegisterReadCursor () noexcept;
-
-    /// \details Thread safe.
-    void UnregisterReadCursor () noexcept;
-
-    void RegisterModificationCursor () noexcept;
-
-    void UnregisterModificationCursor () noexcept;
-
     class CargoDeck *deck;
 
     StandardLayout::Mapping typeMapping;
-
-    std::atomic_size_t readCursorCount;
-
-    static_assert (decltype (readCursorCount)::is_always_lock_free);
-
-    std::size_t modificationCursorCount;
 };
 } // namespace Emergence::Galleon

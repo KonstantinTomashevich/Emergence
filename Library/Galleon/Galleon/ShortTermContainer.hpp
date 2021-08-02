@@ -3,6 +3,7 @@
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
 
 #include <Memory/Pool.hpp>
@@ -154,18 +155,17 @@ private:
 
     /// Only handles have right to destruct containers.
     template <typename>
-    friend
-    class Handling::Handle;
+    friend class Handling::Handle;
 
-    /// \warning Must be used in pair with custom ::new.
     explicit ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    /// \warning Must be used in pair with custom ::delete.
     ~ShortTermContainer () noexcept;
 
     /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
     std::vector <void *> objects;
 
     Memory::Pool pool;
+
+    AccessCounter accessCounter;
 };
 } // namespace Emergence::Galleon

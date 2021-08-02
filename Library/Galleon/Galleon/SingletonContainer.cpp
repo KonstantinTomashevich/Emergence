@@ -10,7 +10,7 @@ SingletonContainer::FetchQuery::Cursor::~Cursor () noexcept
 {
     if (container)
     {
-        container->UnregisterReadCursor ();
+        container->accessCounter.UnregisterReadAccess ();
     }
 }
 
@@ -24,7 +24,7 @@ SingletonContainer::FetchQuery::Cursor::Cursor (Handling::Handle <SingletonConta
     : container (std::move (_container))
 {
     assert (container);
-    container->RegisterReadCursor ();
+    container->accessCounter.RegisterReadAccess ();
 }
 
 SingletonContainer::FetchQuery::Cursor SingletonContainer::FetchQuery::Execute () const noexcept
@@ -42,7 +42,7 @@ SingletonContainer::ModifyQuery::Cursor::~Cursor () noexcept
 {
     if (container)
     {
-        container->UnregisterModificationCursor ();
+        container->accessCounter.UnregisterWriteAccess ();
     }
 }
 
@@ -56,7 +56,7 @@ SingletonContainer::ModifyQuery::Cursor::Cursor (Handling::Handle <SingletonCont
     : container (std::move (_container))
 {
     assert (container);
-    container->RegisterModificationCursor ();
+    container->accessCounter.RegisterWriteAccess ();
 }
 
 SingletonContainer::ModifyQuery::Cursor SingletonContainer::ModifyQuery::Execute () const noexcept
