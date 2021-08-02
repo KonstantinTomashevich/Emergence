@@ -2,6 +2,8 @@
 #include <sstream>
 #include <unordered_map>
 
+#include <Query/Test/CursorManager.hpp>
+
 #include <RecordCollection/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 
@@ -14,28 +16,9 @@ using RepresentationReference = std::variant <
     PointRepresentation,
     VolumetricRepresentation>;
 
-using Cursor = std::variant <
-    LinearRepresentation::ReadCursor,
-    LinearRepresentation::EditCursor,
-    LinearRepresentation::ReversedReadCursor,
-    LinearRepresentation::ReversedEditCursor,
-    PointRepresentation::ReadCursor,
-    PointRepresentation::EditCursor,
-    VolumetricRepresentation::ShapeIntersectionReadCursor,
-    VolumetricRepresentation::ShapeIntersectionEditCursor,
-    VolumetricRepresentation::RayIntersectionReadCursor,
-    VolumetricRepresentation::RayIntersectionEditCursor>;
-
-template <typename CursorType>
-constexpr bool isEditCursor =
-    std::is_same_v <CursorType, LinearRepresentation::EditCursor> ||
-    std::is_same_v <CursorType, LinearRepresentation::ReversedEditCursor> ||
-    std::is_same_v <CursorType, PointRepresentation::EditCursor> ||
-    std::is_same_v <CursorType, VolumetricRepresentation::ShapeIntersectionEditCursor> ||
-    std::is_same_v <CursorType, VolumetricRepresentation::RayIntersectionEditCursor>;
-
-struct ExecutionContext
+class ExecutionContext final
 {
+public:
     explicit ExecutionContext (const StandardLayout::Mapping &_typeMapping);
 
     void ExecuteTask (const CreatePointRepresentation &_task);
@@ -96,6 +79,7 @@ struct ExecutionContext
 
     void ExecuteTask (const CursorClose &_task);
 
+private:
     const RepresentationReference &PrepareForLookup (const QueryBase &_task) const;
 
     void IterateOverRepresentations () const;
@@ -112,7 +96,18 @@ struct ExecutionContext
 
     std::unordered_map <std::string, RepresentationReference> representationReferences;
     std::optional <Collection::Allocator> collectionAllocator;
-    std::unordered_map <std::string, Cursor> activeCursors;
+
+    Query::Test::CursorManager <
+        LinearRepresentation::ReadCursor,
+        LinearRepresentation::EditCursor,
+        LinearRepresentation::ReversedReadCursor,
+        LinearRepresentation::ReversedEditCursor,
+        PointRepresentation::ReadCursor,
+        PointRepresentation::EditCursor,
+        VolumetricRepresentation::ShapeIntersectionReadCursor,
+        VolumetricRepresentation::ShapeIntersectionEditCursor,
+        VolumetricRepresentation::RayIntersectionReadCursor,
+        VolumetricRepresentation::RayIntersectionEditCursor> cursors;
 };
 
 ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
@@ -120,7 +115,7 @@ ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
       typeMapping (_typeMapping),
       representationReferences (),
       collectionAllocator (),
-      activeCursors ()
+      cursors ()
 {
 }
 
@@ -296,37 +291,41 @@ void ExecutionContext::ExecuteTask (const CloseAllocator &)
 void ExecutionContext::ExecuteTask (const QueryValueToRead &_task)
 {
     PointRepresentation representation = std::get <PointRepresentation> (PrepareForLookup (_task));
-    activeCursors.emplace (_task.cursorName, representation.ReadPoint (_task.value));
+    cursors.Add (_task.cursorName, typeMapping, representation.ReadPoint (_task.value));
 }
 
 void ExecutionContext::ExecuteTask (const QueryValueToEdit &_task)
 {
     PointRepresentation representation = std::get <PointRepresentation> (PrepareForLookup (_task));
-    activeCursors.emplace (_task.cursorName, representation.EditPoint (_task.value));
+    cursors.Add (_task.cursorName, typeMapping, representation.EditPoint (_task.value));
 }
 
 void ExecutionContext::ExecuteTask (const QueryRangeToRead &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_task));
-    activeCursors.emplace (_task.cursorName, representation.ReadInterval (_task.minValue, _task.maxValue));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.ReadInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecutionContext::ExecuteTask (const QueryRangeToEdit &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_task));
-    activeCursors.emplace (_task.cursorName, representation.EditInterval (_task.minValue, _task.maxValue));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.EditInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecutionContext::ExecuteTask (const QueryReversedRangeToRead &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_task));
-    activeCursors.emplace (_task.cursorName, representation.ReadReversedInterval (_task.minValue, _task.maxValue));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.ReadReversedInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecutionContext::ExecuteTask (const QueryReversedRangeToEdit &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_task));
-    activeCursors.emplace (_task.cursorName, representation.EditReversedInterval (_task.minValue, _task.maxValue));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.EditReversedInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecutionContext::ExecuteTask (const QueryShapeIntersectionToRead &_task)
@@ -334,7 +333,8 @@ void ExecutionContext::ExecuteTask (const QueryShapeIntersectionToRead &_task)
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_task));
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.min, _task.max);
-    activeCursors.emplace (_task.cursorName, representation.ReadShapeIntersections (&sequence[0u]));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.ReadShapeIntersections (&sequence[0u]));
 }
 
 void ExecutionContext::ExecuteTask (const QueryShapeIntersectionToEdit &_task)
@@ -342,7 +342,8 @@ void ExecutionContext::ExecuteTask (const QueryShapeIntersectionToEdit &_task)
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_task));
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.min, _task.max);
-    activeCursors.emplace (_task.cursorName, representation.EditShapeIntersections (&sequence[0u]));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.EditShapeIntersections (&sequence[0u]));
 }
 
 void ExecutionContext::ExecuteTask (const QueryRayIntersectionToRead &_task)
@@ -350,7 +351,8 @@ void ExecutionContext::ExecuteTask (const QueryRayIntersectionToRead &_task)
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_task));
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.origin, _task.direction);
-    activeCursors.emplace (_task.cursorName, representation.ReadRayIntersections (&sequence[0u], _task.maxDistance));
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.ReadRayIntersections (&sequence[0u], _task.maxDistance));
 }
 
 void ExecutionContext::ExecuteTask (const QueryRayIntersectionToEdit &_task)
@@ -358,281 +360,58 @@ void ExecutionContext::ExecuteTask (const QueryRayIntersectionToEdit &_task)
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_task));
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.origin, _task.direction);
-    activeCursors.emplace (_task.cursorName, representation.EditRayIntersections (&sequence[0u], _task.maxDistance));
+
+    cursors.Add (_task.cursorName, typeMapping,
+                 representation.EditRayIntersections (&sequence[0u], _task.maxDistance));
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheck &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    std::visit (
-        [this, &_task] (auto &_cursor)
-        {
-            const void *record = *_cursor;
-            if (_task.expectedObject)
-            {
-                if (record)
-                {
-                    bool equal = memcmp (record, _task.expectedObject,
-                                         typeMapping.GetObjectSize ()) == 0u;
-
-                    CHECK_WITH_MESSAGE (
-                        equal,
-                        "Expected and pointed records should be equal!\nRecord: ", RecordToString (record),
-                        "\nExpected record: ", RecordToString (_task.expectedObject));
-                }
-                else
-                {
-                    CHECK_WITH_MESSAGE (false, "Cursor should not be empty!");
-                }
-            }
-            else if (record)
-            {
-                CHECK_WITH_MESSAGE (false, "Cursor should be empty!");
-            }
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    std::visit (
-        [this, &_task] (auto &_cursor)
-        {
-            std::size_t position = 0u;
-            const void *record;
-
-            while ((record = *_cursor) || position < _task.expectedObjects.size ())
-            {
-                const void *expected;
-                if (position < _task.expectedObjects.size ())
-                {
-                    expected = _task.expectedObjects[position];
-                }
-                else
-                {
-                    expected = nullptr;
-                }
-
-                if (record && expected)
-                {
-                    bool equal = memcmp (record, expected, typeMapping.GetObjectSize ()) == 0;
-                    CHECK_WITH_MESSAGE (
-                        equal, "Checking that received record ", record, " and expected record ", expected,
-                        " at position ", position, " are equal.\nReceived: ", RecordToString (record),
-                        "\nExpected: ", RecordToString (expected));
-                }
-                else if (record)
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Expecting nothing at position ", position, ", receiving ", RecordToString (record));
-                }
-                else
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Expecting ", expected, " at position ", position, ", but receiving nothing");
-                }
-
-                if (record)
-                {
-                    ++_cursor;
-                }
-
-                ++position;
-            }
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    std::visit (
-        [this, &_task] (auto &_cursor)
-        {
-            std::vector <const void *> records;
-            while (const void *record = *_cursor)
-            {
-                records.emplace_back (record);
-                ++_cursor;
-            }
-
-            CHECK_EQUAL (records.size (), _task.expectedObjects.size ());
-            auto Search = [this] (const std::vector <const void *> &_records, const void *_recordToSearch)
-            {
-                return std::find_if (_records.begin (), _records.end (),
-                                     [this, _recordToSearch] (const void *_otherRecord)
-                                     {
-                                         return memcmp (_recordToSearch, _otherRecord,
-                                                        typeMapping.GetObjectSize ()) == 0u;
-                                     });
-            };
-
-            for (const void *recordFromCursor : records)
-            {
-                auto iterator = Search (_task.expectedObjects, recordFromCursor);
-                if (iterator == _task.expectedObjects.end ())
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Searching for record from cursor in expected records list. Record: ",
-                        RecordToString (recordFromCursor));
-                }
-            }
-
-            for (const void *expectedRecord : records)
-            {
-                auto iterator = Search (records, expectedRecord);
-                if (iterator == records.end ())
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Searching for expected record in received records list. Record: ",
-                        RecordToString (expectedRecord));
-                }
-            }
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorEdit &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    std::visit (
-        [this, &_task] (auto &_cursor)
-        {
-            if constexpr (isEditCursor <std::decay_t <decltype (_cursor)>>)
-            {
-                void *record = *_cursor;
-                CHECK_WITH_MESSAGE (record, "Cursor should not be empty.");
-                REQUIRE_WITH_MESSAGE (_task.copyFromObject, "New value source must not be null pointer!");
-
-                if (record)
-                {
-                    memcpy (record, _task.copyFromObject, typeMapping.GetObjectSize ());
-                }
-            }
-            else
-            {
-                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.name, " should be editable.");
-            }
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorIncrement &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    std::visit (
-        [] (auto &_cursor)
-        {
-            ++_cursor;
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorDeleteObject &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    std::visit (
-        [&_task] (auto &_cursor)
-        {
-            if constexpr (isEditCursor <std::decay_t <decltype (_cursor)>>)
-            {
-                ~_cursor;
-            }
-            else
-            {
-                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.name, " should be editable.");
-            }
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorCopy &_task)
 {
-    auto iterator = activeCursors.find (_task.sourceName);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.sourceName, "\".");
-
-    REQUIRE_WITH_MESSAGE (
-        activeCursors.find (_task.targetName) == activeCursors.end (),
-        "There should be no active cursor with name \"", _task.targetName, "\".");
-
-    std::visit (
-        [this, &_task] (auto &_cursor)
-        {
-            if constexpr (!isEditCursor <std::decay_t <decltype (_cursor)>>)
-            {
-                activeCursors.emplace (_task.targetName, _cursor);
-            }
-            else
-            {
-                REQUIRE_WITH_MESSAGE (false,
-                                      "Cursor ", _task.sourceName, " should not be editable.");
-            }
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorMove &_task)
 {
-    auto iterator = activeCursors.find (_task.sourceName);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.sourceName, "\".");
-
-    REQUIRE_WITH_MESSAGE (
-        activeCursors.find (_task.targetName) == activeCursors.end (),
-        "There should be no active cursor with name \"", _task.targetName, "\".");
-
-    std::visit (
-        [this, &_task] (auto &_cursor)
-        {
-            activeCursors.emplace (_task.targetName, std::move (_cursor));
-        },
-        iterator->second);
+    cursors.ExecuteTask (_task);
 }
 
 void ExecutionContext::ExecuteTask (const CursorClose &_task)
 {
-    auto iterator = activeCursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != activeCursors.end (),
-        "There should be active cursor with name \"", _task.name, "\".");
-
-    activeCursors.erase (iterator);
+    cursors.ExecuteTask (_task);
 }
 
 const RepresentationReference &ExecutionContext::PrepareForLookup (const QueryBase &_task) const
 {
-    REQUIRE_WITH_MESSAGE (
-        activeCursors.find (_task.cursorName) == activeCursors.end (),
-        "There should be no cursor with name \"", _task.cursorName, "\"");
-
     auto iterator = representationReferences.find (_task.sourceName);
     REQUIRE_WITH_MESSAGE (
         iterator != representationReferences.end (),
