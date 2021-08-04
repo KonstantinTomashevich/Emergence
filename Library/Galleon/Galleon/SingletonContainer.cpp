@@ -97,7 +97,7 @@ SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mappin
 {
 }
 
-SingletonContainer::~SingletonContainer ()
+SingletonContainer::~SingletonContainer () noexcept
 {
     assert (deck);
     deck->DetachContainer (this);
