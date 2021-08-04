@@ -6,6 +6,8 @@
 
 using namespace Emergence::Galleon::Test;
 
+// TODO: Test referencing.
+
 BEGIN_SUITE (ShortTermContainer)
 
 REGISTER_ALL_UNORDERED_SEQUENCE_QUERY_TESTS (TestQueryApiDriver)

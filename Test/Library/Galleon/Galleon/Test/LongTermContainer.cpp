@@ -9,6 +9,8 @@
 
 using namespace Emergence::Galleon::Test;
 
+// TODO: Test referencing.
+
 BEGIN_SUITE (LongTermContainer)
 
 REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDriver)

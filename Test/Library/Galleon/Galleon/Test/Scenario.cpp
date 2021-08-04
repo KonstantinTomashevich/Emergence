@@ -1169,4 +1169,10 @@ std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task
     first.insert (first.end (), second.begin (), second.end ());
     return first;
 }
+
+std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noexcept
+{
+    first.emplace_back (_task);
+    return first;
+}
 } // namespace Emergence::Galleon::Test

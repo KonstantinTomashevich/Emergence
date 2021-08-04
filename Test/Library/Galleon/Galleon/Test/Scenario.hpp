@@ -216,4 +216,6 @@ private:
 };
 
 std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+
+std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noexcept;
 } // namespace Emergence::Galleon::Test
