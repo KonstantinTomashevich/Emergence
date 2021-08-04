@@ -608,21 +608,6 @@ std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
     return _output << "Close allocator.";
 }
 
-static Task CreateRepresentation (const Query::Test::Sources::Value &_source)
-{
-    return CreatePointRepresentation {_source.name, _source.queriedFields};
-}
-
-static Task CreateRepresentation (const Query::Test::Sources::Range &_source)
-{
-    return CreateLinearRepresentation {_source.name, _source.queriedField};
-}
-
-static Task CreateRepresentation (const Query::Test::Sources::Volumetric &_source)
-{
-    return CreateVolumetricRepresentation {_source.name, _source.dimensions};
-}
-
 static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, bool _allocateFirst)
 {
     std::vector <Task> tasks;
@@ -650,7 +635,26 @@ static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, boo
             std::visit (
                 [&tasks] (const auto &_unwrappedSource)
                 {
-                    tasks.emplace_back (CreateRepresentation (_unwrappedSource));
+                    using Source = std::decay_t <decltype (_unwrappedSource)>;
+                    if constexpr (std::is_same_v <Source, Query::Test::Sources::Value>)
+                    {
+                        tasks.emplace_back (
+                            CreatePointRepresentation {_unwrappedSource.name, _unwrappedSource.queriedFields});
+                    }
+                    else if constexpr (std::is_same_v <Source, Query::Test::Sources::Range>)
+                    {
+                        tasks.emplace_back (
+                            CreateLinearRepresentation {_unwrappedSource.name, _unwrappedSource.queriedField});
+                    }
+                    else if constexpr (std::is_same_v <Source, Query::Test::Sources::Volumetric>)
+                    {
+                        tasks.emplace_back (
+                            CreateVolumetricRepresentation {_unwrappedSource.name, _unwrappedSource.dimensions});
+                    }
+                    else
+                    {
+                        REQUIRE_WITH_MESSAGE (false, "Only Value, Range and Volumetric sources are supported!");
+                    }
                 },
                 source);
         }
@@ -672,7 +676,18 @@ static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, boo
         std::visit (
             [&tasks] (const auto &_unwrappedTask)
             {
-                tasks.emplace_back (_unwrappedTask);
+                using TaskType = std::decay_t <decltype (_unwrappedTask)>;
+                if constexpr (std::is_same_v <TaskType, QuerySingletonToRead> ||
+                              std::is_same_v <TaskType, QuerySingletonToEdit> ||
+                              std::is_same_v <TaskType, QueryUnorderedSequenceToRead> ||
+                              std::is_same_v <TaskType, QueryUnorderedSequenceToEdit>)
+                {
+                    REQUIRE_WITH_MESSAGE (false, "Singleton and unordered sequence queries are not supported!");
+                }
+                else
+                {
+                    tasks.emplace_back (_unwrappedTask);
+                }
             },
             task);
     }

@@ -6,6 +6,13 @@
 
 namespace Emergence::Galleon
 {
+SingletonContainer::FetchQuery::Cursor::Cursor (const SingletonContainer::FetchQuery::Cursor &_other) noexcept
+    : container (_other.container)
+{
+    assert (container);
+    container->accessCounter.RegisterReadAccess ();
+}
+
 SingletonContainer::FetchQuery::Cursor::~Cursor () noexcept
 {
     if (container)

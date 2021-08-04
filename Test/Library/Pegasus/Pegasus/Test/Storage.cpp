@@ -1,6 +1,6 @@
 #include <Pegasus/Test/Scenario.hpp>
 
-#include <Query/Test/AllQueryTypesInOneStorage.hpp>
+#include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/Data.hpp>
 
 #include <Testing/Testing.hpp>
@@ -9,7 +9,7 @@ using namespace Emergence::Pegasus::Test;
 
 BEGIN_SUITE (Storage)
 
-REGISTER_ALL_TESTS_WITH_ALL_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDrivers::InsertRecordsThanCreateIndices)
+REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDrivers::InsertRecordsThanCreateIndices)
 
 TEST_CASE (DropIndex)
 {

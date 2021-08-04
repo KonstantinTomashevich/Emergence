@@ -1,7 +1,7 @@
-#include <Query/Test/AllQueryTypesInOneStorage.hpp>
+#include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/Data.hpp>
 
-namespace Emergence::Query::Test::AllQueryTypesInOneStorage
+namespace Emergence::Query::Test::AllParametricQueryTypesInOneStorage
 {
 using namespace Tasks;
 
@@ -191,4 +191,4 @@ Scenario EditAndDeleteUsingVolumetricQuery ()
     scenario.tasks += PostConditions ();
     return scenario;
 }
-} // namespace Emergence::Query::Test::AllQueryTypesInOneStorage
+} // namespace Emergence::Query::Test::AllParametricQueryTypesInOneStorage

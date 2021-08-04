@@ -43,8 +43,14 @@ ShortTermContainer::InsertQuery::InsertQuery (Handling::Handle <ShortTermContain
     assert (container);
 }
 
-ShortTermContainer::FetchQuery::Cursor::Cursor (
-    const ShortTermContainer::FetchQuery::Cursor &_other) noexcept = default;
+ShortTermContainer::FetchQuery::Cursor::Cursor (const ShortTermContainer::FetchQuery::Cursor &_other) noexcept
+    : container (_other.container),
+      iterator (_other.iterator),
+      end (_other.end)
+{
+    assert (container);
+    container->accessCounter.RegisterReadAccess ();
+}
 
 ShortTermContainer::FetchQuery::Cursor::Cursor (ShortTermContainer::FetchQuery::Cursor &&_other) noexcept = default;
 

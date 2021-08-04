@@ -1,6 +1,6 @@
 #include <Galleon/Test/Scenario.hpp>
 
-#include <Query/Test/AllQueryTypesInOneStorage.hpp>
+#include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
 #include <Query/Test/ValueQueryTests.hpp>
 #include <Query/Test/VolumetricQueryTests.hpp>
@@ -11,7 +11,7 @@ using namespace Emergence::Galleon::Test;
 
 BEGIN_SUITE (LongTermContainer)
 
-REGISTER_ALL_TESTS_WITH_ALL_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDriver)
+REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDriver)
 
 END_SUITE
 

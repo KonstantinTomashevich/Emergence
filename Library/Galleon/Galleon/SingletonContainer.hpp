@@ -23,7 +23,7 @@ public:
         class Cursor final
         {
         public:
-            Cursor (const Cursor &_other) noexcept = default;
+            Cursor (const Cursor &_other) noexcept;
 
             Cursor (Cursor &&_other) noexcept = default;
 

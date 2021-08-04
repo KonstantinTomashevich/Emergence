@@ -71,6 +71,30 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy
                    (_task.expectedValue ? "yes" : "no") << "\".";
 }
 
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToRead &_task)
+{
+    return _output << "Query singleton from \"" << _task.sourceName << "\" and save read only cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToEdit &_task)
+{
+    return _output << "Query singleton from \"" << _task.sourceName << "\" and save editable cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToRead &_task)
+{
+    return _output << "Query objects sequence from \"" << _task.sourceName << "\" and save read only cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToEdit &_task)
+{
+    return _output << "Query objects sequence from \"" << _task.sourceName << "\" and save editable cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using value sequence " <<

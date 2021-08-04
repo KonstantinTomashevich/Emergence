@@ -91,6 +91,14 @@ public:
 
     void ExecuteTask (const InsertObjects &_task);
 
+    void ExecuteTask (const QuerySingletonToRead &_task);
+
+    void ExecuteTask (const QuerySingletonToEdit &_task);
+
+    void ExecuteTask (const QueryUnorderedSequenceToRead &_task);
+
+    void ExecuteTask (const QueryUnorderedSequenceToEdit &_task);
+
     void ExecuteTask (const QueryValueToRead &_task);
 
     void ExecuteTask (const QueryValueToEdit &_task);
@@ -455,6 +463,30 @@ void ExecutionContext::ExecuteTask (const InsertObjects &_task)
             }
         },
         RequireQuery (_task.name));
+}
+
+void ExecutionContext::ExecuteTask (const QuerySingletonToRead &_task)
+{
+    auto &query = std::get <SingletonContainer::FetchQuery> (RequireQuery (_task.sourceName));
+    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecutionContext::ExecuteTask (const QuerySingletonToEdit &_task)
+{
+    auto &query = std::get <SingletonContainer::ModifyQuery> (RequireQuery (_task.sourceName));
+    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecutionContext::ExecuteTask (const QueryUnorderedSequenceToRead &_task)
+{
+    auto &query = std::get <ShortTermContainer::FetchQuery> (RequireQuery (_task.sourceName));
+    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecutionContext::ExecuteTask (const QueryUnorderedSequenceToEdit &_task)
+{
+    auto &query = std::get <ShortTermContainer::ModifyQuery> (RequireQuery (_task.sourceName));
+    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
 }
 
 void ExecutionContext::ExecuteTask (const QueryValueToRead &_task)
@@ -859,6 +891,30 @@ std::optional <Task> ImportTask (const CheckIsSourceBusy &)
 }
 
 template <>
+std::optional <Task> ImportTask (const QuerySingletonToRead &_task)
+{
+    return QuerySingletonToRead {{_task.sourceName + "::Fetch", _task.cursorName}};
+}
+
+template <>
+std::optional <Task> ImportTask (const QuerySingletonToEdit &_task)
+{
+    return QuerySingletonToEdit {{_task.sourceName + "::Modify", _task.cursorName}};
+}
+
+template <>
+std::optional <Task> ImportTask (const QueryUnorderedSequenceToRead &_task)
+{
+    return QueryUnorderedSequenceToRead {{_task.sourceName + "::Fetch", _task.cursorName}};
+}
+
+template <>
+std::optional <Task> ImportTask (const QueryUnorderedSequenceToEdit &_task)
+{
+    return QueryUnorderedSequenceToEdit {{_task.sourceName + "::Modify", _task.cursorName}};
+}
+
+template <>
 std::optional <Task> ImportTask (const QueryValueToRead &_task)
 {
     return QueryValueToRead {{{_task.sourceName + "::Fetch", _task.cursorName}, _task.value}};
@@ -900,28 +956,28 @@ template <>
 std::optional <Task> ImportTask (const QueryShapeIntersectionToRead &_task)
 {
     return QueryShapeIntersectionToRead {{{_task.sourceName + "::FetchShape", _task.cursorName},
-                                              _task.min, _task.max}};
+                                             _task.min, _task.max}};
 }
 
 template <>
 std::optional <Task> ImportTask (const QueryShapeIntersectionToEdit &_task)
 {
     return QueryShapeIntersectionToEdit {{{_task.sourceName + "::ModifyShape", _task.cursorName},
-                                              _task.min, _task.max}};
+                                             _task.min, _task.max}};
 }
 
 template <>
 std::optional <Task> ImportTask (const QueryRayIntersectionToRead &_task)
 {
     return QueryRayIntersectionToRead {{{_task.sourceName + "::FetchRay", _task.cursorName},
-                                          _task.origin, _task.direction, _task.maxDistance}};
+                                           _task.origin, _task.direction, _task.maxDistance}};
 }
 
 template <>
 std::optional <Task> ImportTask (const QueryRayIntersectionToEdit &_task)
 {
     return QueryRayIntersectionToEdit {{{_task.sourceName + "::ModifyRay", _task.cursorName},
-                                        _task.origin, _task.direction, _task.maxDistance}};
+                                           _task.origin, _task.direction, _task.maxDistance}};
 }
 
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
@@ -937,16 +993,23 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
             const auto AcquisitionTaskFromSourceType =
                 [&containerName, &storage] (const Query::Test::Source &_source) -> Task
                 {
-                    if (std::holds_alternative <Query::Test::Sources::Value> (_source) ||
-                        std::holds_alternative <Query::Test::Sources::Range> (_source) ||
-                        std::holds_alternative <Query::Test::Sources::Volumetric> (_source))
+                    if (std::holds_alternative <Query::Test::Sources::Singleton> (_source))
                     {
-                        return AcquireLongTermContainer {{storage.dataType, containerName}};
+                        return AcquireSingletonContainer {{storage.dataType, containerName}};
+                    }
+                    else if (std::holds_alternative <Query::Test::Sources::UnorderedSequence> (_source))
+                    {
+                        return AcquireShortTermContainer {{storage.dataType, containerName}};
                     }
                     else
                     {
-                        REQUIRE_WITH_MESSAGE (false, "Unable to select container type!");
-                        return AcquireSingletonContainer {{storage.dataType, containerName}};
+                        const bool isParametricSource =
+                            std::holds_alternative <Query::Test::Sources::Value> (_source) ||
+                            std::holds_alternative <Query::Test::Sources::Range> (_source) ||
+                            std::holds_alternative <Query::Test::Sources::Volumetric> (_source);
+
+                        REQUIRE (isParametricSource);
+                        return AcquireLongTermContainer {{storage.dataType, containerName}};
                     }
                 };
 
@@ -973,7 +1036,10 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
 
             for (const auto &source : storage.sources)
             {
+                // Storage is always represented by container and containers
+                // only support specific subsets of sources, not all of them.
                 REQUIRE (containerAcquisition.index () == AcquisitionTaskFromSourceType (source).index ());
+
                 std::visit (
                     [&tasks, &containerName] (const auto &_source)
                     {
@@ -981,7 +1047,19 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
 
                         // For simplicity, we prepare all possible type of queries for given sources.
 
-                        if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Value>)
+                        if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Singleton>)
+                        {
+                            tasks.emplace_back (PrepareSingletonFetchQuery {{containerName, _source.name + "::Fetch"}});
+                            tasks.emplace_back (
+                                PrepareSingletonModifyQuery {{containerName, _source.name + "::Modify"}});
+                        }
+                        else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::UnorderedSequence>)
+                        {
+                            tasks.emplace_back (PrepareShortTermFetchQuery {{containerName, _source.name + "::Fetch"}});
+                            tasks.emplace_back (
+                                PrepareShortTermModifyQuery {{containerName, _source.name + "::Modify"}});
+                        }
+                        else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Value>)
                         {
                             tasks.emplace_back (
                                 PrepareLongTermFetchValueQuery

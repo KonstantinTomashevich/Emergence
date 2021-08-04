@@ -12,6 +12,16 @@ namespace Emergence::Query::Test
 {
 namespace Sources
 {
+struct Singleton final
+{
+    std::string name;
+};
+
+struct UnorderedSequence final
+{
+    std::string name;
+};
+
 struct Value final
 {
     std::string name;
@@ -81,6 +91,8 @@ std::ostream &operator << (std::ostream &_output, const Volumetric::SupportedVal
 } // namespace Sources
 
 using Source = std::variant <
+    Sources::Singleton,
+    Sources::UnorderedSequence,
     Sources::Value,
     Sources::Range,
     Sources::Volumetric>;
@@ -104,6 +116,22 @@ struct QueryBase
 {
     std::string sourceName;
     std::string cursorName;
+};
+
+struct QuerySingletonToRead : public QueryBase
+{
+};
+
+struct QuerySingletonToEdit : public QueryBase
+{
+};
+
+struct QueryUnorderedSequenceToRead : public QueryBase
+{
+};
+
+struct QueryUnorderedSequenceToEdit : public QueryBase
+{
 };
 
 struct ValueQueryBase : public QueryBase
@@ -223,6 +251,14 @@ struct CursorClose final
 
 std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy &_task);
 
+std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToEdit &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryUnorderedSequenceToRead &_task);
+
+std::ostream &operator << (std::ostream &_output, const Tasks::QueryUnorderedSequenceToEdit &_task);
+
 std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task);
 
 std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToEdit &_task);
@@ -264,6 +300,10 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_tas
 
 using Task = std::variant <
     Tasks::CheckIsSourceBusy,
+    Tasks::QuerySingletonToRead,
+    Tasks::QuerySingletonToEdit,
+    Tasks::QueryUnorderedSequenceToRead,
+    Tasks::QueryUnorderedSequenceToEdit,
     Tasks::QueryValueToRead,
     Tasks::QueryValueToEdit,
     Tasks::QueryRangeToRead,
