@@ -2,6 +2,8 @@
 
 #include <Testing/Testing.hpp>
 
+// TODO: Think about renaming this suite after singleton and unordered sequence query additions.
+
 namespace Emergence::Query::Test::AllQueryTypesInOneStorage
 {
 Scenario EditAndDeleteUsingValueQuery ();

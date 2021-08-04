@@ -15,6 +15,7 @@ namespace Emergence::Query::Test
 /// \brief Implements cursor management and cursor task execution for cursors with standard API.
 /// \see EMERGENCE_READ_CURSOR_OPERATIONS
 /// \see EMERGENCE_EDIT_CURSOR_OPERATIONS
+/// \details Singleton-value cursors, that do not have increment, are also supported.
 template <typename... Cursors>
 class CursorManager
 {
@@ -52,6 +53,24 @@ private:
     std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object) const;
 
     std::unordered_map <std::string, Cursor> cursors;
+};
+
+template <typename T>
+concept ReturnsEditablePointer =
+requires (T _cursor) {
+    { *_cursor } -> std::convertible_to <void *>;
+};
+
+template <typename T>
+concept AllowsObjectDeletion =
+requires (T _cursor) {
+    { ~_cursor };
+};
+
+template <typename T>
+concept Movable =
+requires (T _cursor) {
+    { ++_cursor } -> std::convertible_to <T &>;
 };
 
 template <typename... Cursors>
@@ -96,47 +115,54 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllOrdered
     std::visit (
         [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
-            std::size_t position = 0u;
-            const void *object;
-
-            while ((object = *_cursor) || position < _task.expectedObjects.size ())
+            if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
             {
-                const void *expected;
-                if (position < _task.expectedObjects.size ())
-                {
-                    expected = _task.expectedObjects[position];
-                }
-                else
-                {
-                    expected = nullptr;
-                }
+                std::size_t position = 0u;
+                const void *object;
 
-                if (object && expected)
+                while ((object = *_cursor) || position < _task.expectedObjects.size ())
                 {
-                    bool equal = memcmp (object, expected, _mapping.GetObjectSize ()) == 0;
-                    CHECK_WITH_MESSAGE (
-                        equal, "Checking that received object ", object, " and expected object ", expected,
-                        " at position ", position, " are equal.\nReceived: ", ObjectToString (_mapping, object),
-                        "\nExpected: ", ObjectToString (_mapping, expected));
-                }
-                else if (object)
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Expecting nothing at position ", position, ", receiving ",
-                        ObjectToString (_mapping, object));
-                }
-                else
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Expecting ", expected, " at position ", position, ", but receiving nothing");
-                }
+                    const void *expected;
+                    if (position < _task.expectedObjects.size ())
+                    {
+                        expected = _task.expectedObjects[position];
+                    }
+                    else
+                    {
+                        expected = nullptr;
+                    }
 
-                if (object)
-                {
-                    ++_cursor;
-                }
+                    if (object && expected)
+                    {
+                        bool equal = memcmp (object, expected, _mapping.GetObjectSize ()) == 0;
+                        CHECK_WITH_MESSAGE (
+                            equal, "Checking that received object ", object, " and expected object ", expected,
+                            " at position ", position, " are equal.\nReceived: ", ObjectToString (_mapping, object),
+                            "\nExpected: ", ObjectToString (_mapping, expected));
+                    }
+                    else if (object)
+                    {
+                        CHECK_WITH_MESSAGE (
+                            false, "Expecting nothing at position ", position, ", receiving ",
+                            ObjectToString (_mapping, object));
+                    }
+                    else
+                    {
+                        CHECK_WITH_MESSAGE (
+                            false, "Expecting ", expected, " at position ", position, ", but receiving nothing");
+                    }
 
-                ++position;
+                    if (object)
+                    {
+                        ++_cursor;
+                    }
+
+                    ++position;
+                }
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE(false, "Cursor with name \"", _task.name, "\" must be movable!");
             }
         },
         iterator->second.cursor);
@@ -151,55 +177,55 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllUnorder
     std::visit (
         [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
-            std::vector <const void *> objects;
-            while (const void *object = *_cursor)
+            if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
             {
-                objects.emplace_back (object);
-                ++_cursor;
-            }
+                std::vector <const void *> objects;
+                while (const void *object = *_cursor)
+                {
+                    objects.emplace_back (object);
+                    ++_cursor;
+                }
 
-            CHECK_EQUAL (objects.size (), _task.expectedObjects.size ());
-            auto Search = [_mapping] (const std::vector <const void *> &_objects, const void *_objectToSearch)
-            {
-                return std::find_if (
-                    _objects.begin (), _objects.end (),
-                    [_objectToSearch, &_mapping] (const void *_otherRecord)
+                CHECK_EQUAL (objects.size (), _task.expectedObjects.size ());
+                auto Search = [_mapping] (const std::vector <const void *> &_objects, const void *_objectToSearch)
+                {
+                    return std::find_if (
+                        _objects.begin (), _objects.end (),
+                        [_objectToSearch, &_mapping] (const void *_otherRecord)
+                        {
+                            return memcmp (_objectToSearch, _otherRecord, _mapping.GetObjectSize ()) == 0u;
+                        });
+                };
+
+                for (const void *objectFromCursor : objects)
+                {
+                    auto iterator = Search (_task.expectedObjects, objectFromCursor);
+                    if (iterator == _task.expectedObjects.end ())
                     {
-                        return memcmp (_objectToSearch, _otherRecord, _mapping.GetObjectSize ()) == 0u;
-                    });
-            };
+                        CHECK_WITH_MESSAGE (
+                            false, "Searching for object from cursor in expected objects list. Record: ",
+                            ObjectToString (_mapping, objectFromCursor));
+                    }
+                }
 
-            for (const void *objectFromCursor : objects)
-            {
-                auto iterator = Search (_task.expectedObjects, objectFromCursor);
-                if (iterator == _task.expectedObjects.end ())
+                for (const void *expectedRecord : objects)
                 {
-                    CHECK_WITH_MESSAGE (
-                        false, "Searching for object from cursor in expected objects list. Record: ",
-                        ObjectToString (_mapping, objectFromCursor));
+                    auto iterator = Search (objects, expectedRecord);
+                    if (iterator == objects.end ())
+                    {
+                        CHECK_WITH_MESSAGE (
+                            false, "Searching for expected object in received objects list. Record: ",
+                            ObjectToString (_mapping, expectedRecord));
+                    }
                 }
             }
-
-            for (const void *expectedRecord : objects)
+            else
             {
-                auto iterator = Search (objects, expectedRecord);
-                if (iterator == objects.end ())
-                {
-                    CHECK_WITH_MESSAGE (
-                        false, "Searching for expected object in received objects list. Record: ",
-                        ObjectToString (_mapping, expectedRecord));
-                }
+                REQUIRE_WITH_MESSAGE(false, "Cursor with name \"", _task.name, "\" must be movable!");
             }
         },
         iterator->second.cursor);
 }
-
-template <typename T>
-concept EditableCursor =
-requires (T _cursor) {
-    { *_cursor } -> std::convertible_to <void *>;
-    { ~_cursor };
-};
 
 template <typename... Cursors>
 void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorEdit &_task)
@@ -212,7 +238,7 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorEdit &_task)
     std::visit (
         [&_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
-            if constexpr (EditableCursor <std::decay_t <decltype (_cursor)>>)
+            if constexpr (ReturnsEditablePointer <std::decay_t <decltype (_cursor)>>)
             {
                 void *object = *_cursor;
                 CHECK_WITH_MESSAGE (object, "Cursor should not be empty.");
@@ -240,9 +266,16 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorIncrement &_tas
         "There should be cursor with name \"", _task.name, "\".");
 
     std::visit (
-        [] (auto &_cursor)
+        [&_task] (auto &_cursor)
         {
-            ++_cursor;
+            if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
+            {
+                ++_cursor;
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE(false, "Cursor with name \"", _task.name, "\" must be movable!");
+            }
         },
         iterator->second.cursor);
 }
@@ -256,13 +289,13 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorDeleteObject &_
     std::visit (
         [&_task] (auto &_cursor)
         {
-            if constexpr (EditableCursor <std::decay_t <decltype (_cursor)>>)
+            if constexpr (AllowsObjectDeletion <std::decay_t <decltype (_cursor)>>)
             {
                 ~_cursor;
             }
             else
             {
-                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.name, " should be editable.");
+                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.name, " should allow object deletion.");
             }
         },
         iterator->second.cursor);
@@ -283,14 +316,13 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCopy &_task)
     std::visit (
         [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
-            if constexpr (!EditableCursor <std::decay_t <decltype (_cursor)>>)
+            if constexpr (std::copy_constructible <std::decay_t <decltype (_cursor)>>)
             {
                 cursors.emplace (_task.targetName, Cursor {_cursor, _mapping});
             }
             else
             {
-                REQUIRE_WITH_MESSAGE (false,
-                                      "Cursor ", _task.sourceName, " should not be editable.");
+                REQUIRE_WITH_MESSAGE (false, "Cursor ", _task.sourceName, " should be copy constructable.");
             }
         },
         iterator->second.cursor);

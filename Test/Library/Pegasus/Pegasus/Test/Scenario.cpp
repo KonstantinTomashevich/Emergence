@@ -90,8 +90,6 @@ private:
 
     void OnIndexDropped (VolumetricIndex *_index);
 
-    std::string RecordToString (const void *_record) const;
-
     VolumetricIndex::AxisAlignedShapeContainer ExtractShape (
         const VolumetricIndex *_index, const ShapeIntersectionQueryBase &_task) const;
 
@@ -471,21 +469,6 @@ void ExecutionContext::OnIndexDropped (VolumetricIndex *_index)
     {
         knownVolumetricIndices.erase (iterator);
     }
-}
-
-std::string ExecutionContext::RecordToString (const void *_record) const
-{
-    const auto *current = static_cast <const uint8_t *> (_record);
-    const auto *end = current + storage.GetRecordMapping ().GetObjectSize ();
-    std::string result;
-
-    while (current != end)
-    {
-        result += std::to_string (static_cast <std::size_t> (*current)) + " ";
-        ++current;
-    }
-
-    return result;
 }
 
 template <typename Callback>

@@ -31,6 +31,12 @@ ShortTermContainer::InsertQuery::Cursor ShortTermContainer::InsertQuery::Execute
     return Cursor (container);
 }
 
+Handling::Handle <ShortTermContainer> ShortTermContainer::InsertQuery::GetContainer () const noexcept
+{
+    assert (container);
+    return container;
+}
+
 ShortTermContainer::InsertQuery::InsertQuery (Handling::Handle <ShortTermContainer> _container) noexcept
     : container (std::move (_container))
 {
@@ -76,6 +82,12 @@ ShortTermContainer::FetchQuery::Cursor::Cursor (Handling::Handle <ShortTermConta
 ShortTermContainer::FetchQuery::Cursor ShortTermContainer::FetchQuery::Execute () const noexcept
 {
     return Cursor (container);
+}
+
+Handling::Handle <ShortTermContainer> ShortTermContainer::FetchQuery::GetContainer () const noexcept
+{
+    assert (container);
+    return container;
 }
 
 ShortTermContainer::FetchQuery::FetchQuery (Handling::Handle <ShortTermContainer> _container) noexcept
@@ -133,6 +145,12 @@ ShortTermContainer::ModifyQuery::Cursor::Cursor (Handling::Handle <ShortTermCont
 ShortTermContainer::ModifyQuery::Cursor ShortTermContainer::ModifyQuery::Execute () const noexcept
 {
     return Cursor (container);
+}
+
+Handling::Handle <ShortTermContainer> ShortTermContainer::ModifyQuery::GetContainer () const noexcept
+{
+    assert (container);
+    return container;
 }
 
 ShortTermContainer::ModifyQuery::ModifyQuery (Handling::Handle <ShortTermContainer> _container) noexcept

@@ -851,11 +851,20 @@ void Storage::RegisterIndexedFieldUsage (const StandardLayout::Field &_field) no
 
 void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept
 {
-    reflection.indexedFields.EraseExchangingWithLast (
-        std::find_if (reflection.indexedFields.Begin (), reflection.indexedFields.End (),
-                      [&_field] (const IndexedField &_indexedField) -> bool
-                      {
-                          return _indexedField.field.IsSame (_field);
-                      }));
+    auto iterator = std::find_if (
+        reflection.indexedFields.Begin (), reflection.indexedFields.End (),
+        [&_field] (const IndexedField &_indexedField) -> bool
+        {
+            return _indexedField.field.IsSame (_field);
+        });
+
+    assert (iterator != reflection.indexedFields.End ());
+    assert (iterator->usages > 0u);
+    --iterator->usages;
+
+    if (iterator->usages == 0u)
+    {
+        reflection.indexedFields.EraseExchangingWithLast (iterator);
+    }
 }
 } // namespace Emergence::Pegasus

@@ -54,8 +54,8 @@ public:
     ///          (x = 1, y = 3} point and dimensions are x = {float x0; float x1;} and y = {float y0; float y1;},
     ///          then shape memory block should be {-0.5f, 2.5f, 2.0f, 4.0f}.
     ///
-    /// \see ::FetchShapeIntersections
-    /// \see ::ModifyShapeIntersections
+    /// \see ::FetchShapeIntersection
+    /// \see ::ModifyShapeIntersection
     ///
     /// \warning Due to runtime-only nature of shapes, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
@@ -69,8 +69,8 @@ public:
     ///          (dx = 0.8, dy = -0.6) direction and dimensions are x = {float x0; float x1;} and
     ///          y = {float y0; float y1;}, then ray memory block should be {2.0f, 0.8f, 3.0f, -0.6f}.
     ///
-    /// \see ::FetchRayIntersections
-    /// \see ::ModifyRayIntersections
+    /// \see ::FetchRayIntersection
+    /// \see ::ModifyRayIntersection
     ///
     /// \warning Due to runtime-only nature of rays, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
@@ -423,7 +423,7 @@ public:
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    /// \details Key fields are selected during prepared query creation using ::FetchShapeIntersections.
+    /// \details Key fields are selected during prepared query creation using ::FetchShapeIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchShapeIntersectionsQuery final
@@ -473,7 +473,7 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    /// \details Key fields are selected during prepared query creation using ::ModifyShapeIntersections.
+    /// \details Key fields are selected during prepared query creation using ::ModifyShapeIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyShapeIntersectionsQuery final
@@ -522,7 +522,7 @@ public:
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray and distance
     ///        from intersection point to ray origin is less or equal to given max distance.
-    /// \details Key fields are selected during prepared query creation using ::FetchRayIntersections.
+    /// \details Key fields are selected during prepared query creation using ::FetchRayIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchRayIntersectionsQuery final
@@ -575,7 +575,7 @@ public:
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray and distance
     ///        from intersection point to ray origin is less or equal to given max distance.
-    /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersections.
+    /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyRayIntersectionsQuery final

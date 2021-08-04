@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -55,6 +57,8 @@ public:
 
         Cursor Execute () const noexcept;
 
+        Handling::Handle <LongTermContainer> GetContainer () const noexcept;
+
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
 
@@ -70,28 +74,29 @@ public:
 
     template <typename Representation>
     class RepresentationQueryBase
-        {
-        public:
-            RepresentationQueryBase (const RepresentationQueryBase &_other) noexcept = default;
+    {
+    public:
+        RepresentationQueryBase (const RepresentationQueryBase &_other) noexcept = default;
 
-            RepresentationQueryBase (RepresentationQueryBase &&_other) noexcept = default;
+        RepresentationQueryBase (RepresentationQueryBase &&_other) noexcept = default;
 
-            ~RepresentationQueryBase () noexcept;
+        ~RepresentationQueryBase () noexcept;
 
-            /// Assigning prepared queries looks counter intuitive.
-            EMERGENCE_DELETE_ASSIGNMENT (RepresentationQueryBase);
+        Handling::Handle <LongTermContainer> GetContainer () const noexcept;
 
-        protected:
-            RepresentationQueryBase (Handling::Handle <LongTermContainer> _container,
-                                     Representation _representation) noexcept;
+        /// Assigning prepared queries looks counter intuitive.
+        EMERGENCE_DELETE_ASSIGNMENT (RepresentationQueryBase);
 
-            Handling::Handle <LongTermContainer> container;
-            Representation representation;
-        };
+    protected:
+        RepresentationQueryBase (Handling::Handle <LongTermContainer> _container,
+                                 Representation _representation) noexcept;
+
+        Handling::Handle <LongTermContainer> container;
+        Representation representation;
+    };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        each key field value is equal to according value in given values sequence.
-    /// \details Key fields are selected during prepared query creation using ::FetchValue.
     class FetchValueQuery final : public RepresentationQueryBase <RecordCollection::PointRepresentation>
     {
     public:
@@ -99,6 +104,10 @@ public:
         using Cursor = RecordCollection::PointRepresentation::ReadCursor;
 
         Cursor Execute (RecordCollection::PointRepresentation::Point _values) noexcept;
+
+        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldBegin () const noexcept;
+
+        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -110,7 +119,6 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ///        each key field value is equal to according value in given values sequence.
-    /// \details Key fields are selected during prepared query creation using ::ModifyValue.
     class ModifyValueQuery final : public RepresentationQueryBase <RecordCollection::PointRepresentation>
     {
     public:
@@ -118,6 +126,10 @@ public:
         using Cursor = RecordCollection::PointRepresentation::EditCursor;
 
         Cursor Execute (RecordCollection::PointRepresentation::Point _values) noexcept;
+
+        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldBegin () const noexcept;
+
+        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -129,7 +141,6 @@ public:
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
-    /// \details Key fields are selected during prepared query creation using ::FetchRange.
     class FetchRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
@@ -139,6 +150,8 @@ public:
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
             RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+
+        StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -150,7 +163,6 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       given min max interval contains key field value.
-    /// \details Key fields are selected during prepared query creation using ::ModifyRange.
     class ModifyRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
@@ -160,6 +172,8 @@ public:
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
             RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+
+        StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -171,7 +185,6 @@ public:
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
-    /// \details Key fields are selected during prepared query creation using ::FetchReversedRange.
     class FetchReversedRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
@@ -181,6 +194,8 @@ public:
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
             RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+
+        StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -192,7 +207,6 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       given min max interval contains key field value.
-    /// \details Key fields are selected during prepared query creation using ::ModifyReversedRange.
     class ModifyReversedRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
@@ -202,6 +216,8 @@ public:
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
             RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+
+        StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -213,8 +229,7 @@ public:
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    /// \details Key fields are selected during prepared query creation using ::FetchShapeIntersections.
-    class FetchShapeIntersectionsQuery final :
+    class FetchShapeIntersectionQuery final :
         public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
     {
     public:
@@ -223,18 +238,21 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Shape _shape) noexcept;
 
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+
     private:
         friend class LongTermContainer;
 
-        FetchShapeIntersectionsQuery (
+        FetchShapeIntersectionQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    /// \details Key fields are selected during prepared query creation using ::ModifyShapeIntersections.
-    class ModifyShapeIntersectionsQuery final :
+    class ModifyShapeIntersectionQuery final :
         public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
     {
     public:
@@ -243,10 +261,14 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Shape _shape) noexcept;
 
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+
     private:
         friend class LongTermContainer;
 
-        ModifyShapeIntersectionsQuery (
+        ModifyShapeIntersectionQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
@@ -254,8 +276,7 @@ public:
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray and distance
     ///        from intersection point to ray origin is less or equal to given max distance.
-    /// \details Key fields are selected during prepared query creation using ::FetchRayIntersections.
-    class FetchRayIntersectionsQuery final :
+    class FetchRayIntersectionQuery final :
         public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
     {
     public:
@@ -264,10 +285,14 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Ray _ray, float _maxDistance) noexcept;
 
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+
     private:
         friend class LongTermContainer;
 
-        FetchRayIntersectionsQuery (
+        FetchRayIntersectionQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
@@ -275,8 +300,7 @@ public:
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray and distance
     ///        from intersection point to ray origin is less or equal to given max distance.
-    /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersections.
-    class ModifyRayIntersectionsQuery final :
+    class ModifyRayIntersectionQuery final :
         public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
     {
     public:
@@ -285,10 +309,14 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Ray _ray, float _maxDistance) noexcept;
 
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+
+        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+
     private:
         friend class LongTermContainer;
 
-        ModifyRayIntersectionsQuery (
+        ModifyRayIntersectionQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
@@ -307,16 +335,16 @@ public:
 
     ModifyReversedRangeQuery ModifyReversedRange (StandardLayout::FieldId _keyField) noexcept;
 
-    FetchShapeIntersectionsQuery FetchShapeIntersections (
+    FetchShapeIntersectionQuery FetchShapeIntersection (
         const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
-    ModifyShapeIntersectionsQuery ModifyShapeIntersections (
+    ModifyShapeIntersectionQuery ModifyShapeIntersection (
         const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
-    FetchRayIntersectionsQuery FetchRayIntersections (
+    FetchRayIntersectionQuery FetchRayIntersection (
         const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
-    ModifyRayIntersectionsQuery ModifyRayIntersections (
+    ModifyRayIntersectionQuery ModifyRayIntersection (
         const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
 private:
@@ -349,10 +377,20 @@ private:
 template <typename Representation>
 LongTermContainer::RepresentationQueryBase <Representation>::~RepresentationQueryBase () noexcept
 {
-    if (representation.CanBeDropped ())
+    // If prepared query was moved out, representation call will result in undefined behaviour.
+    // Therefore, we should check container reference first. It will be null of query was moved out.
+    if (container && representation.CanBeDropped ())
     {
         representation.Drop ();
     }
+}
+
+template <typename Representation>
+Handling::Handle <LongTermContainer>
+LongTermContainer::RepresentationQueryBase <Representation>::GetContainer () const noexcept
+{
+    assert (container);
+    return container;
 }
 
 template <typename Representation>

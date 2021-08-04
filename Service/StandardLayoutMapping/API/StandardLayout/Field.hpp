@@ -101,7 +101,7 @@ public:
     bool IsHandleValid () const noexcept;
 
     /// \return ::IsHandleValid ()
-    operator bool () const noexcept;
+    explicit operator bool () const noexcept;
 
     Field &operator = (const Field &_other) noexcept;
 

@@ -51,6 +51,8 @@ public:
 
         Cursor Execute () const noexcept;
 
+        Handling::Handle <ShortTermContainer> GetContainer () const noexcept;
+
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
 
@@ -92,6 +94,8 @@ public:
 
         Cursor Execute () const noexcept;
 
+        Handling::Handle <ShortTermContainer> GetContainer () const noexcept;
+
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
 
@@ -131,6 +135,8 @@ public:
         ~ModifyQuery () noexcept = default;
 
         Cursor Execute () const noexcept;
+
+        Handling::Handle <ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);

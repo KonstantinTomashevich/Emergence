@@ -84,8 +84,6 @@ private:
 
     void IterateOverRepresentations () const;
 
-    std::string RecordToString (const void *_record) const;
-
     std::vector <uint8_t> MergeVectorsIntoRepresentationLookupSequence (
         const VolumetricRepresentation &_representation,
         const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_firstVector,
@@ -502,21 +500,6 @@ void ExecutionContext::IterateOverRepresentations () const
                             "Searching known representation with address ",
                             *reinterpret_cast <const void *const *> (&representation), " in received list.");
     }
-}
-
-std::string ExecutionContext::RecordToString (const void *_record) const
-{
-    const auto *current = static_cast <const uint8_t *> (_record);
-    const auto *end = current + typeMapping.GetObjectSize ();
-    std::string result;
-
-    while (current != end)
-    {
-        result += std::to_string (static_cast <std::size_t> (*current)) + " ";
-        ++current;
-    }
-
-    return result;
 }
 
 std::vector <uint8_t>

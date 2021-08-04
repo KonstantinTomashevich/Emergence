@@ -32,6 +32,12 @@ SingletonContainer::FetchQuery::Cursor SingletonContainer::FetchQuery::Execute (
     return Cursor (container);
 }
 
+Handling::Handle <SingletonContainer> SingletonContainer::FetchQuery::GetContainer () const noexcept
+{
+    assert (container);
+    return container;
+}
+
 SingletonContainer::FetchQuery::FetchQuery (Handling::Handle <SingletonContainer> _container) noexcept
     : container (std::move (_container))
 {
@@ -62,6 +68,12 @@ SingletonContainer::ModifyQuery::Cursor::Cursor (Handling::Handle <SingletonCont
 SingletonContainer::ModifyQuery::Cursor SingletonContainer::ModifyQuery::Execute () const noexcept
 {
     return Cursor (container);
+}
+
+Handling::Handle <SingletonContainer> SingletonContainer::ModifyQuery::GetContainer () const noexcept
+{
+    assert (container);
+    return container;
 }
 
 SingletonContainer::ModifyQuery::ModifyQuery (Handling::Handle <SingletonContainer> _container) noexcept
