@@ -1,12 +1,15 @@
 #include <Galleon/CargoDeck.hpp>
+#include <Galleon/Test/Scenario.hpp>
 
+#include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/Data.hpp>
+#include <Query/Test/SingletonQueryTests.hpp>
+#include <Query/Test/UnorderedSequenceQueryTests.hpp>
+#include <Query/Test/VolumetricQueryTests.hpp>
 
 #include <Testing/Testing.hpp>
 
 BEGIN_SUITE (CargoDeck)
-
-// TODO: Check how multiple containers behave in one deck.
 
 TEST_CASE (MoveAssignment)
 {
@@ -91,6 +94,68 @@ TEST_CASE (MoveAssignment)
     CheckQueries ();
     otherDeck = std::move (deck);
     CheckQueries ();
+}
+
+TEST_CASE (ManyContainers)
+{
+    using namespace Emergence::Query::Test;
+    using namespace Emergence::Query::Test::Tasks;
+    Scenario scenario;
+
+    auto Append =
+        [&scenario] (const Scenario &_other)
+        {
+            scenario.storages.insert (scenario.storages.end (), _other.storages.begin (), _other.storages.end ());
+            scenario.tasks += _other.tasks;
+        };
+
+    Append (RemapSources (SingletonQuery::EditAndRead (), {{"singleton", "firstSingleton"}}));
+
+    Append (
+        {
+            {
+                {
+                    BoundingBox::Reflection::GetMapping (),
+                    {&BOX_MIN_M2_1_0_MAX_0_4_2},
+                    {Sources::Singleton {"secondSingleton"}}
+                },
+            },
+            {
+                QuerySingletonToRead {{"secondSingleton", "secondSingleton"}},
+                CursorCheck {"secondSingleton", &BOX_MIN_M2_1_0_MAX_0_4_2},
+                CursorClose {"secondSingleton"},
+            }
+        });
+
+    Append (RemapSources (
+        UnorderedSequenceQuery::EditAndDelete (), {{"sequence", "firstSequence"}}));
+
+    Append (
+        {
+            {
+                {
+                    BoundingBox::Reflection::GetMapping (),
+                    {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_M2_1_0_MAX_0_4_2},
+                    {Sources::UnorderedSequence {"secondSequence"}}
+                },
+            },
+            {
+                QueryUnorderedSequenceToRead {{"secondSequence", "values"}},
+                CursorCheckAllUnordered {"values", {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_M2_1_0_MAX_0_4_2}},
+                CursorClose {"values"},
+            }
+        });
+
+    Append (RemapSources (
+        VolumetricQuery::Edition (), {{"2d", "volumetric2d"}}));
+
+    Append (RemapSources (
+        AllParametricQueryTypesInOneStorage::EditAndDeleteUsingRangeQuery (),
+        {{"playerId",   "allPlayerId"},
+         {"playerName", "allPlayerName"},
+         {"2d",         "all2D"}}));
+
+    Emergence::Galleon::Test::TestQueryApiDriver (scenario);
 }
 
 END_SUITE

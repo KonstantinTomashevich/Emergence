@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -329,6 +330,8 @@ struct Scenario final
     std::vector <Storage> storages;
     std::vector <Task> tasks;
 };
+
+Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation);
 
 std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right);
 
