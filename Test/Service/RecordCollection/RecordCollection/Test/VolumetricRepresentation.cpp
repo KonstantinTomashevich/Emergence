@@ -35,7 +35,7 @@ TEST_CASE (ReferenceManipulations)
                         }
                     }},
             } +
-        Shortcuts::TestIsCanBeDropped ("2d")
+        Common::TestIsCanBeDropped ("2d")
     };
 }
 

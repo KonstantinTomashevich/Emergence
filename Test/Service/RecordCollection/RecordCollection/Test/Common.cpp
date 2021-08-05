@@ -1,6 +1,6 @@
 #include <RecordCollection/Test/Common.hpp>
 
-namespace Emergence::RecordCollection::Test::Shortcuts
+namespace Emergence::RecordCollection::Test::Common
 {
 std::vector <Task> TestIsCanBeDropped (const std::string &_representationName)
 {

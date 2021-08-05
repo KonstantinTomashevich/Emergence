@@ -26,7 +26,7 @@ TEST_CASE (ReferenceManipulations)
             {
                 CreateLinearRepresentation {"source", Emergence::Query::Test::Player::Reflection::id},
             } +
-        Shortcuts::TestIsCanBeDropped ("source")
+        Common::TestIsCanBeDropped ("source")
     };
 }
 
@@ -34,7 +34,8 @@ REGISTER_ALL_RANGE_QUERY_TESTS (TestQueryApiDrivers::CreateRepresentationsThanAl
 
 TEST_CASE (InsertBeforeCreation)
 {
-    TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations (Emergence::Query::Test::RangeQuery::SimpleLookups ());
+    TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations (
+        Emergence::Query::Test::RangeQuery::SimpleLookups ());
 }
 
 END_SUITE

@@ -102,6 +102,9 @@ SingletonContainer::ModifyQuery SingletonContainer::Modify () noexcept
 SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping))
 {
+    // Fill singleton storage with zeros even in release builds
+    // to make uninitialized-access checking and debugging easier.
+    memset (&storage, 0u, typeMapping.GetObjectSize ());
 }
 
 SingletonContainer::~SingletonContainer () noexcept

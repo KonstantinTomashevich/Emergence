@@ -19,7 +19,7 @@ TEST_CASE (ReferenceManipulations)
                 {
                     CreateHashIndex {"source", {Emergence::Query::Test::Player::Reflection::id}},
                 } +
-            Shortcuts::TestIsCanBeDropped ("source")
+            Common::TestIsCanBeDropped ("source")
         };
 }
 
