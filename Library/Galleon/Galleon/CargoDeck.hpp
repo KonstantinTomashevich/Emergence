@@ -22,7 +22,7 @@ public:
 
     CargoDeck (CargoDeck &&_other) noexcept;
 
-    /// \invariant There is no handles to any container and no prepared queries, that belongs this deck.
+    /// \invariant There is no handles to any container and no prepared queries, that belong this deck.
     ~CargoDeck () noexcept;
 
     Handling::Handle <SingletonContainer> AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping);

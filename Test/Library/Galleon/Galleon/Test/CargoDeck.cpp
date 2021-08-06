@@ -146,8 +146,7 @@ TEST_CASE (ManyContainers)
             }
         });
 
-    Append (RemapSources (
-        VolumetricQuery::Edition (), {{"2d", "volumetric2d"}}));
+    Append (RemapSources (VolumetricQuery::Edition (), {{"2d", "volumetric2d"}}));
 
     Append (RemapSources (
         AllParametricQueryTypesInOneStorage::EditAndDeleteUsingRangeQuery (),

@@ -249,9 +249,10 @@ LongTermContainer::ModifyRayIntersectionQuery::DimensionEnd () const noexcept
     return representation.DimensionEnd ();
 }
 
-LongTermContainer::LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
-    : ContainerBase (_deck, std::move (_typeMapping)),
-      collection (typeMapping)
+LongTermContainer::ModifyRayIntersectionQuery::ModifyRayIntersectionQuery (
+    Handling::Handle <LongTermContainer> _container,
+    RecordCollection::VolumetricRepresentation _representation) noexcept
+    : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
 
@@ -318,10 +319,9 @@ LongTermContainer::ModifyRayIntersectionQuery LongTermContainer::ModifyRayInters
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
-LongTermContainer::ModifyRayIntersectionQuery::ModifyRayIntersectionQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::VolumetricRepresentation _representation) noexcept
-    : RepresentationQueryBase (std::move (_container), std::move (_representation))
+LongTermContainer::LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
+    : ContainerBase (_deck, std::move (_typeMapping)),
+      collection (typeMapping)
 {
 }
 

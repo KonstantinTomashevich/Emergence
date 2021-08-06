@@ -13,9 +13,6 @@ sober_library_begin (Galleon STATIC)
     sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${HANDLING_LIBRARY_TARGET})
 
-    sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
-    sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
-
     sober_variant_begin (Original)
     sober_variant_end ()
 sober_library_end ()

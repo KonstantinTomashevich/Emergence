@@ -90,7 +90,7 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheck &_task)
                     bool equal = memcmp (object, _task.expectedObject, _mapping.GetObjectSize ()) == 0u;
                     CHECK_WITH_MESSAGE (
                         equal,
-                        "Expected and pointed objects should be equal!\nRecord: ", ObjectToString (_mapping, object),
+                        "Expected and pointed objects should be equal!\nObject: ", ObjectToString (_mapping, object),
                         "\nExpected object: ", ObjectToString (_mapping, _task.expectedObject));
                 }
                 else
@@ -191,9 +191,9 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllUnorder
                 {
                     return std::find_if (
                         _objects.begin (), _objects.end (),
-                        [_objectToSearch, &_mapping] (const void *_otherRecord)
+                        [_objectToSearch, &_mapping] (const void *_otherObject)
                         {
-                            return memcmp (_objectToSearch, _otherRecord, _mapping.GetObjectSize ()) == 0u;
+                            return memcmp (_objectToSearch, _otherObject, _mapping.GetObjectSize ()) == 0u;
                         });
                 };
 
@@ -203,19 +203,19 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllUnorder
                     if (iterator == _task.expectedObjects.end ())
                     {
                         CHECK_WITH_MESSAGE (
-                            false, "Searching for object from cursor in expected objects list. Record: ",
+                            false, "Searching for object from cursor in expected objects list. Object: ",
                             ObjectToString (_mapping, objectFromCursor));
                     }
                 }
 
-                for (const void *expectedRecord : objects)
+                for (const void *expectedObject : objects)
                 {
-                    auto iterator = Search (objects, expectedRecord);
+                    auto iterator = Search (objects, expectedObject);
                     if (iterator == objects.end ())
                     {
                         CHECK_WITH_MESSAGE (
-                            false, "Searching for expected object in received objects list. Record: ",
-                            ObjectToString (_mapping, expectedRecord));
+                            false, "Searching for expected object in received objects list. Object: ",
+                            ObjectToString (_mapping, expectedObject));
                     }
                 }
             }

@@ -1049,13 +1049,17 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
 
                         if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Singleton>)
                         {
-                            tasks.emplace_back (PrepareSingletonFetchQuery {{containerName, _source.name + "::Fetch"}});
+                            tasks.emplace_back (
+                                PrepareSingletonFetchQuery {{containerName, _source.name + "::Fetch"}});
+
                             tasks.emplace_back (
                                 PrepareSingletonModifyQuery {{containerName, _source.name + "::Modify"}});
                         }
                         else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::UnorderedSequence>)
                         {
-                            tasks.emplace_back (PrepareShortTermFetchQuery {{containerName, _source.name + "::Fetch"}});
+                            tasks.emplace_back (
+                                PrepareShortTermFetchQuery {{containerName, _source.name + "::Fetch"}});
+
                             tasks.emplace_back (
                                 PrepareShortTermModifyQuery {{containerName, _source.name + "::Modify"}});
                         }
