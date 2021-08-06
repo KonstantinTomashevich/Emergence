@@ -36,18 +36,22 @@ public:
 
     ~Handle () noexcept;
 
-    Handle &operator = (const Handle &_other) noexcept;
-
-    Handle &operator = (Handle &&_other) noexcept;
-
     /// \return ::instance
     Type *Get () const noexcept;
 
     /// \return ::instance
     Type *operator -> () const noexcept;
 
-    /// \return Is ::instance not equal to `nullptr`?
-    operator bool () const noexcept;
+    Handle &operator = (const Handle &_other) noexcept;
+
+    Handle &operator = (Handle &&_other) noexcept;
+
+    bool operator == (const Handle &_other) const noexcept = default;
+
+    bool operator != (const Handle &_other) const noexcept = default;
+
+    /// \return Return true if ::instance is not nullptr.
+    explicit operator bool () const noexcept;
 
 private:
     /// \brief Pointer to associated instance. Can be `nullptr`.
@@ -94,6 +98,18 @@ Handle <Type>::~Handle () noexcept
 }
 
 template <typename Type>
+Type *Handle <Type>::Get () const noexcept
+{
+    return instance;
+}
+
+template <typename Type>
+Type *Handle <Type>::operator -> () const noexcept
+{
+    return Get ();
+}
+
+template <typename Type>
 Handle <Type> &Handle <Type>::operator = (const Handle &_other) noexcept
 {
     if (this != &_other)
@@ -115,18 +131,6 @@ Handle <Type> &Handle <Type>::operator = (Handle &&_other) noexcept
     }
 
     return *this;
-}
-
-template <typename Type>
-Type *Handle <Type>::Get () const noexcept
-{
-    return instance;
-}
-
-template <typename Type>
-Type *Handle <Type>::operator -> () const noexcept
-{
-    return Get ();
 }
 
 template <typename Type>

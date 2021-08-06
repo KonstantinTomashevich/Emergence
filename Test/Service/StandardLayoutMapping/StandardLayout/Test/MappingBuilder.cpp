@@ -1,6 +1,5 @@
 #include <ostream>
 #include <unordered_set>
-#include <utility>
 #include <variant>
 #include <vector>
 
@@ -257,7 +256,7 @@ Mapping Grow (MappingSeed _seed)
 void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
 {
     Mapping mapping = Grow (_seed, _builder);
-    std::unordered_set < FieldId > idsFound;
+    std::unordered_set <FieldId> idsFound;
 
     for (FieldSeed &seed : _seed.fields)
     {
@@ -708,6 +707,28 @@ TEST_CASE (FieldsIteration)
     iterator = std::move (iteratorCopyAtBegin);
     CHECK (iterator == iteratorCopyAtBegin);
     CHECK (iterator != iteratorCopyAtSecond);
+}
+
+TEST_CASE (MappingEquality)
+{
+    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMapping = Grow (twoIntsCorrectOrder);
+    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingCopy = twoIntsCorrectOrderMapping;
+    Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (twoIntsReversedOrder);
+
+    CHECK (twoIntsCorrectOrderMapping == twoIntsCorrectOrderMapping);
+    CHECK (twoIntsCorrectOrderMappingCopy == twoIntsCorrectOrderMappingCopy);
+    CHECK (twoIntsReversedOrderMapping == twoIntsReversedOrderMapping);
+
+    CHECK (twoIntsCorrectOrderMapping == twoIntsCorrectOrderMappingCopy);
+    CHECK (twoIntsCorrectOrderMapping != twoIntsReversedOrderMapping);
+    CHECK (twoIntsCorrectOrderMappingCopy != twoIntsReversedOrderMapping);
+
+    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingMoved = std::move (twoIntsCorrectOrderMapping);
+    CHECK (twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingMoved);
+    CHECK (twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingCopy);
+    CHECK (twoIntsCorrectOrderMappingMoved != twoIntsCorrectOrderMapping);
+    CHECK (twoIntsCorrectOrderMappingCopy != twoIntsCorrectOrderMapping);
+    CHECK (twoIntsCorrectOrderMappingMoved != twoIntsReversedOrderMapping);
 }
 
 END_SUITE

@@ -1,7 +1,7 @@
 #include <RecordCollection/Test/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 
-#include <Query/Test/AllQueryTypesInOneStorage.hpp>
+#include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/Data.hpp>
 
 #include <Testing/Testing.hpp>
@@ -15,7 +15,7 @@ bool Emergence::RecordCollection::Test::CollectionTestIncludeMarker () noexcept
 
 BEGIN_SUITE (Collection)
 
-REGISTER_ALL_TESTS_WITH_ALL_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations)
+REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations)
 
 TEST_CASE (DropRepresentation)
 {

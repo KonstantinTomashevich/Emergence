@@ -71,6 +71,30 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy
                    (_task.expectedValue ? "yes" : "no") << "\".";
 }
 
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToRead &_task)
+{
+    return _output << "Query singleton from \"" << _task.sourceName << "\" and save read only cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToEdit &_task)
+{
+    return _output << "Query singleton from \"" << _task.sourceName << "\" and save editable cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToRead &_task)
+{
+    return _output << "Query objects sequence from \"" << _task.sourceName << "\" and save read only cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToEdit &_task)
+{
+    return _output << "Query objects sequence from \"" << _task.sourceName << "\" and save editable cursor as \"" <<
+                   _task.cursorName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using value sequence " <<
@@ -212,6 +236,45 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_tas
     return _output << "Close cursor \"" << _task.name << "\".";
 }
 } // namespace Tasks
+
+Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation)
+{
+    for (Storage &storage : _scenario.storages)
+    {
+        for (Source &source : storage.sources)
+        {
+            std::visit (
+                [&_transformation] (auto &_source)
+                {
+                    auto newNameIterator = _transformation.find (_source.name);
+                    if (newNameIterator != _transformation.end ())
+                    {
+                        _source.name = newNameIterator->second;
+                    }
+                },
+                source);
+        }
+    }
+
+    for (Task &task : _scenario.tasks)
+    {
+        std::visit (
+            [&_transformation] (auto &_task)
+            {
+                if constexpr (std::is_base_of_v <Tasks::QueryBase, std::decay_t <decltype (_task)>>)
+                {
+                    auto newNameIterator = _transformation.find (_task.sourceName);
+                    if (newNameIterator != _transformation.end ())
+                    {
+                        _task.sourceName = newNameIterator->second;
+                    }
+                }
+            },
+            task);
+    }
+
+    return _scenario;
+}
 
 std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right)
 {

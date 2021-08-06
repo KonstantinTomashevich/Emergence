@@ -57,6 +57,12 @@ public:
 
     Mapping &operator = (Mapping &&_other) noexcept;
 
+    /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
+    bool operator == (const Mapping &_other) const noexcept;
+
+    /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
+    bool operator != (const Mapping &_other) const noexcept;
+
 private:
     /// Mapping builder constructs mappings.
     friend class MappingBuilder;

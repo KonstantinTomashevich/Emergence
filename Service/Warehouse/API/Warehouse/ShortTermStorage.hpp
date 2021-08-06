@@ -54,7 +54,7 @@ public:
         InsertQuery (InsertQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~InsertQuery ();
+        ~InsertQuery () noexcept;
 
         /// \return Cursor, that allows user to insert new objects into storage.
         /// \invariant There is no other cursors in this storage.
@@ -99,7 +99,7 @@ public:
         FetchQuery (FetchQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchQuery ();
+        ~FetchQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to stored objects.
         /// \details Thread safe.
@@ -145,7 +145,7 @@ public:
         ModifyQuery (ModifyQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyQuery ();
+        ~ModifyQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to stored objects.
         /// \invariant There is no other cursors in this storage.

@@ -54,8 +54,8 @@ public:
     ///          (x = 1, y = 3} point and dimensions are x = {float x0; float x1;} and y = {float y0; float y1;},
     ///          then shape memory block should be {-0.5f, 2.5f, 2.0f, 4.0f}.
     ///
-    /// \see ::FetchShapeIntersections
-    /// \see ::ModifyShapeIntersections
+    /// \see ::FetchShapeIntersection
+    /// \see ::ModifyShapeIntersection
     ///
     /// \warning Due to runtime-only nature of shapes, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
@@ -69,8 +69,8 @@ public:
     ///          (dx = 0.8, dy = -0.6) direction and dimensions are x = {float x0; float x1;} and
     ///          y = {float y0; float y1;}, then ray memory block should be {2.0f, 0.8f, 3.0f, -0.6f}.
     ///
-    /// \see ::FetchRayIntersections
-    /// \see ::ModifyRayIntersections
+    /// \see ::FetchRayIntersection
+    /// \see ::ModifyRayIntersection
     ///
     /// \warning Due to runtime-only nature of rays, logically incorrect pointers can not be caught.
     /// \invariant Should not be `nullptr`.
@@ -114,7 +114,7 @@ public:
         InsertQuery (InsertQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~InsertQuery ();
+        ~InsertQuery () noexcept;
 
         /// \return Cursor, that allows user to insert new objects into storage.
         /// \invariant There is no other cursors in this storage.
@@ -161,7 +161,7 @@ public:
         FetchValueQuery (FetchValueQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchValueQuery ();
+        ~FetchValueQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchValueQuery brief.
@@ -210,7 +210,7 @@ public:
         ModifyValueQuery (ModifyValueQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyValueQuery ();
+        ~ModifyValueQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects that match criteria in ModifyValueQuery brief.
         /// \invariant There is no other cursors in this storage.
@@ -257,7 +257,7 @@ public:
         FetchRangeQuery (FetchRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchRangeQuery ();
+        ~FetchRangeQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchRangeQuery brief.
@@ -306,7 +306,7 @@ public:
         ModifyRangeQuery (ModifyRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyRangeQuery ();
+        ~ModifyRangeQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects that match criteria in ModifyRangeQuery brief.
         /// \invariant There is no other cursors in this storage.
@@ -353,7 +353,7 @@ public:
         FetchReversedRangeQuery (FetchReversedRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchReversedRangeQuery ();
+        ~FetchReversedRangeQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchReversedRangeQuery brief.
@@ -402,7 +402,7 @@ public:
         ModifyReversedRangeQuery (ModifyReversedRangeQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyReversedRangeQuery ();
+        ~ModifyReversedRangeQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyReversedRangeQuery brief.
@@ -423,7 +423,7 @@ public:
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    /// \details Key fields are selected during prepared query creation using ::FetchShapeIntersections.
+    /// \details Key fields are selected during prepared query creation using ::FetchShapeIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchShapeIntersectionsQuery final
@@ -451,7 +451,7 @@ public:
         FetchShapeIntersectionsQuery (FetchShapeIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchShapeIntersectionsQuery ();
+        ~FetchShapeIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchShapeIntersectionsQuery brief.
@@ -473,7 +473,7 @@ public:
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    /// \details Key fields are selected during prepared query creation using ::ModifyShapeIntersections.
+    /// \details Key fields are selected during prepared query creation using ::ModifyShapeIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyShapeIntersectionsQuery final
@@ -500,7 +500,7 @@ public:
         ModifyShapeIntersectionsQuery (ModifyShapeIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyShapeIntersectionsQuery ();
+        ~ModifyShapeIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyShapeIntersectionsQuery brief.
@@ -520,8 +520,9 @@ public:
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
-    ////       shape, described by values of object key dimensions, intersects with given ray.
-    /// \details Key fields are selected during prepared query creation using ::FetchRayIntersections.
+    ////       shape, described by values of object key dimensions, intersects with given ray and distance
+    ///        from intersection point to ray origin is less or equal to given max distance.
+    /// \details Key fields are selected during prepared query creation using ::FetchRayIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class FetchRayIntersectionsQuery final
@@ -549,13 +550,13 @@ public:
         FetchRayIntersectionsQuery (FetchRayIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~FetchRayIntersectionsQuery ();
+        ~FetchRayIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides thread safe readonly access to objects
         ///         that match criteria in FetchRayIntersectionsQuery brief.
         /// \details Thread safe.
         /// \invariant There is no insertion or modification cursors in this storage.
-        Cursor Execute (const Ray _ray) noexcept;
+        Cursor Execute (const Ray _ray, float _maxDistance) noexcept;
 
         // TODO: Fetch/Modify closes intersection query?
 
@@ -572,8 +573,9 @@ public:
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
-    ////       shape, described by values of object key dimensions, intersects with given ray.
-    /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersections.
+    ////       shape, described by values of object key dimensions, intersects with given ray and distance
+    ///        from intersection point to ray origin is less or equal to given max distance.
+    /// \details Key fields are selected during prepared query creation using ::ModifyRayIntersection.
     ///          Object of this class is shared-ownership handle for implementation instance.
     ///          Prepared query will be automatically deallocated if there is no handles for it.
     class ModifyRayIntersectionsQuery final
@@ -600,12 +602,12 @@ public:
         ModifyRayIntersectionsQuery (ModifyRayIntersectionsQuery &&_other) noexcept;
 
         /// \invariant There is no cursors for this query.
-        ~ModifyRayIntersectionsQuery ();
+        ~ModifyRayIntersectionsQuery () noexcept;
 
         /// \return Cursor, that provides readwrite access to objects
         ///         that match criteria in ModifyRayIntersectionsQuery brief.
         /// \invariant There is no other cursors in this storage.
-        Cursor Execute (const Ray _ray) noexcept;
+        Cursor Execute (const Ray _ray, float _maxDistance) noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyRayIntersectionsQuery);

@@ -13,6 +13,8 @@ namespace Emergence::Warehouse
 /// \details SingletonStorage object is shared-ownership handle for implementation instance. Storage will be
 ///          automatically destroyed if there is no handles for this storage or its prepared queries.
 /// \warning After storage creation singleton instance is allocated, but not initialized. Use ModifyQuery to init it.
+/// \warning Before storage destruction instance destructor must be called manually from ModifyQuery, because singleton
+///          types are unknown on compile time.
 class SingletonStorage final
 {
 public:
