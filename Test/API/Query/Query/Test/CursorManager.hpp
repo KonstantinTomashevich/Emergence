@@ -17,42 +17,15 @@ namespace Emergence::Query::Test
 /// \see EMERGENCE_EDIT_CURSOR_OPERATIONS
 /// \details Singleton-value cursors, that do not have increment, are also supported.
 template <typename... Cursors>
-class CursorManager
+struct CursorManager
 {
-public:
-    CursorManager () = default;
-
-    void ExecuteTask (const Tasks::CursorCheck &_task);
-
-    void ExecuteTask (const Tasks::CursorCheckAllOrdered &_task);
-
-    void ExecuteTask (const Tasks::CursorCheckAllUnordered &_task);
-
-    void ExecuteTask (const Tasks::CursorEdit &_task);
-
-    void ExecuteTask (const Tasks::CursorIncrement &_task);
-
-    void ExecuteTask (const Tasks::CursorDeleteObject &_task);
-
-    void ExecuteTask (const Tasks::CursorCopy &_task);
-
-    void ExecuteTask (const Tasks::CursorMove &_task);
-
-    void ExecuteTask (const Tasks::CursorClose &_task);
-
-    template <typename CursorType>
-    void Add (std::string _name, const StandardLayout::Mapping &_objectMapping, CursorType &&_cursor);
-
-private:
-    struct Cursor final
+    struct CursorData final
     {
         std::variant <Cursors...> cursor;
         StandardLayout::Mapping objectMapping;
     };
 
-    std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object) const;
-
-    std::unordered_map <std::string, Cursor> cursors;
+    std::unordered_map <std::string, CursorData> cursors;
 };
 
 template <typename T>
@@ -74,13 +47,14 @@ requires (T _cursor) {
 };
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheck &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorCheck &_task)
 {
-    auto iterator = cursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != cursors.end (), "There should be cursor with name \"", _task.name, "\".");
+    auto iterator = _manager.cursors.find (_task.name);
+    REQUIRE_WITH_MESSAGE (iterator != _manager.cursors.end (),
+                          "There should be cursor with name \"", _task.name, "\".");
 
     std::visit (
-        [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
+        [&_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
             const void *object = *_cursor;
             if (_task.expectedObject)
@@ -107,13 +81,14 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheck &_task)
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllOrdered &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorCheckAllOrdered &_task)
 {
-    auto iterator = cursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != cursors.end (), "There should be cursor with name \"", _task.name, "\".");
+    auto iterator = _manager.cursors.find (_task.name);
+    REQUIRE_WITH_MESSAGE (iterator != _manager.cursors.end (),
+                          "There should be cursor with name \"", _task.name, "\".");
 
     std::visit (
-        [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
+        [&_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
             if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
             {
@@ -169,13 +144,14 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllOrdered
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllUnordered &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorCheckAllUnordered &_task)
 {
-    auto iterator = cursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != cursors.end (), "There should be cursor with name \"", _task.name, "\".");
+    auto iterator = _manager.cursors.find (_task.name);
+    REQUIRE_WITH_MESSAGE (iterator != _manager.cursors.end (), "There should be cursor with name \"", _task.name,
+                          "\".");
 
     std::visit (
-        [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
+        [&_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
             if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
             {
@@ -228,11 +204,11 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCheckAllUnorder
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorEdit &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorEdit &_task)
 {
-    auto iterator = cursors.find (_task.name);
+    auto iterator = _manager.cursors.find (_task.name);
     REQUIRE_WITH_MESSAGE (
-        iterator != cursors.end (),
+        iterator != _manager.cursors.end (),
         "There should be cursor with name \"", _task.name, "\".");
 
     std::visit (
@@ -258,11 +234,11 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorEdit &_task)
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorIncrement &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorIncrement &_task)
 {
-    auto iterator = cursors.find (_task.name);
+    auto iterator = _manager.cursors.find (_task.name);
     REQUIRE_WITH_MESSAGE (
-        iterator != cursors.end (),
+        iterator != _manager.cursors.end (),
         "There should be cursor with name \"", _task.name, "\".");
 
     std::visit (
@@ -281,10 +257,11 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorIncrement &_tas
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorDeleteObject &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorDeleteObject &_task)
 {
-    auto iterator = cursors.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != cursors.end (), "There should be cursor with name \"", _task.name, "\".");
+    auto iterator = _manager.cursors.find (_task.name);
+    REQUIRE_WITH_MESSAGE (iterator != _manager.cursors.end (), "There should be cursor with name \"", _task.name,
+                          "\".");
 
     std::visit (
         [&_task] (auto &_cursor)
@@ -302,23 +279,24 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorDeleteObject &_
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCopy &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorCopy &_task)
 {
-    auto iterator = cursors.find (_task.sourceName);
+    auto iterator = _manager.cursors.find (_task.sourceName);
     REQUIRE_WITH_MESSAGE (
-        iterator != cursors.end (),
+        iterator != _manager.cursors.end (),
         "There should be cursor with name \"", _task.sourceName, "\".");
 
     REQUIRE_WITH_MESSAGE (
-        cursors.find (_task.targetName) == cursors.end (),
+        _manager.cursors.find (_task.targetName) == _manager.cursors.end (),
         "There should be no cursor with name \"", _task.targetName, "\".");
 
     std::visit (
-        [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
+        [&_manager, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
             if constexpr (std::copy_constructible <std::decay_t <decltype (_cursor)>>)
             {
-                cursors.emplace (_task.targetName, Cursor {_cursor, _mapping});
+                _manager.cursors.emplace (
+                    _task.targetName, typename CursorManager <Cursors...>::CursorData {_cursor, _mapping});
             }
             else
             {
@@ -329,49 +307,50 @@ void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorCopy &_task)
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorMove &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorMove &_task)
 {
-    auto iterator = cursors.find (_task.sourceName);
+    auto iterator = _manager.cursors.find (_task.sourceName);
     REQUIRE_WITH_MESSAGE (
-        iterator != cursors.end (),
+        iterator != _manager.cursors.end (),
         "There should be cursor with name \"", _task.sourceName, "\".");
 
     REQUIRE_WITH_MESSAGE (
-        cursors.find (_task.targetName) == cursors.end (),
+        _manager.cursors.find (_task.targetName) == _manager.cursors.end (),
         "There should be no cursor with name \"", _task.targetName, "\".");
 
     std::visit (
-        [this, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
+        [&_manager, &_task, _mapping {iterator->second.objectMapping}] (auto &_cursor)
         {
-            cursors.emplace (_task.targetName, Cursor {std::move (_cursor), _mapping});
+            _manager.cursors.emplace (
+                _task.targetName, typename CursorManager <Cursors...>::CursorData {std::move (_cursor), _mapping});
         },
         iterator->second.cursor);
 }
 
 template <typename... Cursors>
-void CursorManager <Cursors...>::ExecuteTask (const Tasks::CursorClose &_task)
+void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorClose &_task)
 {
-    auto iterator = cursors.find (_task.name);
+    auto iterator = _manager.cursors.find (_task.name);
     REQUIRE_WITH_MESSAGE (
-        iterator != cursors.end (),
+        iterator != _manager.cursors.end (),
         "There should be cursor with name \"", _task.name, "\".");
 
-    cursors.erase (iterator);
+    _manager.cursors.erase (iterator);
 }
 
-template <typename... Cursors>
-template <typename CursorType>
-void
-CursorManager <Cursors...>::Add (std::string _name, const StandardLayout::Mapping &_objectMapping, CursorType &&_cursor)
+template <typename CursorType, typename... Cursors>
+void AddCursor (CursorManager <Cursors...> &_manager, std::string _name,
+                const StandardLayout::Mapping &_objectMapping, CursorType &&_cursor)
 {
     REQUIRE_WITH_MESSAGE (
-        cursors.find (_name) == cursors.end (), "There should be no cursor with name \"", _name, "\"");
-    cursors.emplace (std::move (_name), Cursor {std::move (_cursor), _objectMapping});
+        _manager.cursors.find (_name) == _manager.cursors.end (), "There should be no cursor with name \"", _name,
+        "\"");
+
+    _manager.cursors.emplace (
+        std::move (_name), typename CursorManager <Cursors...>::CursorData {std::move (_cursor), _objectMapping});
 }
 
-template <typename... Cursors>
-std::string CursorManager <Cursors...>::ObjectToString (
-    const StandardLayout::Mapping &_mapping, const void *_object) const
+std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
 {
     const auto *current = static_cast <const uint8_t *> (_object);
     const auto *end = current + _mapping.GetObjectSize ();

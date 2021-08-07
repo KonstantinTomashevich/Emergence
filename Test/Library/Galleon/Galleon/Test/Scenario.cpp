@@ -34,600 +34,53 @@ using PreparedQuery = std::variant <
     LongTermContainer::FetchRayIntersectionQuery,
     LongTermContainer::ModifyRayIntersectionQuery>;
 
-class ExecutionContext final
+struct ExecutionContext final : public Query::Test::CursorManager <
+    SingletonContainer::FetchQuery::Cursor,
+    SingletonContainer::ModifyQuery::Cursor,
+    ShortTermContainer::FetchQuery::Cursor,
+    ShortTermContainer::ModifyQuery::Cursor,
+    LongTermContainer::FetchValueQuery::Cursor,
+    LongTermContainer::ModifyValueQuery::Cursor,
+    LongTermContainer::FetchRangeQuery::Cursor,
+    LongTermContainer::ModifyRangeQuery::Cursor,
+    LongTermContainer::FetchReversedRangeQuery::Cursor,
+    LongTermContainer::ModifyReversedRangeQuery::Cursor,
+    LongTermContainer::FetchShapeIntersectionQuery::Cursor,
+    LongTermContainer::ModifyShapeIntersectionQuery::Cursor,
+    LongTermContainer::FetchRayIntersectionQuery::Cursor,
+    LongTermContainer::ModifyRayIntersectionQuery::Cursor>
 {
-public:
     ExecutionContext () = default;
 
-    void ExecuteTask (const AcquireSingletonContainer &_task);
-
-    void ExecuteTask (const AcquireShortTermContainer &_task);
-
-    void ExecuteTask (const AcquireLongTermContainer &_task);
-
-    void ExecuteTask (const CopyContainerReference &_task);
-
-    void ExecuteTask (const MoveContainerReference &_task);
-
-    void ExecuteTask (const RemoveContainerReference &_task);
-
-    void ExecuteTask (const PrepareSingletonFetchQuery &_task);
-
-    void ExecuteTask (const PrepareSingletonModifyQuery &_task);
-
-    void ExecuteTask (const PrepareShortTermInsertQuery &_task);
-
-    void ExecuteTask (const PrepareShortTermFetchQuery &_task);
-
-    void ExecuteTask (const PrepareShortTermModifyQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermInsertQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermFetchValueQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermModifyValueQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermFetchRangeQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermModifyRangeQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermFetchReversedRangeQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermModifyReversedRangeQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermFetchShapeIntersectionQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermModifyShapeIntersectionQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermFetchRayIntersectionQuery &_task);
-
-    void ExecuteTask (const PrepareLongTermModifyRayIntersectionQuery &_task);
-
-    void ExecuteTask (const CopyPreparedQuery &_task);
-
-    void ExecuteTask (const MovePreparedQuery &_task);
-
-    void ExecuteTask (const RemovePreparedQuery &_task);
-
-    void ExecuteTask (const InsertObjects &_task);
-
-    void ExecuteTask (const QuerySingletonToRead &_task);
-
-    void ExecuteTask (const QuerySingletonToEdit &_task);
-
-    void ExecuteTask (const QueryUnorderedSequenceToRead &_task);
-
-    void ExecuteTask (const QueryUnorderedSequenceToEdit &_task);
-
-    void ExecuteTask (const QueryValueToRead &_task);
-
-    void ExecuteTask (const QueryValueToEdit &_task);
-
-    void ExecuteTask (const QueryRangeToRead &_task);
-
-    void ExecuteTask (const QueryRangeToEdit &_task);
-
-    void ExecuteTask (const QueryReversedRangeToRead &_task);
-
-    void ExecuteTask (const QueryReversedRangeToEdit &_task);
-
-    void ExecuteTask (const QueryShapeIntersectionToRead &_task);
-
-    void ExecuteTask (const QueryShapeIntersectionToEdit &_task);
-
-    void ExecuteTask (const QueryRayIntersectionToRead &_task);
-
-    void ExecuteTask (const QueryRayIntersectionToEdit &_task);
-
-    void ExecuteTask (const CursorCheck &_task);
-
-    void ExecuteTask (const CursorCheckAllOrdered &_task);
-
-    void ExecuteTask (const CursorCheckAllUnordered &_task);
-
-    void ExecuteTask (const CursorEdit &_task);
-
-    void ExecuteTask (const CursorIncrement &_task);
-
-    void ExecuteTask (const CursorDeleteObject &_task);
-
-    void ExecuteTask (const CursorCopy &_task);
-
-    void ExecuteTask (const CursorMove &_task);
-
-    void ExecuteTask (const CursorClose &_task);
-
-private:
-    ContainerReference &RequireContainer (const std::string &_name);
-
-    PreparedQuery &RequireQuery (const std::string &_name);
-
-    std::vector <RecordCollection::Collection::DimensionDescriptor> ConvertDimensions (
-        const std::vector <Query::Test::Sources::Volumetric::Dimension> &_dimensions);
-
-    template <typename QueryType>
-    std::vector <uint8_t> MergeVectorsIntoQueryParameterSequence (
-        const QueryType &_query,
-        const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_firstVector,
-        const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_secondVector) const;
+    ~ExecutionContext ();
 
     CargoDeck deck;
     std::unordered_map <std::string, ContainerReference> containers;
     std::unordered_map <std::string, PreparedQuery> queries;
-
-    Query::Test::CursorManager <
-        SingletonContainer::FetchQuery::Cursor,
-        SingletonContainer::ModifyQuery::Cursor,
-        ShortTermContainer::FetchQuery::Cursor,
-        ShortTermContainer::ModifyQuery::Cursor,
-        LongTermContainer::FetchValueQuery::Cursor,
-        LongTermContainer::ModifyValueQuery::Cursor,
-        LongTermContainer::FetchRangeQuery::Cursor,
-        LongTermContainer::ModifyRangeQuery::Cursor,
-        LongTermContainer::FetchReversedRangeQuery::Cursor,
-        LongTermContainer::ModifyReversedRangeQuery::Cursor,
-        LongTermContainer::FetchShapeIntersectionQuery::Cursor,
-        LongTermContainer::ModifyShapeIntersectionQuery::Cursor,
-        LongTermContainer::FetchRayIntersectionQuery::Cursor,
-        LongTermContainer::ModifyRayIntersectionQuery::Cursor> cursors;
 };
 
-void ExecutionContext::ExecuteTask (const AcquireSingletonContainer &_task)
+ExecutionContext::~ExecutionContext ()
 {
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.name) == containers.end (),
-        "There should be no container with name \"", _task.name, "\".");
-
-    containers.emplace (_task.name, deck.AcquireSingletonContainer (_task.mapping));
+    cursors.clear ();
 }
 
-void ExecutionContext::ExecuteTask (const AcquireShortTermContainer &_task)
+ContainerReference &RequireContainer (ExecutionContext &_context, const std::string &_name)
 {
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.name) == containers.end (),
-        "There should be no container with name \"", _task.name, "\".");
-
-    containers.emplace (_task.name, deck.AcquireShortTermContainer (_task.mapping));
-}
-
-void ExecutionContext::ExecuteTask (const AcquireLongTermContainer &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.name) == containers.end (),
-        "There should be no container with name \"", _task.name, "\".");
-
-    containers.emplace (_task.name, deck.AcquireLongTermContainer (_task.mapping));
-}
-
-void ExecutionContext::ExecuteTask (const CopyContainerReference &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.targetName) == containers.end (),
-        "There should be no container with name \"", _task.targetName, "\".");
-
-    auto sourceIterator = containers.find (_task.sourceName);
-
-    REQUIRE_WITH_MESSAGE (
-        sourceIterator != containers.end (),
-        "There should be container with name \"", _task.sourceName, "\".");
-
-    containers.emplace (_task.targetName, sourceIterator->second);
-}
-
-void ExecutionContext::ExecuteTask (const MoveContainerReference &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.targetName) == containers.end (),
-        "There should be no container with name \"", _task.targetName, "\".");
-
-    auto sourceIterator = containers.find (_task.sourceName);
-
-    REQUIRE_WITH_MESSAGE (
-        sourceIterator != containers.end (),
-        "There should be container with name \"", _task.sourceName, "\".");
-
-    containers.emplace (_task.targetName, std::move (sourceIterator->second));
-}
-
-void ExecutionContext::ExecuteTask (const RemoveContainerReference &_task)
-{
-    auto iterator = containers.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != containers.end (), "There should be container with name \"", _task.name, "\".");
-    containers.erase (iterator);
-}
-
-void ExecutionContext::ExecuteTask (const PrepareSingletonFetchQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <SingletonContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->Fetch ());
-}
-
-void ExecutionContext::ExecuteTask (const PrepareSingletonModifyQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <SingletonContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->Modify ());
-}
-
-void ExecutionContext::ExecuteTask (const PrepareShortTermInsertQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <ShortTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->Insert ());
-}
-
-void ExecutionContext::ExecuteTask (const PrepareShortTermFetchQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <ShortTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->Fetch ());
-}
-
-void ExecutionContext::ExecuteTask (const PrepareShortTermModifyQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <ShortTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->Modify ());
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermInsertQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->Insert ());
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermFetchValueQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->FetchValue (_task.keyFields));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermModifyValueQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->ModifyValue (_task.keyFields));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermFetchRangeQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->FetchRange (_task.keyField));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermModifyRangeQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->ModifyRange (_task.keyField));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermFetchReversedRangeQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->FetchReversedRange (_task.keyField));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermModifyReversedRangeQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->ModifyReversedRange (_task.keyField));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermFetchShapeIntersectionQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->FetchShapeIntersection (ConvertDimensions (_task.dimensions)));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermModifyShapeIntersectionQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->ModifyShapeIntersection (ConvertDimensions (_task.dimensions)));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermFetchRayIntersectionQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->FetchRayIntersection (ConvertDimensions (_task.dimensions)));
-}
-
-void ExecutionContext::ExecuteTask (const PrepareLongTermModifyRayIntersectionQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        containers.find (_task.queryName) == containers.end (),
-        "There should be no query with name \"", _task.queryName, "\".");
-
-    auto &container = std::get <Handling::Handle <LongTermContainer>> (RequireContainer (_task.containerName));
-    queries.emplace (_task.queryName, container->ModifyRayIntersection (ConvertDimensions (_task.dimensions)));
-}
-
-void ExecutionContext::ExecuteTask (const CopyPreparedQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        queries.find (_task.targetName) == queries.end (),
-        "There should be no prepared query with name \"", _task.targetName, "\".");
-
-    auto sourceIterator = queries.find (_task.sourceName);
-
-    REQUIRE_WITH_MESSAGE (
-        sourceIterator != queries.end (),
-        "There should be prepared query with name \"", _task.sourceName, "\".");
-
-    queries.emplace (_task.targetName, sourceIterator->second);
-}
-
-void ExecutionContext::ExecuteTask (const MovePreparedQuery &_task)
-{
-    REQUIRE_WITH_MESSAGE (
-        queries.find (_task.targetName) == queries.end (),
-        "There should be no prepared query with name \"", _task.targetName, "\".");
-
-    auto sourceIterator = queries.find (_task.sourceName);
-
-    REQUIRE_WITH_MESSAGE (
-        sourceIterator != queries.end (),
-        "There should be prepared query with name \"", _task.sourceName, "\".");
-
-    queries.emplace (_task.targetName, std::move (sourceIterator->second));
-}
-
-void ExecutionContext::ExecuteTask (const RemovePreparedQuery &_task)
-{
-    auto iterator = queries.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != queries.end (),
-                          "There should be prepared query with name \"", _task.name, "\".");
-    queries.erase (iterator);
-}
-
-void ExecutionContext::ExecuteTask (const InsertObjects &_task)
-{
-    std::visit (
-        [&_task] (auto &_query)
-        {
-            using QueryType = std::decay_t <decltype (_query)>;
-            if constexpr(std::is_same_v <QueryType, ShortTermContainer::InsertQuery> ||
-                         std::is_same_v <QueryType, LongTermContainer::InsertQuery>)
-            {
-                auto cursor = _query.Execute ();
-                for (const void *source : _task.copyFrom)
-                {
-                    void *target = ++cursor;
-                    memcpy (target, source, _query.GetContainer ()->GetTypeMapping ().GetObjectSize ());
-                }
-            }
-            else if constexpr (std::is_same_v <QueryType, SingletonContainer::ModifyQuery>)
-            {
-                REQUIRE (_task.copyFrom.size () == 1u);
-                auto cursor = _query.Execute ();
-                memcpy (*cursor, _task.copyFrom[0u],
-                        _query.GetContainer ()->GetTypeMapping ().GetObjectSize ());
-            }
-            else
-            {
-                REQUIRE_WITH_MESSAGE (false, "Prepared query with name \"", _task.name, "\" must be insertion query.");
-            }
-        },
-        RequireQuery (_task.name));
-}
-
-void ExecutionContext::ExecuteTask (const QuerySingletonToRead &_task)
-{
-    auto &query = std::get <SingletonContainer::FetchQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
-}
-
-void ExecutionContext::ExecuteTask (const QuerySingletonToEdit &_task)
-{
-    auto &query = std::get <SingletonContainer::ModifyQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
-}
-
-void ExecutionContext::ExecuteTask (const QueryUnorderedSequenceToRead &_task)
-{
-    auto &query = std::get <ShortTermContainer::FetchQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
-}
-
-void ExecutionContext::ExecuteTask (const QueryUnorderedSequenceToEdit &_task)
-{
-    auto &query = std::get <ShortTermContainer::ModifyQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
-}
-
-void ExecutionContext::ExecuteTask (const QueryValueToRead &_task)
-{
-    auto &query = std::get <LongTermContainer::FetchValueQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (_task.value));
-}
-
-void ExecutionContext::ExecuteTask (const QueryValueToEdit &_task)
-{
-    auto &query = std::get <LongTermContainer::ModifyValueQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (_task.value));
-}
-
-void ExecutionContext::ExecuteTask (const QueryRangeToRead &_task)
-{
-    auto &query = std::get <LongTermContainer::FetchRangeQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (_task.minValue, _task.maxValue));
-}
-
-void ExecutionContext::ExecuteTask (const QueryRangeToEdit &_task)
-{
-    auto &query = std::get <LongTermContainer::ModifyRangeQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (_task.minValue, _task.maxValue));
-}
-
-void ExecutionContext::ExecuteTask (const QueryReversedRangeToRead &_task)
-{
-    auto &query = std::get <LongTermContainer::FetchReversedRangeQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (_task.minValue, _task.maxValue));
-}
-
-void ExecutionContext::ExecuteTask (const QueryReversedRangeToEdit &_task)
-{
-    auto &query = std::get <LongTermContainer::ModifyReversedRangeQuery> (RequireQuery (_task.sourceName));
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (_task.minValue, _task.maxValue));
-}
-
-void ExecutionContext::ExecuteTask (const QueryShapeIntersectionToRead &_task)
-{
-    auto &query = std::get <LongTermContainer::FetchShapeIntersectionQuery> (RequireQuery (_task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.min, _task.max);
-
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (&sequence[0u]));
-}
-
-void ExecutionContext::ExecuteTask (const QueryShapeIntersectionToEdit &_task)
-{
-    auto &query = std::get <LongTermContainer::ModifyShapeIntersectionQuery> (RequireQuery (_task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.min, _task.max);
-
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (&sequence[0u]));
-}
-
-void ExecutionContext::ExecuteTask (const QueryRayIntersectionToRead &_task)
-{
-    auto &query = std::get <LongTermContainer::FetchRayIntersectionQuery> (RequireQuery (_task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.origin, _task.direction);
-
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (&sequence[0u], _task.maxDistance));
-}
-
-void ExecutionContext::ExecuteTask (const QueryRayIntersectionToEdit &_task)
-{
-    auto &query = std::get <LongTermContainer::ModifyRayIntersectionQuery> (RequireQuery (_task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.origin, _task.direction);
-
-    cursors.Add (_task.cursorName, query.GetContainer ()->GetTypeMapping (),
-                 query.Execute (&sequence[0u], _task.maxDistance));
-}
-
-void ExecutionContext::ExecuteTask (const CursorCheck &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorCheckAllOrdered &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorCheckAllUnordered &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorEdit &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorIncrement &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorDeleteObject &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorCopy &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorMove &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-void ExecutionContext::ExecuteTask (const CursorClose &_task)
-{
-    cursors.ExecuteTask (_task);
-}
-
-ContainerReference &ExecutionContext::RequireContainer (const std::string &_name)
-{
-    auto iterator = containers.find (_name);
-    REQUIRE_WITH_MESSAGE (iterator != containers.end (),
+    auto iterator = _context.containers.find (_name);
+    REQUIRE_WITH_MESSAGE (iterator != _context.containers.end (),
                           "There should be container reference with name \"", _name, "\".");
     return iterator->second;
 }
 
-PreparedQuery &ExecutionContext::RequireQuery (const std::string &_name)
+PreparedQuery &RequireQuery (ExecutionContext &_context, const std::string &_name)
 {
-    auto iterator = queries.find (_name);
-    REQUIRE_WITH_MESSAGE (iterator != queries.end (), "There should be prepared query with name \"", _name, "\".");
+    auto iterator = _context.queries.find (_name);
+    REQUIRE_WITH_MESSAGE (iterator != _context.queries.end (),
+                          "There should be prepared query with name \"", _name, "\".");
     return iterator->second;
 }
 
-std::vector <RecordCollection::Collection::DimensionDescriptor> ExecutionContext::ConvertDimensions (
+std::vector <RecordCollection::Collection::DimensionDescriptor> ConvertDimensions (
     const std::vector <Query::Test::Sources::Volumetric::Dimension> &_dimensions)
 {
     std::vector <RecordCollection::Collection::DimensionDescriptor> convertedDimensions;
@@ -649,11 +102,10 @@ std::vector <RecordCollection::Collection::DimensionDescriptor> ExecutionContext
 }
 
 template <typename QueryType>
-std::vector <uint8_t>
-ExecutionContext::MergeVectorsIntoQueryParameterSequence (
+std::vector <uint8_t> MergeVectorsIntoQueryParameterSequence (
     const QueryType &_query,
     const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_firstVector,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_secondVector) const
+    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_secondVector)
 {
     std::size_t sequenceSize = 0u;
     std::size_t dimensionCount = 0u;
@@ -694,6 +146,421 @@ ExecutionContext::MergeVectorsIntoQueryParameterSequence (
     }
 
     return sequence;
+}
+
+void ExecuteTask (ExecutionContext &_context, const AcquireSingletonContainer &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.name) == _context.containers.end (),
+        "There should be no container with name \"", _task.name, "\".");
+
+    _context.containers.emplace (_task.name, _context.deck.AcquireSingletonContainer (_task.mapping));
+}
+
+void ExecuteTask (ExecutionContext &_context, const AcquireShortTermContainer &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.name) == _context.containers.end (),
+        "There should be no container with name \"", _task.name, "\".");
+
+    _context.containers.emplace (_task.name, _context.deck.AcquireShortTermContainer (_task.mapping));
+}
+
+void ExecuteTask (ExecutionContext &_context, const AcquireLongTermContainer &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.name) == _context.containers.end (),
+        "There should be no container with name \"", _task.name, "\".");
+
+    _context.containers.emplace (_task.name, _context.deck.AcquireLongTermContainer (_task.mapping));
+}
+
+void ExecuteTask (ExecutionContext &_context, const CopyContainerReference &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.targetName) == _context.containers.end (),
+        "There should be no container with name \"", _task.targetName, "\".");
+
+    auto sourceIterator = _context.containers.find (_task.sourceName);
+
+    REQUIRE_WITH_MESSAGE (
+        sourceIterator != _context.containers.end (),
+        "There should be container with name \"", _task.sourceName, "\".");
+
+    _context.containers.emplace (_task.targetName, sourceIterator->second);
+}
+
+void ExecuteTask (ExecutionContext &_context, const MoveContainerReference &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.targetName) == _context.containers.end (),
+        "There should be no container with name \"", _task.targetName, "\".");
+
+    auto sourceIterator = _context.containers.find (_task.sourceName);
+
+    REQUIRE_WITH_MESSAGE (
+        sourceIterator != _context.containers.end (),
+        "There should be container with name \"", _task.sourceName, "\".");
+
+    _context.containers.emplace (_task.targetName, std::move (sourceIterator->second));
+}
+
+void ExecuteTask (ExecutionContext &_context, const RemoveContainerReference &_task)
+{
+    auto iterator = _context.containers.find (_task.name);
+    REQUIRE_WITH_MESSAGE (iterator != _context.containers.end (),
+                          "There should be container with name \"", _task.name, "\".");
+    _context.containers.erase (iterator);
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareSingletonFetchQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <SingletonContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->Fetch ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareSingletonModifyQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <SingletonContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->Modify ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareShortTermInsertQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <ShortTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->Insert ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareShortTermFetchQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <ShortTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->Fetch ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareShortTermModifyQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <ShortTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->Modify ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermInsertQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->Insert ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchValueQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->FetchValue (_task.keyFields));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyValueQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->ModifyValue (_task.keyFields));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchRangeQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->FetchRange (_task.keyField));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyRangeQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->ModifyRange (_task.keyField));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchReversedRangeQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->FetchReversedRange (_task.keyField));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyReversedRangeQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->ModifyReversedRange (_task.keyField));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchShapeIntersectionQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries
+            .emplace (_task.queryName, container->FetchShapeIntersection (ConvertDimensions (_task.dimensions)));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyShapeIntersectionQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries
+            .emplace (_task.queryName, container->ModifyShapeIntersection (ConvertDimensions (_task.dimensions)));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchRayIntersectionQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->FetchRayIntersection (ConvertDimensions (_task.dimensions)));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyRayIntersectionQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.containers.find (_task.queryName) == _context.containers.end (),
+        "There should be no query with name \"", _task.queryName, "\".");
+
+    auto &container = std::get <Handling::Handle <LongTermContainer>> (
+        RequireContainer (_context, _task.containerName));
+    _context.queries.emplace (_task.queryName, container->ModifyRayIntersection (ConvertDimensions (_task.dimensions)));
+}
+
+void ExecuteTask (ExecutionContext &_context, const CopyPreparedQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.queries.find (_task.targetName) == _context.queries.end (),
+        "There should be no prepared query with name \"", _task.targetName, "\".");
+
+    auto sourceIterator = _context.queries.find (_task.sourceName);
+
+    REQUIRE_WITH_MESSAGE (
+        sourceIterator != _context.queries.end (),
+        "There should be prepared query with name \"", _task.sourceName, "\".");
+
+    _context.queries.emplace (_task.targetName, sourceIterator->second);
+}
+
+void ExecuteTask (ExecutionContext &_context, const MovePreparedQuery &_task)
+{
+    REQUIRE_WITH_MESSAGE (
+        _context.queries.find (_task.targetName) == _context.queries.end (),
+        "There should be no prepared query with name \"", _task.targetName, "\".");
+
+    auto sourceIterator = _context.queries.find (_task.sourceName);
+
+    REQUIRE_WITH_MESSAGE (
+        sourceIterator != _context.queries.end (),
+        "There should be prepared query with name \"", _task.sourceName, "\".");
+
+    _context.queries.emplace (_task.targetName, std::move (sourceIterator->second));
+}
+
+void ExecuteTask (ExecutionContext &_context, const RemovePreparedQuery &_task)
+{
+    auto iterator = _context.queries.find (_task.name);
+    REQUIRE_WITH_MESSAGE (iterator != _context.queries.end (),
+                          "There should be prepared query with name \"", _task.name, "\".");
+    _context.queries.erase (iterator);
+}
+
+void ExecuteTask (ExecutionContext &_context, const InsertObjects &_task)
+{
+    std::visit (
+        [&_task] (auto &_query)
+        {
+            using QueryType = std::decay_t <decltype (_query)>;
+            if constexpr(std::is_same_v <QueryType, ShortTermContainer::InsertQuery> ||
+                         std::is_same_v <QueryType, LongTermContainer::InsertQuery>)
+            {
+                auto cursor = _query.Execute ();
+                for (const void *source : _task.copyFrom)
+                {
+                    void *target = ++cursor;
+                    memcpy (target, source, _query.GetContainer ()->GetTypeMapping ().GetObjectSize ());
+                }
+            }
+            else if constexpr (std::is_same_v <QueryType, SingletonContainer::ModifyQuery>)
+            {
+                REQUIRE (_task.copyFrom.size () == 1u);
+                auto cursor = _query.Execute ();
+                memcpy (*cursor, _task.copyFrom[0u],
+                        _query.GetContainer ()->GetTypeMapping ().GetObjectSize ());
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE (false, "Prepared query with name \"", _task.name, "\" must be insertion query.");
+            }
+        },
+        RequireQuery (_context, _task.name));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QuerySingletonToRead &_task)
+{
+    auto &query = std::get <SingletonContainer::FetchQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const QuerySingletonToEdit &_task)
+{
+    auto &query = std::get <SingletonContainer::ModifyQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryUnorderedSequenceToRead &_task)
+{
+    auto &query = std::get <ShortTermContainer::FetchQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryUnorderedSequenceToEdit &_task)
+{
+    auto &query = std::get <ShortTermContainer::ModifyQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryValueToRead &_task)
+{
+    auto &query = std::get <LongTermContainer::FetchValueQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (_task.value));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
+{
+    auto &query = std::get <LongTermContainer::ModifyValueQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (_task.value));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
+{
+    auto &query = std::get <LongTermContainer::FetchRangeQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (_task.minValue, _task.maxValue));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
+{
+    auto &query = std::get <LongTermContainer::ModifyRangeQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (_task.minValue, _task.maxValue));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
+{
+    auto &query = std::get <LongTermContainer::FetchReversedRangeQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (_task.minValue, _task.maxValue));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
+{
+    auto &query = std::get <LongTermContainer::ModifyReversedRangeQuery> (RequireQuery (_context, _task.sourceName));
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (_task.minValue, _task.maxValue));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
+{
+    auto &query = std::get <LongTermContainer::FetchShapeIntersectionQuery> (RequireQuery (_context, _task.sourceName));
+    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.min, _task.max);
+
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (&sequence[0u]));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
+{
+    auto
+        &query = std::get <LongTermContainer::ModifyShapeIntersectionQuery> (RequireQuery (_context, _task.sourceName));
+    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.min, _task.max);
+
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (&sequence[0u]));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &_task)
+{
+    auto &query = std::get <LongTermContainer::FetchRayIntersectionQuery> (RequireQuery (_context, _task.sourceName));
+    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.origin, _task.direction);
+
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (&sequence[0u], _task.maxDistance));
+}
+
+void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
+{
+    auto &query = std::get <LongTermContainer::ModifyRayIntersectionQuery> (RequireQuery (_context, _task.sourceName));
+    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.origin, _task.direction);
+
+    AddCursor (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
+               query.Execute (&sequence[0u], _task.maxDistance));
 }
 
 std::ostream &operator << (std::ostream &_output, const AcquireSingletonContainer &_task)
@@ -1143,7 +1010,7 @@ Scenario::Scenario (std::vector <Task> _tasks)
             [&context] (const auto &_unwrappedTask)
             {
                 LOG ((std::stringstream () << _unwrappedTask).str ());
-                context.ExecuteTask (_unwrappedTask);
+                ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);
     }
