@@ -5,465 +5,214 @@
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
+#include <Reference/Test/ReferenceStorage.hpp>
+#include <Reference/Test/Tests.hpp>
+
 #include <Testing/Testing.hpp>
 
 namespace Emergence::Handling::Test
 {
-class HandleableSingletonResource final : public HandleableBase
+using namespace Emergence::Reference::Test::TemplatedTasks;
+
+class HandleableResource final : public HandleableBase
 {
 public:
-    ~HandleableSingletonResource () noexcept
+    HandleableResource (bool *_aliveFlagPointer)
+        : aliveFlagPointer (_aliveFlagPointer)
     {
-        instance = nullptr;
+        REQUIRE (aliveFlagPointer);
+        *aliveFlagPointer = true;
     }
 
-    static HandleableSingletonResource *AcquireInstance () noexcept
+    ~HandleableResource () noexcept
     {
-        if (!instance)
-        {
-            instance = new HandleableSingletonResource ();
-        }
-
-        return instance;
-    }
-
-    static bool HasInstance () noexcept
-    {
-        return instance;
-    }
-
-    static void Cleanup () noexcept
-    {
-        delete instance;
-        instance = nullptr;
+        REQUIRE (aliveFlagPointer);
+        *aliveFlagPointer = false;
     }
 
 private:
-    HandleableSingletonResource () noexcept
-    {
-        instance = this;
-    }
-
-    static HandleableSingletonResource *instance;
-};
-
-HandleableSingletonResource *HandleableSingletonResource::instance = nullptr;
-
-struct ConstructHandle
-{
-    std::string name;
-};
-
-struct DestructHandle
-{
-    std::string name;
-};
-
-struct CopyHandle
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct MoveHandle
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct CopyAssignHandle
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct MoveAssignHandle
-{
-    std::string sourceName;
-    std::string targetName;
+    bool *aliveFlagPointer;
 };
 
 using Task = std::variant <
-    ConstructHandle,
-    DestructHandle,
-    CopyHandle,
-    MoveHandle,
-    CopyAssignHandle,
-    MoveAssignHandle>;
+    Emergence::Reference::Test::Tasks::Create,
+    Move <Handle <HandleableResource>>,
+    Copy <Handle <HandleableResource>>,
+    MoveAssign <Handle <HandleableResource>>,
+    CopyAssign <Handle <HandleableResource>>,
+    Delete <Handle <HandleableResource>>,
+    Emergence::Reference::Test::Tasks::CheckStatus>;
 
-std::string ToString (const ConstructHandle &_task)
+std::ostream &operator << (std::ostream &_output, const Emergence::Reference::Test::Tasks::Create &_task)
 {
-    return "Construct \"" + _task.name + "\".";
+    return _output << "Construct \"" << _task.name << "\".";
 }
 
-std::string ToString (const DestructHandle &_task)
+std::ostream &operator << (std::ostream &_output, const Move <Handle <HandleableResource>> &_task)
 {
-    return "Destruct \"" + _task.name + "\".";
+    return _output << "Move \"" << _task.source << "\" into \"" << _task.target << "\".";
 }
 
-std::string ToString (const CopyHandle &_task)
+std::ostream &operator << (std::ostream &_output, const Copy <Handle <HandleableResource>> &_task)
 {
-    return "Copy  \"" + _task.sourceName + "\" to \"" + _task.targetName + "\".";
+    return _output << "Copy  \"" << _task.source << "\" to \"" << _task.target << "\".";
 }
 
-std::string ToString (const MoveHandle &_task)
+std::ostream &operator << (std::ostream &_output, const MoveAssign <Handle <HandleableResource>> &_task)
 {
-    return "Move \"" + _task.sourceName + "\" into \"" + _task.targetName + "\".";
+    return _output << "Move \"" << _task.source << "\" into \"" << _task.target << "\" using assign operator.";
 }
 
-std::string ToString (const CopyAssignHandle &_task)
+std::ostream &operator << (std::ostream &_output, const CopyAssign <Handle <HandleableResource>> &_task)
 {
-    return "Assign copy of  \"" + _task.sourceName + "\" to \"" + _task.targetName + "\".";
+    return _output << "Assign copy of \"" << _task.source << "\" to \"" << _task.target << "\".";
 }
 
-std::string ToString (const MoveAssignHandle &_task)
+std::ostream &operator << (std::ostream &_output, const Emergence::Reference::Test::Tasks::Delete &_task)
 {
-    return "Move \"" + _task.sourceName + "\" into \"" + _task.targetName + "\" using assign operator.";
+    return _output << "Destruct \"" << _task.name << "\".";
 }
 
-class Scenario final
+std::ostream &operator << (std::ostream &_output, const Emergence::Reference::Test::Tasks::CheckStatus &_task)
 {
-public:
-    explicit Scenario (std::vector <Task> _tasks);
+    return _output << "Check that resource has any references. Expected result: \"" << _task.hasAnyReferences << "\".";
+}
 
-private:
-    std::string GetFullDescription () const;
+std::ostream &operator << (std::ostream &_output, const std::vector <Task> &_tasks)
+{
+    _output << "Scenario: " << std::endl;
+    for (const Task &wrappedTask : _tasks)
+    {
+        _output << " - ";
+        std::visit (
+            [&_output] (const auto &_unwrappedTask)
+            {
+                _output << _unwrappedTask;
+            },
+            wrappedTask);
 
-    void ExecuteTask (const ConstructHandle &_task);
+        _output << std::endl;
+    }
 
-    void ExecuteTask (const DestructHandle &_task);
+    return _output;
+}
 
-    void ExecuteTask (const CopyHandle &_task);
-
-    void ExecuteTask (const MoveHandle &_task);
-
-    void ExecuteTask (const CopyAssignHandle &_task);
-
-    void ExecuteTask (const MoveAssignHandle &_task);
-
-private:
-    std::vector <Task> tasks;
-    std::unordered_map <std::string, Handle <HandleableSingletonResource>> handles;
+struct ExecutionContext final : Emergence::Reference::Test::ReferenceStorage <Handle <HandleableResource>>
+{
+    bool aliveFlag = false;
+    HandleableResource *resource = nullptr;
 };
 
-Scenario::Scenario (std::vector <Task> _tasks)
-    : tasks (std::move (_tasks)),
-      handles ()
+void ExecuteTask (ExecutionContext &_context, const Emergence::Reference::Test::Tasks::Create &_task)
 {
-    LOG (GetFullDescription ());
-    for (const Task &packedTask : tasks)
+    if (!_context.aliveFlag)
+    {
+        _context.resource = new HandleableResource (&_context.aliveFlag);
+    }
+
+    AddReference (_context, _task.name, _context.resource);
+}
+
+void ExecuteTask (ExecutionContext &_context, const Emergence::Reference::Test::Tasks::CheckStatus &_task)
+{
+    CHECK_EQUAL (_context.aliveFlag, _task.hasAnyReferences);
+}
+
+void ExecuteScenario (const std::vector <Task> &_tasks)
+{
+    ExecutionContext context {};
+    LOG ((std::stringstream () << _tasks).str ());
+
+    for (const Task &wrappedTask : _tasks)
     {
         std::visit (
-            [this] (const auto &task)
+            [&context] (const auto &_unwrappedTask)
             {
-                LOG (ToString (task));
-                ExecuteTask (task);
+                std::stringstream stream;
+                stream << _unwrappedTask;
+                LOG (stream.str ());
+                ExecuteTask (context, _unwrappedTask);
             },
-            packedTask);
-    }
+            wrappedTask);
 
-    handles.clear ();
-    CHECK (HandleableSingletonResource::HasInstance () == false);
-    HandleableSingletonResource::Cleanup ();
+        for (const auto &pair : context.references)
+        {
+            if (pair.second)
+            {
+                CHECK_WITH_MESSAGE (
+                    context.aliveFlag,
+                    "Handle \"", pair.first, "\" is valid. Handles can be valid only when resource is alive.");
+                CHECK_EQUAL (pair.second.Get (), context.resource);
+            }
+        }
+    }
 }
 
-std::string Scenario::GetFullDescription () const
+template <typename SourceTask>
+Task ConvertTask (const SourceTask &_task)
 {
-    std::stringstream output;
-    output << "Scenario: " << std::endl;
-    for (const Task &packedTask : tasks)
+    return _task;
+}
+
+template <>
+Task ConvertTask (const Emergence::Reference::Test::Tasks::Move &_task)
+{
+    return Move <Handle <HandleableResource>> {_task};
+}
+
+template <>
+Task ConvertTask (const Emergence::Reference::Test::Tasks::Copy &_task)
+{
+    return Copy <Handle <HandleableResource>> {_task};
+}
+
+template <>
+Task ConvertTask (const Emergence::Reference::Test::Tasks::MoveAssign &_task)
+{
+    return MoveAssign <Handle <HandleableResource>> {_task};
+}
+
+template <>
+Task ConvertTask (const Emergence::Reference::Test::Tasks::CopyAssign &_task)
+{
+    return CopyAssign <Handle <HandleableResource>> {_task};
+}
+
+template <>
+Task ConvertTask (const Emergence::Reference::Test::Tasks::Delete &_task)
+{
+    return Delete <Handle <HandleableResource>> {_task};
+}
+
+void ReferenceTestDriver (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    std::vector <Task> tasks;
+    for (const Emergence::Reference::Test::Task &sourceTask : _scenario)
     {
         std::visit (
-            [&output] (const auto &task)
+            [&tasks] (const auto &_task)
             {
-                output << " - " << ToString (task) << std::endl;
+                tasks.emplace_back (ConvertTask (_task));
             },
-            packedTask);
+            sourceTask);
     }
 
-    return output.str ();
-}
-
-void Scenario::ExecuteTask (const ConstructHandle &_task)
-{
-    REQUIRE (handles.find (_task.name) == handles.end ());
-    auto[iterator, emplaceResult] = handles.emplace (
-        _task.name, HandleableSingletonResource::AcquireInstance ());
-
-    REQUIRE (emplaceResult);
-    CHECK (iterator->second);
-}
-
-void Scenario::ExecuteTask (const DestructHandle &_task)
-{
-    auto iterator = handles.find (_task.name);
-    REQUIRE (iterator != handles.end ());
-    handles.erase (iterator);
-}
-
-void Scenario::ExecuteTask (const CopyHandle &_task)
-{
-    auto sourceIterator = handles.find (_task.sourceName);
-    REQUIRE (sourceIterator != handles.end ());
-    REQUIRE (handles.find (_task.targetName) == handles.end ());
-
-    auto[iterator, emplaceResult] = handles.emplace (_task.targetName, sourceIterator->second);
-    REQUIRE (emplaceResult);
-    CHECK (iterator->second == sourceIterator->second);
-}
-
-void Scenario::ExecuteTask (const MoveHandle &_task)
-{
-    auto sourceIterator = handles.find (_task.sourceName);
-    REQUIRE (sourceIterator != handles.end ());
-    REQUIRE (handles.find (_task.targetName) == handles.end ());
-
-    bool sourceValid {sourceIterator->second};
-    auto[iterator, emplaceResult] = handles.emplace (
-        _task.targetName, std::move (sourceIterator->second));
-
-    REQUIRE (emplaceResult);
-    CHECK (!sourceIterator->second);
-    CHECK (bool {iterator->second} == sourceValid);
-}
-
-void Scenario::ExecuteTask (const CopyAssignHandle &_task)
-{
-    auto sourceIterator = handles.find (_task.sourceName);
-    REQUIRE (sourceIterator != handles.end ());
-
-    auto targetIterator = handles.find (_task.targetName);
-    REQUIRE (targetIterator != handles.end ());
-
-    bool sourceValid {sourceIterator->second};
-    targetIterator->second = sourceIterator->second;
-    CHECK (sourceIterator->second == targetIterator->second);
-
-    if (sourceIterator == targetIterator)
-    {
-        HandleableSingletonResource *expected =
-            sourceValid ? HandleableSingletonResource::AcquireInstance () : nullptr;
-        CHECK (sourceIterator->second.Get () == expected);
-    }
-}
-
-void Scenario::ExecuteTask (const MoveAssignHandle &_task)
-{
-    auto sourceIterator = handles.find (_task.sourceName);
-    REQUIRE (sourceIterator != handles.end ());
-
-    auto targetIterator = handles.find (_task.targetName);
-    REQUIRE (targetIterator != handles.end ());
-
-    bool sourceValid {sourceIterator->second};
-    targetIterator->second = std::move (sourceIterator->second);
-
-    if (sourceIterator == targetIterator)
-    {
-        HandleableSingletonResource *expected =
-            sourceValid ? HandleableSingletonResource::AcquireInstance () : nullptr;
-        CHECK (sourceIterator->second.Get () == expected);
-    }
-    else
-    {
-        CHECK (!sourceIterator->second);
-        CHECK (bool {targetIterator->second} == sourceValid);
-    }
+    ExecuteScenario (tasks);
 }
 } // namespace Emergence::Handling::Test
 
 BEGIN_SUITE (HandleManagement)
 
-/// It's difficult to describe all handle manipulations with short names and there
-/// is not real sense to do it, because scenarios describe these manipulations better.
-/// Therefore we use line numbers to generate unique test case names.
+REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, ConstructAndDestructMultiple)
 
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-        });
-}
+REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, MoveChain)
 
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::DestructHandle {"first"},
-        });
-}
+REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, MoveCopy)
 
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::DestructHandle {"first"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
+REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, CopyMultiple)
 
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
+REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, CopyAssignMultiple)
 
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::CopyHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"first"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::CopyHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::MoveHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"first"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::MoveHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::MoveHandle {"first", "second"},
-            Emergence::Handling::Test::ConstructHandle {"third"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::MoveHandle {"first", "second"},
-            Emergence::Handling::Test::MoveHandle {"first", "third"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::MoveHandle {"first", "second"},
-            Emergence::Handling::Test::CopyHandle {"first", "third"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::CopyAssignHandle {"first", "first"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::MoveAssignHandle {"first", "first"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::CopyAssignHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"first"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::MoveAssignHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"first"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::MoveAssignHandle {"first", "second"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::ConstructHandle {"third"},
-            Emergence::Handling::Test::MoveAssignHandle {"first", "second"},
-            Emergence::Handling::Test::MoveAssignHandle {"first", "third"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
-
-TEST_CASE (__LINE__)
-{
-    Emergence::Handling::Test::Scenario (
-        {
-            Emergence::Handling::Test::ConstructHandle {"first"},
-            Emergence::Handling::Test::ConstructHandle {"second"},
-            Emergence::Handling::Test::ConstructHandle {"third"},
-            Emergence::Handling::Test::MoveAssignHandle {"first", "second"},
-            Emergence::Handling::Test::CopyAssignHandle {"first", "third"},
-            Emergence::Handling::Test::DestructHandle {"second"},
-        });
-}
+REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, MoveAssignChain)
 
 END_SUITE
