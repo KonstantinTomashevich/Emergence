@@ -2,7 +2,6 @@
 #include <sstream>
 #include <unordered_map>
 
-#include <Pegasus/Storage.hpp>
 #include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/CursorManager.hpp>
@@ -11,22 +10,19 @@
 
 namespace Emergence::Pegasus::Test
 {
-using IndexReference = std::variant <
-    Handling::Handle <HashIndex>,
-    Handling::Handle <OrderedIndex>,
-    Handling::Handle <VolumetricIndex>>;
-
-struct ExecutionContext final : public Query::Test::CursorManager <
-    HashIndex::ReadCursor,
-    HashIndex::EditCursor,
-    OrderedIndex::ReadCursor,
-    OrderedIndex::EditCursor,
-    OrderedIndex::ReversedReadCursor,
-    OrderedIndex::ReversedEditCursor,
-    VolumetricIndex::ShapeIntersectionReadCursor,
-    VolumetricIndex::ShapeIntersectionEditCursor,
-    VolumetricIndex::RayIntersectionReadCursor,
-    VolumetricIndex::RayIntersectionEditCursor>
+struct ExecutionContext final :
+    public Reference::Test::ReferenceStorage <IndexReference>,
+    public Query::Test::CursorManager <
+        HashIndex::ReadCursor,
+        HashIndex::EditCursor,
+        OrderedIndex::ReadCursor,
+        OrderedIndex::EditCursor,
+        OrderedIndex::ReversedReadCursor,
+        OrderedIndex::ReversedEditCursor,
+        VolumetricIndex::ShapeIntersectionReadCursor,
+        VolumetricIndex::ShapeIntersectionEditCursor,
+        VolumetricIndex::RayIntersectionReadCursor,
+        VolumetricIndex::RayIntersectionEditCursor>
 {
     explicit ExecutionContext (StandardLayout::Mapping _recordMapping);
 
@@ -36,8 +32,6 @@ struct ExecutionContext final : public Query::Test::CursorManager <
     std::vector <HashIndex *> knownHashIndices;
     std::vector <OrderedIndex *> knownOrderedIndices;
     std::vector <VolumetricIndex *> knownVolumetricIndices;
-
-    std::unordered_map <std::string, IndexReference> indexReferences;
     std::optional <Storage::Allocator> storageAllocator;
 };
 
@@ -45,24 +39,14 @@ ExecutionContext::ExecutionContext (StandardLayout::Mapping _recordMapping)
     : storage (std::move (_recordMapping)),
       knownHashIndices (),
       knownOrderedIndices (),
-      knownVolumetricIndices (),
-      indexReferences ()
+      knownVolumetricIndices ()
 {
 }
 
 ExecutionContext::~ExecutionContext ()
 {
     cursors.clear ();
-}
-
-const IndexReference &PrepareForLookup (const ExecutionContext &_context, const QueryBase &_task)
-{
-    auto iterator = _context.indexReferences.find (_task.sourceName);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.indexReferences.end (),
-        "There should be index reference with name \"", _task.sourceName, "\".");
-
-    return iterator->second;
+    references.clear ();
 }
 
 std::vector <uint8_t> MergeVectorsIntoIndexLookupSequence (
@@ -183,38 +167,26 @@ void OnIndexDropped (ExecutionContext &_context, VolumetricIndex *_index)
 
 void ExecuteTask (ExecutionContext &_context, const CreateHashIndex &_task)
 {
-    REQUIRE_WITH_MESSAGE (
-        _context.indexReferences.find (_task.name) == _context.indexReferences.end (),
-        "There should be no index reference with name \"", _task.name, "\".");
-
     Handling::Handle <HashIndex> index = _context.storage.CreateHashIndex (_task.indexedFields);
     REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     _context.knownHashIndices.emplace_back (index.Get ());
-    _context.indexReferences.emplace (_task.name, index);
+    AddReference (_context, _task.name, index);
     IterateOverIndices (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreateOrderedIndex &_task)
 {
-    REQUIRE_WITH_MESSAGE (
-        _context.indexReferences.find (_task.name) == _context.indexReferences.end (),
-        "There should be no index reference with name \"", _task.name, "\".");
-
     Handling::Handle <OrderedIndex> index = _context.storage.CreateOrderedIndex (_task.indexedField);
     REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     _context.knownOrderedIndices.emplace_back (index.Get ());
-    _context.indexReferences.emplace (_task.name, index);
+    AddReference (_context, _task.name, index);
     IterateOverIndices (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreateVolumetricIndex &_task)
 {
-    REQUIRE_WITH_MESSAGE (
-        _context.indexReferences.find (_task.name) == _context.indexReferences.end (),
-        "There should be no index reference with name \"", _task.name, "\".");
-
     std::vector <VolumetricIndex::DimensionDescriptor> convertedDescriptors;
     convertedDescriptors.reserve (_task.dimensions.size ());
 
@@ -236,38 +208,12 @@ void ExecuteTask (ExecutionContext &_context, const CreateVolumetricIndex &_task
     REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     _context.knownVolumetricIndices.emplace_back (index.Get ());
-    _context.indexReferences.emplace (_task.name, index);
+    AddReference (_context, _task.name, index);
     IterateOverIndices (_context);
-}
-
-void ExecuteTask (ExecutionContext &_context, const CopyIndexReference &_task)
-{
-    auto iterator = _context.indexReferences.find (_task.sourceName);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.indexReferences.end (),
-        "There should be index reference with name \"", _task.sourceName, "\".");
-
-    // Copying reference into itself is ok and may even be used as part of special test scenario.
-    _context.indexReferences.emplace (_task.targetName, iterator->second);
-}
-
-void ExecuteTask (ExecutionContext &_context, const RemoveIndexReference &_task)
-{
-    auto iterator = _context.indexReferences.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.indexReferences.end (),
-        "There should be index reference with name \"", _task.name, "\".");
-
-    _context.indexReferences.erase (iterator);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CheckIsSourceBusy &_task)
 {
-    auto iterator = _context.indexReferences.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.indexReferences.end (),
-        "There should be index reference with name \"", _task.name, "\".");
-
     std::visit (
         [&_task] (auto &_handle)
         {
@@ -277,16 +223,11 @@ void ExecuteTask (ExecutionContext &_context, const CheckIsSourceBusy &_task)
             CHECK_EQUAL (handleValue->CanBeDropped (), !_task.expectedValue);
             _handle = handleValue;
         },
-        iterator->second);
+        GetReference <IndexReference> (_context, _task.name));
 }
 
 void ExecuteTask (ExecutionContext &_context, const DropIndex &_task)
 {
-    auto iterator = _context.indexReferences.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.indexReferences.end (),
-        "There should be index reference with name \"", _task.name, "\".");
-
     std::visit (
         [&_context] (auto &_handle)
         {
@@ -298,9 +239,9 @@ void ExecuteTask (ExecutionContext &_context, const DropIndex &_task)
             handleValue->Drop ();
             OnIndexDropped (_context, handleValue);
         },
-        iterator->second);
+        GetReference <IndexReference> (_context, _task.name));
 
-    _context.indexReferences.erase (iterator);
+    _context.references.erase (_context.references.find (_task.name));
     IterateOverIndices (_context);
 }
 
@@ -330,49 +271,63 @@ void ExecuteTask (ExecutionContext &_context, const CloseAllocator &)
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToRead &_task)
 {
-    HashIndex *index = std::get <Handling::Handle <HashIndex>> (PrepareForLookup (_context, _task)).Get ();
+    HashIndex *index = std::get <Handling::Handle <HashIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     AddCursor (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                index->LookupToRead ({_task.value}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
 {
-    HashIndex *index = std::get <Handling::Handle <HashIndex>> (PrepareForLookup (_context, _task)).Get ();
+    HashIndex *index = std::get <Handling::Handle <HashIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     AddCursor (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                index->LookupToEdit ({_task.value}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_context, _task)).Get ();
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     AddCursor (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                index->LookupToRead ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_context, _task)).Get ();
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     AddCursor (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                index->LookupToEdit ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_context, _task)).Get ();
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     AddCursor (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                index->LookupToReadReversed ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (PrepareForLookup (_context, _task)).Get ();
+    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     AddCursor (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                index->LookupToEditReversed ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_context, _task)).Get ();
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
     std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.min, _task.max);
 
@@ -383,7 +338,9 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_context, _task)).Get ();
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
     std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.min, _task.max);
 
@@ -394,7 +351,9 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_context, _task)).Get ();
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
+        GetReference (_context, _task.sourceName)).Get ();
+
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.origin, _task.direction);
 
@@ -405,7 +364,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (PrepareForLookup (_context, _task)).Get ();
+    VolumetricIndex
+        *index = std::get <Handling::Handle <VolumetricIndex>> (GetReference (_context, _task.sourceName)).Get ();
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.origin, _task.direction);
 
@@ -443,12 +403,12 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CopyIndexReference &_task)
+std::ostream &operator << (std::ostream &_output, const Reference::Test::TemplatedTasks::Copy <IndexReference> &_task)
 {
-    return _output << "Copy index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+    return _output << "Copy index reference \"" << _task.source << "\" to \"" << _task.target << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const RemoveIndexReference &_task)
+std::ostream &operator << (std::ostream &_output, const Reference::Test::TemplatedTasks::Delete <IndexReference> &_task)
 {
     return _output << "Remove index reference \"" << _task.name << "\".";
 }
@@ -577,7 +537,9 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
-                LOG ((std::stringstream () << _unwrappedTask).str ());
+                std::stringstream stream;
+                stream << _unwrappedTask;
+                LOG (stream.str ());
                 ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);

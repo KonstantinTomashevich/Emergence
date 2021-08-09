@@ -9,6 +9,9 @@ sober_test_begin (RecordCollection)
     sober_naming_variant_target (TestQueryAPI Original TEST_QUERY_API_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${TEST_QUERY_API_LIBRARY_TARGET})
 
+    sober_naming_variant_target (TestReferenceAPI Original TEST_REFERENCE_API_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${TEST_REFERENCE_API_LIBRARY_TARGET})
+
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)
         sober_library_private_compile_options (/EHa)

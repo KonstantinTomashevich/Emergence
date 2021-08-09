@@ -97,7 +97,7 @@ void ExecuteTask (ReferenceStorage <Reference> &_storage, const TemplatedTasks::
     Reference &source = GetReference (_storage, _task.source);
     Reference &target = GetReference (_storage, _task.target);
 
-    if constexpr (std::is_move_constructible_v <Reference>)
+    if constexpr (std::is_move_assignable_v <Reference>)
     {
         target = std::move (source);
     }
@@ -113,7 +113,7 @@ void ExecuteTask (ReferenceStorage <Reference> &_storage, const TemplatedTasks::
     Reference &source = GetReference (_storage, _task.source);
     Reference &target = GetReference (_storage, _task.target);
 
-    if constexpr (std::is_copy_constructible_v <Reference>)
+    if constexpr (std::is_copy_assignable_v <Reference>)
     {
         target = source;
     }
@@ -131,3 +131,34 @@ void ExecuteTask (ReferenceStorage <Reference> &_storage, const TemplatedTasks::
     _storage.references.erase (iterator);
 }
 } // namespace Emergence::Reference::Test
+
+#define EMERGENCE_TEST_REFERENCE_STORAGE_TASK_EXECUTION_DEDUCTION_HELPER(HighLevelContext, ReferenceType)              \
+void ExecuteTask (                                                                                                     \
+    HighLevelContext &_context, const Emergence::Reference::Test::TemplatedTasks::Move <ReferenceType> &_task)         \
+{                                                                                                                      \
+    Emergence::Reference::Test::ExecuteTask <ReferenceType> (_context, _task);                                         \
+}                                                                                                                      \
+                                                                                                                       \
+void ExecuteTask (                                                                                                     \
+    HighLevelContext &_context, const Emergence::Reference::Test::TemplatedTasks::Copy <ReferenceType> &_task)         \
+{                                                                                                                      \
+    Emergence::Reference::Test::ExecuteTask <ReferenceType> (_context, _task);                                         \
+}                                                                                                                      \
+                                                                                                                       \
+void ExecuteTask (                                                                                                     \
+    HighLevelContext &_context, const Emergence::Reference::Test::TemplatedTasks::MoveAssign <ReferenceType> &_task)   \
+{                                                                                                                      \
+    Emergence::Reference::Test::ExecuteTask <ReferenceType> (_context, _task);                                         \
+}                                                                                                                      \
+                                                                                                                       \
+void ExecuteTask (                                                                                                     \
+    HighLevelContext &_context, const Emergence::Reference::Test::TemplatedTasks::CopyAssign <ReferenceType> &_task)   \
+{                                                                                                                      \
+    Emergence::Reference::Test::ExecuteTask <ReferenceType> (_context, _task);                                         \
+}                                                                                                                      \
+                                                                                                                       \
+void ExecuteTask (                                                                                                     \
+    HighLevelContext &_context, const Emergence::Reference::Test::TemplatedTasks::Delete <ReferenceType> &_task)       \
+{                                                                                                                      \
+    Emergence::Reference::Test::ExecuteTask <ReferenceType> (_context, _task);                                         \
+}

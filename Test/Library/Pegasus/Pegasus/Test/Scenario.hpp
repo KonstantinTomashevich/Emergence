@@ -5,13 +5,20 @@
 #include <variant>
 #include <vector>
 
+#include <Handling/Handle.hpp>
+
+#include <Pegasus/Storage.hpp>
+
 #include <Query/Test/Scenario.hpp>
+
+#include <Reference/Test/ReferenceStorage.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Pegasus::Test
 {
 using namespace Query::Test::Tasks;
+using namespace Reference::Test::TemplatedTasks;
 
 struct CreateHashIndex
 {
@@ -29,17 +36,6 @@ struct CreateVolumetricIndex
 {
     std::string name;
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
-};
-
-struct CopyIndexReference
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemoveIndexReference
-{
-    std::string name;
 };
 
 struct DropIndex
@@ -60,12 +56,17 @@ struct CloseAllocator
 {
 };
 
+using IndexReference = std::variant <
+    Handling::Handle <HashIndex>,
+    Handling::Handle <OrderedIndex>,
+    Handling::Handle <VolumetricIndex>>;
+
 using Task = std::variant <
     CreateHashIndex,
     CreateOrderedIndex,
     CreateVolumetricIndex,
-    CopyIndexReference,
-    RemoveIndexReference,
+    Copy <IndexReference>,
+    Delete <IndexReference>,
     DropIndex,
     OpenAllocator,
     AllocateAndInit,

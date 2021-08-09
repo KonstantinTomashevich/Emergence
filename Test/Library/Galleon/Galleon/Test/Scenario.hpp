@@ -5,13 +5,18 @@
 #include <variant>
 #include <vector>
 
+#include <Galleon/CargoDeck.hpp>
+
 #include <Query/Test/Scenario.hpp>
+
+#include <Reference/Test/ReferenceStorage.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Galleon::Test
 {
 using namespace Query::Test::Tasks;
+using namespace Reference::Test::TemplatedTasks;
 
 struct ContainerAcquisitionBase
 {
@@ -29,23 +34,6 @@ struct AcquireShortTermContainer : public ContainerAcquisitionBase
 
 struct AcquireLongTermContainer : public ContainerAcquisitionBase
 {
-};
-
-struct CopyContainerReference
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct MoveContainerReference
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemoveContainerReference
-{
-    std::string name;
 };
 
 struct QueryPreparationBase
@@ -128,36 +116,42 @@ struct PrepareLongTermModifyRayIntersectionQuery : public QueryPreparationBase
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
-struct CopyPreparedQuery
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct MovePreparedQuery
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemovePreparedQuery
-{
-    std::string name;
-};
-
 struct InsertObjects
 {
     std::string name;
     std::vector <const void *> copyFrom;
 };
 
+using ContainerReference = std::variant <
+    Handling::Handle <SingletonContainer>,
+    Handling::Handle <ShortTermContainer>,
+    Handling::Handle <LongTermContainer>>;
+
+using PreparedQuery = std::variant <
+    SingletonContainer::FetchQuery,
+    SingletonContainer::ModifyQuery,
+    ShortTermContainer::InsertQuery,
+    ShortTermContainer::FetchQuery,
+    ShortTermContainer::ModifyQuery,
+    LongTermContainer::InsertQuery,
+    LongTermContainer::FetchValueQuery,
+    LongTermContainer::ModifyValueQuery,
+    LongTermContainer::FetchRangeQuery,
+    LongTermContainer::ModifyRangeQuery,
+    LongTermContainer::FetchReversedRangeQuery,
+    LongTermContainer::ModifyReversedRangeQuery,
+    LongTermContainer::FetchShapeIntersectionQuery,
+    LongTermContainer::ModifyShapeIntersectionQuery,
+    LongTermContainer::FetchRayIntersectionQuery,
+    LongTermContainer::ModifyRayIntersectionQuery>;
+
 using Task = std::variant <
     AcquireSingletonContainer,
     AcquireShortTermContainer,
     AcquireLongTermContainer,
-    CopyContainerReference,
-    MoveContainerReference,
-    RemoveContainerReference,
+    Copy <ContainerReference>,
+    Move <ContainerReference>,
+    Delete <ContainerReference>,
     PrepareSingletonFetchQuery,
     PrepareSingletonModifyQuery,
     PrepareShortTermInsertQuery,
@@ -174,9 +168,9 @@ using Task = std::variant <
     PrepareLongTermModifyShapeIntersectionQuery,
     PrepareLongTermFetchRayIntersectionQuery,
     PrepareLongTermModifyRayIntersectionQuery,
-    CopyPreparedQuery,
-    MovePreparedQuery,
-    RemovePreparedQuery,
+    Copy <PreparedQuery>,
+    Move <PreparedQuery>,
+    Delete <PreparedQuery>,
     InsertObjects,
     QuerySingletonToRead,
     QuerySingletonToEdit,

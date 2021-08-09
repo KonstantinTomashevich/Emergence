@@ -8,7 +8,11 @@ target_include_directories (TestGalleonOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_
 
 sober_naming_variant_target (Galleon Original GALLEON_LIBRARY_TARGET)
 sober_naming_variant_target (TestQueryAPI Original TEST_QUERY_API_LIBRARY_TARGET)
-target_link_libraries (TestGalleonOriginal PRIVATE ${GALLEON_LIBRARY_TARGET} ${TEST_QUERY_API_LIBRARY_TARGET})
+sober_naming_variant_target (TestReferenceAPI Original TEST_REFERENCE_API_LIBRARY_TARGET)
+
+target_link_libraries (
+        TestGalleonOriginal PRIVATE
+        ${GALLEON_LIBRARY_TARGET} ${TEST_QUERY_API_LIBRARY_TARGET} ${TEST_REFERENCE_API_LIBRARY_TARGET})
 
 if (MSVC)
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

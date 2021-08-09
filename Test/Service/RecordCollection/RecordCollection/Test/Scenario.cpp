@@ -4,29 +4,25 @@
 
 #include <Query/Test/CursorManager.hpp>
 
-#include <RecordCollection/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 
 #include <Testing/Testing.hpp>
 
 namespace Emergence::RecordCollection::Test
 {
-using RepresentationReference = std::variant <
-    LinearRepresentation,
-    PointRepresentation,
-    VolumetricRepresentation>;
-
-struct ExecutionContext final : public Query::Test::CursorManager <
-    LinearRepresentation::ReadCursor,
-    LinearRepresentation::EditCursor,
-    LinearRepresentation::ReversedReadCursor,
-    LinearRepresentation::ReversedEditCursor,
-    PointRepresentation::ReadCursor,
-    PointRepresentation::EditCursor,
-    VolumetricRepresentation::ShapeIntersectionReadCursor,
-    VolumetricRepresentation::ShapeIntersectionEditCursor,
-    VolumetricRepresentation::RayIntersectionReadCursor,
-    VolumetricRepresentation::RayIntersectionEditCursor>
+struct ExecutionContext final :
+    public Reference::Test::ReferenceStorage <RepresentationReference>,
+    public Query::Test::CursorManager <
+        LinearRepresentation::ReadCursor,
+        LinearRepresentation::EditCursor,
+        LinearRepresentation::ReversedReadCursor,
+        LinearRepresentation::ReversedEditCursor,
+        PointRepresentation::ReadCursor,
+        PointRepresentation::EditCursor,
+        VolumetricRepresentation::ShapeIntersectionReadCursor,
+        VolumetricRepresentation::ShapeIntersectionEditCursor,
+        VolumetricRepresentation::RayIntersectionReadCursor,
+        VolumetricRepresentation::RayIntersectionEditCursor>
 {
     explicit ExecutionContext (const StandardLayout::Mapping &_typeMapping);
 
@@ -34,15 +30,12 @@ struct ExecutionContext final : public Query::Test::CursorManager <
 
     Collection collection;
     StandardLayout::Mapping typeMapping;
-
-    std::unordered_map <std::string, RepresentationReference> representationReferences;
     std::optional <Collection::Allocator> collectionAllocator;
 };
 
 ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
     : collection (_typeMapping),
       typeMapping (_typeMapping),
-      representationReferences (),
       collectionAllocator ()
 {
 }
@@ -50,16 +43,7 @@ ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
 ExecutionContext::~ExecutionContext ()
 {
     cursors.clear ();
-}
-
-const RepresentationReference &PrepareForLookup (const ExecutionContext &_context, const QueryBase &_task)
-{
-    auto iterator = _context.representationReferences.find (_task.sourceName);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.representationReferences.end (),
-        "There should be representation reference with name \"", _task.sourceName, "\".");
-
-    return iterator->second;
+    references.clear ();
 }
 
 std::vector <uint8_t> MergeVectorsIntoRepresentationLookupSequence (
@@ -111,7 +95,7 @@ std::vector <uint8_t> MergeVectorsIntoRepresentationLookupSequence (
 void IterateOverRepresentations (const ExecutionContext &_context)
 {
     std::vector <RepresentationReference> known;
-    for (const auto &[name, representation] : _context.representationReferences)
+    for (const auto &[name, representation] : _context.references)
     {
         known.emplace_back (representation);
     }
@@ -194,10 +178,6 @@ void IterateOverRepresentations (const ExecutionContext &_context)
 
 void ExecuteTask (ExecutionContext &_context, const CreatePointRepresentation &_task)
 {
-    REQUIRE_WITH_MESSAGE (
-        _context.representationReferences.find (_task.name) == _context.representationReferences.end (),
-        "There should be no representation reference with name \"", _task.name, "\".");
-
     PointRepresentation representation = _context.collection.CreatePointRepresentation (_task.keyFields);
     // Check that representation key fields are equal to expected key fields.
     std::size_t keyFieldIndex = 0u;
@@ -223,29 +203,21 @@ void ExecuteTask (ExecutionContext &_context, const CreatePointRepresentation &_
         }
     }
 
-    _context.representationReferences.emplace (_task.name, representation);
+    AddReference (_context, _task.name, representation);
     IterateOverRepresentations (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreateLinearRepresentation &_task)
 {
-    REQUIRE_WITH_MESSAGE (
-        _context.representationReferences.find (_task.name) == _context.representationReferences.end (),
-        "There should be no representation reference with name \"", _task.name, "\".");
-
     LinearRepresentation representation = _context.collection.CreateLinearRepresentation (_task.keyField);
     CHECK (_context.typeMapping.GetField (_task.keyField).IsSame (representation.GetKeyField ()));
 
-    _context.representationReferences.emplace (_task.name, representation);
+    AddReference (_context, _task.name, representation);
     IterateOverRepresentations (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreateVolumetricRepresentation &_task)
 {
-    REQUIRE_WITH_MESSAGE (
-        _context.representationReferences.find (_task.name) == _context.representationReferences.end (),
-        "There should be no representation reference with name \"", _task.name, "\".");
-
     std::vector <Collection::DimensionDescriptor> convertedDescriptors;
     convertedDescriptors.reserve (_task.dimensions.size ());
 
@@ -282,61 +254,30 @@ void ExecuteTask (ExecutionContext &_context, const CreateVolumetricRepresentati
         }
     }
 
-    _context.representationReferences.emplace (_task.name, representation);
+    AddReference (_context, _task.name, representation);
     IterateOverRepresentations (_context);
-}
-
-void ExecuteTask (ExecutionContext &_context, const CopyRepresentationReference &_task)
-{
-    auto iterator = _context.representationReferences.find (_task.sourceName);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.representationReferences.end (),
-        "There should be representation reference with name \"", _task.sourceName, "\".");
-
-    // Copying reference into itself is ok and may even be used as part of special test scenario.
-    _context.representationReferences.emplace (_task.targetName, iterator->second);
-}
-
-void ExecuteTask (ExecutionContext &_context, const RemoveRepresentationReference &_task)
-{
-    auto iterator = _context.representationReferences.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.representationReferences.end (),
-        "There should be representation reference with name \"", _task.name, "\".");
-
-    _context.representationReferences.erase (iterator);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CheckIsSourceBusy &_task)
 {
-    auto iterator = _context.representationReferences.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.representationReferences.end (),
-        "There should be representation reference with name \"", _task.name, "\".");
-
     std::visit (
         [&_task] (auto &_reference)
         {
             CHECK_EQUAL (_reference.CanBeDropped (), !_task.expectedValue);
         },
-        iterator->second);
+        GetReference <RepresentationReference> (_context, _task.name));
 }
 
 void ExecuteTask (ExecutionContext &_context, const DropRepresentation &_task)
 {
-    auto iterator = _context.representationReferences.find (_task.name);
-    REQUIRE_WITH_MESSAGE (
-        iterator != _context.representationReferences.end (),
-        "There should be representation reference with name \"", _task.name, "\".");
-
     std::visit (
         [] (auto &_reference)
         {
             _reference.Drop ();
         },
-        iterator->second);
+        GetReference <RepresentationReference> (_context, _task.name));
 
-    _context.representationReferences.erase (iterator);
+    _context.references.erase (_context.references.find (_task.name));
     IterateOverRepresentations (_context);
 }
 
@@ -366,74 +307,95 @@ void ExecuteTask (ExecutionContext &_context, const CloseAllocator &)
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToRead &_task)
 {
-    PointRepresentation representation = std::get <PointRepresentation> (PrepareForLookup (_context, _task));
+    PointRepresentation representation = std::get <PointRepresentation> (
+        GetReference (_context, _task.sourceName));
     AddCursor (_context, _task.cursorName, _context.typeMapping, representation.ReadPoint (_task.value));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
 {
-    PointRepresentation representation = std::get <PointRepresentation> (PrepareForLookup (_context, _task));
+    PointRepresentation representation = std::get <PointRepresentation> (
+        GetReference (_context, _task.sourceName));
     AddCursor (_context, _task.cursorName, _context.typeMapping, representation.EditPoint (_task.value));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
 {
-    LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_context, _task));
+    LinearRepresentation representation = std::get <LinearRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.ReadInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
 {
-    LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_context, _task));
+    LinearRepresentation representation = std::get <LinearRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.EditInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
 {
-    LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_context, _task));
+    LinearRepresentation representation = std::get <LinearRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.ReadReversedInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
 {
-    LinearRepresentation representation = std::get <LinearRepresentation> (PrepareForLookup (_context, _task));
+    LinearRepresentation representation = std::get <LinearRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.EditReversedInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
 {
-    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_context, _task));
+    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.min, _task.max);
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.ReadShapeIntersections (&sequence[0u]));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
 {
-    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_context, _task));
+    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.min, _task.max);
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.EditShapeIntersections (&sequence[0u]));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &_task)
 {
-    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_context, _task));
+    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
+        GetReference (_context, _task.sourceName));
+
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.origin, _task.direction);
+
     AddCursor (_context, _task.cursorName, _context.typeMapping,
                representation.ReadRayIntersections (&sequence[0u], _task.maxDistance));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
 {
-    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (PrepareForLookup (_context, _task));
+    VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
+        GetReference (_context, _task.sourceName));
+    
     std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
         representation, _task.origin, _task.direction);
 
@@ -470,12 +432,12 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricRepresen
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CopyRepresentationReference &_task)
+std::ostream &operator << (std::ostream &_output, const Copy <RepresentationReference> &_task)
 {
-    return _output << "Copy representation reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+    return _output << "Copy representation reference \"" << _task.source << "\" to \"" << _task.target << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const RemoveRepresentationReference &_task)
+std::ostream &operator << (std::ostream &_output, const Delete <RepresentationReference> &_task)
 {
     return _output << "Remove representation reference \"" << _task.name << "\".";
 }
@@ -609,7 +571,9 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
-                LOG ((std::stringstream () << _unwrappedTask).str ());
+                std::stringstream stream;
+                stream << _unwrappedTask;
+                LOG (stream.str ());
                 ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);

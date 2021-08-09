@@ -7,11 +7,16 @@
 
 #include <Query/Test/Scenario.hpp>
 
+#include <RecordCollection/Collection.hpp>
+
+#include <Reference/Test/ReferenceStorage.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::RecordCollection::Test
 {
 using namespace Query::Test::Tasks;
+using namespace Reference::Test::TemplatedTasks;
 
 struct CreateLinearRepresentation
 {
@@ -29,17 +34,6 @@ struct CreateVolumetricRepresentation
 {
     std::string name;
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
-};
-
-struct CopyRepresentationReference
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemoveRepresentationReference
-{
-    std::string name;
 };
 
 struct DropRepresentation
@@ -60,12 +54,17 @@ struct CloseAllocator
 {
 };
 
+using RepresentationReference = std::variant <
+    LinearRepresentation,
+    PointRepresentation,
+    VolumetricRepresentation>;
+
 using Task = std::variant <
     CreateLinearRepresentation,
     CreatePointRepresentation,
     CreateVolumetricRepresentation,
-    CopyRepresentationReference,
-    RemoveRepresentationReference,
+    Copy <RepresentationReference>,
+    Delete <RepresentationReference>,
     DropRepresentation,
     OpenAllocator,
     AllocateAndInit,

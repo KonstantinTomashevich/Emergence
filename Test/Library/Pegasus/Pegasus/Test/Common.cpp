@@ -7,10 +7,10 @@ std::vector <Task> TestIsCanBeDropped (const std::string &_indexName)
     return
         {
             CheckIsSourceBusy {_indexName, false},
-            CopyIndexReference {_indexName, _indexName + "_duplicate"},
+            Copy <IndexReference> {{_indexName, _indexName + "_duplicate"}},
             CheckIsSourceBusy {_indexName, true},
             CheckIsSourceBusy {_indexName + "_duplicate", true},
-            RemoveIndexReference {_indexName},
+            Delete <IndexReference> {{_indexName}},
             CheckIsSourceBusy {_indexName + "_duplicate", false},
             DropIndex {_indexName + "_duplicate"},
         };
