@@ -2,11 +2,44 @@
 #include <sstream>
 #include <unordered_map>
 
+#include <Galleon/CargoDeck.hpp>
 #include <Galleon/Test/Scenario.hpp>
 
 #include <Query/Test/CursorManager.hpp>
 
 #include <Testing/Testing.hpp>
+
+namespace Emergence::Galleon::Test
+{
+using ContainerReference = std::variant <
+    Handling::Handle <SingletonContainer>,
+    Handling::Handle <ShortTermContainer>,
+    Handling::Handle <LongTermContainer>>;
+
+using PreparedQuery = std::variant <
+    SingletonContainer::FetchQuery,
+    SingletonContainer::ModifyQuery,
+    ShortTermContainer::InsertQuery,
+    ShortTermContainer::FetchQuery,
+    ShortTermContainer::ModifyQuery,
+    LongTermContainer::InsertQuery,
+    LongTermContainer::FetchValueQuery,
+    LongTermContainer::ModifyValueQuery,
+    LongTermContainer::FetchRangeQuery,
+    LongTermContainer::ModifyRangeQuery,
+    LongTermContainer::FetchReversedRangeQuery,
+    LongTermContainer::ModifyReversedRangeQuery,
+    LongTermContainer::FetchShapeIntersectionQuery,
+    LongTermContainer::ModifyShapeIntersectionQuery,
+    LongTermContainer::FetchRayIntersectionQuery,
+    LongTermContainer::ModifyRayIntersectionQuery>;
+} // namespace Emergence::Galleon::Test
+
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
+    Emergence::Galleon::Test::ContainerReferenceTag, Emergence::Galleon::Test::ContainerReference)
+
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
+    Emergence::Galleon::Test::PreparedQueryTag, Emergence::Galleon::Test::PreparedQuery)
 
 namespace Emergence::Galleon::Test
 {
@@ -392,10 +425,6 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
                query.Execute (&sequence[0u], _task.maxDistance));
 }
 
-EMERGENCE_TEST_OBJECT_STORAGE_TASK_EXECUTION_DEDUCTION_HELPER (ExecutionContext, ContainerReference)
-
-EMERGENCE_TEST_OBJECT_STORAGE_TASK_EXECUTION_DEDUCTION_HELPER (ExecutionContext, PreparedQuery)
-
 std::ostream &operator << (std::ostream &_output, const AcquireSingletonContainer &_task)
 {
     return _output << "Acquire singleton container \"" << _task.name << "\" for mapping " <<
@@ -414,17 +443,17 @@ std::ostream &operator << (std::ostream &_output, const AcquireLongTermContainer
                    *reinterpret_cast <const void *const *> (&_task.mapping) << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Copy <ContainerReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Copy <ContainerReferenceTag> &_task)
 {
     return _output << "Copy container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <ContainerReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Move <ContainerReferenceTag> &_task)
 {
     return _output << "Move container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Delete <ContainerReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Delete <ContainerReferenceTag> &_task)
 {
     return _output << "Remove container reference \"" << _task.name << "\".";
 }
@@ -551,17 +580,17 @@ std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyRay
                    _task.dimensions << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Copy <PreparedQuery> &_task)
+std::ostream &operator << (std::ostream &_output, const Copy <PreparedQueryTag> &_task)
 {
     return _output << "Copy prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <PreparedQuery> &_task)
+std::ostream &operator << (std::ostream &_output, const Move <PreparedQueryTag> &_task)
 {
     return _output << "Move prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Delete <PreparedQuery> &_task)
+std::ostream &operator << (std::ostream &_output, const Delete <PreparedQueryTag> &_task)
 {
     return _output << "Remove prepared query \"" << _task.name << "\".";
 }
@@ -732,7 +761,7 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
             }
 
             tasks.emplace_back (InsertObjects {containerName + "::Init", storage.objectsToInsert});
-            tasks.emplace_back (Delete <PreparedQuery> {{containerName + "::Init"}});
+            tasks.emplace_back (Delete <PreparedQueryTag> {{containerName + "::Init"}});
 
             for (const auto &source : storage.sources)
             {

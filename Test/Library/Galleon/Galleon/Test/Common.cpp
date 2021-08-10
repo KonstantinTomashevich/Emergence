@@ -64,12 +64,12 @@ std::vector <Task> TestContainerReferenceManipulation (
     return _checkThatContainerNotInitialized +
            _initContainer +
            _checkThatContainerInitialized +
-           Move <ContainerReference> {containerName, "moved"} +
+           Move <ContainerReferenceTag> {containerName, "moved"} +
            _checkThatContainerInitialized +
-           Copy <ContainerReference> {"moved", "copied"} +
-           Delete <ContainerReference> {"moved"} +
+           Copy <ContainerReferenceTag> {"moved", "copied"} +
+           Delete <ContainerReferenceTag> {"moved"} +
            _checkThatContainerInitialized +
-           Delete <ContainerReference> {{"copied"}} +
+           Delete <ContainerReferenceTag> {{"copied"}} +
            _checkThatContainerNotInitialized;
 }
 
@@ -89,14 +89,14 @@ std::vector <Task> TestQueryReferenceManipulation (
            _initContainer +
            _checkThatContainerInitialized +
            _prepareQuery +
-           Delete <ContainerReference> {{containerName}} +
+           Delete <ContainerReferenceTag> {{containerName}} +
            _checkThatContainerInitialized +
-           Move <PreparedQuery> {queryName, "moved"} +
+           Move <PreparedQueryTag> {queryName, "moved"} +
            _checkThatContainerInitialized +
-           Copy <PreparedQuery> {"moved", "copied"} +
-           Delete <PreparedQuery> {"moved"} +
+           Copy <PreparedQueryTag> {"moved", "copied"} +
+           Delete <PreparedQueryTag> {"moved"} +
            _checkThatContainerInitialized +
-           Delete <PreparedQuery> {"copied"} +
+           Delete <PreparedQueryTag> {"copied"} +
            _checkThatContainerNotInitialized;
 }
 } // namespace Emergence::Galleon::Test

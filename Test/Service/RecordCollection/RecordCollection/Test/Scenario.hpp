@@ -9,8 +9,6 @@
 
 #include <Query/Test/Scenario.hpp>
 
-#include <RecordCollection/Collection.hpp>
-
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::RecordCollection::Test
@@ -54,17 +52,12 @@ struct CloseAllocator
 {
 };
 
-using RepresentationReference = std::variant <
-    LinearRepresentation,
-    PointRepresentation,
-    VolumetricRepresentation>;
-
 using Task = std::variant <
     CreateLinearRepresentation,
     CreatePointRepresentation,
     CreateVolumetricRepresentation,
-    Copy <RepresentationReference>,
-    Delete <RepresentationReference>,
+    Copy <struct RepresentationReferenceTag>,
+    Delete <struct RepresentationReferenceTag>,
     DropRepresentation,
     OpenAllocator,
     AllocateAndInit,

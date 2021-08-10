@@ -2,11 +2,25 @@
 #include <sstream>
 #include <unordered_map>
 
+#include <Handling/Handle.hpp>
+
+#include <Pegasus/Storage.hpp>
 #include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/CursorManager.hpp>
 
 #include <Testing/Testing.hpp>
+
+namespace Emergence::Pegasus::Test
+{
+using IndexReference = std::variant <
+    Handling::Handle <HashIndex>,
+    Handling::Handle <OrderedIndex>,
+    Handling::Handle <VolumetricIndex>>;
+} // namespace Emergence::Pegasus::Test
+
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
+    Emergence::Pegasus::Test::IndexReferenceTag, Emergence::Pegasus::Test::IndexReference)
 
 namespace Emergence::Pegasus::Test
 {
@@ -403,12 +417,12 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Copy <IndexReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Copy <IndexReferenceTag> &_task)
 {
     return _output << "Copy index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Delete <IndexReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Delete <IndexReferenceTag> &_task)
 {
     return _output << "Remove index reference \"" << _task.name << "\".";
 }

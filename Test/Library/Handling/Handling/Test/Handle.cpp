@@ -13,8 +13,6 @@
 
 namespace Emergence::Handling::Test
 {
-using namespace Context::Extension::Tasks;
-
 class HandleableResource final : public HandleableBase
 {
 public:
@@ -35,13 +33,24 @@ private:
     bool *aliveFlagPointer;
 };
 
+struct HandleableResourceTag;
+} // namespace Emergence::Handling::Test
+
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
+    Emergence::Handling::Test::HandleableResourceTag,
+    Emergence::Handling::Handle <Emergence::Handling::Test::HandleableResource>)
+
+namespace Emergence::Handling::Test
+{
+using namespace Context::Extension::Tasks;
+
 using Task = std::variant <
     Reference::Test::Tasks::Create,
-    Move <Handle <HandleableResource>>,
-    Copy <Handle <HandleableResource>>,
-    MoveAssign <Handle <HandleableResource>>,
-    CopyAssign <Handle <HandleableResource>>,
-    Delete <Handle <HandleableResource>>,
+    Move <HandleableResourceTag>,
+    Copy <HandleableResourceTag>,
+    MoveAssign <HandleableResourceTag>,
+    CopyAssign <HandleableResourceTag>,
+    Delete <HandleableResourceTag>,
     Reference::Test::Tasks::CheckStatus>;
 
 std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::Create &_task)
@@ -49,27 +58,27 @@ std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::
     return _output << "Construct \"" << _task.name << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <Handle <HandleableResource>> &_task)
+std::ostream &operator << (std::ostream &_output, const Move <HandleableResourceTag> &_task)
 {
     return _output << "Move \"" << _task.sourceName << "\" into \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Copy <Handle <HandleableResource>> &_task)
+std::ostream &operator << (std::ostream &_output, const Copy <HandleableResourceTag> &_task)
 {
     return _output << "Copy  \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const MoveAssign <Handle <HandleableResource>> &_task)
+std::ostream &operator << (std::ostream &_output, const MoveAssign <HandleableResourceTag> &_task)
 {
     return _output << "Move \"" << _task.sourceName << "\" into \"" << _task.targetName << "\" using assign operator.";
 }
 
-std::ostream &operator << (std::ostream &_output, const CopyAssign <Handle <HandleableResource>> &_task)
+std::ostream &operator << (std::ostream &_output, const CopyAssign <HandleableResourceTag> &_task)
 {
     return _output << "Assign copy of \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Delete <Handle <HandleableResource>> &_task)
+std::ostream &operator << (std::ostream &_output, const Delete <HandleableResourceTag> &_task)
 {
     return _output << "Destruct \"" << _task.name << "\".";
 }
@@ -164,31 +173,31 @@ Task ConvertTask (const SourceTask &_task)
 template <>
 Task ConvertTask (const Reference::Test::Tasks::Move &_task)
 {
-    return Move <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
+    return Move <HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::Copy &_task)
 {
-    return Copy <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
+    return Copy <HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::MoveAssign &_task)
 {
-    return MoveAssign <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
+    return MoveAssign <HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::CopyAssign &_task)
 {
-    return CopyAssign <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
+    return CopyAssign <HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::Delete &_task)
 {
-    return Delete <Handle <HandleableResource>> {_task.name};
+    return Delete <HandleableResourceTag> {_task.name};
 }
 
 void ReferenceTestDriver (const Reference::Test::Scenario &_scenario)

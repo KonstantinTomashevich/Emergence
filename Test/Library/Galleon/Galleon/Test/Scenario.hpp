@@ -7,8 +7,6 @@
 
 #include <Context/Extension/ObjectStorage.hpp>
 
-#include <Galleon/CargoDeck.hpp>
-
 #include <Query/Test/Scenario.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -122,36 +120,17 @@ struct InsertObjects
     std::vector <const void *> copyFrom;
 };
 
-using ContainerReference = std::variant <
-    Handling::Handle <SingletonContainer>,
-    Handling::Handle <ShortTermContainer>,
-    Handling::Handle <LongTermContainer>>;
+struct ContaineReferenceTag;
 
-using PreparedQuery = std::variant <
-    SingletonContainer::FetchQuery,
-    SingletonContainer::ModifyQuery,
-    ShortTermContainer::InsertQuery,
-    ShortTermContainer::FetchQuery,
-    ShortTermContainer::ModifyQuery,
-    LongTermContainer::InsertQuery,
-    LongTermContainer::FetchValueQuery,
-    LongTermContainer::ModifyValueQuery,
-    LongTermContainer::FetchRangeQuery,
-    LongTermContainer::ModifyRangeQuery,
-    LongTermContainer::FetchReversedRangeQuery,
-    LongTermContainer::ModifyReversedRangeQuery,
-    LongTermContainer::FetchShapeIntersectionQuery,
-    LongTermContainer::ModifyShapeIntersectionQuery,
-    LongTermContainer::FetchRayIntersectionQuery,
-    LongTermContainer::ModifyRayIntersectionQuery>;
+struct PreparedQueryTag;
 
 using Task = std::variant <
     AcquireSingletonContainer,
     AcquireShortTermContainer,
     AcquireLongTermContainer,
-    Copy <ContainerReference>,
-    Move <ContainerReference>,
-    Delete <ContainerReference>,
+    Copy <struct ContainerReferenceTag>,
+    Move <struct ContainerReferenceTag>,
+    Delete <struct ContainerReferenceTag>,
     PrepareSingletonFetchQuery,
     PrepareSingletonModifyQuery,
     PrepareShortTermInsertQuery,
@@ -168,9 +147,9 @@ using Task = std::variant <
     PrepareLongTermModifyShapeIntersectionQuery,
     PrepareLongTermFetchRayIntersectionQuery,
     PrepareLongTermModifyRayIntersectionQuery,
-    Copy <PreparedQuery>,
-    Move <PreparedQuery>,
-    Delete <PreparedQuery>,
+    Copy <struct PreparedQueryTag>,
+    Move <struct PreparedQueryTag>,
+    Delete <struct PreparedQueryTag>,
     InsertObjects,
     QuerySingletonToRead,
     QuerySingletonToEdit,

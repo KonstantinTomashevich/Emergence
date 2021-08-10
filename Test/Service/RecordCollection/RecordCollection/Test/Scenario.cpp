@@ -4,9 +4,22 @@
 
 #include <Query/Test/CursorManager.hpp>
 
+#include <RecordCollection/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 
 #include <Testing/Testing.hpp>
+
+namespace Emergence::RecordCollection::Test
+{
+using RepresentationReference = std::variant <
+    LinearRepresentation,
+    PointRepresentation,
+    VolumetricRepresentation>;
+} // namespace Emergence::RecordCollection::Test
+
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
+    Emergence::RecordCollection::Test::RepresentationReferenceTag,
+    Emergence::RecordCollection::Test::RepresentationReference)
 
 namespace Emergence::RecordCollection::Test
 {
@@ -432,12 +445,12 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricRepresen
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Copy <RepresentationReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Copy <RepresentationReferenceTag> &_task)
 {
     return _output << "Copy representation reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Delete <RepresentationReference> &_task)
+std::ostream &operator << (std::ostream &_output, const Delete <RepresentationReferenceTag> &_task)
 {
     return _output << "Remove representation reference \"" << _task.name << "\".";
 }

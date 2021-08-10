@@ -7,10 +7,6 @@
 
 #include <Context/Extension/ObjectStorage.hpp>
 
-#include <Handling/Handle.hpp>
-
-#include <Pegasus/Storage.hpp>
-
 #include <Query/Test/Scenario.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -56,17 +52,12 @@ struct CloseAllocator
 {
 };
 
-using IndexReference = std::variant <
-    Handling::Handle <HashIndex>,
-    Handling::Handle <OrderedIndex>,
-    Handling::Handle <VolumetricIndex>>;
-
 using Task = std::variant <
     CreateHashIndex,
     CreateOrderedIndex,
     CreateVolumetricIndex,
-    Copy <IndexReference>,
-    Delete <IndexReference>,
+    Copy <struct IndexReferenceTag>,
+    Delete <struct IndexReferenceTag>,
     DropIndex,
     OpenAllocator,
     AllocateAndInit,

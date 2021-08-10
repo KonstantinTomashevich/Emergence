@@ -9,37 +9,41 @@ namespace Emergence::Context::Extension
 {
 /// \brief Scenarios for high-level libraries could use more than one object type, therefore templated
 ///        tasks were added in order to make integration with multiple object types easier.
+/// \details Instead of real object types, user should pass tag-types (for example empty structs) as template arguments
+///          for these tasks. This approach both helps to reduce compilation time by not including real types to task
+///          declaration headers and helps compiler to deduce task executors. Tag-to-object-type binding should be
+///          registered via EMERGENCE_CONTEXT_BIND_OBJECT_TAG.
 namespace Tasks
 {
-template <typename Object>
+template <typename ObjectTag>
 struct Move
 {
     std::string sourceName;
     std::string targetName;
 };
 
-template <typename Object>
+template <typename ObjectTag>
 struct Copy
 {
     std::string sourceName;
     std::string targetName;
 };
 
-template <typename Object>
+template <typename ObjectTag>
 struct MoveAssign
 {
     std::string sourceName;
     std::string targetName;
 };
 
-template <typename Object>
+template <typename ObjectTag>
 struct CopyAssign
 {
     std::string sourceName;
     std::string targetName;
 };
 
-template <typename Object>
+template <typename ObjectTag>
 struct Delete
 {
     std::string name;
@@ -70,11 +74,23 @@ Object &GetObject (ObjectStorage <Object> &_storage, const std::string &_name)
     return iterator->second;
 }
 
-template <typename Object>
-void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::Move <Object> &_task)
+template <typename ObjectTag>
+struct ObjectTagToObject
 {
-    Object &source = GetObject (_storage, _task.sourceName);
-    if constexpr (std::is_move_constructible_v <Object>)
+    // This type must always be specialized, therefore absence of `using Object = ...` is intentional.
+};
+
+template <typename ObjectTag>
+using ObjectFromTag = typename ObjectTagToObject <ObjectTag>::Object;
+
+template <typename ObjectTag>
+using ObjectStorageFromTag = ObjectStorage <ObjectFromTag <ObjectTag>>;
+
+template <typename ObjectTag>
+void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Move <ObjectTag> &_task)
+{
+    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    if constexpr (std::is_move_constructible_v <ObjectFromTag <ObjectTag>>)
     {
         AddObject (_storage, _task.targetName, std::move (source));
     }
@@ -84,11 +100,11 @@ void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::Move <Object> &
     }
 }
 
-template <typename Object>
-void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::Copy <Object> &_task)
+template <typename ObjectTag>
+void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Copy <ObjectTag> &_task)
 {
-    Object &source = GetObject (_storage, _task.sourceName);
-    if constexpr (std::is_copy_constructible_v <Object>)
+    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    if constexpr (std::is_copy_constructible_v <ObjectFromTag <ObjectTag>>)
     {
         AddObject (_storage, _task.targetName, source);
     }
@@ -98,13 +114,13 @@ void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::Copy <Object> &
     }
 }
 
-template <typename Object>
-void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::MoveAssign <Object> &_task)
+template <typename ObjectTag>
+void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::MoveAssign <ObjectTag> &_task)
 {
-    Object &source = GetObject (_storage, _task.sourceName);
-    Object &target = GetObject (_storage, _task.targetName);
+    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    ObjectFromTag <ObjectTag> &target = GetObject (_storage, _task.targetName);
 
-    if constexpr (std::is_move_assignable_v <Object>)
+    if constexpr (std::is_move_assignable_v <ObjectFromTag <ObjectTag>>)
     {
         target = std::move (source);
     }
@@ -114,13 +130,13 @@ void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::MoveAssign <Obj
     }
 }
 
-template <typename Object>
-void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::CopyAssign <Object> &_task)
+template <typename ObjectTag>
+void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::CopyAssign <ObjectTag> &_task)
 {
-    Object &source = GetObject (_storage, _task.sourceName);
-    Object &target = GetObject (_storage, _task.targetName);
+    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    ObjectFromTag <ObjectTag> &target = GetObject (_storage, _task.targetName);
 
-    if constexpr (std::is_copy_assignable_v <Object>)
+    if constexpr (std::is_copy_assignable_v <ObjectFromTag <ObjectTag>>)
     {
         target = source;
     }
@@ -130,8 +146,8 @@ void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::CopyAssign <Obj
     }
 }
 
-template <typename Object>
-void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::Delete <Object> &_task)
+template <typename ObjectTag>
+void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Delete <ObjectTag> &_task)
 {
     auto iterator = _storage.objects.find (_task.name);
     REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _task.name, "\" should exist!");
@@ -139,33 +155,12 @@ void ExecuteTask (ObjectStorage <Object> &_storage, const Tasks::Delete <Object>
 }
 } // namespace Emergence::Context::Extension
 
-#define EMERGENCE_TEST_OBJECT_STORAGE_TASK_EXECUTION_DEDUCTION_HELPER(HighLevelContext, ObjectType)                    \
-void ExecuteTask (                                                                                                     \
-    HighLevelContext &_context, const Emergence::Context::Extension::Tasks::Move <ObjectType> &_task)                  \
-{                                                                                                                      \
-    Emergence::Context::Extension::ExecuteTask <ObjectType> (_context, _task);                                         \
-}                                                                                                                      \
-                                                                                                                       \
-void ExecuteTask (                                                                                                     \
-    HighLevelContext &_context, const Emergence::Context::Extension::Tasks::Copy <ObjectType> &_task)                  \
-{                                                                                                                      \
-    Emergence::Context::Extension::ExecuteTask <ObjectType> (_context, _task);                                         \
-}                                                                                                                      \
-                                                                                                                       \
-void ExecuteTask (                                                                                                     \
-    HighLevelContext &_context, const Emergence::Context::Extension::Tasks::MoveAssign <ObjectType> &_task)            \
-{                                                                                                                      \
-    Emergence::Context::Extension::ExecuteTask <ObjectType> (_context, _task);                                         \
-}                                                                                                                      \
-                                                                                                                       \
-void ExecuteTask (                                                                                                     \
-    HighLevelContext &_context, const Emergence::Context::Extension::Tasks::CopyAssign <ObjectType> &_task)            \
-{                                                                                                                      \
-    Emergence::Context::Extension::ExecuteTask <ObjectType> (_context, _task);                                         \
-}                                                                                                                      \
-                                                                                                                       \
-void ExecuteTask (                                                                                                     \
-    HighLevelContext &_context, const Emergence::Context::Extension::Tasks::Delete <ObjectType> &_task)                \
-{                                                                                                                      \
-    Emergence::Context::Extension::ExecuteTask <ObjectType> (_context, _task);                                         \
-}
+#define EMERGENCE_CONTEXT_BIND_OBJECT_TAG(ObjectTag, ObjectType)               \
+namespace Emergence::Context::Extension                                        \
+{                                                                              \
+template <>                                                                    \
+struct ObjectTagToObject <ObjectTag>                                           \
+{                                                                              \
+    using Object = ObjectType;                                                 \
+};                                                                             \
+} // namespace Emergence::Context::Extension
