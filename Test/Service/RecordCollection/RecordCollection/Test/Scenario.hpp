@@ -5,18 +5,18 @@
 #include <variant>
 #include <vector>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Query/Test/Scenario.hpp>
 
 #include <RecordCollection/Collection.hpp>
-
-#include <Reference/Test/ReferenceStorage.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::RecordCollection::Test
 {
 using namespace Query::Test::Tasks;
-using namespace Reference::Test::TemplatedTasks;
+using namespace Context::Extension::Tasks;
 
 struct CreateLinearRepresentation
 {

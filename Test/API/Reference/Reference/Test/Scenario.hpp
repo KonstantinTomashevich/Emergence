@@ -15,26 +15,26 @@ struct Create
 
 struct Move
 {
-    std::string source;
-    std::string target;
+    std::string sourceName;
+    std::string targetName;
 };
 
 struct Copy
 {
-    std::string source;
-    std::string target;
+    std::string sourceName;
+    std::string targetName;
 };
 
 struct MoveAssign
 {
-    std::string source;
-    std::string target;
+    std::string sourceName;
+    std::string targetName;
 };
 
 struct CopyAssign
 {
-    std::string source;
-    std::string target;
+    std::string sourceName;
+    std::string targetName;
 };
 
 struct Delete

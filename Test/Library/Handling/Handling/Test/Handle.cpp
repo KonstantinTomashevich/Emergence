@@ -2,17 +2,18 @@
 #include <unordered_map>
 #include <variant>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
-#include <Reference/Test/ReferenceStorage.hpp>
 #include <Reference/Test/Tests.hpp>
 
 #include <Testing/Testing.hpp>
 
 namespace Emergence::Handling::Test
 {
-using namespace Emergence::Reference::Test::TemplatedTasks;
+using namespace Context::Extension::Tasks;
 
 class HandleableResource final : public HandleableBase
 {
@@ -35,45 +36,45 @@ private:
 };
 
 using Task = std::variant <
-    Emergence::Reference::Test::Tasks::Create,
+    Reference::Test::Tasks::Create,
     Move <Handle <HandleableResource>>,
     Copy <Handle <HandleableResource>>,
     MoveAssign <Handle <HandleableResource>>,
     CopyAssign <Handle <HandleableResource>>,
     Delete <Handle <HandleableResource>>,
-    Emergence::Reference::Test::Tasks::CheckStatus>;
+    Reference::Test::Tasks::CheckStatus>;
 
-std::ostream &operator << (std::ostream &_output, const Emergence::Reference::Test::Tasks::Create &_task)
+std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::Create &_task)
 {
     return _output << "Construct \"" << _task.name << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const Move <Handle <HandleableResource>> &_task)
 {
-    return _output << "Move \"" << _task.source << "\" into \"" << _task.target << "\".";
+    return _output << "Move \"" << _task.sourceName << "\" into \"" << _task.targetName << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const Copy <Handle <HandleableResource>> &_task)
 {
-    return _output << "Copy  \"" << _task.source << "\" to \"" << _task.target << "\".";
+    return _output << "Copy  \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const MoveAssign <Handle <HandleableResource>> &_task)
 {
-    return _output << "Move \"" << _task.source << "\" into \"" << _task.target << "\" using assign operator.";
+    return _output << "Move \"" << _task.sourceName << "\" into \"" << _task.targetName << "\" using assign operator.";
 }
 
 std::ostream &operator << (std::ostream &_output, const CopyAssign <Handle <HandleableResource>> &_task)
 {
-    return _output << "Assign copy of \"" << _task.source << "\" to \"" << _task.target << "\".";
+    return _output << "Assign copy of \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Emergence::Reference::Test::Tasks::Delete &_task)
+std::ostream &operator << (std::ostream &_output, const Delete <Handle <HandleableResource>> &_task)
 {
     return _output << "Destruct \"" << _task.name << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Emergence::Reference::Test::Tasks::CheckStatus &_task)
+std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::CheckStatus &_task)
 {
     return _output << "Check that resource has any references. Expected result: \"" << _task.hasAnyReferences << "\".";
 }
@@ -97,45 +98,51 @@ std::ostream &operator << (std::ostream &_output, const std::vector <Task> &_tas
     return _output;
 }
 
-struct ExecutionContext final : Emergence::Reference::Test::ReferenceStorage <Handle <HandleableResource>>
+struct ExecutionContext final : Context::Extension::ObjectStorage <Handle <HandleableResource>>
 {
     bool aliveFlag = false;
     HandleableResource *resource = nullptr;
 };
 
-void ExecuteTask (ExecutionContext &_context, const Emergence::Reference::Test::Tasks::Create &_task)
+void ExecuteTask (ExecutionContext &_context, const Reference::Test::Tasks::Create &_task)
 {
     if (!_context.aliveFlag)
     {
         _context.resource = new HandleableResource (&_context.aliveFlag);
     }
 
-    AddReference (_context, _task.name, _context.resource);
+    AddObject (_context, _task.name, _context.resource);
 }
 
-void ExecuteTask (ExecutionContext &_context, const Emergence::Reference::Test::Tasks::CheckStatus &_task)
+void ExecuteTask (ExecutionContext &_context, const Reference::Test::Tasks::CheckStatus &_task)
 {
     CHECK_EQUAL (_context.aliveFlag, _task.hasAnyReferences);
+}
+
+template <typename T>
+std::string ToString (const T &_value)
+{
+    std::stringstream stream;
+    stream << _value;
+    return stream.str ();
 }
 
 void ExecuteScenario (const std::vector <Task> &_tasks)
 {
     ExecutionContext context {};
-    LOG ((std::stringstream () << _tasks).str ());
+    LOG (ToString (_tasks));
 
     for (const Task &wrappedTask : _tasks)
     {
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
-                std::stringstream stream;
-                stream << _unwrappedTask;
-                LOG (stream.str ());
+                LOG (ToString (_unwrappedTask));
                 ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);
 
-        for (const auto &pair : context.references)
+        for (const auto &pair : context.objects)
         {
             if (pair.second)
             {
@@ -155,39 +162,39 @@ Task ConvertTask (const SourceTask &_task)
 }
 
 template <>
-Task ConvertTask (const Emergence::Reference::Test::Tasks::Move &_task)
+Task ConvertTask (const Reference::Test::Tasks::Move &_task)
 {
-    return Move <Handle <HandleableResource>> {_task};
+    return Move <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
 }
 
 template <>
-Task ConvertTask (const Emergence::Reference::Test::Tasks::Copy &_task)
+Task ConvertTask (const Reference::Test::Tasks::Copy &_task)
 {
-    return Copy <Handle <HandleableResource>> {_task};
+    return Copy <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
 }
 
 template <>
-Task ConvertTask (const Emergence::Reference::Test::Tasks::MoveAssign &_task)
+Task ConvertTask (const Reference::Test::Tasks::MoveAssign &_task)
 {
-    return MoveAssign <Handle <HandleableResource>> {_task};
+    return MoveAssign <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
 }
 
 template <>
-Task ConvertTask (const Emergence::Reference::Test::Tasks::CopyAssign &_task)
+Task ConvertTask (const Reference::Test::Tasks::CopyAssign &_task)
 {
-    return CopyAssign <Handle <HandleableResource>> {_task};
+    return CopyAssign <Handle <HandleableResource>> {_task.sourceName, _task.targetName};
 }
 
 template <>
-Task ConvertTask (const Emergence::Reference::Test::Tasks::Delete &_task)
+Task ConvertTask (const Reference::Test::Tasks::Delete &_task)
 {
-    return Delete <Handle <HandleableResource>> {_task};
+    return Delete <Handle <HandleableResource>> {_task.name};
 }
 
-void ReferenceTestDriver (const Emergence::Reference::Test::Scenario &_scenario)
+void ReferenceTestDriver (const Reference::Test::Scenario &_scenario)
 {
     std::vector <Task> tasks;
-    for (const Emergence::Reference::Test::Task &sourceTask : _scenario)
+    for (const Reference::Test::Task &sourceTask : _scenario)
     {
         std::visit (
             [&tasks] (const auto &_task)
@@ -203,16 +210,6 @@ void ReferenceTestDriver (const Emergence::Reference::Test::Scenario &_scenario)
 
 BEGIN_SUITE (HandleManagement)
 
-REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, ConstructAndDestructMultiple)
-
-REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, MoveChain)
-
-REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, MoveCopy)
-
-REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, CopyMultiple)
-
-REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, CopyAssignMultiple)
-
-REGISTER_REFERENCE_TEST (Emergence::Handling::Test::ReferenceTestDriver, MoveAssignChain)
+REGISTER_ALL_REFERENCE_TESTS (Emergence::Handling::Test::ReferenceTestDriver)
 
 END_SUITE

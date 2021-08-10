@@ -6,6 +6,9 @@ sober_test_begin (RecordCollection)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    sober_naming_variant_target (ContextExtension Original CONTEXT_EXTENSION_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${CONTEXT_EXTENSION_LIBRARY_TARGET})
+
     sober_naming_variant_target (TestQueryAPI Original TEST_QUERY_API_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${TEST_QUERY_API_LIBRARY_TARGET})
 

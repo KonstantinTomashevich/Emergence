@@ -5,20 +5,20 @@
 #include <variant>
 #include <vector>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Pegasus/Storage.hpp>
 
 #include <Query/Test/Scenario.hpp>
 
-#include <Reference/Test/ReferenceStorage.hpp>
-
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Pegasus::Test
 {
 using namespace Query::Test::Tasks;
-using namespace Reference::Test::TemplatedTasks;
+using namespace Context::Extension::Tasks;
 
 struct CreateHashIndex
 {

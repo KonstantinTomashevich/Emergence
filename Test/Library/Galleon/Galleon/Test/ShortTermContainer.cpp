@@ -20,7 +20,7 @@ static std::vector <Task> InitContainerForReferenceTests ()
             AcquireShortTermContainer {{Player::Reflection::GetMapping (), "storage"}},
             PrepareShortTermInsertQuery {{"storage", "temporaryInserter"}},
             InsertObjects {"temporaryInserter", {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}},
-            Delete <PreparedQuery> {{"temporaryInserter"}},
+            Delete <PreparedQuery> {"temporaryInserter"},
         };
 }
 
@@ -38,8 +38,8 @@ static std::vector <Task> CheckReferenceTestsContainerContent (const Task &_chec
         std::vector <Emergence::Galleon::Test::Task>
             {
                 CursorClose {"cursor"},
-                Delete <PreparedQuery> {{"temporaryQuery"}},
-                Delete <ContainerReference> {{"temporaryReference"}},
+                Delete <PreparedQuery> {"temporaryQuery"},
+                Delete <ContainerReference> {"temporaryReference"},
             };
 }
 

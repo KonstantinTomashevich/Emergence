@@ -4,6 +4,22 @@ namespace Emergence::Reference::Test
 {
 using namespace Tasks;
 
+Scenario ConstructAndDestructSingle ()
+{
+    return
+    {
+        CheckStatus {false},
+        Create {"first"},
+        CheckStatus {true},
+        Create {"second"},
+        CheckStatus {true},
+        Delete {"first"},
+        CheckStatus {true},
+        Delete {"second"},
+        CheckStatus {false},
+        };
+}
+
 Scenario ConstructAndDestructMultiple ()
 {
     return
@@ -12,15 +28,6 @@ Scenario ConstructAndDestructMultiple ()
             Create {"original"},
             CheckStatus {true},
             Delete {"original"},
-            CheckStatus {false},
-
-            Create {"first"},
-            CheckStatus {true},
-            Create {"second"},
-            CheckStatus {true},
-            Delete {"first"},
-            CheckStatus {true},
-            Delete {"second"},
             CheckStatus {false},
         };
 }

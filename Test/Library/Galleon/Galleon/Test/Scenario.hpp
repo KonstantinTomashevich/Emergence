@@ -5,18 +5,18 @@
 #include <variant>
 #include <vector>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Galleon/CargoDeck.hpp>
 
 #include <Query/Test/Scenario.hpp>
-
-#include <Reference/Test/ReferenceStorage.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Galleon::Test
 {
 using namespace Query::Test::Tasks;
-using namespace Reference::Test::TemplatedTasks;
+using namespace Context::Extension::Tasks;
 
 struct ContainerAcquisitionBase
 {
