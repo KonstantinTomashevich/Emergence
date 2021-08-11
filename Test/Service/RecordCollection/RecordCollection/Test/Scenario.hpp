@@ -9,6 +9,8 @@
 
 #include <Query/Test/Scenario.hpp>
 
+#include <Reference/Test/Scenario.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::RecordCollection::Test
@@ -56,7 +58,10 @@ using Task = std::variant <
     CreateLinearRepresentation,
     CreatePointRepresentation,
     CreateVolumetricRepresentation,
+    Move <struct RepresentationReferenceTag>,
     Copy <struct RepresentationReferenceTag>,
+    MoveAssign <struct RepresentationReferenceTag>,
+    CopyAssign <struct RepresentationReferenceTag>,
     Delete <struct RepresentationReferenceTag>,
     DropRepresentation,
     OpenAllocator,
@@ -88,7 +93,13 @@ namespace TestQueryApiDrivers
 void CreateRepresentationsThanAllocateRecords (const Query::Test::Scenario &_scenario);
 
 void AllocateRecordsThanCreateRepresentations (const Query::Test::Scenario &_scenario);
-}
+} // namespace TestQueryApiDrivers
+
+namespace ReferenceApiTestImporters
+{
+std::vector <Task> ForRepresentationReference (
+    const Reference::Test::Scenario &_scenario, const std::string &_representationName);
+} // namespace ReferenceApiTestImporters
 
 class Scenario final
 {
@@ -102,5 +113,5 @@ private:
     std::vector <Task> tasks;
 };
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
 } // namespace Emergence::RecordCollection::Test

@@ -9,6 +9,8 @@
 
 #include <Query/Test/Scenario.hpp>
 
+#include <Reference/Test/Scenario.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Galleon::Test
@@ -120,16 +122,14 @@ struct InsertObjects
     std::vector <const void *> copyFrom;
 };
 
-struct ContaineReferenceTag;
-
-struct PreparedQueryTag;
-
 using Task = std::variant <
     AcquireSingletonContainer,
     AcquireShortTermContainer,
     AcquireLongTermContainer,
-    Copy <struct ContainerReferenceTag>,
     Move <struct ContainerReferenceTag>,
+    Copy <struct ContainerReferenceTag>,
+    MoveAssign <struct ContainerReferenceTag>,
+    CopyAssign <struct ContainerReferenceTag>,
     Delete <struct ContainerReferenceTag>,
     PrepareSingletonFetchQuery,
     PrepareSingletonModifyQuery,
@@ -147,8 +147,8 @@ using Task = std::variant <
     PrepareLongTermModifyShapeIntersectionQuery,
     PrepareLongTermFetchRayIntersectionQuery,
     PrepareLongTermModifyRayIntersectionQuery,
-    Copy <struct PreparedQueryTag>,
     Move <struct PreparedQueryTag>,
+    Copy <struct PreparedQueryTag>,
     Delete <struct PreparedQueryTag>,
     InsertObjects,
     QuerySingletonToRead,
@@ -177,6 +177,13 @@ using Task = std::variant <
 
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
 
+namespace TestReferenceApiImporters
+{
+Task ForContainerReference (const Reference::Test::Task &_task);
+
+Task ForPreparedQuery (const Reference::Test::Task &_task);
+} // namespace TestReferenceApiImporters
+
 class Scenario final
 {
 public:
@@ -188,7 +195,7 @@ private:
     std::vector <Task> tasks;
 };
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
 
 std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noexcept;
 } // namespace Emergence::Galleon::Test

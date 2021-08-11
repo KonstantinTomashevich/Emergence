@@ -162,6 +162,7 @@ struct QueryRangeToEdit final : public RangeQueryBase
 {
 };
 
+// TODO: Rename all reversed/* queries to descending/ascending in tests, services and libraries.
 struct QueryReversedRangeToRead final : public RangeQueryBase
 {
 };

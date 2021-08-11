@@ -7,16 +7,12 @@ using namespace Tasks;
 Scenario ConstructAndDestructSingle ()
 {
     return
-    {
-        CheckStatus {false},
-        Create {"first"},
-        CheckStatus {true},
-        Create {"second"},
-        CheckStatus {true},
-        Delete {"first"},
-        CheckStatus {true},
-        Delete {"second"},
-        CheckStatus {false},
+        {
+            CheckStatus {false},
+            Create {"original"},
+            CheckStatus {true},
+            Delete {"original"},
+            CheckStatus {false},
         };
 }
 
@@ -25,9 +21,13 @@ Scenario ConstructAndDestructMultiple ()
     return
         {
             CheckStatus {false},
-            Create {"original"},
+            Create {"first"},
             CheckStatus {true},
-            Delete {"original"},
+            Create {"second"},
+            CheckStatus {true},
+            Delete {"first"},
+            CheckStatus {true},
+            Delete {"second"},
             CheckStatus {false},
         };
 }
@@ -150,6 +150,7 @@ Scenario MoveAssignChain ()
         {
             CheckStatus {false},
             Create {"original"},
+            CheckStatus {true},
             Create {"first"},
             Create {"second"},
             Create {"third"},

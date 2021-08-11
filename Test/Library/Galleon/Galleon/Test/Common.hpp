@@ -1,17 +1,20 @@
 #pragma once
 
+#include <functional>
+
 #include <Galleon/Test/Scenario.hpp>
 
 namespace Emergence::Galleon::Test
 {
-std::vector <Task> TestContainerReferenceManipulation (
-    const std::vector <Task> &_initContainer,
-    const std::vector <Task> &_checkThatContainerInitialized,
-    const std::vector <Task> &_checkThatContainerNotInitialized);
+void ExecuteReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario,
+    std::function <std::vector <Task> (const std::string &, bool)> _onCreate,
+    std::function <std::vector <Task> (bool)> _onStatusCheck,
+    bool _containerReferenceBaseImporter);
 
-std::vector <Task> TestQueryReferenceManipulation (
-    const std::vector <Task> &_initContainer,
-    const Task &_prepareQuery,
-    const std::vector <Task> &_checkThatContainerInitialized,
-    const std::vector <Task> &_checkThatContainerNotInitialized);
+void AdaptPreparedQueryReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario,
+    const Task& _prepareQuery,
+    const std::function <std::vector <Task> (const std::string &, bool)>& _onContainerCreate,
+    const std::function <std::vector <Task> (bool)>& _onStatusCheck);
 } // namespace Emergence::Galleon::Test

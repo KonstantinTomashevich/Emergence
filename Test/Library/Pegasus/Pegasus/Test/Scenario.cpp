@@ -8,6 +8,7 @@
 #include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/CursorManager.hpp>
+#include <Query/Test/DataTypes.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -379,7 +380,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
 {
     VolumetricIndex
-        *index = std::get <Handling::Handle <VolumetricIndex>> (GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+        *index =
+        std::get <Handling::Handle <VolumetricIndex>> (GetObject <IndexReference> (_context, _task.sourceName)).Get ();
     REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
     std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.origin, _task.direction);
 
@@ -417,14 +419,33 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_
     return _output << ".";
 }
 
+std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Move <IndexReferenceTag> &_task)
+{
+    return _output << "Move index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Copy <IndexReferenceTag> &_task)
 {
     return _output << "Copy index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
+std::ostream &operator << (
+    std::ostream &_output, const Context::Extension::Tasks::MoveAssign <IndexReferenceTag> &_task)
+{
+    return _output << "Move index reference \"" << _task.sourceName << "\" to \"" <<
+                   _task.targetName << "\" using move assignment.";
+}
+
+std::ostream &operator << (
+    std::ostream &_output, const Context::Extension::Tasks::CopyAssign <IndexReferenceTag> &_task)
+{
+    return _output << "Assign copy of index reference \"" << _task.sourceName <<
+                   "\" to \"" << _task.targetName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Delete <IndexReferenceTag> &_task)
 {
-    return _output << "Remove index reference \"" << _task.name << "\".";
+    return _output << "Delete index reference \"" << _task.name << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const DropIndex &_task)
@@ -539,6 +560,57 @@ void TestQueryApiDrivers::InsertRecordsThanCreateIndices (const Query::Test::Sce
     ExecuteQueryApiScenario (_scenario, true);
 }
 
+namespace ReferenceApiTestImporters
+{
+std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario, const std::string &_indexName)
+{
+    std::vector <Task> tasks;
+    for (const Reference::Test::Task &packedTask : _scenario)
+    {
+        std::visit (
+            [&tasks, &_indexName] (const auto &_task)
+            {
+                using TaskType = std::decay_t <decltype (_task)>;
+                if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
+                {
+                    tasks.emplace_back (Copy <IndexReferenceTag> {_indexName, _task.name});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
+                {
+                    tasks.emplace_back (Move <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
+                {
+                    tasks.emplace_back (Copy <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::MoveAssign>)
+                {
+                    tasks.emplace_back (MoveAssign <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CopyAssign>)
+                {
+                    tasks.emplace_back (CopyAssign <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
+                {
+                    tasks.emplace_back (Delete <IndexReferenceTag> {_task.name});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
+                {
+                    tasks.emplace_back (CheckIsSourceBusy {_indexName, _task.hasAnyReferences});
+                }
+                else
+                {
+                    REQUIRE_WITH_MESSAGE (false, "Unknown task type!");
+                }
+            },
+            packedTask);
+    }
+
+    return tasks;
+}
+} // namespace ReferenceApiTestImporters
+
 Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
     : mapping (std::move (_mapping)),
       tasks (std::move (_tasks))
@@ -579,7 +651,7 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept
 {
     first.insert (first.end (), second.begin (), second.end ());
     return first;

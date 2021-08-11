@@ -1,3 +1,4 @@
+#include <Galleon/Test/Common.hpp>
 #include <Galleon/CargoDeck.hpp>
 
 #include <Galleon/Test/Scenario.hpp>
@@ -5,92 +6,103 @@
 #include <Query/Test/Data.hpp>
 #include <Query/Test/SingletonQueryTests.hpp>
 
+#include <Reference/Test/Tests.hpp>
+
 #include <Testing/Testing.hpp>
 
 using namespace Emergence::Galleon::Test;
 
+static std::array <uint8_t, sizeof (Emergence::Query::Test::Player)> UNINITIALIZED_PLAYER {0u};
+
+static std::vector <Task> InitTestContainer (const std::string &_name, bool _isAlreadyInitializedTrivialExpectation)
+{
+    using namespace Emergence::Query::Test;
+    if (_isAlreadyInitializedTrivialExpectation)
+    {
+        return
+            {
+                AcquireSingletonContainer {{Emergence::Query::Test::Player::Reflection::GetMapping (), _name}}
+            };
+    }
+    else
+    {
+        return
+            {
+                AcquireSingletonContainer {{Player::Reflection::GetMapping (), _name}},
+                PrepareSingletonModifyQuery {{_name, "temporaryInserter"}},
+                InsertObjects {"temporaryInserter", {&HUGO_0_ALIVE_STUNNED}},
+                Delete <PreparedQueryTag> {"temporaryInserter"},
+            };
+    }
+}
+
+static std::vector <Task> CheckIsTestContainerInitialized (bool _shouldBeInitialized)
+{
+    using namespace Emergence::Query::Test;
+    std::vector <Emergence::Galleon::Test::Task> tasks
+        {
+            AcquireSingletonContainer {{Player::Reflection::GetMapping (), "temporaryReference"}},
+            PrepareSingletonFetchQuery {{"temporaryReference", "temporaryQuery"}},
+            QuerySingletonToRead {{"temporaryQuery", "cursor"}},
+        };
+
+    if (_shouldBeInitialized)
+    {
+        tasks.emplace_back (CursorCheck {"cursor", &HUGO_0_ALIVE_STUNNED});
+    }
+    else
+    {
+        tasks.emplace_back (CursorCheck {"cursor", &UNINITIALIZED_PLAYER});
+    }
+
+    tasks +=
+        {
+            CursorClose {"cursor"},
+            Delete <PreparedQueryTag> {"temporaryQuery"},
+            Delete <ContainerReferenceTag> {"temporaryReference"},
+        };
+
+    return tasks;
+}
+
+static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    ExecuteReferenceApiTest (
+        _scenario, InitTestContainer, CheckIsTestContainerInitialized, true);
+}
+
+static void ExecuteFetchQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    AdaptPreparedQueryReferenceApiTest (
+        _scenario, PrepareSingletonFetchQuery {}, InitTestContainer, CheckIsTestContainerInitialized);
+}
+
+static void ExecuteModifyQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    AdaptPreparedQueryReferenceApiTest (
+        _scenario, PrepareSingletonModifyQuery {}, InitTestContainer, CheckIsTestContainerInitialized);
+}
+
+BEGIN_SUITE (SingletonContainerReferences)
+
+REGISTER_ALL_REFERENCE_TESTS (ExecuteContainerReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (SingletonFetchQueryReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchQueryReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (SingletonModifyQueryReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyQueryReferenceApiTest)
+
+END_SUITE
+
 BEGIN_SUITE (SingletonContainer)
 
 REGISTER_ALL_SINGLETON_QUERY_TESTS (TestQueryApiDriver)
-
-/// \brief Helper for reference manipulation tests, that initializes container.
-Emergence::Handling::Handle <Emergence::Galleon::SingletonContainer> InitContainer (
-    Emergence::Galleon::CargoDeck &_deck)
-{
-    using namespace Emergence::Query::Test;
-    auto container = _deck.AcquireSingletonContainer (Player::Reflection::GetMapping ());
-
-    auto modifyQuery = container->Modify ();
-    memcpy (*modifyQuery.Execute (), &HUGO_0_ALIVE_STUNNED, Player::Reflection::GetMapping ().GetObjectSize ());
-    return container;
-}
-
-/// \brief Helper for reference manipulation tests, that checks is container initialized.
-bool IsContainerInitialized (Emergence::Galleon::CargoDeck &_deck)
-{
-    using namespace Emergence::Query::Test;
-    auto container = _deck.AcquireSingletonContainer (Player::Reflection::GetMapping ());
-
-    // Prepared query is created on the fly, therefore it will not interfere with other references.
-    auto fetchQuery = container->Fetch ();
-    return memcmp (*fetchQuery.Execute (), &HUGO_0_ALIVE_STUNNED,
-                   Player::Reflection::GetMapping ().GetObjectSize ()) == 0;
-}
-
-TEST_CASE (ContainerReferenceManipulation)
-{
-    Emergence::Galleon::CargoDeck deck;
-    CHECK (!IsContainerInitialized (deck));
-
-    auto originalReference = InitContainer (deck);
-    CHECK (IsContainerInitialized (deck));
-
-    auto movedReference {std::move (originalReference)};
-    CHECK (IsContainerInitialized (deck));
-
-    auto copiedReference {movedReference};
-    CHECK (IsContainerInitialized (deck));
-
-    movedReference = nullptr;
-    CHECK (IsContainerInitialized (deck));
-
-    auto reacquiredReference = deck.AcquireSingletonContainer (
-        Emergence::Query::Test::Player::Reflection::GetMapping ());
-    copiedReference = nullptr;
-    CHECK (IsContainerInitialized (deck));
-
-    reacquiredReference = nullptr;
-    CHECK (!IsContainerInitialized (deck));
-}
-
-#define QUERY_REFERENCE_MANIPULATION_TEST(QueryName)                                                                   \
-TEST_CASE (QueryName ## QueryReferenceManipulation)                                                                    \
-{                                                                                                                      \
-    using namespace Emergence::Galleon;                                                                                \
-    CargoDeck deck;                                                                                                    \
-    CHECK (!IsContainerInitialized (deck));                                                                            \
-                                                                                                                       \
-    auto originalReference = InitContainer (deck);                                                                     \
-    CHECK (IsContainerInitialized (deck));                                                                             \
-                                                                                                                       \
-    SingletonContainer::QueryName ## Query *copiedQueryPointer;                                                        \
-    {                                                                                                                  \
-        SingletonContainer::QueryName ## Query initialQuery = originalReference->QueryName ();                         \
-        originalReference = nullptr;                                                                                   \
-        CHECK (IsContainerInitialized (deck));                                                                         \
-                                                                                                                       \
-        SingletonContainer::QueryName ## Query movedQuery {std::move (initialQuery)};                                  \
-        CHECK (IsContainerInitialized (deck));                                                                         \
-        copiedQueryPointer = new SingletonContainer::QueryName ## Query (movedQuery);                                  \
-    }                                                                                                                  \
-                                                                                                                       \
-    CHECK (IsContainerInitialized (deck));                                                                             \
-    delete copiedQueryPointer;                                                                                         \
-    CHECK (!IsContainerInitialized (deck));                                                                            \
-}
-
-QUERY_REFERENCE_MANIPULATION_TEST (Fetch)
-
-QUERY_REFERENCE_MANIPULATION_TEST (Modify)
 
 END_SUITE

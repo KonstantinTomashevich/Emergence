@@ -1,8 +1,9 @@
-#include <Pegasus/Test/Common.hpp>
 #include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
+
+#include <Reference/Test/Tests.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 
@@ -10,19 +11,22 @@
 
 using namespace Emergence::Pegasus::Test;
 
-BEGIN_SUITE (OrderedIndex)
-
-TEST_CASE (ReferenceManipulations)
+void ExecuteOrderedIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    Scenario {
-        Emergence::Query::Test::Player::Reflection::GetMapping (),
-        std::vector <Task>
-            {
-                CreateOrderedIndex {"source", Emergence::Query::Test::Player::Reflection::id},
-            } +
-        Common::TestIsCanBeDropped ("source")
-    };
+    std::vector <Task> tasks;
+    tasks.emplace_back (CreateOrderedIndex {"source", Emergence::Query::Test::Player::Reflection::id});
+    tasks += ReferenceApiTestImporters::ForIndexReference (_scenario, "source");
+    tasks.emplace_back (DropIndex {"source"});
+    Scenario (Emergence::Query::Test::Player::Reflection::GetMapping (), tasks);
 }
+
+BEGIN_SUITE (OrderedIndexReference)
+
+REGISTER_ALL_REFERENCE_TESTS (ExecuteOrderedIndexReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (OrderedIndexQueries)
 
 REGISTER_ALL_RANGE_QUERY_TESTS (TestQueryApiDrivers::CreateIndicesThanInsertRecords)
 

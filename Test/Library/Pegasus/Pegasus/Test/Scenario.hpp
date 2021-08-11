@@ -9,6 +9,8 @@
 
 #include <Query/Test/Scenario.hpp>
 
+#include <Reference/Test/Scenario.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Pegasus::Test
@@ -56,7 +58,10 @@ using Task = std::variant <
     CreateHashIndex,
     CreateOrderedIndex,
     CreateVolumetricIndex,
+    Move <struct IndexReferenceTag>,
     Copy <struct IndexReferenceTag>,
+    MoveAssign <struct IndexReferenceTag>,
+    CopyAssign <struct IndexReferenceTag>,
     Delete <struct IndexReferenceTag>,
     DropIndex,
     OpenAllocator,
@@ -90,6 +95,11 @@ void CreateIndicesThanInsertRecords (const Query::Test::Scenario &_scenario);
 void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario);
 }
 
+namespace ReferenceApiTestImporters
+{
+std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario, const std::string &_indexName);
+} // namespace ReferenceApiTestImporters
+
 class Scenario final
 {
 public:
@@ -102,5 +112,5 @@ private:
     std::vector <Task> tasks;
 };
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
 } // namespace Emergence::Pegasus::Test

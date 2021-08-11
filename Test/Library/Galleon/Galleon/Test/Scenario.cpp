@@ -443,14 +443,26 @@ std::ostream &operator << (std::ostream &_output, const AcquireLongTermContainer
                    *reinterpret_cast <const void *const *> (&_task.mapping) << ".";
 }
 
+std::ostream &operator << (std::ostream &_output, const Move <ContainerReferenceTag> &_task)
+{
+    return _output << "Move container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Copy <ContainerReferenceTag> &_task)
 {
     return _output << "Copy container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <ContainerReferenceTag> &_task)
+std::ostream &operator << (std::ostream &_output, const MoveAssign <ContainerReferenceTag> &_task)
 {
-    return _output << "Move container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+    return _output << "Move container reference \"" << _task.sourceName << "\" to \"" <<
+                   _task.targetName << "\" using move assignment.";
+}
+
+std::ostream &operator << (std::ostream &_output, const CopyAssign <ContainerReferenceTag> &_task)
+{
+    return _output << "Assign copy of container reference \"" << _task.sourceName << "\" to \"" <<
+                   _task.targetName << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const Delete <ContainerReferenceTag> &_task)
@@ -580,14 +592,14 @@ std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyRay
                    _task.dimensions << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Copy <PreparedQueryTag> &_task)
-{
-    return _output << "Copy prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const Move <PreparedQueryTag> &_task)
 {
     return _output << "Move prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const Copy <PreparedQueryTag> &_task)
+{
+    return _output << "Copy prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const Delete <PreparedQueryTag> &_task)
@@ -860,6 +872,67 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
     Scenario {tasks};
 }
 
+namespace TestReferenceApiImporters
+{
+template <typename Tag>
+Task ImportForTag (const Reference::Test::Task &_task)
+{
+    return std::visit (
+        [] (const auto &_task) -> Task
+        {
+            using TaskType = std::decay_t <decltype (_task)>;
+            if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
+            {
+                return Move <Tag> {_task.sourceName, _task.targetName};
+            }
+
+            if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
+            {
+                return Copy <Tag> {_task.sourceName, _task.targetName};
+            }
+
+            if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
+            {
+                return Delete <Tag> {_task.name};
+            }
+
+            if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::MoveAssign>)
+            {
+                // Assignment is not supported for some object types.
+                if constexpr (std::is_convertible_v <MoveAssign <Tag>, Task>)
+                {
+                    return MoveAssign <Tag> {_task.sourceName, _task.targetName};
+                }
+            }
+
+            if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CopyAssign>)
+            {
+                // Assignment is not supported for some object types.
+                if constexpr (std::is_convertible_v <CopyAssign <Tag>, Task>)
+                {
+                    return CopyAssign <Tag> {_task.sourceName, _task.targetName};
+                }
+            }
+
+            REQUIRE_WITH_MESSAGE (
+                false, "Unsupported task type! Create and CheckStatus tasks are context dependent and "
+                       "therefore are not supported by this importer too.");
+            return Delete <Tag> {"placeholder"};
+        },
+        _task);
+}
+
+Task ForContainerReference (const Reference::Test::Task &_task)
+{
+    return ImportForTag <ContainerReferenceTag> (_task);
+}
+
+Task ForPreparedQuery (const Reference::Test::Task &_task)
+{
+    return ImportForTag <PreparedQueryTag> (_task);
+}
+} // namespace TestReferenceApiImporters
+
 Scenario::Scenario (std::vector <Task> _tasks)
     : tasks (std::move (_tasks))
 {
@@ -899,7 +972,7 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept
 {
     first.insert (first.end (), second.begin (), second.end ());
     return first;

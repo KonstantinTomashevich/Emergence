@@ -5,98 +5,86 @@
 
 namespace Emergence::Galleon::Test
 {
-static std::string ExtractContainerName (const std::vector <Task> &_containerInitializer)
+void ExecuteReferenceApiTest (const Reference::Test::Scenario &_scenario,
+                              std::function <std::vector <Task> (const std::string &, bool)> _onCreate,
+                              std::function <std::vector <Task> (bool)> _onStatusCheck,
+                              bool _containerReferenceBaseImporter)
 {
-    for (const Task &packagedTask : _containerInitializer)
+    std::vector <Emergence::Galleon::Test::Task> tasks;
+    bool isAlreadyInitializedTrivialExpectation = false;
+
+    for (const Emergence::Reference::Test::Task &_packedTask : _scenario)
     {
-        const std::optional <std::string> containerName = std::visit (
-            [] (const auto &_task) -> std::optional <std::string>
+        std::visit (
+            [&tasks, &isAlreadyInitializedTrivialExpectation,
+                _containerReferenceBaseImporter, &_onCreate, &_onStatusCheck] (
+                const auto &_task)
             {
                 using TaskType = std::decay_t <decltype (_task)>;
-                if constexpr (std::is_base_of_v <ContainerAcquisitionBase, TaskType>)
+                if constexpr (std::is_same_v <TaskType, Emergence::Reference::Test::Tasks::Create>)
                 {
-                    return _task.name;
+                    tasks += _onCreate (_task.name, isAlreadyInitializedTrivialExpectation);
+                    isAlreadyInitializedTrivialExpectation = true;
+                }
+                else if constexpr (std::is_same_v <TaskType, Emergence::Reference::Test::Tasks::CheckStatus>)
+                {
+                    isAlreadyInitializedTrivialExpectation = _task.hasAnyReferences;
+                    tasks += _onStatusCheck (_task.hasAnyReferences);
                 }
                 else
                 {
-                    return std::nullopt;
+                    if (_containerReferenceBaseImporter)
+                    {
+                        tasks.emplace_back (TestReferenceApiImporters::ForContainerReference (_task));
+                    }
+                    else
+                    {
+                        tasks.emplace_back (TestReferenceApiImporters::ForPreparedQuery (_task));
+                    }
                 }
             },
-            packagedTask);
-
-        if (containerName.has_value ())
-        {
-            return containerName.value ();
-        }
+            _packedTask);
     }
 
-    assert (false);
-    return "Unable to extract container name!";
+    Scenario {tasks};
 }
 
-static std::string ExtractQueryName (const Task &_queryPreparation)
+static Task RenamePreparedQuery (Task _queryPreparation, std::string _newContainerName, std::string _newQueryName)
 {
-    return std::visit (
-        [] (const auto &_task) -> std::string
+    std::visit (
+        [&_newContainerName, &_newQueryName] (auto &_task)
         {
-            using TaskType = std::decay_t <decltype (_task)>;
-            if constexpr (std::is_base_of_v <QueryPreparationBase, TaskType>)
+            if constexpr (std::is_base_of_v <QueryPreparationBase, std::decay_t <decltype (_task)>>)
             {
-                return _task.queryName;
+                _task.containerName = _newContainerName;
+                _task.queryName = _newQueryName;
             }
             else
             {
-                assert (false);
-                return "Unable to extract query name!";
+                REQUIRE_WITH_MESSAGE (false, "Query preparation task should inherit QueryPreparationBase.");
             }
         },
         _queryPreparation);
+
+    return _queryPreparation;
 }
 
-std::vector <Task> TestContainerReferenceManipulation (
-    const std::vector <Task> &_initContainer, const std::vector <Task> &_checkThatContainerInitialized,
-    const std::vector <Task> &_checkThatContainerNotInitialized)
+void AdaptPreparedQueryReferenceApiTest (
+    const Reference::Test::Scenario &_scenario, const Task &_prepareQuery,
+    const std::function <std::vector <Task> (const std::string &, bool)> &_onContainerCreate,
+    const std::function <std::vector <Task> (bool)> &_onStatusCheck)
 {
-    std::string containerName = ExtractContainerName (_initContainer);
-    assert (containerName != "moved");
-    assert (containerName != "copied");
-
-    return _checkThatContainerNotInitialized +
-           _initContainer +
-           _checkThatContainerInitialized +
-           Move <ContainerReferenceTag> {containerName, "moved"} +
-           _checkThatContainerInitialized +
-           Copy <ContainerReferenceTag> {"moved", "copied"} +
-           Delete <ContainerReferenceTag> {"moved"} +
-           _checkThatContainerInitialized +
-           Delete <ContainerReferenceTag> {{"copied"}} +
-           _checkThatContainerNotInitialized;
-}
-
-std::vector <Task> TestQueryReferenceManipulation (
-    const std::vector <Task> &_initContainer,
-    const Task &_prepareQuery,
-    const std::vector <Task> &_checkThatContainerInitialized,
-    const std::vector <Task> &_checkThatContainerNotInitialized)
-{
-    std::string containerName = ExtractContainerName (_initContainer);
-    std::string queryName = ExtractQueryName (_prepareQuery);
-
-    assert (queryName != "moved");
-    assert (queryName != "copied");
-
-    return _checkThatContainerNotInitialized +
-           _initContainer +
-           _checkThatContainerInitialized +
-           _prepareQuery +
-           Delete <ContainerReferenceTag> {{containerName}} +
-           _checkThatContainerInitialized +
-           Move <PreparedQueryTag> {queryName, "moved"} +
-           _checkThatContainerInitialized +
-           Copy <PreparedQueryTag> {"moved", "copied"} +
-           Delete <PreparedQueryTag> {"moved"} +
-           _checkThatContainerInitialized +
-           Delete <PreparedQueryTag> {"copied"} +
-           _checkThatContainerNotInitialized;
+    ExecuteReferenceApiTest (
+        _scenario,
+        [&_prepareQuery, &_onContainerCreate] (
+            const std::string &_name, bool _isAlreadyInitializedTrivialExpectation) -> std::vector <Task>
+        {
+            return _onContainerCreate (
+                _name + "TemporaryContainer", _isAlreadyInitializedTrivialExpectation) +
+                   RenamePreparedQuery (_prepareQuery, _name + "TemporaryContainer", _name) +
+                   Delete < ContainerReferenceTag > {_name + "TemporaryContainer"};
+        },
+        _onStatusCheck,
+        false);
 }
 } // namespace Emergence::Galleon::Test

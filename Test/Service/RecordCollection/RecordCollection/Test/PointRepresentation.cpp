@@ -1,6 +1,7 @@
-#include <RecordCollection/Test/Common.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 #include <RecordCollection/Test/PointRepresentation.hpp>
+
+#include <Reference/Test/Tests.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/ValueQueryTests.hpp>
@@ -14,20 +15,22 @@ bool Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker () 
     return true;
 }
 
-BEGIN_SUITE (PointRepresentation)
-
-TEST_CASE (ReferenceManipulations)
+void ExecutePointRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    Scenario
-        {
-            Emergence::Query::Test::Player::Reflection::GetMapping (),
-            std::vector <Task>
-                {
-                    CreatePointRepresentation {"source", {Emergence::Query::Test::Player::Reflection::id}},
-                } +
-            Common::TestIsCanBeDropped ("source")
-        };
+    std::vector <Task> tasks;
+    tasks.emplace_back (CreatePointRepresentation {"source", {Emergence::Query::Test::Player::Reflection::id}});
+    tasks += ReferenceApiTestImporters::ForRepresentationReference (_scenario, "source");
+    tasks.emplace_back (DropRepresentation {"source"});
+    Scenario (Emergence::Query::Test::Player::Reflection::GetMapping (), tasks);
 }
+
+BEGIN_SUITE (PointRepresentationReference)
+
+REGISTER_ALL_REFERENCE_TESTS (ExecutePointRepresentationReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (PointRepresentationQueries)
 
 REGISTER_ALL_VALUE_QUERY_TESTS (TestQueryApiDrivers::CreateRepresentationsThanAllocateRecords)
 

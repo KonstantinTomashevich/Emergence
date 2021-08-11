@@ -1,37 +1,41 @@
-#include <Pegasus/Test/Common.hpp>
 #include <Pegasus/Test/Scenario.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/VolumetricQueryTests.hpp>
 
+#include <Reference/Test/Tests.hpp>
+
 #include <Testing/Testing.hpp>
 
 using namespace Emergence::Pegasus::Test;
 
-BEGIN_SUITE (VolumetricIndex)
-
-TEST_CASE (ReferenceManipulations)
+void ExecuteVolumetricIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    Scenario {
-        Emergence::Query::Test::BoundingBox::Reflection::GetMapping (),
-        std::vector <Task>
+    std::vector <Task> tasks;
+    using BoundingBoxReflection = Emergence::Query::Test::BoundingBox::Reflection;
+
+    tasks.emplace_back (
+        CreateVolumetricIndex
             {
-                CreateVolumetricIndex {
-                    "2d",
-                    {
-                        {
-                            -100.0f, Emergence::Query::Test::BoundingBox::Reflection::minX,
-                            100.0f, Emergence::Query::Test::BoundingBox::Reflection::maxX
-                        },
-                        {
-                            -100.0f, Emergence::Query::Test::BoundingBox::Reflection::minY,
-                            100.0f, Emergence::Query::Test::BoundingBox::Reflection::maxY
-                        }
-                    }},
-            } +
-        Common::TestIsCanBeDropped ("2d")
-    };
+                "source",
+                {
+                    {-100.0f, BoundingBoxReflection::minX, 100.0f, BoundingBoxReflection::maxX},
+                    {-100.0f, BoundingBoxReflection::minY, 100.0f, BoundingBoxReflection::maxY}
+                }
+            });
+
+    tasks += ReferenceApiTestImporters::ForIndexReference (_scenario, "source");
+    tasks.emplace_back (DropIndex {"source"});
+    Scenario (BoundingBoxReflection::GetMapping (), tasks);
 }
+
+BEGIN_SUITE (VolumetricIndexReference)
+
+REGISTER_ALL_REFERENCE_TESTS (ExecuteVolumetricIndexReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (VolumetricIndexQueries)
 
 REGISTER_ALL_VOLUMETRIC_QUERY_TESTS (TestQueryApiDrivers::CreateIndicesThanInsertRecords)
 

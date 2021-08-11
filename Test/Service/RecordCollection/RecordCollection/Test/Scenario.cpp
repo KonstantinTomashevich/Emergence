@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include <Query/Test/CursorManager.hpp>
+#include <Query/Test/DataTypes.hpp>
 
 #include <RecordCollection/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
@@ -110,7 +111,12 @@ void IterateOverRepresentations (const ExecutionContext &_context)
     std::vector <RepresentationReference> known;
     for (const auto &[name, representation] : _context.objects)
     {
-        known.emplace_back (representation);
+        // TODO: Some references can be moved out, therefore we must skip them.
+        //       Current iteration test routine will be refactored soon, therefore this hack is ok for now.
+        if (*reinterpret_cast <const void *const *> (&representation))
+        {
+            known.emplace_back (representation);
+        }
     }
 
     std::vector <RepresentationReference> found;
@@ -445,14 +451,31 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricRepresen
     return _output << ".";
 }
 
+std::ostream &operator << (std::ostream &_output, const Move <RepresentationReferenceTag> &_task)
+{
+    return _output << "Move representation reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Copy <RepresentationReferenceTag> &_task)
 {
     return _output << "Copy representation reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
 }
 
+std::ostream &operator << (std::ostream &_output, const MoveAssign <RepresentationReferenceTag> &_task)
+{
+    return _output << "Move representation reference \"" << _task.sourceName << "\" to \"" <<
+                   _task.targetName << "\" using move assignment.";
+}
+
+std::ostream &operator << (std::ostream &_output, const CopyAssign <RepresentationReferenceTag> &_task)
+{
+    return _output << "Assign copy of representation reference \"" << _task.sourceName <<
+                   "\" to \"" << _task.targetName << "\".";
+}
+
 std::ostream &operator << (std::ostream &_output, const Delete <RepresentationReferenceTag> &_task)
 {
-    return _output << "Remove representation reference \"" << _task.name << "\".";
+    return _output << "Delete representation reference \"" << _task.name << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const DropRepresentation &_task)
@@ -572,7 +595,61 @@ void TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations (const Query:
     ExecuteQueryApiScenario (_scenario, true);
 }
 
-Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
+namespace ReferenceApiTestImporters
+{
+std::vector <Task> ForRepresentationReference (
+    const Reference::Test::Scenario &_scenario, const std::string &_representationName)
+{
+    std::vector <Task> tasks;
+    for (const Reference::Test::Task &packedTask : _scenario)
+    {
+        std::visit (
+            [&tasks, &_representationName] (const auto &_task)
+            {
+                using TaskType = std::decay_t <decltype (_task)>;
+                if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
+                {
+                    tasks.emplace_back (Copy <RepresentationReferenceTag> {_representationName, _task.name});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
+                {
+                    tasks.emplace_back (Move <RepresentationReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
+                {
+                    tasks.emplace_back (Copy <RepresentationReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::MoveAssign>)
+                {
+                    tasks.emplace_back (MoveAssign <RepresentationReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CopyAssign>)
+                {
+                    tasks.emplace_back (CopyAssign <RepresentationReferenceTag> {_task.sourceName, _task.targetName});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
+                {
+                    tasks.emplace_back (Delete <RepresentationReferenceTag> {_task.name});
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
+                {
+                    tasks.emplace_back (CheckIsSourceBusy {_representationName, _task.hasAnyReferences});
+                }
+                else
+                {
+                    REQUIRE_WITH_MESSAGE (false, "Unknown task type!");
+                }
+            },
+            packedTask);
+    }
+
+    return tasks;
+}
+} // namespace ReferenceApiTestImporters
+
+Scenario::Scenario (StandardLayout::Mapping
+                    _mapping, std::vector <Task>
+                    _tasks)
     : mapping (std::move (_mapping)),
       tasks (std::move (_tasks))
 {
@@ -612,7 +689,7 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept
 {
     first.insert (first.end (), second.begin (), second.end ());
     return first;

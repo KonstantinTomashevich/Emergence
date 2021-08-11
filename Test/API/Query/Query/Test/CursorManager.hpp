@@ -162,36 +162,31 @@ void ExecuteTask (CursorManager <Cursors...> &_manager, const Tasks::CursorCheck
                     ++_cursor;
                 }
 
-                CHECK_EQUAL (objects.size (), _task.expectedObjects.size ());
-                auto Search = [_mapping] (const std::vector <const void *> &_objects, const void *_objectToSearch)
+                // Brute force counting is the most efficient solution there,
+                // because tests check small vectors of objects, usually not more than 5.
+                auto Count = [_mapping] (const std::vector <const void *> &_objects, const void *_objectToSearch)
                 {
-                    return std::find_if (
-                        _objects.begin (), _objects.end (),
-                        [_objectToSearch, &_mapping] (const void *_otherObject)
+                    std::size_t count = 0u;
+                    for (const void *_otherObject : _objects)
+                    {
+                        if (memcmp (_objectToSearch, _otherObject, _mapping.GetObjectSize ()) == 0)
                         {
-                            return memcmp (_objectToSearch, _otherObject, _mapping.GetObjectSize ()) == 0u;
-                        });
+                            ++count;
+                        }
+                    }
+
+                    return count;
                 };
 
                 for (const void *objectFromCursor : objects)
                 {
-                    auto iterator = Search (_task.expectedObjects, objectFromCursor);
-                    if (iterator == _task.expectedObjects.end ())
-                    {
-                        CHECK_WITH_MESSAGE (
-                            false, "Searching for object from cursor in expected objects list. Object: ",
-                            ObjectToString (_mapping, objectFromCursor));
-                    }
-                }
+                    const std::size_t countInCursor = Count (objects, objectFromCursor);
+                    const std::size_t countExpected = Count (_task.expectedObjects, objectFromCursor);
+                    CHECK_EQUAL (countInCursor, countExpected);
 
-                for (const void *expectedObject : objects)
-                {
-                    auto iterator = Search (objects, expectedObject);
-                    if (iterator == objects.end ())
+                    if (countInCursor != countExpected)
                     {
-                        CHECK_WITH_MESSAGE (
-                            false, "Searching for expected object in received objects list. Object: ",
-                            ObjectToString (_mapping, expectedObject));
+                        LOG ("Checked object: ", ObjectToString (_mapping, objectFromCursor));
                     }
                 }
             }
