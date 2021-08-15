@@ -34,10 +34,11 @@ using Cursor = std::variant <
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
     Emergence::Pegasus::Test::CursorTag,
-    Emergence::Query::Test::CursorData <Emergence::Pegasus::Test::Cursor>)
+    Emergence::Query::Test::CursorData <Emergence::Pegasus::Test::Cursor>,
+    "cursor")
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
-    Emergence::Pegasus::Test::IndexReferenceTag, Emergence::Pegasus::Test::IndexReference)
+    Emergence::Pegasus::Test::IndexReferenceTag, Emergence::Pegasus::Test::IndexReference, "index reference")
 
 namespace Emergence::Pegasus::Test
 {
@@ -425,35 +426,6 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Move <IndexReferenceTag> &_task)
-{
-    return _output << "Move index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Copy <IndexReferenceTag> &_task)
-{
-    return _output << "Copy index reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (
-    std::ostream &_output, const Context::Extension::Tasks::MoveAssign <IndexReferenceTag> &_task)
-{
-    return _output << "Move index reference \"" << _task.sourceName << "\" to \"" <<
-                   _task.targetName << "\" using move assignment.";
-}
-
-std::ostream &operator << (
-    std::ostream &_output, const Context::Extension::Tasks::CopyAssign <IndexReferenceTag> &_task)
-{
-    return _output << "Assign copy of index reference \"" << _task.sourceName <<
-                   "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Context::Extension::Tasks::Delete <IndexReferenceTag> &_task)
-{
-    return _output << "Delete index reference \"" << _task.name << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const CheckIsIndexCanBeDropped &_task)
 {
     return _output << "Check is index \"" << _task.name << "\" can be dropped, expected result: \"" <<
@@ -478,21 +450,6 @@ std::ostream &operator << (std::ostream &_output, const AllocateAndInit &_task)
 std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
 {
     return _output << "Close allocator.";
-}
-
-std::ostream &operator << (std::ostream &_output, const Move <CursorTag> &_task)
-{
-    return _output << "Move cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <CursorTag> &_task)
-{
-    return _output << "Copy cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <CursorTag> &_task)
-{
-    return _output << "Delete cursor \"" << _task.name << "\".";
 }
 
 Task ImportQueryApiTask (const Query::Test::Task &_task)

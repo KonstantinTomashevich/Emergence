@@ -91,40 +91,40 @@ std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceTo
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryValueToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using value sequence " <<
                    _task.value << " and save read only cursor as \"" << _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryValueToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using value sequence " <<
                    _task.value << " and save editable cursor as \"" << _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryRangeToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
                    _task.minValue << ", " << _task.maxValue << "] and save read only cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryRangeToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
                    _task.minValue << ", " << _task.maxValue << "] and save editable cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
                    _task.minValue << ", " << _task.maxValue << "] and save read only reversed order cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
                    _task.minValue << ", " << _task.maxValue << "] and save editable reversed order cursor as \"" <<
@@ -145,41 +145,41 @@ std::ostream &operator << (std::ostream &_output, const std::vector <Sources::Vo
     return _output << ")";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using shape (min = (" <<
                    _task.min << "), max = (" << _task.max << ")) and save read only cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using shape (min = " <<
                    _task.min << ", max = " << _task.max << ") and save editable cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using ray (origin = " <<
                    _task.origin << ", direction = " << _task.direction << ") and save read only cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using ray (origin = " <<
                    _task.origin << ", direction = " << _task.direction << ") and save editable cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheck &_task)
+std::ostream &operator << (std::ostream &_output, const CursorCheck &_task)
 {
     return _output << "Check that cursor \"" << _task.name << "\" points to object, equal to " <<
                    _task.expectedObject << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrdered &_task)
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllOrdered &_task)
 {
     _output << "Check that cursor \"" << _task.name << "\" points to ordered sequence of objects equal to:";
     for (const void *object : _task.expectedObjects)
@@ -190,7 +190,7 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrd
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllUnordered &_task)
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllUnordered &_task)
 {
     _output << "Check that cursor \"" << _task.name << "\" points to set of objects equal to:";
     for (const void *object : _task.expectedObjects)
@@ -201,23 +201,23 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllUno
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorEdit &_task)
+std::ostream &operator << (std::ostream &_output, const CursorEdit &_task)
 {
     return _output << "Replace value of object, to which cursor \"" << _task.name <<
                    "\" points with value of " << _task.copyFromObject << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &_task)
+std::ostream &operator << (std::ostream &_output, const CursorIncrement &_task)
 {
     return _output << "Increment cursor \"" << _task.name << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObject &_task)
+std::ostream &operator << (std::ostream &_output, const CursorDeleteObject &_task)
 {
     return _output << "Delete object, to which cursor \"" << _task.name << "\" points.";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_task)
+std::ostream &operator << (std::ostream &_output, const CursorClose &_task)
 {
     return _output << "Close cursor \"" << _task.name << "\".";
 }

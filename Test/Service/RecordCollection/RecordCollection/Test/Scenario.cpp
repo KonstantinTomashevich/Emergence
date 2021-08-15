@@ -32,11 +32,13 @@ using Cursor = std::variant <
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
     Emergence::RecordCollection::Test::CursorTag,
-    Emergence::Query::Test::CursorData <Emergence::RecordCollection::Test::Cursor>)
+    Emergence::Query::Test::CursorData <Emergence::RecordCollection::Test::Cursor>,
+    "cursor")
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
     Emergence::RecordCollection::Test::RepresentationReferenceTag,
-    Emergence::RecordCollection::Test::RepresentationReference)
+    Emergence::RecordCollection::Test::RepresentationReference,
+    "representation reference")
 
 namespace Emergence::RecordCollection::Test
 {
@@ -458,33 +460,6 @@ std::ostream &operator << (std::ostream &_output, const CreateVolumetricRepresen
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <RepresentationReferenceTag> &_task)
-{
-    return _output << "Move representation reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <RepresentationReferenceTag> &_task)
-{
-    return _output << "Copy representation reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const MoveAssign <RepresentationReferenceTag> &_task)
-{
-    return _output << "Move representation reference \"" << _task.sourceName << "\" to \"" <<
-                   _task.targetName << "\" using move assignment.";
-}
-
-std::ostream &operator << (std::ostream &_output, const CopyAssign <RepresentationReferenceTag> &_task)
-{
-    return _output << "Assign copy of representation reference \"" << _task.sourceName <<
-                   "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <RepresentationReferenceTag> &_task)
-{
-    return _output << "Delete representation reference \"" << _task.name << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const CheckIsRepresentationCanBeDropped &_task)
 {
     return _output << "Check is representation \"" << _task.name << "\" can be dropped, expected result: \"" <<
@@ -509,21 +484,6 @@ std::ostream &operator << (std::ostream &_output, const AllocateAndInit &_task)
 std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
 {
     return _output << "Close allocator.";
-}
-
-std::ostream &operator << (std::ostream &_output, const Move <CursorTag> &_task)
-{
-    return _output << "Move cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <CursorTag> &_task)
-{
-    return _output << "Copy cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <CursorTag> &_task)
-{
-    return _output << "Delete cursor \"" << _task.name << "\".";
 }
 
 Task ImportQueryApiTask (const Query::Test::Task &_task)

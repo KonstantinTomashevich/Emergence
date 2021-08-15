@@ -52,14 +52,17 @@ using Cursor = std::variant <
 } // namespace Emergence::Galleon::Test
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
-    Emergence::Galleon::Test::ContainerReferenceTag, Emergence::Galleon::Test::ContainerReference)
+    Emergence::Galleon::Test::ContainerReferenceTag,
+    Emergence::Galleon::Test::ContainerReference,
+    "container reference")
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
     Emergence::Galleon::Test::CursorTag,
-    Emergence::Query::Test::CursorData <Emergence::Galleon::Test::Cursor>)
+    Emergence::Query::Test::CursorData <Emergence::Galleon::Test::Cursor>,
+    "cursor")
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
-    Emergence::Galleon::Test::PreparedQueryTag, Emergence::Galleon::Test::PreparedQuery)
+    Emergence::Galleon::Test::PreparedQueryTag, Emergence::Galleon::Test::PreparedQuery, "prepared query")
 
 namespace Emergence::Galleon::Test
 {
@@ -464,33 +467,6 @@ std::ostream &operator << (std::ostream &_output, const AcquireLongTermContainer
                    *reinterpret_cast <const void *const *> (&_task.mapping) << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <ContainerReferenceTag> &_task)
-{
-    return _output << "Move container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <ContainerReferenceTag> &_task)
-{
-    return _output << "Copy container reference \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const MoveAssign <ContainerReferenceTag> &_task)
-{
-    return _output << "Move container reference \"" << _task.sourceName << "\" to \"" <<
-                   _task.targetName << "\" using move assignment.";
-}
-
-std::ostream &operator << (std::ostream &_output, const CopyAssign <ContainerReferenceTag> &_task)
-{
-    return _output << "Assign copy of container reference \"" << _task.sourceName << "\" to \"" <<
-                   _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <ContainerReferenceTag> &_task)
-{
-    return _output << "Remove container reference \"" << _task.name << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const CheckIsSingletonContainerAllocated &_task)
 {
     return _output << "Check is singleton container for mapping " <<
@@ -634,21 +610,6 @@ std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyRay
                    _task.dimensions << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const Move <PreparedQueryTag> &_task)
-{
-    return _output << "Move prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <PreparedQueryTag> &_task)
-{
-    return _output << "Copy prepared query \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <PreparedQueryTag> &_task)
-{
-    return _output << "Remove prepared query \"" << _task.name << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const InsertObjects &_task)
 {
     _output << "Allocate objects using query \"" << _task.name << "\" and init from";
@@ -658,21 +619,6 @@ std::ostream &operator << (std::ostream &_output, const InsertObjects &_task)
     }
 
     return _output << ".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Move <CursorTag> &_task)
-{
-    return _output << "Move cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <CursorTag> &_task)
-{
-    return _output << "Copy cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <CursorTag> &_task)
-{
-    return _output << "Delete cursor \"" << _task.name << "\".";
 }
 
 namespace TestQueryApiImporters

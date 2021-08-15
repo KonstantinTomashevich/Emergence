@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -83,13 +84,13 @@ void RemoveObject (ObjectStorage <Object> &_storage, const std::string &_name)
 }
 
 template <typename ObjectTag>
-struct ObjectTagToObject
+struct ObjectTagMeta
 {
     // This type must always be specialized, therefore absence of `using Object = ...` is intentional.
 };
 
 template <typename ObjectTag>
-using ObjectFromTag = typename ObjectTagToObject <ObjectTag>::Object;
+using ObjectFromTag = typename ObjectTagMeta <ObjectTag>::Object;
 
 template <typename ObjectTag>
 using ObjectStorageFromTag = ObjectStorage <ObjectFromTag <ObjectTag>>;
@@ -154,19 +155,57 @@ void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::CopyA
     }
 }
 
+namespace Tasks
+{
 template <typename ObjectTag>
 void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Delete <ObjectTag> &_task)
 {
     RemoveObject (_storage, _task.name);
 }
+
+template <typename ObjectTag>
+std::ostream &operator << (std::ostream &_output, const Tasks::Move <ObjectTag> &_task)
+{
+    return _output << "Move " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.sourceName <<
+                   "\" to \"" << _task.targetName << "\".";
+}
+
+template <typename ObjectTag>
+std::ostream &operator << (std::ostream &_output, const Tasks::Copy <ObjectTag> &_task)
+{
+    return _output << "Copy " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.sourceName <<
+                   "\" to \"" << _task.targetName << "\".";
+}
+
+template <typename ObjectTag>
+std::ostream &operator << (std::ostream &_output, const Tasks::MoveAssign <ObjectTag> &_task)
+{
+    return _output << "Move " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.sourceName << "\" to \"" <<
+                   _task.targetName << "\" using move assignment.";
+}
+
+template <typename ObjectTag>
+std::ostream &operator << (std::ostream &_output, const Tasks::CopyAssign <ObjectTag> &_task)
+{
+    return _output << "Assign copy of " << ObjectTagMeta <ObjectTag>::Name << " \"" <<
+                   _task.sourceName << "\" to \"" << _task.targetName << "\".";
+}
+
+template <typename ObjectTag>
+std::ostream &operator << (std::ostream &_output, const Tasks::Delete <ObjectTag> &_task)
+{
+    return _output << "Remove " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.name << "\".";
+}
+} // namespace Tasks
 } // namespace Emergence::Context::Extension
 
-#define EMERGENCE_CONTEXT_BIND_OBJECT_TAG(ObjectTag, ObjectType)               \
+#define EMERGENCE_CONTEXT_BIND_OBJECT_TAG(ObjectTag, ObjectType, ReadableName) \
 namespace Emergence::Context::Extension                                        \
 {                                                                              \
 template <>                                                                    \
-struct ObjectTagToObject <ObjectTag>                                           \
+struct ObjectTagMeta <ObjectTag>                                               \
 {                                                                              \
     using Object = ObjectType;                                                 \
+    static constexpr const char *Name = ReadableName;                          \
 };                                                                             \
 } // namespace Emergence::Context::Extension

@@ -234,47 +234,47 @@ struct CursorClose final
     std::string name;
 };
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryUnorderedSequenceToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryUnorderedSequenceToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryValueToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryValueToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheck &_task);
+std::ostream &operator << (std::ostream &_output, const CursorCheck &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrdered &_task);
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllOrdered &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllUnordered &_task);
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllUnordered &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorEdit &_task);
+std::ostream &operator << (std::ostream &_output, const CursorEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &_task);
+std::ostream &operator << (std::ostream &_output, const CursorIncrement &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObject &_task);
+std::ostream &operator << (std::ostream &_output, const CursorDeleteObject &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_task);
+std::ostream &operator << (std::ostream &_output, const CursorClose &_task);
 } // namespace Tasks
 
 using Task = std::variant <

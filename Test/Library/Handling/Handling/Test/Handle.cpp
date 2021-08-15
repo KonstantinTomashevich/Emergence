@@ -38,7 +38,8 @@ struct HandleableResourceTag;
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
     Emergence::Handling::Test::HandleableResourceTag,
-    Emergence::Handling::Handle <Emergence::Handling::Test::HandleableResource>)
+    Emergence::Handling::Handle <Emergence::Handling::Test::HandleableResource>,
+    "handle")
 
 namespace Emergence::Handling::Test
 {
@@ -56,31 +57,6 @@ using Task = std::variant <
 std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::Create &_task)
 {
     return _output << "Construct \"" << _task.name << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Move <HandleableResourceTag> &_task)
-{
-    return _output << "Move \"" << _task.sourceName << "\" into \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Copy <HandleableResourceTag> &_task)
-{
-    return _output << "Copy  \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const MoveAssign <HandleableResourceTag> &_task)
-{
-    return _output << "Move \"" << _task.sourceName << "\" into \"" << _task.targetName << "\" using assign operator.";
-}
-
-std::ostream &operator << (std::ostream &_output, const CopyAssign <HandleableResourceTag> &_task)
-{
-    return _output << "Assign copy of \"" << _task.sourceName << "\" to \"" << _task.targetName << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Delete <HandleableResourceTag> &_task)
-{
-    return _output << "Destruct \"" << _task.name << "\".";
 }
 
 std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::CheckStatus &_task)
