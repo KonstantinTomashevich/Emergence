@@ -90,6 +90,34 @@ requires (T _cursor) {
 };
 
 template <typename Cursor>
+void AddObject (CursorStorage <Cursor> &_storage, std::string _name,
+                const StandardLayout::Mapping &_objectMapping, Cursor &&_cursor)
+{
+    AddObject (_storage, _name, CursorData <Cursor> {std::move (_cursor), _objectMapping});
+}
+
+template <typename Cursor>
+void GetCursor (CursorStorage <Cursor> &_storage, std::string _name)
+{
+    return GetObject (_storage, _name).cursor;
+}
+
+std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
+{
+    const auto *current = static_cast <const uint8_t *> (_object);
+    const auto *end = current + _mapping.GetObjectSize ();
+    std::string result;
+
+    while (current != end)
+    {
+        result += std::to_string (static_cast <std::size_t> (*current)) + " ";
+        ++current;
+    }
+
+    return result;
+}
+
+template <typename Cursor>
 void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheck &_task)
 {
     CursorData <Cursor> &cursorData = GetObject (_storage, _task.name);
@@ -298,33 +326,5 @@ template <typename Cursor>
 void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorClose &_task)
 {
     RemoveObject (_storage, _task.name);
-}
-
-template <typename Cursor>
-void AddObject (CursorStorage <Cursor> &_storage, std::string _name,
-                const StandardLayout::Mapping &_objectMapping, Cursor &&_cursor)
-{
-    AddObject (_storage, _name, CursorData <Cursor> {std::move (_cursor), _objectMapping});
-}
-
-template <typename Cursor>
-void GetCursor (CursorStorage <Cursor> &_storage, std::string _name)
-{
-    return GetObject (_storage, _name).cursor;
-}
-
-std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
-{
-    const auto *current = static_cast <const uint8_t *> (_object);
-    const auto *end = current + _mapping.GetObjectSize ();
-    std::string result;
-
-    while (current != end)
-    {
-        result += std::to_string (static_cast <std::size_t> (*current)) + " ";
-        ++current;
-    }
-
-    return result;
 }
 } // namespace Emergence::Query::Test
