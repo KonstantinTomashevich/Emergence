@@ -2,6 +2,8 @@
 
 #include <Query/Test/Scenario.hpp>
 
+#include <Testing/Testing.hpp>
+
 namespace Emergence::Query::Test
 {
 Sources::Volumetric::SupportedValue::SupportedValue (int8_t _value) noexcept
@@ -65,12 +67,6 @@ std::ostream &operator << (std::ostream &_output, const Sources::Volumetric::Sup
 
 namespace Tasks
 {
-std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy &_task)
-{
-    return _output << "Check is source \"" << _task.name << "\" busy, expected result: \"" <<
-                   (_task.expectedValue ? "yes" : "no") << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const QuerySingletonToRead &_task)
 {
     return _output << "Query singleton from \"" << _task.sourceName << "\" and save read only cursor as \"" <<
@@ -221,21 +217,39 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObjec
     return _output << "Delete object, to which cursor \"" << _task.name << "\" points.";
 }
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCopy &_task)
-{
-    return _output << "Copy cursor \"" << _task.sourceName << "\" as \"" << _task.targetName << ".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorMove &_task)
-{
-    return _output << "Move cursor \"" << _task.sourceName << "\" to \"" << _task.targetName << ".";
-}
-
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_task)
 {
     return _output << "Close cursor \"" << _task.name << "\".";
 }
 } // namespace Tasks
+
+Task ChangeQuerySourceAndCursor (
+    Task _query, std::optional <std::string> _newSourceName, std::optional <std::string> _newCursorName)
+{
+    std::visit (
+        [&_newSourceName, &_newCursorName] (auto &_task)
+        {
+            if constexpr (std::is_base_of_v <Tasks::QueryBase, std::decay_t <decltype (_task)>>)
+            {
+                if (_newSourceName.has_value ())
+                {
+                    _task.sourceName = std::move (_newSourceName.value ());
+                }
+
+                if (_newCursorName.has_value ())
+                {
+                    _task.cursorName = std::move (_newCursorName.value ());
+                }
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE (false, "Query must be derived from QueryBase!");
+            }
+        },
+        _query);
+
+    return _query;
+}
 
 Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation)
 {

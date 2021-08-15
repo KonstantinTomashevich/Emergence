@@ -1,4 +1,3 @@
-#include <Galleon/Test/Common.hpp>
 #include <Galleon/Test/Scenario.hpp>
 
 #include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
@@ -9,32 +8,7 @@
 
 #include <Reference/Test/Tests.hpp>
 
-#include <Testing/Testing.hpp>
-
 using namespace Emergence::Galleon::Test;
-
-static std::vector <Task> InitTestContainer (const std::string &_name, bool _isAlreadyInitializedTrivialExpectation)
-{
-    using namespace Emergence::Query::Test;
-    if (_isAlreadyInitializedTrivialExpectation)
-    {
-        return
-            {
-                AcquireLongTermContainer {
-                    {Emergence::Query::Test::PlayerWithBoundingBox::Reflection::GetMapping (), _name}}
-            };
-    }
-    else
-    {
-        return
-            {
-                AcquireLongTermContainer {{PlayerWithBoundingBox::Reflection::GetMapping (), _name}},
-                PrepareLongTermInsertQuery {{_name, "temporaryInserter"}},
-                InsertObjects {"temporaryInserter", {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2}},
-                Delete <PreparedQueryTag> {"temporaryInserter"},
-            };
-    }
-}
 
 static Emergence::StandardLayout::FieldId GetPlayedIdField ()
 {
@@ -43,105 +17,7 @@ static Emergence::StandardLayout::FieldId GetPlayedIdField ()
     return ProjectNestedField (PlayerWithBoundingBox::Reflection::player, Player::Reflection::id);
 }
 
-static std::vector <Task> CheckIsTestContainerInitialized (bool _shouldBeInitialized)
-{
-    using namespace Emergence::Query::Test;
-    std::vector <Emergence::Galleon::Test::Task> tasks
-        {
-            AcquireLongTermContainer {{PlayerWithBoundingBox::Reflection::GetMapping (), "temporaryReference"}},
-            PrepareLongTermFetchRangeQuery
-                {
-                    {"temporaryReference", "temporaryQuery"},
-                    GetPlayedIdField ()
-                },
-            QueryRangeToRead {{{"temporaryQuery", "cursor"}, nullptr, nullptr}},
-        };
-
-    if (_shouldBeInitialized)
-    {
-        tasks.emplace_back (
-            CursorCheckAllOrdered
-                {
-                    "cursor",
-                    {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2}
-                });
-    }
-    else
-    {
-        tasks.emplace_back (CursorCheckAllOrdered {"cursor", {}});
-    }
-
-    tasks +=
-        {
-            CursorClose {"cursor"},
-            Delete <PreparedQueryTag> {"temporaryQuery"},
-            Delete <ContainerReferenceTag> {"temporaryReference"},
-        };
-
-    return tasks;
-}
-
-static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    ExecuteReferenceApiTest (
-        _scenario, InitTestContainer, CheckIsTestContainerInitialized, true);
-}
-
-static void ExecuteInsertQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario, PrepareLongTermInsertQuery {}, InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static void ExecuteFetchValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermFetchValueQuery {{}, {GetPlayedIdField ()}},
-        InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static void ExecuteModifyValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermModifyValueQuery {{}, {GetPlayedIdField ()}},
-        InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static void ExecuteFetchRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermFetchRangeQuery {{}, GetPlayedIdField ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static void ExecuteModifyRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermModifyRangeQuery {{}, GetPlayedIdField ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static void ExecuteFetchReversedRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermFetchReversedRangeQuery {{}, GetPlayedIdField ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static void ExecuteModifyReversedRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
-{
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermModifyReversedRangeQuery {{}, GetPlayedIdField ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
-}
-
-static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetReferenceTestDimensions ()
+static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
@@ -164,37 +40,185 @@ static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetR
         };
 }
 
+static Emergence::Query::Test::Storage GetTestStorage ()
+{
+    using namespace Emergence::Query::Test;
+    using namespace Emergence::StandardLayout;
+
+    return
+        {
+            PlayerWithBoundingBox::Reflection::GetMapping (),
+            {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
+            {
+                Sources::Value {"Value", {GetPlayedIdField ()}},
+                Sources::Range {"Range", GetPlayedIdField ()},
+                Sources::Volumetric {"Volumetric", GetTestDimensions ()},
+            }
+        };
+}
+
+static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForContainerReference (_scenario, GetTestStorage ());
+}
+
+static void ExecuteInsertQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermInsertQuery {});
+}
+
+static void ExecuteFetchValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermFetchValueQuery {{}, {GetPlayedIdField ()}});
+}
+
+static void ExecuteModifyValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermModifyValueQuery {{}, {GetPlayedIdField ()}});
+}
+
+static void ExecuteFetchRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermFetchRangeQuery {{}, GetPlayedIdField ()});
+}
+
+static void ExecuteModifyRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermModifyRangeQuery {{}, GetPlayedIdField ()});
+}
+
+static void ExecuteFetchReversedRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermFetchReversedRangeQuery {{}, GetPlayedIdField ()});
+}
+
+static void ExecuteModifyReversedRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermModifyReversedRangeQuery {{}, GetPlayedIdField ()});
+}
+
 static void ExecuteFetchShapeIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermFetchShapeIntersectionQuery {{}, GetReferenceTestDimensions ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermFetchShapeIntersectionQuery {{}, GetTestDimensions ()});
 }
 
 static void ExecuteModifyShapeIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermModifyShapeIntersectionQuery {{}, GetReferenceTestDimensions ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermModifyShapeIntersectionQuery {{}, GetTestDimensions ()});
 }
 
 static void ExecuteFetchRayIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermFetchRayIntersectionQuery {{}, GetReferenceTestDimensions ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermFetchRayIntersectionQuery {{}, GetTestDimensions ()});
 }
 
 static void ExecuteModifyRayIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario,
-        PrepareLongTermModifyRayIntersectionQuery {{}, GetReferenceTestDimensions ()},
-        InitTestContainer, CheckIsTestContainerInitialized);
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareLongTermModifyRayIntersectionQuery {{}, GetTestDimensions ()});
 }
+
+static void ExecuteFetchValueQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToRead {{{"Value", {}}, &Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteModifyValueQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToEdit {{{"Value", {}}, &Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteFetchRangeQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QueryRangeToRead {{{"Range", {}}, nullptr, nullptr}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteModifyRangeQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QueryRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteFetchReversedRangeQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QueryReversedRangeToRead {{{"Range", {}}, nullptr, nullptr}},
+        &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
+}
+
+static void ExecuteModifyReversedRangeQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QueryReversedRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
+        &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
+}
+
+static void ExecuteFetchShapeIntersectionQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (),
+        QueryShapeIntersectionToRead {{{"Volumetric", {}}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteModifyShapeIntersectionQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (),
+        QueryShapeIntersectionToEdit {{{"Volumetric", {}}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteFetchRayIntersectionQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (),
+        QueryRayIntersectionToRead {{{"Volumetric", {}}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteModifyRayIntersectionQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (),
+        QueryRayIntersectionToEdit {{{"Volumetric", {}}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
+        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+// TODO: InsertQuery::Cursor is skipped for now, because it has unique interface.
 
 BEGIN_SUITE (LongTermContainerReferences)
 
@@ -268,20 +292,96 @@ REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyRayIntersectionQue
 
 END_SUITE
 
-BEGIN_SUITE (LongTermContainer::Range)
+BEGIN_SUITE (LongTermFetchValueQueryCursorReferences)
 
-REGISTER_ALL_RANGE_QUERY_TESTS (TestQueryApiDriver)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchValueQueryCursorReferenceApiTest)
 
 END_SUITE
 
-BEGIN_SUITE (LongTermContainer::Value)
+BEGIN_SUITE (LongTermModifyValueQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyValueQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyValueQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermFetchRangeQueryCursorReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchRangeQueryCursorReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermModifyRangeQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyRangeQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermFetchReversedRangeQueryCursorReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchReversedRangeQueryCursorReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermModifyReversedRangeQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyReversedRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyReversedRangeQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermFetchShapeIntersectionQueryCursorReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchShapeIntersectionQueryCursorReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermModifyShapeIntersectionQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyShapeIntersectionQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyShapeIntersectionQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermFetchRayIntersectionQueryCursorReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchRayIntersectionQueryCursorReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermModifyRayIntersectionQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyRayIntersectionQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyRayIntersectionQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermContainerValueQueries)
 
 REGISTER_ALL_VALUE_QUERY_TESTS (TestQueryApiDriver)
 
 END_SUITE
 
-BEGIN_SUITE (LongTermContainer::Volumetric)
+BEGIN_SUITE (LongTermContainerRangeQueries)
+
+REGISTER_ALL_RANGE_QUERY_TESTS (TestQueryApiDriver)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermContainerVolumetricQueries)
 
 REGISTER_ALL_VOLUMETRIC_QUERY_TESTS (TestQueryApiDriver)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermContainerAllQueriesCombined)
+
+REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDriver)
 
 END_SUITE

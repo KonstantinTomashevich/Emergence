@@ -74,6 +74,14 @@ Object &GetObject (ObjectStorage <Object> &_storage, const std::string &_name)
     return iterator->second;
 }
 
+template <typename Object>
+void RemoveObject (ObjectStorage <Object> &_storage, const std::string &_name)
+{
+    auto iterator = _storage.objects.find (_name);
+    REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _name, "\" should exist!");
+    _storage.objects.erase (iterator);
+}
+
 template <typename ObjectTag>
 struct ObjectTagToObject
 {
@@ -149,9 +157,7 @@ void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::CopyA
 template <typename ObjectTag>
 void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Delete <ObjectTag> &_task)
 {
-    auto iterator = _storage.objects.find (_task.name);
-    REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _task.name, "\" should exist!");
-    _storage.objects.erase (iterator);
+    RemoveObject (_storage, _task.name);
 }
 } // namespace Emergence::Context::Extension
 

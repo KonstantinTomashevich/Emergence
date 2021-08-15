@@ -89,6 +89,27 @@ Handling::Handle <LongTermContainer> CargoDeck::AcquireLongTermContainer (const 
     }
 }
 
+bool CargoDeck::IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
+{
+    return std::find_if (
+        containers.singleton.begin (), containers.singleton.end (),
+        TypeMappingPredicate {_typeMapping}) != containers.singleton.end ();
+}
+
+bool CargoDeck::IsShortTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
+{
+    return std::find_if (
+        containers.shortTerm.begin (), containers.shortTerm.end (),
+        TypeMappingPredicate {_typeMapping}) != containers.shortTerm.end ();
+}
+
+bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
+{
+    return std::find_if (
+        containers.longTerm.begin (), containers.longTerm.end (),
+        TypeMappingPredicate {_typeMapping}) != containers.longTerm.end ();
+}
+
 CargoDeck &CargoDeck::operator = (CargoDeck &&_other) noexcept
 {
     if (this != &_other)

@@ -36,6 +36,12 @@ struct CreateVolumetricRepresentation
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
+struct CheckIsRepresentationCanBeDropped
+{
+    std::string name;
+    bool expected = false;
+};
+
 struct DropRepresentation
 {
     std::string name;
@@ -63,11 +69,11 @@ using Task = std::variant <
     MoveAssign <struct RepresentationReferenceTag>,
     CopyAssign <struct RepresentationReferenceTag>,
     Delete <struct RepresentationReferenceTag>,
+    CheckIsRepresentationCanBeDropped,
     DropRepresentation,
     OpenAllocator,
     AllocateAndInit,
     CloseAllocator,
-    CheckIsSourceBusy,
     QueryValueToRead,
     QueryValueToEdit,
     QueryRangeToRead,
@@ -84,8 +90,9 @@ using Task = std::variant <
     CursorEdit,
     CursorIncrement,
     CursorDeleteObject,
-    CursorCopy,
-    CursorMove,
+    Move <struct CursorTag>,
+    Copy <struct CursorTag>,
+    Delete <struct CursorTag>,
     CursorClose>;
 
 namespace TestQueryApiDrivers
@@ -99,6 +106,10 @@ namespace ReferenceApiTestImporters
 {
 std::vector <Task> ForRepresentationReference (
     const Reference::Test::Scenario &_scenario, const std::string &_representationName);
+
+std::vector <Task> ForCursor (
+    const Reference::Test::Scenario &_scenario, const std::string &_representationName,
+    const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject);
 } // namespace ReferenceApiTestImporters
 
 class Scenario final

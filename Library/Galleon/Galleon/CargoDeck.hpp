@@ -31,6 +31,12 @@ public:
 
     Handling::Handle <LongTermContainer> AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping);
 
+    bool IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
+
+    bool IsShortTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
+
+    bool IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
+
     /// CargoDeck manages lots of storages with lots of objects, therefore it's not optimal to copy assign it.
     CargoDeck &operator = (const CargoDeck &_other) = delete;
 

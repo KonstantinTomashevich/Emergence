@@ -6,10 +6,6 @@
 
 namespace Emergence::Query::Test::VolumetricQuery
 {
-Scenario ShapeIntersectionCursorManipulations () noexcept;
-
-Scenario RayIntersectionCursorManipulations () noexcept;
-
 Scenario RayIntersections2D () noexcept;
 
 Scenario ShapeIntersections2D () noexcept;
@@ -34,8 +30,6 @@ TEST_CASE (TestName)                                                           \
 }                                                                              \
 
 #define REGISTER_ALL_VOLUMETRIC_QUERY_TESTS(Driver)                            \
-REGISTER_VOLUMETRIC_QUERY_TEST (Driver, ShapeIntersectionCursorManipulations)  \
-REGISTER_VOLUMETRIC_QUERY_TEST (Driver, RayIntersectionCursorManipulations)    \
 REGISTER_VOLUMETRIC_QUERY_TEST (Driver, RayIntersections2D)                    \
 REGISTER_VOLUMETRIC_QUERY_TEST (Driver, ShapeIntersections2D)                  \
 REGISTER_VOLUMETRIC_QUERY_TEST (Driver, Duplicates)                            \

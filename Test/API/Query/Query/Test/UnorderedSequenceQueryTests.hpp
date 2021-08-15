@@ -6,8 +6,6 @@
 
 namespace Emergence::Query::Test::UnorderedSequenceQuery
 {
-Scenario CursorManipulations () noexcept;
-
 Scenario Read () noexcept;
 
 Scenario Edit () noexcept;
@@ -24,7 +22,6 @@ TEST_CASE (TestName)                                                           \
 }                                                                              \
 
 #define REGISTER_ALL_UNORDERED_SEQUENCE_QUERY_TESTS(Driver)                    \
-REGISTER_UNORDERED_SEQUENCE_QUERY_TEST (Driver, CursorManipulations)           \
 REGISTER_UNORDERED_SEQUENCE_QUERY_TEST (Driver, Read)                          \
 REGISTER_UNORDERED_SEQUENCE_QUERY_TEST (Driver, Edit)                          \
 REGISTER_UNORDERED_SEQUENCE_QUERY_TEST (Driver, Delete)                        \

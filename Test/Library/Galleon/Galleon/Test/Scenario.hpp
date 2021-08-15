@@ -36,6 +36,24 @@ struct AcquireLongTermContainer : public ContainerAcquisitionBase
 {
 };
 
+struct ContainerAllocationCheckBase
+{
+    StandardLayout::Mapping mapping;
+    bool expected = false;
+};
+
+struct CheckIsSingletonContainerAllocated final : public ContainerAllocationCheckBase
+{
+};
+
+struct CheckIsShortTermContainerAllocated final : public ContainerAllocationCheckBase
+{
+};
+
+struct CheckIsLongTermContainerAllocated final : public ContainerAllocationCheckBase
+{
+};
+
 struct QueryPreparationBase
 {
     std::string containerName;
@@ -131,6 +149,9 @@ using Task = std::variant <
     MoveAssign <struct ContainerReferenceTag>,
     CopyAssign <struct ContainerReferenceTag>,
     Delete <struct ContainerReferenceTag>,
+    CheckIsSingletonContainerAllocated,
+    CheckIsShortTermContainerAllocated,
+    CheckIsLongTermContainerAllocated,
     PrepareSingletonFetchQuery,
     PrepareSingletonModifyQuery,
     PrepareShortTermInsertQuery,
@@ -171,18 +192,26 @@ using Task = std::variant <
     CursorEdit,
     CursorIncrement,
     CursorDeleteObject,
-    CursorCopy,
-    CursorMove,
+    Move <struct CursorTag>,
+    Copy <struct CursorTag>,
+    Delete <struct CursorTag>,
     CursorClose>;
 
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
 
-namespace TestReferenceApiImporters
+namespace TestReferenceApiDrivers
 {
-Task ForContainerReference (const Reference::Test::Task &_task);
+void ForContainerReference (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor);
 
-Task ForPreparedQuery (const Reference::Test::Task &_task);
-} // namespace TestReferenceApiImporters
+void ForPreparedQuery (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
+    const Task &_queryPreparation);
+
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
+    const Query::Test::Task &_query, const void *_cursorExpectedObject);
+} // namespace TestReferenceApiDrivers
 
 class Scenario final
 {

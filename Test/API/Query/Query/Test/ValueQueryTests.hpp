@@ -8,8 +8,6 @@ namespace Emergence::Query::Test::ValueQuery
 {
 Scenario SimpleLookup () noexcept;
 
-Scenario CursorManipulations () noexcept;
-
 Scenario LookupForNonExistentObject () noexcept;
 
 Scenario LookupForMany () noexcept;
@@ -37,7 +35,6 @@ TEST_CASE (TestName)                                                           \
 
 #define REGISTER_ALL_VALUE_QUERY_TESTS(Driver)                                 \
 REGISTER_VALUE_QUERY_TEST (Driver, SimpleLookup)                               \
-REGISTER_VALUE_QUERY_TEST (Driver, CursorManipulations)                        \
 REGISTER_VALUE_QUERY_TEST (Driver, LookupForNonExistentObject)                 \
 REGISTER_VALUE_QUERY_TEST (Driver, LookupForMany)                              \
 REGISTER_VALUE_QUERY_TEST (Driver, LookupAndEdit)                              \

@@ -1,4 +1,3 @@
-#include <Query/Test/Common.hpp>
 #include <Query/Test/Data.hpp>
 #include <Query/Test/UnorderedSequenceQueryTests.hpp>
 
@@ -13,20 +12,6 @@ Storage RequestStorage (const std::vector <const void *> &_objects)
             Player::Reflection::GetMapping (),
             _objects,
             {Sources::UnorderedSequence {"sequence"}}
-        };
-}
-
-Scenario CursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestStorage ({&HUGO_0_ALIVE_STUNNED}),
-            },
-            TestCursorCopyAndMove (
-                QueryUnorderedSequenceToRead {{"sequence", "cursor"}},
-                QueryUnorderedSequenceToEdit {{"sequence", "cursor"}},
-                &HUGO_0_ALIVE_STUNNED, nullptr, &HUGO_0_ALIVE_STUNNED, nullptr)
         };
 }
 

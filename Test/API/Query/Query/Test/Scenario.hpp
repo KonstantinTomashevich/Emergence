@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -107,12 +108,6 @@ struct Storage final
 
 namespace Tasks
 {
-struct CheckIsSourceBusy
-{
-    std::string name;
-    bool expectedValue = false;
-};
-
 struct QueryBase
 {
     std::string sourceName;
@@ -234,24 +229,10 @@ struct CursorDeleteObject final
     std::string name;
 };
 
-struct CursorCopy final
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct CursorMove final
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
 struct CursorClose final
 {
     std::string name;
 };
-
-std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy &_task);
 
 std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToRead &_task);
 
@@ -293,15 +274,10 @@ std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &
 
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObject &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCopy &_task);
-
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorMove &_task);
-
 std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_task);
 } // namespace Tasks
 
 using Task = std::variant <
-    Tasks::CheckIsSourceBusy,
     Tasks::QuerySingletonToRead,
     Tasks::QuerySingletonToEdit,
     Tasks::QueryUnorderedSequenceToRead,
@@ -322,8 +298,6 @@ using Task = std::variant <
     Tasks::CursorEdit,
     Tasks::CursorIncrement,
     Tasks::CursorDeleteObject,
-    Tasks::CursorCopy,
-    Tasks::CursorMove,
     Tasks::CursorClose>;
 
 struct Scenario final
@@ -331,6 +305,10 @@ struct Scenario final
     std::vector <Storage> storages;
     std::vector <Task> tasks;
 };
+
+/// \brief Query-type agnostic renaming is widely used in tests, therefore it was extracted to utility function.
+Task ChangeQuerySourceAndCursor (
+    Task _query, std::optional <std::string> _newSourceName, std::optional <std::string> _newCursorName);
 
 Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation);
 

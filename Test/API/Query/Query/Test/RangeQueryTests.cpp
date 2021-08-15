@@ -1,6 +1,5 @@
 #include <cassert>
 
-#include <Query/Test/Common.hpp>
 #include <Query/Test/Data.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
 
@@ -48,40 +47,6 @@ static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
                         _field
                     },
             }
-        };
-}
-
-Scenario CursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestPlayerStorage (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE),
-            },
-            TestCursorCopyAndMove (
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
-                QueryRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
-                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED)
-        };
-}
-
-Scenario ReversedCursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestPlayerStorage (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE),
-            },
-            TestCursorCopyAndMove (
-                QueryReversedRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
-                QueryReversedRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED,
-                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED)
         };
 }
 

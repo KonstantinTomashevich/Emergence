@@ -1,6 +1,3 @@
-#include <Galleon/Test/Common.hpp>
-#include <Galleon/CargoDeck.hpp>
-
 #include <Galleon/Test/Scenario.hpp>
 
 #include <Query/Test/Data.hpp>
@@ -8,79 +5,48 @@
 
 #include <Reference/Test/Tests.hpp>
 
-#include <Testing/Testing.hpp>
-
 using namespace Emergence::Galleon::Test;
 
-static std::array <uint8_t, sizeof (Emergence::Query::Test::Player)> UNINITIALIZED_PLAYER {0u};
-
-static std::vector <Task> InitTestContainer (const std::string &_name, bool _isAlreadyInitializedTrivialExpectation)
+static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    if (_isAlreadyInitializedTrivialExpectation)
-    {
-        return
-            {
-                AcquireSingletonContainer {{Emergence::Query::Test::Player::Reflection::GetMapping (), _name}}
-            };
-    }
-    else
-    {
-        return
-            {
-                AcquireSingletonContainer {{Player::Reflection::GetMapping (), _name}},
-                PrepareSingletonModifyQuery {{_name, "temporaryInserter"}},
-                InsertObjects {"temporaryInserter", {&HUGO_0_ALIVE_STUNNED}},
-                Delete <PreparedQueryTag> {"temporaryInserter"},
-            };
-    }
-}
-
-static std::vector <Task> CheckIsTestContainerInitialized (bool _shouldBeInitialized)
-{
-    using namespace Emergence::Query::Test;
-    std::vector <Emergence::Galleon::Test::Task> tasks
+    return
         {
-            AcquireSingletonContainer {{Player::Reflection::GetMapping (), "temporaryReference"}},
-            PrepareSingletonFetchQuery {{"temporaryReference", "temporaryQuery"}},
-            QuerySingletonToRead {{"temporaryQuery", "cursor"}},
+            Player::Reflection::GetMapping (),
+            {&HUGO_0_ALIVE_STUNNED},
+            {Sources::Singleton {"Source"}}
         };
-
-    if (_shouldBeInitialized)
-    {
-        tasks.emplace_back (CursorCheck {"cursor", &HUGO_0_ALIVE_STUNNED});
-    }
-    else
-    {
-        tasks.emplace_back (CursorCheck {"cursor", &UNINITIALIZED_PLAYER});
-    }
-
-    tasks +=
-        {
-            CursorClose {"cursor"},
-            Delete <PreparedQueryTag> {"temporaryQuery"},
-            Delete <ContainerReferenceTag> {"temporaryReference"},
-        };
-
-    return tasks;
 }
 
 static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (
-        _scenario, InitTestContainer, CheckIsTestContainerInitialized, true);
+    TestReferenceApiDrivers::ForContainerReference (_scenario, GetTestStorage ());
 }
 
 static void ExecuteFetchQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario, PrepareSingletonFetchQuery {}, InitTestContainer, CheckIsTestContainerInitialized);
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareSingletonFetchQuery {});
 }
 
 static void ExecuteModifyQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    AdaptPreparedQueryReferenceApiTest (
-        _scenario, PrepareSingletonModifyQuery {}, InitTestContainer, CheckIsTestContainerInitialized);
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario, GetTestStorage (), PrepareSingletonModifyQuery {});
+}
+
+static void ExecuteFetchQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QuerySingletonToRead {{"Source", {}}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+}
+
+static void ExecuteModifyQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForCursor (
+        _scenario, GetTestStorage (), QuerySingletonToEdit {{"Source", {}}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (SingletonContainerReferences)
@@ -101,7 +67,21 @@ REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyQueryReferenceApiT
 
 END_SUITE
 
-BEGIN_SUITE (SingletonContainer)
+BEGIN_SUITE (SingletonFetchQueryCursorReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchQueryCursorReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (SingletonModifyQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (SingletonContainerQueries)
 
 REGISTER_ALL_SINGLETON_QUERY_TESTS (TestQueryApiDriver)
 

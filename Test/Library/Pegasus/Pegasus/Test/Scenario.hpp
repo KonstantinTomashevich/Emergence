@@ -36,6 +36,12 @@ struct CreateVolumetricIndex
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
+struct CheckIsIndexCanBeDropped
+{
+    std::string name;
+    bool expected = false;
+};
+
 struct DropIndex
 {
     std::string name;
@@ -63,11 +69,11 @@ using Task = std::variant <
     MoveAssign <struct IndexReferenceTag>,
     CopyAssign <struct IndexReferenceTag>,
     Delete <struct IndexReferenceTag>,
+    CheckIsIndexCanBeDropped,
     DropIndex,
     OpenAllocator,
     AllocateAndInit,
     CloseAllocator,
-    CheckIsSourceBusy,
     QueryValueToRead,
     QueryValueToEdit,
     QueryRangeToRead,
@@ -84,8 +90,9 @@ using Task = std::variant <
     CursorEdit,
     CursorIncrement,
     CursorDeleteObject,
-    CursorCopy,
-    CursorMove,
+    Move <struct CursorTag>,
+    Copy <struct CursorTag>,
+    Delete <struct CursorTag>,
     CursorClose>;
 
 namespace TestQueryApiDrivers
@@ -98,6 +105,10 @@ void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario);
 namespace ReferenceApiTestImporters
 {
 std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario, const std::string &_indexName);
+
+std::vector <Task> ForCursor (
+    const Reference::Test::Scenario &_scenario, const std::string &_indexName,
+    const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject);
 } // namespace ReferenceApiTestImporters
 
 class Scenario final

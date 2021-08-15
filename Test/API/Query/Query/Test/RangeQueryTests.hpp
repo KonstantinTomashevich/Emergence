@@ -6,10 +6,6 @@
 
 namespace Emergence::Query::Test::RangeQuery
 {
-Scenario CursorManipulations () noexcept;
-
-Scenario ReversedCursorManipulations () noexcept;
-
 Scenario SimpleLookups () noexcept;
 
 Scenario OnStringField () noexcept;
@@ -56,8 +52,6 @@ TEST_CASE (TestName)                                                           \
 }                                                                              \
 
 #define REGISTER_ALL_RANGE_QUERY_TESTS(Driver)                                 \
-REGISTER_RANGE_QUERY_TEST (Driver, CursorManipulations)                        \
-REGISTER_RANGE_QUERY_TEST (Driver, ReversedCursorManipulations)                \
 REGISTER_RANGE_QUERY_TEST (Driver, SimpleLookups)                              \
 REGISTER_RANGE_QUERY_TEST (Driver, OnStringField)                              \
 REGISTER_RANGE_QUERY_TEST (Driver, WithDuplicates)                             \
