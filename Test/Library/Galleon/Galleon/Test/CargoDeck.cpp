@@ -58,12 +58,12 @@ TEST_CASE (MoveAssignment)
                 memcpy (++insertCursor, &KARL_1_ALIVE_IMMOBILIZED, Player::Reflection::GetMapping ().GetObjectSize ());
             }
 
-            return handle->FetchRange (Player::Reflection::id);
+            return handle->FetchAscendingRange (Player::Reflection::id);
         };
 
     SingletonContainer::FetchQuery singletonFetch = InitSingletonContainer ();
     ShortTermContainer::FetchQuery shortTermFetch = InitShortTermContainer ();
-    LongTermContainer::FetchRangeQuery longTermFetchRange = InitLongTermContainer ();
+    LongTermContainer::FetchAscendingRangeQuery longTermFetchRange = InitLongTermContainer ();
 
     auto CheckEquality =
         [] (const void *_object, const void *_source)

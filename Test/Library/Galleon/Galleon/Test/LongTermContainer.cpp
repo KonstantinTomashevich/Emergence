@@ -80,28 +80,28 @@ static void ExecuteModifyValueQueryReferenceApiTest (const Emergence::Reference:
         _scenario, GetTestStorage (), PrepareLongTermModifyValueQuery {{}, {GetPlayedIdField ()}});
 }
 
-static void ExecuteFetchRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteFetchAscendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareLongTermFetchRangeQuery {{}, GetPlayedIdField ()});
+        _scenario, GetTestStorage (), PrepareLongTermFetchAscendingRangeQuery {{}, GetPlayedIdField ()});
 }
 
-static void ExecuteModifyRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteModifyAscendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareLongTermModifyRangeQuery {{}, GetPlayedIdField ()});
+        _scenario, GetTestStorage (), PrepareLongTermModifyAscendingRangeQuery {{}, GetPlayedIdField ()});
 }
 
-static void ExecuteFetchReversedRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteFetchDescendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareLongTermFetchReversedRangeQuery {{}, GetPlayedIdField ()});
+        _scenario, GetTestStorage (), PrepareLongTermFetchDescendingRangeQuery {{}, GetPlayedIdField ()});
 }
 
-static void ExecuteModifyReversedRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteModifyDescendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareLongTermModifyReversedRangeQuery {{}, GetPlayedIdField ()});
+        _scenario, GetTestStorage (), PrepareLongTermModifyDescendingRangeQuery {{}, GetPlayedIdField ()});
 }
 
 static void ExecuteFetchShapeIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -144,7 +144,8 @@ static void ExecuteModifyValueQueryCursorReferenceApiTest (const Emergence::Refe
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
-static void ExecuteFetchRangeQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteFetchAscendingRangeQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
@@ -152,7 +153,8 @@ static void ExecuteFetchRangeQueryCursorReferenceApiTest (const Emergence::Refer
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
-static void ExecuteModifyRangeQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteModifyAscendingRangeQueryCursorReferenceApiTest (
+    const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
@@ -160,7 +162,7 @@ static void ExecuteModifyRangeQueryCursorReferenceApiTest (const Emergence::Refe
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
-static void ExecuteFetchReversedRangeQueryCursorReferenceApiTest (
+static void ExecuteFetchDescendingRangeQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
@@ -169,7 +171,7 @@ static void ExecuteFetchReversedRangeQueryCursorReferenceApiTest (
         &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
 }
 
-static void ExecuteModifyReversedRangeQueryCursorReferenceApiTest (
+static void ExecuteModifyDescendingRangeQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
@@ -244,27 +246,27 @@ REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyValueQueryReferenc
 
 END_SUITE
 
-BEGIN_SUITE (LongTermFetchRangeQueryReferences)
+BEGIN_SUITE (LongTermFetchAscendingRangeQueryReferences)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchRangeQueryReferenceApiTest)
-
-END_SUITE
-
-BEGIN_SUITE (LongTermModifyRangeQueryReferences)
-
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyRangeQueryReferenceApiTest)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchAscendingRangeQueryReferenceApiTest)
 
 END_SUITE
 
-BEGIN_SUITE (LongTermFetchReversedRangeQueryReferences)
+BEGIN_SUITE (LongTermModifyAscendingRangeQueryReferences)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchReversedRangeQueryReferenceApiTest)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyAscendingRangeQueryReferenceApiTest)
 
 END_SUITE
 
-BEGIN_SUITE (LongTermModifyReversedRangeQueryReferences)
+BEGIN_SUITE (LongTermFetchDescendingRangeQueryReferences)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyReversedRangeQueryReferenceApiTest)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchDescendingRangeQueryReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (LongTermModifyDescendingRangeQueryReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyDescendingRangeQueryReferenceApiTest)
 
 END_SUITE
 
@@ -306,31 +308,31 @@ REGISTER_REFERENCE_TEST (ExecuteModifyValueQueryCursorReferenceApiTest, MoveChai
 
 END_SUITE
 
-BEGIN_SUITE (LongTermFetchRangeQueryCursorReferences)
+BEGIN_SUITE (LongTermFetchAscendingRangeQueryCursorReferences)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchRangeQueryCursorReferenceApiTest)
-
-END_SUITE
-
-BEGIN_SUITE (LongTermModifyRangeQueryCursorReferences)
-
-REGISTER_REFERENCE_TEST (ExecuteModifyRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
-
-REGISTER_REFERENCE_TEST (ExecuteModifyRangeQueryCursorReferenceApiTest, MoveChain)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchAscendingRangeQueryCursorReferenceApiTest)
 
 END_SUITE
 
-BEGIN_SUITE (LongTermFetchReversedRangeQueryCursorReferences)
+BEGIN_SUITE (LongTermModifyAscendingRangeQueryCursorReferences)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchReversedRangeQueryCursorReferenceApiTest)
+REGISTER_REFERENCE_TEST (ExecuteModifyAscendingRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyAscendingRangeQueryCursorReferenceApiTest, MoveChain)
 
 END_SUITE
 
-BEGIN_SUITE (LongTermModifyReversedRangeQueryCursorReferences)
+BEGIN_SUITE (LongTermFetchDescendingRangeQueryCursorReferences)
 
-REGISTER_REFERENCE_TEST (ExecuteModifyReversedRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchDescendingRangeQueryCursorReferenceApiTest)
 
-REGISTER_REFERENCE_TEST (ExecuteModifyReversedRangeQueryCursorReferenceApiTest, MoveChain)
+END_SUITE
+
+BEGIN_SUITE (LongTermModifyDescendingRangeQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyDescendingRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifyDescendingRangeQueryCursorReferenceApiTest, MoveChain)
 
 END_SUITE
 

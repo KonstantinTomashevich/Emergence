@@ -94,22 +94,22 @@ struct PrepareLongTermModifyValueQuery : public QueryPreparationBase
     std::vector <StandardLayout::FieldId> keyFields;
 };
 
-struct PrepareLongTermFetchRangeQuery : public QueryPreparationBase
+struct PrepareLongTermFetchAscendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
 
-struct PrepareLongTermModifyRangeQuery : public QueryPreparationBase
+struct PrepareLongTermModifyAscendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
 
-struct PrepareLongTermFetchReversedRangeQuery : public QueryPreparationBase
+struct PrepareLongTermFetchDescendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
 
-struct PrepareLongTermModifyReversedRangeQuery : public QueryPreparationBase
+struct PrepareLongTermModifyDescendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
@@ -160,10 +160,10 @@ using Task = std::variant <
     PrepareLongTermInsertQuery,
     PrepareLongTermFetchValueQuery,
     PrepareLongTermModifyValueQuery,
-    PrepareLongTermFetchRangeQuery,
-    PrepareLongTermModifyRangeQuery,
-    PrepareLongTermFetchReversedRangeQuery,
-    PrepareLongTermModifyReversedRangeQuery,
+    PrepareLongTermFetchAscendingRangeQuery,
+    PrepareLongTermModifyAscendingRangeQuery,
+    PrepareLongTermFetchDescendingRangeQuery,
+    PrepareLongTermModifyDescendingRangeQuery,
     PrepareLongTermFetchShapeIntersectionQuery,
     PrepareLongTermModifyShapeIntersectionQuery,
     PrepareLongTermFetchRayIntersectionQuery,

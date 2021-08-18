@@ -25,10 +25,10 @@ using PreparedQuery = std::variant <
     LongTermContainer::InsertQuery,
     LongTermContainer::FetchValueQuery,
     LongTermContainer::ModifyValueQuery,
-    LongTermContainer::FetchRangeQuery,
-    LongTermContainer::ModifyRangeQuery,
-    LongTermContainer::FetchReversedRangeQuery,
-    LongTermContainer::ModifyReversedRangeQuery,
+    LongTermContainer::FetchAscendingRangeQuery,
+    LongTermContainer::ModifyAscendingRangeQuery,
+    LongTermContainer::FetchDescendingRangeQuery,
+    LongTermContainer::ModifyDescendingRangeQuery,
     LongTermContainer::FetchShapeIntersectionQuery,
     LongTermContainer::ModifyShapeIntersectionQuery,
     LongTermContainer::FetchRayIntersectionQuery,
@@ -41,10 +41,10 @@ using Cursor = std::variant <
     ShortTermContainer::ModifyQuery::Cursor,
     LongTermContainer::FetchValueQuery::Cursor,
     LongTermContainer::ModifyValueQuery::Cursor,
-    LongTermContainer::FetchRangeQuery::Cursor,
-    LongTermContainer::ModifyRangeQuery::Cursor,
-    LongTermContainer::FetchReversedRangeQuery::Cursor,
-    LongTermContainer::ModifyReversedRangeQuery::Cursor,
+    LongTermContainer::FetchAscendingRangeQuery::Cursor,
+    LongTermContainer::ModifyAscendingRangeQuery::Cursor,
+    LongTermContainer::FetchDescendingRangeQuery::Cursor,
+    LongTermContainer::ModifyDescendingRangeQuery::Cursor,
     LongTermContainer::FetchShapeIntersectionQuery::Cursor,
     LongTermContainer::ModifyShapeIntersectionQuery::Cursor,
     LongTermContainer::FetchRayIntersectionQuery::Cursor,
@@ -239,32 +239,32 @@ void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyValueQu
     AddObject <PreparedQuery> (_context, _task.queryName, container->ModifyValue (_task.keyFields));
 }
 
-void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchRangeQuery &_task)
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchAscendingRangeQuery &_task)
 {
     auto &container = std::get <Handling::Handle <LongTermContainer>> (
         GetObject <ContainerReference> (_context, _task.containerName));
-    AddObject <PreparedQuery> (_context, _task.queryName, container->FetchRange (_task.keyField));
+    AddObject <PreparedQuery> (_context, _task.queryName, container->FetchAscendingRange (_task.keyField));
 }
 
-void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyRangeQuery &_task)
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyAscendingRangeQuery &_task)
 {
     auto &container = std::get <Handling::Handle <LongTermContainer>> (
         GetObject <ContainerReference> (_context, _task.containerName));
-    AddObject <PreparedQuery> (_context, _task.queryName, container->ModifyRange (_task.keyField));
+    AddObject <PreparedQuery> (_context, _task.queryName, container->ModifyAscendingRange (_task.keyField));
 }
 
-void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchReversedRangeQuery &_task)
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchDescendingRangeQuery &_task)
 {
     auto &container = std::get <Handling::Handle <LongTermContainer>> (
         GetObject <ContainerReference> (_context, _task.containerName));
-    AddObject <PreparedQuery> (_context, _task.queryName, container->FetchReversedRange (_task.keyField));
+    AddObject <PreparedQuery> (_context, _task.queryName, container->FetchDescendingRange (_task.keyField));
 }
 
-void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyReversedRangeQuery &_task)
+void ExecuteTask (ExecutionContext &_context, const PrepareLongTermModifyDescendingRangeQuery &_task)
 {
     auto &container = std::get <Handling::Handle <LongTermContainer>> (
         GetObject <ContainerReference> (_context, _task.containerName));
-    AddObject <PreparedQuery> (_context, _task.queryName, container->ModifyReversedRange (_task.keyField));
+    AddObject <PreparedQuery> (_context, _task.queryName, container->ModifyDescendingRange (_task.keyField));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareLongTermFetchShapeIntersectionQuery &_task)
@@ -379,7 +379,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
 {
     auto &query =
-        std::get <LongTermContainer::FetchRangeQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
+        std::get <LongTermContainer::FetchAscendingRangeQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.minValue, _task.maxValue));
 }
@@ -387,14 +387,15 @@ void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_task)
 {
     auto &query =
-        std::get <LongTermContainer::ModifyRangeQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
+        std::get <LongTermContainer::ModifyAscendingRangeQuery> (
+            GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &_task)
 {
-    auto &query = std::get <LongTermContainer::FetchReversedRangeQuery> (
+    auto &query = std::get <LongTermContainer::FetchDescendingRangeQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.minValue, _task.maxValue));
@@ -402,7 +403,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &
 
 void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &_task)
 {
-    auto &query = std::get <LongTermContainer::ModifyReversedRangeQuery> (
+    auto &query = std::get <LongTermContainer::ModifyDescendingRangeQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.minValue, _task.maxValue));
@@ -546,27 +547,27 @@ std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyVal
                    _task.containerName << "\" on fields" << _task.keyFields << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const PrepareLongTermFetchRangeQuery &_task)
+std::ostream &operator << (std::ostream &_output, const PrepareLongTermFetchAscendingRangeQuery &_task)
 {
-    return _output << "Prepare fetch range query \"" << _task.queryName << "\" for long term container \"" <<
-                   _task.containerName << "\" on field " << _task.keyField << ".";
+    return _output << "Prepare fetch ascending range query \"" << _task.queryName <<
+                   "\" for long term container \"" << _task.containerName << "\" on field " << _task.keyField << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyRangeQuery &_task)
+std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyAscendingRangeQuery &_task)
 {
-    return _output << "Prepare modify range query \"" << _task.queryName << "\" for long term container \"" <<
-                   _task.containerName << "\" on field " << _task.keyField << ".";
+    return _output << "Prepare modify ascending range query \"" << _task.queryName <<
+                   "\" for long term container \"" << _task.containerName << "\" on field " << _task.keyField << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const PrepareLongTermFetchReversedRangeQuery &_task)
+std::ostream &operator << (std::ostream &_output, const PrepareLongTermFetchDescendingRangeQuery &_task)
 {
-    return _output << "Prepare fetch reversed range query \"" << _task.queryName << "\" for long term container \"" <<
-                   _task.containerName << "\" on field " << _task.keyField << ".";
+    return _output << "Prepare fetch descending range query \"" << _task.queryName <<
+                   "\" for long term container \"" << _task.containerName << "\" on field " << _task.keyField << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyReversedRangeQuery &_task)
+std::ostream &operator << (std::ostream &_output, const PrepareLongTermModifyDescendingRangeQuery &_task)
 {
-    return _output << "Prepare modify reversed range query \"" << _task.queryName <<
+    return _output << "Prepare modify descending range query \"" << _task.queryName <<
                    "\" for long term container \"" << _task.containerName << "\" on field " << _task.keyField << ".";
 }
 
@@ -668,27 +669,29 @@ Task ImportTask (const QueryValueToEdit &_task)
 template <>
 Task ImportTask (const QueryAscendingRangeToRead &_task)
 {
-    return QueryAscendingRangeToRead {{{_task.sourceName + "::Fetch", _task.cursorName}, _task.minValue, _task.maxValue}};
+    return QueryAscendingRangeToRead {{{_task.sourceName + "::FetchAscending", _task.cursorName},
+                                          _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryAscendingRangeToEdit &_task)
 {
-    return QueryAscendingRangeToEdit {{{_task.sourceName + "::Modify", _task.cursorName}, _task.minValue, _task.maxValue}};
+    return QueryAscendingRangeToEdit {{{_task.sourceName + "::ModifyAscending", _task.cursorName},
+                                          _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryDescendingRangeToRead &_task)
 {
-    return QueryDescendingRangeToRead {{{_task.sourceName + "::FetchReversed", _task.cursorName},
-                                         _task.minValue, _task.maxValue}};
+    return QueryDescendingRangeToRead {{{_task.sourceName + "::FetchDescending", _task.cursorName},
+                                           _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryDescendingRangeToEdit &_task)
 {
-    return QueryDescendingRangeToEdit {{{_task.sourceName + "::ModifyReversed", _task.cursorName},
-                                         _task.minValue, _task.maxValue}};
+    return QueryDescendingRangeToEdit {{{_task.sourceName + "::ModifyDescending", _task.cursorName},
+                                           _task.minValue, _task.maxValue}};
 }
 
 template <>
@@ -816,20 +819,20 @@ static std::vector <Task> ImportStorage (
                 else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Range>)
                 {
                     tasks.emplace_back (
-                        PrepareLongTermFetchRangeQuery
-                            {{_containerName, _source.name + "::Fetch"}, _source.queriedField});
+                        PrepareLongTermFetchAscendingRangeQuery
+                            {{_containerName, _source.name + "::FetchAscending"}, _source.queriedField});
 
                     tasks.emplace_back (
-                        PrepareLongTermModifyRangeQuery
-                            {{_containerName, _source.name + "::Modify"}, _source.queriedField});
+                        PrepareLongTermModifyAscendingRangeQuery
+                            {{_containerName, _source.name + "::ModifyAscending"}, _source.queriedField});
 
                     tasks.emplace_back (
-                        PrepareLongTermFetchReversedRangeQuery
-                            {{_containerName, _source.name + "::FetchReversed"}, _source.queriedField});
+                        PrepareLongTermFetchDescendingRangeQuery
+                            {{_containerName, _source.name + "::FetchDescending"}, _source.queriedField});
 
                     tasks.emplace_back (
-                        PrepareLongTermModifyReversedRangeQuery
-                            {{_containerName, _source.name + "::ModifyReversed"}, _source.queriedField});
+                        PrepareLongTermModifyDescendingRangeQuery
+                            {{_containerName, _source.name + "::ModifyDescending"}, _source.queriedField});
                 }
                 else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Volumetric>)
                 {
