@@ -22,10 +22,10 @@ using IndexReference = std::variant <
 using Cursor = std::variant <
     HashIndex::ReadCursor,
     HashIndex::EditCursor,
-    OrderedIndex::ReadCursor,
-    OrderedIndex::EditCursor,
-    OrderedIndex::ReversedReadCursor,
-    OrderedIndex::ReversedEditCursor,
+    OrderedIndex::AscendingReadCursor,
+    OrderedIndex::AscendingEditCursor,
+    OrderedIndex::DescendingReadCursor,
+    OrderedIndex::DescendingEditCursor,
     VolumetricIndex::ShapeIntersectionReadCursor,
     VolumetricIndex::ShapeIntersectionEditCursor,
     VolumetricIndex::RayIntersectionReadCursor,
@@ -315,7 +315,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToRead ({_task.minValue}, {_task.maxValue}));
+                        index->LookupToReadAscending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
@@ -324,7 +324,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToEdit ({_task.minValue}, {_task.maxValue}));
+                        index->LookupToEditAscending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
@@ -333,7 +333,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_t
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToReadReversed ({_task.minValue}, {_task.maxValue}));
+                        index->LookupToReadDescending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
@@ -342,7 +342,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_t
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToEditReversed ({_task.minValue}, {_task.maxValue}));
+                        index->LookupToEditDescending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
@@ -452,7 +452,9 @@ std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
     return _output << "Close allocator.";
 }
 
-Task ImportQueryApiTask (const Query::Test::Task &_task)
+namespace TestQueryApiDrivers
+{
+Task ImportTask (const Query::Test::Task &_task)
 {
     return std::visit (
         [] (const auto &_unwrappedTask) -> Task
@@ -535,21 +537,22 @@ static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, boo
 
     for (const Query::Test::Task &task : _scenario.tasks)
     {
-        tasks.emplace_back (ImportQueryApiTask (task));
+        tasks.emplace_back (ImportTask (task));
     }
 
     Scenario (_scenario.storages[0u].dataType, tasks);
 }
 
-void TestQueryApiDrivers::CreateIndicesThanInsertRecords (const Query::Test::Scenario &_scenario)
+void CreateIndicesThanInsertRecords (const Query::Test::Scenario &_scenario)
 {
     ExecuteQueryApiScenario (_scenario, false);
 }
 
-void TestQueryApiDrivers::InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario)
+void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario)
 {
     ExecuteQueryApiScenario (_scenario, true);
 }
+} // namespace TestQueryApiDrivers
 
 namespace ReferenceApiTestImporters
 {
@@ -614,7 +617,7 @@ std::vector <Task> ForCursor (
                 using TaskType = std::decay_t <decltype (_task)>;
                 if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
                 {
-                    tasks.emplace_back (ImportQueryApiTask (
+                    tasks.emplace_back (TestQueryApiDrivers::ImportTask (
                         Query::Test::ChangeQuerySourceAndCursor (_sourceQuery, _indexName, _task.name)));
                 }
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)

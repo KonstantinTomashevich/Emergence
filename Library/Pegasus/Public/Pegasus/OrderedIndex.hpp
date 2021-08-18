@@ -22,34 +22,34 @@ public:
         const void *boundValue;
     };
 
-    class ReadCursor final
+    class AscendingReadCursor final
     {
     public:
-        EMERGENCE_READ_CURSOR_OPERATIONS (ReadCursor);
+        EMERGENCE_READ_CURSOR_OPERATIONS (AscendingReadCursor);
 
     private:
         friend class OrderedIndex;
 
-        ReadCursor (OrderedIndex *_index,
-                    std::vector <const void *>::const_iterator _begin,
-                    std::vector <const void *>::const_iterator _end) noexcept;
+        AscendingReadCursor (OrderedIndex *_index,
+                             std::vector <const void *>::const_iterator _begin,
+                             std::vector <const void *>::const_iterator _end) noexcept;
 
         OrderedIndex *index;
         std::vector <const void *>::const_iterator current;
         std::vector <const void *>::const_iterator end;
     };
 
-    class EditCursor final
+    class AscendingEditCursor final
     {
     public:
-        EMERGENCE_EDIT_CURSOR_OPERATIONS (EditCursor);
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (AscendingEditCursor);
 
     private:
         friend class OrderedIndex;
 
-        EditCursor (OrderedIndex *_index,
-                    std::vector <const void *>::iterator _begin,
-                    std::vector <const void *>::iterator _end) noexcept;
+        AscendingEditCursor (OrderedIndex *_index,
+                             std::vector <const void *>::iterator _begin,
+                             std::vector <const void *>::iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
@@ -58,34 +58,34 @@ public:
         std::vector <const void *>::iterator end;
     };
 
-    class ReversedReadCursor final
+    class DescendingReadCursor final
     {
     public:
-        EMERGENCE_READ_CURSOR_OPERATIONS (ReversedReadCursor);
+        EMERGENCE_READ_CURSOR_OPERATIONS (DescendingReadCursor);
 
     private:
         friend class OrderedIndex;
 
-        ReversedReadCursor (OrderedIndex *_index,
-                            std::vector <const void *>::const_reverse_iterator _begin,
-                            std::vector <const void *>::const_reverse_iterator _end) noexcept;
+        DescendingReadCursor (OrderedIndex *_index,
+                              std::vector <const void *>::const_reverse_iterator _begin,
+                              std::vector <const void *>::const_reverse_iterator _end) noexcept;
 
         OrderedIndex *index;
         std::vector <const void *>::const_reverse_iterator current;
         std::vector <const void *>::const_reverse_iterator end;
     };
 
-    class ReversedEditCursor final
+    class DescendingEditCursor final
     {
     public:
-        EMERGENCE_EDIT_CURSOR_OPERATIONS (ReversedEditCursor);
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (DescendingEditCursor);
 
     private:
         friend class OrderedIndex;
 
-        ReversedEditCursor (OrderedIndex *_index,
-                            std::vector <const void *>::reverse_iterator _begin,
-                            std::vector <const void *>::reverse_iterator _end) noexcept;
+        DescendingEditCursor (OrderedIndex *_index,
+                              std::vector <const void *>::reverse_iterator _begin,
+                              std::vector <const void *>::reverse_iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
@@ -100,15 +100,13 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     OrderedIndex (OrderedIndex &&_other) = delete;
 
-    ReadCursor LookupToRead (const Bound &_min, const Bound &_max) noexcept;
+    AscendingReadCursor LookupToReadAscending (const Bound &_min, const Bound &_max) noexcept;
 
-    // \brief Executes ::LookupToRead, but returns cursor with reversed iteration order.
-    ReversedReadCursor LookupToReadReversed (const Bound &_min, const Bound &_max) noexcept;
+    DescendingReadCursor LookupToReadDescending (const Bound &_min, const Bound &_max) noexcept;
 
-    EditCursor LookupToEdit (const Bound &_min, const Bound &_max) noexcept;
+    AscendingEditCursor LookupToEditAscending (const Bound &_min, const Bound &_max) noexcept;
 
-    // \brief Executes ::LookupToEdit, but returns cursor with reversed iteration order.
-    ReversedEditCursor LookupToEditReversed (const Bound &_min, const Bound &_max) noexcept;
+    DescendingEditCursor LookupToEditDescending (const Bound &_min, const Bound &_max) noexcept;
 
     StandardLayout::Field GetIndexedField () const noexcept;
 
