@@ -477,62 +477,66 @@ Task ImportTask (const Query::Test::Task &_task)
         _task);
 }
 
-static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, bool _insertFirst)
+std::vector <Task> InsertRecords (const Query::Test::Storage &_storage)
+{
+    std::vector <Task> tasks {OpenAllocator {}};
+    for (const void *record : _storage.objectsToInsert)
+    {
+        tasks.emplace_back (AllocateAndInit {record});
+    }
+
+    tasks.emplace_back (CloseAllocator {});
+    return tasks;
+}
+
+std::vector <Task> CreateIndices (const Query::Test::Storage &_storage)
+{
+    std::vector <Task> tasks;
+    for (const Query::Test::Source &source : _storage.sources)
+    {
+        std::visit (
+            [&tasks] (const auto &_source)
+            {
+                using Source = std::decay_t <decltype (_source)>;
+                if constexpr (std::is_same_v <Source, Query::Test::Sources::Value>)
+                {
+                    tasks.emplace_back (CreateHashIndex {_source.name, _source.queriedFields});
+                }
+                else if constexpr (std::is_same_v <Source, Query::Test::Sources::Range>)
+                {
+                    tasks.emplace_back (CreateOrderedIndex {_source.name, _source.queriedField});
+                }
+                else if constexpr (std::is_same_v <Source, Query::Test::Sources::Volumetric>)
+                {
+                    tasks.emplace_back (CreateVolumetricIndex {_source.name, _source.dimensions});
+                }
+                else
+                {
+                    REQUIRE_WITH_MESSAGE (false, "Only Value, Range and Volumetric sources are supported!");
+                }
+            },
+            source);
+    }
+
+    return tasks;
+}
+
+static void ExecuteScenario (const Query::Test::Scenario &_scenario, bool _insertFirst)
 {
     std::vector <Task> tasks;
     REQUIRE_WITH_MESSAGE (
         _scenario.storages.size () == 1u,
         "Only one-storage tests are supported right now, because Pegasus storages are independent.");
 
-    auto InsertRecords = [&_scenario, &tasks] ()
-    {
-        tasks.emplace_back (OpenAllocator {});
-        for (const void *record : _scenario.storages[0u].objectsToInsert)
-        {
-            tasks.emplace_back (AllocateAndInit {record});
-        }
-
-        tasks.emplace_back (CloseAllocator {});
-    };
-
-    auto CreateIndices = [&_scenario, &tasks] ()
-    {
-        for (const Query::Test::Source &source : _scenario.storages[0u].sources)
-        {
-            std::visit (
-                [&tasks] (const auto &_unwrappedSource)
-                {
-                    using Source = std::decay_t <decltype (_unwrappedSource)>;
-                    if constexpr (std::is_same_v <Source, Query::Test::Sources::Value>)
-                    {
-                        tasks.emplace_back (CreateHashIndex {_unwrappedSource.name, _unwrappedSource.queriedFields});
-                    }
-                    else if constexpr (std::is_same_v <Source, Query::Test::Sources::Range>)
-                    {
-                        tasks.emplace_back (CreateOrderedIndex {_unwrappedSource.name, _unwrappedSource.queriedField});
-                    }
-                    else if constexpr (std::is_same_v <Source, Query::Test::Sources::Volumetric>)
-                    {
-                        tasks.emplace_back (CreateVolumetricIndex {_unwrappedSource.name, _unwrappedSource.dimensions});
-                    }
-                    else
-                    {
-                        REQUIRE_WITH_MESSAGE (false, "Only Value, Range and Volumetric sources are supported!");
-                    }
-                },
-                source);
-        }
-    };
-
     if (_insertFirst)
     {
-        InsertRecords ();
-        CreateIndices ();
+        tasks += InsertRecords (_scenario.storages[0u]);
+        tasks += CreateIndices (_scenario.storages[0u]);
     }
     else
     {
-        CreateIndices ();
-        InsertRecords ();
+        tasks += CreateIndices (_scenario.storages[0u]);
+        tasks += InsertRecords (_scenario.storages[0u]);
     }
 
     for (const Query::Test::Task &task : _scenario.tasks)
@@ -545,29 +549,43 @@ static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, boo
 
 void CreateIndicesThanInsertRecords (const Query::Test::Scenario &_scenario)
 {
-    ExecuteQueryApiScenario (_scenario, false);
+    ExecuteScenario (_scenario, false);
 }
 
 void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario)
 {
-    ExecuteQueryApiScenario (_scenario, true);
+    ExecuteScenario (_scenario, true);
 }
 } // namespace TestQueryApiDrivers
 
 namespace ReferenceApiTestImporters
 {
-std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario, const std::string &_indexName)
+std::string ExtractSourceName (const Query::Test::Source &_source)
 {
-    std::vector <Task> tasks;
+    return std::visit (
+        [] (const auto &_unwrappedSource)
+        {
+            return _unwrappedSource.name;
+        },
+        _source);
+}
+
+void ForIndexReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage)
+{
+    REQUIRE (_storage.sources.size () == 1u);
+    const std::string indexName = ExtractSourceName (_storage.sources[0u]);
+    std::vector <Task> tasks = TestQueryApiDrivers::CreateIndices (_storage);
+    tasks += TestQueryApiDrivers::InsertRecords (_storage);
+
     for (const Reference::Test::Task &packedTask : _scenario)
     {
         std::visit (
-            [&tasks, &_indexName] (const auto &_task)
+            [&tasks, &indexName] (const auto &_task)
             {
                 using TaskType = std::decay_t <decltype (_task)>;
                 if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
                 {
-                    tasks.emplace_back (Copy <IndexReferenceTag> {_indexName, _task.name});
+                    tasks.emplace_back (Copy <IndexReferenceTag> {indexName, _task.name});
                 }
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
                 {
@@ -591,7 +609,7 @@ std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario
                 }
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
                 {
-                    tasks.emplace_back (CheckIsIndexCanBeDropped {_indexName, !_task.hasAnyReferences});
+                    tasks.emplace_back (CheckIsIndexCanBeDropped {indexName, !_task.hasAnyReferences});
                 }
                 else
                 {
@@ -601,24 +619,29 @@ std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario
             packedTask);
     }
 
-    return tasks;
+    tasks.emplace_back (DropIndex {indexName});
+    Scenario {_storage.dataType, tasks};
 }
 
-std::vector <Task> ForCursor (
-    const Reference::Test::Scenario &_scenario, const std::string &_indexName,
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
     const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject)
 {
-    std::vector <Task> tasks;
+    REQUIRE (_storage.sources.size () == 1u);
+    const std::string indexName = ExtractSourceName (_storage.sources[0u]);
+    std::vector <Task> tasks = TestQueryApiDrivers::CreateIndices (_storage);
+    tasks += TestQueryApiDrivers::InsertRecords (_storage);
+
     for (const Reference::Test::Task &packedTask : _scenario)
     {
         std::visit (
-            [&tasks, &_indexName, &_sourceQuery, _expectedPointedObject] (const auto &_task)
+            [&tasks, &indexName, &_sourceQuery, _expectedPointedObject] (const auto &_task)
             {
                 using TaskType = std::decay_t <decltype (_task)>;
                 if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
                 {
                     tasks.emplace_back (TestQueryApiDrivers::ImportTask (
-                        Query::Test::ChangeQuerySourceAndCursor (_sourceQuery, _indexName, _task.name)));
+                        Query::Test::ChangeQuerySourceAndCursor (_sourceQuery, indexName, _task.name)));
                 }
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
                 {
@@ -637,7 +660,7 @@ std::vector <Task> ForCursor (
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
                 {
                     tasks.emplace_back (
-                        CheckIsIndexCanBeDropped {_indexName, !_task.hasAnyReferences});
+                        CheckIsIndexCanBeDropped {indexName, !_task.hasAnyReferences});
                 }
                 else
                 {
@@ -647,7 +670,8 @@ std::vector <Task> ForCursor (
             packedTask);
     }
 
-    return tasks;
+    tasks.emplace_back (DropIndex {indexName});
+    Scenario {_storage.dataType, tasks};
 }
 } // namespace ReferenceApiTestImporters
 

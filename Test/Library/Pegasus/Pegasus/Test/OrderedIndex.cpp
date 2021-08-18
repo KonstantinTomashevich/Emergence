@@ -10,56 +10,48 @@
 
 using namespace Emergence::Pegasus::Test;
 
-static const char *const TEST_REPRESENTATION_NAME = "source";
-
-static void ExecuteReferenceApiTest (const std::vector <Task> &_importedScenario)
+static Emergence::Query::Test::Storage GetTestStorage ()
 {
-    std::vector <Task> tasks
+    using namespace Emergence::Query::Test;
+    return
         {
-            CreateOrderedIndex {TEST_REPRESENTATION_NAME, Emergence::Query::Test::Player::Reflection::id},
-            OpenAllocator {},
-            AllocateAndInit {&Emergence::Query::Test::HUGO_0_ALIVE_STUNNED},
-            AllocateAndInit {&Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED},
-            CloseAllocator {},
+            Player::Reflection::GetMapping (),
+            {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+            {Sources::Range {"Source", Player::Reflection::id}}
         };
-
-    tasks += _importedScenario;
-    tasks.emplace_back (DropIndex {TEST_REPRESENTATION_NAME});
-    Scenario (Emergence::Query::Test::Player::Reflection::GetMapping (), tasks);
 }
 
 static void ExecuteIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (
-        ReferenceApiTestImporters::ForIndexReference (_scenario, TEST_REPRESENTATION_NAME));
+    ReferenceApiTestImporters::ForIndexReference (_scenario, GetTestStorage ());
 }
 
 static void ExecuteAscendingReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryAscendingRangeToRead {{{}, nullptr, nullptr}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryAscendingRangeToRead {{{}, nullptr, nullptr}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteAscendingEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryAscendingRangeToEdit {{{}, nullptr, nullptr}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryAscendingRangeToEdit {{{}, nullptr, nullptr}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteDescendingReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryDescendingRangeToRead {{{}, nullptr, nullptr}},
-        &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryDescendingRangeToRead {{{}, nullptr, nullptr}},
+        &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED);
 }
 
 static void ExecuteDescendingEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryDescendingRangeToEdit {{{}, nullptr, nullptr}},
-        &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryDescendingRangeToEdit {{{}, nullptr, nullptr}},
+        &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED);
 }
 
 BEGIN_SUITE (OrderedIndexReference)

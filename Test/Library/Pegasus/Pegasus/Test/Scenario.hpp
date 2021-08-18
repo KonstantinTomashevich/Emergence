@@ -104,10 +104,10 @@ void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario);
 
 namespace ReferenceApiTestImporters
 {
-std::vector <Task> ForIndexReference (const Reference::Test::Scenario &_scenario, const std::string &_indexName);
+void ForIndexReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage);
 
-std::vector <Task> ForCursor (
-    const Reference::Test::Scenario &_scenario, const std::string &_indexName,
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
     const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject);
 } // namespace ReferenceApiTestImporters
 

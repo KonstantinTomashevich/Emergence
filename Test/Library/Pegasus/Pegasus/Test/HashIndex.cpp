@@ -8,41 +8,34 @@
 
 using namespace Emergence::Pegasus::Test;
 
-static const char *const TEST_REPRESENTATION_NAME = "source";
-
-static void ExecuteReferenceApiTest (const std::vector <Task> &_importedScenario)
+static Emergence::Query::Test::Storage GetTestStorage ()
 {
-    std::vector <Task> tasks
-        {
-            CreateHashIndex {TEST_REPRESENTATION_NAME, {Emergence::Query::Test::Player::Reflection::id}},
-            OpenAllocator {},
-            AllocateAndInit {&Emergence::Query::Test::HUGO_0_ALIVE_STUNNED},
-            CloseAllocator {},
-        };
-
-    tasks += _importedScenario;
-    tasks.emplace_back (DropIndex {TEST_REPRESENTATION_NAME});
-    Scenario (Emergence::Query::Test::Player::Reflection::GetMapping (), tasks);
+    using namespace Emergence::Query::Test;
+    return
+    {
+        Player::Reflection::GetMapping (),
+        {&HUGO_0_ALIVE_STUNNED},
+        {Sources::Value {"Source", {Player::Reflection::id}}}
+    };
 }
 
 static void ExecuteIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (
-        ReferenceApiTestImporters::ForIndexReference (_scenario, TEST_REPRESENTATION_NAME));
+    ReferenceApiTestImporters::ForIndexReference (_scenario, GetTestStorage ());
 }
 
 static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (HashIndexReference)

@@ -14,41 +14,34 @@ bool Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker () 
     return true;
 }
 
-static const char *const TEST_REPRESENTATION_NAME = "Source";
-
-static void ExecuteReferenceApiTest (const std::vector <Task> &_importedScenario)
+static Emergence::Query::Test::Storage GetTestStorage ()
 {
-    std::vector <Task> tasks
+    using namespace Emergence::Query::Test;
+    return
         {
-            CreatePointRepresentation {TEST_REPRESENTATION_NAME, {Emergence::Query::Test::Player::Reflection::id}},
-            OpenAllocator {},
-            AllocateAndInit {&Emergence::Query::Test::HUGO_0_ALIVE_STUNNED},
-            CloseAllocator {},
+            Player::Reflection::GetMapping (),
+            {&HUGO_0_ALIVE_STUNNED},
+            {Sources::Value {"Source", {Player::Reflection::id}}}
         };
-
-    tasks += _importedScenario;
-    tasks.emplace_back (DropRepresentation {TEST_REPRESENTATION_NAME});
-    Scenario (Emergence::Query::Test::Player::Reflection::GetMapping (), tasks);
 }
 
 static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (
-        ReferenceApiTestImporters::ForRepresentationReference (_scenario, TEST_REPRESENTATION_NAME));
+    ReferenceApiTestImporters::ForRepresentationReference (_scenario, GetTestStorage ());
 }
 
 static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (PointRepresentationReference)

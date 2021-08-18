@@ -486,7 +486,9 @@ std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
     return _output << "Close allocator.";
 }
 
-Task ImportQueryApiTask (const Query::Test::Task &_task)
+namespace TestQueryApiDrivers
+{
+Task ImportTask (const Query::Test::Task &_task)
 {
     return std::visit (
         [] (const auto &_unwrappedTask) -> Task
@@ -509,102 +511,118 @@ Task ImportQueryApiTask (const Query::Test::Task &_task)
         _task);
 }
 
-static void ExecuteQueryApiScenario (const Query::Test::Scenario &_scenario, bool _allocateFirst)
+std::vector <Task> InsertRecords (const Query::Test::Storage &_storage)
+{
+    std::vector <Task> tasks {OpenAllocator {}};
+    for (const void *record : _storage.objectsToInsert)
+    {
+        tasks.emplace_back (AllocateAndInit {record});
+    }
+
+    tasks.emplace_back (CloseAllocator {});
+    return tasks;
+}
+
+std::vector <Task> CreateRepresentations (const Query::Test::Storage &_storage)
 {
     std::vector <Task> tasks;
-    // TODO: Augment scenario system to support multiple collections? Do this to Pegasus tests too?
+    for (const Query::Test::Source &source : _storage.sources)
+    {
+        std::visit (
+            [&tasks] (const auto &_source)
+            {
+                using Source = std::decay_t <decltype (_source)>;
+                if constexpr (std::is_same_v <Source, Query::Test::Sources::Value>)
+                {
+                    tasks.emplace_back (
+                        CreatePointRepresentation {_source.name, _source.queriedFields});
+                }
+                else if constexpr (std::is_same_v <Source, Query::Test::Sources::Range>)
+                {
+                    tasks.emplace_back (
+                        CreateLinearRepresentation {_source.name, _source.queriedField});
+                }
+                else if constexpr (std::is_same_v <Source, Query::Test::Sources::Volumetric>)
+                {
+                    tasks.emplace_back (
+                        CreateVolumetricRepresentation {_source.name, _source.dimensions});
+                }
+                else
+                {
+                    REQUIRE_WITH_MESSAGE (false, "Only Value, Range and Volumetric sources are supported!");
+                }
+            },
+            source);
+    }
 
+    return tasks;
+}
+
+static void ExecuteScenario (const Query::Test::Scenario &_scenario, bool _allocateFirst)
+{
+    std::vector <Task> tasks;
     REQUIRE_WITH_MESSAGE (
         _scenario.storages.size () == 1u,
         "Only one-storage tests are supported right now, because record collections are independent.");
 
-    auto InsertRecords = [&_scenario, &tasks] ()
-    {
-        tasks.emplace_back (OpenAllocator {});
-        for (const void *record : _scenario.storages[0u].objectsToInsert)
-        {
-            tasks.emplace_back (AllocateAndInit {record});
-        }
-
-        tasks.emplace_back (CloseAllocator {});
-    };
-
-    auto CreateRepresentations = [&_scenario, &tasks] ()
-    {
-        for (const Query::Test::Source &source : _scenario.storages[0u].sources)
-        {
-            std::visit (
-                [&tasks] (const auto &_unwrappedSource)
-                {
-                    using Source = std::decay_t <decltype (_unwrappedSource)>;
-                    if constexpr (std::is_same_v <Source, Query::Test::Sources::Value>)
-                    {
-                        tasks.emplace_back (
-                            CreatePointRepresentation {_unwrappedSource.name, _unwrappedSource.queriedFields});
-                    }
-                    else if constexpr (std::is_same_v <Source, Query::Test::Sources::Range>)
-                    {
-                        tasks.emplace_back (
-                            CreateLinearRepresentation {_unwrappedSource.name, _unwrappedSource.queriedField});
-                    }
-                    else if constexpr (std::is_same_v <Source, Query::Test::Sources::Volumetric>)
-                    {
-                        tasks.emplace_back (
-                            CreateVolumetricRepresentation {_unwrappedSource.name, _unwrappedSource.dimensions});
-                    }
-                    else
-                    {
-                        REQUIRE_WITH_MESSAGE (false, "Only Value, Range and Volumetric sources are supported!");
-                    }
-                },
-                source);
-        }
-    };
-
     if (_allocateFirst)
     {
-        InsertRecords ();
-        CreateRepresentations ();
+        tasks += InsertRecords (_scenario.storages[0u]);
+        tasks += CreateRepresentations (_scenario.storages[0u]);
     }
     else
     {
-        CreateRepresentations ();
-        InsertRecords ();
+        tasks += CreateRepresentations (_scenario.storages[0u]);
+        tasks += InsertRecords (_scenario.storages[0u]);
     }
 
     for (const Query::Test::Task &task : _scenario.tasks)
     {
-        tasks.emplace_back (ImportQueryApiTask (task));
+        tasks.emplace_back (ImportTask (task));
     }
 
     Scenario (_scenario.storages[0u].dataType, tasks);
 }
 
-void TestQueryApiDrivers::CreateRepresentationsThanAllocateRecords (const Query::Test::Scenario &_scenario)
+void CreateRepresentationsThanAllocateRecords (const Query::Test::Scenario &_scenario)
 {
-    ExecuteQueryApiScenario (_scenario, false);
+    ExecuteScenario (_scenario, false);
 }
 
-void TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations (const Query::Test::Scenario &_scenario)
+void AllocateRecordsThanCreateRepresentations (const Query::Test::Scenario &_scenario)
 {
-    ExecuteQueryApiScenario (_scenario, true);
+    ExecuteScenario (_scenario, true);
 }
+} // namespace TestQueryApiDrivers
 
 namespace ReferenceApiTestImporters
 {
-std::vector <Task> ForRepresentationReference (
-    const Reference::Test::Scenario &_scenario, const std::string &_representationName)
+std::string ExtractSourceName (const Query::Test::Source &_source)
 {
-    std::vector <Task> tasks;
+    return std::visit (
+        [] (const auto &_unwrappedSource)
+        {
+            return _unwrappedSource.name;
+        },
+        _source);
+}
+
+void ForRepresentationReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage)
+{
+    REQUIRE (_storage.sources.size () == 1u);
+    const std::string representationName = ExtractSourceName (_storage.sources[0u]);
+    std::vector <Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
+    tasks += TestQueryApiDrivers::InsertRecords (_storage);
+
     for (const Reference::Test::Task &packedTask : _scenario)
     {
         std::visit (
-            [&tasks, &_representationName] (const auto &_task)
+            [&tasks, &representationName] (const auto &_task)
             {
                 using TaskType = std::decay_t <decltype (_task)>;
                 if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
                 {
-                    tasks.emplace_back (Copy <RepresentationReferenceTag> {_representationName, _task.name});
+                    tasks.emplace_back (Copy <RepresentationReferenceTag> {representationName, _task.name});
                 }
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
                 {
@@ -629,7 +647,7 @@ std::vector <Task> ForRepresentationReference (
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
                 {
                     tasks.emplace_back (
-                        CheckIsRepresentationCanBeDropped {_representationName, !_task.hasAnyReferences});
+                        CheckIsRepresentationCanBeDropped {representationName, !_task.hasAnyReferences});
                 }
                 else
                 {
@@ -639,24 +657,29 @@ std::vector <Task> ForRepresentationReference (
             packedTask);
     }
 
-    return tasks;
+    tasks.emplace_back (DropRepresentation {representationName});
+    Scenario {_storage.dataType, tasks};
 }
 
-std::vector <Task> ForCursor (
-    const Reference::Test::Scenario &_scenario, const std::string &_representationName,
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
     const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject)
 {
-    std::vector <Task> tasks;
+    REQUIRE (_storage.sources.size () == 1u);
+    const std::string representationName = ExtractSourceName (_storage.sources[0u]);
+    std::vector <Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
+    tasks += TestQueryApiDrivers::InsertRecords (_storage);
+
     for (const Reference::Test::Task &packedTask : _scenario)
     {
         std::visit (
-            [&tasks, &_representationName, &_sourceQuery, _expectedPointedObject] (const auto &_task)
+            [&tasks, &representationName, &_sourceQuery, _expectedPointedObject] (const auto &_task)
             {
                 using TaskType = std::decay_t <decltype (_task)>;
                 if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
                 {
-                    tasks.emplace_back (ImportQueryApiTask (
-                        Query::Test::ChangeQuerySourceAndCursor (_sourceQuery, _representationName, _task.name)));
+                    tasks.emplace_back (TestQueryApiDrivers::ImportTask (
+                        Query::Test::ChangeQuerySourceAndCursor (_sourceQuery, representationName, _task.name)));
                 }
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
                 {
@@ -675,7 +698,7 @@ std::vector <Task> ForCursor (
                 else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
                 {
                     tasks.emplace_back (
-                        CheckIsRepresentationCanBeDropped {_representationName, !_task.hasAnyReferences});
+                        CheckIsRepresentationCanBeDropped {representationName, !_task.hasAnyReferences});
                 }
                 else
                 {
@@ -685,7 +708,8 @@ std::vector <Task> ForCursor (
             packedTask);
     }
 
-    return tasks;
+    tasks.emplace_back (DropRepresentation {representationName});
+    Scenario {_storage.dataType, tasks};
 }
 } // namespace ReferenceApiTestImporters
 

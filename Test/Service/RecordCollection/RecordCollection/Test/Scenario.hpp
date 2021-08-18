@@ -104,11 +104,10 @@ void AllocateRecordsThanCreateRepresentations (const Query::Test::Scenario &_sce
 
 namespace ReferenceApiTestImporters
 {
-std::vector <Task> ForRepresentationReference (
-    const Reference::Test::Scenario &_scenario, const std::string &_representationName);
+void ForRepresentationReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage);
 
-std::vector <Task> ForCursor (
-    const Reference::Test::Scenario &_scenario, const std::string &_representationName,
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
     const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject);
 } // namespace ReferenceApiTestImporters
 
