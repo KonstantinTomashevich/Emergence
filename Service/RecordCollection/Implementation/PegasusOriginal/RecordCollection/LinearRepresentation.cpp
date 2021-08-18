@@ -10,140 +10,140 @@
 
 namespace Emergence::RecordCollection
 {
-LinearRepresentation::ReadCursor::ReadCursor (const LinearRepresentation::ReadCursor &_other) noexcept
+LinearRepresentation::AscendingReadCursor::AscendingReadCursor (const LinearRepresentation::AscendingReadCursor &_other) noexcept
 {
     new (&data) Pegasus::OrderedIndex::AscendingReadCursor (
         block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (_other.data));
 }
 
-LinearRepresentation::ReadCursor::ReadCursor (LinearRepresentation::ReadCursor &&_other) noexcept
+LinearRepresentation::AscendingReadCursor::AscendingReadCursor (LinearRepresentation::AscendingReadCursor &&_other) noexcept
 {
     new (&data) Pegasus::OrderedIndex::AscendingReadCursor (
         std::move (block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (_other.data)));
 }
 
-LinearRepresentation::ReadCursor::~ReadCursor () noexcept
+LinearRepresentation::AscendingReadCursor::~AscendingReadCursor () noexcept
 {
     block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (data).~AscendingReadCursor ();
 }
 
-const void *LinearRepresentation::ReadCursor::operator * () const noexcept
+const void *LinearRepresentation::AscendingReadCursor::operator * () const noexcept
 {
     return *block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (data);
 }
 
-LinearRepresentation::ReadCursor &LinearRepresentation::ReadCursor::operator ++ () noexcept
+LinearRepresentation::AscendingReadCursor &LinearRepresentation::AscendingReadCursor::operator ++ () noexcept
 {
     ++block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (data);
     return *this;
 }
 
-LinearRepresentation::ReadCursor::ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
+LinearRepresentation::AscendingReadCursor::AscendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) Pegasus::OrderedIndex::AscendingReadCursor (
         std::move (block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (*_data)));
 }
 
-LinearRepresentation::EditCursor::EditCursor (LinearRepresentation::EditCursor &&_other) noexcept
+LinearRepresentation::AscendingEditCursor::AscendingEditCursor (LinearRepresentation::AscendingEditCursor &&_other) noexcept
 {
     new (&data) Pegasus::OrderedIndex::AscendingEditCursor (
         std::move (block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (_other.data)));
 }
 
-LinearRepresentation::EditCursor::~EditCursor () noexcept
+LinearRepresentation::AscendingEditCursor::~AscendingEditCursor () noexcept
 {
     block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data).~AscendingEditCursor ();
 }
 
-void *LinearRepresentation::EditCursor::operator * () noexcept
+void *LinearRepresentation::AscendingEditCursor::operator * () noexcept
 {
     return *block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data);
 }
 
-LinearRepresentation::EditCursor &LinearRepresentation::EditCursor::operator ~ () noexcept
+LinearRepresentation::AscendingEditCursor &LinearRepresentation::AscendingEditCursor::operator ~ () noexcept
 {
     ~block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data);
     return *this;
 }
 
-LinearRepresentation::EditCursor &LinearRepresentation::EditCursor::operator ++ () noexcept
+LinearRepresentation::AscendingEditCursor &LinearRepresentation::AscendingEditCursor::operator ++ () noexcept
 {
     ++block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data);
     return *this;
 }
 
-LinearRepresentation::EditCursor::EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
+LinearRepresentation::AscendingEditCursor::AscendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) Pegasus::OrderedIndex::AscendingEditCursor (
         std::move (block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (*_data)));
 }
 
-LinearRepresentation::ReversedReadCursor::ReversedReadCursor (
-    const LinearRepresentation::ReversedReadCursor &_other) noexcept
+LinearRepresentation::DescendingReadCursor::DescendingReadCursor (
+    const LinearRepresentation::DescendingReadCursor &_other) noexcept
 {
     new (&data) Pegasus::OrderedIndex::DescendingReadCursor (
         block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (_other.data));
 }
 
-LinearRepresentation::ReversedReadCursor::ReversedReadCursor (
-    LinearRepresentation::ReversedReadCursor &&_other) noexcept
+LinearRepresentation::DescendingReadCursor::DescendingReadCursor (
+    LinearRepresentation::DescendingReadCursor &&_other) noexcept
 {
     new (&data) Pegasus::OrderedIndex::DescendingReadCursor (
         std::move (block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (_other.data)));
 }
 
-LinearRepresentation::ReversedReadCursor::~ReversedReadCursor () noexcept
+LinearRepresentation::DescendingReadCursor::~DescendingReadCursor () noexcept
 {
     block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (data).~DescendingReadCursor ();
 }
 
-const void *LinearRepresentation::ReversedReadCursor::operator * () const noexcept
+const void *LinearRepresentation::DescendingReadCursor::operator * () const noexcept
 {
     return *block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (data);
 }
 
-LinearRepresentation::ReversedReadCursor &LinearRepresentation::ReversedReadCursor::operator ++ () noexcept
+LinearRepresentation::DescendingReadCursor &LinearRepresentation::DescendingReadCursor::operator ++ () noexcept
 {
     ++block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (data);
     return *this;
 }
 
-LinearRepresentation::ReversedReadCursor::ReversedReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
+LinearRepresentation::DescendingReadCursor::DescendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) Pegasus::OrderedIndex::DescendingReadCursor (
         std::move (block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (*_data)));
 }
 
-LinearRepresentation::ReversedEditCursor::ReversedEditCursor (
-    LinearRepresentation::ReversedEditCursor &&_other) noexcept
+LinearRepresentation::DescendingEditCursor::DescendingEditCursor (
+    LinearRepresentation::DescendingEditCursor &&_other) noexcept
 {
     new (&data) Pegasus::OrderedIndex::DescendingEditCursor (
         std::move (block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (_other.data)));
 }
 
-LinearRepresentation::ReversedEditCursor::~ReversedEditCursor () noexcept
+LinearRepresentation::DescendingEditCursor::~DescendingEditCursor () noexcept
 {
     block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data).~DescendingEditCursor ();
 }
 
-void *LinearRepresentation::ReversedEditCursor::operator * () noexcept
+void *LinearRepresentation::DescendingEditCursor::operator * () noexcept
 {
     return *block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data);
 }
 
-LinearRepresentation::ReversedEditCursor &LinearRepresentation::ReversedEditCursor::operator ~ () noexcept
+LinearRepresentation::DescendingEditCursor &LinearRepresentation::DescendingEditCursor::operator ~ () noexcept
 {
     ~block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data);
     return *this;
 }
 
-LinearRepresentation::ReversedEditCursor &LinearRepresentation::ReversedEditCursor::operator ++ () noexcept
+LinearRepresentation::DescendingEditCursor &LinearRepresentation::DescendingEditCursor::operator ++ () noexcept
 {
     ++block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data);
     return *this;
 }
 
-LinearRepresentation::ReversedEditCursor::ReversedEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
+LinearRepresentation::DescendingEditCursor::DescendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (&data) Pegasus::OrderedIndex::DescendingEditCursor (
         std::move (block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (*_data)));
@@ -166,44 +166,44 @@ LinearRepresentation::~LinearRepresentation () noexcept
     reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->~Handle ();
 }
 
-LinearRepresentation::ReadCursor LinearRepresentation::ReadInterval (
+LinearRepresentation::AscendingReadCursor LinearRepresentation::ReadAscendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
     assert (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::AscendingReadCursor cursor = index->LookupToReadAscending ({_min}, {_max});
-    return ReadCursor (reinterpret_cast <decltype (ReadCursor::data) *> (&cursor));
+    return AscendingReadCursor (reinterpret_cast <decltype (AscendingReadCursor::data) *> (&cursor));
 }
 
-LinearRepresentation::EditCursor LinearRepresentation::EditInterval (
+LinearRepresentation::AscendingEditCursor LinearRepresentation::EditAscendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
     assert (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::AscendingEditCursor cursor = index->LookupToEditAscending ({_min}, {_max});
-    return EditCursor (reinterpret_cast <decltype (EditCursor::data) *> (&cursor));
+    return AscendingEditCursor (reinterpret_cast <decltype (AscendingEditCursor::data) *> (&cursor));
 }
 
-LinearRepresentation::ReversedReadCursor LinearRepresentation::ReadReversedInterval (
+LinearRepresentation::DescendingReadCursor LinearRepresentation::ReadDescendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
     assert (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::DescendingReadCursor cursor = index->LookupToReadDescending ({_min}, {_max});
 
-    return ReversedReadCursor (
-        reinterpret_cast <decltype (ReversedReadCursor::data) *> (&cursor));
+    return DescendingReadCursor (
+        reinterpret_cast <decltype (DescendingReadCursor::data) *> (&cursor));
 }
 
-LinearRepresentation::ReversedEditCursor LinearRepresentation::EditReversedInterval (
+LinearRepresentation::DescendingEditCursor LinearRepresentation::EditDescendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
     assert (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast <Handling::Handle <Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::DescendingEditCursor cursor = index->LookupToEditDescending ({_min}, {_max});
 
-    return ReversedEditCursor (
-        reinterpret_cast <decltype (ReversedEditCursor::data) *> (&cursor));
+    return DescendingEditCursor (
+        reinterpret_cast <decltype (DescendingEditCursor::data) *> (&cursor));
 }
 
 StandardLayout::Field LinearRepresentation::GetKeyField () const noexcept

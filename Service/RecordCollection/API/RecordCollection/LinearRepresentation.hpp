@@ -17,12 +17,13 @@ namespace Emergence::RecordCollection
 class LinearRepresentation final
 {
 public:
-    /// \brief Allows user to read records, that match criteria, specified in LinearRepresentation::ReadInterval.
-    /// \details All ReadCursor operations are thread safe.
-    class ReadCursor final
+    /// \brief Allows user to read records, that match criteria,
+    ///        specified in LinearRepresentation::ReadAscendingInterval.
+    /// \details All AscendingReadCursor operations are thread safe.
+    class AscendingReadCursor final
     {
     public:
-        EMERGENCE_READ_CURSOR_OPERATIONS (ReadCursor);
+        EMERGENCE_READ_CURSOR_OPERATIONS (AscendingReadCursor);
 
     private:
         /// LinearRepresentation constructs its cursors.
@@ -30,15 +31,15 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AscendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
-    ///        match criteria, specified in LinearRepresentation::EditInterval.
-    class EditCursor final
+    ///        match criteria, specified in LinearRepresentation::EditAscendingInterval.
+    class AscendingEditCursor final
     {
     public:
-        EMERGENCE_EDIT_CURSOR_OPERATIONS (EditCursor);
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (AscendingEditCursor);
 
     private:
         /// LinearRepresentation constructs its cursors.
@@ -46,16 +47,16 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AscendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    /// \brief Allows user to read records, that match criteria, specified in
-    ///        LinearRepresentation::ReadReversedInterval.
-    /// \details All ReversedReadCursor operations are thread safe.
-    class ReversedReadCursor final
+    /// \brief Allows user to read records, that match criteria,
+    ///        specified in LinearRepresentation::ReadDescendingInterval.
+    /// \details All DescendingReadCursor operations are thread safe.
+    class DescendingReadCursor final
     {
     public:
-        EMERGENCE_READ_CURSOR_OPERATIONS (ReversedReadCursor);
+        EMERGENCE_READ_CURSOR_OPERATIONS (DescendingReadCursor);
 
     private:
         /// LinearRepresentation constructs its cursors.
@@ -63,15 +64,15 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit ReversedReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DescendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
-    ///        match criteria, specified in LinearRepresentation::EditReversedInterval.
-    class ReversedEditCursor final
+    ///        match criteria, specified in LinearRepresentation::EditDescendingInterval.
+    class DescendingEditCursor final
     {
     public:
-        EMERGENCE_EDIT_CURSOR_OPERATIONS (ReversedEditCursor);
+        EMERGENCE_EDIT_CURSOR_OPERATIONS (DescendingEditCursor);
 
     private:
         /// LinearRepresentation constructs its cursors.
@@ -79,7 +80,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit ReversedEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DescendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Points to value, that defines one of interval borders.
@@ -98,29 +99,29 @@ public:
 
     /// \brief Finds interval, described by given borders, and allows user to read records from it.
     /// \details Nullptr border pointer will be interpreted as `no border`.
+    ///          Cursor moves from lowest record to greatest in requested interval.
     ///
     /// \details Complexity -- O(lgN), where N is count of records in Collection.
     /// \invariant There is no active allocation transactions and edit cursors in Collection.
-    ReadCursor ReadInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
+    AscendingReadCursor ReadAscendingInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
     /// \brief Finds interval, described by given borders,
     ///        and allows user to edit and delete records from this interval.
     /// \details Nullptr border pointer will be interpreted as `no border`.
+    ///          Cursor moves from lowest record to greatest in requested interval.
     ///
     /// \details Complexity -- O(lgN), where N is count of records in Collection.
     /// \invariant There is no active allocation transactions and read or edit cursors in Collection.
-    EditCursor EditInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
+    AscendingEditCursor EditAscendingInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
-    /// \brief Same as ::ReadInterval, but returned cursor will move from last record in interval to first.
-    ReversedReadCursor ReadReversedInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
+    /// \brief Same as ::ReadAscendingInterval, but records will be returned in descending order instead.
+    DescendingReadCursor ReadDescendingInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
-    /// \brief Same as ::EditInterval, but returned cursor will move from last record in interval to first.
-    ReversedEditCursor EditReversedInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
+    /// \brief Same as ::EditAscendingInterval, but records will be returned in descending order instead.
+    DescendingEditCursor EditDescendingInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
     /// \return Field, by which records are sorted in this linear representation.
     StandardLayout::Field GetKeyField () const noexcept;
-
-    // TODO: What about automatic drop feature? It seams quite useful for complex layered systems like Warehouse.
 
     /// \return Can this representation be safely dropped?
     /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.

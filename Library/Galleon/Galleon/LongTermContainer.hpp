@@ -145,7 +145,7 @@ public:
     {
     public:
         /// \details Objects are sorted in ascending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::ReadCursor;
+        using Cursor = RecordCollection::LinearRepresentation::AscendingReadCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -167,7 +167,7 @@ public:
     {
     public:
         /// \details Objects are sorted in ascending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::EditCursor;
+        using Cursor = RecordCollection::LinearRepresentation::AscendingEditCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -189,7 +189,7 @@ public:
     {
     public:
         /// \details Objects are sorted in descending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::ReversedReadCursor;
+        using Cursor = RecordCollection::LinearRepresentation::DescendingReadCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -211,7 +211,7 @@ public:
     {
     public:
         /// \details Objects are sorted in descending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::ReversedEditCursor;
+        using Cursor = RecordCollection::LinearRepresentation::DescendingEditCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,

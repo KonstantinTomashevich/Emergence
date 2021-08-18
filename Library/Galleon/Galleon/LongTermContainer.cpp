@@ -84,7 +84,7 @@ LongTermContainer::FetchRangeQuery::Cursor LongTermContainer::FetchRangeQuery::E
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.ReadInterval (_min, _max);
+    return representation.ReadAscendingInterval (_min, _max);
 }
 
 StandardLayout::Field LongTermContainer::FetchRangeQuery::GetKeyField () const noexcept
@@ -103,7 +103,7 @@ LongTermContainer::ModifyRangeQuery::Cursor LongTermContainer::ModifyRangeQuery:
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.EditInterval (_min, _max);
+    return representation.EditAscendingInterval (_min, _max);
 }
 
 StandardLayout::Field LongTermContainer::ModifyRangeQuery::GetKeyField () const noexcept
@@ -122,7 +122,7 @@ LongTermContainer::FetchReversedRangeQuery::Cursor LongTermContainer::FetchRever
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.ReadReversedInterval (_min, _max);
+    return representation.ReadDescendingInterval (_min, _max);
 }
 
 StandardLayout::Field LongTermContainer::FetchReversedRangeQuery::GetKeyField () const noexcept
@@ -141,7 +141,7 @@ LongTermContainer::ModifyReversedRangeQuery::Cursor LongTermContainer::ModifyRev
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.EditReversedInterval (_min, _max);
+    return representation.EditDescendingInterval (_min, _max);
 }
 
 StandardLayout::Field LongTermContainer::ModifyReversedRangeQuery::GetKeyField () const noexcept

@@ -18,10 +18,10 @@ using RepresentationReference = std::variant <
     VolumetricRepresentation>;
 
 using Cursor = std::variant <
-    LinearRepresentation::ReadCursor,
-    LinearRepresentation::EditCursor,
-    LinearRepresentation::ReversedReadCursor,
-    LinearRepresentation::ReversedEditCursor,
+    LinearRepresentation::AscendingReadCursor,
+    LinearRepresentation::AscendingEditCursor,
+    LinearRepresentation::DescendingReadCursor,
+    LinearRepresentation::DescendingEditCursor,
     PointRepresentation::ReadCursor,
     PointRepresentation::EditCursor,
     VolumetricRepresentation::ShapeIntersectionReadCursor,
@@ -353,7 +353,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
-                        representation.ReadInterval (_task.minValue, _task.maxValue));
+                        representation.ReadAscendingInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
@@ -362,7 +362,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
-                        representation.EditInterval (_task.minValue, _task.maxValue));
+                        representation.EditAscendingInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
@@ -371,7 +371,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_t
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
-                        representation.ReadReversedInterval (_task.minValue, _task.maxValue));
+                        representation.ReadDescendingInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
@@ -380,7 +380,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_t
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
-                        representation.EditReversedInterval (_task.minValue, _task.maxValue));
+                        representation.EditDescendingInterval (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
