@@ -68,7 +68,7 @@ std::vector <Task> PreConditions ()
             CursorCheckAllUnordered {"2", {&XAVIER_2_MIN_15_8_50_MAX_19_11_60}},
             CursorClose {"2"},
 
-            QueryRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
+            QueryAscendingRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
             CursorCheckAllOrdered
                 {
                     "names",
@@ -105,7 +105,7 @@ std::vector <Task> PostConditions ()
             QueryValueToRead {{{"playerId", "2"}, &Queries::ID_2}},
             CursorCheckAllUnordered {"2", {}},
 
-            QueryRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
+            QueryAscendingRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
             CursorCheckAllOrdered {"names", {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2}},
 
             QueryShapeIntersectionToRead
@@ -155,7 +155,7 @@ Scenario EditAndDeleteUsingRangeQuery ()
 
     scenario.tasks +=
         {
-            QueryRangeToEdit {{{"playerName", "karl_and_xavier"}, &Queries::KARL, nullptr}},
+            QueryAscendingRangeToEdit {{{"playerName", "karl_and_xavier"}, &Queries::KARL, nullptr}},
             CursorCheck {"karl_and_xavier", &KARL_1_MIN_M2_1_0_MAX_0_4_2},
             CursorEdit {"karl_and_xavier", &HUGO_0_MIN_10_8_4_MAX_11_9_5},
             CursorDeleteObject {"karl_and_xavier"},

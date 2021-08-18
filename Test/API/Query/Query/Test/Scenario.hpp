@@ -149,20 +149,19 @@ struct RangeQueryBase : public QueryBase
     const void *maxValue = nullptr;
 };
 
-struct QueryRangeToRead final : public RangeQueryBase
+struct QueryAscendingRangeToRead final : public RangeQueryBase
 {
 };
 
-struct QueryRangeToEdit final : public RangeQueryBase
+struct QueryAscendingRangeToEdit final : public RangeQueryBase
 {
 };
 
-// TODO: Rename all reversed/* queries to descending/ascending in tests, services and libraries.
-struct QueryReversedRangeToRead final : public RangeQueryBase
+struct QueryDescendingRangeToRead final : public RangeQueryBase
 {
 };
 
-struct QueryReversedRangeToEdit final : public RangeQueryBase
+struct QueryDescendingRangeToEdit final : public RangeQueryBase
 {
 };
 
@@ -246,13 +245,13 @@ std::ostream &operator << (std::ostream &_output, const QueryValueToRead &_task)
 
 std::ostream &operator << (std::ostream &_output, const QueryValueToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryRangeToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryRangeToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToEdit &_task);
 
 std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToRead &_task);
 
@@ -284,10 +283,10 @@ using Task = std::variant <
     Tasks::QueryUnorderedSequenceToEdit,
     Tasks::QueryValueToRead,
     Tasks::QueryValueToEdit,
-    Tasks::QueryRangeToRead,
-    Tasks::QueryRangeToEdit,
-    Tasks::QueryReversedRangeToRead,
-    Tasks::QueryReversedRangeToEdit,
+    Tasks::QueryAscendingRangeToRead,
+    Tasks::QueryAscendingRangeToEdit,
+    Tasks::QueryDescendingRangeToRead,
+    Tasks::QueryDescendingRangeToEdit,
     Tasks::QueryShapeIntersectionToRead,
     Tasks::QueryShapeIntersectionToEdit,
     Tasks::QueryRayIntersectionToRead,

@@ -41,31 +41,31 @@ static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::T
         ReferenceApiTestImporters::ForRepresentationReference (_scenario, TEST_REPRESENTATION_NAME));
 }
 
-static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteAscendingReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryRangeToRead {{{}, nullptr, nullptr}},
+        _scenario, TEST_REPRESENTATION_NAME, QueryAscendingRangeToRead {{{}, nullptr, nullptr}},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
 }
 
-static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteAscendingEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryRangeToEdit {{{}, nullptr, nullptr}},
+        _scenario, TEST_REPRESENTATION_NAME, QueryAscendingRangeToEdit {{{}, nullptr, nullptr}},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED));
 }
 
-static void ExecuteReversedReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteDescendingReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryReversedRangeToRead {{{}, nullptr, nullptr}},
+        _scenario, TEST_REPRESENTATION_NAME, QueryDescendingRangeToRead {{{}, nullptr, nullptr}},
         &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED));
 }
 
-static void ExecuteReversedEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+static void ExecuteDescendingEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ExecuteReferenceApiTest (ReferenceApiTestImporters::ForCursor (
-        _scenario, TEST_REPRESENTATION_NAME, QueryReversedRangeToEdit {{{}, nullptr, nullptr}},
+        _scenario, TEST_REPRESENTATION_NAME, QueryDescendingRangeToEdit {{{}, nullptr, nullptr}},
         &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED));
 }
 
@@ -75,31 +75,31 @@ REGISTER_ALL_REFERENCE_TESTS (ExecuteRepresentationReferenceApiTest)
 
 END_SUITE
 
-BEGIN_SUITE (LinearRepresentationReadCursorReference)
+BEGIN_SUITE (LinearRepresentationAscendingReadCursorReference)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteReadCursorReferenceApiTest)
-
-END_SUITE
-
-BEGIN_SUITE (LinearRepresentationEditCursorReference)
-
-REGISTER_REFERENCE_TEST (ExecuteEditCursorReferenceApiTest, ConstructAndDestructSingle)
-
-REGISTER_REFERENCE_TEST (ExecuteEditCursorReferenceApiTest, MoveChain)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteAscendingReadCursorReferenceApiTest)
 
 END_SUITE
 
-BEGIN_SUITE (LinearRepresentationReversedReadCursorReference)
+BEGIN_SUITE (LinearRepresentationAscendingEditCursorReference)
 
-REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteReversedReadCursorReferenceApiTest)
+REGISTER_REFERENCE_TEST (ExecuteAscendingEditCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteAscendingEditCursorReferenceApiTest, MoveChain)
 
 END_SUITE
 
-BEGIN_SUITE (LinearRepresentationReversedEditCursorReference)
+BEGIN_SUITE (LinearRepresentationDescendingReadCursorReference)
 
-REGISTER_REFERENCE_TEST (ExecuteReversedEditCursorReferenceApiTest, ConstructAndDestructSingle)
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteDescendingReadCursorReferenceApiTest)
 
-REGISTER_REFERENCE_TEST (ExecuteReversedEditCursorReferenceApiTest, MoveChain)
+END_SUITE
+
+BEGIN_SUITE (LinearRepresentationDescendingEditCursorReference)
+
+REGISTER_REFERENCE_TEST (ExecuteDescendingEditCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteDescendingEditCursorReferenceApiTest, MoveChain)
 
 END_SUITE
 

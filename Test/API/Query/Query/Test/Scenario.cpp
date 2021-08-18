@@ -103,31 +103,31 @@ std::ostream &operator << (std::ostream &_output, const QueryValueToEdit &_task)
                    _task.value << " and save editable cursor as \"" << _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const QueryRangeToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
-                   _task.minValue << ", " << _task.maxValue << "] and save read only cursor as \"" <<
+                   _task.minValue << ", " << _task.maxValue << "] and save read only ascending order cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const QueryRangeToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
-                   _task.minValue << ", " << _task.maxValue << "] and save editable cursor as \"" <<
+                   _task.minValue << ", " << _task.maxValue << "] and save editable ascending order cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToRead &_task)
+std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
-                   _task.minValue << ", " << _task.maxValue << "] and save read only reversed order cursor as \"" <<
+                   _task.minValue << ", " << _task.maxValue << "] and save read only descending order cursor as \"" <<
                    _task.cursorName << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const QueryReversedRangeToEdit &_task)
+std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToEdit &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using range [" <<
-                   _task.minValue << ", " << _task.maxValue << "] and save editable reversed order cursor as \"" <<
+                   _task.minValue << ", " << _task.maxValue << "] and save editable descending order cursor as \"" <<
                    _task.cursorName << "\".";
 }
 

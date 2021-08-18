@@ -94,7 +94,7 @@ TEST_CASE (DropIndex)
             QueryValueToRead {{{"playerAlive", "dead"}, &Query::Test::Queries::DEAD}},
             CursorCheckAllUnordered {"dead", {}},
 
-            QueryRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
+            QueryAscendingRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
             CursorCheckAllOrdered
                 {
                     "names",

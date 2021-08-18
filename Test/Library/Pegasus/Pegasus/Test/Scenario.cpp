@@ -309,7 +309,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
                         index->LookupToEdit ({_task.value}));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
 {
     OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
@@ -318,7 +318,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
                         index->LookupToReadAscending ({_task.minValue}, {_task.maxValue}));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_task)
 {
     OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
@@ -327,7 +327,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
                         index->LookupToEditAscending ({_task.minValue}, {_task.maxValue}));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &_task)
 {
     OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
@@ -336,7 +336,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_t
                         index->LookupToReadDescending ({_task.minValue}, {_task.maxValue}));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &_task)
 {
     OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();

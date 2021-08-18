@@ -376,7 +376,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
                         query.Execute (_task.value));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
 {
     auto &query =
         std::get <LongTermContainer::FetchRangeQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
@@ -384,7 +384,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
                         query.Execute (_task.minValue, _task.maxValue));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_task)
 {
     auto &query =
         std::get <LongTermContainer::ModifyRangeQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
@@ -392,7 +392,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
                         query.Execute (_task.minValue, _task.maxValue));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &_task)
 {
     auto &query = std::get <LongTermContainer::FetchReversedRangeQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
@@ -400,7 +400,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_t
                         query.Execute (_task.minValue, _task.maxValue));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &_task)
 {
     auto &query = std::get <LongTermContainer::ModifyReversedRangeQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
@@ -666,28 +666,28 @@ Task ImportTask (const QueryValueToEdit &_task)
 }
 
 template <>
-Task ImportTask (const QueryRangeToRead &_task)
+Task ImportTask (const QueryAscendingRangeToRead &_task)
 {
-    return QueryRangeToRead {{{_task.sourceName + "::Fetch", _task.cursorName}, _task.minValue, _task.maxValue}};
+    return QueryAscendingRangeToRead {{{_task.sourceName + "::Fetch", _task.cursorName}, _task.minValue, _task.maxValue}};
 }
 
 template <>
-Task ImportTask (const QueryRangeToEdit &_task)
+Task ImportTask (const QueryAscendingRangeToEdit &_task)
 {
-    return QueryRangeToEdit {{{_task.sourceName + "::Modify", _task.cursorName}, _task.minValue, _task.maxValue}};
+    return QueryAscendingRangeToEdit {{{_task.sourceName + "::Modify", _task.cursorName}, _task.minValue, _task.maxValue}};
 }
 
 template <>
-Task ImportTask (const QueryReversedRangeToRead &_task)
+Task ImportTask (const QueryDescendingRangeToRead &_task)
 {
-    return QueryReversedRangeToRead {{{_task.sourceName + "::FetchReversed", _task.cursorName},
+    return QueryDescendingRangeToRead {{{_task.sourceName + "::FetchReversed", _task.cursorName},
                                          _task.minValue, _task.maxValue}};
 }
 
 template <>
-Task ImportTask (const QueryReversedRangeToEdit &_task)
+Task ImportTask (const QueryDescendingRangeToEdit &_task)
 {
-    return QueryReversedRangeToEdit {{{_task.sourceName + "::ModifyReversed", _task.cursorName},
+    return QueryDescendingRangeToEdit {{{_task.sourceName + "::ModifyReversed", _task.cursorName},
                                          _task.minValue, _task.maxValue}};
 }
 

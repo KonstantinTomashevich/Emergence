@@ -148,7 +148,7 @@ static void ExecuteFetchRangeQueryCursorReferenceApiTest (const Emergence::Refer
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QueryRangeToRead {{{"Range", {}}, nullptr, nullptr}},
+        _scenario, GetTestStorage (), QueryAscendingRangeToRead {{{"Range", {}}, nullptr, nullptr}},
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
@@ -156,7 +156,7 @@ static void ExecuteModifyRangeQueryCursorReferenceApiTest (const Emergence::Refe
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QueryRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
+        _scenario, GetTestStorage (), QueryAscendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
@@ -165,7 +165,7 @@ static void ExecuteFetchReversedRangeQueryCursorReferenceApiTest (
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QueryReversedRangeToRead {{{"Range", {}}, nullptr, nullptr}},
+        _scenario, GetTestStorage (), QueryDescendingRangeToRead {{{"Range", {}}, nullptr, nullptr}},
         &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
 }
 
@@ -174,7 +174,7 @@ static void ExecuteModifyReversedRangeQueryCursorReferenceApiTest (
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QueryReversedRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
+        _scenario, GetTestStorage (), QueryDescendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
         &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
 }
 

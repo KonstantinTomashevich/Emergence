@@ -347,7 +347,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping, representation.EditPoint (_task.value));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
@@ -356,7 +356,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToRead &_task)
                         representation.ReadAscendingInterval (_task.minValue, _task.maxValue));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
@@ -365,7 +365,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRangeToEdit &_task)
                         representation.EditAscendingInterval (_task.minValue, _task.maxValue));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
@@ -374,7 +374,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToRead &_t
                         representation.ReadDescendingInterval (_task.minValue, _task.maxValue));
 }
 
-void ExecuteTask (ExecutionContext &_context, const QueryReversedRangeToEdit &_task)
+void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &_task)
 {
     LinearRepresentation representation = std::get <LinearRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
