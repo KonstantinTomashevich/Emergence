@@ -68,50 +68,17 @@ ExecutionContext::~ExecutionContext ()
     Context::Extension::ObjectStorage <RepresentationReference>::objects.clear ();
 }
 
-std::vector <uint8_t> MergeVectorsIntoRepresentationLookupSequence (
-    const VolumetricRepresentation &_representation,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_firstVector,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_secondVector)
+std::vector <std::size_t> CollectVolumetricRepresentationKeyFieldSizes (const VolumetricRepresentation &_representation)
 {
-    std::size_t sequenceSize = 0u;
-    std::size_t dimensionCount = 0u;
-
+    std::vector <std::size_t> result;
     for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
     {
         auto dimension = *iterator;
         REQUIRE (dimension.minField.GetSize () == dimension.maxField.GetSize ());
-        REQUIRE (dimension.minField.GetSize () <= sizeof (Query::Test::Sources::Volumetric::SupportedValue));
-
-        sequenceSize += dimension.minField.GetSize () + dimension.maxField.GetSize ();
-        ++dimensionCount;
+        result.emplace_back (dimension.minField.GetSize ());
     }
 
-    REQUIRE (_firstVector.size () == dimensionCount);
-    REQUIRE (_secondVector.size () == dimensionCount);
-
-    std::vector <uint8_t> sequence (sequenceSize);
-    std::size_t dimensionIndex = 0u;
-    uint8_t *output = &sequence[0u];
-
-    for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
-    {
-        auto dimension = *iterator;
-        for (std::size_t byteIndex = 0u; byteIndex < dimension.minField.GetSize (); ++byteIndex)
-        {
-            *output = reinterpret_cast <const uint8_t *> (&_firstVector[dimensionIndex])[byteIndex];
-            ++output;
-        }
-
-        for (std::size_t byteIndex = 0u; byteIndex < dimension.minField.GetSize (); ++byteIndex)
-        {
-            *output = reinterpret_cast <const uint8_t *> (&_secondVector[dimensionIndex])[byteIndex];
-            ++output;
-        }
-
-        ++dimensionIndex;
-    }
-
-    return sequence;
+    return result;
 }
 
 void IterateOverRepresentations (const ExecutionContext &_context)
@@ -388,8 +355,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
-    std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
-        representation, _task.min, _task.max);
+    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+        _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
                         representation.ReadShapeIntersections (&sequence[0u]));
@@ -400,8 +367,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
-    std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
-        representation, _task.min, _task.max);
+    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+        _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
                         representation.EditShapeIntersections (&sequence[0u]));
@@ -412,8 +379,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
-    std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
-        representation, _task.origin, _task.direction);
+    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+        _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
                         representation.ReadRayIntersections (&sequence[0u], _task.maxDistance));
@@ -424,8 +391,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
     VolumetricRepresentation representation = std::get <VolumetricRepresentation> (
         GetObject <RepresentationReference> (_context, _task.sourceName));
 
-    std::vector <uint8_t> sequence = MergeVectorsIntoRepresentationLookupSequence (
-        representation, _task.origin, _task.direction);
+    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+        _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.typeMapping,
                         representation.EditRayIntersections (&sequence[0u], _task.maxDistance));

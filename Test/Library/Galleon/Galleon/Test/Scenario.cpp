@@ -107,50 +107,17 @@ std::vector <RecordCollection::Collection::DimensionDescriptor> ConvertDimension
 }
 
 template <typename QueryType>
-std::vector <uint8_t> MergeVectorsIntoQueryParameterSequence (
-    const QueryType &_query,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_firstVector,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_secondVector)
+std::vector <std::size_t> CollectVolumetricQueryKeyFieldSizes (const QueryType &_query)
 {
-    std::size_t sequenceSize = 0u;
-    std::size_t dimensionCount = 0u;
-
+    std::vector <std::size_t> result;
     for (auto iterator = _query.DimensionBegin (); iterator != _query.DimensionEnd (); ++iterator)
     {
         auto dimension = *iterator;
         REQUIRE (dimension.minField.GetSize () == dimension.maxField.GetSize ());
-        REQUIRE (dimension.minField.GetSize () <= sizeof (Query::Test::Sources::Volumetric::SupportedValue));
-
-        sequenceSize += dimension.minField.GetSize () + dimension.maxField.GetSize ();
-        ++dimensionCount;
+        result.emplace_back (dimension.minField.GetSize ());
     }
 
-    REQUIRE (_firstVector.size () == dimensionCount);
-    REQUIRE (_secondVector.size () == dimensionCount);
-
-    std::vector <uint8_t> sequence (sequenceSize);
-    std::size_t dimensionIndex = 0u;
-    uint8_t *output = &sequence[0u];
-
-    for (auto iterator = _query.DimensionBegin (); iterator != _query.DimensionEnd (); ++iterator)
-    {
-        auto dimension = *iterator;
-        for (std::size_t byteIndex = 0u; byteIndex < dimension.minField.GetSize (); ++byteIndex)
-        {
-            *output = reinterpret_cast <const uint8_t *> (&_firstVector[dimensionIndex])[byteIndex];
-            ++output;
-        }
-
-        for (std::size_t byteIndex = 0u; byteIndex < dimension.minField.GetSize (); ++byteIndex)
-        {
-            *output = reinterpret_cast <const uint8_t *> (&_secondVector[dimensionIndex])[byteIndex];
-            ++output;
-        }
-
-        ++dimensionIndex;
-    }
-
-    return sequence;
+    return result;
 }
 
 void ExecuteTask (ExecutionContext &_context, const AcquireSingletonContainer &_task)
@@ -413,7 +380,9 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
 {
     auto &query = std::get <LongTermContainer::FetchShapeIntersectionQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.min, _task.max);
+
+    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+        _task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (&sequence[0u]));
@@ -421,10 +390,11 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
 {
-    auto
-        &query = std::get <LongTermContainer::ModifyShapeIntersectionQuery> (
+    auto &query = std::get <LongTermContainer::ModifyShapeIntersectionQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.min, _task.max);
+
+    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+        _task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (&sequence[0u]));
@@ -434,7 +404,9 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
 {
     auto &query = std::get <LongTermContainer::FetchRayIntersectionQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.origin, _task.direction);
+
+    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+        _task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (&sequence[0u], _task.maxDistance));
@@ -444,7 +416,9 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
 {
     auto &query = std::get <LongTermContainer::ModifyRayIntersectionQuery> (
         GetObject <PreparedQuery> (_context, _task.sourceName));
-    std::vector <uint8_t> sequence = MergeVectorsIntoQueryParameterSequence (query, _task.origin, _task.direction);
+
+    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+        _task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (&sequence[0u], _task.maxDistance));
@@ -1165,4 +1139,5 @@ std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noex
     first.emplace_back (_task);
     return first;
 }
+
 } // namespace Emergence::Galleon::Test

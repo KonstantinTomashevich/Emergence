@@ -71,48 +71,19 @@ ExecutionContext::~ExecutionContext ()
     Context::Extension::ObjectStorage <IndexReference>::objects.clear ();
 }
 
-std::vector <uint8_t> MergeVectorsIntoIndexLookupSequence (
-    const VolumetricIndex *_index,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_firstVector,
-    const std::vector <Query::Test::Sources::Volumetric::SupportedValue> &_secondVector)
+std::vector <std::size_t> CollectVolumetricIndexKeyFieldSizes (const VolumetricIndex *_index)
 {
     REQUIRE (_index);
-    REQUIRE (_firstVector.size () == _index->GetDimensions ().GetCount ());
-    REQUIRE (_secondVector.size () == _index->GetDimensions ().GetCount ());
-
-    std::size_t sequenceSize = 0u;
+    std::vector <std::size_t> result;
 
     for (const auto &dimension : _index->GetDimensions ())
     {
         REQUIRE (dimension.minBorderField.GetSize () == dimension.maxBorderField.GetSize ());
-        REQUIRE (dimension.minBorderField.GetSize () <= sizeof (Query::Test::Sources::Volumetric::SupportedValue));
-        sequenceSize += dimension.minBorderField.GetSize () + dimension.maxBorderField.GetSize ();
+        result.emplace_back (dimension.minBorderField.GetSize ());
     }
 
-    std::vector <uint8_t> sequence (sequenceSize);
-    std::size_t dimensionIndex = 0u;
-    uint8_t *output = &sequence[0u];
-
-    for (const auto &dimension : _index->GetDimensions ())
-    {
-        for (std::size_t byteIndex = 0u; byteIndex < dimension.minBorderField.GetSize (); ++byteIndex)
-        {
-            *output = reinterpret_cast <const uint8_t *> (&_firstVector[dimensionIndex])[byteIndex];
-            ++output;
-        }
-
-        for (std::size_t byteIndex = 0u; byteIndex < dimension.maxBorderField.GetSize (); ++byteIndex)
-        {
-            *output = reinterpret_cast <const uint8_t *> (&_secondVector[dimensionIndex])[byteIndex];
-            ++output;
-        }
-
-        ++dimensionIndex;
-    }
-
-    return sequence;
+    return result;
 }
-
 
 void IterateOverIndices (const ExecutionContext &_context)
 {
@@ -350,8 +321,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
-    REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
-    std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.min, _task.max);
+    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+        _task, CollectVolumetricIndexKeyFieldSizes (index));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                         index->LookupShapeIntersectionToRead (
@@ -363,8 +334,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
-    REQUIRE_EQUAL (_task.min.size (), index->GetDimensions ().GetCount ());
-    std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.min, _task.max);
+    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+        _task, CollectVolumetricIndexKeyFieldSizes (index));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                         index->LookupShapeIntersectionToEdit (
@@ -376,8 +347,8 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
     VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
         GetObject <IndexReference> (_context, _task.sourceName)).Get ();
 
-    REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
-    std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.origin, _task.direction);
+    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+        _task, CollectVolumetricIndexKeyFieldSizes (index));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                         index->LookupRayIntersectionToRead (
@@ -386,11 +357,11 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
 {
-    VolumetricIndex
-        *index =
-        std::get <Handling::Handle <VolumetricIndex>> (GetObject <IndexReference> (_context, _task.sourceName)).Get ();
-    REQUIRE_EQUAL (_task.origin.size (), index->GetDimensions ().GetCount ());
-    std::vector <uint8_t> sequence = MergeVectorsIntoIndexLookupSequence (index, _task.origin, _task.direction);
+    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
+        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+
+    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+        _task, CollectVolumetricIndexKeyFieldSizes (index));
 
     AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
                         index->LookupRayIntersectionToEdit (

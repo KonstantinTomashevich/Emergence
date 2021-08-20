@@ -101,6 +101,12 @@ using Source = std::variant <
 
 struct Storage final
 {
+    /// \brief Custom constructor, used to check requirements, that are not well expressed through data structure.
+    Storage (
+        StandardLayout::Mapping _dataType,
+        std::vector <const void *> _objectsToInsert,
+        std::vector <Source> _sources);
+
     StandardLayout::Mapping dataType;
     std::vector <const void *> objectsToInsert;
     std::vector <Source> sources;
@@ -309,7 +315,18 @@ struct Scenario final
 Task ChangeQuerySourceAndCursor (
     Task _query, std::optional <std::string> _newSourceName, std::optional <std::string> _newCursorName);
 
+/// \brief Renames sources and all their usages according to given transformation map.
 Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation);
+
+/// \brief Lays out min-max arrays as sequence of min-max pairs.
+/// \details Because test drivers usually do not keep info about storages,
+///          it's more convenient to pass only sizes of fields for used dimensions.
+std::vector <uint8_t> LayoutShapeIntersectionQueryParameters (
+    const Tasks::ShapeIntersectionQueryBase &_query, const std::vector <std::size_t> &_valueSizes);
+
+/// \brief Same as LayoutShapeIntersectionQueryParameters, but for ray intersection queries.
+std::vector <uint8_t> LayoutRayIntersectionQueryParameters (
+    const Tasks::RayIntersectionQueryBase &_query, const std::vector <std::size_t> &_valueSizes);
 
 std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right);
 

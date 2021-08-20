@@ -13,7 +13,7 @@ namespace Emergence::Context::Extension
 /// \details Instead of real object types, user should pass tag-types (for example empty structs) as template arguments
 ///          for these tasks. This approach both helps to reduce compilation time by not including real types to task
 ///          declaration headers and helps compiler to deduce task executors. Tag-to-object-type binding should be
-///          registered via EMERGENCE_CONTEXT_BIND_OBJECT_TAG.
+///          registered via EMERGENCE_CONTEXT_BIND_OBJECT_TAG inside task execution translation unit.
 namespace Tasks
 {
 template <typename ObjectTag>
