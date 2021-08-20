@@ -44,6 +44,8 @@ public:
 
     Registry &operator = (Registry &&_other) noexcept;
 
+    // TODO: Warehouse API must be reworked from scratch: storages should not be exposed to user.
+
 private:
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };

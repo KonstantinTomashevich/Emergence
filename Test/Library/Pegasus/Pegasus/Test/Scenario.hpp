@@ -5,13 +5,18 @@
 #include <variant>
 #include <vector>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Query/Test/Scenario.hpp>
+
+#include <Reference/Test/Scenario.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Pegasus::Test
 {
 using namespace Query::Test::Tasks;
+using namespace Context::Extension::Tasks;
 
 struct CreateHashIndex
 {
@@ -31,15 +36,10 @@ struct CreateVolumetricIndex
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
-struct CopyIndexReference
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemoveIndexReference
+struct CheckIsIndexCanBeDropped
 {
     std::string name;
+    bool expected = false;
 };
 
 struct DropIndex
@@ -64,19 +64,22 @@ using Task = std::variant <
     CreateHashIndex,
     CreateOrderedIndex,
     CreateVolumetricIndex,
-    CopyIndexReference,
-    RemoveIndexReference,
+    Move <struct IndexReferenceTag>,
+    Copy <struct IndexReferenceTag>,
+    MoveAssign <struct IndexReferenceTag>,
+    CopyAssign <struct IndexReferenceTag>,
+    Delete <struct IndexReferenceTag>,
+    CheckIsIndexCanBeDropped,
     DropIndex,
     OpenAllocator,
     AllocateAndInit,
     CloseAllocator,
-    CheckIsSourceBusy,
     QueryValueToRead,
     QueryValueToEdit,
-    QueryRangeToRead,
-    QueryRangeToEdit,
-    QueryReversedRangeToRead,
-    QueryReversedRangeToEdit,
+    QueryAscendingRangeToRead,
+    QueryAscendingRangeToEdit,
+    QueryDescendingRangeToRead,
+    QueryDescendingRangeToEdit,
     QueryShapeIntersectionToRead,
     QueryShapeIntersectionToEdit,
     QueryRayIntersectionToRead,
@@ -87,8 +90,9 @@ using Task = std::variant <
     CursorEdit,
     CursorIncrement,
     CursorDeleteObject,
-    CursorCopy,
-    CursorMove,
+    Move <struct CursorTag>,
+    Copy <struct CursorTag>,
+    Delete <struct CursorTag>,
     CursorClose>;
 
 namespace TestQueryApiDrivers
@@ -97,6 +101,15 @@ void CreateIndicesThanInsertRecords (const Query::Test::Scenario &_scenario);
 
 void InsertRecordsThanCreateIndices (const Query::Test::Scenario &_scenario);
 }
+
+namespace ReferenceApiTestImporters
+{
+void ForIndexReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage);
+
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
+    const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject);
+} // namespace ReferenceApiTestImporters
 
 class Scenario final
 {
@@ -110,5 +123,5 @@ private:
     std::vector <Task> tasks;
 };
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
 } // namespace Emergence::Pegasus::Test

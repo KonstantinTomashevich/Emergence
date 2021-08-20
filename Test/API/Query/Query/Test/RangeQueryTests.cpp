@@ -1,6 +1,5 @@
 #include <cassert>
 
-#include <Query/Test/Common.hpp>
 #include <Query/Test/Data.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
 
@@ -37,9 +36,10 @@ static Storage RequestPlayerStorage (const std::vector <const void *> &_objects,
 
 static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
 {
+    StandardLayout::Mapping mapping = AllFieldTypesStructure::Reflection::GetMapping ();
     return
         {
-            AllFieldTypesStructure::Reflection::GetMapping (),
+            mapping,
             {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2},
             {
                 Sources::Range
@@ -48,40 +48,6 @@ static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
                         _field
                     },
             }
-        };
-}
-
-Scenario CursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestPlayerStorage (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE),
-            },
-            TestCursorCopyAndMove (
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
-                QueryRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
-                &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED)
-        };
-}
-
-Scenario ReversedCursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestPlayerStorage (
-                    {&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE),
-            },
-            TestCursorCopyAndMove (
-                QueryReversedRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
-                QueryReversedRangeToEdit {{{"playerId", "all"}, nullptr, nullptr}},
-                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED,
-                &XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED)
         };
 }
 
@@ -95,32 +61,32 @@ Scenario SimpleLookups () noexcept
                     FLAG_PLAYER_ID_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryReversedRangeToRead {{{"playerId", "allReversed"}, nullptr, nullptr}},
-                CursorCheckAllOrdered {"allReversed",
+                QueryDescendingRangeToRead {{{"playerId", "allDescending"}, nullptr, nullptr}},
+                CursorCheckAllOrdered {"allDescending",
                                        {&XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED, &HUGO_0_ALIVE_STUNNED}},
 
-                QueryRangeToRead {{{"playerId", "ids[1,2]"}, &Queries::ID_1, &Queries::ID_2}},
+                QueryAscendingRangeToRead {{{"playerId", "ids[1,2]"}, &Queries::ID_1, &Queries::ID_2}},
                 CursorCheckAllOrdered {"ids[1,2]", {&KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerId", "ids[0]"}, &Queries::ID_0, &Queries::ID_0}},
+                QueryAscendingRangeToRead {{{"playerId", "ids[0]"}, &Queries::ID_0, &Queries::ID_0}},
                 CursorCheckAllOrdered {"ids[0]", {&HUGO_0_ALIVE_STUNNED}},
 
-                QueryReversedRangeToRead {{{"playerId", "ids[1,2,3]Reversed"},
-                                              &Queries::ID_0, &Queries::ID_2}},
-                CursorCheckAllOrdered {"ids[1,2,3]Reversed",
+                QueryDescendingRangeToRead {{{"playerId", "ids[1,2,3]Descending"},
+                                                &Queries::ID_0, &Queries::ID_2}},
+                CursorCheckAllOrdered {"ids[1,2,3]Descending",
                                        {&XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED, &HUGO_0_ALIVE_STUNNED}},
 
-                QueryRangeToRead {{{"playerId", "ids[2,3]"}, &Queries::ID_2, &Queries::ID_3}},
+                QueryAscendingRangeToRead {{{"playerId", "ids[2,3]"}, &Queries::ID_2, &Queries::ID_3}},
                 CursorCheckAllOrdered {"ids[2,3]", {&XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerId", "ids[3+]"}, &Queries::ID_3, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "ids[3+]"}, &Queries::ID_3, nullptr}},
                 CursorCheck {"ids[3+]", nullptr},
 
-                QueryRangeToRead {{{"playerId", "ids[-0]"}, nullptr, &Queries::ID_0}},
+                QueryAscendingRangeToRead {{{"playerId", "ids[-0]"}, nullptr, &Queries::ID_0}},
                 CursorCheckAllOrdered {"ids[-0]", {&HUGO_0_ALIVE_STUNNED}},
             }
         };
@@ -136,23 +102,23 @@ Scenario OnStringField () noexcept
                     FLAG_PLAYER_NAME_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerName", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerName", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerName", "ioran-zanek"}, &Queries::IORAN, &Queries::ZANEK}},
+                QueryAscendingRangeToRead {{{"playerName", "ioran-zanek"}, &Queries::IORAN, &Queries::ZANEK}},
                 CursorCheckAllOrdered {"ioran-zanek", {&KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerName", "hugo-karl"}, &Queries::HUGO, &Queries::KARL}},
+                QueryAscendingRangeToRead {{{"playerName", "hugo-karl"}, &Queries::HUGO, &Queries::KARL}},
                 CursorCheckAllOrdered {"hugo-karl", {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}},
 
-                QueryRangeToRead {{{"playerName", "xavier"}, &Queries::XAVIER, &Queries::XAVIER}},
+                QueryAscendingRangeToRead {{{"playerName", "xavier"}, &Queries::XAVIER, &Queries::XAVIER}},
                 CursorCheckAllOrdered {"xavier", {&XAVIER_2_ALIVE_POISONED}},
 
-                QueryReversedRangeToRead {{{"playerName", "zanek-karl"}, &Queries::KARL, &Queries::ZANEK}},
+                QueryDescendingRangeToRead {{{"playerName", "zanek-karl"}, &Queries::KARL, &Queries::ZANEK}},
                 CursorCheckAllOrdered {"zanek-karl", {&XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED}},
 
-                QueryReversedRangeToRead {{{"playerName", "null-xavier"}, nullptr, &Queries::XAVIER}},
+                QueryDescendingRangeToRead {{{"playerName", "null-xavier"}, nullptr, &Queries::XAVIER}},
                 CursorCheckAllOrdered {"null-xavier",
                                        {&XAVIER_2_ALIVE_POISONED, &KARL_1_ALIVE_IMMOBILIZED, &HUGO_0_ALIVE_STUNNED}},
             }
@@ -172,17 +138,17 @@ Scenario WithDuplicates () noexcept
                     FLAG_PLAYER_ID_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {
                     "all", {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                             &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerId", "1"}, &Queries::ID_1, &Queries::ID_1}},
+                QueryAscendingRangeToRead {{{"playerId", "1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheckAllOrdered {
                     "1", {&KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED}},
 
-                QueryReversedRangeToRead {{{"playerId", "null-1(Reversed)"}, nullptr, &Queries::ID_1}},
-                CursorCheckAllOrdered {"null-1(Reversed)",
+                QueryDescendingRangeToRead {{{"playerId", "null-1(Descending)"}, nullptr, &Queries::ID_1}},
+                CursorCheckAllOrdered {"null-1(Descending)",
                                        {&KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &HUGO_0_ALIVE_STUNNED}},
             }
@@ -202,13 +168,13 @@ Scenario Edition () noexcept
                     FLAG_PLAYER_ID_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"all"},
 
-                QueryRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
+                QueryAscendingRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorEdit {"1-1", &XAVIER_2_ALIVE_POISONED},
                 CursorIncrement {"1-1"},
@@ -216,7 +182,7 @@ Scenario Edition () noexcept
                 CursorEdit {"1-1", &HUGO_0_ALIVE_STUNNED},
                 CursorClose {"1-1"},
 
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&HUGO_0_ALIVE_STUNNED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &XAVIER_2_ALIVE_POISONED, &XAVIER_2_ALIVE_POISONED}},
@@ -234,24 +200,24 @@ Scenario Deletion () noexcept
                     FLAG_PLAYER_ID_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"all"},
 
-                QueryRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
+                QueryAscendingRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorDeleteObject {"1-1"},
                 CursorCheck {"1-1", nullptr},
                 CursorClose {"1-1"},
 
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&HUGO_0_ALIVE_STUNNED, &XAVIER_2_ALIVE_POISONED}},
             }
         };
 }
 
-Scenario EditionAndDeletionFromReversedCursor () noexcept
+Scenario EditionAndDeletionFromDescendingCursor () noexcept
 {
     return
         {
@@ -261,12 +227,12 @@ Scenario EditionAndDeletionFromReversedCursor () noexcept
                     FLAG_PLAYER_ID_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"all"},
 
-                QueryReversedRangeToEdit {{{"playerId", "null-1"}, nullptr, &Queries::ID_1}},
+                QueryDescendingRangeToEdit {{{"playerId", "null-1"}, nullptr, &Queries::ID_1}},
                 CursorCheck {"null-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorEdit {"null-1", &XAVIER_2_ALIVE_POISONED},
                 CursorIncrement {"null-1"},
@@ -274,18 +240,18 @@ Scenario EditionAndDeletionFromReversedCursor () noexcept
                 CursorEdit {"null-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorClose {"null-1"},
 
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all",
                                        {&KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED, &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"all"},
 
-                QueryReversedRangeToEdit {{{"playerId", "2-2"}, &Queries::ID_2, &Queries::ID_2}},
+                QueryDescendingRangeToEdit {{{"playerId", "2-2"}, &Queries::ID_2, &Queries::ID_2}},
                 CursorCheck {"2-2", &XAVIER_2_ALIVE_POISONED},
                 CursorDeleteObject {"2-2"},
                 CursorCheck {"2-2", &XAVIER_2_ALIVE_POISONED},
                 CursorClose {"2-2"},
 
-                QueryRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"all"},
             }
@@ -303,19 +269,19 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
                     FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE),
             },
             {
-                QueryRangeToRead {{{"playerId", "allIds"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "allIds"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"allIds",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"allIds"},
 
-                QueryRangeToRead {{{"playerName", "allNames"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerName", "allNames"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"allNames",
                                        {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_1_ALIVE_IMMOBILIZED,
                                         &XAVIER_2_ALIVE_POISONED}},
                 CursorClose {"allNames"},
 
-                QueryRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
+                QueryAscendingRangeToEdit {{{"playerId", "1-1"}, &Queries::ID_1, &Queries::ID_1}},
                 CursorCheck {"1-1", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorEdit {"1-1", &XAVIER_2_ALIVE_POISONED},
                 CursorDeleteObject {"1-1"},
@@ -323,11 +289,11 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
                 CursorEdit {"1-1", &XAVIER_2_ALIVE_POISONED},
                 CursorClose {"1-1"},
 
-                QueryRangeToRead {{{"playerId", "allIds"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerId", "allIds"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"allIds",
                                        {&HUGO_0_ALIVE_STUNNED, &XAVIER_2_ALIVE_POISONED, &XAVIER_2_ALIVE_POISONED}},
 
-                QueryRangeToRead {{{"playerName", "allNames"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"playerName", "allNames"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"allNames",
                                        {&HUGO_0_ALIVE_STUNNED, &XAVIER_2_ALIVE_POISONED, &XAVIER_2_ALIVE_POISONED}},
             }
@@ -342,7 +308,7 @@ Scenario OrderingInt8 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::int8),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -356,7 +322,7 @@ Scenario OrderingInt16 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::int16),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_0}}
             }
         };
@@ -370,7 +336,7 @@ Scenario OrderingInt32 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::int32),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -384,7 +350,7 @@ Scenario OrderingInt64 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::int64),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}
             }
         };
@@ -398,7 +364,7 @@ Scenario OrderingUInt8 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint8),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -412,7 +378,7 @@ Scenario OrderingUInt16 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint16),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -426,7 +392,7 @@ Scenario OrderingUInt32 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint32),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -440,7 +406,7 @@ Scenario OrderingUInt64 () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint64),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}
             }
         };
@@ -454,7 +420,7 @@ Scenario OrderingFloat () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::floating),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -468,7 +434,7 @@ Scenario OrderingDouble () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::doubleFloating),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2}}
             }
         };
@@ -482,7 +448,7 @@ Scenario OrderingBlock () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::block),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}
             }
         };
@@ -496,7 +462,7 @@ Scenario OrderingString () noexcept
                 RequestOrderingStorage (AllFieldTypesStructure::Reflection::string),
             },
             {
-                QueryRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
+                QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
                 CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}
             }
         };

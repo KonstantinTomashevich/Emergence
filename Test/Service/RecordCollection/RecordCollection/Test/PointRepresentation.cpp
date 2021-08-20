@@ -1,11 +1,11 @@
-#include <RecordCollection/Test/Common.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 #include <RecordCollection/Test/PointRepresentation.hpp>
 
+#include <Reference/Test/Tests.hpp>
+
+#include <Query/Test/Data.hpp>
 #include <Query/Test/DataTypes.hpp>
 #include <Query/Test/ValueQueryTests.hpp>
-
-#include <Testing/Testing.hpp>
 
 using namespace Emergence::RecordCollection::Test;
 
@@ -14,20 +14,57 @@ bool Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker () 
     return true;
 }
 
-BEGIN_SUITE (PointRepresentation)
-
-TEST_CASE (ReferenceManipulations)
+static Emergence::Query::Test::Storage GetTestStorage ()
 {
-    Scenario
+    using namespace Emergence::Query::Test;
+    return
         {
-            Emergence::Query::Test::Player::Reflection::GetMapping (),
-            std::vector <Task>
-                {
-                    CreatePointRepresentation {"source", {Emergence::Query::Test::Player::Reflection::id}},
-                } +
-            Common::TestIsCanBeDropped ("source")
+            Player::Reflection::GetMapping (),
+            {&HUGO_0_ALIVE_STUNNED},
+            {Sources::Value {"Source", {Player::Reflection::id}}}
         };
 }
+
+static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    ReferenceApiTestImporters::ForRepresentationReference (_scenario, GetTestStorage ());
+}
+
+static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+}
+
+static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    ReferenceApiTestImporters::ForCursor (
+        _scenario, GetTestStorage (), QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
+        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+}
+
+BEGIN_SUITE (PointRepresentationReference)
+
+REGISTER_ALL_REFERENCE_TESTS (ExecuteRepresentationReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (PointRepresentationReadCursorReference)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteReadCursorReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (PointRepresentationEditCursorReference)
+
+REGISTER_REFERENCE_TEST (ExecuteEditCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteEditCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (PointRepresentationQueries)
 
 REGISTER_ALL_VALUE_QUERY_TESTS (TestQueryApiDrivers::CreateRepresentationsThanAllocateRecords)
 

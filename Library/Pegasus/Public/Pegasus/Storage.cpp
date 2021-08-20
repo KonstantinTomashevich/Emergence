@@ -325,7 +325,7 @@ Handling::Handle <HashIndex> Storage::CreateHashIndex (
     if (!indices.ordered.Empty ())
     {
         // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
-        OrderedIndex::ReadCursor cursor = indices.ordered.Begin ()->index->LookupToRead (
+        OrderedIndex::AscendingReadCursor cursor = indices.ordered.Begin ()->index->LookupToReadAscending (
             {nullptr}, {nullptr});
 
         while (const void *record = *cursor)
@@ -363,7 +363,7 @@ Handling::Handle <OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fie
     if (indices.ordered.GetCount () > 1u)
     {
         // If there is another ordered index, fetch records from it, because it's faster than fetching them from pool.
-        OrderedIndex::ReadCursor cursor = indices.ordered.Begin ()->index->LookupToRead (
+        OrderedIndex::AscendingReadCursor cursor = indices.ordered.Begin ()->index->LookupToReadAscending (
             {nullptr}, {nullptr});
 
         while (const void *record = *cursor)
@@ -405,7 +405,7 @@ Handling::Handle <VolumetricIndex> Storage::CreateVolumetricIndex (
     if (!indices.ordered.Empty ())
     {
         // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
-        OrderedIndex::ReadCursor cursor = indices.ordered.Begin ()->index->LookupToRead (
+        OrderedIndex::AscendingReadCursor cursor = indices.ordered.Begin ()->index->LookupToReadAscending (
             {nullptr}, {nullptr});
 
         while (const void *record = *cursor)

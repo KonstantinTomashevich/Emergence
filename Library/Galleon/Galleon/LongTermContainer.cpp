@@ -80,76 +80,76 @@ LongTermContainer::ModifyValueQuery::ModifyValueQuery (
 {
 }
 
-LongTermContainer::FetchRangeQuery::Cursor LongTermContainer::FetchRangeQuery::Execute (
+LongTermContainer::FetchAscendingRangeQuery::Cursor LongTermContainer::FetchAscendingRangeQuery::Execute (
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.ReadInterval (_min, _max);
+    return representation.ReadAscendingInterval (_min, _max);
 }
 
-StandardLayout::Field LongTermContainer::FetchRangeQuery::GetKeyField () const noexcept
+StandardLayout::Field LongTermContainer::FetchAscendingRangeQuery::GetKeyField () const noexcept
 {
     return representation.GetKeyField ();
 }
 
-LongTermContainer::FetchRangeQuery::FetchRangeQuery (
+LongTermContainer::FetchAscendingRangeQuery::FetchAscendingRangeQuery (
     Handling::Handle <LongTermContainer> _container,
     RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
 
-LongTermContainer::ModifyRangeQuery::Cursor LongTermContainer::ModifyRangeQuery::Execute (
+LongTermContainer::ModifyAscendingRangeQuery::Cursor LongTermContainer::ModifyAscendingRangeQuery::Execute (
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.EditInterval (_min, _max);
+    return representation.EditAscendingInterval (_min, _max);
 }
 
-StandardLayout::Field LongTermContainer::ModifyRangeQuery::GetKeyField () const noexcept
+StandardLayout::Field LongTermContainer::ModifyAscendingRangeQuery::GetKeyField () const noexcept
 {
     return representation.GetKeyField ();
 }
 
-LongTermContainer::ModifyRangeQuery::ModifyRangeQuery (
+LongTermContainer::ModifyAscendingRangeQuery::ModifyAscendingRangeQuery (
     Handling::Handle <LongTermContainer> _container,
     RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
 
-LongTermContainer::FetchReversedRangeQuery::Cursor LongTermContainer::FetchReversedRangeQuery::Execute (
+LongTermContainer::FetchDescendingRangeQuery::Cursor LongTermContainer::FetchDescendingRangeQuery::Execute (
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.ReadReversedInterval (_min, _max);
+    return representation.ReadDescendingInterval (_min, _max);
 }
 
-StandardLayout::Field LongTermContainer::FetchReversedRangeQuery::GetKeyField () const noexcept
+StandardLayout::Field LongTermContainer::FetchDescendingRangeQuery::GetKeyField () const noexcept
 {
     return representation.GetKeyField ();
 }
 
-LongTermContainer::FetchReversedRangeQuery::FetchReversedRangeQuery (
+LongTermContainer::FetchDescendingRangeQuery::FetchDescendingRangeQuery (
     Handling::Handle <LongTermContainer> _container,
     RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
 
-LongTermContainer::ModifyReversedRangeQuery::Cursor LongTermContainer::ModifyReversedRangeQuery::Execute (
+LongTermContainer::ModifyDescendingRangeQuery::Cursor LongTermContainer::ModifyDescendingRangeQuery::Execute (
     RecordCollection::LinearRepresentation::KeyFieldValue _min,
     RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    return representation.EditReversedInterval (_min, _max);
+    return representation.EditDescendingInterval (_min, _max);
 }
 
-StandardLayout::Field LongTermContainer::ModifyReversedRangeQuery::GetKeyField () const noexcept
+StandardLayout::Field LongTermContainer::ModifyDescendingRangeQuery::GetKeyField () const noexcept
 {
     return representation.GetKeyField ();
 }
 
-LongTermContainer::ModifyReversedRangeQuery::ModifyReversedRangeQuery (
+LongTermContainer::ModifyDescendingRangeQuery::ModifyDescendingRangeQuery (
     Handling::Handle <LongTermContainer> _container,
     RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
@@ -273,23 +273,25 @@ LongTermContainer::ModifyValueQuery LongTermContainer::ModifyValue
     return {this, AcquirePointRepresentation (_keyFields)};
 }
 
-LongTermContainer::FetchRangeQuery LongTermContainer::FetchRange (StandardLayout::FieldId _keyField) noexcept
-{
-    return {this, AcquireLinearRepresentation (_keyField)};
-}
-
-LongTermContainer::ModifyRangeQuery LongTermContainer::ModifyRange (StandardLayout::FieldId _keyField) noexcept
-{
-    return {this, AcquireLinearRepresentation (_keyField)};
-}
-
-LongTermContainer::FetchReversedRangeQuery LongTermContainer::FetchReversedRange (
+LongTermContainer::FetchAscendingRangeQuery LongTermContainer::FetchAscendingRange (
     StandardLayout::FieldId _keyField) noexcept
 {
     return {this, AcquireLinearRepresentation (_keyField)};
 }
 
-LongTermContainer::ModifyReversedRangeQuery LongTermContainer::ModifyReversedRange (
+LongTermContainer::ModifyAscendingRangeQuery LongTermContainer::ModifyAscendingRange (
+    StandardLayout::FieldId _keyField) noexcept
+{
+    return {this, AcquireLinearRepresentation (_keyField)};
+}
+
+LongTermContainer::FetchDescendingRangeQuery LongTermContainer::FetchDescendingRange (
+    StandardLayout::FieldId _keyField) noexcept
+{
+    return {this, AcquireLinearRepresentation (_keyField)};
+}
+
+LongTermContainer::ModifyDescendingRangeQuery LongTermContainer::ModifyDescendingRange (
     StandardLayout::FieldId _keyField) noexcept
 {
     return {this, AcquireLinearRepresentation (_keyField)};

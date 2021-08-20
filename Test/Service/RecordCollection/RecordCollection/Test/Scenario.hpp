@@ -5,13 +5,18 @@
 #include <variant>
 #include <vector>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Query/Test/Scenario.hpp>
+
+#include <Reference/Test/Scenario.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::RecordCollection::Test
 {
 using namespace Query::Test::Tasks;
+using namespace Context::Extension::Tasks;
 
 struct CreateLinearRepresentation
 {
@@ -31,15 +36,10 @@ struct CreateVolumetricRepresentation
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
-struct CopyRepresentationReference
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemoveRepresentationReference
+struct CheckIsRepresentationCanBeDropped
 {
     std::string name;
+    bool expected = false;
 };
 
 struct DropRepresentation
@@ -64,19 +64,22 @@ using Task = std::variant <
     CreateLinearRepresentation,
     CreatePointRepresentation,
     CreateVolumetricRepresentation,
-    CopyRepresentationReference,
-    RemoveRepresentationReference,
+    Move <struct RepresentationReferenceTag>,
+    Copy <struct RepresentationReferenceTag>,
+    MoveAssign <struct RepresentationReferenceTag>,
+    CopyAssign <struct RepresentationReferenceTag>,
+    Delete <struct RepresentationReferenceTag>,
+    CheckIsRepresentationCanBeDropped,
     DropRepresentation,
     OpenAllocator,
     AllocateAndInit,
     CloseAllocator,
-    CheckIsSourceBusy,
     QueryValueToRead,
     QueryValueToEdit,
-    QueryRangeToRead,
-    QueryRangeToEdit,
-    QueryReversedRangeToRead,
-    QueryReversedRangeToEdit,
+    QueryAscendingRangeToRead,
+    QueryAscendingRangeToEdit,
+    QueryDescendingRangeToRead,
+    QueryDescendingRangeToEdit,
     QueryShapeIntersectionToRead,
     QueryShapeIntersectionToEdit,
     QueryRayIntersectionToRead,
@@ -87,8 +90,9 @@ using Task = std::variant <
     CursorEdit,
     CursorIncrement,
     CursorDeleteObject,
-    CursorCopy,
-    CursorMove,
+    Move <struct CursorTag>,
+    Copy <struct CursorTag>,
+    Delete <struct CursorTag>,
     CursorClose>;
 
 namespace TestQueryApiDrivers
@@ -96,7 +100,16 @@ namespace TestQueryApiDrivers
 void CreateRepresentationsThanAllocateRecords (const Query::Test::Scenario &_scenario);
 
 void AllocateRecordsThanCreateRepresentations (const Query::Test::Scenario &_scenario);
-}
+} // namespace TestQueryApiDrivers
+
+namespace ReferenceApiTestImporters
+{
+void ForRepresentationReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage);
+
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
+    const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject);
+} // namespace ReferenceApiTestImporters
 
 class Scenario final
 {
@@ -110,5 +123,5 @@ private:
     std::vector <Task> tasks;
 };
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
 } // namespace Emergence::RecordCollection::Test

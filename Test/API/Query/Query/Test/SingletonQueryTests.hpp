@@ -19,4 +19,3 @@ TEST_CASE (TestName)                                                           \
 
 #define REGISTER_ALL_SINGLETON_QUERY_TESTS(Driver)                             \
 REGISTER_SINGLETON_QUERY_TEST (Driver, EditAndRead)                            \
-REGISTER_SINGLETON_QUERY_TEST (Driver, CursorManipulations)                    \

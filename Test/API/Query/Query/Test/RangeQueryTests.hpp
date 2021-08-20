@@ -6,10 +6,6 @@
 
 namespace Emergence::Query::Test::RangeQuery
 {
-Scenario CursorManipulations () noexcept;
-
-Scenario ReversedCursorManipulations () noexcept;
-
 Scenario SimpleLookups () noexcept;
 
 Scenario OnStringField () noexcept;
@@ -20,7 +16,7 @@ Scenario Edition () noexcept;
 
 Scenario Deletion () noexcept;
 
-Scenario EditionAndDeletionFromReversedCursor () noexcept;
+Scenario EditionAndDeletionFromDescendingCursor () noexcept;
 
 Scenario MultipleSourcesEditionAndDeletion () noexcept;
 
@@ -56,14 +52,12 @@ TEST_CASE (TestName)                                                           \
 }                                                                              \
 
 #define REGISTER_ALL_RANGE_QUERY_TESTS(Driver)                                 \
-REGISTER_RANGE_QUERY_TEST (Driver, CursorManipulations)                        \
-REGISTER_RANGE_QUERY_TEST (Driver, ReversedCursorManipulations)                \
 REGISTER_RANGE_QUERY_TEST (Driver, SimpleLookups)                              \
 REGISTER_RANGE_QUERY_TEST (Driver, OnStringField)                              \
 REGISTER_RANGE_QUERY_TEST (Driver, WithDuplicates)                             \
 REGISTER_RANGE_QUERY_TEST (Driver, Edition)                                    \
 REGISTER_RANGE_QUERY_TEST (Driver, Deletion)                                   \
-REGISTER_RANGE_QUERY_TEST (Driver, EditionAndDeletionFromReversedCursor)       \
+REGISTER_RANGE_QUERY_TEST (Driver, EditionAndDeletionFromDescendingCursor)       \
 REGISTER_RANGE_QUERY_TEST (Driver, MultipleSourcesEditionAndDeletion)          \
 REGISTER_RANGE_QUERY_TEST (Driver, OrderingInt8)                               \
 REGISTER_RANGE_QUERY_TEST (Driver, OrderingInt16)                              \

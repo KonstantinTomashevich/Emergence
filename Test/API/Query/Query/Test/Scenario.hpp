@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -100,6 +101,12 @@ using Source = std::variant <
 
 struct Storage final
 {
+    /// \brief Custom constructor, used to check requirements, that are not well expressed through data structure.
+    Storage (
+        StandardLayout::Mapping _dataType,
+        std::vector <const void *> _objectsToInsert,
+        std::vector <Source> _sources);
+
     StandardLayout::Mapping dataType;
     std::vector <const void *> objectsToInsert;
     std::vector <Source> sources;
@@ -107,12 +114,6 @@ struct Storage final
 
 namespace Tasks
 {
-struct CheckIsSourceBusy
-{
-    std::string name;
-    bool expectedValue = false;
-};
-
 struct QueryBase
 {
     std::string sourceName;
@@ -154,19 +155,19 @@ struct RangeQueryBase : public QueryBase
     const void *maxValue = nullptr;
 };
 
-struct QueryRangeToRead final : public RangeQueryBase
+struct QueryAscendingRangeToRead final : public RangeQueryBase
 {
 };
 
-struct QueryRangeToEdit final : public RangeQueryBase
+struct QueryAscendingRangeToEdit final : public RangeQueryBase
 {
 };
 
-struct QueryReversedRangeToRead final : public RangeQueryBase
+struct QueryDescendingRangeToRead final : public RangeQueryBase
 {
 };
 
-struct QueryReversedRangeToEdit final : public RangeQueryBase
+struct QueryDescendingRangeToEdit final : public RangeQueryBase
 {
 };
 
@@ -233,84 +234,65 @@ struct CursorDeleteObject final
     std::string name;
 };
 
-struct CursorCopy final
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct CursorMove final
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
 struct CursorClose final
 {
     std::string name;
 };
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CheckIsSourceBusy &_task);
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QuerySingletonToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QuerySingletonToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryUnorderedSequenceToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryUnorderedSequenceToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryValueToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryValueToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryValueToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRangeToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryReversedRangeToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryShapeIntersectionToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToRead &_task);
+std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::QueryRayIntersectionToEdit &_task);
+std::ostream &operator << (std::ostream &_output, const CursorCheck &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheck &_task);
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllOrdered &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllOrdered &_task);
+std::ostream &operator << (std::ostream &_output, const CursorCheckAllUnordered &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCheckAllUnordered &_task);
+std::ostream &operator << (std::ostream &_output, const CursorEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorEdit &_task);
+std::ostream &operator << (std::ostream &_output, const CursorIncrement &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorIncrement &_task);
+std::ostream &operator << (std::ostream &_output, const CursorDeleteObject &_task);
 
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorDeleteObject &_task);
-
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorCopy &_task);
-
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorMove &_task);
-
-std::ostream &operator << (std::ostream &_output, const Tasks::CursorClose &_task);
+std::ostream &operator << (std::ostream &_output, const CursorClose &_task);
 } // namespace Tasks
 
 using Task = std::variant <
-    Tasks::CheckIsSourceBusy,
     Tasks::QuerySingletonToRead,
     Tasks::QuerySingletonToEdit,
     Tasks::QueryUnorderedSequenceToRead,
     Tasks::QueryUnorderedSequenceToEdit,
     Tasks::QueryValueToRead,
     Tasks::QueryValueToEdit,
-    Tasks::QueryRangeToRead,
-    Tasks::QueryRangeToEdit,
-    Tasks::QueryReversedRangeToRead,
-    Tasks::QueryReversedRangeToEdit,
+    Tasks::QueryAscendingRangeToRead,
+    Tasks::QueryAscendingRangeToEdit,
+    Tasks::QueryDescendingRangeToRead,
+    Tasks::QueryDescendingRangeToEdit,
     Tasks::QueryShapeIntersectionToRead,
     Tasks::QueryShapeIntersectionToEdit,
     Tasks::QueryRayIntersectionToRead,
@@ -321,8 +303,6 @@ using Task = std::variant <
     Tasks::CursorEdit,
     Tasks::CursorIncrement,
     Tasks::CursorDeleteObject,
-    Tasks::CursorCopy,
-    Tasks::CursorMove,
     Tasks::CursorClose>;
 
 struct Scenario final
@@ -331,7 +311,22 @@ struct Scenario final
     std::vector <Task> tasks;
 };
 
+/// \brief Query-type agnostic renaming is widely used in tests, therefore it was extracted to utility function.
+Task ChangeQuerySourceAndCursor (
+    Task _query, std::optional <std::string> _newSourceName, std::optional <std::string> _newCursorName);
+
+/// \brief Renames sources and all their usages according to given transformation map.
 Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation);
+
+/// \brief Lays out min-max arrays as sequence of min-max pairs.
+/// \details Because test drivers usually do not keep info about storages,
+///          it's more convenient to pass only sizes of fields for used dimensions.
+std::vector <uint8_t> LayoutShapeIntersectionQueryParameters (
+    const Tasks::ShapeIntersectionQueryBase &_query, const std::vector <std::size_t> &_valueSizes);
+
+/// \brief Same as LayoutShapeIntersectionQueryParameters, but for ray intersection queries.
+std::vector <uint8_t> LayoutRayIntersectionQueryParameters (
+    const Tasks::RayIntersectionQueryBase &_query, const std::vector <std::size_t> &_valueSizes);
 
 std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right);
 

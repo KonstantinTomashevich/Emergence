@@ -141,11 +141,10 @@ public:
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
-    class FetchRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class FetchAscendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
-        /// \details Objects are sorted in ascending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::ReadCursor;
+        using Cursor = RecordCollection::LinearRepresentation::AscendingReadCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -156,18 +155,17 @@ public:
     private:
         friend class LongTermContainer;
 
-        FetchRangeQuery (
+        FetchAscendingRangeQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       given min max interval contains key field value.
-    class ModifyRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class ModifyAscendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
-        /// \details Objects are sorted in ascending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::EditCursor;
+        using Cursor = RecordCollection::LinearRepresentation::AscendingEditCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -178,18 +176,17 @@ public:
     private:
         friend class LongTermContainer;
 
-        ModifyRangeQuery (
+        ModifyAscendingRangeQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
-    class FetchReversedRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class FetchDescendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
-        /// \details Objects are sorted in descending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::ReversedReadCursor;
+        using Cursor = RecordCollection::LinearRepresentation::DescendingReadCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -200,18 +197,18 @@ public:
     private:
         friend class LongTermContainer;
 
-        FetchReversedRangeQuery (
+        FetchDescendingRangeQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       given min max interval contains key field value.
-    class ModifyReversedRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class ModifyDescendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
     {
     public:
         /// \details Objects are sorted in descending order on key field value.
-        using Cursor = RecordCollection::LinearRepresentation::ReversedEditCursor;
+        using Cursor = RecordCollection::LinearRepresentation::DescendingEditCursor;
 
         Cursor Execute (
             RecordCollection::LinearRepresentation::KeyFieldValue _min,
@@ -222,7 +219,7 @@ public:
     private:
         friend class LongTermContainer;
 
-        ModifyReversedRangeQuery (
+        ModifyDescendingRangeQuery (
             Handling::Handle <LongTermContainer> _container,
             RecordCollection::LinearRepresentation _representation) noexcept;
     };
@@ -327,13 +324,13 @@ public:
 
     ModifyValueQuery ModifyValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
 
-    FetchRangeQuery FetchRange (StandardLayout::FieldId _keyField) noexcept;
+    FetchAscendingRangeQuery FetchAscendingRange (StandardLayout::FieldId _keyField) noexcept;
 
-    ModifyRangeQuery ModifyRange (StandardLayout::FieldId _keyField) noexcept;
+    ModifyAscendingRangeQuery ModifyAscendingRange (StandardLayout::FieldId _keyField) noexcept;
 
-    FetchReversedRangeQuery FetchReversedRange (StandardLayout::FieldId _keyField) noexcept;
+    FetchDescendingRangeQuery FetchDescendingRange (StandardLayout::FieldId _keyField) noexcept;
 
-    ModifyReversedRangeQuery ModifyReversedRange (StandardLayout::FieldId _keyField) noexcept;
+    ModifyDescendingRangeQuery ModifyDescendingRange (StandardLayout::FieldId _keyField) noexcept;
 
     FetchShapeIntersectionQuery FetchShapeIntersection (
         const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;

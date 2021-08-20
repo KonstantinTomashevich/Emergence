@@ -5,13 +5,18 @@
 #include <variant>
 #include <vector>
 
+#include <Context/Extension/ObjectStorage.hpp>
+
 #include <Query/Test/Scenario.hpp>
+
+#include <Reference/Test/Scenario.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Galleon::Test
 {
 using namespace Query::Test::Tasks;
+using namespace Context::Extension::Tasks;
 
 struct ContainerAcquisitionBase
 {
@@ -31,21 +36,22 @@ struct AcquireLongTermContainer : public ContainerAcquisitionBase
 {
 };
 
-struct CopyContainerReference
+struct ContainerAllocationCheckBase
 {
-    std::string sourceName;
-    std::string targetName;
+    StandardLayout::Mapping mapping;
+    bool expected = false;
 };
 
-struct MoveContainerReference
+struct CheckIsSingletonContainerAllocated final : public ContainerAllocationCheckBase
 {
-    std::string sourceName;
-    std::string targetName;
 };
 
-struct RemoveContainerReference
+struct CheckIsShortTermContainerAllocated final : public ContainerAllocationCheckBase
 {
-    std::string name;
+};
+
+struct CheckIsLongTermContainerAllocated final : public ContainerAllocationCheckBase
+{
 };
 
 struct QueryPreparationBase
@@ -88,22 +94,22 @@ struct PrepareLongTermModifyValueQuery : public QueryPreparationBase
     std::vector <StandardLayout::FieldId> keyFields;
 };
 
-struct PrepareLongTermFetchRangeQuery : public QueryPreparationBase
+struct PrepareLongTermFetchAscendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
 
-struct PrepareLongTermModifyRangeQuery : public QueryPreparationBase
+struct PrepareLongTermModifyAscendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
 
-struct PrepareLongTermFetchReversedRangeQuery : public QueryPreparationBase
+struct PrepareLongTermFetchDescendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
 
-struct PrepareLongTermModifyReversedRangeQuery : public QueryPreparationBase
+struct PrepareLongTermModifyDescendingRangeQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
 };
@@ -128,23 +134,6 @@ struct PrepareLongTermModifyRayIntersectionQuery : public QueryPreparationBase
     std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
-struct CopyPreparedQuery
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct MovePreparedQuery
-{
-    std::string sourceName;
-    std::string targetName;
-};
-
-struct RemovePreparedQuery
-{
-    std::string name;
-};
-
 struct InsertObjects
 {
     std::string name;
@@ -155,9 +144,14 @@ using Task = std::variant <
     AcquireSingletonContainer,
     AcquireShortTermContainer,
     AcquireLongTermContainer,
-    CopyContainerReference,
-    MoveContainerReference,
-    RemoveContainerReference,
+    Move <struct ContainerReferenceTag>,
+    Copy <struct ContainerReferenceTag>,
+    MoveAssign <struct ContainerReferenceTag>,
+    CopyAssign <struct ContainerReferenceTag>,
+    Delete <struct ContainerReferenceTag>,
+    CheckIsSingletonContainerAllocated,
+    CheckIsShortTermContainerAllocated,
+    CheckIsLongTermContainerAllocated,
     PrepareSingletonFetchQuery,
     PrepareSingletonModifyQuery,
     PrepareShortTermInsertQuery,
@@ -166,17 +160,17 @@ using Task = std::variant <
     PrepareLongTermInsertQuery,
     PrepareLongTermFetchValueQuery,
     PrepareLongTermModifyValueQuery,
-    PrepareLongTermFetchRangeQuery,
-    PrepareLongTermModifyRangeQuery,
-    PrepareLongTermFetchReversedRangeQuery,
-    PrepareLongTermModifyReversedRangeQuery,
+    PrepareLongTermFetchAscendingRangeQuery,
+    PrepareLongTermModifyAscendingRangeQuery,
+    PrepareLongTermFetchDescendingRangeQuery,
+    PrepareLongTermModifyDescendingRangeQuery,
     PrepareLongTermFetchShapeIntersectionQuery,
     PrepareLongTermModifyShapeIntersectionQuery,
     PrepareLongTermFetchRayIntersectionQuery,
     PrepareLongTermModifyRayIntersectionQuery,
-    CopyPreparedQuery,
-    MovePreparedQuery,
-    RemovePreparedQuery,
+    Move <struct PreparedQueryTag>,
+    Copy <struct PreparedQueryTag>,
+    Delete <struct PreparedQueryTag>,
     InsertObjects,
     QuerySingletonToRead,
     QuerySingletonToEdit,
@@ -184,10 +178,10 @@ using Task = std::variant <
     QueryUnorderedSequenceToEdit,
     QueryValueToRead,
     QueryValueToEdit,
-    QueryRangeToRead,
-    QueryRangeToEdit,
-    QueryReversedRangeToRead,
-    QueryReversedRangeToEdit,
+    QueryAscendingRangeToRead,
+    QueryAscendingRangeToEdit,
+    QueryDescendingRangeToRead,
+    QueryDescendingRangeToEdit,
     QueryShapeIntersectionToRead,
     QueryShapeIntersectionToEdit,
     QueryRayIntersectionToRead,
@@ -198,11 +192,26 @@ using Task = std::variant <
     CursorEdit,
     CursorIncrement,
     CursorDeleteObject,
-    CursorCopy,
-    CursorMove,
+    Move <struct CursorTag>,
+    Copy <struct CursorTag>,
+    Delete <struct CursorTag>,
     CursorClose>;
 
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
+
+namespace TestReferenceApiDrivers
+{
+void ForContainerReference (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor);
+
+void ForPreparedQuery (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
+    const Task &_queryPreparation);
+
+void ForCursor (
+    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
+    const Query::Test::Task &_query, const void *_cursorExpectedObject);
+} // namespace TestReferenceApiDrivers
 
 class Scenario final
 {
@@ -215,7 +224,7 @@ private:
     std::vector <Task> tasks;
 };
 
-std::vector <Task> operator + (std::vector <Task> first, const std::vector <Task> &second) noexcept;
+std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
 
 std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noexcept;
 } // namespace Emergence::Galleon::Test

@@ -1,6 +1,5 @@
 #include <cassert>
 
-#include <Query/Test/Common.hpp>
 #include <Query/Test/Data.hpp>
 #include <Query/Test/VolumetricQueryTests.hpp>
 
@@ -54,9 +53,10 @@ static Storage RequestBoundingBoxStorage (const std::vector <const void *> &_obj
 
 static Storage RequestScreenRectStorage (const std::vector <const void *> &_objects)
 {
+    StandardLayout::Mapping mapping = ScreenRect::Reflection::GetMapping ();
     return
         {
-            ScreenRect::Reflection::GetMapping (),
+            mapping,
             _objects,
             {
                 Sources::Volumetric
@@ -73,42 +73,6 @@ static Storage RequestScreenRectStorage (const std::vector <const void *> &_obje
                             },
                         }
                     }}
-        };
-}
-
-Scenario ShapeIntersectionCursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestBoundingBoxStorage (
-                    {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_M2_1_0_MAX_0_4_2, &BOX_MIN_15_8_50_MAX_19_11_60},
-                    FLAG_2D_SOURCE),
-            },
-            TestCursorCopyAndMove (
-                QueryShapeIntersectionToRead
-                    {{{"2d", "min = (8, 7), max = (10.5, 9)"}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
-                QueryShapeIntersectionToEdit
-                    {{{"2d", "min = (-3, -1), max = (0, 2)"}, {-3.0f, -1.0f}, {0.0f, 2.0f}}},
-                &BOX_MIN_10_8_4_MAX_11_9_5, nullptr, &BOX_MIN_M2_1_0_MAX_0_4_2, nullptr)
-        };
-}
-
-Scenario RayIntersectionCursorManipulations () noexcept
-{
-    return
-        {
-            {
-                RequestBoundingBoxStorage (
-                    {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_M2_1_0_MAX_0_4_2, &BOX_MIN_15_8_50_MAX_19_11_60},
-                    FLAG_2D_SOURCE),
-            },
-            TestCursorCopyAndMove (
-                QueryRayIntersectionToRead
-                    {{{"2d", "origin = (7, 9), direction = (2, 0)"}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
-                QueryRayIntersectionToEdit
-                    {{{"2d", "origin = (-1, -3), direction = (0, 2)"}, {-1.0f, -3.0f}, {0.0f, 2.0f}}},
-                &BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_15_8_50_MAX_19_11_60, &BOX_MIN_M2_1_0_MAX_0_4_2, nullptr)
         };
 }
 
