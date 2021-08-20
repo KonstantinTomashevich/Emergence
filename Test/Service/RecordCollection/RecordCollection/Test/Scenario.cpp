@@ -680,9 +680,7 @@ void ForCursor (
 }
 } // namespace ReferenceApiTestImporters
 
-Scenario::Scenario (StandardLayout::Mapping
-                    _mapping, std::vector <Task>
-                    _tasks)
+Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
     : mapping (std::move (_mapping)),
       tasks (std::move (_tasks))
 {
@@ -694,9 +692,7 @@ Scenario::Scenario (StandardLayout::Mapping
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
-                std::stringstream stream;
-                stream << _unwrappedTask;
-                LOG (stream.str ());
+                LOG ((std::stringstream () << _unwrappedTask).str ());
                 ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);

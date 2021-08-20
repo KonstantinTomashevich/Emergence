@@ -7,9 +7,10 @@ using namespace Tasks;
 
 Storage RequestStorage ()
 {
+    StandardLayout::Mapping mapping = PlayerWithBoundingBox::Reflection::GetMapping ();
     return
         {
-            PlayerWithBoundingBox::Reflection::GetMapping (),
+            mapping,
             {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2, &XAVIER_2_MIN_15_8_50_MAX_19_11_60},
             {
                 Sources::Value

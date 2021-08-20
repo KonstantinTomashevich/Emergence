@@ -36,9 +36,10 @@ static Storage RequestPlayerStorage (const std::vector <const void *> &_objects,
 
 static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
 {
+    StandardLayout::Mapping mapping = AllFieldTypesStructure::Reflection::GetMapping ();
     return
         {
-            AllFieldTypesStructure::Reflection::GetMapping (),
+            mapping,
             {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2},
             {
                 Sources::Range

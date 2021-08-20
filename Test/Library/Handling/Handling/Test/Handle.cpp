@@ -11,6 +11,19 @@
 
 #include <Testing/Testing.hpp>
 
+namespace Emergence::Reference::Test::Tasks
+{
+std::ostream &operator << (std::ostream &_output, const Create &_task)
+{
+    return _output << "Construct \"" << _task.name << "\".";
+}
+
+std::ostream &operator << (std::ostream &_output, const CheckStatus &_task)
+{
+    return _output << "Check that resource has any references. Expected result: \"" << _task.hasAnyReferences << "\".";
+}
+} // namespace Emergence::Reference::Test::Tasks
+
 namespace Emergence::Handling::Test
 {
 class HandleableResource final : public HandleableBase
@@ -54,16 +67,6 @@ using Task = std::variant <
     Delete <HandleableResourceTag>,
     Reference::Test::Tasks::CheckStatus>;
 
-std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::Create &_task)
-{
-    return _output << "Construct \"" << _task.name << "\".";
-}
-
-std::ostream &operator << (std::ostream &_output, const Reference::Test::Tasks::CheckStatus &_task)
-{
-    return _output << "Check that resource has any references. Expected result: \"" << _task.hasAnyReferences << "\".";
-}
-
 std::ostream &operator << (std::ostream &_output, const std::vector <Task> &_tasks)
 {
     _output << "Scenario: " << std::endl;
@@ -104,25 +107,17 @@ void ExecuteTask (ExecutionContext &_context, const Reference::Test::Tasks::Chec
     CHECK_EQUAL (_context.aliveFlag, _task.hasAnyReferences);
 }
 
-template <typename T>
-std::string ToString (const T &_value)
-{
-    std::stringstream stream;
-    stream << _value;
-    return stream.str ();
-}
-
 void ExecuteScenario (const std::vector <Task> &_tasks)
 {
     ExecutionContext context {};
-    LOG (ToString (_tasks));
+    LOG ((std::stringstream () << _tasks).str ());
 
     for (const Task &wrappedTask : _tasks)
     {
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
-                LOG (ToString (_unwrappedTask));
+                LOG ((std::stringstream () << _unwrappedTask).str ());
                 ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);

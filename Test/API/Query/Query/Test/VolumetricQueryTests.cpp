@@ -53,9 +53,10 @@ static Storage RequestBoundingBoxStorage (const std::vector <const void *> &_obj
 
 static Storage RequestScreenRectStorage (const std::vector <const void *> &_objects)
 {
+    StandardLayout::Mapping mapping = ScreenRect::Reflection::GetMapping ();
     return
         {
-            ScreenRect::Reflection::GetMapping (),
+            mapping,
             _objects,
             {
                 Sources::Volumetric

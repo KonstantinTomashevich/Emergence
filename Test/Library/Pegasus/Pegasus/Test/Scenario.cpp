@@ -658,9 +658,7 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
         std::visit (
             [&context] (const auto &_unwrappedTask)
             {
-                std::stringstream stream;
-                stream << _unwrappedTask;
-                LOG (stream.str ());
+                LOG ((std::stringstream () << _unwrappedTask).str ());
                 ExecuteTask (context, _unwrappedTask);
             },
             wrappedTask);
