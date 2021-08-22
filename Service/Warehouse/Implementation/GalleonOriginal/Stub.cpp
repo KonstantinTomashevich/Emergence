@@ -1,5 +1,20 @@
 // TODO: Temporary include all headers to force CLion to highlight them properly.
-#include <Warehouse/LongTermStorage.hpp>
+#include <Warehouse/Dimension.hpp>
+#include <Warehouse/FetchAscendingRangeQuery.hpp>
+#include <Warehouse/FetchDescendingRangeQuery.hpp>
+#include <Warehouse/FetchRayIntersectionQuery.hpp>
+#include <Warehouse/FetchSequenceQuery.hpp>
+#include <Warehouse/FetchShapeIntersectionQuery.hpp>
+#include <Warehouse/FetchSingletonQuery.hpp>
+#include <Warehouse/FetchValueQuery.hpp>
+#include <Warehouse/InsertLongTermQuery.hpp>
+#include <Warehouse/InsertShortTermQuery.hpp>
+#include <Warehouse/ModifyAscendingRangeQuery.hpp>
+#include <Warehouse/ModifyDescendingRangeQuery.hpp>
+#include <Warehouse/ModifyRayIntersectionQuery.hpp>
+#include <Warehouse/ModifySequenceQuery.hpp>
+#include <Warehouse/ModifyShapeIntersectionQuery.hpp>
+#include <Warehouse/ModifySingletonQuery.hpp>
+#include <Warehouse/ModifyValueQuery.hpp>
+#include <Warehouse/Parameter.hpp>
 #include <Warehouse/Registry.hpp>
-#include <Warehouse/ShortTermStorage.hpp>
-#include <Warehouse/SingletonStorage.hpp>
