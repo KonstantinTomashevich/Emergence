@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
