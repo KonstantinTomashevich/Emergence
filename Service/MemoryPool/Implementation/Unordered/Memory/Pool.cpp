@@ -1,3 +1,5 @@
+#include <API/Common/Implementation/Iterator.hpp>
+
 #include <Memory/Pool.hpp>
 #include <Memory/UnorderedPool.hpp>
 
@@ -5,153 +7,27 @@
 
 namespace Emergence::Memory
 {
-Pool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const Pool::AcquiredChunkConstIterator &_other) noexcept
-{
-    new (&data) UnorderedPool::AcquiredChunkConstIterator (block_cast <UnorderedPool::AcquiredChunkConstIterator> (_other.data));
-}
+using AcquiredChunkConstIterator = Pool::AcquiredChunkConstIterator;
 
-Pool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (Pool::AcquiredChunkConstIterator &&_other) noexcept
-{
-    new (&data) UnorderedPool::AcquiredChunkConstIterator (
-        std::move (block_cast <UnorderedPool::AcquiredChunkConstIterator> (_other.data)));
-}
+using AcquiredChunkConstIteratorImplementation = UnorderedPool::AcquiredChunkConstIterator;
 
-Pool::AcquiredChunkConstIterator::~AcquiredChunkConstIterator () noexcept
-{
-    block_cast <UnorderedPool::AcquiredChunkConstIterator> (data).~AcquiredChunkConstIterator ();
-}
+EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (
+    AcquiredChunkConstIterator, AcquiredChunkConstIteratorImplementation)
 
 const void *Pool::AcquiredChunkConstIterator::operator * () const noexcept
 {
     return *block_cast <UnorderedPool::AcquiredChunkConstIterator> (data);
 }
 
-Pool::AcquiredChunkConstIterator &Pool::AcquiredChunkConstIterator::operator ++ () noexcept
-{
-    ++block_cast <UnorderedPool::AcquiredChunkConstIterator> (data);
-    return *this;
-}
+using AcquiredChunkIterator = Pool::AcquiredChunkIterator;
 
-Pool::AcquiredChunkConstIterator Pool::AcquiredChunkConstIterator::operator ++ (int) noexcept
-{
-    UnorderedPool::AcquiredChunkConstIterator result =
-        block_cast <UnorderedPool::AcquiredChunkConstIterator> (data)++;
-    return AcquiredChunkConstIterator (reinterpret_cast <decltype (data) *> (&result));
-}
+using AcquiredChunkIteratorImplementation = UnorderedPool::AcquiredChunkIterator;
 
-bool Pool::AcquiredChunkConstIterator::operator == (const Pool::AcquiredChunkConstIterator &_other) const noexcept
-{
-    return block_cast <UnorderedPool::AcquiredChunkConstIterator> (data) ==
-           block_cast <UnorderedPool::AcquiredChunkConstIterator> (_other.data);
-}
-
-bool Pool::AcquiredChunkConstIterator::operator != (const Pool::AcquiredChunkConstIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Pool::AcquiredChunkConstIterator &Pool::AcquiredChunkConstIterator::operator = (
-    const Pool::AcquiredChunkConstIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~AcquiredChunkConstIterator ();
-        new (this) AcquiredChunkConstIterator (_other);
-    }
-
-    return *this;
-}
-
-Pool::AcquiredChunkConstIterator &Pool::AcquiredChunkConstIterator::operator = (
-    Pool::AcquiredChunkConstIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~AcquiredChunkConstIterator ();
-        new (this) AcquiredChunkConstIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-Pool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) UnorderedPool::AcquiredChunkConstIterator (
-        block_cast <UnorderedPool::AcquiredChunkConstIterator> (*_data));
-}
-
-Pool::AcquiredChunkIterator::AcquiredChunkIterator (const Pool::AcquiredChunkIterator &_other) noexcept
-{
-    new (&data) UnorderedPool::AcquiredChunkIterator (block_cast <UnorderedPool::AcquiredChunkIterator> (_other.data));
-}
-
-Pool::AcquiredChunkIterator::AcquiredChunkIterator (Pool::AcquiredChunkIterator &&_other) noexcept
-{
-    new (&data) UnorderedPool::AcquiredChunkIterator (
-        std::move (block_cast <UnorderedPool::AcquiredChunkIterator> (_other.data)));
-}
-
-Pool::AcquiredChunkIterator::~AcquiredChunkIterator () noexcept
-{
-    block_cast <UnorderedPool::AcquiredChunkIterator> (data).~AcquiredChunkIterator ();
-}
+EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (AcquiredChunkIterator, AcquiredChunkIteratorImplementation)
 
 void *Pool::AcquiredChunkIterator::operator * () const noexcept
 {
     return *block_cast <UnorderedPool::AcquiredChunkIterator> (data);
-}
-
-Pool::AcquiredChunkIterator &Pool::AcquiredChunkIterator::operator ++ () noexcept
-{
-    ++block_cast <UnorderedPool::AcquiredChunkIterator> (data);
-    return *this;
-}
-
-Pool::AcquiredChunkIterator Pool::AcquiredChunkIterator::operator ++ (int) noexcept
-{
-    UnorderedPool::AcquiredChunkIterator result = block_cast <UnorderedPool::AcquiredChunkIterator> (data)++;
-    return AcquiredChunkIterator (reinterpret_cast <decltype (data) *> (&result));
-}
-
-bool Pool::AcquiredChunkIterator::operator == (const Pool::AcquiredChunkIterator &_other) const noexcept
-{
-    return block_cast <UnorderedPool::AcquiredChunkIterator> (data) ==
-           block_cast <UnorderedPool::AcquiredChunkIterator> (_other.data);
-}
-
-bool Pool::AcquiredChunkIterator::operator != (const Pool::AcquiredChunkIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Pool::AcquiredChunkIterator &Pool::AcquiredChunkIterator::operator = (
-    const Pool::AcquiredChunkIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~AcquiredChunkIterator ();
-        new (this) AcquiredChunkIterator (_other);
-    }
-
-    return *this;
-}
-
-Pool::AcquiredChunkIterator &Pool::AcquiredChunkIterator::operator = (
-    Pool::AcquiredChunkIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~AcquiredChunkIterator ();
-        new (this) AcquiredChunkIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-Pool::AcquiredChunkIterator::AcquiredChunkIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) UnorderedPool::AcquiredChunkIterator (
-        block_cast <UnorderedPool::AcquiredChunkIterator> (*_data));
 }
 
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;

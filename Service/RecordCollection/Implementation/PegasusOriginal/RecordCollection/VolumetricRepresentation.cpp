@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <API/Common/Implementation/Iterator.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Pegasus/VolumetricIndex.hpp>
@@ -162,97 +164,18 @@ VolumetricRepresentation::RayIntersectionEditCursor::RayIntersectionEditCursor (
         std::move (block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (*_data)));
 }
 
-using DimensionIteratorBaseType = InplaceVector <
+using DimensionIterator = VolumetricRepresentation::DimensionIterator;
+
+using DimensionIteratorImplementation = InplaceVector <
     Pegasus::VolumetricIndex::Dimension, Pegasus::Constants::VolumetricIndex::MAX_DIMENSIONS>::ConstIterator;
 
-VolumetricRepresentation::DimensionIterator::DimensionIterator (
-    const VolumetricRepresentation::DimensionIterator &_other) noexcept
-{
-    new (&data) DimensionIteratorBaseType (block_cast <DimensionIteratorBaseType> (_other.data));
-}
-
-VolumetricRepresentation::DimensionIterator::DimensionIterator (
-    VolumetricRepresentation::DimensionIterator &&_other) noexcept
-{
-    new (&data) DimensionIteratorBaseType (std::move (block_cast <DimensionIteratorBaseType> (_other.data)));
-}
-
-VolumetricRepresentation::DimensionIterator::~DimensionIterator () noexcept
-{
-    block_cast <DimensionIteratorBaseType> (data).~DimensionIteratorBaseType ();
-}
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)
 
 VolumetricRepresentation::DimensionIterator::Dimension
 VolumetricRepresentation::DimensionIterator::operator * () const noexcept
 {
-    const Pegasus::VolumetricIndex::Dimension &dimension = *block_cast <DimensionIteratorBaseType> (data);
+    const Pegasus::VolumetricIndex::Dimension &dimension = *block_cast <DimensionIteratorImplementation> (data);
     return {&dimension.globalMinBorder, dimension.minBorderField, &dimension.globalMaxBorder, dimension.maxBorderField};
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator ++ () noexcept
-{
-    ++block_cast <DimensionIteratorBaseType> (data);
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionIterator::operator ++ (int) noexcept
-{
-    auto previous = block_cast <DimensionIteratorBaseType> (data)++;
-    return DimensionIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator -- () noexcept
-{
-    --block_cast <DimensionIteratorBaseType> (data);
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionIterator::operator -- (int) noexcept
-{
-    auto previous = block_cast <DimensionIteratorBaseType> (data)--;
-    return DimensionIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-bool VolumetricRepresentation::DimensionIterator::operator == (
-    const VolumetricRepresentation::DimensionIterator &_other) const noexcept
-{
-    return block_cast <DimensionIteratorBaseType> (data) == block_cast <DimensionIteratorBaseType> (_other.data);
-}
-
-bool VolumetricRepresentation::DimensionIterator::operator != (
-    const VolumetricRepresentation::DimensionIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator = (
-    const VolumetricRepresentation::DimensionIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~DimensionIterator ();
-        new (this) DimensionIterator (_other);
-    }
-
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator = (
-    VolumetricRepresentation::DimensionIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~DimensionIterator ();
-        new (this) DimensionIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator::DimensionIterator (
-    const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) DimensionIteratorBaseType (std::move (block_cast <DimensionIteratorBaseType> (*_data)));
 }
 
 VolumetricRepresentation::VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept

@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <API/Common/Implementation/Iterator.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Pegasus/HashIndex.hpp>
@@ -75,92 +77,16 @@ PointRepresentation::EditCursor::EditCursor (std::array <uint8_t, DATA_MAX_SIZE>
     new (&data) Pegasus::HashIndex::EditCursor (std::move (block_cast <Pegasus::HashIndex::EditCursor> (*_data)));
 }
 
-using KeyFieldIteratorBaseType = InplaceVector <
+using KeyFieldIterator = PointRepresentation::KeyFieldIterator;
+
+using KeyFieldIteratorImplementation = InplaceVector <
     StandardLayout::Field, Pegasus::Constants::HashIndex::MAX_INDEXED_FIELDS>::ConstIterator;
 
-PointRepresentation::KeyFieldIterator::KeyFieldIterator (const PointRepresentation::KeyFieldIterator &_other) noexcept
-{
-    new (&data) KeyFieldIteratorBaseType (block_cast <KeyFieldIteratorBaseType> (_other.data));
-}
-
-PointRepresentation::KeyFieldIterator::KeyFieldIterator (PointRepresentation::KeyFieldIterator &&_other) noexcept
-{
-    new (&data) KeyFieldIteratorBaseType (std::move (block_cast <KeyFieldIteratorBaseType> (_other.data)));
-}
-
-PointRepresentation::KeyFieldIterator::~KeyFieldIterator () noexcept
-{
-    block_cast <KeyFieldIteratorBaseType> (data).~KeyFieldIteratorBaseType ();
-}
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (KeyFieldIterator, KeyFieldIteratorImplementation)
 
 StandardLayout::Field PointRepresentation::KeyFieldIterator::operator * () const noexcept
 {
-    return *block_cast <KeyFieldIteratorBaseType> (data);
-}
-
-PointRepresentation::KeyFieldIterator &PointRepresentation::KeyFieldIterator::operator ++ () noexcept
-{
-    ++block_cast <KeyFieldIteratorBaseType> (data);
-    return *this;
-}
-
-PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldIterator::operator ++ (int) noexcept
-{
-    auto previous = block_cast <KeyFieldIteratorBaseType> (data)++;
-    return KeyFieldIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-PointRepresentation::KeyFieldIterator &PointRepresentation::KeyFieldIterator::operator -- () noexcept
-{
-    --block_cast <KeyFieldIteratorBaseType> (data);
-    return *this;
-}
-
-PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldIterator::operator -- (int) noexcept
-{
-    auto previous = block_cast <KeyFieldIteratorBaseType> (data)--;
-    return KeyFieldIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-bool PointRepresentation::KeyFieldIterator::operator == (
-    const PointRepresentation::KeyFieldIterator &_other) const noexcept
-{
-    return block_cast <KeyFieldIteratorBaseType> (data) == block_cast <KeyFieldIteratorBaseType> (_other.data);
-}
-
-bool PointRepresentation::KeyFieldIterator::operator != (
-    const PointRepresentation::KeyFieldIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-PointRepresentation::KeyFieldIterator &PointRepresentation::KeyFieldIterator::operator = (
-    const PointRepresentation::KeyFieldIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~KeyFieldIterator ();
-        new (this) KeyFieldIterator (_other);
-    }
-
-    return *this;
-}
-
-PointRepresentation::KeyFieldIterator &PointRepresentation::KeyFieldIterator::operator = (
-    PointRepresentation::KeyFieldIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~KeyFieldIterator ();
-        new (this) KeyFieldIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-PointRepresentation::KeyFieldIterator::KeyFieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) KeyFieldIteratorBaseType (block_cast <KeyFieldIteratorBaseType> (*_data));
+    return *block_cast <KeyFieldIteratorImplementation> (data);
 }
 
 PointRepresentation::PointRepresentation (const PointRepresentation &_other) noexcept

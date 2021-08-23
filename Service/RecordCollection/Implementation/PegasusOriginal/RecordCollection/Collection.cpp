@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <API/Common/Implementation/Iterator.hpp>
+
 #include <Pegasus/Storage.hpp>
 
 #include <RecordCollection/Collection.hpp>
@@ -28,280 +30,40 @@ Collection::Allocator::Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) no
     new (&data) Pegasus::Storage::Allocator (std::move (block_cast <Pegasus::Storage::Allocator> (*_data)));
 }
 
-Collection::LinearRepresentationIterator::LinearRepresentationIterator (
-    const Collection::LinearRepresentationIterator &_other) noexcept
-{
-    new (&data) Pegasus::Storage::OrderedIndexIterator (
-        block_cast <Pegasus::Storage::OrderedIndexIterator> (_other.data));
-}
+using LinearRepresentationIterator = Collection::LinearRepresentationIterator;
 
-Collection::LinearRepresentationIterator::LinearRepresentationIterator (
-    Collection::LinearRepresentationIterator &&_other) noexcept
-{
-    new (&data) Pegasus::Storage::OrderedIndexIterator (
-        std::move (block_cast <Pegasus::Storage::OrderedIndexIterator> (_other.data)));
-}
+using LinearRepresentationIteratorImplementation = Pegasus::Storage::OrderedIndexIterator;
 
-Collection::LinearRepresentationIterator::~LinearRepresentationIterator () noexcept
-{
-    block_cast <Pegasus::Storage::OrderedIndexIterator> (data).~OrderedIndexIterator ();
-}
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (
+    LinearRepresentationIterator, LinearRepresentationIteratorImplementation)
 
 LinearRepresentation Collection::LinearRepresentationIterator::operator * () const noexcept
 {
     return LinearRepresentation ((*block_cast <Pegasus::Storage::OrderedIndexIterator> (data)).Get ());
 }
 
-Collection::LinearRepresentationIterator &Collection::LinearRepresentationIterator::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::Storage::OrderedIndexIterator> (data);
-    return *this;
-}
+using PointRepresentationIterator = Collection::PointRepresentationIterator;
 
-Collection::LinearRepresentationIterator Collection::LinearRepresentationIterator::operator ++ (int) noexcept
-{
-    Pegasus::Storage::OrderedIndexIterator previous = block_cast <Pegasus::Storage::OrderedIndexIterator> (data)++;
-    return LinearRepresentationIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
+using PointRepresentationIteratorImplementation = Pegasus::Storage::HashIndexIterator;
 
-Collection::LinearRepresentationIterator &Collection::LinearRepresentationIterator::operator -- () noexcept
-{
-    --block_cast <Pegasus::Storage::OrderedIndexIterator> (data);
-    return *this;
-}
-
-Collection::LinearRepresentationIterator Collection::LinearRepresentationIterator::operator -- (int) noexcept
-{
-    Pegasus::Storage::OrderedIndexIterator previous = block_cast <Pegasus::Storage::OrderedIndexIterator> (data)--;
-    return LinearRepresentationIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-bool Collection::LinearRepresentationIterator::operator == (
-    const Collection::LinearRepresentationIterator &_other) const noexcept
-{
-    return block_cast <Pegasus::Storage::OrderedIndexIterator> (data) ==
-           block_cast <Pegasus::Storage::OrderedIndexIterator> (_other.data);
-}
-
-bool Collection::LinearRepresentationIterator::operator != (
-    const Collection::LinearRepresentationIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Collection::LinearRepresentationIterator &Collection::LinearRepresentationIterator::operator = (
-    const LinearRepresentationIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~LinearRepresentationIterator ();
-        new (this) LinearRepresentationIterator (_other);
-    }
-
-    return *this;
-}
-
-Collection::LinearRepresentationIterator &Collection::LinearRepresentationIterator::operator = (
-    LinearRepresentationIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~LinearRepresentationIterator ();
-        new (this) LinearRepresentationIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-Collection::LinearRepresentationIterator::LinearRepresentationIterator (
-    const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::Storage::OrderedIndexIterator (block_cast <Pegasus::Storage::OrderedIndexIterator> (*_data));
-}
-
-Collection::PointRepresentationIterator::PointRepresentationIterator (
-    const Collection::PointRepresentationIterator &_other) noexcept
-{
-    new (&data) Pegasus::Storage::HashIndexIterator (
-        block_cast <Pegasus::Storage::HashIndexIterator> (_other.data));
-}
-
-Collection::PointRepresentationIterator::PointRepresentationIterator (
-    Collection::PointRepresentationIterator &&_other) noexcept
-{
-    new (&data) Pegasus::Storage::HashIndexIterator (
-        std::move (block_cast <Pegasus::Storage::HashIndexIterator> (_other.data)));
-}
-
-Collection::PointRepresentationIterator::~PointRepresentationIterator () noexcept
-{
-    block_cast <Pegasus::Storage::HashIndexIterator> (data).~HashIndexIterator ();
-}
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (
+    PointRepresentationIterator, PointRepresentationIteratorImplementation)
 
 PointRepresentation Collection::PointRepresentationIterator::operator * () const noexcept
 {
     return PointRepresentation ((*block_cast <Pegasus::Storage::HashIndexIterator> (data)).Get ());
 }
 
-Collection::PointRepresentationIterator &Collection::PointRepresentationIterator::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::Storage::HashIndexIterator> (data);
-    return *this;
-}
+using VolumetricRepresentationIterator = Collection::VolumetricRepresentationIterator;
 
-Collection::PointRepresentationIterator Collection::PointRepresentationIterator::operator ++ (int) noexcept
-{
-    Pegasus::Storage::HashIndexIterator previous = block_cast <Pegasus::Storage::HashIndexIterator> (data)++;
-    return PointRepresentationIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
+using VolumetricRepresentationIteratorImplementation = Pegasus::Storage::VolumetricIndexIterator;
 
-Collection::PointRepresentationIterator &Collection::PointRepresentationIterator::operator -- () noexcept
-{
-    --block_cast <Pegasus::Storage::HashIndexIterator> (data);
-    return *this;
-}
-
-Collection::PointRepresentationIterator Collection::PointRepresentationIterator::operator -- (int) noexcept
-{
-    Pegasus::Storage::HashIndexIterator previous = block_cast <Pegasus::Storage::HashIndexIterator> (data)--;
-    return PointRepresentationIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-bool Collection::PointRepresentationIterator::operator == (
-    const Collection::PointRepresentationIterator &_other) const noexcept
-{
-    return block_cast <Pegasus::Storage::HashIndexIterator> (data) ==
-           block_cast <Pegasus::Storage::HashIndexIterator> (_other.data);
-}
-
-bool Collection::PointRepresentationIterator::operator != (
-    const Collection::PointRepresentationIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Collection::PointRepresentationIterator &Collection::PointRepresentationIterator::operator = (
-    const PointRepresentationIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~PointRepresentationIterator ();
-        new (this) PointRepresentationIterator (_other);
-    }
-
-    return *this;
-}
-
-Collection::PointRepresentationIterator &Collection::PointRepresentationIterator::operator = (
-    PointRepresentationIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~PointRepresentationIterator ();
-        new (this) PointRepresentationIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-Collection::PointRepresentationIterator::PointRepresentationIterator (
-    const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::Storage::HashIndexIterator (block_cast <Pegasus::Storage::HashIndexIterator> (*_data));
-}
-
-Collection::VolumetricRepresentationIterator::VolumetricRepresentationIterator (
-    const Collection::VolumetricRepresentationIterator &_other) noexcept
-{
-    new (&data) Pegasus::Storage::VolumetricIndexIterator (
-        block_cast <Pegasus::Storage::VolumetricIndexIterator> (_other.data));
-}
-
-Collection::VolumetricRepresentationIterator::VolumetricRepresentationIterator (
-    Collection::VolumetricRepresentationIterator &&_other) noexcept
-{
-    new (&data) Pegasus::Storage::VolumetricIndexIterator (
-        std::move (block_cast <Pegasus::Storage::VolumetricIndexIterator> (_other.data)));
-}
-
-Collection::VolumetricRepresentationIterator::~VolumetricRepresentationIterator () noexcept
-{
-    block_cast <Pegasus::Storage::VolumetricIndexIterator> (data).~VolumetricIndexIterator ();
-}
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (
+    VolumetricRepresentationIterator, VolumetricRepresentationIteratorImplementation)
 
 VolumetricRepresentation Collection::VolumetricRepresentationIterator::operator * () const noexcept
 {
     return VolumetricRepresentation ((*block_cast <Pegasus::Storage::VolumetricIndexIterator> (data)).Get ());
-}
-
-Collection::VolumetricRepresentationIterator &Collection::VolumetricRepresentationIterator::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::Storage::VolumetricIndexIterator> (data);
-    return *this;
-}
-
-Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationIterator::operator ++ (int) noexcept
-{
-    Pegasus::Storage::VolumetricIndexIterator
-        previous = block_cast <Pegasus::Storage::VolumetricIndexIterator> (data)++;
-    return VolumetricRepresentationIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-Collection::VolumetricRepresentationIterator &Collection::VolumetricRepresentationIterator::operator -- () noexcept
-{
-    --block_cast <Pegasus::Storage::VolumetricIndexIterator> (data);
-    return *this;
-}
-
-Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationIterator::operator -- (int) noexcept
-{
-    Pegasus::Storage::VolumetricIndexIterator
-        previous = block_cast <Pegasus::Storage::VolumetricIndexIterator> (data)--;
-    return VolumetricRepresentationIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-bool Collection::VolumetricRepresentationIterator::operator == (
-    const Collection::VolumetricRepresentationIterator &_other) const noexcept
-{
-    return block_cast <Pegasus::Storage::VolumetricIndexIterator> (data) ==
-           block_cast <Pegasus::Storage::VolumetricIndexIterator> (_other.data);
-}
-
-bool Collection::VolumetricRepresentationIterator::operator != (
-    const Collection::VolumetricRepresentationIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Collection::VolumetricRepresentationIterator &Collection::VolumetricRepresentationIterator::operator = (
-    const VolumetricRepresentationIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~VolumetricRepresentationIterator ();
-        new (this) VolumetricRepresentationIterator (_other);
-    }
-
-    return *this;
-}
-
-Collection::VolumetricRepresentationIterator &Collection::VolumetricRepresentationIterator::operator = (
-    VolumetricRepresentationIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~VolumetricRepresentationIterator ();
-        new (this) VolumetricRepresentationIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-Collection::VolumetricRepresentationIterator::VolumetricRepresentationIterator (
-    const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::Storage::VolumetricIndexIterator (
-        block_cast <Pegasus::Storage::VolumetricIndexIterator> (*_data));
 }
 
 Collection::Collection (StandardLayout::Mapping _typeMapping)
