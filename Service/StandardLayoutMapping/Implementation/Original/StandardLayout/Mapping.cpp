@@ -44,28 +44,6 @@ Field Mapping::GetField (FieldId _field) const noexcept
     return Field (handle->GetField (_field));
 }
 
-Mapping &Mapping::operator = (const Mapping &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~Mapping ();
-        new (this) Mapping (_other);
-    }
-
-    return *this;
-}
-
-Mapping &Mapping::operator = (Mapping &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~Mapping ();
-        new (this) Mapping (std::move (_other));
-    }
-
-    return *this;
-}
-
 bool Mapping::operator == (const Mapping &_other) const noexcept
 {
     return block_cast <Handling::Handle <PlainMapping>> (data) ==

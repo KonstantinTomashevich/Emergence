@@ -105,7 +105,11 @@ TEST_CASE (ManyContainers)
     auto Append =
         [&scenario] (const Scenario &_other)
         {
-            scenario.storages.insert (scenario.storages.end (), _other.storages.begin (), _other.storages.end ());
+            for (const Storage &storage : _other.storages)
+            {
+                scenario.storages.emplace_back (storage);
+            }
+
             scenario.tasks += _other.tasks;
         };
 

@@ -5,6 +5,7 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 #include <StandardLayout/Field.hpp>
 
@@ -53,15 +54,14 @@ public:
     /// \invariant Inside valid bounds, but not in the ending.
     FieldId GetFieldId (const FieldIterator &_iterator) const noexcept;
 
-    Mapping &operator = (const Mapping &_other) noexcept;
-
-    Mapping &operator = (Mapping &&_other) noexcept;
-
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator == (const Mapping &_other) const noexcept;
 
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator != (const Mapping &_other) const noexcept;
+
+    /// Assigning mappings looks counter intuitive.
+    EMERGENCE_DELETE_ASSIGNMENT (Mapping);
 
 private:
     /// Mapping builder constructs mappings.

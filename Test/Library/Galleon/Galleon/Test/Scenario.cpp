@@ -1128,7 +1128,11 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
 
 std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept
 {
-    first.insert (first.end (), second.begin (), second.end ());
+    for (const Task &task : second)
+    {
+        first.emplace_back (task);
+    }
+
     return first;
 }
 
