@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include <API/Common/Implementation/Cursor.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
 #include <Handling/Handle.hpp>
@@ -12,70 +13,17 @@
 
 namespace Emergence::RecordCollection
 {
-PointRepresentation::ReadCursor::ReadCursor (const PointRepresentation::ReadCursor &_other) noexcept
-{
-    new (&data) Pegasus::HashIndex::ReadCursor (block_cast <Pegasus::HashIndex::ReadCursor> (_other.data));
-}
+using ReadCursor = PointRepresentation::ReadCursor;
 
-PointRepresentation::ReadCursor::ReadCursor (PointRepresentation::ReadCursor &&_other) noexcept
-{
-    new (&data) Pegasus::HashIndex::ReadCursor (
-        std::move (block_cast <Pegasus::HashIndex::ReadCursor> (_other.data)));
-}
+using ReadCursorImplementation = Pegasus::HashIndex::ReadCursor;
 
-PointRepresentation::ReadCursor::~ReadCursor () noexcept
-{
-    block_cast <Pegasus::HashIndex::ReadCursor> (data).~ReadCursor ();
-}
+EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (ReadCursor, ReadCursorImplementation)
 
-const void *PointRepresentation::ReadCursor::operator * () const noexcept
-{
-    return *block_cast <Pegasus::HashIndex::ReadCursor> (data);
-}
+using EditCursor = PointRepresentation::EditCursor;
 
-PointRepresentation::ReadCursor &PointRepresentation::ReadCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::HashIndex::ReadCursor> (data);
-    return *this;
-}
+using EditCursorImplementation = Pegasus::HashIndex::EditCursor;
 
-PointRepresentation::ReadCursor::ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::HashIndex::ReadCursor (std::move (block_cast <Pegasus::HashIndex::ReadCursor> (*_data)));
-}
-
-PointRepresentation::EditCursor::EditCursor (PointRepresentation::EditCursor &&_other) noexcept
-{
-    new (&data) Pegasus::HashIndex::EditCursor (
-        std::move (block_cast <Pegasus::HashIndex::EditCursor> (_other.data)));
-}
-
-PointRepresentation::EditCursor::~EditCursor () noexcept
-{
-    block_cast <Pegasus::HashIndex::EditCursor> (data).~EditCursor ();
-}
-
-void *PointRepresentation::EditCursor::operator * () noexcept
-{
-    return *block_cast <Pegasus::HashIndex::EditCursor> (data);
-}
-
-PointRepresentation::EditCursor &PointRepresentation::EditCursor::operator ~ () noexcept
-{
-    ~block_cast <Pegasus::HashIndex::EditCursor> (data);
-    return *this;
-}
-
-PointRepresentation::EditCursor &PointRepresentation::EditCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::HashIndex::EditCursor> (data);
-    return *this;
-}
-
-PointRepresentation::EditCursor::EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::HashIndex::EditCursor (std::move (block_cast <Pegasus::HashIndex::EditCursor> (*_data)));
-}
+EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (EditCursor, EditCursorImplementation)
 
 using KeyFieldIterator = PointRepresentation::KeyFieldIterator;
 

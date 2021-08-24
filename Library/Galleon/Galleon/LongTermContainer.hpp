@@ -70,8 +70,6 @@ public:
         Handling::Handle <LongTermContainer> container;
     };
 
-    // TODO: For now we plainly use RecordCollection cursors and query formats. Is it ok or is it bad?
-
     template <typename Representation>
     class RepresentationQueryBase
     {
