@@ -73,9 +73,14 @@ Mapping::FieldIterator Mapping::End () const noexcept
 
 FieldId Mapping::GetFieldId (const Mapping::FieldIterator &_iterator) const noexcept
 {
+    return GetFieldId (*_iterator);
+}
+
+FieldId Mapping::GetFieldId (const Field &_field) const noexcept
+{
     const auto &handle = block_cast <Handling::Handle <PlainMapping>> (data);
     assert (handle);
-    return handle->GetFieldId (*reinterpret_cast <const PlainMapping::ConstIterator *> (&_iterator.data));
+    return handle->GetFieldId (*reinterpret_cast <const FieldData *> (_field.handle));
 }
 
 Mapping::Mapping (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept

@@ -80,11 +80,7 @@ Collection::Collection (Collection &&_other) noexcept
 
 Collection::~Collection () noexcept
 {
-    if (handle)
-    {
-        // TODO: Think about better way to create collections than new/delete.
-        delete static_cast <Pegasus::Storage *> (handle);
-    }
+    delete static_cast <Pegasus::Storage *> (handle);
 }
 
 Collection::Allocator Collection::AllocateAndInsert () noexcept
@@ -198,8 +194,7 @@ Collection &Collection::operator = (Collection &&_other) noexcept
     if (handle != _other.handle)
     {
         this->~Collection ();
-        handle = _other.handle;
-        _other.handle = nullptr;
+        new (this) Collection (std::move (_other));
     }
 
     return *this;

@@ -26,7 +26,7 @@ public:
         /// Prepared query constructs cursors.
         friend class ModifyDescendingRangeQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
         explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -34,13 +34,13 @@ public:
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (
         ModifyDescendingRangeQuery, Cursor, const Bound _min, const Bound _max);
 
-    StandardLayout::FieldId GetKeyField () const noexcept;
+    StandardLayout::Field GetKeyField () const noexcept;
 
 private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
     explicit ModifyDescendingRangeQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };

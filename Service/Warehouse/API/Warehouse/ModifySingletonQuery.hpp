@@ -42,7 +42,7 @@ private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
     explicit ModifySingletonQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };

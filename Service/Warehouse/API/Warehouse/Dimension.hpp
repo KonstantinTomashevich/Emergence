@@ -15,10 +15,10 @@ struct Dimension
     ///          Guarantied to be copied during prepared query creation, therefore can point to stack memory.
     const void *globalMinBorder;
 
-    /// \brief Id of field, that holds record minimum border value for this dimension.
+    /// \brief Field, that holds record minimum border value for this dimension.
     ///
     /// \invariant Field archetype is FieldArchetype::INT, FieldArchetype::UINT or FieldArchetype::FLOAT.
-    StandardLayout::FieldId minBorderField;
+    StandardLayout::Field minBorderField;
 
     /// \brief Pointer to maximum possible value of #maxBorderField.
     ///
@@ -26,10 +26,10 @@ struct Dimension
     ///          Guarantied to be copied during prepared query creation, therefore can point to stack memory.
     const void *globalMaxBorder;
 
-    /// \brief Id of field, that holds record maximum border value for this dimension.
+    /// \brief Field, that holds record maximum border value for this dimension.
     ///
     /// \invariant Field archetype is FieldArchetype::INT, FieldArchetype::UINT or FieldArchetype::FLOAT.
-    StandardLayout::FieldId maxBorderField;
+    StandardLayout::Field maxBorderField;
 };
 
 /// \brief Provides iteration over dimensions of volumetric prepared queries.
@@ -50,6 +50,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-    explicit DimensionIterator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit DimensionIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

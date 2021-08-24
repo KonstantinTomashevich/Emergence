@@ -11,7 +11,7 @@ namespace Emergence::Warehouse
 class KeyFieldIterator final
 {
 public:
-    EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (KeyFieldIterator, StandardLayout::FieldId);
+    EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (KeyFieldIterator, StandardLayout::Field);
 
 private:
     /// These prepared queries construct dimension iterators.
@@ -21,6 +21,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-    explicit KeyFieldIterator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit KeyFieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

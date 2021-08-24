@@ -54,6 +54,10 @@ public:
     /// \invariant Inside valid bounds, but not in the ending.
     FieldId GetFieldId (const FieldIterator &_iterator) const noexcept;
 
+    /// \return Id of given field.
+    /// \invariant Given field belongs to this mapping.
+    FieldId GetFieldId (const Field &_field) const noexcept;
+
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator == (const Mapping &_other) const noexcept;
 

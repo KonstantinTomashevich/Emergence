@@ -26,7 +26,7 @@ public:
         /// Prepared query constructs cursors.
         friend class FetchRayIntersectionQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
 
         explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -42,7 +42,7 @@ private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
     explicit FetchRayIntersectionQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
