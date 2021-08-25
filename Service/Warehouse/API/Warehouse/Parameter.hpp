@@ -14,7 +14,7 @@ namespace Emergence::Warehouse
 ///            StandardLayout::Field::GetSize, even if string length is less than this value.
 /// \invariant Values for fields with StandardLayout::FieldArchetype::BIT must passed as bytes in which all
 ///            bits should be zero's except bit with StandardLayout::Field::GetBitOffset.
-using ValueSequence = void *;
+using ValueSequence = const void *;
 
 /// \brief Points to value, that defines one of interval bounds for range lookup.
 ///
@@ -22,7 +22,7 @@ using ValueSequence = void *;
 ///          block with actual value. `nullptr` values will be interpreted as absence of borders.
 ///
 /// \warning Due to runtime-only nature of values, logically incorrect pointers can not be caught.
-using Bound = void *;
+using Bound = const void *;
 
 /// \brief Defines shape by specifying min-max value pair for each dimension.
 ///
@@ -34,7 +34,7 @@ using Bound = void *;
 ///
 /// \warning Due to runtime-only nature of shapes, logically incorrect pointers can not be caught.
 /// \invariant Should not be `nullptr`.
-using Shape = void *;
+using Shape = const void *;
 
 /// \brief Defines ray by specifying origin-direction value pair for each dimension.
 ///
@@ -46,5 +46,5 @@ using Shape = void *;
 ///
 /// \warning Due to runtime-only nature of rays, logically incorrect pointers can not be caught.
 /// \invariant Should not be `nullptr`.
-using Ray = void *;
+using Ray = const void *;
 } // namespace Emergence::Warehouse

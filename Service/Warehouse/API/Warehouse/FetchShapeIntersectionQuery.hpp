@@ -31,7 +31,7 @@ public:
         explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchShapeIntersectionQuery, Cursor, const Shape _shape);
+    EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchShapeIntersectionQuery, Cursor, Shape _shape);
 
     DimensionIterator DimensionBegin () const noexcept;
 

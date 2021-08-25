@@ -39,7 +39,7 @@ std::vector <RecordCollection::Collection::DimensionDescriptor> ConvertDimension
     std::vector <RecordCollection::Collection::DimensionDescriptor> result;
     result.reserve (_dimensions.size ());
 
-    for (const Dimension &dimension: _dimensions)
+    for (const Dimension &dimension : _dimensions)
     {
         result.emplace_back (
             RecordCollection::Collection::DimensionDescriptor

@@ -19,7 +19,7 @@ EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (Cursor, CursorImplementati
 
 EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (ModifyAscendingRangeQuery, QueryImplementation)
 
-Cursor ModifyAscendingRangeQuery::Execute (const Bound _min, const Bound _max) noexcept
+Cursor ModifyAscendingRangeQuery::Execute (Bound _min, Bound _max) noexcept
 {
     CursorImplementation cursor = block_cast <QueryImplementation> (data).Execute (_min, _max);
     return Cursor (reinterpret_cast <decltype (Cursor::data) *> (&cursor));

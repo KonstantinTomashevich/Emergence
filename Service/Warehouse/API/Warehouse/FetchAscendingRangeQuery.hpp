@@ -32,7 +32,7 @@ public:
     };
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (
-        FetchAscendingRangeQuery, Cursor, const Bound _min, const Bound _max);
+        FetchAscendingRangeQuery, Cursor, Bound _min, Bound _max);
 
     StandardLayout::Field GetKeyField () const noexcept;
 

@@ -30,7 +30,7 @@ public:
         explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyValueQuery, Cursor, const ValueSequence _values);
+    EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyValueQuery, Cursor, ValueSequence _values);
 
     KeyFieldIterator KeyFieldBegin () const noexcept;
 

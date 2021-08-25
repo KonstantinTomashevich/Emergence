@@ -30,7 +30,7 @@ public:
         explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchValueQuery, Cursor, const ValueSequence _values);
+    EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchValueQuery, Cursor, ValueSequence _values);
 
     KeyFieldIterator KeyFieldBegin () const noexcept;
 

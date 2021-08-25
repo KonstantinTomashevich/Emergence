@@ -32,7 +32,7 @@ public:
     };
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (
-        FetchRayIntersectionQuery, Cursor, const Ray _ray, float _maxDistance);
+        FetchRayIntersectionQuery, Cursor, Ray _ray, float _maxDistance);
 
     DimensionIterator DimensionBegin () const noexcept;
 

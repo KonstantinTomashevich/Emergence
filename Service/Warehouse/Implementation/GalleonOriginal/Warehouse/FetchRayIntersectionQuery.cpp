@@ -19,7 +19,7 @@ EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (Cursor, CursorImplementati
 
 EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (FetchRayIntersectionQuery, QueryImplementation)
 
-Cursor FetchRayIntersectionQuery::Execute (const Ray _ray, float _maxDistance) noexcept
+Cursor FetchRayIntersectionQuery::Execute (Ray _ray, float _maxDistance) noexcept
 {
     CursorImplementation cursor = block_cast <QueryImplementation> (data).Execute (_ray, _maxDistance);
     return Cursor (reinterpret_cast <decltype (Cursor::data) *> (&cursor));

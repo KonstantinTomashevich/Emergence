@@ -19,7 +19,7 @@ EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (Cursor, CursorImplementati
 
 EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (FetchShapeIntersectionQuery, QueryImplementation)
 
-Cursor FetchShapeIntersectionQuery::Execute (const Shape _shape) noexcept
+Cursor FetchShapeIntersectionQuery::Execute (Shape _shape) noexcept
 {
     CursorImplementation cursor = block_cast <QueryImplementation> (data).Execute (_shape);
     return Cursor (reinterpret_cast <decltype (Cursor::data) *> (&cursor));

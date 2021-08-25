@@ -19,7 +19,7 @@ EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (Cursor, CursorImplementati
 
 EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (ModifyValueQuery, QueryImplementation)
 
-Cursor ModifyValueQuery::Execute (const ValueSequence _values) noexcept
+Cursor ModifyValueQuery::Execute (ValueSequence _values) noexcept
 {
     CursorImplementation cursor = block_cast <QueryImplementation> (data).Execute (_values);
     return Cursor (reinterpret_cast <decltype (Cursor::data) *> (&cursor));

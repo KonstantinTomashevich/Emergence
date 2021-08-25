@@ -31,7 +31,7 @@ public:
         explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyShapeIntersectionQuery, Cursor, const Shape _shape);
+    EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyShapeIntersectionQuery, Cursor, Shape _shape);
 
     DimensionIterator DimensionBegin () const noexcept;
 

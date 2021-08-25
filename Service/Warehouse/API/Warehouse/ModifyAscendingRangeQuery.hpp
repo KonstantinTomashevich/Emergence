@@ -32,7 +32,7 @@ public:
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (
-        ModifyAscendingRangeQuery, Cursor, const Bound _min, const Bound _max);
+        ModifyAscendingRangeQuery, Cursor, Bound _min, Bound _max);
 
     StandardLayout::Field GetKeyField () const noexcept;
 

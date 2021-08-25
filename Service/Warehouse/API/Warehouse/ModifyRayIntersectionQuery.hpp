@@ -32,7 +32,7 @@ public:
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (
-        ModifyRayIntersectionQuery, Cursor, const Ray _ray, float _maxDistance);
+        ModifyRayIntersectionQuery, Cursor, Ray _ray, float _maxDistance);
 
     DimensionIterator DimensionBegin () const noexcept;
 
