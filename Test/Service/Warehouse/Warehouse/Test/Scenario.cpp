@@ -145,68 +145,128 @@ void ExecuteTask (ExecutionContext &_context, const PrepareInsertLongTermQuery &
         _context, _task.queryName, _context.registry.InsertLongTerm (_task.typeMapping));
 }
 
+template <typename Query>
+void ValidateCreatedQuery (
+    const StandardLayout::Mapping &_typeMapping, const std::vector <StandardLayout::FieldId> &_keyFields,
+    const Query &_query)
+{
+    auto queryIterator = _query.KeyFieldBegin ();
+    auto expectedIterator = _keyFields.begin ();
+
+    while (queryIterator != _query.KeyFieldEnd () && expectedIterator != _keyFields.end ())
+    {
+        CHECK (_typeMapping.GetField (*expectedIterator).IsSame (*queryIterator));
+        ++queryIterator;
+        ++expectedIterator;
+    }
+
+    CHECK (queryIterator == _query.KeyFieldEnd ());
+    CHECK (expectedIterator == _keyFields.end ());
+}
+
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchValueQuery &_task)
 {
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.FetchValue (_task.typeMapping, _task.keyFields));
+    auto query = _context.registry.FetchValue (_task.typeMapping, _task.keyFields);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyFields, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyValueQuery &_task)
 {
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.ModifyValue (_task.typeMapping, _task.keyFields));
+    auto query = _context.registry.ModifyValue (_task.typeMapping, _task.keyFields);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyFields, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
+}
+
+template <typename Query>
+void ValidateCreatedQuery (
+    const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField,  const Query &_query)
+{
+    CHECK (_typeMapping.GetField (_keyField).IsSame (_query.GetKeyField ()));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchAscendingRangeQuery &_task)
 {
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.FetchAscendingRange (_task.typeMapping, _task.keyField));
+    auto query = _context.registry.FetchAscendingRange (_task.typeMapping, _task.keyField);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyField, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyAscendingRangeQuery &_task)
 {
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.ModifyAscendingRange (_task.typeMapping, _task.keyField));
+    auto query = _context.registry.ModifyAscendingRange (_task.typeMapping, _task.keyField);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyField, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchDescendingRangeQuery &_task)
 {
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.FetchDescendingRange (_task.typeMapping, _task.keyField));
+    auto query = _context.registry.FetchDescendingRange (_task.typeMapping, _task.keyField);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyField, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyDescendingRangeQuery &_task)
 {
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.ModifyDescendingRange (_task.typeMapping, _task.keyField));
+    auto query = _context.registry.ModifyDescendingRange (_task.typeMapping, _task.keyField);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyField, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
+}
+
+template <typename Query>
+void ValidateCreatedQuery (const std::vector <Dimension> &_dimensions,  const Query &_query)
+{
+    auto queryIterator = _query.DimensionBegin ();
+    auto expectedIterator = _dimensions.begin ();
+
+    while (queryIterator != _query.DimensionEnd () && expectedIterator != _dimensions.end ())
+    {
+        const Dimension &received = *queryIterator;
+        const Dimension &expected = *expectedIterator;
+
+        CHECK_EQUAL (received.globalMinBorder, expected.globalMinBorder);
+        CHECK (expected.minBorderField.IsSame (received.minBorderField));
+        CHECK_EQUAL (received.globalMaxBorder, expected.globalMaxBorder);
+        CHECK (expected.maxBorderField.IsSame (received.maxBorderField));
+
+        ++queryIterator;
+        ++expectedIterator;
+    }
+
+    CHECK (queryIterator == _query.DimensionEnd ());
+    CHECK (expectedIterator == _dimensions.end ());
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectionQuery &_task)
 {
-    std::vector <Warehouse::Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions));
+    const std::vector <Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const auto query = _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions);
+    ValidateCreatedQuery (dimensions, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersectionQuery &_task)
 {
-    std::vector <Warehouse::Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions));
+    const std::vector <Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const auto query = _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions);
+    ValidateCreatedQuery (dimensions, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQuery &_task)
 {
-    std::vector <Warehouse::Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.FetchRayIntersection (_task.typeMapping, dimensions));
+    const std::vector <Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const auto query = _context.registry.FetchRayIntersection (_task.typeMapping, dimensions);
+    ValidateCreatedQuery (dimensions, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyRayIntersectionQuery &_task)
 {
-    std::vector <Warehouse::Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    AddObject <PreparedQuery> (
-        _context, _task.queryName, _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions));
+    const std::vector <Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const auto query = _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions);
+    ValidateCreatedQuery (dimensions, query);
+    AddObject <PreparedQuery> (_context, _task.queryName, std::move (query));
 }
 
 void ExecuteTask (ExecutionContext &_context, const InsertObjects &_task)
@@ -621,6 +681,11 @@ static std::vector <Task> ImportStorage (
     const Query::Test::Storage &_storage, const std::optional <Task> &_prepareOnlyCustomQuery = std::nullopt)
 {
     std::vector <Task> tasks;
+    if (_storage.sources.empty ())
+    {
+        return tasks;
+    }
+
     Task inserterPreparation = InsertQueryPreparationTaskFromSource (
         _storage.sources.front (), _storage.dataType, "TemporaryInserter");
 
@@ -718,13 +783,9 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
     using namespace TestQueryApiImporters;
     std::vector <Task> tasks;
 
-    for (std::size_t index = 0u; index < _scenario.storages.size (); ++index)
+    for (const Query::Test::Storage &storage : _scenario.storages)
     {
-        const Query::Test::Storage &storage = _scenario.storages[index];
-        if (!storage.sources.empty ())
-        {
-            tasks += ImportStorage (storage);
-        }
+        tasks += ImportStorage (storage);
     }
 
     for (const auto &task : _scenario.tasks)
@@ -849,10 +910,15 @@ namespace TestReferenceApiDrivers
 //}
 
 void ForCursor (
-    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_environmentDescriptor,
+    const Reference::Test::Scenario &_scenario, const std::vector <Query::Test::Storage> &_environment,
     const Query::Test::Task &_query, const void *_cursorExpectedObject)
 {
-    std::vector <Task> tasks = TestQueryApiImporters::ImportStorage (_environmentDescriptor);
+    std::vector <Task> tasks;
+    for (const Query::Test::Storage &storage : _environment)
+    {
+        tasks += TestQueryApiImporters::ImportStorage (storage);
+    }
+
     for (const Reference::Test::Task &packedTask : _scenario)
     {
         std::visit (

@@ -160,7 +160,7 @@ namespace TestReferenceApiDrivers
 //    const Task &_queryPreparation);
 
 void ForCursor (
-    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_environmentDescriptor,
+    const Reference::Test::Scenario &_scenario, const std::vector <Query::Test::Storage> &_environment,
     const Query::Test::Task &_query, const void *_cursorExpectedObject);
 } // namespace TestReferenceApiDrivers
 
