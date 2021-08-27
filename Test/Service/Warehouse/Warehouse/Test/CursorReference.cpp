@@ -46,6 +46,9 @@ static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetT
 static std::vector <Emergence::Query::Test::Storage> GetEnvironment ()
 {
     using namespace Emergence::Query::Test;
+    // Prefetch mapping to guarantee that reflection will be ready during GetPlayedIdField and GetTestDimensions calls.
+    Emergence::StandardLayout::Mapping playerWithBoundedBoxMapping = PlayerWithBoundingBox::Reflection::GetMapping ();
+
     return
         {
             {
@@ -59,7 +62,7 @@ static std::vector <Emergence::Query::Test::Storage> GetEnvironment ()
                 {Sources::UnorderedSequence {"Sequence"}}
             },
             {
-                PlayerWithBoundingBox::Reflection::GetMapping (),
+                playerWithBoundedBoxMapping,
                 {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
                 {
                     Sources::Value {"Value", {GetPlayedIdField ()}},

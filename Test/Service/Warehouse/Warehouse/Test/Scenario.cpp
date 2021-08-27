@@ -224,10 +224,10 @@ void ValidateCreatedQuery (const std::vector <Dimension> &_dimensions,  const Qu
         const Dimension &received = *queryIterator;
         const Dimension &expected = *expectedIterator;
 
-        CHECK_EQUAL (received.globalMinBorder, expected.globalMinBorder);
         CHECK (expected.minBorderField.IsSame (received.minBorderField));
-        CHECK_EQUAL (received.globalMaxBorder, expected.globalMaxBorder);
+        CHECK (memcmp (received.globalMinBorder, expected.globalMinBorder, received.minBorderField.GetSize ()) == 0);
         CHECK (expected.maxBorderField.IsSame (received.maxBorderField));
+        CHECK (memcmp (received.globalMaxBorder, expected.globalMaxBorder, received.minBorderField.GetSize ()) == 0);
 
         ++queryIterator;
         ++expectedIterator;
