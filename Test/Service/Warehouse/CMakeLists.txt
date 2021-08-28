@@ -15,9 +15,12 @@ sober_test_begin (Warehouse)
     sober_naming_variant_target (TestReferenceAPI Original TEST_REFERENCE_API_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${TEST_REFERENCE_API_LIBRARY_TARGET})
 
-    # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)
+        # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
         sober_library_private_compile_options (/EHa)
+
+        # Scenario object file is too big for MSVC default configuration, therefore we need to increase object size.
+        sober_library_private_compile_options (/bigobj)
     endif ()
 
     sober_test_variant_begin (GalleonOriginal)

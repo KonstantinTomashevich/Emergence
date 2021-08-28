@@ -677,8 +677,7 @@ static Task InsertQueryPreparationTaskFromSource (
     }
 }
 
-static std::vector <Task> ImportStorage (
-    const Query::Test::Storage &_storage, const std::optional <Task> &_prepareOnlyCustomQuery = std::nullopt)
+static std::vector <Task> ImportStorage (const Query::Test::Storage &_storage)
 {
     std::vector <Task> tasks;
     if (_storage.sources.empty ())
@@ -689,86 +688,79 @@ static std::vector <Task> ImportStorage (
     Task inserterPreparation = InsertQueryPreparationTaskFromSource (
         _storage.sources.front (), _storage.dataType, "TemporaryInserter");
 
-    if (_prepareOnlyCustomQuery)
+    for (const auto &source : _storage.sources)
     {
-        tasks.emplace_back (_prepareOnlyCustomQuery.value ());
-    }
-    else
-    {
-        for (const auto &source : _storage.sources)
-        {
-            std::visit (
-                [&tasks, &_storage] (const auto &_source)
+        std::visit (
+            [&tasks, &_storage] (const auto &_source)
+            {
+                using SourceType = std::decay_t <decltype (_source)>;
+
+                // For simplicity, we prepare all possible type of queries for given sources.
+
+                if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Singleton>)
                 {
-                    using SourceType = std::decay_t <decltype (_source)>;
+                    tasks.emplace_back (
+                        PrepareFetchSingletonQuery {{_storage.dataType, _source.name + "::Fetch"}});
 
-                    // For simplicity, we prepare all possible type of queries for given sources.
+                    tasks.emplace_back (
+                        PrepareModifySingletonQuery {{_storage.dataType, _source.name + "::Modify"}});
+                }
+                else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::UnorderedSequence>)
+                {
+                    tasks.emplace_back (
+                        PrepareFetchSequenceQuery {{_storage.dataType, _source.name + "::Fetch"}});
 
-                    if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Singleton>)
-                    {
-                        tasks.emplace_back (
-                            PrepareFetchSingletonQuery {{_storage.dataType, _source.name + "::Fetch"}});
+                    tasks.emplace_back (
+                        PrepareModifySequenceQuery {{_storage.dataType, _source.name + "::Modify"}});
+                }
+                else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Value>)
+                {
+                    tasks.emplace_back (
+                        PrepareFetchValueQuery
+                            {{_storage.dataType, _source.name + "::Fetch"}, _source.queriedFields});
 
-                        tasks.emplace_back (
-                            PrepareModifySingletonQuery {{_storage.dataType, _source.name + "::Modify"}});
-                    }
-                    else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::UnorderedSequence>)
-                    {
-                        tasks.emplace_back (
-                            PrepareFetchSequenceQuery {{_storage.dataType, _source.name + "::Fetch"}});
+                    tasks.emplace_back (
+                        PrepareModifyValueQuery
+                            {{_storage.dataType, _source.name + "::Modify"}, _source.queriedFields});
+                }
+                else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Range>)
+                {
+                    tasks.emplace_back (
+                        PrepareFetchAscendingRangeQuery
+                            {{_storage.dataType, _source.name + "::FetchAscending"}, _source.queriedField});
 
-                        tasks.emplace_back (
-                            PrepareModifySequenceQuery {{_storage.dataType, _source.name + "::Modify"}});
-                    }
-                    else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Value>)
-                    {
-                        tasks.emplace_back (
-                            PrepareFetchValueQuery
-                                {{_storage.dataType, _source.name + "::Fetch"}, _source.queriedFields});
+                    tasks.emplace_back (
+                        PrepareModifyAscendingRangeQuery
+                            {{_storage.dataType, _source.name + "::ModifyAscending"}, _source.queriedField});
 
-                        tasks.emplace_back (
-                            PrepareModifyValueQuery
-                                {{_storage.dataType, _source.name + "::Modify"}, _source.queriedFields});
-                    }
-                    else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Range>)
-                    {
-                        tasks.emplace_back (
-                            PrepareFetchAscendingRangeQuery
-                                {{_storage.dataType, _source.name + "::FetchAscending"}, _source.queriedField});
+                    tasks.emplace_back (
+                        PrepareFetchDescendingRangeQuery
+                            {{_storage.dataType, _source.name + "::FetchDescending"}, _source.queriedField});
 
-                        tasks.emplace_back (
-                            PrepareModifyAscendingRangeQuery
-                                {{_storage.dataType, _source.name + "::ModifyAscending"}, _source.queriedField});
+                    tasks.emplace_back (
+                        PrepareModifyDescendingRangeQuery
+                            {{_storage.dataType, _source.name + "::ModifyDescending"}, _source.queriedField});
+                }
+                else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Volumetric>)
+                {
+                    tasks.emplace_back (
+                        PrepareFetchShapeIntersectionQuery
+                            {{_storage.dataType, _source.name + "::FetchShape"}, _source.dimensions});
 
-                        tasks.emplace_back (
-                            PrepareFetchDescendingRangeQuery
-                                {{_storage.dataType, _source.name + "::FetchDescending"}, _source.queriedField});
+                    tasks.emplace_back (
+                        PrepareModifyShapeIntersectionQuery
+                            {{_storage.dataType, _source.name + "::ModifyShape"}, _source.dimensions});
 
-                        tasks.emplace_back (
-                            PrepareModifyDescendingRangeQuery
-                                {{_storage.dataType, _source.name + "::ModifyDescending"}, _source.queriedField});
-                    }
-                    else if constexpr (std::is_same_v <SourceType, Query::Test::Sources::Volumetric>)
-                    {
-                        tasks.emplace_back (
-                            PrepareFetchShapeIntersectionQuery
-                                {{_storage.dataType, _source.name + "::FetchShape"}, _source.dimensions});
+                    tasks.emplace_back (
+                        PrepareFetchRayIntersectionQuery
+                            {{_storage.dataType, _source.name + "::FetchRay"}, _source.dimensions});
 
-                        tasks.emplace_back (
-                            PrepareModifyShapeIntersectionQuery
-                                {{_storage.dataType, _source.name + "::ModifyShape"}, _source.dimensions});
-
-                        tasks.emplace_back (
-                            PrepareFetchRayIntersectionQuery
-                                {{_storage.dataType, _source.name + "::FetchRay"}, _source.dimensions});
-
-                        tasks.emplace_back (
-                            PrepareModifyRayIntersectionQuery
-                                {{_storage.dataType, _source.name + "::ModifyRay"}, _source.dimensions});
-                    }
-                },
-                source);
-        }
+                    tasks.emplace_back (
+                        PrepareModifyRayIntersectionQuery
+                            {{_storage.dataType, _source.name + "::ModifyRay"}, _source.dimensions});
+                }
+            },
+            source);
     }
 
     tasks.emplace_back (inserterPreparation);
@@ -803,111 +795,187 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
 
 namespace TestReferenceApiDrivers
 {
-//static Task ContainerAcquisitionTaskToAllocationCheck (const Task &_acquisition, const bool _allocationExpected)
-//{
-//    if (const auto *singleton = std::get_if <AcquireSingletonContainer> (&_acquisition))
-//    {
-//        return CheckIsSingletonContainerAllocated {{singleton->mapping, _allocationExpected}};
-//    }
-//    else if (const auto *shortTerm = std::get_if <AcquireShortTermContainer> (&_acquisition))
-//    {
-//        return CheckIsShortTermContainerAllocated {{shortTerm->mapping, _allocationExpected}};
-//    }
-//    else
-//    {
-//        const auto *longTerm = std::get_if <AcquireLongTermContainer> (&_acquisition);
-//        REQUIRE (longTerm);
-//        return CheckIsLongTermContainerAllocated {{longTerm->mapping, _allocationExpected}};
-//    }
-//}
-//
-//static Task RenamePreparedQuery (Task _queryPreparation, std::string _newContainerName, std::string _newQueryName)
-//{
-//    std::visit (
-//        [&_newContainerName, &_newQueryName] (auto &_task)
-//        {
-//            if constexpr (std::is_base_of_v <QueryPreparationBase, std::decay_t <decltype (_task)>>)
-//            {
-//                *reinterpret_cast <const void *const *> (&_task.typeMapping) = _newContainerName;
-//                _task.queryName = _newQueryName;
-//            }
-//            else
-//            {
-//                REQUIRE_WITH_MESSAGE (false, "Query preparation task should inherit QueryPreparationBase.");
-//            }
-//        },
-//        _queryPreparation);
-//
-//    return _queryPreparation;
-//}
+template <typename T, typename Head, typename... Tail>
+struct OneOf
+{
+    static constexpr bool value = std::is_same_v <T, Head> || OneOf <T, Tail...>::value;
+};
 
-//void ForPreparedQuery (
-//    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
-//    const Task &_queryPreparation)
-//{
-//    std::vector <Task> tasks;
-//    bool containerCreated = false;
-//    bool anyReferenceModificationExecuted = false;
-//
-//    for (const Reference::Test::Task &packedTask : _scenario)
-//    {
-//        std::visit (
-//            [&tasks, &anyReferenceModificationExecuted, &containerCreated,
-//                &_containerDescriptor, &_queryPreparation] (const auto &_task)
-//            {
-//                using TaskType = std::decay_t <decltype (_task)>;
-//                if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
-//                {
-//                    if (containerCreated)
-//                    {
-//                        tasks.emplace_back (TestQueryApiImporters::ContainerAcquisitionTaskFromSource (
-//                            _containerDescriptor.sources[0u], _containerDescriptor.dataType,
-//                            "TemporaryContainer"));
-//                    }
-//                    else
-//                    {
-//                        REQUIRE_WITH_MESSAGE (
-//                            !anyReferenceModificationExecuted,
-//                            "For simplicity container creation after reference modification is not supported, "
-//                            "because it would introduce branching into test.");
-//
-//                        tasks += TestQueryApiImporters::ImportStorage (
-//                            _containerDescriptor, "TemporaryContainer", false);
-//                        containerCreated = true;
-//                    }
-//
-//                    tasks.emplace_back (RenamePreparedQuery (_queryPreparation, "TemporaryContainer", _task.name));
-//                    tasks.emplace_back (Delete <ContainerReferenceTag> {{"TemporaryContainer"}});
-//                }
-//                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
-//                {
-//                    tasks.emplace_back (ContainerAcquisitionTaskToAllocationCheck (
-//                        TestQueryApiImporters::ContainerAcquisitionTaskFromSource (
-//                            _containerDescriptor.sources[0u], _containerDescriptor.dataType, {}),
-//                        _task.hasAnyReferences));
-//                }
-//                else
-//                {
-//                    anyReferenceModificationExecuted = true;
-//                    if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
-//                    {
-//                        tasks.emplace_back (Move <PreparedQueryTag> {_task.sourceName, _task.targetName});
-//                    }
-//                    else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
-//                    {
-//                        tasks.emplace_back (Copy <PreparedQueryTag> {_task.sourceName, _task.targetName});
-//                    }
-//                    else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
-//                    {
-//                        tasks.emplace_back (Delete <PreparedQueryTag> {_task.name});
-//                    }
-//                }
-//            },
-//            packedTask);
-//    }
-//
-//    Scenario {tasks};
-//}
+template <typename T, typename Head>
+struct OneOf <T, Head>
+{
+    static constexpr bool value = std::is_same_v <T, Head>;
+};
+
+template <typename Type>
+concept SingletonQueryPreparation = OneOf <Type, PrepareFetchSingletonQuery, PrepareModifySingletonQuery>::value;
+
+template <typename Type>
+concept SequenceQueryPreparation =
+OneOf <Type, PrepareInsertShortTermQuery, PrepareFetchSequenceQuery, PrepareModifySequenceQuery>::value;
+
+template <typename Type>
+concept IndexedQueryPreparation =
+OneOf <Type, PrepareInsertLongTermQuery, PrepareFetchValueQuery, PrepareModifyValueQuery,
+       PrepareFetchAscendingRangeQuery, PrepareModifyAscendingRangeQuery, PrepareFetchDescendingRangeQuery,
+       PrepareModifyDescendingRangeQuery, PrepareFetchShapeIntersectionQuery, PrepareModifyShapeIntersectionQuery,
+       PrepareFetchRayIntersectionQuery, PrepareModifyRayIntersectionQuery>::value;
+
+static std::vector <Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void * _object)
+{
+    return std::visit (
+        [&_object] (const auto &_query)
+        {
+            std::vector <Task> tasks;
+            if constexpr (SingletonQueryPreparation <std::decay_t <decltype (_query)>>)
+            {
+                tasks.emplace_back (PrepareModifySingletonQuery {{_query.typeMapping, "TemporaryInserter"}});
+            }
+            else if constexpr (SequenceQueryPreparation <std::decay_t <decltype (_query)>>)
+            {
+                tasks.emplace_back (PrepareInsertShortTermQuery {{_query.typeMapping, "TemporaryInserter"}});
+            }
+            else if constexpr (IndexedQueryPreparation <std::decay_t <decltype (_query)>>)
+            {
+                tasks.emplace_back (PrepareInsertLongTermQuery {{_query.typeMapping, "TemporaryInserter"}});
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE (false, "Unsupported query preparation type!");
+            }
+
+            tasks.emplace_back (InsertObjects {"TemporaryInserter", {_object}});
+            tasks.emplace_back (Delete <PreparedQueryTag> {{"TemporaryInserter"}});
+            return tasks;
+        },
+        _queryPreparation);
+}
+
+static Task RenamePreparedQuery (Task _queryPreparation, std::string _newQueryName)
+{
+    std::visit (
+        [&_newQueryName] (auto &_task)
+        {
+            if constexpr (std::is_base_of_v <QueryPreparationBase, std::decay_t <decltype (_task)>>)
+            {
+                _task.queryName = _newQueryName;
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE (false, "Query preparation task should inherit QueryPreparationBase.");
+            }
+        },
+        _queryPreparation);
+
+    return _queryPreparation;
+}
+
+static std::vector <Task> CheckQueryEnvironment (const Task &_queryPreparation, const void * _expectedObject)
+{
+    return std::visit (
+        [&_expectedObject] (const auto &_query)
+        {
+            std::vector <Task> tasks;
+            if constexpr (SingletonQueryPreparation <std::decay_t <decltype (_query)>>)
+            {
+                static std::array <uint8_t, 1024u> zeroMemory {0u};
+                REQUIRE (_query.typeMapping.GetObjectSize () <= zeroMemory.max_size ());
+
+                tasks +=
+                    {
+                        PrepareFetchSingletonQuery {{_query.typeMapping, "EnvironmentCheck"}},
+                        QuerySingletonToRead {{"EnvironmentCheck", "CheckCursor"}},
+                        CursorCheck {"CheckCursor", _expectedObject ? _expectedObject : &zeroMemory}
+                    };
+            }
+            else if constexpr (SequenceQueryPreparation <std::decay_t <decltype (_query)>>)
+            {
+                tasks +=
+                    {
+                        PrepareFetchSequenceQuery {{_query.typeMapping, "EnvironmentCheck"}},
+                        QueryUnorderedSequenceToRead {{"EnvironmentCheck", "CheckCursor"}},
+                        CursorCheck {"CheckCursor", _expectedObject}
+                    };
+            }
+            else if constexpr (IndexedQueryPreparation <std::decay_t <decltype (_query)>>)
+            {
+                tasks +=
+                    {
+                        // Because we check environment for any object existence,
+                        // it's ok to prepare query for first field without checking what this field is.
+                        PrepareFetchAscendingRangeQuery {{_query.typeMapping, "EnvironmentCheck"}, 0u},
+                        QueryAscendingRangeToRead {{{"EnvironmentCheck", "CheckCursor"}}},
+                        CursorCheck {"CheckCursor", _expectedObject}
+                    };
+            }
+            else
+            {
+                REQUIRE_WITH_MESSAGE (false, "Unsupported query preparation type!");
+            }
+
+            tasks +=
+                {
+                    CursorClose {"CheckCursor"},
+                    Delete <PreparedQueryTag> {"EnvironmentCheck"},
+                };
+            return tasks;
+        },
+        _queryPreparation);
+}
+
+void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_queryPreparation, const void *_object)
+{
+    std::vector <Task> tasks;
+    bool environmentReady = false;
+    bool anyReferenceModificationExecuted = false;
+
+    for (const Reference::Test::Task &packedTask : _scenario)
+    {
+        std::visit (
+            [&tasks, &anyReferenceModificationExecuted, &environmentReady, &_queryPreparation, &_object] (
+                const auto &_task)
+            {
+                using TaskType = std::decay_t <decltype (_task)>;
+                if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
+                {
+                    tasks.emplace_back (RenamePreparedQuery (_queryPreparation, _task.name));
+                    if (!environmentReady)
+                    {
+                        REQUIRE_WITH_MESSAGE (
+                            !anyReferenceModificationExecuted,
+                            "For simplicity environment setup after reference modification is not supported, "
+                            "because it would introduce branching into test.");
+
+                        tasks += SetupEnvironmentForQuery (_queryPreparation, _object);
+                        environmentReady = true;
+                    }
+                }
+                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
+                {
+                    tasks += CheckQueryEnvironment (_queryPreparation, _task.hasAnyReferences ? _object : nullptr);
+                }
+                else
+                {
+                    anyReferenceModificationExecuted = true;
+                    if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
+                    {
+                        tasks.emplace_back (Move <PreparedQueryTag> {_task.sourceName, _task.targetName});
+                    }
+                    else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
+                    {
+                        tasks.emplace_back (Copy <PreparedQueryTag> {_task.sourceName, _task.targetName});
+                    }
+                    else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
+                    {
+                        tasks.emplace_back (Delete <PreparedQueryTag> {_task.name});
+                    }
+                }
+            },
+            packedTask);
+    }
+
+    Scenario {tasks};
+}
 
 void ForCursor (
     const Reference::Test::Scenario &_scenario, const std::vector <Query::Test::Storage> &_environment,

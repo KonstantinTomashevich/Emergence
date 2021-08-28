@@ -154,10 +154,8 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
 
 namespace TestReferenceApiDrivers
 {
-// TODO: Garbage collection tests will be implemented later.
-//void ForPreparedQuery (
-//    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
-//    const Task &_queryPreparation);
+
+void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_queryPreparation, const void *_object);
 
 void ForCursor (
     const Reference::Test::Scenario &_scenario, const std::vector <Query::Test::Storage> &_environment,
