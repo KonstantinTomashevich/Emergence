@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  run_tests:
+  check_code_style:
     defaults:
       run:
         shell: pwsh
