@@ -19,7 +19,6 @@ Storage::Allocator::~Allocator () noexcept
 {
     if (owner)
     {
-        void *too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_too_long = nullptr;
         if (current)
         {
             owner->InsertRecord (current);
