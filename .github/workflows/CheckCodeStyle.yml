@@ -19,4 +19,4 @@ jobs:
           submodules: true
 
       - name: Check C++ code style using CLang Format
-        run: .\Script\CodeStyle\CheckCLangFormat.ps1
+        run: .\Script\CodeStyle\CheckCLangFormat.ps1 12

@@ -1,12 +1,19 @@
 #!/usr/bin/env pwsh
 
-if ($args.Count -ne 0)
+if ($args.Count -gt 1)
 {
-    echo "Usage: <script>"
+    echo "Usage: <script> [clang-format-version]"
     exit -1
 }
 
-if (-Not(Get-Command clang-format))
+$CLangFormatExecutable = "clang-format"
+if ($args.Count -eq 1)
+{
+    echo "Hm"
+    $CLangFormatExecutable += "-" + $args[0]
+}
+
+if (-Not(Get-Command $CLangFormatExecutable))
 {
     echo "Unable to find clang-format in path!"
     exit -2
@@ -23,4 +30,4 @@ foreach ($RootChild in $RootChildren)
     }
 }
 
-clang-format --Werror --dry-run $Sources
+& $CLangFormatExecutable --Werror --dry-run $Sources
