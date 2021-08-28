@@ -38,7 +38,7 @@ ObjCSpaceBeforeProtocolList: true
 # TODO: CLang-Format 13.0 PackConstructorInitializers: Never
 PointerAlignment: Right
 ReflowComments: true
-SortIncludes: CaseSensitive
+SortIncludes: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false
