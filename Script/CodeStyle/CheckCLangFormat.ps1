@@ -9,7 +9,6 @@ if ($args.Count -gt 1)
 $CLangFormatExecutable = "clang-format"
 if ($args.Count -eq 1)
 {
-    echo "Hm"
     $CLangFormatExecutable += "-" + $args[0]
 }
 
