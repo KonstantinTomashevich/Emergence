@@ -16,6 +16,7 @@ class FetchValueQuery final
 {
 public:
     /// \brief Provides tread safe readonly access to objects with requested values.
+    /// \details There is no guarantied object order.
     class Cursor final
     {
     public:

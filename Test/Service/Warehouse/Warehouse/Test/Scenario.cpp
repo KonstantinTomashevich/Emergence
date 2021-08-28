@@ -227,7 +227,7 @@ void ValidateCreatedQuery (const std::vector <Dimension> &_dimensions,  const Qu
         CHECK (expected.minBorderField.IsSame (received.minBorderField));
         CHECK (memcmp (received.globalMinBorder, expected.globalMinBorder, received.minBorderField.GetSize ()) == 0);
         CHECK (expected.maxBorderField.IsSame (received.maxBorderField));
-        CHECK (memcmp (received.globalMaxBorder, expected.globalMaxBorder, received.minBorderField.GetSize ()) == 0);
+        CHECK (memcmp (received.globalMaxBorder, expected.globalMaxBorder, received.maxBorderField.GetSize ()) == 0);
 
         ++queryIterator;
         ++expectedIterator;
@@ -821,7 +821,7 @@ OneOf <Type, PrepareInsertLongTermQuery, PrepareFetchValueQuery, PrepareModifyVa
        PrepareModifyDescendingRangeQuery, PrepareFetchShapeIntersectionQuery, PrepareModifyShapeIntersectionQuery,
        PrepareFetchRayIntersectionQuery, PrepareModifyRayIntersectionQuery>::value;
 
-static std::vector <Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void * _object)
+static std::vector <Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void *_object)
 {
     return std::visit (
         [&_object] (const auto &_query)
@@ -870,7 +870,7 @@ static Task RenamePreparedQuery (Task _queryPreparation, std::string _newQueryNa
     return _queryPreparation;
 }
 
-static std::vector <Task> CheckQueryEnvironment (const Task &_queryPreparation, const void * _expectedObject)
+static std::vector <Task> CheckQueryEnvironment (const Task &_queryPreparation, const void *_expectedObject)
 {
     return std::visit (
         [&_expectedObject] (const auto &_query)

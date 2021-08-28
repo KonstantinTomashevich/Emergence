@@ -16,6 +16,7 @@ class ModifyValueQuery final
 {
 public:
     /// \brief Provides readwrite access to objects with requested values.
+    /// \details There is no guarantied object order.
     class Cursor final
     {
     public:

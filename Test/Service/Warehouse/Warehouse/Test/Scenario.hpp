@@ -154,7 +154,6 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
 
 namespace TestReferenceApiDrivers
 {
-
 void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_queryPreparation, const void *_object);
 
 void ForCursor (
