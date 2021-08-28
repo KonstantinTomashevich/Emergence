@@ -31,8 +31,8 @@ TEST_CASE (AcquireNotNull)
 TEST_CASE (MultipleAcquiresDoNotOverlap)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
-    auto *first = static_cast <TestItem *> (pool.Acquire ());
-    auto *second = static_cast <TestItem *> (pool.Acquire ());
+    auto *first = static_cast<TestItem *> (pool.Acquire ());
+    auto *second = static_cast<TestItem *> (pool.Acquire ());
 
     TestItem firstValue = {12, 341.55f, false};
     TestItem secondValue = {59, 947.11f, true};
@@ -59,7 +59,7 @@ TEST_CASE (MemoryReused)
     CHECK_EQUAL (item, anotherItem);
 }
 
-void CheckPoolItemVectorsEquality (const std::vector <void *> &_first, const std::vector <void *> &_second)
+void CheckPoolItemVectorsEquality (const std::vector<void *> &_first, const std::vector<void *> &_second)
 {
     CHECK_EQUAL (_first.size (), _second.size ());
 
@@ -71,9 +71,9 @@ void CheckPoolItemVectorsEquality (const std::vector <void *> &_first, const std
     }
 }
 
-void CheckPoolIteration (Emergence::Memory::Pool &_pool, const std::vector <void *> &_expectedItems)
+void CheckPoolIteration (Emergence::Memory::Pool &_pool, const std::vector<void *> &_expectedItems)
 {
-    std::vector <void *> itemsFromIteration;
+    std::vector<void *> itemsFromIteration;
     for (void *item : _pool)
     {
         itemsFromIteration.emplace_back (item);
@@ -82,9 +82,9 @@ void CheckPoolIteration (Emergence::Memory::Pool &_pool, const std::vector <void
     CheckPoolItemVectorsEquality (_expectedItems, itemsFromIteration);
     itemsFromIteration.clear ();
 
-    for (const void *item : const_cast <const Emergence::Memory::Pool &> (_pool))
+    for (const void *item : const_cast<const Emergence::Memory::Pool &> (_pool))
     {
-        itemsFromIteration.emplace_back (const_cast <void *> (item));
+        itemsFromIteration.emplace_back (const_cast<void *> (item));
     }
 
     CheckPoolItemVectorsEquality (_expectedItems, itemsFromIteration);
@@ -106,7 +106,7 @@ struct FullPoolContext
     }
 
     Emergence::Memory::Pool pool {sizeof (TestItem), PAGE_CAPACITY};
-    std::vector <void *> items;
+    std::vector<void *> items;
 };
 
 TEST_CASE (SuccessfullShrink)
@@ -222,7 +222,7 @@ TEST_CASE (IterateFullWithGaps)
 TEST_CASE (ReleaseDoesNotInvalidateIterator)
 {
     Emergence::Memory::Pool pool {sizeof (TestItem)};
-    std::vector <void *> items;
+    std::vector<void *> items;
 
     // Must be greater than 1. If it's greater than 1, value should not matter.
     constexpr std::size_t itemsToAcquire = 5u;
@@ -232,7 +232,7 @@ TEST_CASE (ReleaseDoesNotInvalidateIterator)
         items.emplace_back (pool.Acquire ());
     }
 
-    std::vector <void *> itemsFromIteration;
+    std::vector<void *> itemsFromIteration;
     auto iterator = pool.BeginAcquired ();
     auto end = pool.EndAcquired ();
 
@@ -280,7 +280,7 @@ TEST_CASE (CursorConstructionAndAssignment)
     FullPoolContext context;
     // Test both mutable and const iterators.
     Test (context.pool.BeginAcquired ());
-    Test (const_cast <const Emergence::Memory::Pool &> (context.pool).BeginAcquired ());
+    Test (const_cast<const Emergence::Memory::Pool &> (context.pool).BeginAcquired ());
 }
 
 END_SUITE

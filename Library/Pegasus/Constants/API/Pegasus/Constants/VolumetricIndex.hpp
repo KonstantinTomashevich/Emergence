@@ -11,7 +11,7 @@ namespace Emergence::Pegasus::Constants::VolumetricIndex
 constexpr std::size_t MAX_DIMENSIONS = Implementation::VolumetricIndex::MAX_DIMENSIONS;
 
 /// \brief Maximum subdivision levels for each dimension count.
-constexpr std::array <std::size_t, MAX_DIMENSIONS> LEVELS = Implementation::VolumetricIndex::LEVELS;
+constexpr std::array<std::size_t, MAX_DIMENSIONS> LEVELS = Implementation::VolumetricIndex::LEVELS;
 
 /// \brief Used to check floating point values equality.
 constexpr float EPSILON = Implementation::VolumetricIndex::EPSILON;

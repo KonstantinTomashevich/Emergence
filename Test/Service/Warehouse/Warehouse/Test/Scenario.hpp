@@ -50,12 +50,12 @@ struct PrepareInsertLongTermQuery : public QueryPreparationBase
 
 struct PrepareFetchValueQuery : public QueryPreparationBase
 {
-    std::vector <StandardLayout::FieldId> keyFields;
+    std::vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareModifyValueQuery : public QueryPreparationBase
 {
-    std::vector <StandardLayout::FieldId> keyFields;
+    std::vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareFetchAscendingRangeQuery : public QueryPreparationBase
@@ -80,75 +80,74 @@ struct PrepareModifyDescendingRangeQuery : public QueryPreparationBase
 
 struct PrepareFetchShapeIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareModifyShapeIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareFetchRayIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareModifyRayIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct InsertObjects
 {
     std::string name;
-    std::vector <const void *> copyFrom;
+    std::vector<const void *> copyFrom;
 };
 
-using Task = std::variant <
-    PrepareFetchSingletonQuery,
-    PrepareModifySingletonQuery,
-    PrepareInsertShortTermQuery,
-    PrepareFetchSequenceQuery,
-    PrepareModifySequenceQuery,
-    PrepareInsertLongTermQuery,
-    PrepareFetchValueQuery,
-    PrepareModifyValueQuery,
-    PrepareFetchAscendingRangeQuery,
-    PrepareModifyAscendingRangeQuery,
-    PrepareFetchDescendingRangeQuery,
-    PrepareModifyDescendingRangeQuery,
-    PrepareFetchShapeIntersectionQuery,
-    PrepareModifyShapeIntersectionQuery,
-    PrepareFetchRayIntersectionQuery,
-    PrepareModifyRayIntersectionQuery,
-    InsertObjects,
-    Move <struct PreparedQueryTag>,
-    Copy <struct PreparedQueryTag>,
-    Delete <struct PreparedQueryTag>,
-    QuerySingletonToRead,
-    QuerySingletonToEdit,
-    QueryUnorderedSequenceToRead,
-    QueryUnorderedSequenceToEdit,
-    QueryValueToRead,
-    QueryValueToEdit,
-    QueryAscendingRangeToRead,
-    QueryAscendingRangeToEdit,
-    QueryDescendingRangeToRead,
-    QueryDescendingRangeToEdit,
-    QueryShapeIntersectionToRead,
-    QueryShapeIntersectionToEdit,
-    QueryRayIntersectionToRead,
-    QueryRayIntersectionToEdit,
-    CursorCheck,
-    CursorCheckAllOrdered,
-    CursorCheckAllUnordered,
-    CursorEdit,
-    CursorIncrement,
-    CursorDeleteObject,
-    Move <struct CursorTag>,
-    Copy <struct CursorTag>,
-    Delete <struct CursorTag>,
-    CursorClose>;
+using Task = std::variant<PrepareFetchSingletonQuery,
+                          PrepareModifySingletonQuery,
+                          PrepareInsertShortTermQuery,
+                          PrepareFetchSequenceQuery,
+                          PrepareModifySequenceQuery,
+                          PrepareInsertLongTermQuery,
+                          PrepareFetchValueQuery,
+                          PrepareModifyValueQuery,
+                          PrepareFetchAscendingRangeQuery,
+                          PrepareModifyAscendingRangeQuery,
+                          PrepareFetchDescendingRangeQuery,
+                          PrepareModifyDescendingRangeQuery,
+                          PrepareFetchShapeIntersectionQuery,
+                          PrepareModifyShapeIntersectionQuery,
+                          PrepareFetchRayIntersectionQuery,
+                          PrepareModifyRayIntersectionQuery,
+                          InsertObjects,
+                          Move<struct PreparedQueryTag>,
+                          Copy<struct PreparedQueryTag>,
+                          Delete<struct PreparedQueryTag>,
+                          QuerySingletonToRead,
+                          QuerySingletonToEdit,
+                          QueryUnorderedSequenceToRead,
+                          QueryUnorderedSequenceToEdit,
+                          QueryValueToRead,
+                          QueryValueToEdit,
+                          QueryAscendingRangeToRead,
+                          QueryAscendingRangeToEdit,
+                          QueryDescendingRangeToRead,
+                          QueryDescendingRangeToEdit,
+                          QueryShapeIntersectionToRead,
+                          QueryShapeIntersectionToEdit,
+                          QueryRayIntersectionToRead,
+                          QueryRayIntersectionToEdit,
+                          CursorCheck,
+                          CursorCheckAllOrdered,
+                          CursorCheckAllUnordered,
+                          CursorEdit,
+                          CursorIncrement,
+                          CursorDeleteObject,
+                          Move<struct CursorTag>,
+                          Copy<struct CursorTag>,
+                          Delete<struct CursorTag>,
+                          CursorClose>;
 
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
 
@@ -156,23 +155,24 @@ namespace TestReferenceApiDrivers
 {
 void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_queryPreparation, const void *_object);
 
-void ForCursor (
-    const Reference::Test::Scenario &_scenario, const std::vector <Query::Test::Storage> &_environment,
-    const Query::Test::Task &_query, const void *_cursorExpectedObject);
+void ForCursor (const Reference::Test::Scenario &_scenario,
+                const std::vector<Query::Test::Storage> &_environment,
+                const Query::Test::Task &_query,
+                const void *_cursorExpectedObject);
 } // namespace TestReferenceApiDrivers
 
 class Scenario final
 {
 public:
-    explicit Scenario (std::vector <Task> _tasks);
+    explicit Scenario (std::vector<Task> _tasks);
 
 private:
-    friend std::ostream &operator << (std::ostream &_output, const Scenario &_seed);
+    friend std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
 
-    std::vector <Task> tasks;
+    std::vector<Task> tasks;
 };
 
-std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
+std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
 
-std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noexcept;
+std::vector<Task> operator+ (std::vector<Task> first, const Task &_task) noexcept;
 } // namespace Emergence::Warehouse::Test

@@ -11,12 +11,9 @@ using namespace Emergence::Pegasus::Test;
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return
-    {
-        Player::Reflection::GetMapping (),
-        {&HUGO_0_ALIVE_STUNNED},
-        {Sources::Value {"Source", {Player::Reflection::id}}}
-    };
+    return {Player::Reflection::GetMapping (),
+            {&HUGO_0_ALIVE_STUNNED},
+            {Sources::Value {"Source", {Player::Reflection::id}}}};
 }
 
 static void ExecuteIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -26,16 +23,16 @@ static void ExecuteIndexReferenceApiTest (const Emergence::Reference::Test::Scen
 
 static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
+                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
+                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (HashIndexReference)

@@ -24,7 +24,7 @@ public:
 
         /// \return Pointer to memory, allocated for the new object.
         /// \invariant Previously allocated object must be initialized before next call.
-        void *operator ++ () noexcept;
+        void *operator++ () noexcept;
 
         /// Assigning cursors looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -35,7 +35,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (InsertLongTermQuery, Cursor);
@@ -46,6 +46,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit InsertLongTermQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit InsertLongTermQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

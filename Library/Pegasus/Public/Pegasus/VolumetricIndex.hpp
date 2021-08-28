@@ -18,7 +18,7 @@ namespace Emergence::Pegasus
 class VolumetricIndex final : public IndexBase
 {
 private:
-    using LeafCoordinate = std::array <std::size_t, Constants::VolumetricIndex::MAX_DIMENSIONS>;
+    using LeafCoordinate = std::array<std::size_t, Constants::VolumetricIndex::MAX_DIMENSIONS>;
 
     struct LeafSector final
     {
@@ -94,7 +94,7 @@ public:
     {
         /// \brief Contains min-max pairs for all dimensions.
         /// \details It's recommended to use ::Min and ::Max methods to access values of this array.
-        std::array <AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
+        std::array<AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
 
         AxisValue &Min (std::size_t _dimensionIndex) noexcept;
 
@@ -106,7 +106,7 @@ public:
     };
 
     /// \brief Memory block, that can fit AxisAlignedShape of any supported type.
-    using AxisAlignedShapeContainer = std::array <uint8_t, sizeof (AxisAlignedShape <SupportedAxisValue>)>;
+    using AxisAlignedShapeContainer = std::array<uint8_t, sizeof (AxisAlignedShape<SupportedAxisValue>)>;
 
     /// \brief Ray with specific value type.
     template <typename AxisValue>
@@ -114,7 +114,7 @@ public:
     {
         /// \brief Contains origin-direction pairs for all dimensions.
         /// \details It's recommended to use ::Origin and ::Direction methods to access values of this array.
-        std::array <AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
+        std::array<AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
 
         AxisValue &Origin (std::size_t _dimensionIndex) noexcept;
 
@@ -126,8 +126,8 @@ public:
     };
 
     /// \brief Memory block, that can fit Ray of any supported type.
-    using RayContainer = std::array <
-        uint8_t, sizeof (SupportedAxisValue) * Constants::VolumetricIndex::MAX_DIMENSIONS * 2u>;
+    using RayContainer =
+        std::array<uint8_t, sizeof (SupportedAxisValue) * Constants::VolumetricIndex::MAX_DIMENSIONS * 2u>;
 
     class ShapeIntersectionCursorBase
     {
@@ -139,8 +139,9 @@ public:
         ~ShapeIntersectionCursorBase () noexcept;
 
     protected:
-        ShapeIntersectionCursorBase (
-            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShapeContainer &_shape) noexcept;
+        ShapeIntersectionCursorBase (VolumetricIndex *_index,
+                                     const LeafSector &_sector,
+                                     const AxisAlignedShapeContainer &_shape) noexcept;
 
         bool IsFinished () const noexcept;
 
@@ -169,7 +170,7 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        std::vector <bool> visitedRecords;
+        std::vector<bool> visitedRecords;
     };
 
     class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
@@ -180,8 +181,9 @@ public:
     private:
         friend class VolumetricIndex;
 
-        ShapeIntersectionReadCursor (
-            VolumetricIndex *_index, const LeafSector &_sector, const AxisAlignedShapeContainer &_shape) noexcept;
+        ShapeIntersectionReadCursor (VolumetricIndex *_index,
+                                     const LeafSector &_sector,
+                                     const AxisAlignedShapeContainer &_shape) noexcept;
     };
 
     class ShapeIntersectionEditCursor final : private ShapeIntersectionCursorBase
@@ -192,7 +194,8 @@ public:
     private:
         friend class VolumetricIndex;
 
-        ShapeIntersectionEditCursor (VolumetricIndex *_index, const LeafSector &_sector,
+        ShapeIntersectionEditCursor (VolumetricIndex *_index,
+                                     const LeafSector &_sector,
                                      const AxisAlignedShapeContainer &_shape) noexcept;
 
         void BeginRecordEdition () const noexcept;
@@ -234,10 +237,10 @@ public:
         VolumetricIndex *index;
 
         /// \brief Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
-        std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> currentPoint;
+        std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> currentPoint;
 
         /// \brief Ray direction, converted into leaf coordinates.
-        std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
+        std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
 
         /// Distance from ray origin to ::currentPoint border in world coordinates.
         float distanceTraveled;
@@ -249,7 +252,7 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        std::vector <bool> visitedRecords;
+        std::vector<bool> visitedRecords;
     };
 
     class RayIntersectionReadCursor final : private RayIntersectionCursorBase
@@ -282,25 +285,25 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     VolumetricIndex (VolumetricIndex &&_other) = delete;
 
-    const InplaceVector <Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
+    const InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
 
     ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShapeContainer &_shape) noexcept;
 
     ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShapeContainer &_shape) noexcept;
 
     RayIntersectionReadCursor LookupRayIntersectionToRead (
-        const RayContainer &_ray, float _maxDistance = std::numeric_limits <float>::max ()) noexcept;
+        const RayContainer &_ray, float _maxDistance = std::numeric_limits<float>::max ()) noexcept;
 
     RayIntersectionEditCursor LookupRayIntersectionToEdit (
-        const RayContainer &_ray, float _maxDistance = std::numeric_limits <float>::max ()) noexcept;
+        const RayContainer &_ray, float _maxDistance = std::numeric_limits<float>::max ()) noexcept;
 
     void Drop () noexcept;
 
     /// There is no sense to copy assign indices.
-    VolumetricIndex &operator = (const VolumetricIndex &_other) = delete;
+    VolumetricIndex &operator= (const VolumetricIndex &_other) = delete;
 
     /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
-    VolumetricIndex &operator = (VolumetricIndex &&_other) = delete;
+    VolumetricIndex &operator= (VolumetricIndex &&_other) = delete;
 
 private:
     friend class Storage;
@@ -316,15 +319,15 @@ private:
 
     struct LeafData final
     {
-        std::vector <RecordData> records;
+        std::vector<RecordData> records;
 
-        std::vector <RecordData>::iterator FindRecord (const void *_record) noexcept;
+        std::vector<RecordData>::iterator FindRecord (const void *_record) noexcept;
 
         /// \brief Deletes record from leaf using "exchange with last" strategy.
-        void DeleteRecord (const std::vector <RecordData>::iterator &_recordIterator) noexcept;
+        void DeleteRecord (const std::vector<RecordData>::iterator &_recordIterator) noexcept;
     };
 
-    VolumetricIndex (Storage *_storage, const std::vector <DimensionDescriptor> &_dimensions) noexcept;
+    VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept;
 
     template <typename Operations>
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
@@ -333,18 +336,20 @@ private:
     LeafSector CalculateSector (const AxisAlignedShapeContainer &_shape, const Operations &_operations) const noexcept;
 
     template <typename Operations>
-    SupportedAxisValue CalculateLeafSize (
-        const Dimension &_dimension, const Operations &_operations) const noexcept;
+    SupportedAxisValue CalculateLeafSize (const Dimension &_dimension, const Operations &_operations) const noexcept;
 
     template <typename Operations>
-    std::size_t CalculateCoordinate (
-        const SupportedAxisValue &_value, const Dimension &_dimension,
-        const SupportedAxisValue &_leafSize, const Operations &_operations) const noexcept;
+    std::size_t CalculateCoordinate (const SupportedAxisValue &_value,
+                                     const Dimension &_dimension,
+                                     const SupportedAxisValue &_leafSize,
+                                     const Operations &_operations) const noexcept;
 
     template <typename Operations>
     bool CheckRayShapeIntersection (
-        const RayContainer &_ray, const AxisAlignedShapeContainer &_shape, float &_distanceOutput,
-        std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
+        const RayContainer &_ray,
+        const AxisAlignedShapeContainer &_shape,
+        float &_distanceOutput,
+        std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
         const Operations &_operations) const noexcept;
 
     template <typename Callback>
@@ -356,8 +361,8 @@ private:
 
     bool AreEqual (const LeafCoordinate &_left, const LeafCoordinate &_right) const noexcept;
 
-    VolumetricIndex::LeafCoordinate NextInsideSector (
-        const LeafSector &_sector, LeafCoordinate _coordinate) const noexcept;
+    VolumetricIndex::LeafCoordinate NextInsideSector (const LeafSector &_sector,
+                                                      LeafCoordinate _coordinate) const noexcept;
 
     bool AreEqual (const LeafSector &_left, const LeafSector &_right) const noexcept;
 
@@ -369,59 +374,59 @@ private:
 
     void OnWriterClosed () noexcept;
 
-    InplaceVector <Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> dimensions;
+    InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> dimensions;
 
     // TODO: For now we use simplified approach and work only with leaves, therefore reducing octree into grid.
     //       This approach is problematic because it significantly limits count of subdivisions.
-    std::vector <LeafData> leaves;
-    std::vector <std::size_t> freeRecordIds;
+    std::vector<LeafData> leaves;
+    std::vector<std::size_t> freeRecordIds;
     std::size_t nextRecordId;
 };
 
 template <typename AxisValue>
-AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Min (std::size_t _dimensionIndex) noexcept
+AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Min (std::size_t _dimensionIndex) noexcept
 {
     return data[_dimensionIndex * 2u];
 }
 
 template <typename AxisValue>
-AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Max (std::size_t _dimensionIndex) noexcept
+AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Max (std::size_t _dimensionIndex) noexcept
 {
     return data[_dimensionIndex * 2u + 1u];
 }
 
 template <typename AxisValue>
-const AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Min (std::size_t _dimensionIndex) const noexcept
+const AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Min (std::size_t _dimensionIndex) const noexcept
 {
     return data[_dimensionIndex * 2u];
 }
 
 template <typename AxisValue>
-const AxisValue &VolumetricIndex::AxisAlignedShape <AxisValue>::Max (std::size_t _dimensionIndex) const noexcept
+const AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Max (std::size_t _dimensionIndex) const noexcept
 {
     return data[_dimensionIndex * 2u + 1u];
 }
 
 template <typename AxisValue>
-AxisValue &VolumetricIndex::Ray <AxisValue>::Origin (std::size_t _dimensionIndex) noexcept
+AxisValue &VolumetricIndex::Ray<AxisValue>::Origin (std::size_t _dimensionIndex) noexcept
 {
     return data[_dimensionIndex * 2u];
 }
 
 template <typename AxisValue>
-AxisValue &VolumetricIndex::Ray <AxisValue>::Direction (std::size_t _dimensionIndex) noexcept
+AxisValue &VolumetricIndex::Ray<AxisValue>::Direction (std::size_t _dimensionIndex) noexcept
 {
     return data[_dimensionIndex * 2u + 1u];
 }
 
 template <typename AxisValue>
-const AxisValue &VolumetricIndex::Ray <AxisValue>::Origin (std::size_t _dimensionIndex) const noexcept
+const AxisValue &VolumetricIndex::Ray<AxisValue>::Origin (std::size_t _dimensionIndex) const noexcept
 {
     return data[_dimensionIndex * 2u];
 }
 
 template <typename AxisValue>
-const AxisValue &VolumetricIndex::Ray <AxisValue>::Direction (std::size_t _dimensionIndex) const noexcept
+const AxisValue &VolumetricIndex::Ray<AxisValue>::Direction (std::size_t _dimensionIndex) const noexcept
 {
     return data[_dimensionIndex * 2u + 1u];
 }

@@ -1,0 +1,22 @@
+name: Check code style
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  check_code_style:
+    defaults:
+      run:
+        shell: pwsh
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Check C++ code style using CLang Format
+        run: .\Script\CodeStyle\CheckCLangFormat.ps1 12

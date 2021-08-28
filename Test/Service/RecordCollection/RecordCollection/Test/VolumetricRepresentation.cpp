@@ -17,21 +17,11 @@ bool Emergence::RecordCollection::Test::VolumetricRepresentationTestIncludeMarke
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return
-        {
-            BoundingBox::Reflection::GetMapping (),
+    return {BoundingBox::Reflection::GetMapping (),
             {&BOX_MIN_10_8_4_MAX_11_9_5},
-            {
-                Sources::Volumetric
-                    {
-                        "Source",
-                        {
-                            {-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
-                            {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}
-                        }
-                    }
-            }
-        };
+            {Sources::Volumetric {"Source",
+                                  {{-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
+                                   {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}}}}};
 }
 
 static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -41,30 +31,30 @@ static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::T
 
 static void ExecuteShapeIntersectionReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryShapeIntersectionToRead {{{}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
-        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryShapeIntersectionToRead {{{}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
+                                          &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteShapeIntersectionEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryShapeIntersectionToEdit {{{}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
-        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryShapeIntersectionToEdit {{{}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
+                                          &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteRayIntersectionReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryRayIntersectionToRead {{{}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
-        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryRayIntersectionToRead {{{}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
+                                          &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteRayIntersectionEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryRayIntersectionToEdit {{{}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
-        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryRayIntersectionToEdit {{{}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
+                                          &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 BEGIN_SUITE (VolumetricRepresentationReference)

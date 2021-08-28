@@ -46,7 +46,7 @@ public:
     {
         std::size_t offset;
 
-        Handling::Handle <PlainMapping> nestedObjectMapping;
+        Handling::Handle<PlainMapping> nestedObjectMapping;
     };
 
     FieldArchetype GetArchetype () const;
@@ -57,7 +57,7 @@ public:
 
     uint_fast8_t GetBitOffset () const;
 
-    Handling::Handle <PlainMapping> GetNestedObjectMapping () const;
+    Handling::Handle<PlainMapping> GetNestedObjectMapping () const;
 
 private:
     /// PlainMapping deletes FieldData's.
@@ -85,7 +85,7 @@ private:
     {
         std::uint_fast8_t bitOffset;
 
-        Handling::Handle <PlainMapping> nestedObjectMapping;
+        Handling::Handle<PlainMapping> nestedObjectMapping;
     };
 };
 
@@ -107,43 +107,43 @@ public:
 
         ConstIterator () noexcept;
 
-        const FieldData &operator * () const noexcept;
+        const FieldData &operator* () const noexcept;
 
-        const FieldData *operator -> () const noexcept;
+        const FieldData *operator-> () const noexcept;
 
-        ConstIterator &operator ++ () noexcept;
+        ConstIterator &operator++ () noexcept;
 
-        ConstIterator operator ++ (int) noexcept;
+        ConstIterator operator++ (int) noexcept;
 
-        ConstIterator &operator -- () noexcept;
+        ConstIterator &operator-- () noexcept;
 
-        ConstIterator operator -- (int) noexcept;
+        ConstIterator operator-- (int) noexcept;
 
-        ConstIterator operator + (ptrdiff_t _steps) const noexcept;
+        ConstIterator operator+ (ptrdiff_t _steps) const noexcept;
 
-        friend ConstIterator operator + (ptrdiff_t _steps, const ConstIterator &_iterator) noexcept;
+        friend ConstIterator operator+ (ptrdiff_t _steps, const ConstIterator &_iterator) noexcept;
 
-        ConstIterator &operator += (ptrdiff_t _steps) noexcept;
+        ConstIterator &operator+= (ptrdiff_t _steps) noexcept;
 
-        ConstIterator operator - (ptrdiff_t _steps) const noexcept;
+        ConstIterator operator- (ptrdiff_t _steps) const noexcept;
 
-        ConstIterator &operator -= (ptrdiff_t _steps) noexcept;
+        ConstIterator &operator-= (ptrdiff_t _steps) noexcept;
 
-        const FieldData &operator [] (std::size_t _index) const noexcept;
+        const FieldData &operator[] (std::size_t _index) const noexcept;
 
-        ptrdiff_t operator - (const ConstIterator &_other) const noexcept;
+        ptrdiff_t operator- (const ConstIterator &_other) const noexcept;
 
-        bool operator == (const ConstIterator &_other) const noexcept;
+        bool operator== (const ConstIterator &_other) const noexcept;
 
-        bool operator != (const ConstIterator &_other) const noexcept;
+        bool operator!= (const ConstIterator &_other) const noexcept;
 
-        bool operator < (const ConstIterator &_other) const noexcept;
+        bool operator< (const ConstIterator &_other) const noexcept;
 
-        bool operator > (const ConstIterator &_other) const noexcept;
+        bool operator> (const ConstIterator &_other) const noexcept;
 
-        bool operator <= (const ConstIterator &_other) const noexcept;
+        bool operator<= (const ConstIterator &_other) const noexcept;
 
-        bool operator >= (const ConstIterator &_other) const noexcept;
+        bool operator>= (const ConstIterator &_other) const noexcept;
 
     private:
         friend class PlainMapping;
@@ -214,7 +214,7 @@ public:
 
     void Begin (std::size_t _objectSize) noexcept;
 
-    Handling::Handle <PlainMapping> End () noexcept;
+    Handling::Handle<PlainMapping> End () noexcept;
 
     FieldId AddField (FieldData::StandardSeed _seed) noexcept;
 
@@ -225,7 +225,7 @@ public:
 private:
     static constexpr std::size_t INITIAL_FIELD_CAPACITY = 32u;
 
-    std::pair <FieldId, FieldData *> AllocateField () noexcept;
+    std::pair<FieldId, FieldData *> AllocateField () noexcept;
 
     void ReallocateMapping (std::size_t _fieldCapacity) noexcept;
 

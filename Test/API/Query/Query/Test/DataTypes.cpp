@@ -15,11 +15,11 @@ static StandardLayout::Mapping RegisterPlayer ()
     Player::Reflection::alive = builder.RegisterBit (offsetof (Player, status), Player::Status::FLAG_ALIVE_OFFSET);
     Player::Reflection::stunned = builder.RegisterBit (offsetof (Player, status), Player::Status::FLAG_STUNNED_OFFSET);
 
-    Player::Reflection::poisoned = builder.RegisterBit (
-        offsetof (Player, status), Player::Status::FLAG_POISONED_OFFSET);
+    Player::Reflection::poisoned =
+        builder.RegisterBit (offsetof (Player, status), Player::Status::FLAG_POISONED_OFFSET);
 
-    Player::Reflection::immobilized = builder.RegisterBit (
-        offsetof (Player, status), Player::Status::FLAG_IMMOBILIZED_OFFSET);
+    Player::Reflection::immobilized =
+        builder.RegisterBit (offsetof (Player, status), Player::Status::FLAG_IMMOBILIZED_OFFSET);
     return builder.End ();
 }
 
@@ -56,8 +56,8 @@ static StandardLayout::Mapping RegisterPlayerWithBoundingBox ()
     StandardLayout::MappingBuilder builder;
     builder.Begin (sizeof (PlayerWithBoundingBox));
 
-    PlayerWithBoundingBox::Reflection::player = builder.RegisterNestedObject (
-        offsetof (PlayerWithBoundingBox, player), Player::Reflection::GetMapping ());
+    PlayerWithBoundingBox::Reflection::player =
+        builder.RegisterNestedObject (offsetof (PlayerWithBoundingBox, player), Player::Reflection::GetMapping ());
 
     PlayerWithBoundingBox::Reflection::boundingBox = builder.RegisterNestedObject (
         offsetof (PlayerWithBoundingBox, boundingBox), BoundingBox::Reflection::GetMapping ());
@@ -84,11 +84,11 @@ static StandardLayout::Mapping RegisterAllFieldTypesStructure ()
     AllFieldTypesStructure::Reflection::doubleFloating =
         builder.RegisterDouble (offsetof (AllFieldTypesStructure, doubleFloating));
 
-    AllFieldTypesStructure::Reflection::block = builder.RegisterBlock (
-        offsetof (AllFieldTypesStructure, block), sizeof (AllFieldTypesStructure::block));
+    AllFieldTypesStructure::Reflection::block =
+        builder.RegisterBlock (offsetof (AllFieldTypesStructure, block), sizeof (AllFieldTypesStructure::block));
 
-    AllFieldTypesStructure::Reflection::string = builder.RegisterString (
-        offsetof (AllFieldTypesStructure, string), sizeof (AllFieldTypesStructure::string));
+    AllFieldTypesStructure::Reflection::string =
+        builder.RegisterString (offsetof (AllFieldTypesStructure, string), sizeof (AllFieldTypesStructure::string));
     return builder.End ();
 }
 
@@ -181,4 +181,4 @@ StandardLayout::Mapping AllFieldTypesStructure::Reflection::GetMapping ()
     static StandardLayout::Mapping mapping = RegisterAllFieldTypesStructure ();
     return mapping;
 }
-} // namespace Query::Test
+} // namespace Emergence::Query::Test

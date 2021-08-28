@@ -13,7 +13,7 @@ class ByteHasher final
 public:
     ByteHasher () noexcept;
 
-    ~ByteHasher() noexcept;
+    ~ByteHasher () noexcept;
 
     /// \brief Modifies current state by appending given byte.
     void Append (uint8_t _byte) noexcept;

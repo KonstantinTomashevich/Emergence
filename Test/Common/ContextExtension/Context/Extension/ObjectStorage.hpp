@@ -56,19 +56,19 @@ struct Delete
 template <typename Object>
 struct ObjectStorage
 {
-    std::unordered_map <std::string, Object> objects;
+    std::unordered_map<std::string, Object> objects;
 };
 
 template <typename Object, typename... Types>
-void AddObject (ObjectStorage <Object> &_storage, std::string _name, Types &&... _constructionArguments)
+void AddObject (ObjectStorage<Object> &_storage, std::string _name, Types &&..._constructionArguments)
 {
-    REQUIRE_WITH_MESSAGE (_storage.objects.find (_name) == _storage.objects.end (),
-                          "Object \"", _name, "\" should not exist!");
-    _storage.objects.emplace (std::move (_name), Object (std::forward <Types> (_constructionArguments)...));
+    REQUIRE_WITH_MESSAGE (_storage.objects.find (_name) == _storage.objects.end (), "Object \"", _name,
+                          "\" should not exist!");
+    _storage.objects.emplace (std::move (_name), Object (std::forward<Types> (_constructionArguments)...));
 }
 
 template <typename Object>
-Object &GetObject (ObjectStorage <Object> &_storage, const std::string &_name)
+Object &GetObject (ObjectStorage<Object> &_storage, const std::string &_name)
 {
     auto iterator = _storage.objects.find (_name);
     REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _name, "\" should exist!");
@@ -76,7 +76,7 @@ Object &GetObject (ObjectStorage <Object> &_storage, const std::string &_name)
 }
 
 template <typename Object>
-void RemoveObject (ObjectStorage <Object> &_storage, const std::string &_name)
+void RemoveObject (ObjectStorage<Object> &_storage, const std::string &_name)
 {
     auto iterator = _storage.objects.find (_name);
     REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _name, "\" should exist!");
@@ -90,16 +90,16 @@ struct ObjectTagMeta
 };
 
 template <typename ObjectTag>
-using ObjectFromTag = typename ObjectTagMeta <ObjectTag>::Object;
+using ObjectFromTag = typename ObjectTagMeta<ObjectTag>::Object;
 
 template <typename ObjectTag>
-using ObjectStorageFromTag = ObjectStorage <ObjectFromTag <ObjectTag>>;
+using ObjectStorageFromTag = ObjectStorage<ObjectFromTag<ObjectTag>>;
 
 template <typename ObjectTag>
-void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Move <ObjectTag> &_task)
+void ExecuteTask (ObjectStorageFromTag<ObjectTag> &_storage, const Tasks::Move<ObjectTag> &_task)
 {
-    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
-    if constexpr (std::is_move_constructible_v <ObjectFromTag <ObjectTag>>)
+    ObjectFromTag<ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    if constexpr (std::is_move_constructible_v<ObjectFromTag<ObjectTag>>)
     {
         AddObject (_storage, _task.targetName, std::move (source));
     }
@@ -110,10 +110,10 @@ void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Move 
 }
 
 template <typename ObjectTag>
-void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Copy <ObjectTag> &_task)
+void ExecuteTask (ObjectStorageFromTag<ObjectTag> &_storage, const Tasks::Copy<ObjectTag> &_task)
 {
-    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
-    if constexpr (std::is_copy_constructible_v <ObjectFromTag <ObjectTag>>)
+    ObjectFromTag<ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    if constexpr (std::is_copy_constructible_v<ObjectFromTag<ObjectTag>>)
     {
         AddObject (_storage, _task.targetName, source);
     }
@@ -124,12 +124,12 @@ void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Copy 
 }
 
 template <typename ObjectTag>
-void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::MoveAssign <ObjectTag> &_task)
+void ExecuteTask (ObjectStorageFromTag<ObjectTag> &_storage, const Tasks::MoveAssign<ObjectTag> &_task)
 {
-    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
-    ObjectFromTag <ObjectTag> &target = GetObject (_storage, _task.targetName);
+    ObjectFromTag<ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    ObjectFromTag<ObjectTag> &target = GetObject (_storage, _task.targetName);
 
-    if constexpr (std::is_move_assignable_v <ObjectFromTag <ObjectTag>>)
+    if constexpr (std::is_move_assignable_v<ObjectFromTag<ObjectTag>>)
     {
         target = std::move (source);
     }
@@ -140,12 +140,12 @@ void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::MoveA
 }
 
 template <typename ObjectTag>
-void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::CopyAssign <ObjectTag> &_task)
+void ExecuteTask (ObjectStorageFromTag<ObjectTag> &_storage, const Tasks::CopyAssign<ObjectTag> &_task)
 {
-    ObjectFromTag <ObjectTag> &source = GetObject (_storage, _task.sourceName);
-    ObjectFromTag <ObjectTag> &target = GetObject (_storage, _task.targetName);
+    ObjectFromTag<ObjectTag> &source = GetObject (_storage, _task.sourceName);
+    ObjectFromTag<ObjectTag> &target = GetObject (_storage, _task.targetName);
 
-    if constexpr (std::is_copy_assignable_v <ObjectFromTag <ObjectTag>>)
+    if constexpr (std::is_copy_assignable_v<ObjectFromTag<ObjectTag>>)
     {
         target = source;
     }
@@ -158,54 +158,54 @@ void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::CopyA
 namespace Tasks
 {
 template <typename ObjectTag>
-void ExecuteTask (ObjectStorageFromTag <ObjectTag> &_storage, const Tasks::Delete <ObjectTag> &_task)
+void ExecuteTask (ObjectStorageFromTag<ObjectTag> &_storage, const Tasks::Delete<ObjectTag> &_task)
 {
     RemoveObject (_storage, _task.name);
 }
 
 template <typename ObjectTag>
-std::ostream &operator << (std::ostream &_output, const Tasks::Move <ObjectTag> &_task)
+std::ostream &operator<< (std::ostream &_output, const Tasks::Move<ObjectTag> &_task)
 {
-    return _output << "Move " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.sourceName <<
-                   "\" to \"" << _task.targetName << "\".";
+    return _output << "Move " << ObjectTagMeta<ObjectTag>::Name << " \"" << _task.sourceName << "\" to \""
+                   << _task.targetName << "\".";
 }
 
 template <typename ObjectTag>
-std::ostream &operator << (std::ostream &_output, const Tasks::Copy <ObjectTag> &_task)
+std::ostream &operator<< (std::ostream &_output, const Tasks::Copy<ObjectTag> &_task)
 {
-    return _output << "Copy " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.sourceName <<
-                   "\" to \"" << _task.targetName << "\".";
+    return _output << "Copy " << ObjectTagMeta<ObjectTag>::Name << " \"" << _task.sourceName << "\" to \""
+                   << _task.targetName << "\".";
 }
 
 template <typename ObjectTag>
-std::ostream &operator << (std::ostream &_output, const Tasks::MoveAssign <ObjectTag> &_task)
+std::ostream &operator<< (std::ostream &_output, const Tasks::MoveAssign<ObjectTag> &_task)
 {
-    return _output << "Move " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.sourceName << "\" to \"" <<
-                   _task.targetName << "\" using move assignment.";
+    return _output << "Move " << ObjectTagMeta<ObjectTag>::Name << " \"" << _task.sourceName << "\" to \""
+                   << _task.targetName << "\" using move assignment.";
 }
 
 template <typename ObjectTag>
-std::ostream &operator << (std::ostream &_output, const Tasks::CopyAssign <ObjectTag> &_task)
+std::ostream &operator<< (std::ostream &_output, const Tasks::CopyAssign<ObjectTag> &_task)
 {
-    return _output << "Assign copy of " << ObjectTagMeta <ObjectTag>::Name << " \"" <<
-                   _task.sourceName << "\" to \"" << _task.targetName << "\".";
+    return _output << "Assign copy of " << ObjectTagMeta<ObjectTag>::Name << " \"" << _task.sourceName << "\" to \""
+                   << _task.targetName << "\".";
 }
 
 template <typename ObjectTag>
-std::ostream &operator << (std::ostream &_output, const Tasks::Delete <ObjectTag> &_task)
+std::ostream &operator<< (std::ostream &_output, const Tasks::Delete<ObjectTag> &_task)
 {
-    return _output << "Remove " << ObjectTagMeta <ObjectTag>::Name << " \"" << _task.name << "\".";
+    return _output << "Remove " << ObjectTagMeta<ObjectTag>::Name << " \"" << _task.name << "\".";
 }
 } // namespace Tasks
 } // namespace Emergence::Context::Extension
 
-#define EMERGENCE_CONTEXT_BIND_OBJECT_TAG(ObjectTag, ObjectType, ReadableName) \
-namespace Emergence::Context::Extension                                        \
-{                                                                              \
-template <>                                                                    \
-struct ObjectTagMeta <ObjectTag>                                               \
-{                                                                              \
-    using Object = ObjectType;                                                 \
-    static constexpr const char *Name = ReadableName;                          \
-};                                                                             \
-} // namespace Emergence::Context::Extension
+#define EMERGENCE_CONTEXT_BIND_OBJECT_TAG(ObjectTag, ObjectType, ReadableName)                                         \
+    namespace Emergence::Context::Extension                                                                            \
+    {                                                                                                                  \
+    template <>                                                                                                        \
+    struct ObjectTagMeta<ObjectTag>                                                                                    \
+    {                                                                                                                  \
+        using Object = ObjectType;                                                                                     \
+        static constexpr const char *Name = ReadableName;                                                              \
+    };                                                                                                                 \
+    } // namespace Emergence::Context::Extension

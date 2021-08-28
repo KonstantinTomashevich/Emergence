@@ -31,12 +31,12 @@ public:
         friend class OrderedIndex;
 
         AscendingReadCursor (OrderedIndex *_index,
-                             std::vector <const void *>::const_iterator _begin,
-                             std::vector <const void *>::const_iterator _end) noexcept;
+                             std::vector<const void *>::const_iterator _begin,
+                             std::vector<const void *>::const_iterator _end) noexcept;
 
         OrderedIndex *index;
-        std::vector <const void *>::const_iterator current;
-        std::vector <const void *>::const_iterator end;
+        std::vector<const void *>::const_iterator current;
+        std::vector<const void *>::const_iterator end;
     };
 
     class AscendingEditCursor final
@@ -48,14 +48,14 @@ public:
         friend class OrderedIndex;
 
         AscendingEditCursor (OrderedIndex *_index,
-                             std::vector <const void *>::iterator _begin,
-                             std::vector <const void *>::iterator _end) noexcept;
+                             std::vector<const void *>::iterator _begin,
+                             std::vector<const void *>::iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
         OrderedIndex *index;
-        std::vector <const void *>::iterator current;
-        std::vector <const void *>::iterator end;
+        std::vector<const void *>::iterator current;
+        std::vector<const void *>::iterator end;
     };
 
     class DescendingReadCursor final
@@ -67,12 +67,12 @@ public:
         friend class OrderedIndex;
 
         DescendingReadCursor (OrderedIndex *_index,
-                              std::vector <const void *>::const_reverse_iterator _begin,
-                              std::vector <const void *>::const_reverse_iterator _end) noexcept;
+                              std::vector<const void *>::const_reverse_iterator _begin,
+                              std::vector<const void *>::const_reverse_iterator _end) noexcept;
 
         OrderedIndex *index;
-        std::vector <const void *>::const_reverse_iterator current;
-        std::vector <const void *>::const_reverse_iterator end;
+        std::vector<const void *>::const_reverse_iterator current;
+        std::vector<const void *>::const_reverse_iterator end;
     };
 
     class DescendingEditCursor final
@@ -84,14 +84,14 @@ public:
         friend class OrderedIndex;
 
         DescendingEditCursor (OrderedIndex *_index,
-                              std::vector <const void *>::reverse_iterator _begin,
-                              std::vector <const void *>::reverse_iterator _end) noexcept;
+                              std::vector<const void *>::reverse_iterator _begin,
+                              std::vector<const void *>::reverse_iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
         OrderedIndex *index;
-        std::vector <const void *>::reverse_iterator current;
-        std::vector <const void *>::reverse_iterator end;
+        std::vector<const void *>::reverse_iterator current;
+        std::vector<const void *>::reverse_iterator end;
     };
 
     /// There is no sense to copy indices.
@@ -113,18 +113,18 @@ public:
     void Drop () noexcept;
 
     /// There is no sense to copy assign indices.
-    OrderedIndex &operator = (const OrderedIndex &_other) = delete;
+    OrderedIndex &operator= (const OrderedIndex &_other) = delete;
 
     /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
-    OrderedIndex &operator = (OrderedIndex &&_other) = delete;
+    OrderedIndex &operator= (OrderedIndex &&_other) = delete;
 
 private:
     friend class Storage;
 
     struct InternalLookupResult
     {
-        std::vector <const void *>::iterator begin;
-        std::vector <const void *>::iterator end;
+        std::vector<const void *>::iterator begin;
+        std::vector<const void *>::iterator end;
     };
 
     struct ChangedRecordInfo
@@ -154,8 +154,8 @@ private:
 
     InternalLookupResult InternalLookup (const Bound &_min, const Bound &_max) noexcept;
 
-    std::vector <const void *>::const_iterator LocateRecord (
-        const void *_record, const void *_recordBackup) const noexcept;
+    std::vector<const void *>::const_iterator LocateRecord (const void *_record,
+                                                            const void *_recordBackup) const noexcept;
 
     void InsertRecord (const void *_record) noexcept;
 
@@ -163,20 +163,20 @@ private:
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
 
-    void DeleteRecordMyself (const std::vector <const void *>::iterator &_position) noexcept;
+    void DeleteRecordMyself (const std::vector<const void *>::iterator &_position) noexcept;
 
-    void DeleteRecordMyself (const std::vector <const void *>::reverse_iterator &_position) noexcept;
+    void DeleteRecordMyself (const std::vector<const void *>::reverse_iterator &_position) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
-    void OnRecordChangedByMe (const std::vector <const void *>::iterator &_position) noexcept;
+    void OnRecordChangedByMe (const std::vector<const void *>::iterator &_position) noexcept;
 
-    void OnRecordChangedByMe (const std::vector <const void *>::reverse_iterator &_position) noexcept;
+    void OnRecordChangedByMe (const std::vector<const void *>::reverse_iterator &_position) noexcept;
 
     void OnWriterClosed () noexcept;
 
     StandardLayout::Field indexedField;
-    std::vector <const void *> records;
+    std::vector<const void *> records;
 
     /// \brief Debug-only, used to assert that there is always not more than one MassInsertionExecutor.
     bool massInsertionInProgress = false;
@@ -191,7 +191,7 @@ private:
     /// even if edition was done using cursor from other index.
     bool hasEditCursor = false;
 
-    std::vector <ChangedRecordInfo> changedRecords;
-    std::vector <std::size_t> deletedRecordIndices;
+    std::vector<ChangedRecordInfo> changedRecords;
+    std::vector<std::size_t> deletedRecordIndices;
 };
 } // namespace Emergence::Pegasus

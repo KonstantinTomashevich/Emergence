@@ -17,15 +17,15 @@ public:
     public:
         ~AcquiredChunkConstIterator () noexcept = default;
 
-        const void *operator * () const noexcept;
+        const void *operator* () const noexcept;
 
-        AcquiredChunkConstIterator &operator ++ () noexcept;
+        AcquiredChunkConstIterator &operator++ () noexcept;
 
-        AcquiredChunkConstIterator operator ++ (int) noexcept;
+        AcquiredChunkConstIterator operator++ (int) noexcept;
 
-        bool operator == (const AcquiredChunkConstIterator &_other) const noexcept = default;
+        bool operator== (const AcquiredChunkConstIterator &_other) const noexcept = default;
 
-        bool operator != (const AcquiredChunkConstIterator &_other) const noexcept = default;
+        bool operator!= (const AcquiredChunkConstIterator &_other) const noexcept = default;
 
     private:
         /// UnorderedPool constructs iterators.
@@ -33,8 +33,9 @@ public:
 
         explicit AcquiredChunkConstIterator (const UnorderedPool *_pool, const Page *_page) noexcept;
 
-        explicit AcquiredChunkConstIterator (
-            const UnorderedPool *_pool, const Page *_page, const Chunk *_chunk) noexcept;
+        explicit AcquiredChunkConstIterator (const UnorderedPool *_pool,
+                                             const Page *_page,
+                                             const Chunk *_chunk) noexcept;
 
         const UnorderedPool *pool;
         const Page *page;
@@ -46,15 +47,15 @@ public:
     public:
         ~AcquiredChunkIterator () noexcept = default;
 
-        void *operator * () const noexcept;
+        void *operator* () const noexcept;
 
-        AcquiredChunkIterator &operator ++ () noexcept;
+        AcquiredChunkIterator &operator++ () noexcept;
 
-        AcquiredChunkIterator operator ++ (int) noexcept;
+        AcquiredChunkIterator operator++ (int) noexcept;
 
-        bool operator == (const AcquiredChunkIterator &_other) const noexcept = default;
+        bool operator== (const AcquiredChunkIterator &_other) const noexcept = default;
 
-        bool operator != (const AcquiredChunkIterator &_other) const noexcept = default;
+        bool operator!= (const AcquiredChunkIterator &_other) const noexcept = default;
 
     private:
         /// UnorderedPool constructs iterators.

@@ -6,17 +6,25 @@ namespace Emergence::Handling
 {
 /// \brief Describes Handle requirements for its parameter Type.
 template <typename Type>
-concept Handleable =
-requires (Type _object)
+concept Handleable = requires (Type _object)
 {
     /// \brief Increments reference counter.
-    { _object.RegisterReference () } noexcept;
+    {
+        _object.RegisterReference ()
+    }
+    noexcept;
 
     /// \brief Decrements reference counter.
-    { _object.UnregisterReference () } noexcept;
+    {
+        _object.UnregisterReference ()
+    }
+    noexcept;
 
     /// \return Reference counter value.
-    { _object.GetReferenceCount () } noexcept -> std::convertible_to <uintptr_t>;
+    {
+        _object.GetReferenceCount ()
+    }
+    noexcept->std::convertible_to<uintptr_t>;
 };
 
 /// \brief Strong reference to given object.
@@ -40,15 +48,15 @@ public:
     Type *Get () const noexcept;
 
     /// \return ::instance
-    Type *operator -> () const noexcept;
+    Type *operator-> () const noexcept;
 
-    Handle &operator = (const Handle &_other) noexcept;
+    Handle &operator= (const Handle &_other) noexcept;
 
-    Handle &operator = (Handle &&_other) noexcept;
+    Handle &operator= (Handle &&_other) noexcept;
 
-    bool operator == (const Handle &_other) const noexcept = default;
+    bool operator== (const Handle &_other) const noexcept = default;
 
-    bool operator != (const Handle &_other) const noexcept = default;
+    bool operator!= (const Handle &_other) const noexcept = default;
 
     /// \return Return true if ::instance is not nullptr.
     explicit operator bool () const noexcept;
@@ -59,10 +67,9 @@ private:
 };
 
 template <typename Type>
-Handle <Type>::Handle (Type *_instance) noexcept
-    : instance (_instance)
+Handle<Type>::Handle (Type *_instance) noexcept : instance (_instance)
 {
-    static_assert (Handleable <Type>);
+    static_assert (Handleable<Type>);
     if (instance)
     {
         instance->RegisterReference ();
@@ -70,22 +77,20 @@ Handle <Type>::Handle (Type *_instance) noexcept
 }
 
 template <typename Type>
-Handle <Type>::Handle (const Handle &_other) noexcept
-    : Handle (_other.instance)
+Handle<Type>::Handle (const Handle &_other) noexcept : Handle (_other.instance)
 {
 }
 
 template <typename Type>
-Handle <Type>::Handle (Handle &&_other) noexcept
-    : instance (_other.instance)
+Handle<Type>::Handle (Handle &&_other) noexcept : instance (_other.instance)
 {
     _other.instance = nullptr;
 }
 
 template <typename Type>
-Handle <Type>::~Handle () noexcept
+Handle<Type>::~Handle () noexcept
 {
-    static_assert (Handleable <Type>);
+    static_assert (Handleable<Type>);
     if (instance)
     {
         instance->UnregisterReference ();
@@ -98,19 +103,19 @@ Handle <Type>::~Handle () noexcept
 }
 
 template <typename Type>
-Type *Handle <Type>::Get () const noexcept
+Type *Handle<Type>::Get () const noexcept
 {
     return instance;
 }
 
 template <typename Type>
-Type *Handle <Type>::operator -> () const noexcept
+Type *Handle<Type>::operator-> () const noexcept
 {
     return Get ();
 }
 
 template <typename Type>
-Handle <Type> &Handle <Type>::operator = (const Handle &_other) noexcept
+Handle<Type> &Handle<Type>::operator= (const Handle &_other) noexcept
 {
     if (this != &_other)
     {
@@ -122,7 +127,7 @@ Handle <Type> &Handle <Type>::operator = (const Handle &_other) noexcept
 }
 
 template <typename Type>
-Handle <Type> &Handle <Type>::operator = (Handle &&_other) noexcept
+Handle<Type> &Handle<Type>::operator= (Handle &&_other) noexcept
 {
     if (this != &_other)
     {
@@ -134,7 +139,7 @@ Handle <Type> &Handle <Type>::operator = (Handle &&_other) noexcept
 }
 
 template <typename Type>
-Handle <Type>::operator bool () const noexcept
+Handle<Type>::operator bool () const noexcept
 {
     return instance;
 }

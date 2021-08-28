@@ -30,7 +30,7 @@ public:
             ~Cursor () noexcept;
 
             /// \return Singleton instance.
-            const void *operator * () const noexcept;
+            const void *operator* () const noexcept;
 
             /// Assigning cursors looks counter intuitive.
             EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -38,9 +38,9 @@ public:
         private:
             friend class FetchQuery;
 
-            explicit Cursor (Handling::Handle <SingletonContainer> _container) noexcept;
+            explicit Cursor (Handling::Handle<SingletonContainer> _container) noexcept;
 
-            Handling::Handle <SingletonContainer> container;
+            Handling::Handle<SingletonContainer> container;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept = default;
@@ -52,7 +52,7 @@ public:
 
         Cursor Execute () const noexcept;
 
-        Handling::Handle <SingletonContainer> GetContainer () const noexcept;
+        Handling::Handle<SingletonContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
@@ -60,9 +60,9 @@ public:
     private:
         friend class SingletonContainer;
 
-        explicit FetchQuery (Handling::Handle <SingletonContainer> _container) noexcept;
+        explicit FetchQuery (Handling::Handle<SingletonContainer> _container) noexcept;
 
-        Handling::Handle <SingletonContainer> container;
+        Handling::Handle<SingletonContainer> container;
     };
 
     /// \brief Provides readwrite access to singleton instance.
@@ -79,7 +79,7 @@ public:
             ~Cursor () noexcept;
 
             /// \return Singleton instance.
-            void *operator * () const noexcept;
+            void *operator* () const noexcept;
 
             /// Assigning cursors looks counter intuitive.
             EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -87,9 +87,9 @@ public:
         private:
             friend class ModifyQuery;
 
-            explicit Cursor (Handling::Handle <SingletonContainer> _container) noexcept;
+            explicit Cursor (Handling::Handle<SingletonContainer> _container) noexcept;
 
-            Handling::Handle <SingletonContainer> container;
+            Handling::Handle<SingletonContainer> container;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept = default;
@@ -100,7 +100,7 @@ public:
 
         Cursor Execute () const noexcept;
 
-        Handling::Handle <SingletonContainer> GetContainer () const noexcept;
+        Handling::Handle<SingletonContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);
@@ -108,9 +108,9 @@ public:
     private:
         friend class SingletonContainer;
 
-        explicit ModifyQuery (Handling::Handle <SingletonContainer> _container) noexcept;
+        explicit ModifyQuery (Handling::Handle<SingletonContainer> _container) noexcept;
 
-        Handling::Handle <SingletonContainer> container;
+        Handling::Handle<SingletonContainer> container;
     };
 
     FetchQuery Fetch () noexcept;

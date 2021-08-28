@@ -6,14 +6,14 @@
 
 namespace Emergence::Memory
 {
-const void *UnorderedPool::AcquiredChunkConstIterator::operator * () const noexcept
+const void *UnorderedPool::AcquiredChunkConstIterator::operator* () const noexcept
 {
     assert (page);
     assert (chunk);
     return chunk;
 }
 
-UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIterator::operator ++ () noexcept
+UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIterator::operator++ () noexcept
 {
     assert (pool);
     assert (page);
@@ -21,7 +21,7 @@ UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIter
 
     do
     {
-        const auto *next = reinterpret_cast <const Chunk *> (&chunk->bytes[0u] + pool->chunkSize);
+        const auto *next = reinterpret_cast<const Chunk *> (&chunk->bytes[0u] + pool->chunkSize);
         if (&next->bytes[0u] < &page->chunks[0u].bytes[0u] + pool->chunkSize * pool->pageCapacity)
         {
             chunk = next;
@@ -39,22 +39,20 @@ UnorderedPool::AcquiredChunkConstIterator &UnorderedPool::AcquiredChunkConstIter
                 break;
             }
         }
-    }
-    while (pool->IsFree (chunk));
+    } while (pool->IsFree (chunk));
 
     return *this;
 }
 
-UnorderedPool::AcquiredChunkConstIterator UnorderedPool::AcquiredChunkConstIterator::operator ++ (int) noexcept
+UnorderedPool::AcquiredChunkConstIterator UnorderedPool::AcquiredChunkConstIterator::operator++ (int) noexcept
 {
     AcquiredChunkConstIterator previousValue (pool, page, chunk);
     ++*this;
     return previousValue;
 }
 
-UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
-    const UnorderedPool *_pool,
-    const Page *_page) noexcept
+UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const UnorderedPool *_pool,
+                                                                       const Page *_page) noexcept
     : AcquiredChunkConstIterator (_pool, _page, _page ? &_page->chunks[0u] : nullptr)
 {
     if (chunk)
@@ -67,8 +65,9 @@ UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
     }
 }
 
-UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
-    const UnorderedPool *_pool, const Page *_page, const Chunk *_chunk) noexcept
+UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const UnorderedPool *_pool,
+                                                                       const Page *_page,
+                                                                       const Chunk *_chunk) noexcept
     : pool (_pool),
       page (_page),
       chunk (_chunk)
@@ -87,18 +86,18 @@ UnorderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (
 #endif
 }
 
-void *UnorderedPool::AcquiredChunkIterator::operator * () const noexcept
+void *UnorderedPool::AcquiredChunkIterator::operator* () const noexcept
 {
-    return const_cast <void *> (*coreIterator);
+    return const_cast<void *> (*coreIterator);
 }
 
-UnorderedPool::AcquiredChunkIterator &UnorderedPool::AcquiredChunkIterator::operator ++ () noexcept
+UnorderedPool::AcquiredChunkIterator &UnorderedPool::AcquiredChunkIterator::operator++ () noexcept
 {
     ++coreIterator;
     return *this;
 }
 
-UnorderedPool::AcquiredChunkIterator UnorderedPool::AcquiredChunkIterator::operator ++ (int) noexcept
+UnorderedPool::AcquiredChunkIterator UnorderedPool::AcquiredChunkIterator::operator++ (int) noexcept
 {
     AcquiredChunkIterator previousValue (coreIterator);
     ++*this;
@@ -142,14 +141,14 @@ void *UnorderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
-        Page *newPage = static_cast <Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
+        Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         newPage->next = topPage;
         topPage = newPage;
         Chunk *currentChunk = &newPage->chunks[0u];
 
         for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
-            auto *next = reinterpret_cast <Chunk *> (reinterpret_cast <uint8_t *> (currentChunk) + chunkSize);
+            auto *next = reinterpret_cast<Chunk *> (reinterpret_cast<uint8_t *> (currentChunk) + chunkSize);
             currentChunk->nextFree = next;
             currentChunk = next;
         }
@@ -167,7 +166,7 @@ void *UnorderedPool::Acquire () noexcept
 
 void UnorderedPool::Release (void *_chunk) noexcept
 {
-    auto chunk = static_cast <Chunk *> (_chunk);
+    auto chunk = static_cast<Chunk *> (_chunk);
 
 #ifndef NDEBUG
     {
@@ -202,7 +201,7 @@ void UnorderedPool::Shrink () noexcept
 
     // Pool Shrink operation is always slow (especially for unordered pools),
     // therefore it's not so bad to dynamically create array here.
-    std::vector <size_t> freeChunkCounters (pageCount, 0u);
+    std::vector<size_t> freeChunkCounters (pageCount, 0u);
     Chunk *currentFreeChunk = topFreeChunk;
 
     while (currentFreeChunk)
@@ -280,7 +279,7 @@ size_t UnorderedPool::GetAllocatedSpace () const noexcept
 bool UnorderedPool::IsInside (const UnorderedPool::Page *_page, const UnorderedPool::Chunk *_chunk) const noexcept
 {
     const Chunk *first = &_page->chunks[0u];
-    const auto *last = reinterpret_cast <const Chunk *> (&first->bytes[0u] + chunkSize * (pageCapacity - 1u));
+    const auto *last = reinterpret_cast<const Chunk *> (&first->bytes[0u] + chunkSize * (pageCapacity - 1u));
     return _chunk >= first && _chunk <= last;
 }
 
@@ -312,11 +311,11 @@ UnorderedPool::AcquiredChunkConstIterator UnorderedPool::EndAcquired () const no
 
 UnorderedPool::AcquiredChunkIterator UnorderedPool::BeginAcquired () noexcept
 {
-    return AcquiredChunkIterator (static_cast <const UnorderedPool *> (this)->BeginAcquired ());
+    return AcquiredChunkIterator (static_cast<const UnorderedPool *> (this)->BeginAcquired ());
 }
 
 UnorderedPool::AcquiredChunkIterator UnorderedPool::EndAcquired () noexcept
 {
-    return AcquiredChunkIterator (static_cast <const UnorderedPool *> (this)->EndAcquired ());
+    return AcquiredChunkIterator (static_cast<const UnorderedPool *> (this)->EndAcquired ());
 }
 } // namespace Emergence::Memory

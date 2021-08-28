@@ -48,14 +48,13 @@ struct CheckStatus
 };
 } // namespace Tasks
 
-using Task = std::variant <
-    Tasks::Create,
-    Tasks::Move,
-    Tasks::Copy,
-    Tasks::CopyAssign,
-    Tasks::MoveAssign,
-    Tasks::Delete,
-    Tasks::CheckStatus>;
+using Task = std::variant<Tasks::Create,
+                          Tasks::Move,
+                          Tasks::Copy,
+                          Tasks::CopyAssign,
+                          Tasks::MoveAssign,
+                          Tasks::Delete,
+                          Tasks::CheckStatus>;
 
-using Scenario = std::vector <Task>;
+using Scenario = std::vector<Task>;
 } // namespace Emergence::Reference::Test

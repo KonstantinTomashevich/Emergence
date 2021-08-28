@@ -27,78 +27,78 @@ EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (EditCursor, EditCursorImpl
 
 using KeyFieldIterator = PointRepresentation::KeyFieldIterator;
 
-using KeyFieldIteratorImplementation = InplaceVector <
-    StandardLayout::Field, Pegasus::Constants::HashIndex::MAX_INDEXED_FIELDS>::ConstIterator;
+using KeyFieldIteratorImplementation =
+    InplaceVector<StandardLayout::Field, Pegasus::Constants::HashIndex::MAX_INDEXED_FIELDS>::ConstIterator;
 
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (KeyFieldIterator, KeyFieldIteratorImplementation)
 
-StandardLayout::Field PointRepresentation::KeyFieldIterator::operator * () const noexcept
+StandardLayout::Field PointRepresentation::KeyFieldIterator::operator* () const noexcept
 {
-    return *block_cast <KeyFieldIteratorImplementation> (data);
+    return *block_cast<KeyFieldIteratorImplementation> (data);
 }
 
 PointRepresentation::PointRepresentation (const PointRepresentation &_other) noexcept
 {
-    new (&handle) Handling::Handle <Pegasus::HashIndex> (
-        *reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&_other.handle));
+    new (&handle) Handling::Handle<Pegasus::HashIndex> (
+        *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&_other.handle));
 }
 
 PointRepresentation::PointRepresentation (PointRepresentation &&_other) noexcept
 {
-    new (&handle) Handling::Handle <Pegasus::HashIndex> (
-        std::move (*reinterpret_cast <Handling::Handle <Pegasus::HashIndex> *> (&_other.handle)));
+    new (&handle) Handling::Handle<Pegasus::HashIndex> (
+        std::move (*reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&_other.handle)));
 }
 
 PointRepresentation::~PointRepresentation () noexcept
 {
     if (handle)
     {
-        reinterpret_cast <Handling::Handle <Pegasus::HashIndex> *> (&handle)->~Handle ();
+        reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->~Handle ();
     }
 }
 
 PointRepresentation::ReadCursor PointRepresentation::ReadPoint (PointRepresentation::Point _point) noexcept
 {
     assert (handle);
-    Pegasus::HashIndex *index = reinterpret_cast <Handling::Handle <Pegasus::HashIndex> *> (&handle)->Get ();
+    Pegasus::HashIndex *index = reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     Pegasus::HashIndex::ReadCursor cursor = index->LookupToRead ({_point});
-    return ReadCursor (reinterpret_cast <decltype (ReadCursor::data) *> (&cursor));
+    return ReadCursor (reinterpret_cast<decltype (ReadCursor::data) *> (&cursor));
 }
 
 PointRepresentation::EditCursor PointRepresentation::EditPoint (PointRepresentation::Point _point) noexcept
 {
     assert (handle);
-    Pegasus::HashIndex *index = reinterpret_cast <Handling::Handle <Pegasus::HashIndex> *> (&handle)->Get ();
+    Pegasus::HashIndex *index = reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     Pegasus::HashIndex::EditCursor cursor = index->LookupToEdit ({_point});
-    return EditCursor (reinterpret_cast <decltype (EditCursor::data) *> (&cursor));
+    return EditCursor (reinterpret_cast<decltype (EditCursor::data) *> (&cursor));
 }
 
 PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldBegin () const noexcept
 {
     assert (handle);
-    Pegasus::HashIndex *index = reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle)->Get ();
+    Pegasus::HashIndex *index = reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     auto iterator = index->GetIndexedFields ().Begin ();
-    return KeyFieldIterator (reinterpret_cast <decltype (KeyFieldIterator::data) *> (&iterator));
+    return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
 }
 
 PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const noexcept
 {
     assert (handle);
-    Pegasus::HashIndex *index = reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle)->Get ();
+    Pegasus::HashIndex *index = reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     auto iterator = index->GetIndexedFields ().End ();
-    return KeyFieldIterator (reinterpret_cast <decltype (KeyFieldIterator::data) *> (&iterator));
+    return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
 }
 
 bool PointRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle);
+    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
     Pegasus::HashIndex *index = realHandle.Get ();
 
     // To extract correct result we must temporary unlink index handle.
-    const_cast <Handling::Handle <Pegasus::HashIndex> &> (realHandle) = nullptr;
+    const_cast<Handling::Handle<Pegasus::HashIndex> &> (realHandle) = nullptr;
     bool canBeDropped = index->CanBeDropped ();
-    const_cast <Handling::Handle <Pegasus::HashIndex> &> (realHandle) = index;
+    const_cast<Handling::Handle<Pegasus::HashIndex> &> (realHandle) = index;
 
     return canBeDropped;
 }
@@ -106,20 +106,20 @@ bool PointRepresentation::CanBeDropped () const noexcept
 void PointRepresentation::Drop () noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast <const Handling::Handle <Pegasus::HashIndex> *> (&handle);
+    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
     Pegasus::HashIndex *index = realHandle.Get ();
 
     // Free handle first, because indices can not be deleted while any handle points to them.
-    const_cast <Handling::Handle <Pegasus::HashIndex> &> (realHandle) = nullptr;
+    const_cast<Handling::Handle<Pegasus::HashIndex> &> (realHandle) = nullptr;
     index->Drop ();
 }
 
-bool PointRepresentation::operator == (const PointRepresentation &_other) const noexcept
+bool PointRepresentation::operator== (const PointRepresentation &_other) const noexcept
 {
     return handle == _other.handle;
 }
 
-PointRepresentation &PointRepresentation::operator = (const PointRepresentation &_other) noexcept
+PointRepresentation &PointRepresentation::operator= (const PointRepresentation &_other) noexcept
 {
     if (this != &_other)
     {
@@ -130,7 +130,7 @@ PointRepresentation &PointRepresentation::operator = (const PointRepresentation 
     return *this;
 }
 
-PointRepresentation &PointRepresentation::operator = (PointRepresentation &&_other) noexcept
+PointRepresentation &PointRepresentation::operator= (PointRepresentation &&_other) noexcept
 {
     if (this != &_other)
     {
@@ -144,7 +144,7 @@ PointRepresentation &PointRepresentation::operator = (PointRepresentation &&_oth
 PointRepresentation::PointRepresentation (void *_handle) noexcept
 {
     assert (_handle);
-    static_assert (sizeof (handle) == sizeof (Handling::Handle <Pegasus::HashIndex>));
-    new (&handle) Handling::Handle <Pegasus::HashIndex> (static_cast <Pegasus::HashIndex *> (_handle));
+    static_assert (sizeof (handle) == sizeof (Handling::Handle<Pegasus::HashIndex>));
+    new (&handle) Handling::Handle<Pegasus::HashIndex> (static_cast<Pegasus::HashIndex *> (_handle));
 }
 } // namespace Emergence::RecordCollection

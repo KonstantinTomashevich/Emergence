@@ -17,44 +17,44 @@ using Player = Emergence::Query::Test::Player;
 
 static void ExecuteFetchSingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareFetchSingletonQuery {{Player::Reflection::GetMapping (), {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareFetchSingletonQuery {{Player::Reflection::GetMapping (), {}}},
+                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareModifySingletonQuery {{Player::Reflection::GetMapping (), {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareModifySingletonQuery {{Player::Reflection::GetMapping (), {}}},
+                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteInsertShortTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareInsertShortTermQuery {{Player::Reflection::GetMapping (), {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareInsertShortTermQuery {{Player::Reflection::GetMapping (), {}}},
+                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchSequenceQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareFetchSequenceQuery {{Player::Reflection::GetMapping (), {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareFetchSequenceQuery {{Player::Reflection::GetMapping (), {}}},
+                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySequenceQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareModifySequenceQuery {{Player::Reflection::GetMapping (), {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareModifySequenceQuery {{Player::Reflection::GetMapping (), {}}},
+                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteInsertLongTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareInsertLongTermQuery {{Player::Reflection::GetMapping (), {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareInsertLongTermQuery {{Player::Reflection::GetMapping (), {}}},
+                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -101,16 +101,13 @@ static void ExecuteModifyDescendingRangeQueryReferenceApiTest (const Emergence::
 
 using BoundingBox = Emergence::Query::Test::BoundingBox;
 
-static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
+static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
     // Prefetch mapping to guarantee that reflection will be ready.
     BoundingBox::Reflection::GetMapping ();
 
-    return
-        {
-            {-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
-            {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}
-        };
+    return {{-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
+            {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}};
 }
 
 static void ExecuteFetchShapeIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

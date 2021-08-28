@@ -15,7 +15,8 @@ bool Emergence::RecordCollection::Test::CollectionTestIncludeMarker () noexcept
 
 BEGIN_SUITE (Collection)
 
-REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations)
+REGISTER_ALL_TESTS_WITH_ALL_PARAMETRIC_QUERY_TYPES_IN_ONE_STORAGE (
+    TestQueryApiDrivers::AllocateRecordsThanCreateRepresentations)
 
 TEST_CASE (DropRepresentation)
 {
@@ -24,60 +25,44 @@ TEST_CASE (DropRepresentation)
     Scenario {
         Query::Test::PlayerWithBoundingBox::Reflection::GetMapping (),
         {
-            CreateLinearRepresentation
-                {
-                    "playerName",
-                    StandardLayout::ProjectNestedField (
-                        Query::Test::PlayerWithBoundingBox::Reflection::player,
-                        Query::Test::Player::Reflection::name)
-                },
+            CreateLinearRepresentation {"playerName", StandardLayout::ProjectNestedField (
+                                                          Query::Test::PlayerWithBoundingBox::Reflection::player,
+                                                          Query::Test::Player::Reflection::name)},
 
-            CreatePointRepresentation
+            CreatePointRepresentation {
+                "playerId",
                 {
-                    "playerId",
-                    {
-                        StandardLayout::ProjectNestedField (
-                            Query::Test::PlayerWithBoundingBox::Reflection::player,
-                            Query::Test::Player::Reflection::id),
-                    }
-                },
+                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::player,
+                                                        Query::Test::Player::Reflection::id),
+                }},
 
-            CreatePointRepresentation
+            CreatePointRepresentation {
+                "playerAlive",
                 {
-                    "playerAlive",
-                    {
-                        StandardLayout::ProjectNestedField (
-                            Query::Test::PlayerWithBoundingBox::Reflection::player,
-                            Query::Test::Player::Reflection::alive),
-                    }
-                },
+                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::player,
+                                                        Query::Test::Player::Reflection::alive),
+                }},
 
             CreateVolumetricRepresentation {
                 "2d",
-                {
-                    {
-                        -100.0f,
-                        StandardLayout::ProjectNestedField (
-                            Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                            Query::Test::BoundingBox::Reflection::minX),
+                {{
+                     -100.0f,
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
+                                                         Query::Test::BoundingBox::Reflection::minX),
 
-                        100.0f,
-                        StandardLayout::ProjectNestedField (
-                            Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                            Query::Test::BoundingBox::Reflection::maxX),
-                    },
-                    {
-                        -100.0f,
-                        StandardLayout::ProjectNestedField (
-                            Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                            Query::Test::BoundingBox::Reflection::minY),
+                     100.0f,
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
+                                                         Query::Test::BoundingBox::Reflection::maxX),
+                 },
+                 {
+                     -100.0f,
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
+                                                         Query::Test::BoundingBox::Reflection::minY),
 
-                        100.0f,
-                        StandardLayout::ProjectNestedField (
-                            Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                            Query::Test::BoundingBox::Reflection::maxY),
-                    }
-                }},
+                     100.0f,
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
+                                                         Query::Test::BoundingBox::Reflection::maxY),
+                 }}},
 
             OpenAllocator {},
             AllocateAndInit {&Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5},
@@ -87,42 +72,27 @@ TEST_CASE (DropRepresentation)
 
             DropRepresentation {"playerId"},
             QueryValueToRead {{{"playerAlive", "alive"}, &Query::Test::Queries::ALIVE}},
-            CursorCheckAllUnordered
-                {
-                    "alive",
-                    {
-                        &Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5,
-                        &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
-                        &Query::Test::XAVIER_2_MIN_15_8_50_MAX_19_11_60
-                    }
-                },
+            CursorCheckAllUnordered {
+                "alive",
+                {&Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5, &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
+                 &Query::Test::XAVIER_2_MIN_15_8_50_MAX_19_11_60}},
 
             QueryValueToRead {{{"playerAlive", "dead"}, &Query::Test::Queries::DEAD}},
             CursorCheckAllUnordered {"dead", {}},
 
             QueryAscendingRangeToRead {{{"playerName", "names"}, nullptr, nullptr}},
-            CursorCheckAllOrdered
-                {
-                    "names",
-                    {
-                        &Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5,
-                        &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
-                        &Query::Test::XAVIER_2_MIN_15_8_50_MAX_19_11_60
-                    }
-                },
+            CursorCheckAllOrdered {
+                "names",
+                {&Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5, &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
+                 &Query::Test::XAVIER_2_MIN_15_8_50_MAX_19_11_60}},
 
-            QueryShapeIntersectionToRead
-                {{{"2d", "min = (-3, 0), max = (11, 11)"}, {-3.0f, 0.0f}, {11.0f, 11.0f}}},
-            CursorCheckAllUnordered
-                {
-                    "min = (-3, 0), max = (11, 11)",
-                    {
-                        &Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5,
-                        &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
-                    }
-                },
-        }
-    };
+            QueryShapeIntersectionToRead {{{"2d", "min = (-3, 0), max = (11, 11)"}, {-3.0f, 0.0f}, {11.0f, 11.0f}}},
+            CursorCheckAllUnordered {"min = (-3, 0), max = (11, 11)",
+                                     {
+                                         &Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5,
+                                         &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
+                                     }},
+        }};
 }
 
 END_SUITE

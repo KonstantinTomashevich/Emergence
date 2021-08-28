@@ -17,14 +17,9 @@ constexpr uint8_t FLAG_PLAYER_ALIVE_SOURCE = 1u << 3u;
 
 constexpr uint8_t FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE = 1u << 4u;
 
-static Storage RequestStorage (const std::vector <const void *> &_objects, uint8_t _sources)
+static Storage RequestStorage (const std::vector<const void *> &_objects, uint8_t _sources)
 {
-    Storage storage
-        {
-            Player::Reflection::GetMapping (),
-            _objects,
-            {}
-        };
+    Storage storage {Player::Reflection::GetMapping (), _objects, {}};
 
     assert (_sources > 0u);
     if (_sources & FLAG_PLAYER_ID_SOURCE)
@@ -39,15 +34,11 @@ static Storage RequestStorage (const std::vector <const void *> &_objects, uint8
 
     if (_sources & FLAG_PLAYER_NAME_AND_ID_SOURCE)
     {
-        storage.sources.emplace_back (
-            Sources::Value
-                {
-                    "playerNameAndId",
-                    {
-                        Player::Reflection::name,
-                        Player::Reflection::id,
-                    }
-                });
+        storage.sources.emplace_back (Sources::Value {"playerNameAndId",
+                                                      {
+                                                          Player::Reflection::name,
+                                                          Player::Reflection::id,
+                                                      }});
     }
 
     if (_sources & FLAG_PLAYER_ALIVE_SOURCE)
@@ -57,15 +48,11 @@ static Storage RequestStorage (const std::vector <const void *> &_objects, uint8
 
     if (_sources & FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE)
     {
-        storage.sources.emplace_back (
-            Sources::Value
-                {
-                    "playerAliveAndStunned",
-                    {
-                        Player::Reflection::alive,
-                        Player::Reflection::stunned,
-                    }
-                });
+        storage.sources.emplace_back (Sources::Value {"playerAliveAndStunned",
+                                                      {
+                                                          Player::Reflection::alive,
+                                                          Player::Reflection::stunned,
+                                                      }});
     }
 
     return storage;
@@ -73,9 +60,7 @@ static Storage RequestStorage (const std::vector <const void *> &_objects, uint8
 
 Scenario SimpleLookup () noexcept
 {
-    return
-        {
-            {
+    return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ID_SOURCE),
             },
             {
@@ -83,15 +68,12 @@ Scenario SimpleLookup () noexcept
                 CursorCheck {"0", &HUGO_0_ALIVE_STUNNED},
                 CursorIncrement {"0"},
                 CursorCheck {"0", nullptr},
-            }
-        };
+            }};
 }
 
 Scenario LookupForNonExistentObject () noexcept
 {
-    return
-        {
-            {
+    return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ID_SOURCE),
             },
             {
@@ -101,31 +83,24 @@ Scenario LookupForNonExistentObject () noexcept
                 CursorCheckAllUnordered {"1", {&KARL_1_ALIVE_IMMOBILIZED}},
                 QueryValueToRead {{{"playerId", "2"}, &Queries::ID_2}},
                 CursorCheck {"2", nullptr},
-            }
-        };
+            }};
 }
 
 Scenario LookupForMany () noexcept
 {
-    return
-        {
-            {
-                RequestStorage (
-                    {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE),
+    return {{
+                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED},
+                                FLAG_PLAYER_ID_SOURCE),
             },
             {
                 QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
                 CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED, &DUPLICATE_0_IMMOBILIZED}},
-            }
-        };
+            }};
 }
 
 Scenario LookupAndEdit () noexcept
 {
-    return
-        {
-            {
+    return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ID_SOURCE),
             },
             {
@@ -137,15 +112,12 @@ Scenario LookupAndEdit () noexcept
                 CursorClose {"1"},
                 QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
                 CursorCheckAllUnordered {"0", {&HUGO_0_ALIVE_STUNNED, &KARL_0_ALIVE_IMMOBILIZED}},
-            }
-        };
+            }};
 }
 
 Scenario OnStringField () noexcept
 {
-    return
-        {
-            {
+    return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_NAME_SOURCE),
             },
             {
@@ -153,15 +125,12 @@ Scenario OnStringField () noexcept
                 CursorCheckAllUnordered {"karl", {&KARL_1_ALIVE_IMMOBILIZED}},
                 QueryValueToRead {{{"playerName", "hugo"}, &Queries::HUGO}},
                 CursorCheckAllUnordered {"hugo", {&HUGO_0_ALIVE_STUNNED}},
-            }
-        };
+            }};
 }
 
 Scenario OnTwoFields () noexcept
 {
-    return
-        {
-            {
+    return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_NAME_AND_ID_SOURCE),
             },
             {
@@ -169,18 +138,14 @@ Scenario OnTwoFields () noexcept
                 CursorCheck {"hugo1", nullptr},
                 QueryValueToRead {{{"playerNameAndId", "karl1"}, &Queries::KARL_1}},
                 CursorCheckAllUnordered {"karl1", {&KARL_1_ALIVE_IMMOBILIZED}},
-            }
-        };
+            }};
 }
 
 Scenario OnBitField () noexcept
 {
-    return
-        {
-            {
-                RequestStorage (
-                    {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED},
-                    FLAG_PLAYER_ALIVE_SOURCE),
+    return {{
+                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED},
+                                FLAG_PLAYER_ALIVE_SOURCE),
             },
             {
                 QueryValueToRead {{{"playerAlive", "alive"}, &Queries::ALIVE}},
@@ -195,40 +160,33 @@ Scenario OnBitField () noexcept
                 CursorClose {"dead"},
 
                 QueryValueToRead {{{"playerAlive", "alive"}, &Queries::ALIVE}},
-                CursorCheckAllUnordered {
-                    "alive", {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_0_ALIVE_IMMOBILIZED}},
+                CursorCheckAllUnordered {"alive",
+                                         {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &KARL_0_ALIVE_IMMOBILIZED}},
 
                 QueryValueToRead {{{"playerAlive", "dead"}, &Queries::DEAD}},
                 CursorCheck {"dead", nullptr},
-            }
-        };
+            }};
 }
 
 Scenario OnTwoBitFields () noexcept
 {
-    return
+    return {
         {
-            {
-                RequestStorage (
-                    {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE),
-            },
-            {
-                QueryValueToRead {{{"playerAliveAndStunned", "aliveAndStunned"}, &Queries::ALIVE_AND_STUNNED}},
-                CursorCheckAllUnordered {"aliveAndStunned", {&HUGO_0_ALIVE_STUNNED}},
-                QueryValueToRead {{{"playerAliveAndStunned", "aliveAndNotStunned"}, &Queries::ALIVE_AND_NOT_STUNNED}},
-                CursorCheckAllUnordered {"aliveAndNotStunned", {&KARL_1_ALIVE_IMMOBILIZED}},
-            }
-        };
+            RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE),
+        },
+        {
+            QueryValueToRead {{{"playerAliveAndStunned", "aliveAndStunned"}, &Queries::ALIVE_AND_STUNNED}},
+            CursorCheckAllUnordered {"aliveAndStunned", {&HUGO_0_ALIVE_STUNNED}},
+            QueryValueToRead {{{"playerAliveAndStunned", "aliveAndNotStunned"}, &Queries::ALIVE_AND_NOT_STUNNED}},
+            CursorCheckAllUnordered {"aliveAndNotStunned", {&KARL_1_ALIVE_IMMOBILIZED}},
+        }};
 }
 
 Scenario MultipleSourcesEdition () noexcept
 {
-    return
-        {
-            {
-                RequestStorage (
-                    {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE | FLAG_PLAYER_NAME_AND_ID_SOURCE),
+    return {{
+                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                                FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE | FLAG_PLAYER_NAME_AND_ID_SOURCE),
             },
             {
                 QueryValueToEdit {{{"playerId", "1"}, &Queries::ID_1}},
@@ -253,18 +211,14 @@ Scenario MultipleSourcesEdition () noexcept
 
                 QueryValueToRead {{{"playerNameAndId", "karl0"}, &Queries::KARL_0}},
                 CursorCheckAllUnordered {"karl0", {&KARL_0_ALIVE_IMMOBILIZED}},
-            }
-        };
+            }};
 }
 
 Scenario MultipleSourcesDeletion () noexcept
 {
-    return
-        {
-            {
-                RequestStorage (
-                    {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-                    FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE),
+    return {{
+                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+                                FLAG_PLAYER_ID_SOURCE | FLAG_PLAYER_NAME_SOURCE),
             },
             {
                 QueryValueToEdit {{{"playerId", "1"}, &Queries::ID_1}},
@@ -284,7 +238,6 @@ Scenario MultipleSourcesDeletion () noexcept
 
                 QueryValueToRead {{{"playerName", "hugo"}, &Queries::HUGO}},
                 CursorCheckAllUnordered {"hugo", {&HUGO_0_ALIVE_STUNNED}},
-            }
-        };
+            }};
 }
 } // namespace Emergence::Query::Test::ValueQuery

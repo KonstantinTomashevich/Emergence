@@ -28,10 +28,10 @@ public:
     uintptr_t GetReferenceCount () const noexcept;
 
     /// It doesn't make sense to copy assign references counters.
-    HandleableBase &operator = (const HandleableBase &_other) = delete;
+    HandleableBase &operator= (const HandleableBase &_other) = delete;
 
     /// It doesn't make sense to move assign references counters.
-    HandleableBase &operator = (HandleableBase &&_other) = delete;
+    HandleableBase &operator= (HandleableBase &&_other) = delete;
 
 protected:
     /// \brief Initializes ::references to zero.

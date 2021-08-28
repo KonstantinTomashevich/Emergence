@@ -35,7 +35,7 @@ public:
 
             /// \return Pointer to memory, allocated for the new object.
             /// \invariant Previously allocated object must be initialized before next call.
-            void *operator ++ () noexcept;
+            void *operator++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.
             EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -43,9 +43,9 @@ public:
         private:
             friend class InsertQuery;
 
-            explicit Cursor (Handling::Handle <LongTermContainer> _container) noexcept;
+            explicit Cursor (Handling::Handle<LongTermContainer> _container) noexcept;
 
-            Handling::Handle <LongTermContainer> container;
+            Handling::Handle<LongTermContainer> container;
             RecordCollection::Collection::Allocator allocator;
         };
 
@@ -57,7 +57,7 @@ public:
 
         Cursor Execute () const noexcept;
 
-        Handling::Handle <LongTermContainer> GetContainer () const noexcept;
+        Handling::Handle<LongTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
@@ -65,9 +65,9 @@ public:
     private:
         friend class LongTermContainer;
 
-        explicit InsertQuery (Handling::Handle <LongTermContainer> _container) noexcept;
+        explicit InsertQuery (Handling::Handle<LongTermContainer> _container) noexcept;
 
-        Handling::Handle <LongTermContainer> container;
+        Handling::Handle<LongTermContainer> container;
     };
 
     template <typename Representation>
@@ -80,22 +80,22 @@ public:
 
         ~RepresentationQueryBase () noexcept;
 
-        Handling::Handle <LongTermContainer> GetContainer () const noexcept;
+        Handling::Handle<LongTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (RepresentationQueryBase);
 
     protected:
-        RepresentationQueryBase (Handling::Handle <LongTermContainer> _container,
+        RepresentationQueryBase (Handling::Handle<LongTermContainer> _container,
                                  Representation _representation) noexcept;
 
-        Handling::Handle <LongTermContainer> container;
+        Handling::Handle<LongTermContainer> container;
         Representation representation;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        each key field value is equal to according value in given values sequence.
-    class FetchValueQuery final : public RepresentationQueryBase <RecordCollection::PointRepresentation>
+    class FetchValueQuery final : public RepresentationQueryBase<RecordCollection::PointRepresentation>
     {
     public:
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
@@ -110,14 +110,13 @@ public:
     private:
         friend class LongTermContainer;
 
-        FetchValueQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::PointRepresentation _representation) noexcept;
+        FetchValueQuery (Handling::Handle<LongTermContainer> _container,
+                         RecordCollection::PointRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ///        each key field value is equal to according value in given values sequence.
-    class ModifyValueQuery final : public RepresentationQueryBase <RecordCollection::PointRepresentation>
+    class ModifyValueQuery final : public RepresentationQueryBase<RecordCollection::PointRepresentation>
     {
     public:
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
@@ -132,100 +131,90 @@ public:
     private:
         friend class LongTermContainer;
 
-        ModifyValueQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::PointRepresentation _representation) noexcept;
+        ModifyValueQuery (Handling::Handle<LongTermContainer> _container,
+                          RecordCollection::PointRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
-    class FetchAscendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class FetchAscendingRangeQuery final : public RepresentationQueryBase<RecordCollection::LinearRepresentation>
     {
     public:
         using Cursor = RecordCollection::LinearRepresentation::AscendingReadCursor;
 
-        Cursor Execute (
-            RecordCollection::LinearRepresentation::KeyFieldValue _min,
-            RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+        Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
+                        RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
         StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
 
-        FetchAscendingRangeQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::LinearRepresentation _representation) noexcept;
+        FetchAscendingRangeQuery (Handling::Handle<LongTermContainer> _container,
+                                  RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       given min max interval contains key field value.
-    class ModifyAscendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class ModifyAscendingRangeQuery final : public RepresentationQueryBase<RecordCollection::LinearRepresentation>
     {
     public:
         using Cursor = RecordCollection::LinearRepresentation::AscendingEditCursor;
 
-        Cursor Execute (
-            RecordCollection::LinearRepresentation::KeyFieldValue _min,
-            RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+        Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
+                        RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
         StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
 
-        ModifyAscendingRangeQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::LinearRepresentation _representation) noexcept;
+        ModifyAscendingRangeQuery (Handling::Handle<LongTermContainer> _container,
+                                   RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ///        given min max interval contains key field value.
-    class FetchDescendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class FetchDescendingRangeQuery final : public RepresentationQueryBase<RecordCollection::LinearRepresentation>
     {
     public:
         using Cursor = RecordCollection::LinearRepresentation::DescendingReadCursor;
 
-        Cursor Execute (
-            RecordCollection::LinearRepresentation::KeyFieldValue _min,
-            RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+        Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
+                        RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
         StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
 
-        FetchDescendingRangeQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::LinearRepresentation _representation) noexcept;
+        FetchDescendingRangeQuery (Handling::Handle<LongTermContainer> _container,
+                                   RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       given min max interval contains key field value.
-    class ModifyDescendingRangeQuery final : public RepresentationQueryBase <RecordCollection::LinearRepresentation>
+    class ModifyDescendingRangeQuery final : public RepresentationQueryBase<RecordCollection::LinearRepresentation>
     {
     public:
         /// \details Objects are sorted in descending order on key field value.
         using Cursor = RecordCollection::LinearRepresentation::DescendingEditCursor;
 
-        Cursor Execute (
-            RecordCollection::LinearRepresentation::KeyFieldValue _min,
-            RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
+        Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
+                        RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
         StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
 
-        ModifyDescendingRangeQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::LinearRepresentation _representation) noexcept;
+        ModifyDescendingRangeQuery (Handling::Handle<LongTermContainer> _container,
+                                    RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    class FetchShapeIntersectionQuery final :
-        public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
+    class FetchShapeIntersectionQuery final : public RepresentationQueryBase<RecordCollection::VolumetricRepresentation>
     {
     public:
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
@@ -240,15 +229,14 @@ public:
     private:
         friend class LongTermContainer;
 
-        FetchShapeIntersectionQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::VolumetricRepresentation _representation) noexcept;
+        FetchShapeIntersectionQuery (Handling::Handle<LongTermContainer> _container,
+                                     RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
-    class ModifyShapeIntersectionQuery final :
-        public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
+    class ModifyShapeIntersectionQuery final
+        : public RepresentationQueryBase<RecordCollection::VolumetricRepresentation>
     {
     public:
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
@@ -263,16 +251,14 @@ public:
     private:
         friend class LongTermContainer;
 
-        ModifyShapeIntersectionQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::VolumetricRepresentation _representation) noexcept;
+        ModifyShapeIntersectionQuery (Handling::Handle<LongTermContainer> _container,
+                                      RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray and distance
     ///        from intersection point to ray origin is less or equal to given max distance.
-    class FetchRayIntersectionQuery final :
-        public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
+    class FetchRayIntersectionQuery final : public RepresentationQueryBase<RecordCollection::VolumetricRepresentation>
     {
     public:
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
@@ -287,16 +273,14 @@ public:
     private:
         friend class LongTermContainer;
 
-        FetchRayIntersectionQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::VolumetricRepresentation _representation) noexcept;
+        FetchRayIntersectionQuery (Handling::Handle<LongTermContainer> _container,
+                                   RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
 
     /// \brief Prepared query, used to gain readwrite access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given ray and distance
     ///        from intersection point to ray origin is less or equal to given max distance.
-    class ModifyRayIntersectionQuery final :
-        public RepresentationQueryBase <RecordCollection::VolumetricRepresentation>
+    class ModifyRayIntersectionQuery final : public RepresentationQueryBase<RecordCollection::VolumetricRepresentation>
     {
     public:
         /// \warning There is no guaranteed order of objects. Therefore object order should be considered random.
@@ -311,16 +295,15 @@ public:
     private:
         friend class LongTermContainer;
 
-        ModifyRayIntersectionQuery (
-            Handling::Handle <LongTermContainer> _container,
-            RecordCollection::VolumetricRepresentation _representation) noexcept;
+        ModifyRayIntersectionQuery (Handling::Handle<LongTermContainer> _container,
+                                    RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
 
     InsertQuery Insert () noexcept;
 
-    FetchValueQuery FetchValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
+    FetchValueQuery FetchValue (const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
-    ModifyValueQuery ModifyValue (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
+    ModifyValueQuery ModifyValue (const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     FetchAscendingRangeQuery FetchAscendingRange (StandardLayout::FieldId _keyField) noexcept;
 
@@ -331,16 +314,16 @@ public:
     ModifyDescendingRangeQuery ModifyDescendingRange (StandardLayout::FieldId _keyField) noexcept;
 
     FetchShapeIntersectionQuery FetchShapeIntersection (
-        const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     ModifyShapeIntersectionQuery ModifyShapeIntersection (
-        const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     FetchRayIntersectionQuery FetchRayIntersection (
-        const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     ModifyRayIntersectionQuery ModifyRayIntersection (
-        const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
 private:
     /// CargoDeck constructs containers.
@@ -361,16 +344,16 @@ private:
     //       There is same problem with volumetric query dimension reordering.
 
     RecordCollection::PointRepresentation AcquirePointRepresentation (
-        const std::vector <StandardLayout::FieldId> &_keyFields) noexcept;
+        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     RecordCollection::VolumetricRepresentation AcquireVolumetricRepresentation (
-        const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     RecordCollection::Collection collection;
 };
 
 template <typename Representation>
-LongTermContainer::RepresentationQueryBase <Representation>::~RepresentationQueryBase () noexcept
+LongTermContainer::RepresentationQueryBase<Representation>::~RepresentationQueryBase () noexcept
 {
     // If prepared query was moved out, representation call will result in undefined behaviour.
     // Therefore, we should check container reference first. It will be null of query was moved out.
@@ -381,16 +364,16 @@ LongTermContainer::RepresentationQueryBase <Representation>::~RepresentationQuer
 }
 
 template <typename Representation>
-Handling::Handle <LongTermContainer>
-LongTermContainer::RepresentationQueryBase <Representation>::GetContainer () const noexcept
+Handling::Handle<LongTermContainer> LongTermContainer::RepresentationQueryBase<Representation>::GetContainer ()
+    const noexcept
 {
     assert (container);
     return container;
 }
 
 template <typename Representation>
-LongTermContainer::RepresentationQueryBase <Representation>::RepresentationQueryBase (
-    Handling::Handle <LongTermContainer> _container, Representation _representation) noexcept
+LongTermContainer::RepresentationQueryBase<Representation>::RepresentationQueryBase (
+    Handling::Handle<LongTermContainer> _container, Representation _representation) noexcept
     : container (std::move (_container)),
       representation (std::move (_representation))
 {

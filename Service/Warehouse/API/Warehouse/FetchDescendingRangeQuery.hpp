@@ -28,11 +28,10 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (
-        FetchDescendingRangeQuery, Cursor, Bound _min, Bound _max);
+    EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchDescendingRangeQuery, Cursor, Bound _min, Bound _max);
 
     StandardLayout::Field GetKeyField () const noexcept;
 
@@ -42,6 +41,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit FetchDescendingRangeQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit FetchDescendingRangeQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

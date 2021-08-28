@@ -21,12 +21,12 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (ModifyDescendingRangeQuery, QueryImpleme
 
 Cursor ModifyDescendingRangeQuery::Execute (Bound _min, Bound _max) noexcept
 {
-    CursorImplementation cursor = block_cast <QueryImplementation> (data).Execute (_min, _max);
-    return Cursor (reinterpret_cast <decltype (Cursor::data) *> (&cursor));
+    CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute (_min, _max);
+    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
 }
 
 StandardLayout::Field ModifyDescendingRangeQuery::GetKeyField () const noexcept
 {
-    return block_cast <QueryImplementation> (data).GetKeyField ();
+    return block_cast<QueryImplementation> (data).GetKeyField ();
 }
 } // namespace Emergence::Warehouse

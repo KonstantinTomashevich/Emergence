@@ -23,15 +23,15 @@ struct Comparator
 {
     Comparator (const OrderedIndex *_index, BaseComparator _baseComparator) noexcept;
 
-    bool operator () (const void *_firstRecord, const void *_secondRecord) const noexcept;
+    bool operator() (const void *_firstRecord, const void *_secondRecord) const noexcept;
 
-    bool operator () (const RecordWithBackup &_firstRecord, const void *_secondRecord) const noexcept;
+    bool operator() (const RecordWithBackup &_firstRecord, const void *_secondRecord) const noexcept;
 
-    bool operator () (const void *_firstRecord, const RecordWithBackup &_secondRecord) const noexcept;
+    bool operator() (const void *_firstRecord, const RecordWithBackup &_secondRecord) const noexcept;
 
-    bool operator () (const OrderedIndex::Bound &_bound, const void *_record) const noexcept;
+    bool operator() (const OrderedIndex::Bound &_bound, const void *_record) const noexcept;
 
-    bool operator () (const void *_record, const OrderedIndex::Bound &_bound) const noexcept;
+    bool operator() (const void *_record, const OrderedIndex::Bound &_bound) const noexcept;
 
 private:
     const void *GetValue (const void *_record) const noexcept;
@@ -41,14 +41,14 @@ private:
 };
 
 template <typename BaseComparator>
-Comparator <BaseComparator>::Comparator (const OrderedIndex *_index, BaseComparator _baseComparator) noexcept
+Comparator<BaseComparator>::Comparator (const OrderedIndex *_index, BaseComparator _baseComparator) noexcept
     : fieldOffset (_index->GetIndexedField ().GetOffset ()),
       baseComparator (std::move (_baseComparator))
 {
 }
 
 template <typename BaseComparator>
-bool Comparator <BaseComparator>::operator () (const void *_firstRecord, const void *_secondRecord) const noexcept
+bool Comparator<BaseComparator>::operator() (const void *_firstRecord, const void *_secondRecord) const noexcept
 {
     assert (_firstRecord);
     assert (_secondRecord);
@@ -56,8 +56,8 @@ bool Comparator <BaseComparator>::operator () (const void *_firstRecord, const v
 }
 
 template <typename BaseComparator>
-bool Comparator <BaseComparator>::operator () (
-    const RecordWithBackup &_firstRecord, const void *_secondRecord) const noexcept
+bool Comparator<BaseComparator>::operator() (const RecordWithBackup &_firstRecord,
+                                             const void *_secondRecord) const noexcept
 {
     assert (_secondRecord);
     if (_firstRecord.record == _secondRecord)
@@ -72,8 +72,8 @@ bool Comparator <BaseComparator>::operator () (
 }
 
 template <typename BaseComparator>
-bool Comparator <BaseComparator>::operator () (
-    const void *_firstRecord, const RecordWithBackup &_secondRecord) const noexcept
+bool Comparator<BaseComparator>::operator() (const void *_firstRecord,
+                                             const RecordWithBackup &_secondRecord) const noexcept
 {
     assert (_firstRecord);
     if (_secondRecord.record == _firstRecord)
@@ -88,7 +88,7 @@ bool Comparator <BaseComparator>::operator () (
 }
 
 template <typename BaseComparator>
-bool Comparator <BaseComparator>::operator () (const OrderedIndex::Bound &_bound, const void *_record) const noexcept
+bool Comparator<BaseComparator>::operator() (const OrderedIndex::Bound &_bound, const void *_record) const noexcept
 {
     assert (_bound.boundValue);
     assert (_record);
@@ -96,7 +96,7 @@ bool Comparator <BaseComparator>::operator () (const OrderedIndex::Bound &_bound
 }
 
 template <typename BaseComparator>
-bool Comparator <BaseComparator>::operator () (const void *_record, const OrderedIndex::Bound &_bound) const noexcept
+bool Comparator<BaseComparator>::operator() (const void *_record, const OrderedIndex::Bound &_bound) const noexcept
 {
     assert (_record);
     assert (_bound.boundValue);
@@ -104,9 +104,9 @@ bool Comparator <BaseComparator>::operator () (const void *_record, const Ordere
 }
 
 template <typename BaseComparator>
-const void *Comparator <BaseComparator>::GetValue (const void *_record) const noexcept
+const void *Comparator<BaseComparator>::GetValue (const void *_record) const noexcept
 {
-    return static_cast <const uint8_t *> (_record) + fieldOffset;
+    return static_cast<const uint8_t *> (_record) + fieldOffset;
 }
 
 OrderedIndex::AscendingReadCursor::AscendingReadCursor (const OrderedIndex::AscendingReadCursor &_other) noexcept
@@ -137,13 +137,13 @@ OrderedIndex::AscendingReadCursor::~AscendingReadCursor () noexcept
     }
 }
 
-const void *OrderedIndex::AscendingReadCursor::operator * () const noexcept
+const void *OrderedIndex::AscendingReadCursor::operator* () const noexcept
 {
     assert (index);
     return current != end ? *current : nullptr;
 }
 
-OrderedIndex::AscendingReadCursor &OrderedIndex::AscendingReadCursor::operator ++ () noexcept
+OrderedIndex::AscendingReadCursor &OrderedIndex::AscendingReadCursor::operator++ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -152,9 +152,9 @@ OrderedIndex::AscendingReadCursor &OrderedIndex::AscendingReadCursor::operator +
     return *this;
 }
 
-OrderedIndex::AscendingReadCursor::AscendingReadCursor (
-    OrderedIndex *_index, std::vector <const void *>::const_iterator _begin,
-    std::vector <const void *>::const_iterator _end) noexcept
+OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
+                                                        std::vector<const void *>::const_iterator _begin,
+                                                        std::vector<const void *>::const_iterator _end) noexcept
     : index (_index),
       current (std::move (_begin)),
       end (std::move (_end))
@@ -189,13 +189,13 @@ OrderedIndex::AscendingEditCursor::~AscendingEditCursor () noexcept
     }
 }
 
-void *OrderedIndex::AscendingEditCursor::operator * () noexcept
+void *OrderedIndex::AscendingEditCursor::operator* () noexcept
 {
     assert (index);
-    return current != end ? const_cast <void *> (*current) : nullptr;
+    return current != end ? const_cast<void *> (*current) : nullptr;
 }
 
-OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator ~ () noexcept
+OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator~ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -206,7 +206,7 @@ OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator ~
     return *this;
 }
 
-OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator ++ () noexcept
+OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator++ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -221,9 +221,9 @@ OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator +
     return *this;
 }
 
-OrderedIndex::AscendingEditCursor::AscendingEditCursor (
-    OrderedIndex *_index, std::vector <const void *>::iterator _begin,
-    std::vector <const void *>::iterator _end) noexcept
+OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex *_index,
+                                                        std::vector<const void *>::iterator _begin,
+                                                        std::vector<const void *>::iterator _end) noexcept
     : index (_index),
       current (std::move (_begin)),
       end (std::move (_end))
@@ -273,13 +273,13 @@ OrderedIndex::DescendingReadCursor::~DescendingReadCursor () noexcept
     }
 }
 
-const void *OrderedIndex::DescendingReadCursor::operator * () const noexcept
+const void *OrderedIndex::DescendingReadCursor::operator* () const noexcept
 {
     assert (index);
     return current != end ? *current : nullptr;
 }
 
-OrderedIndex::DescendingReadCursor &OrderedIndex::DescendingReadCursor::operator ++ () noexcept
+OrderedIndex::DescendingReadCursor &OrderedIndex::DescendingReadCursor::operator++ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -289,8 +289,9 @@ OrderedIndex::DescendingReadCursor &OrderedIndex::DescendingReadCursor::operator
 }
 
 OrderedIndex::DescendingReadCursor::DescendingReadCursor (
-    OrderedIndex *_index, std::vector <const void *>::const_reverse_iterator _begin,
-    std::vector <const void *>::const_reverse_iterator _end) noexcept
+    OrderedIndex *_index,
+    std::vector<const void *>::const_reverse_iterator _begin,
+    std::vector<const void *>::const_reverse_iterator _end) noexcept
     : index (_index),
       current (std::move (_begin)),
       end (std::move (_end))
@@ -325,13 +326,13 @@ OrderedIndex::DescendingEditCursor::~DescendingEditCursor () noexcept
     }
 }
 
-void *OrderedIndex::DescendingEditCursor::operator * () noexcept
+void *OrderedIndex::DescendingEditCursor::operator* () noexcept
 {
     assert (index);
-    return current != end ? const_cast <void *> (*current) : nullptr;
+    return current != end ? const_cast<void *> (*current) : nullptr;
 }
 
-OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator ~ () noexcept
+OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator~ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -342,7 +343,7 @@ OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator
     return *this;
 }
 
-OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator ++ () noexcept
+OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator++ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -357,9 +358,9 @@ OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator
     return *this;
 }
 
-OrderedIndex::DescendingEditCursor::DescendingEditCursor (
-    OrderedIndex *_index, std::vector <const void *>::reverse_iterator _begin,
-    std::vector <const void *>::reverse_iterator _end) noexcept
+OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex *_index,
+                                                          std::vector<const void *>::reverse_iterator _begin,
+                                                          std::vector<const void *>::reverse_iterator _end) noexcept
     : index (_index),
       current (std::move (_begin)),
       end (std::move (_end))
@@ -381,38 +382,36 @@ void OrderedIndex::DescendingEditCursor::BeginRecordEdition () const noexcept
     }
 }
 
-OrderedIndex::AscendingReadCursor OrderedIndex::LookupToReadAscending (
-    const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
+OrderedIndex::AscendingReadCursor OrderedIndex::LookupToReadAscending (const OrderedIndex::Bound &_min,
+                                                                       const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
     return OrderedIndex::AscendingReadCursor (this, result.begin, result.end);
 }
 
-OrderedIndex::DescendingReadCursor OrderedIndex::LookupToReadDescending (
-    const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
+OrderedIndex::DescendingReadCursor OrderedIndex::LookupToReadDescending (const OrderedIndex::Bound &_min,
+                                                                         const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::DescendingReadCursor (
-        this, std::vector <const void *>::const_reverse_iterator (result.end),
-        std::vector <const void *>::const_reverse_iterator (result.begin));
+    return OrderedIndex::DescendingReadCursor (this, std::vector<const void *>::const_reverse_iterator (result.end),
+                                               std::vector<const void *>::const_reverse_iterator (result.begin));
 }
 
-OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (
-    const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
+OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (const OrderedIndex::Bound &_min,
+                                                                       const OrderedIndex::Bound &_max) noexcept
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
     return OrderedIndex::AscendingEditCursor (this, result.begin, result.end);
 }
 
-OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (
-    const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
+OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (const OrderedIndex::Bound &_min,
+                                                                         const OrderedIndex::Bound &_max) noexcept
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::DescendingEditCursor (
-        this, std::vector <const void *>::reverse_iterator (result.end),
-        std::vector <const void *>::reverse_iterator (result.begin));
+    return OrderedIndex::DescendingEditCursor (this, std::vector<const void *>::reverse_iterator (result.end),
+                                               std::vector<const void *>::reverse_iterator (result.begin));
 }
 
 StandardLayout::Field OrderedIndex::GetIndexedField () const noexcept
@@ -430,12 +429,12 @@ void OrderedIndex::Drop () noexcept
 OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
 {
     assert (owner);
-    DoWithCorrectComparator (
-        owner->indexedField,
-        [this] (auto _comparator) -> void
-        {
-            std::sort (owner->records.begin (), owner->records.end (), Comparator (owner, _comparator));
-        });
+    DoWithCorrectComparator (owner->indexedField,
+                             [this] (auto _comparator) -> void
+                             {
+                                 std::sort (owner->records.begin (), owner->records.end (),
+                                            Comparator (owner, _comparator));
+                             });
 
 #ifndef NDEBUG
     assert (owner->massInsertionInProgress);
@@ -450,8 +449,7 @@ void OrderedIndex::MassInsertionExecutor::InsertRecord (const void *_record) noe
     owner->records.emplace_back (_record);
 }
 
-OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner) noexcept
-    : owner (_owner)
+OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner) noexcept : owner (_owner)
 {
     assert (owner);
 
@@ -468,8 +466,8 @@ OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedFie
     assert (indexedField.IsHandleValid ());
 }
 
-OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (
-    const OrderedIndex::Bound &_min, const OrderedIndex::Bound &_max) noexcept
+OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (const OrderedIndex::Bound &_min,
+                                                                 const OrderedIndex::Bound &_max) noexcept
 {
     return DoWithCorrectComparator (
         indexedField,
@@ -481,31 +479,29 @@ OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (
 
             if (_min.boundValue)
             {
-                result.begin = std::lower_bound (records.begin (), records.end (),
-                                                 _min, Comparator (this, _comparator));
+                result.begin =
+                    std::lower_bound (records.begin (), records.end (), _min, Comparator (this, _comparator));
             }
 
             if (_max.boundValue)
             {
-                result.end = std::upper_bound (result.begin, records.end (),
-                                               _max, Comparator (this, _comparator));
+                result.end = std::upper_bound (result.begin, records.end (), _max, Comparator (this, _comparator));
             }
 
             return result;
         });
 }
 
-std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
-    const void *_record, const void *_recordBackup) const noexcept
+std::vector<const void *>::const_iterator OrderedIndex::LocateRecord (const void *_record,
+                                                                      const void *_recordBackup) const noexcept
 {
-    auto iterator = DoWithCorrectComparator (
-        indexedField,
-        [this, _record, _recordBackup] (auto _comparator)
-        {
-            return std::lower_bound (
-                records.begin (), records.end (),
-                RecordWithBackup {_record, _recordBackup}, Comparator (this, _comparator));
-        });
+    auto iterator = DoWithCorrectComparator (indexedField,
+                                             [this, _record, _recordBackup] (auto _comparator)
+                                             {
+                                                 return std::lower_bound (records.begin (), records.end (),
+                                                                          RecordWithBackup {_record, _recordBackup},
+                                                                          Comparator (this, _comparator));
+                                             });
 
     assert (iterator != records.end ());
 
@@ -521,14 +517,13 @@ std::vector <const void *>::const_iterator OrderedIndex::LocateRecord (
 void OrderedIndex::InsertRecord (const void *_record) noexcept
 {
     assert (_record);
-    DoWithCorrectComparator (
-        indexedField,
-        [this, _record] (auto _comparator)
-        {
-            auto place = std::upper_bound (records.begin (), records.end (),
-                                           _record, Comparator (this, _comparator));
-            records.insert (place, _record);
-        });
+    DoWithCorrectComparator (indexedField,
+                             [this, _record] (auto _comparator)
+                             {
+                                 auto place = std::upper_bound (records.begin (), records.end (), _record,
+                                                                Comparator (this, _comparator));
+                                 records.insert (place, _record);
+                             });
 }
 
 OrderedIndex::MassInsertionExecutor OrderedIndex::StartMassInsertion () noexcept
@@ -544,24 +539,24 @@ void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBack
     records.erase (iterator);
 }
 
-void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::iterator &_position) noexcept
+void OrderedIndex::DeleteRecordMyself (const std::vector<const void *>::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     std::size_t index = _position - records.begin ();
 
     assert (deletedRecordIndices.empty () || index > deletedRecordIndices.back ());
     deletedRecordIndices.emplace_back (index);
-    storage->DeleteRecord (const_cast <void *> (*_position), this);
+    storage->DeleteRecord (const_cast<void *> (*_position), this);
 }
 
-void OrderedIndex::DeleteRecordMyself (const std::vector <const void *>::reverse_iterator &_position) noexcept
+void OrderedIndex::DeleteRecordMyself (const std::vector<const void *>::reverse_iterator &_position) noexcept
 {
     assert (_position != records.rend ());
     std::size_t index = records.rend () - _position - 1u;
 
     assert (deletedRecordIndices.empty () || index < deletedRecordIndices.front ());
     deletedRecordIndices.emplace (deletedRecordIndices.begin (), index);
-    storage->DeleteRecord (const_cast <void *> (*_position), this);
+    storage->DeleteRecord (const_cast<void *> (*_position), this);
 }
 
 void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
@@ -570,11 +565,11 @@ void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBack
     auto iterator = LocateRecord (_record, _recordBackup);
     assert (iterator != records.end ());
 
-    changedRecords.emplace_back (ChangedRecordInfo {std::numeric_limits <std::size_t>::max (), (_record)});
+    changedRecords.emplace_back (ChangedRecordInfo {std::numeric_limits<std::size_t>::max (), (_record)});
     records.erase (iterator);
 }
 
-void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::iterator &_position) noexcept
+void OrderedIndex::OnRecordChangedByMe (const std::vector<const void *>::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     std::size_t index = _position - records.begin ();
@@ -583,7 +578,7 @@ void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::iterat
     changedRecords.emplace_back (ChangedRecordInfo {index, *_position});
 }
 
-void OrderedIndex::OnRecordChangedByMe (const std::vector <const void *>::reverse_iterator &_position) noexcept
+void OrderedIndex::OnRecordChangedByMe (const std::vector<const void *>::reverse_iterator &_position) noexcept
 {
     assert (_position != records.rend ());
     std::size_t index = records.rend () - _position - 1u;
@@ -601,33 +596,33 @@ void OrderedIndex::OnWriterClosed () noexcept
         auto deletedRecordsIterator = deletedRecordIndices.begin ();
         const auto deletedRecordsEnd = deletedRecordIndices.end ();
 
-        auto AdvanceToNextCheckpoint =
-            [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator, &deletedRecordsEnd] () -> std::size_t
+        auto AdvanceToNextCheckpoint = [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator,
+                                        &deletedRecordsEnd] () -> std::size_t
+        {
+            std::size_t nextCheckpoint;
+            if (changedRecordsIterator != changedRecordsEnd)
             {
-                std::size_t nextCheckpoint;
-                if (changedRecordsIterator != changedRecordsEnd)
+                if (deletedRecordsIterator != deletedRecordsEnd &&
+                    *deletedRecordsIterator < changedRecordsIterator->originalIndex)
                 {
-                    if (deletedRecordsIterator != deletedRecordsEnd &&
-                        *deletedRecordsIterator < changedRecordsIterator->originalIndex)
-                    {
-                        nextCheckpoint = *deletedRecordsIterator;
-                        ++deletedRecordsIterator;
-                    }
-                    else
-                    {
-                        nextCheckpoint = changedRecordsIterator->originalIndex;
-                        ++changedRecordsIterator;
-                    }
-                }
-                else
-                {
-                    assert (deletedRecordsIterator != deletedRecordsEnd);
                     nextCheckpoint = *deletedRecordsIterator;
                     ++deletedRecordsIterator;
                 }
+                else
+                {
+                    nextCheckpoint = changedRecordsIterator->originalIndex;
+                    ++changedRecordsIterator;
+                }
+            }
+            else
+            {
+                assert (deletedRecordsIterator != deletedRecordsEnd);
+                nextCheckpoint = *deletedRecordsIterator;
+                ++deletedRecordsIterator;
+            }
 
-                return nextCheckpoint;
-            };
+            return nextCheckpoint;
+        };
 
         std::size_t offset = 0u;
         std::size_t intervalBegin = AdvanceToNextCheckpoint ();
@@ -645,8 +640,7 @@ void OrderedIndex::OnWriterClosed () noexcept
             if (intervalBegin + 1u < records.size ())
             {
 #endif
-                memcpy (&records[intervalBegin - offset], &records[intervalBegin + 1u],
-                        intervalSize * sizeof (void *));
+                memcpy (&records[intervalBegin - offset], &records[intervalBegin + 1u], intervalSize * sizeof (void *));
 #ifndef NDEBUG
             }
 #endif
@@ -669,8 +663,8 @@ void OrderedIndex::OnWriterClosed () noexcept
 
     if (!changedRecords.empty ())
     {
-        if (changedRecords.size () >= static_cast <float> (changedRecords.size () + records.size ()) *
-                                      Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
+        if (changedRecords.size () >= static_cast<float> (changedRecords.size () + records.size ()) *
+                                          Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
         {
             MassInsertionExecutor executor = StartMassInsertion ();
             for (const ChangedRecordInfo &info : changedRecords)

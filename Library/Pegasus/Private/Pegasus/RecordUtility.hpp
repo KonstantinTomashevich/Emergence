@@ -10,13 +10,15 @@ namespace Emergence::Pegasus
 /// \brief Wrapper for ::DoWithCorrectComparator, that applies comparator to fields of two given records.
 ///
 /// \details If you have more than two records to compare, consider using ::DoWithCorrectComparator.
-bool AreRecordValuesEqual (const void *_firstRecord, const void *_secondRecord,
+bool AreRecordValuesEqual (const void *_firstRecord,
+                           const void *_secondRecord,
                            const StandardLayout::Field &_field) noexcept;
 
 /// \brief Wrapper for ::DoWithCorrectComparator, that applies comparator to two given values.
 ///
 /// \details If you have more than two values to compare, consider using ::DoWithCorrectComparator.
-bool AreFieldValuesEqual (const void *_firstRecordValue, const void *_secondRecordValue,
+bool AreFieldValuesEqual (const void *_firstRecordValue,
+                          const void *_secondRecordValue,
                           const StandardLayout::Field &_field) noexcept;
 
 /// \brief Select appropriate value comparator for given field and passes it as argument to callback.
@@ -59,75 +61,75 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
 
     switch (_field.GetArchetype ())
     {
-        case StandardLayout::FieldArchetype::BIT:
+    case StandardLayout::FieldArchetype::BIT:
+    {
+        uint8_t mask = 1u << _field.GetBitOffset ();
+        return _callback (BitValueComparator {mask});
+    }
+
+    case StandardLayout::FieldArchetype::INT:
+    {
+        switch (_field.GetSize ())
         {
-            uint8_t mask = 1u << _field.GetBitOffset ();
-            return _callback (BitValueComparator {mask});
+        case sizeof (int8_t):
+            return _callback (NumericValueComparator<int8_t> {});
+
+        case sizeof (int16_t):
+            return _callback (NumericValueComparator<int16_t> {});
+
+        case sizeof (int32_t):
+            return _callback (NumericValueComparator<int32_t> {});
+
+        case sizeof (int64_t):
+            return _callback (NumericValueComparator<int64_t> {});
         }
 
-        case StandardLayout::FieldArchetype::INT:
+        break;
+    }
+    case StandardLayout::FieldArchetype::UINT:
+    {
+        switch (_field.GetSize ())
         {
-            switch (_field.GetSize ())
-            {
-                case sizeof (int8_t):
-                    return _callback (NumericValueComparator <int8_t> {});
+        case sizeof (uint8_t):
+            return _callback (NumericValueComparator<uint8_t> {});
 
-                case sizeof (int16_t):
-                    return _callback (NumericValueComparator <int16_t> {});
+        case sizeof (uint16_t):
+            return _callback (NumericValueComparator<uint16_t> {});
 
-                case sizeof (int32_t):
-                    return _callback (NumericValueComparator <int32_t> {});
+        case sizeof (uint32_t):
+            return _callback (NumericValueComparator<uint32_t> {});
 
-                case sizeof (int64_t):
-                    return _callback (NumericValueComparator <int64_t> {});
-            }
-
-            break;
-        }
-        case StandardLayout::FieldArchetype::UINT:
-        {
-            switch (_field.GetSize ())
-            {
-                case sizeof (uint8_t):
-                    return _callback (NumericValueComparator <uint8_t> {});
-
-                case sizeof (uint16_t):
-                    return _callback (NumericValueComparator <uint16_t> {});
-
-                case sizeof (uint32_t):
-                    return _callback (NumericValueComparator <uint32_t> {});
-
-                case sizeof (uint64_t):
-                    return _callback (NumericValueComparator <uint64_t> {});
-            }
-
-            break;
+        case sizeof (uint64_t):
+            return _callback (NumericValueComparator<uint64_t> {});
         }
 
-        case StandardLayout::FieldArchetype::FLOAT:
+        break;
+    }
+
+    case StandardLayout::FieldArchetype::FLOAT:
+    {
+        switch (_field.GetSize ())
         {
-            switch (_field.GetSize ())
-            {
-                case sizeof (float):
-                    return _callback (NumericValueComparator <float> {});
+        case sizeof (float):
+            return _callback (NumericValueComparator<float> {});
 
-                case sizeof (double):
-                    return _callback (NumericValueComparator <double> {});
-            }
-
-            break;
+        case sizeof (double):
+            return _callback (NumericValueComparator<double> {});
         }
 
-        case StandardLayout::FieldArchetype::BLOCK:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
-        {
-            return _callback (BlockValueComparator {_field.GetSize ()});
-        }
+        break;
+    }
 
-        case StandardLayout::FieldArchetype::STRING:
-        {
-            return _callback (StringValueComparator {_field.GetSize ()});
-        }
+    case StandardLayout::FieldArchetype::BLOCK:
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    {
+        return _callback (BlockValueComparator {_field.GetSize ()});
+    }
+
+    case StandardLayout::FieldArchetype::STRING:
+    {
+        return _callback (StringValueComparator {_field.GetSize ()});
+    }
     }
 
     assert (false);
@@ -135,13 +137,13 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
 }
 
 template <typename Type>
-int NumericValueComparator <Type>::Compare (const void *_firstValue, const void *_secondValue) const noexcept
+int NumericValueComparator<Type>::Compare (const void *_firstValue, const void *_secondValue) const noexcept
 {
-    if (*static_cast <const Type *> (_firstValue) < *static_cast <const Type *> (_secondValue))
+    if (*static_cast<const Type *> (_firstValue) < *static_cast<const Type *> (_secondValue))
     {
         return -1;
     }
-    else if (*static_cast <const Type *> (_firstValue) > *static_cast <const Type *> (_secondValue))
+    else if (*static_cast<const Type *> (_firstValue) > *static_cast<const Type *> (_secondValue))
     {
         return 1;
     }

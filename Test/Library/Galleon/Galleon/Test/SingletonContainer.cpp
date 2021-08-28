@@ -10,12 +10,7 @@ using namespace Emergence::Galleon::Test;
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return
-        {
-            Player::Reflection::GetMapping (),
-            {&HUGO_0_ALIVE_STUNNED},
-            {Sources::Singleton {"Source"}}
-        };
+    return {Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"Source"}}};
 }
 
 static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -25,28 +20,24 @@ static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::
 
 static void ExecuteFetchQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareSingletonFetchQuery {});
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, GetTestStorage (), PrepareSingletonFetchQuery {});
 }
 
 static void ExecuteModifyQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareSingletonModifyQuery {});
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, GetTestStorage (), PrepareSingletonModifyQuery {});
 }
 
 static void ExecuteFetchQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QuerySingletonToRead {{"Source", {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetTestStorage (), QuerySingletonToRead {{"Source", {}}},
+                                        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QuerySingletonToEdit {{"Source", {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetTestStorage (), QuerySingletonToEdit {{"Source", {}}},
+                                        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (SingletonContainerReferences)
