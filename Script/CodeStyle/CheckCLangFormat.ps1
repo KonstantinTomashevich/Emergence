@@ -2,7 +2,7 @@
 
 if ($args.Count -gt 1)
 {
-    echo "Usage: <script> [clang-format-version]"
+    echo "Usage: <script> [clang-format-version-major]"
     exit -1
 }
 
@@ -14,7 +14,7 @@ if ($args.Count -eq 1)
 
 if (-Not(Get-Command $CLangFormatExecutable))
 {
-    echo "Unable to find clang-format in path!"
+    echo "Unable to find $CLangFormatExecutable in path!"
     exit -2
 }
 
@@ -25,7 +25,7 @@ foreach ($RootChild in $RootChildren)
 {
     if (($RootChild.Name -ne "ThirdParty") -and ($RootChild.Name -ne "Build"))
     {
-        $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.hpp", "*.cpp"
+        $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp"
     }
 }
 
