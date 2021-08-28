@@ -14,47 +14,43 @@
 
 namespace Emergence::Pegasus::Test
 {
-using IndexReference = std::variant <
-    Handling::Handle <HashIndex>,
-    Handling::Handle <OrderedIndex>,
-    Handling::Handle <VolumetricIndex>>;
+using IndexReference =
+    std::variant<Handling::Handle<HashIndex>, Handling::Handle<OrderedIndex>, Handling::Handle<VolumetricIndex>>;
 
-using Cursor = std::variant <
-    HashIndex::ReadCursor,
-    HashIndex::EditCursor,
-    OrderedIndex::AscendingReadCursor,
-    OrderedIndex::AscendingEditCursor,
-    OrderedIndex::DescendingReadCursor,
-    OrderedIndex::DescendingEditCursor,
-    VolumetricIndex::ShapeIntersectionReadCursor,
-    VolumetricIndex::ShapeIntersectionEditCursor,
-    VolumetricIndex::RayIntersectionReadCursor,
-    VolumetricIndex::RayIntersectionEditCursor>;
+using Cursor = std::variant<HashIndex::ReadCursor,
+                            HashIndex::EditCursor,
+                            OrderedIndex::AscendingReadCursor,
+                            OrderedIndex::AscendingEditCursor,
+                            OrderedIndex::DescendingReadCursor,
+                            OrderedIndex::DescendingEditCursor,
+                            VolumetricIndex::ShapeIntersectionReadCursor,
+                            VolumetricIndex::ShapeIntersectionEditCursor,
+                            VolumetricIndex::RayIntersectionReadCursor,
+                            VolumetricIndex::RayIntersectionEditCursor>;
 } // namespace Emergence::Pegasus::Test
 
-EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
-    Emergence::Pegasus::Test::CursorTag,
-    Emergence::Query::Test::CursorData <Emergence::Pegasus::Test::Cursor>,
-    "cursor")
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (Emergence::Pegasus::Test::CursorTag,
+                                   Emergence::Query::Test::CursorData<Emergence::Pegasus::Test::Cursor>,
+                                   "cursor")
 
-EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
-    Emergence::Pegasus::Test::IndexReferenceTag, Emergence::Pegasus::Test::IndexReference, "index reference")
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (Emergence::Pegasus::Test::IndexReferenceTag,
+                                   Emergence::Pegasus::Test::IndexReference,
+                                   "index reference")
 
 namespace Emergence::Pegasus::Test
 {
-struct ExecutionContext final :
-    public Context::Extension::ObjectStorage <IndexReference>,
-    public Query::Test::CursorStorage <Cursor>
+struct ExecutionContext final : public Context::Extension::ObjectStorage<IndexReference>,
+                                public Query::Test::CursorStorage<Cursor>
 {
     explicit ExecutionContext (StandardLayout::Mapping _recordMapping);
 
     ~ExecutionContext ();
 
     Storage storage;
-    std::vector <HashIndex *> knownHashIndices;
-    std::vector <OrderedIndex *> knownOrderedIndices;
-    std::vector <VolumetricIndex *> knownVolumetricIndices;
-    std::optional <Storage::Allocator> storageAllocator;
+    std::vector<HashIndex *> knownHashIndices;
+    std::vector<OrderedIndex *> knownOrderedIndices;
+    std::vector<VolumetricIndex *> knownVolumetricIndices;
+    std::optional<Storage::Allocator> storageAllocator;
 };
 
 ExecutionContext::ExecutionContext (StandardLayout::Mapping _recordMapping)
@@ -67,14 +63,14 @@ ExecutionContext::ExecutionContext (StandardLayout::Mapping _recordMapping)
 
 ExecutionContext::~ExecutionContext ()
 {
-    Query::Test::CursorStorage <Cursor>::objects.clear ();
-    Context::Extension::ObjectStorage <IndexReference>::objects.clear ();
+    Query::Test::CursorStorage<Cursor>::objects.clear ();
+    Context::Extension::ObjectStorage<IndexReference>::objects.clear ();
 }
 
-std::vector <std::size_t> CollectVolumetricIndexKeyFieldSizes (const VolumetricIndex *_index)
+std::vector<std::size_t> CollectVolumetricIndexKeyFieldSizes (const VolumetricIndex *_index)
 {
     REQUIRE (_index);
-    std::vector <std::size_t> result;
+    std::vector<std::size_t> result;
 
     for (const auto &dimension : _index->GetDimensions ())
     {
@@ -89,7 +85,7 @@ void IterateOverIndices (const ExecutionContext &_context)
 {
     auto Iterate = [] (auto _current, auto _end, const auto &_known)
     {
-        std::decay_t <decltype (_known)> found;
+        std::decay_t<decltype (_known)> found;
         while (_current != _end)
         {
             found.emplace_back ((*_current).Get ());
@@ -111,17 +107,15 @@ void IterateOverIndices (const ExecutionContext &_context)
     };
 
     LOG ("Checking hash indices.");
-    Iterate (
-        _context.storage.BeginHashIndices (), _context.storage.EndHashIndices (), _context.knownHashIndices);
+    Iterate (_context.storage.BeginHashIndices (), _context.storage.EndHashIndices (), _context.knownHashIndices);
 
     LOG ("Checking ordered indices.");
-    Iterate (
-        _context.storage.BeginOrderedIndices (), _context.storage.EndOrderedIndices (), _context.knownOrderedIndices);
+    Iterate (_context.storage.BeginOrderedIndices (), _context.storage.EndOrderedIndices (),
+             _context.knownOrderedIndices);
 
     LOG ("Checking volumetric indices.");
-    Iterate (
-        _context.storage.BeginVolumetricIndices (), _context.storage.EndVolumetricIndices (),
-        _context.knownVolumetricIndices);
+    Iterate (_context.storage.BeginVolumetricIndices (), _context.storage.EndVolumetricIndices (),
+             _context.knownVolumetricIndices);
 }
 
 void OnIndexDropped (ExecutionContext &_context, HashIndex *_index)
@@ -148,8 +142,8 @@ void OnIndexDropped (ExecutionContext &_context, OrderedIndex *_index)
 
 void OnIndexDropped (ExecutionContext &_context, VolumetricIndex *_index)
 {
-    auto
-        iterator = std::find (_context.knownVolumetricIndices.begin (), _context.knownVolumetricIndices.end (), _index);
+    auto iterator =
+        std::find (_context.knownVolumetricIndices.begin (), _context.knownVolumetricIndices.end (), _index);
     CHECK (iterator != _context.knownVolumetricIndices.end ());
 
     if (iterator != _context.knownVolumetricIndices.end ())
@@ -160,48 +154,46 @@ void OnIndexDropped (ExecutionContext &_context, VolumetricIndex *_index)
 
 void ExecuteTask (ExecutionContext &_context, const CreateHashIndex &_task)
 {
-    Handling::Handle <HashIndex> index = _context.storage.CreateHashIndex (_task.indexedFields);
+    Handling::Handle<HashIndex> index = _context.storage.CreateHashIndex (_task.indexedFields);
     REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     _context.knownHashIndices.emplace_back (index.Get ());
-    AddObject <IndexReference> (_context, _task.name, index);
+    AddObject<IndexReference> (_context, _task.name, index);
     IterateOverIndices (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreateOrderedIndex &_task)
 {
-    Handling::Handle <OrderedIndex> index = _context.storage.CreateOrderedIndex (_task.indexedField);
+    Handling::Handle<OrderedIndex> index = _context.storage.CreateOrderedIndex (_task.indexedField);
     REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     _context.knownOrderedIndices.emplace_back (index.Get ());
-    AddObject <IndexReference> (_context, _task.name, index);
+    AddObject<IndexReference> (_context, _task.name, index);
     IterateOverIndices (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreateVolumetricIndex &_task)
 {
-    std::vector <VolumetricIndex::DimensionDescriptor> convertedDescriptors;
+    std::vector<VolumetricIndex::DimensionDescriptor> convertedDescriptors;
     convertedDescriptors.reserve (_task.dimensions.size ());
 
     for (const Query::Test::Sources::Volumetric::Dimension &dimension : _task.dimensions)
     {
         static_assert (sizeof (VolumetricIndex::SupportedAxisValue) == sizeof (dimension.globalMin));
 
-        convertedDescriptors.emplace_back (
-            VolumetricIndex::DimensionDescriptor
-                {
-                    *reinterpret_cast <const VolumetricIndex::SupportedAxisValue *> (&dimension.globalMin),
-                    dimension.minField,
-                    *reinterpret_cast <const VolumetricIndex::SupportedAxisValue *> (&dimension.globalMax),
-                    dimension.maxField,
-                });
+        convertedDescriptors.emplace_back (VolumetricIndex::DimensionDescriptor {
+            *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (&dimension.globalMin),
+            dimension.minField,
+            *reinterpret_cast<const VolumetricIndex::SupportedAxisValue *> (&dimension.globalMax),
+            dimension.maxField,
+        });
     }
 
-    Handling::Handle <VolumetricIndex> index = _context.storage.CreateVolumetricIndex (convertedDescriptors);
+    Handling::Handle<VolumetricIndex> index = _context.storage.CreateVolumetricIndex (convertedDescriptors);
     REQUIRE_WITH_MESSAGE (index, "Returned index should not be null.");
 
     _context.knownVolumetricIndices.emplace_back (index.Get ());
-    AddObject <IndexReference> (_context, _task.name, index);
+    AddObject<IndexReference> (_context, _task.name, index);
     IterateOverIndices (_context);
 }
 
@@ -216,7 +208,7 @@ void ExecuteTask (ExecutionContext &_context, const CheckIsIndexCanBeDropped &_t
             CHECK_EQUAL (handleValue->CanBeDropped (), _task.expected);
             _handle = handleValue;
         },
-        GetObject <IndexReference> (_context, _task.name));
+        GetObject<IndexReference> (_context, _task.name));
 }
 
 void ExecuteTask (ExecutionContext &_context, const DropIndex &_task)
@@ -232,9 +224,9 @@ void ExecuteTask (ExecutionContext &_context, const DropIndex &_task)
             handleValue->Drop ();
             OnIndexDropped (_context, handleValue);
         },
-        GetObject <IndexReference> (_context, _task.name));
+        GetObject<IndexReference> (_context, _task.name));
 
-    ExecuteTask (_context, Delete <IndexReferenceTag> {_task.name});
+    ExecuteTask (_context, Delete<IndexReferenceTag> {_task.name});
     IterateOverIndices (_context);
 }
 
@@ -264,111 +256,111 @@ void ExecuteTask (ExecutionContext &_context, const CloseAllocator &)
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToRead &_task)
 {
-    HashIndex *index = std::get <Handling::Handle <HashIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    HashIndex *index =
+        std::get<Handling::Handle<HashIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToRead ({_task.value}));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupToRead ({_task.value}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
 {
-    HashIndex *index = std::get <Handling::Handle <HashIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    HashIndex *index =
+        std::get<Handling::Handle<HashIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToEdit ({_task.value}));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupToEdit ({_task.value}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    OrderedIndex *index =
+        std::get<Handling::Handle<OrderedIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToReadAscending ({_task.minValue}, {_task.maxValue}));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupToReadAscending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    OrderedIndex *index =
+        std::get<Handling::Handle<OrderedIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToEditAscending ({_task.minValue}, {_task.maxValue}));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupToEditAscending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    OrderedIndex *index =
+        std::get<Handling::Handle<OrderedIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToReadDescending ({_task.minValue}, {_task.maxValue}));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupToReadDescending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &_task)
 {
-    OrderedIndex *index = std::get <Handling::Handle <OrderedIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    OrderedIndex *index =
+        std::get<Handling::Handle<OrderedIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupToEditDescending ({_task.minValue}, {_task.maxValue}));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupToEditDescending ({_task.minValue}, {_task.maxValue}));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    VolumetricIndex *index =
+        std::get<Handling::Handle<VolumetricIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
-        _task, CollectVolumetricIndexKeyFieldSizes (index));
+    std::vector<uint8_t> sequence =
+        Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricIndexKeyFieldSizes (index));
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupShapeIntersectionToRead (
-                            *reinterpret_cast <VolumetricIndex::AxisAlignedShapeContainer *> (&sequence[0u])));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupShapeIntersectionToRead (
+                           *reinterpret_cast<VolumetricIndex::AxisAlignedShapeContainer *> (&sequence[0u])));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    VolumetricIndex *index =
+        std::get<Handling::Handle<VolumetricIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    std::vector <uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
-        _task, CollectVolumetricIndexKeyFieldSizes (index));
+    std::vector<uint8_t> sequence =
+        Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricIndexKeyFieldSizes (index));
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupShapeIntersectionToEdit (
-                            *reinterpret_cast <VolumetricIndex::AxisAlignedShapeContainer *> (&sequence[0u])));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupShapeIntersectionToEdit (
+                           *reinterpret_cast<VolumetricIndex::AxisAlignedShapeContainer *> (&sequence[0u])));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    VolumetricIndex *index =
+        std::get<Handling::Handle<VolumetricIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
-        _task, CollectVolumetricIndexKeyFieldSizes (index));
+    std::vector<uint8_t> sequence =
+        Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricIndexKeyFieldSizes (index));
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupRayIntersectionToRead (
-                            *reinterpret_cast <VolumetricIndex::RayContainer *> (&sequence[0u]), _task.maxDistance));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupRayIntersectionToRead (
+                           *reinterpret_cast<VolumetricIndex::RayContainer *> (&sequence[0u]), _task.maxDistance));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
 {
-    VolumetricIndex *index = std::get <Handling::Handle <VolumetricIndex>> (
-        GetObject <IndexReference> (_context, _task.sourceName)).Get ();
+    VolumetricIndex *index =
+        std::get<Handling::Handle<VolumetricIndex>> (GetObject<IndexReference> (_context, _task.sourceName)).Get ();
 
-    std::vector <uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
-        _task, CollectVolumetricIndexKeyFieldSizes (index));
+    std::vector<uint8_t> sequence =
+        Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricIndexKeyFieldSizes (index));
 
-    AddObject <Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
-                        index->LookupRayIntersectionToEdit (
-                            *reinterpret_cast <VolumetricIndex::RayContainer *> (&sequence[0u]), _task.maxDistance));
+    AddObject<Cursor> (_context, _task.cursorName, _context.storage.GetRecordMapping (),
+                       index->LookupRayIntersectionToEdit (
+                           *reinterpret_cast<VolumetricIndex::RayContainer *> (&sequence[0u]), _task.maxDistance));
 }
 
-std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
+std::ostream &operator<< (std::ostream &_output, const CreateHashIndex &_task)
 {
     _output << "Create hash index \"" << _task.name << "\" on fields:";
     for (StandardLayout::FieldId fieldId : _task.indexedFields)
@@ -379,46 +371,45 @@ std::ostream &operator << (std::ostream &_output, const CreateHashIndex &_task)
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CreateOrderedIndex &_task)
+std::ostream &operator<< (std::ostream &_output, const CreateOrderedIndex &_task)
 {
     return _output << "Create ordered index \"" << _task.name << "\" on field " << _task.indexedField << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CreateVolumetricIndex &_task)
+std::ostream &operator<< (std::ostream &_output, const CreateVolumetricIndex &_task)
 {
     _output << "Create volumetric index \"" << _task.name << "\" on dimensions:";
     for (const Query::Test::Sources::Volumetric::Dimension &dimension : _task.dimensions)
     {
-        _output << " { globalMin: " << dimension.globalMin << ", minField: " <<
-                dimension.minField << ", globalMax: " << dimension.globalMax <<
-                ", maxField: " << dimension.maxField << " }";
+        _output << " { globalMin: " << dimension.globalMin << ", minField: " << dimension.minField
+                << ", globalMax: " << dimension.globalMax << ", maxField: " << dimension.maxField << " }";
     }
 
     return _output << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CheckIsIndexCanBeDropped &_task)
+std::ostream &operator<< (std::ostream &_output, const CheckIsIndexCanBeDropped &_task)
 {
-    return _output << "Check is index \"" << _task.name << "\" can be dropped, expected result: \"" <<
-                   (_task.expected ? "yes" : "no") << "\".";
+    return _output << "Check is index \"" << _task.name << "\" can be dropped, expected result: \""
+                   << (_task.expected ? "yes" : "no") << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const DropIndex &_task)
+std::ostream &operator<< (std::ostream &_output, const DropIndex &_task)
 {
     return _output << "Drop index \"" << _task.name << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const OpenAllocator &)
+std::ostream &operator<< (std::ostream &_output, const OpenAllocator &)
 {
     return _output << "Open allocator.";
 }
 
-std::ostream &operator << (std::ostream &_output, const AllocateAndInit &_task)
+std::ostream &operator<< (std::ostream &_output, const AllocateAndInit &_task)
 {
     return _output << "Allocate record and init from " << _task.copyFrom << ".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CloseAllocator &)
+std::ostream &operator<< (std::ostream &_output, const CloseAllocator &)
 {
     return _output << "Close allocator.";
 }
@@ -430,11 +421,11 @@ Task ImportTask (const Query::Test::Task &_task)
     return std::visit (
         [] (const auto &_unwrappedTask) -> Task
         {
-            using TaskType = std::decay_t <decltype (_unwrappedTask)>;
-            if constexpr (std::is_same_v <TaskType, QuerySingletonToRead> ||
-                          std::is_same_v <TaskType, QuerySingletonToEdit> ||
-                          std::is_same_v <TaskType, QueryUnorderedSequenceToRead> ||
-                          std::is_same_v <TaskType, QueryUnorderedSequenceToEdit>)
+            using TaskType = std::decay_t<decltype (_unwrappedTask)>;
+            if constexpr (std::is_same_v<TaskType, QuerySingletonToRead> ||
+                          std::is_same_v<TaskType, QuerySingletonToEdit> ||
+                          std::is_same_v<TaskType, QueryUnorderedSequenceToRead> ||
+                          std::is_same_v<TaskType, QueryUnorderedSequenceToEdit>)
             {
                 REQUIRE_WITH_MESSAGE (false, "Singleton and unordered sequence queries are not supported!");
                 // Will never be reached because of REQUIRE above. Added to suppress no-return-value warning.
@@ -448,9 +439,9 @@ Task ImportTask (const Query::Test::Task &_task)
         _task);
 }
 
-std::vector <Task> InsertRecords (const Query::Test::Storage &_storage)
+std::vector<Task> InsertRecords (const Query::Test::Storage &_storage)
 {
-    std::vector <Task> tasks {OpenAllocator {}};
+    std::vector<Task> tasks {OpenAllocator {}};
     for (const void *record : _storage.objectsToInsert)
     {
         tasks.emplace_back (AllocateAndInit {record});
@@ -460,24 +451,24 @@ std::vector <Task> InsertRecords (const Query::Test::Storage &_storage)
     return tasks;
 }
 
-std::vector <Task> CreateIndices (const Query::Test::Storage &_storage)
+std::vector<Task> CreateIndices (const Query::Test::Storage &_storage)
 {
-    std::vector <Task> tasks;
+    std::vector<Task> tasks;
     for (const Query::Test::Source &source : _storage.sources)
     {
         std::visit (
             [&tasks] (const auto &_source)
             {
-                using Source = std::decay_t <decltype (_source)>;
-                if constexpr (std::is_same_v <Source, Query::Test::Sources::Value>)
+                using Source = std::decay_t<decltype (_source)>;
+                if constexpr (std::is_same_v<Source, Query::Test::Sources::Value>)
                 {
                     tasks.emplace_back (CreateHashIndex {_source.name, _source.queriedFields});
                 }
-                else if constexpr (std::is_same_v <Source, Query::Test::Sources::Range>)
+                else if constexpr (std::is_same_v<Source, Query::Test::Sources::Range>)
                 {
                     tasks.emplace_back (CreateOrderedIndex {_source.name, _source.queriedField});
                 }
-                else if constexpr (std::is_same_v <Source, Query::Test::Sources::Volumetric>)
+                else if constexpr (std::is_same_v<Source, Query::Test::Sources::Volumetric>)
                 {
                     tasks.emplace_back (CreateVolumetricIndex {_source.name, _source.dimensions});
                 }
@@ -494,10 +485,9 @@ std::vector <Task> CreateIndices (const Query::Test::Storage &_storage)
 
 static void ExecuteScenario (const Query::Test::Scenario &_scenario, bool _insertFirst)
 {
-    std::vector <Task> tasks;
-    REQUIRE_WITH_MESSAGE (
-        _scenario.storages.size () == 1u,
-        "Only one-storage tests are supported right now, because Pegasus storages are independent.");
+    std::vector<Task> tasks;
+    REQUIRE_WITH_MESSAGE (_scenario.storages.size () == 1u,
+                          "Only one-storage tests are supported right now, because Pegasus storages are independent.");
 
     if (_insertFirst)
     {
@@ -545,7 +535,7 @@ void ForIndexReference (const Reference::Test::Scenario &_scenario, const Query:
 {
     REQUIRE (_storage.sources.size () == 1u);
     const std::string indexName = ExtractSourceName (_storage.sources[0u]);
-    std::vector <Task> tasks = TestQueryApiDrivers::CreateIndices (_storage);
+    std::vector<Task> tasks = TestQueryApiDrivers::CreateIndices (_storage);
     tasks += TestQueryApiDrivers::InsertRecords (_storage);
 
     for (const Reference::Test::Task &packedTask : _scenario)
@@ -553,32 +543,32 @@ void ForIndexReference (const Reference::Test::Scenario &_scenario, const Query:
         std::visit (
             [&tasks, &indexName] (const auto &_task)
             {
-                using TaskType = std::decay_t <decltype (_task)>;
-                if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
+                using TaskType = std::decay_t<decltype (_task)>;
+                if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Create>)
                 {
-                    tasks.emplace_back (Copy <IndexReferenceTag> {indexName, _task.name});
+                    tasks.emplace_back (Copy<IndexReferenceTag> {indexName, _task.name});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Move>)
                 {
-                    tasks.emplace_back (Move <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                    tasks.emplace_back (Move<IndexReferenceTag> {_task.sourceName, _task.targetName});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Copy>)
                 {
-                    tasks.emplace_back (Copy <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                    tasks.emplace_back (Copy<IndexReferenceTag> {_task.sourceName, _task.targetName});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::MoveAssign>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::MoveAssign>)
                 {
-                    tasks.emplace_back (MoveAssign <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                    tasks.emplace_back (MoveAssign<IndexReferenceTag> {_task.sourceName, _task.targetName});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CopyAssign>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::CopyAssign>)
                 {
-                    tasks.emplace_back (CopyAssign <IndexReferenceTag> {_task.sourceName, _task.targetName});
+                    tasks.emplace_back (CopyAssign<IndexReferenceTag> {_task.sourceName, _task.targetName});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Delete>)
                 {
-                    tasks.emplace_back (Delete <IndexReferenceTag> {_task.name});
+                    tasks.emplace_back (Delete<IndexReferenceTag> {_task.name});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::CheckStatus>)
                 {
                     tasks.emplace_back (CheckIsIndexCanBeDropped {indexName, !_task.hasAnyReferences});
                 }
@@ -594,13 +584,14 @@ void ForIndexReference (const Reference::Test::Scenario &_scenario, const Query:
     Scenario {_storage.dataType, tasks};
 }
 
-void ForCursor (
-    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage,
-    const Query::Test::Task &_sourceQuery, const void *_expectedPointedObject)
+void ForCursor (const Reference::Test::Scenario &_scenario,
+                const Query::Test::Storage &_storage,
+                const Query::Test::Task &_sourceQuery,
+                const void *_expectedPointedObject)
 {
     REQUIRE (_storage.sources.size () == 1u);
     const std::string indexName = ExtractSourceName (_storage.sources[0u]);
-    std::vector <Task> tasks = TestQueryApiDrivers::CreateIndices (_storage);
+    std::vector<Task> tasks = TestQueryApiDrivers::CreateIndices (_storage);
     tasks += TestQueryApiDrivers::InsertRecords (_storage);
 
     for (const Reference::Test::Task &packedTask : _scenario)
@@ -608,30 +599,29 @@ void ForCursor (
         std::visit (
             [&tasks, &indexName, &_sourceQuery, _expectedPointedObject] (const auto &_task)
             {
-                using TaskType = std::decay_t <decltype (_task)>;
-                if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Create>)
+                using TaskType = std::decay_t<decltype (_task)>;
+                if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Create>)
                 {
                     tasks.emplace_back (TestQueryApiDrivers::ImportTask (
                         Query::Test::ChangeQuerySourceAndCursor (_sourceQuery, indexName, _task.name)));
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Move>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Move>)
                 {
-                    tasks.emplace_back (Move <CursorTag> {_task.sourceName, _task.targetName});
+                    tasks.emplace_back (Move<CursorTag> {_task.sourceName, _task.targetName});
                     tasks.emplace_back (CursorCheck {_task.targetName, _expectedPointedObject});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Copy>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Copy>)
                 {
-                    tasks.emplace_back (Copy <CursorTag> {_task.sourceName, _task.targetName});
+                    tasks.emplace_back (Copy<CursorTag> {_task.sourceName, _task.targetName});
                     tasks.emplace_back (CursorCheck {_task.targetName, _expectedPointedObject});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::Delete>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::Delete>)
                 {
-                    tasks.emplace_back (Delete <CursorTag> {_task.name});
+                    tasks.emplace_back (Delete<CursorTag> {_task.name});
                 }
-                else if constexpr (std::is_same_v <TaskType, Reference::Test::Tasks::CheckStatus>)
+                else if constexpr (std::is_same_v<TaskType, Reference::Test::Tasks::CheckStatus>)
                 {
-                    tasks.emplace_back (
-                        CheckIsIndexCanBeDropped {indexName, !_task.hasAnyReferences});
+                    tasks.emplace_back (CheckIsIndexCanBeDropped {indexName, !_task.hasAnyReferences});
                 }
                 else
                 {
@@ -646,7 +636,7 @@ void ForCursor (
 }
 } // namespace ReferenceApiTestImporters
 
-Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
+Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector<Task> _tasks)
     : mapping (std::move (_mapping)),
       tasks (std::move (_tasks))
 {
@@ -665,7 +655,7 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector <Task> _tasks)
     }
 }
 
-std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
+std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
 {
     _output << "Scenario: " << std::endl;
     for (const Task &wrappedTask : _scenario.tasks)
@@ -684,7 +674,7 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept
 {
     first.insert (first.end (), second.begin (), second.end ());
     return first;

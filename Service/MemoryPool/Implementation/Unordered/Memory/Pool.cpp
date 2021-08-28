@@ -11,12 +11,12 @@ using AcquiredChunkConstIterator = Pool::AcquiredChunkConstIterator;
 
 using AcquiredChunkConstIteratorImplementation = UnorderedPool::AcquiredChunkConstIterator;
 
-EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (
-    AcquiredChunkConstIterator, AcquiredChunkConstIteratorImplementation)
+EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (AcquiredChunkConstIterator,
+                                                           AcquiredChunkConstIteratorImplementation)
 
-const void *Pool::AcquiredChunkConstIterator::operator * () const noexcept
+const void *Pool::AcquiredChunkConstIterator::operator* () const noexcept
 {
-    return *block_cast <UnorderedPool::AcquiredChunkConstIterator> (data);
+    return *block_cast<UnorderedPool::AcquiredChunkConstIterator> (data);
 }
 
 using AcquiredChunkIterator = Pool::AcquiredChunkIterator;
@@ -25,15 +25,14 @@ using AcquiredChunkIteratorImplementation = UnorderedPool::AcquiredChunkIterator
 
 EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (AcquiredChunkIterator, AcquiredChunkIteratorImplementation)
 
-void *Pool::AcquiredChunkIterator::operator * () const noexcept
+void *Pool::AcquiredChunkIterator::operator* () const noexcept
 {
-    return *block_cast <UnorderedPool::AcquiredChunkIterator> (data);
+    return *block_cast<UnorderedPool::AcquiredChunkIterator> (data);
 }
 
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-Pool::Pool (std::size_t _chunkSize) noexcept
-    : Pool (_chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+Pool::Pool (std::size_t _chunkSize) noexcept : Pool (_chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
@@ -44,66 +43,66 @@ Pool::Pool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept
 
 Pool::Pool (Pool &&_other) noexcept
 {
-    new (&data) UnorderedPool (std::move (block_cast <UnorderedPool> (_other.data)));
+    new (&data) UnorderedPool (std::move (block_cast<UnorderedPool> (_other.data)));
 }
 
 Pool::~Pool () noexcept
 {
-    block_cast <UnorderedPool> (data).~UnorderedPool ();
+    block_cast<UnorderedPool> (data).~UnorderedPool ();
 }
 
 void *Pool::Acquire () noexcept
 {
-    return block_cast <UnorderedPool> (data).Acquire ();
+    return block_cast<UnorderedPool> (data).Acquire ();
 }
 
 void Pool::Release (void *_chunk) noexcept
 {
-    block_cast <UnorderedPool> (data).Release (_chunk);
+    block_cast<UnorderedPool> (data).Release (_chunk);
 }
 
 void Pool::Shrink () noexcept
 {
-    block_cast <UnorderedPool> (data).Shrink ();
+    block_cast<UnorderedPool> (data).Shrink ();
 }
 
 void Pool::Clear () noexcept
 {
-    block_cast <UnorderedPool> (data).Clear ();
+    block_cast<UnorderedPool> (data).Clear ();
 }
 
 std::size_t Pool::GetAllocatedSpace () const noexcept
 {
-    return block_cast <UnorderedPool> (data).GetAllocatedSpace ();
+    return block_cast<UnorderedPool> (data).GetAllocatedSpace ();
 }
 
 Pool::AcquiredChunkConstIterator Pool::BeginAcquired () const noexcept
 {
-    UnorderedPool::AcquiredChunkConstIterator iterator = block_cast <UnorderedPool> (data).BeginAcquired ();
+    UnorderedPool::AcquiredChunkConstIterator iterator = block_cast<UnorderedPool> (data).BeginAcquired ();
     return AcquiredChunkConstIterator (
-        reinterpret_cast <const decltype (AcquiredChunkConstIterator::data) *> (&iterator));
+        reinterpret_cast<const decltype (AcquiredChunkConstIterator::data) *> (&iterator));
 }
 
 Pool::AcquiredChunkConstIterator Pool::EndAcquired () const noexcept
 {
-    UnorderedPool::AcquiredChunkConstIterator iterator = block_cast <UnorderedPool> (data).EndAcquired ();
+    UnorderedPool::AcquiredChunkConstIterator iterator = block_cast<UnorderedPool> (data).EndAcquired ();
     return AcquiredChunkConstIterator (
-        reinterpret_cast <const decltype (AcquiredChunkConstIterator::data) *> (&iterator));
+        reinterpret_cast<const decltype (AcquiredChunkConstIterator::data) *> (&iterator));
 }
 
 Pool::AcquiredChunkIterator Pool::BeginAcquired () noexcept
 {
-    UnorderedPool::AcquiredChunkIterator iterator = block_cast <UnorderedPool> (data).BeginAcquired ();
-    return AcquiredChunkIterator (reinterpret_cast <const decltype (AcquiredChunkIterator::data) *> (&iterator));
+    UnorderedPool::AcquiredChunkIterator iterator = block_cast<UnorderedPool> (data).BeginAcquired ();
+    return AcquiredChunkIterator (reinterpret_cast<const decltype (AcquiredChunkIterator::data) *> (&iterator));
 }
 
 Pool::AcquiredChunkIterator Pool::EndAcquired () noexcept
 {
-    UnorderedPool::AcquiredChunkIterator iterator = block_cast <UnorderedPool> (data).EndAcquired ();
-    return AcquiredChunkIterator (reinterpret_cast <const decltype (AcquiredChunkIterator::data) *> (&iterator));
+    UnorderedPool::AcquiredChunkIterator iterator = block_cast<UnorderedPool> (data).EndAcquired ();
+    return AcquiredChunkIterator (reinterpret_cast<const decltype (AcquiredChunkIterator::data) *> (&iterator));
 }
 
-Pool &Pool::operator = (Pool &&_other) noexcept
+Pool &Pool::operator= (Pool &&_other) noexcept
 {
     if (this != &_other)
     {

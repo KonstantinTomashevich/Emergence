@@ -27,7 +27,7 @@ struct UnorderedSequence final
 struct Value final
 {
     std::string name;
-    std::vector <StandardLayout::FieldId> queriedFields;
+    std::vector<StandardLayout::FieldId> queriedFields;
 };
 
 struct Range final
@@ -86,30 +86,25 @@ struct Volumetric final
     };
 
     std::string name;
-    std::vector <Dimension> dimensions;
+    std::vector<Dimension> dimensions;
 };
 
-std::ostream &operator << (std::ostream &_output, const Volumetric::SupportedValue &_value);
+std::ostream &operator<< (std::ostream &_output, const Volumetric::SupportedValue &_value);
 } // namespace Sources
 
-using Source = std::variant <
-    Sources::Singleton,
-    Sources::UnorderedSequence,
-    Sources::Value,
-    Sources::Range,
-    Sources::Volumetric>;
+using Source =
+    std::variant<Sources::Singleton, Sources::UnorderedSequence, Sources::Value, Sources::Range, Sources::Volumetric>;
 
 struct Storage final
 {
     /// \brief Custom constructor, used to check requirements, that are not well expressed through data structure.
-    Storage (
-        StandardLayout::Mapping _dataType,
-        std::vector <const void *> _objectsToInsert,
-        std::vector <Source> _sources);
+    Storage (StandardLayout::Mapping _dataType,
+             std::vector<const void *> _objectsToInsert,
+             std::vector<Source> _sources);
 
     StandardLayout::Mapping dataType;
-    std::vector <const void *> objectsToInsert;
-    std::vector <Source> sources;
+    std::vector<const void *> objectsToInsert;
+    std::vector<Source> sources;
 };
 
 namespace Tasks
@@ -173,8 +168,8 @@ struct QueryDescendingRangeToEdit final : public RangeQueryBase
 
 struct ShapeIntersectionQueryBase : public QueryBase
 {
-    std::vector <Sources::Volumetric::SupportedValue> min;
-    std::vector <Sources::Volumetric::SupportedValue> max;
+    std::vector<Sources::Volumetric::SupportedValue> min;
+    std::vector<Sources::Volumetric::SupportedValue> max;
 };
 
 struct QueryShapeIntersectionToRead final : public ShapeIntersectionQueryBase
@@ -187,9 +182,9 @@ struct QueryShapeIntersectionToEdit final : public ShapeIntersectionQueryBase
 
 struct RayIntersectionQueryBase : public QueryBase
 {
-    std::vector <Sources::Volumetric::SupportedValue> origin;
-    std::vector <Sources::Volumetric::SupportedValue> direction;
-    float maxDistance = std::numeric_limits <float>::max ();
+    std::vector<Sources::Volumetric::SupportedValue> origin;
+    std::vector<Sources::Volumetric::SupportedValue> direction;
+    float maxDistance = std::numeric_limits<float>::max ();
 };
 
 struct QueryRayIntersectionToRead final : public RayIntersectionQueryBase
@@ -209,13 +204,13 @@ struct CursorCheck final
 struct CursorCheckAllOrdered final
 {
     std::string name;
-    std::vector <const void *> expectedObjects;
+    std::vector<const void *> expectedObjects;
 };
 
 struct CursorCheckAllUnordered final
 {
     std::string name;
-    std::vector <const void *> expectedObjects;
+    std::vector<const void *> expectedObjects;
 };
 
 struct CursorEdit final
@@ -239,96 +234,96 @@ struct CursorClose final
     std::string name;
 };
 
-std::ostream &operator << (std::ostream &_output, const QuerySingletonToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QuerySingletonToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QuerySingletonToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QuerySingletonToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryUnorderedSequenceToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryUnorderedSequenceToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryUnorderedSequenceToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryValueToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryValueToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryValueToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryValueToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryAscendingRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryAscendingRangeToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryAscendingRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryDescendingRangeToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryDescendingRangeToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryDescendingRangeToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryShapeIntersectionToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryShapeIntersectionToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryShapeIntersectionToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToRead &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryRayIntersectionToRead &_task);
 
-std::ostream &operator << (std::ostream &_output, const QueryRayIntersectionToEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const QueryRayIntersectionToEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorCheck &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorCheck &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorCheckAllOrdered &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorCheckAllOrdered &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorCheckAllUnordered &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorCheckAllUnordered &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorEdit &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorEdit &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorIncrement &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorIncrement &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorDeleteObject &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorDeleteObject &_task);
 
-std::ostream &operator << (std::ostream &_output, const CursorClose &_task);
+std::ostream &operator<< (std::ostream &_output, const CursorClose &_task);
 } // namespace Tasks
 
-using Task = std::variant <
-    Tasks::QuerySingletonToRead,
-    Tasks::QuerySingletonToEdit,
-    Tasks::QueryUnorderedSequenceToRead,
-    Tasks::QueryUnorderedSequenceToEdit,
-    Tasks::QueryValueToRead,
-    Tasks::QueryValueToEdit,
-    Tasks::QueryAscendingRangeToRead,
-    Tasks::QueryAscendingRangeToEdit,
-    Tasks::QueryDescendingRangeToRead,
-    Tasks::QueryDescendingRangeToEdit,
-    Tasks::QueryShapeIntersectionToRead,
-    Tasks::QueryShapeIntersectionToEdit,
-    Tasks::QueryRayIntersectionToRead,
-    Tasks::QueryRayIntersectionToEdit,
-    Tasks::CursorCheck,
-    Tasks::CursorCheckAllOrdered,
-    Tasks::CursorCheckAllUnordered,
-    Tasks::CursorEdit,
-    Tasks::CursorIncrement,
-    Tasks::CursorDeleteObject,
-    Tasks::CursorClose>;
+using Task = std::variant<Tasks::QuerySingletonToRead,
+                          Tasks::QuerySingletonToEdit,
+                          Tasks::QueryUnorderedSequenceToRead,
+                          Tasks::QueryUnorderedSequenceToEdit,
+                          Tasks::QueryValueToRead,
+                          Tasks::QueryValueToEdit,
+                          Tasks::QueryAscendingRangeToRead,
+                          Tasks::QueryAscendingRangeToEdit,
+                          Tasks::QueryDescendingRangeToRead,
+                          Tasks::QueryDescendingRangeToEdit,
+                          Tasks::QueryShapeIntersectionToRead,
+                          Tasks::QueryShapeIntersectionToEdit,
+                          Tasks::QueryRayIntersectionToRead,
+                          Tasks::QueryRayIntersectionToEdit,
+                          Tasks::CursorCheck,
+                          Tasks::CursorCheckAllOrdered,
+                          Tasks::CursorCheckAllUnordered,
+                          Tasks::CursorEdit,
+                          Tasks::CursorIncrement,
+                          Tasks::CursorDeleteObject,
+                          Tasks::CursorClose>;
 
 struct Scenario final
 {
-    std::vector <Storage> storages;
-    std::vector <Task> tasks;
+    std::vector<Storage> storages;
+    std::vector<Task> tasks;
 };
 
 /// \brief Query-type agnostic renaming is widely used in tests, therefore it was extracted to utility function.
-Task ChangeQuerySourceAndCursor (
-    Task _query, std::optional <std::string> _newSourceName, std::optional <std::string> _newCursorName);
+Task ChangeQuerySourceAndCursor (Task _query,
+                                 std::optional<std::string> _newSourceName,
+                                 std::optional<std::string> _newCursorName);
 
 /// \brief Renames sources and all their usages according to given transformation map.
-Scenario RemapSources (Scenario _scenario, const std::unordered_map <std::string, std::string> &_transformation);
+Scenario RemapSources (Scenario _scenario, const std::unordered_map<std::string, std::string> &_transformation);
 
 /// \brief Lays out min-max arrays as sequence of min-max pairs.
 /// \details Because test drivers usually do not keep info about storages,
 ///          it's more convenient to pass only sizes of fields for used dimensions.
-std::vector <uint8_t> LayoutShapeIntersectionQueryParameters (
-    const Tasks::ShapeIntersectionQueryBase &_query, const std::vector <std::size_t> &_valueSizes);
+std::vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
+                                                             const std::vector<std::size_t> &_valueSizes);
 
 /// \brief Same as LayoutShapeIntersectionQueryParameters, but for ray intersection queries.
-std::vector <uint8_t> LayoutRayIntersectionQueryParameters (
-    const Tasks::RayIntersectionQueryBase &_query, const std::vector <std::size_t> &_valueSizes);
+std::vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
+                                                           const std::vector<std::size_t> &_valueSizes);
 
-std::vector <Task> &operator += (std::vector <Task> &_left, const std::vector <Task> &_right);
+std::vector<Task> &operator+= (std::vector<Task> &_left, const std::vector<Task> &_right);
 
-std::ostream &operator << (std::ostream &_output, const Task &_task);
+std::ostream &operator<< (std::ostream &_output, const Task &_task);
 } // namespace Emergence::Query::Test

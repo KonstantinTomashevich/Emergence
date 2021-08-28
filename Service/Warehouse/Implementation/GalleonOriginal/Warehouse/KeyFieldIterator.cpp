@@ -12,8 +12,8 @@ using KeyFieldIteratorImplementation = RecordCollection::PointRepresentation::Ke
 
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (KeyFieldIterator, KeyFieldIteratorImplementation)
 
-StandardLayout::Field KeyFieldIterator::operator * () const noexcept
+StandardLayout::Field KeyFieldIterator::operator* () const noexcept
 {
-    return *block_cast <KeyFieldIteratorImplementation> (data);
+    return *block_cast<KeyFieldIteratorImplementation> (data);
 }
 } // namespace Emergence::Warehouse

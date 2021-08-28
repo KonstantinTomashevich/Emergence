@@ -12,9 +12,9 @@ using DimensionIteratorImplementation = RecordCollection::VolumetricRepresentati
 
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)
 
-Dimension DimensionIterator::operator * () const noexcept
+Dimension DimensionIterator::operator* () const noexcept
 {
-    auto dimension = *block_cast <DimensionIteratorImplementation> (data);
+    auto dimension = *block_cast<DimensionIteratorImplementation> (data);
     return {dimension.globalMin, dimension.minField, dimension.globalMax, dimension.maxField};
 }
 } // namespace Emergence::Warehouse

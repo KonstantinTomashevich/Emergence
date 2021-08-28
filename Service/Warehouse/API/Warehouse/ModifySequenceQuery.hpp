@@ -23,7 +23,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifySequenceQuery, Cursor);
@@ -34,6 +34,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit ModifySequenceQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit ModifySequenceQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

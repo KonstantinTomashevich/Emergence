@@ -24,7 +24,7 @@ static Emergence::StandardLayout::FieldId GetPlayedIdField ()
     return ProjectNestedField (PlayerWithBoundingBox::Reflection::player, Player::Reflection::id);
 }
 
-static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
+static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
@@ -34,128 +34,102 @@ static std::vector <Emergence::Query::Test::Sources::Volumetric::Dimension> GetT
 
     const Emergence::StandardLayout::FieldId boundingBoxField = PlayerWithBoundingBox::Reflection::boundingBox;
 
-    return
-        {
-            {
-                -100.0f,
-                ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minX),
-                100.0f,
-                ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxX)
-            },
-            {
-                -100.0f,
-                ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minY),
-                100.0f,
-                ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxY)
-            }
-        };
+    return {{-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minX), 100.0f,
+             ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxX)},
+            {-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minY), 100.0f,
+             ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxY)}};
 }
 
-static std::vector <Emergence::Query::Test::Storage> GetEnvironment ()
+static std::vector<Emergence::Query::Test::Storage> GetEnvironment ()
 {
     using namespace Emergence::Query::Test;
-    return
-        {
-            {
-                Player::Reflection::GetMapping (),
-                {&HUGO_0_ALIVE_STUNNED},
-                {Sources::Singleton {"Singleton"}}
-            },
-            {
-                BoundingBox::Reflection::GetMapping (),
-                {&BOX_MIN_10_8_4_MAX_11_9_5},
-                {Sources::UnorderedSequence {"Sequence"}}
-            },
-            {
-                PlayerWithBoundingBox::Reflection::GetMapping (),
-                {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
-                {
-                    Sources::Value {"Value", {GetPlayedIdField ()}},
-                    Sources::Range {"Range", GetPlayedIdField ()},
-                    Sources::Volumetric {"Volumetric", GetTestDimensions ()},
-                }
-            }
-        };
+    return {{Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"Singleton"}}},
+            {BoundingBox::Reflection::GetMapping (),
+             {&BOX_MIN_10_8_4_MAX_11_9_5},
+             {Sources::UnorderedSequence {"Sequence"}}},
+            {PlayerWithBoundingBox::Reflection::GetMapping (),
+             {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
+             {
+                 Sources::Value {"Value", {GetPlayedIdField ()}},
+                 Sources::Range {"Range", GetPlayedIdField ()},
+                 Sources::Volumetric {"Volumetric", GetTestDimensions ()},
+             }}};
 }
 
 static void ExecuteFetchSingletonQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QuerySingletonToRead {{"Singleton", {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QuerySingletonToRead {{"Singleton", {}}},
+                                        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySingletonQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QuerySingletonToEdit {{"Singleton", {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QuerySingletonToEdit {{"Singleton", {}}},
+                                        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchSequenceQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryUnorderedSequenceToRead {{"Sequence", {}}},
-        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QueryUnorderedSequenceToRead {{"Sequence", {}}},
+                                        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteModifySequenceQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryUnorderedSequenceToEdit {{"Sequence", {}}},
-        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QueryUnorderedSequenceToEdit {{"Sequence", {}}},
+                                        &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteFetchValueQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryValueToRead {{{"Value", {}}, &Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryValueToRead {{{"Value", {}}, &Queries::ID_0}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteModifyValueQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryValueToEdit {{{"Value", {}}, &Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryValueToEdit {{{"Value", {}}, &Queries::ID_0}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteFetchAscendingRangeQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryAscendingRangeToRead {{{"Range", {}}, nullptr, nullptr}},
-        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryAscendingRangeToRead {{{"Range", {}}, nullptr, nullptr}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteModifyAscendingRangeQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryAscendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
-        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryAscendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteFetchDescendingRangeQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryDescendingRangeToRead {{{"Range", {}}, nullptr, nullptr}},
-        &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryDescendingRangeToRead {{{"Range", {}}, nullptr, nullptr}},
+                                        &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
 }
 
 static void ExecuteModifyDescendingRangeQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (), QueryDescendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
-        &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryDescendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
+                                        &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
 }
 
 static void ExecuteFetchShapeIntersectionQueryCursorReferenceApiTest (
@@ -163,8 +137,7 @@ static void ExecuteFetchShapeIntersectionQueryCursorReferenceApiTest (
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (),
-        QueryShapeIntersectionToRead {{{"Volumetric", {}}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
+        _scenario, GetEnvironment (), QueryShapeIntersectionToRead {{{"Volumetric", {}}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
@@ -173,8 +146,7 @@ static void ExecuteModifyShapeIntersectionQueryCursorReferenceApiTest (
 {
     using namespace Emergence::Query::Test;
     TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (),
-        QueryShapeIntersectionToEdit {{{"Volumetric", {}}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
+        _scenario, GetEnvironment (), QueryShapeIntersectionToEdit {{{"Volumetric", {}}, {8.0f, 7.0f}, {10.5f, 9.0f}}},
         &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
@@ -182,20 +154,18 @@ static void ExecuteFetchRayIntersectionQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (),
-        QueryRayIntersectionToRead {{{"Volumetric", {}}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
-        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryRayIntersectionToRead {{{"Volumetric", {}}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteModifyRayIntersectionQueryCursorReferenceApiTest (
     const Emergence::Reference::Test::Scenario &_scenario)
 {
     using namespace Emergence::Query::Test;
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetEnvironment (),
-        QueryRayIntersectionToEdit {{{"Volumetric", {}}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
-        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
+                                        QueryRayIntersectionToEdit {{{"Volumetric", {}}, {7.0f, 9.0f}, {2.0f, 0.0f}}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 // TODO: Insertion query cursors are skipped for now, because they have unique interface.

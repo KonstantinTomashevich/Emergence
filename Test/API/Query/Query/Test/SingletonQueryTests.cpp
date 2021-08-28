@@ -7,19 +7,12 @@ using namespace Tasks;
 
 Storage RequestStorage ()
 {
-    return
-        {
-            Player::Reflection::GetMapping (),
-            {&HUGO_0_ALIVE_STUNNED},
-            {Sources::Singleton {"singleton"}}
-        };
+    return {Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"singleton"}}};
 }
 
 Scenario EditAndRead () noexcept
 {
-    return
-        {
-            {
+    return {{
                 RequestStorage (),
             },
             {
@@ -31,7 +24,6 @@ Scenario EditAndRead () noexcept
                 QuerySingletonToRead {{"singleton", "singleton"}},
                 CursorCheck {"singleton", &KARL_1_ALIVE_IMMOBILIZED},
                 CursorClose {"singleton"},
-            }
-        };
+            }};
 }
 } // namespace Emergence::Query::Test::SingletonQuery

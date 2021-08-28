@@ -22,7 +22,7 @@ public:
         ~Cursor () noexcept;
 
         /// \return Singleton instance.
-        void *operator * () const noexcept;
+        void *operator* () const noexcept;
 
         /// Assigning cursors looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -33,7 +33,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifySingletonQuery, Cursor);
@@ -44,6 +44,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit ModifySingletonQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit ModifySingletonQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

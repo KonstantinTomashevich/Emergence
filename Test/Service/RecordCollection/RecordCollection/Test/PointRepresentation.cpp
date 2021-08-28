@@ -1,5 +1,5 @@
-#include <RecordCollection/Test/Scenario.hpp>
 #include <RecordCollection/Test/PointRepresentation.hpp>
+#include <RecordCollection/Test/Scenario.hpp>
 
 #include <Reference/Test/Tests.hpp>
 
@@ -17,12 +17,9 @@ bool Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker () 
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return
-        {
-            Player::Reflection::GetMapping (),
+    return {Player::Reflection::GetMapping (),
             {&HUGO_0_ALIVE_STUNNED},
-            {Sources::Value {"Source", {Player::Reflection::id}}}
-        };
+            {Sources::Value {"Source", {Player::Reflection::id}}}};
 }
 
 static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -32,16 +29,16 @@ static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::T
 
 static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
+                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    ReferenceApiTestImporters::ForCursor (
-        _scenario, GetTestStorage (), QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
+                                          QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
+                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (PointRepresentationReference)

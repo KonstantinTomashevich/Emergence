@@ -103,9 +103,9 @@ public:
     /// \return ::IsHandleValid ()
     explicit operator bool () const noexcept;
 
-    Field &operator = (const Field &_other) noexcept;
+    Field &operator= (const Field &_other) noexcept;
 
-    Field &operator = (Field &&_other) noexcept;
+    Field &operator= (Field &&_other) noexcept;
 
 private:
     /// Fields are constructed inside Mapping.

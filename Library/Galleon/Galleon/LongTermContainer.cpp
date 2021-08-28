@@ -3,12 +3,12 @@
 
 namespace Emergence::Galleon
 {
-void *LongTermContainer::InsertQuery::Cursor::operator ++ () noexcept
+void *LongTermContainer::InsertQuery::Cursor::operator++ () noexcept
 {
     return allocator.Allocate ();
 }
 
-LongTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle <LongTermContainer> _container) noexcept
+LongTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle<LongTermContainer> _container) noexcept
     : container (std::move (_container)),
       allocator (container->collection.AllocateAndInsert ())
 {
@@ -20,13 +20,13 @@ LongTermContainer::InsertQuery::Cursor LongTermContainer::InsertQuery::Execute (
     return Cursor (container);
 }
 
-Handling::Handle <LongTermContainer> LongTermContainer::InsertQuery::GetContainer () const noexcept
+Handling::Handle<LongTermContainer> LongTermContainer::InsertQuery::GetContainer () const noexcept
 {
     assert (container);
     return container;
 }
 
-LongTermContainer::InsertQuery::InsertQuery (Handling::Handle <LongTermContainer> _container) noexcept
+LongTermContainer::InsertQuery::InsertQuery (Handling::Handle<LongTermContainer> _container) noexcept
     : container (std::move (_container))
 {
     assert (container);
@@ -38,20 +38,20 @@ LongTermContainer::FetchValueQuery::Cursor LongTermContainer::FetchValueQuery::E
     return representation.ReadPoint (_values);
 }
 
-RecordCollection::PointRepresentation::KeyFieldIterator
-LongTermContainer::FetchValueQuery::KeyFieldBegin () const noexcept
+RecordCollection::PointRepresentation::KeyFieldIterator LongTermContainer::FetchValueQuery::KeyFieldBegin ()
+    const noexcept
 {
     return representation.KeyFieldBegin ();
 }
 
-RecordCollection::PointRepresentation::KeyFieldIterator
-LongTermContainer::FetchValueQuery::KeyFieldEnd () const noexcept
+RecordCollection::PointRepresentation::KeyFieldIterator LongTermContainer::FetchValueQuery::KeyFieldEnd ()
+    const noexcept
 {
     return representation.KeyFieldEnd ();
 }
 
-LongTermContainer::FetchValueQuery::FetchValueQuery (
-    Handling::Handle <LongTermContainer> _container, RecordCollection::PointRepresentation _representation) noexcept
+LongTermContainer::FetchValueQuery::FetchValueQuery (Handling::Handle<LongTermContainer> _container,
+                                                     RecordCollection::PointRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -62,20 +62,20 @@ LongTermContainer::ModifyValueQuery::Cursor LongTermContainer::ModifyValueQuery:
     return representation.EditPoint (_values);
 }
 
-RecordCollection::PointRepresentation::KeyFieldIterator
-LongTermContainer::ModifyValueQuery::KeyFieldBegin () const noexcept
+RecordCollection::PointRepresentation::KeyFieldIterator LongTermContainer::ModifyValueQuery::KeyFieldBegin ()
+    const noexcept
 {
     return representation.KeyFieldBegin ();
 }
 
-RecordCollection::PointRepresentation::KeyFieldIterator
-LongTermContainer::ModifyValueQuery::KeyFieldEnd () const noexcept
+RecordCollection::PointRepresentation::KeyFieldIterator LongTermContainer::ModifyValueQuery::KeyFieldEnd ()
+    const noexcept
 {
     return representation.KeyFieldEnd ();
 }
 
-LongTermContainer::ModifyValueQuery::ModifyValueQuery (
-    Handling::Handle <LongTermContainer> _container, RecordCollection::PointRepresentation _representation) noexcept
+LongTermContainer::ModifyValueQuery::ModifyValueQuery (Handling::Handle<LongTermContainer> _container,
+                                                       RecordCollection::PointRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -93,8 +93,7 @@ StandardLayout::Field LongTermContainer::FetchAscendingRangeQuery::GetKeyField (
 }
 
 LongTermContainer::FetchAscendingRangeQuery::FetchAscendingRangeQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::LinearRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -112,8 +111,7 @@ StandardLayout::Field LongTermContainer::ModifyAscendingRangeQuery::GetKeyField 
 }
 
 LongTermContainer::ModifyAscendingRangeQuery::ModifyAscendingRangeQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::LinearRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -131,8 +129,7 @@ StandardLayout::Field LongTermContainer::FetchDescendingRangeQuery::GetKeyField 
 }
 
 LongTermContainer::FetchDescendingRangeQuery::FetchDescendingRangeQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::LinearRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -150,8 +147,7 @@ StandardLayout::Field LongTermContainer::ModifyDescendingRangeQuery::GetKeyField
 }
 
 LongTermContainer::ModifyDescendingRangeQuery::ModifyDescendingRangeQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::LinearRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::LinearRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -175,8 +171,7 @@ LongTermContainer::FetchShapeIntersectionQuery::DimensionEnd () const noexcept
 }
 
 LongTermContainer::FetchShapeIntersectionQuery::FetchShapeIntersectionQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::VolumetricRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::VolumetricRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -200,8 +195,7 @@ LongTermContainer::ModifyShapeIntersectionQuery::DimensionEnd () const noexcept
 }
 
 LongTermContainer::ModifyShapeIntersectionQuery::ModifyShapeIntersectionQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::VolumetricRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::VolumetricRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -225,8 +219,7 @@ LongTermContainer::FetchRayIntersectionQuery::DimensionEnd () const noexcept
 }
 
 LongTermContainer::FetchRayIntersectionQuery::FetchRayIntersectionQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::VolumetricRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::VolumetricRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -250,8 +243,7 @@ LongTermContainer::ModifyRayIntersectionQuery::DimensionEnd () const noexcept
 }
 
 LongTermContainer::ModifyRayIntersectionQuery::ModifyRayIntersectionQuery (
-    Handling::Handle <LongTermContainer> _container,
-    RecordCollection::VolumetricRepresentation _representation) noexcept
+    Handling::Handle<LongTermContainer> _container, RecordCollection::VolumetricRepresentation _representation) noexcept
     : RepresentationQueryBase (std::move (_container), std::move (_representation))
 {
 }
@@ -262,13 +254,13 @@ LongTermContainer::InsertQuery LongTermContainer::Insert () noexcept
 }
 
 LongTermContainer::FetchValueQuery LongTermContainer::FetchValue (
-    const std::vector <StandardLayout::FieldId> &_keyFields) noexcept
+    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     return {this, AcquirePointRepresentation (_keyFields)};
 }
 
-LongTermContainer::ModifyValueQuery LongTermContainer::ModifyValue
-    (const std::vector <StandardLayout::FieldId> &_keyFields) noexcept
+LongTermContainer::ModifyValueQuery LongTermContainer::ModifyValue (
+    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     return {this, AcquirePointRepresentation (_keyFields)};
 }
@@ -298,25 +290,25 @@ LongTermContainer::ModifyDescendingRangeQuery LongTermContainer::ModifyDescendin
 }
 
 LongTermContainer::FetchShapeIntersectionQuery LongTermContainer::FetchShapeIntersection (
-    const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::ModifyShapeIntersectionQuery LongTermContainer::ModifyShapeIntersection (
-    const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::FetchRayIntersectionQuery LongTermContainer::FetchRayIntersection (
-    const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::ModifyRayIntersectionQuery LongTermContainer::ModifyRayIntersection (
-    const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
@@ -330,8 +322,8 @@ LongTermContainer::LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping 
 RecordCollection::LinearRepresentation LongTermContainer::AcquireLinearRepresentation (
     StandardLayout::FieldId _keyField) noexcept
 {
-    for (auto iterator = collection.LinearRepresentationBegin ();
-         iterator != collection.LinearRepresentationEnd (); ++iterator)
+    for (auto iterator = collection.LinearRepresentationBegin (); iterator != collection.LinearRepresentationEnd ();
+         ++iterator)
     {
         RecordCollection::LinearRepresentation representation = *iterator;
         if (representation.GetKeyField ().IsSame (typeMapping.GetField (_keyField)))
@@ -344,10 +336,10 @@ RecordCollection::LinearRepresentation LongTermContainer::AcquireLinearRepresent
 }
 
 RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentation (
-    const std::vector <StandardLayout::FieldId> &_keyFields) noexcept
+    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
-    for (auto iterator = collection.PointRepresentationBegin ();
-         iterator != collection.PointRepresentationEnd (); ++iterator)
+    for (auto iterator = collection.PointRepresentationBegin (); iterator != collection.PointRepresentationEnd ();
+         ++iterator)
     {
         RecordCollection::PointRepresentation representation = *iterator;
         auto representationKeyFieldIterator = representation.KeyFieldBegin ();
@@ -380,7 +372,7 @@ RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentat
 }
 
 RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricRepresentation (
-    const std::vector <RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     for (auto iterator = collection.VolumetricRepresentationBegin ();
          iterator != collection.VolumetricRepresentationEnd (); ++iterator)
@@ -399,21 +391,19 @@ RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricR
             assert (givenDimension.globalMinBorder);
             assert (givenDimension.globalMaxBorder);
 
-            const bool minFieldMatches = representationDimension.minField.IsSame (
-                typeMapping.GetField (givenDimension.minBorderField));
+            const bool minFieldMatches =
+                representationDimension.minField.IsSame (typeMapping.GetField (givenDimension.minBorderField));
 
             const bool minValueMatches =
-                minFieldMatches &&
-                memcmp (representationDimension.globalMin, givenDimension.globalMinBorder,
-                        representationDimension.minField.GetSize ()) == 0;
+                minFieldMatches && memcmp (representationDimension.globalMin, givenDimension.globalMinBorder,
+                                           representationDimension.minField.GetSize ()) == 0;
 
-            const bool maxFieldMatches = representationDimension.maxField.IsSame (
-                typeMapping.GetField (givenDimension.maxBorderField));
+            const bool maxFieldMatches =
+                representationDimension.maxField.IsSame (typeMapping.GetField (givenDimension.maxBorderField));
 
             const bool maxValueMatches =
-                maxFieldMatches &&
-                memcmp (representationDimension.globalMax, givenDimension.globalMaxBorder,
-                        representationDimension.maxField.GetSize ()) == 0;
+                maxFieldMatches && memcmp (representationDimension.globalMax, givenDimension.globalMaxBorder,
+                                           representationDimension.maxField.GetSize ()) == 0;
 
             if (!minFieldMatches || !maxFieldMatches || !minValueMatches || !maxValueMatches)
             {

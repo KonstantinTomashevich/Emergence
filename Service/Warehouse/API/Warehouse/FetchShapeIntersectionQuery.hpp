@@ -28,7 +28,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
 
-        explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchShapeIntersectionQuery, Cursor, Shape _shape);
@@ -43,6 +43,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit FetchShapeIntersectionQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit FetchShapeIntersectionQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

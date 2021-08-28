@@ -31,7 +31,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit ReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -47,7 +47,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit EditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over PointRepresentation key fields.
@@ -62,7 +62,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit KeyFieldIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit KeyFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Defines point by specifying value for each key field.
@@ -104,7 +104,8 @@ public:
     KeyFieldIterator KeyFieldEnd () const noexcept;
 
     /// \return Can this representation be safely dropped?
-    /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
+    /// \details Representation can be safely dropped if there is only one reference to it and there is no active
+    ///          cursors.
     bool CanBeDropped () const noexcept;
 
     /// \brief Deletes this point representation from Collection.
@@ -112,11 +113,11 @@ public:
     void Drop () noexcept;
 
     /// \return True if this and given instances are handles to the same representation.
-    bool operator == (const PointRepresentation &_other) const noexcept;
+    bool operator== (const PointRepresentation &_other) const noexcept;
 
-    PointRepresentation &operator = (const PointRepresentation &_other) noexcept;
+    PointRepresentation &operator= (const PointRepresentation &_other) noexcept;
 
-    PointRepresentation &operator = (PointRepresentation &&_other) noexcept;
+    PointRepresentation &operator= (PointRepresentation &&_other) noexcept;
 
 private:
     /// Collection constructs representations.

@@ -10,12 +10,7 @@ using namespace Emergence::Galleon::Test;
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return
-        {
-            Player::Reflection::GetMapping (),
-            {&HUGO_0_ALIVE_STUNNED},
-            {Sources::UnorderedSequence {"Source"}}
-        };
+    return {Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::UnorderedSequence {"Source"}}};
 }
 
 static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -25,34 +20,29 @@ static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::
 
 static void ExecuteInsertQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareShortTermInsertQuery {});
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, GetTestStorage (), PrepareShortTermInsertQuery {});
 }
 
 static void ExecuteFetchQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareShortTermFetchQuery {});
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, GetTestStorage (), PrepareShortTermFetchQuery {});
 }
 
 static void ExecuteModifyQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, GetTestStorage (), PrepareShortTermModifyQuery {});
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, GetTestStorage (), PrepareShortTermModifyQuery {});
 }
 
 static void ExecuteFetchQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QueryUnorderedSequenceToRead {{"Source", {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetTestStorage (), QueryUnorderedSequenceToRead {{"Source", {}}},
+                                        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForCursor (
-        _scenario, GetTestStorage (), QueryUnorderedSequenceToEdit {{"Source", {}}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForCursor (_scenario, GetTestStorage (), QueryUnorderedSequenceToEdit {{"Source", {}}},
+                                        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 // TODO: InsertQuery::Cursor is skipped for now, because it has unique interface.

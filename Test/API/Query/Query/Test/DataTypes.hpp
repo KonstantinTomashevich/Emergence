@@ -43,7 +43,7 @@ struct Player final
     static constexpr std::size_t NAME_MAX_SIZE = 32u;
 
     uint32_t id = 0u;
-    std::array <char, NAME_MAX_SIZE> name = {0u};
+    std::array<char, NAME_MAX_SIZE> name = {0u};
     uint8_t status = 0u;
 };
 
@@ -154,8 +154,8 @@ struct AllFieldTypesStructure
     float floating = 0.0f;
     double doubleFloating = 0.0;
 
-    std::array <uint8_t, 4> block {};
-    std::array <char, 24> string {};
+    std::array<uint8_t, 4> block {};
+    std::array<char, 24> string {};
 };
 
 namespace Queries

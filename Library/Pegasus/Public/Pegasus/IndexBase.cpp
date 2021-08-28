@@ -9,9 +9,7 @@ bool IndexBase::CanBeDropped () const noexcept
     return GetReferenceCount () <= 1u && activeCursors == 0u;
 }
 
-IndexBase::IndexBase (class Storage *_storage) noexcept
-    : storage (_storage),
-      activeCursors (0u)
+IndexBase::IndexBase (class Storage *_storage) noexcept : storage (_storage), activeCursors (0u)
 {
     assert (storage);
     // Add self reference to prevent Handling from deleting this object.

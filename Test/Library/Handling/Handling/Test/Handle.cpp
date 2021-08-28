@@ -13,12 +13,12 @@
 
 namespace Emergence::Reference::Test::Tasks
 {
-std::ostream &operator << (std::ostream &_output, const Create &_task)
+std::ostream &operator<< (std::ostream &_output, const Create &_task)
 {
     return _output << "Construct \"" << _task.name << "\".";
 }
 
-std::ostream &operator << (std::ostream &_output, const CheckStatus &_task)
+std::ostream &operator<< (std::ostream &_output, const CheckStatus &_task)
 {
     return _output << "Check that resource has any references. Expected result: \"" << _task.hasAnyReferences << "\".";
 }
@@ -29,8 +29,7 @@ namespace Emergence::Handling::Test
 class HandleableResource final : public HandleableBase
 {
 public:
-    HandleableResource (bool *_aliveFlagPointer)
-        : aliveFlagPointer (_aliveFlagPointer)
+    HandleableResource (bool *_aliveFlagPointer) : aliveFlagPointer (_aliveFlagPointer)
     {
         REQUIRE (aliveFlagPointer);
         *aliveFlagPointer = true;
@@ -49,25 +48,23 @@ private:
 struct HandleableResourceTag;
 } // namespace Emergence::Handling::Test
 
-EMERGENCE_CONTEXT_BIND_OBJECT_TAG (
-    Emergence::Handling::Test::HandleableResourceTag,
-    Emergence::Handling::Handle <Emergence::Handling::Test::HandleableResource>,
-    "handle")
+EMERGENCE_CONTEXT_BIND_OBJECT_TAG (Emergence::Handling::Test::HandleableResourceTag,
+                                   Emergence::Handling::Handle<Emergence::Handling::Test::HandleableResource>,
+                                   "handle")
 
 namespace Emergence::Handling::Test
 {
 using namespace Context::Extension::Tasks;
 
-using Task = std::variant <
-    Reference::Test::Tasks::Create,
-    Move <HandleableResourceTag>,
-    Copy <HandleableResourceTag>,
-    MoveAssign <HandleableResourceTag>,
-    CopyAssign <HandleableResourceTag>,
-    Delete <HandleableResourceTag>,
-    Reference::Test::Tasks::CheckStatus>;
+using Task = std::variant<Reference::Test::Tasks::Create,
+                          Move<HandleableResourceTag>,
+                          Copy<HandleableResourceTag>,
+                          MoveAssign<HandleableResourceTag>,
+                          CopyAssign<HandleableResourceTag>,
+                          Delete<HandleableResourceTag>,
+                          Reference::Test::Tasks::CheckStatus>;
 
-std::ostream &operator << (std::ostream &_output, const std::vector <Task> &_tasks)
+std::ostream &operator<< (std::ostream &_output, const std::vector<Task> &_tasks)
 {
     _output << "Scenario: " << std::endl;
     for (const Task &wrappedTask : _tasks)
@@ -86,7 +83,7 @@ std::ostream &operator << (std::ostream &_output, const std::vector <Task> &_tas
     return _output;
 }
 
-struct ExecutionContext final : Context::Extension::ObjectStorage <Handle <HandleableResource>>
+struct ExecutionContext final : Context::Extension::ObjectStorage<Handle<HandleableResource>>
 {
     bool aliveFlag = false;
     HandleableResource *resource = nullptr;
@@ -107,7 +104,7 @@ void ExecuteTask (ExecutionContext &_context, const Reference::Test::Tasks::Chec
     CHECK_EQUAL (_context.aliveFlag, _task.hasAnyReferences);
 }
 
-void ExecuteScenario (const std::vector <Task> &_tasks)
+void ExecuteScenario (const std::vector<Task> &_tasks)
 {
     ExecutionContext context {};
     LOG ((std::stringstream () << _tasks).str ());
@@ -126,9 +123,8 @@ void ExecuteScenario (const std::vector <Task> &_tasks)
         {
             if (pair.second)
             {
-                CHECK_WITH_MESSAGE (
-                    context.aliveFlag,
-                    "Handle \"", pair.first, "\" is valid. Handles can be valid only when resource is alive.");
+                CHECK_WITH_MESSAGE (context.aliveFlag, "Handle \"", pair.first,
+                                    "\" is valid. Handles can be valid only when resource is alive.");
                 CHECK_EQUAL (pair.second.Get (), context.resource);
             }
         }
@@ -144,36 +140,36 @@ Task ConvertTask (const SourceTask &_task)
 template <>
 Task ConvertTask (const Reference::Test::Tasks::Move &_task)
 {
-    return Move <HandleableResourceTag> {_task.sourceName, _task.targetName};
+    return Move<HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::Copy &_task)
 {
-    return Copy <HandleableResourceTag> {_task.sourceName, _task.targetName};
+    return Copy<HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::MoveAssign &_task)
 {
-    return MoveAssign <HandleableResourceTag> {_task.sourceName, _task.targetName};
+    return MoveAssign<HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::CopyAssign &_task)
 {
-    return CopyAssign <HandleableResourceTag> {_task.sourceName, _task.targetName};
+    return CopyAssign<HandleableResourceTag> {_task.sourceName, _task.targetName};
 }
 
 template <>
 Task ConvertTask (const Reference::Test::Tasks::Delete &_task)
 {
-    return Delete <HandleableResourceTag> {_task.name};
+    return Delete<HandleableResourceTag> {_task.name};
 }
 
 void ReferenceTestDriver (const Reference::Test::Scenario &_scenario)
 {
-    std::vector <Task> tasks;
+    std::vector<Task> tasks;
     for (const Reference::Test::Task &sourceTask : _scenario)
     {
         std::visit (

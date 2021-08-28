@@ -12,67 +12,65 @@ namespace Emergence::RecordCollection
 {
 Collection::Allocator::Allocator (Collection::Allocator &&_other) noexcept
 {
-    new (&data) Pegasus::Storage::Allocator (std::move (block_cast <Pegasus::Storage::Allocator> (_other.data)));
+    new (&data) Pegasus::Storage::Allocator (std::move (block_cast<Pegasus::Storage::Allocator> (_other.data)));
 }
 
 Collection::Allocator::~Allocator () noexcept
 {
-    block_cast <Pegasus::Storage::Allocator> (data).~Allocator ();
+    block_cast<Pegasus::Storage::Allocator> (data).~Allocator ();
 }
 
 void *Collection::Allocator::Allocate () noexcept
 {
-    return block_cast <Pegasus::Storage::Allocator> (data).Next ();
+    return block_cast<Pegasus::Storage::Allocator> (data).Next ();
 }
 
-Collection::Allocator::Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
+Collection::Allocator::Allocator (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
-    new (&data) Pegasus::Storage::Allocator (std::move (block_cast <Pegasus::Storage::Allocator> (*_data)));
+    new (&data) Pegasus::Storage::Allocator (std::move (block_cast<Pegasus::Storage::Allocator> (*_data)));
 }
 
 using LinearRepresentationIterator = Collection::LinearRepresentationIterator;
 
 using LinearRepresentationIteratorImplementation = Pegasus::Storage::OrderedIndexIterator;
 
-EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (
-    LinearRepresentationIterator, LinearRepresentationIteratorImplementation)
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (LinearRepresentationIterator,
+                                                                 LinearRepresentationIteratorImplementation)
 
-LinearRepresentation Collection::LinearRepresentationIterator::operator * () const noexcept
+LinearRepresentation Collection::LinearRepresentationIterator::operator* () const noexcept
 {
-    return LinearRepresentation ((*block_cast <Pegasus::Storage::OrderedIndexIterator> (data)).Get ());
+    return LinearRepresentation ((*block_cast<Pegasus::Storage::OrderedIndexIterator> (data)).Get ());
 }
 
 using PointRepresentationIterator = Collection::PointRepresentationIterator;
 
 using PointRepresentationIteratorImplementation = Pegasus::Storage::HashIndexIterator;
 
-EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (
-    PointRepresentationIterator, PointRepresentationIteratorImplementation)
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (PointRepresentationIterator,
+                                                                 PointRepresentationIteratorImplementation)
 
-PointRepresentation Collection::PointRepresentationIterator::operator * () const noexcept
+PointRepresentation Collection::PointRepresentationIterator::operator* () const noexcept
 {
-    return PointRepresentation ((*block_cast <Pegasus::Storage::HashIndexIterator> (data)).Get ());
+    return PointRepresentation ((*block_cast<Pegasus::Storage::HashIndexIterator> (data)).Get ());
 }
 
 using VolumetricRepresentationIterator = Collection::VolumetricRepresentationIterator;
 
 using VolumetricRepresentationIteratorImplementation = Pegasus::Storage::VolumetricIndexIterator;
 
-EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (
-    VolumetricRepresentationIterator, VolumetricRepresentationIteratorImplementation)
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (VolumetricRepresentationIterator,
+                                                                 VolumetricRepresentationIteratorImplementation)
 
-VolumetricRepresentation Collection::VolumetricRepresentationIterator::operator * () const noexcept
+VolumetricRepresentation Collection::VolumetricRepresentationIterator::operator* () const noexcept
 {
-    return VolumetricRepresentation ((*block_cast <Pegasus::Storage::VolumetricIndexIterator> (data)).Get ());
+    return VolumetricRepresentation ((*block_cast<Pegasus::Storage::VolumetricIndexIterator> (data)).Get ());
 }
 
-Collection::Collection (StandardLayout::Mapping _typeMapping)
-    : handle (new Pegasus::Storage (std::move (_typeMapping)))
+Collection::Collection (StandardLayout::Mapping _typeMapping) : handle (new Pegasus::Storage (std::move (_typeMapping)))
 {
 }
 
-Collection::Collection (Collection &&_other) noexcept
-    : handle (_other.handle)
+Collection::Collection (Collection &&_other) noexcept : handle (_other.handle)
 {
     assert (handle);
     _other.handle = nullptr;
@@ -80,58 +78,53 @@ Collection::Collection (Collection &&_other) noexcept
 
 Collection::~Collection () noexcept
 {
-    delete static_cast <Pegasus::Storage *> (handle);
+    delete static_cast<Pegasus::Storage *> (handle);
 }
 
 Collection::Allocator Collection::AllocateAndInsert () noexcept
 {
     assert (handle);
-    Pegasus::Storage::Allocator allocator = static_cast <Pegasus::Storage *> (handle)->AllocateAndInsert ();
-    return Allocator (reinterpret_cast <decltype (Allocator::data) *> (&allocator));
+    Pegasus::Storage::Allocator allocator = static_cast<Pegasus::Storage *> (handle)->AllocateAndInsert ();
+    return Allocator (reinterpret_cast<decltype (Allocator::data) *> (&allocator));
 }
 
 LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::FieldId _keyField) const noexcept
 {
     assert (handle);
-    Handling::Handle <Pegasus::OrderedIndex> index =
-        static_cast <Pegasus::Storage *> (handle)->CreateOrderedIndex (_keyField);
+    Handling::Handle<Pegasus::OrderedIndex> index =
+        static_cast<Pegasus::Storage *> (handle)->CreateOrderedIndex (_keyField);
     return LinearRepresentation (index.Get ());
 }
 
-PointRepresentation
-Collection::CreatePointRepresentation (const std::vector <StandardLayout::FieldId> &_keyFields) const noexcept
+PointRepresentation Collection::CreatePointRepresentation (
+    const std::vector<StandardLayout::FieldId> &_keyFields) const noexcept
 {
     assert (handle);
-    Handling::Handle <Pegasus::HashIndex> index =
-        static_cast <Pegasus::Storage *> (handle)->CreateHashIndex (_keyFields);
+    Handling::Handle<Pegasus::HashIndex> index = static_cast<Pegasus::Storage *> (handle)->CreateHashIndex (_keyFields);
     return PointRepresentation (index.Get ());
 }
 
-VolumetricRepresentation
-Collection::CreateVolumetricRepresentation (const std::vector <DimensionDescriptor> &_dimensions) const noexcept
+VolumetricRepresentation Collection::CreateVolumetricRepresentation (
+    const std::vector<DimensionDescriptor> &_dimensions) const noexcept
 {
     assert (handle);
     // Volumetric representation creation is rare operation, therefore it's ok to dynamically allocate vector here.
-    std::vector <Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions;
+    std::vector<Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions;
+    convertedDimensions.reserve (_dimensions.size ());
 
     for (const DimensionDescriptor &dimension : _dimensions)
     {
-        convertedDimensions.emplace_back (
-            Pegasus::VolumetricIndex::DimensionDescriptor
-                {
-                    *reinterpret_cast <const Pegasus::VolumetricIndex::SupportedAxisValue *> (
-                        dimension.globalMinBorder),
-                    dimension.minBorderField,
+        convertedDimensions.emplace_back (Pegasus::VolumetricIndex::DimensionDescriptor {
+            *reinterpret_cast<const Pegasus::VolumetricIndex::SupportedAxisValue *> (dimension.globalMinBorder),
+            dimension.minBorderField,
 
-                    *reinterpret_cast <const Pegasus::VolumetricIndex::SupportedAxisValue *> (
-                        dimension.globalMaxBorder),
-                    dimension.maxBorderField,
-                }
-        );
+            *reinterpret_cast<const Pegasus::VolumetricIndex::SupportedAxisValue *> (dimension.globalMaxBorder),
+            dimension.maxBorderField,
+        });
     }
 
-    Handling::Handle <Pegasus::VolumetricIndex> index =
-        static_cast <Pegasus::Storage *> (handle)->CreateVolumetricIndex (convertedDimensions);
+    Handling::Handle<Pegasus::VolumetricIndex> index =
+        static_cast<Pegasus::Storage *> (handle)->CreateVolumetricIndex (convertedDimensions);
     return VolumetricRepresentation (index.Get ());
 }
 
@@ -139,57 +132,55 @@ Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin (
 {
     assert (handle);
     Pegasus::Storage::OrderedIndexIterator iterator =
-        static_cast <const Pegasus::Storage *> (handle)->BeginOrderedIndices ();
+        static_cast<const Pegasus::Storage *> (handle)->BeginOrderedIndices ();
 
-    return LinearRepresentationIterator (
-        reinterpret_cast <decltype (LinearRepresentationIterator::data) *> (&iterator));
+    return LinearRepresentationIterator (reinterpret_cast<decltype (LinearRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () const noexcept
 {
     assert (handle);
     Pegasus::Storage::OrderedIndexIterator iterator =
-        static_cast <const Pegasus::Storage *> (handle)->EndOrderedIndices ();
+        static_cast<const Pegasus::Storage *> (handle)->EndOrderedIndices ();
 
-    return LinearRepresentationIterator (
-        reinterpret_cast <decltype (LinearRepresentationIterator::data) *> (&iterator));
+    return LinearRepresentationIterator (reinterpret_cast<decltype (LinearRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::PointRepresentationIterator Collection::PointRepresentationBegin () const noexcept
 {
     assert (handle);
-    Pegasus::Storage::HashIndexIterator iterator = static_cast <const Pegasus::Storage *> (handle)->BeginHashIndices ();
-    return PointRepresentationIterator (reinterpret_cast <decltype (PointRepresentationIterator::data) *> (&iterator));
+    Pegasus::Storage::HashIndexIterator iterator = static_cast<const Pegasus::Storage *> (handle)->BeginHashIndices ();
+    return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::PointRepresentationIterator Collection::PointRepresentationEnd () const noexcept
 {
     assert (handle);
-    Pegasus::Storage::HashIndexIterator iterator = static_cast <const Pegasus::Storage *> (handle)->EndHashIndices ();
-    return PointRepresentationIterator (reinterpret_cast <decltype (PointRepresentationIterator::data) *> (&iterator));
+    Pegasus::Storage::HashIndexIterator iterator = static_cast<const Pegasus::Storage *> (handle)->EndHashIndices ();
+    return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () const noexcept
 {
     assert (handle);
     Pegasus::Storage::VolumetricIndexIterator iterator =
-        static_cast <const Pegasus::Storage *> (handle)->BeginVolumetricIndices ();
+        static_cast<const Pegasus::Storage *> (handle)->BeginVolumetricIndices ();
 
     return VolumetricRepresentationIterator (
-        reinterpret_cast <decltype (VolumetricRepresentationIterator::data) *> (&iterator));
+        reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationEnd () const noexcept
 {
     assert (handle);
     Pegasus::Storage::VolumetricIndexIterator iterator =
-        static_cast <const Pegasus::Storage *> (handle)->EndVolumetricIndices ();
+        static_cast<const Pegasus::Storage *> (handle)->EndVolumetricIndices ();
 
     return VolumetricRepresentationIterator (
-        reinterpret_cast <decltype (VolumetricRepresentationIterator::data) *> (&iterator));
+        reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
 }
 
-Collection &Collection::operator = (Collection &&_other) noexcept
+Collection &Collection::operator= (Collection &&_other) noexcept
 {
     if (handle != _other.handle)
     {

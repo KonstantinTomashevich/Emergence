@@ -22,23 +22,21 @@ struct TypeOperations final
 
     int Compare (const void *_left, const void *_right) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Subtract (
-        const VolumetricIndex::SupportedAxisValue &_left,
-        const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
+    VolumetricIndex::SupportedAxisValue Subtract (const VolumetricIndex::SupportedAxisValue &_left,
+                                                  const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Divide (
-        const VolumetricIndex::SupportedAxisValue &_value,
-        const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
+    VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
+                                                const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Divide (
-        const VolumetricIndex::SupportedAxisValue &_value, std::size_t divider) const noexcept;
+    VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
+                                                std::size_t divider) const noexcept;
 
     std::size_t TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
     float ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
 private:
-    NumericValueComparator <Type> comparator {};
+    NumericValueComparator<Type> comparator {};
 };
 
 template <typename Cursor>
@@ -57,124 +55,113 @@ auto DoWithCorrectTypeOperations (const StandardLayout::Field &_field, const Cal
 {
     switch (_field.GetArchetype ())
     {
-        case StandardLayout::FieldArchetype::INT:
+    case StandardLayout::FieldArchetype::INT:
+    {
+        switch (_field.GetSize ())
         {
-            switch (_field.GetSize ())
-            {
-                case sizeof (int8_t):
-                    return _callback (TypeOperations <int8_t> {});
+        case sizeof (int8_t):
+            return _callback (TypeOperations<int8_t> {});
 
-                case sizeof (int16_t):
-                    return _callback (TypeOperations <int16_t> {});
+        case sizeof (int16_t):
+            return _callback (TypeOperations<int16_t> {});
 
-                case sizeof (int32_t):
-                    return _callback (TypeOperations <int32_t> {});
+        case sizeof (int32_t):
+            return _callback (TypeOperations<int32_t> {});
 
-                case sizeof (int64_t):
-                    return _callback (TypeOperations <int64_t> {});
-            }
-
-            break;
-        }
-        case StandardLayout::FieldArchetype::UINT:
-        {
-            switch (_field.GetSize ())
-            {
-                case sizeof (uint8_t):
-                    return _callback (TypeOperations <uint8_t> {});
-
-                case sizeof (uint16_t):
-                    return _callback (TypeOperations <uint16_t> {});
-
-                case sizeof (uint32_t):
-                    return _callback (TypeOperations <uint32_t> {});
-
-                case sizeof (uint64_t):
-                    return _callback (TypeOperations <uint64_t> {});
-            }
-
-            break;
+        case sizeof (int64_t):
+            return _callback (TypeOperations<int64_t> {});
         }
 
-        case StandardLayout::FieldArchetype::FLOAT:
+        break;
+    }
+    case StandardLayout::FieldArchetype::UINT:
+    {
+        switch (_field.GetSize ())
         {
-            switch (_field.GetSize ())
-            {
-                case sizeof (float):
-                    return _callback (TypeOperations <float> {});
+        case sizeof (uint8_t):
+            return _callback (TypeOperations<uint8_t> {});
 
-                case sizeof (double):
-                    return _callback (TypeOperations <double> {});
-            }
+        case sizeof (uint16_t):
+            return _callback (TypeOperations<uint16_t> {});
 
-            break;
+        case sizeof (uint32_t):
+            return _callback (TypeOperations<uint32_t> {});
+
+        case sizeof (uint64_t):
+            return _callback (TypeOperations<uint64_t> {});
         }
 
-        case StandardLayout::FieldArchetype::BIT:
-        case StandardLayout::FieldArchetype::BLOCK:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
-        case StandardLayout::FieldArchetype::STRING:
+        break;
+    }
+
+    case StandardLayout::FieldArchetype::FLOAT:
+    {
+        switch (_field.GetSize ())
         {
-            break;
+        case sizeof (float):
+            return _callback (TypeOperations<float> {});
+
+        case sizeof (double):
+            return _callback (TypeOperations<double> {});
         }
+
+        break;
+    }
+
+    case StandardLayout::FieldArchetype::BIT:
+    case StandardLayout::FieldArchetype::BLOCK:
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::STRING:
+    {
+        break;
+    }
     }
 
     assert (false);
-    return _callback (TypeOperations <float> ());
+    return _callback (TypeOperations<float> ());
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue () noexcept
-    : uint64 (0u)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue () noexcept : uint64 (0u)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int8_t _value) noexcept
-    : int8 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int8_t _value) noexcept : int8 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int16_t _value) noexcept
-    : int16 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int16_t _value) noexcept : int16 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int32_t _value) noexcept
-    : int32 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int32_t _value) noexcept : int32 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int64_t _value) noexcept
-    : int64 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int64_t _value) noexcept : int64 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint8_t _value) noexcept
-    : uint8 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint8_t _value) noexcept : uint8 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint16_t _value) noexcept
-    : uint16 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint16_t _value) noexcept : uint16 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint32_t _value) noexcept
-    : uint32 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint32_t _value) noexcept : uint32 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint64_t _value) noexcept
-    : uint64 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint64_t _value) noexcept : uint64 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (float _value) noexcept
-    : floating (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (float _value) noexcept : floating (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (double _value) noexcept
-    : doubleFloating (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (double _value) noexcept : doubleFloating (_value)
 {
 }
 
@@ -213,7 +200,8 @@ VolumetricIndex::ShapeIntersectionCursorBase::~ShapeIntersectionCursorBase () no
 }
 
 VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
-    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
+    VolumetricIndex *_index,
+    const VolumetricIndex::LeafSector &_sector,
     const AxisAlignedShapeContainer &_shape) noexcept
     : index (_index),
       sector (_sector),
@@ -246,7 +234,7 @@ bool VolumetricIndex::ShapeIntersectionCursorBase::IsFinished () const noexcept
 
 void VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextRecord () noexcept
 {
-    CursorCommons <ShapeIntersectionCursorBase>::MoveToNextRecord (*this);
+    CursorCommons<ShapeIntersectionCursorBase>::MoveToNextRecord (*this);
 }
 
 const void *VolumetricIndex::ShapeIntersectionCursorBase::GetRecord () const noexcept
@@ -265,7 +253,7 @@ VolumetricIndex *VolumetricIndex::ShapeIntersectionCursorBase::GetIndex () const
 
 void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noexcept
 {
-    CursorCommons <ShapeIntersectionCursorBase>::FixCurrentRecordIndex (*this);
+    CursorCommons<ShapeIntersectionCursorBase>::FixCurrentRecordIndex (*this);
 }
 
 template <typename Operations>
@@ -284,11 +272,11 @@ bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const O
 }
 
 template <typename Operations>
-bool VolumetricIndex::ShapeIntersectionCursorBase::CheckIntersection (
-    const void *_record, const Operations &_operations) const noexcept
+bool VolumetricIndex::ShapeIntersectionCursorBase::CheckIntersection (const void *_record,
+                                                                      const Operations &_operations) const noexcept
 {
     assert (index);
-    const auto *lookupShape = reinterpret_cast <const AxisAlignedShape <typename Operations::ValueType> *> (&shape);
+    const auto *lookupShape = reinterpret_cast<const AxisAlignedShape<typename Operations::ValueType> *> (&shape);
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
@@ -325,19 +313,20 @@ VolumetricIndex::ShapeIntersectionReadCursor::~ShapeIntersectionReadCursor () no
     }
 }
 
-const void *VolumetricIndex::ShapeIntersectionReadCursor::operator * () const noexcept
+const void *VolumetricIndex::ShapeIntersectionReadCursor::operator* () const noexcept
 {
     return GetRecord ();
 }
 
-VolumetricIndex::ShapeIntersectionReadCursor &VolumetricIndex::ShapeIntersectionReadCursor::operator ++ () noexcept
+VolumetricIndex::ShapeIntersectionReadCursor &VolumetricIndex::ShapeIntersectionReadCursor::operator++ () noexcept
 {
     MoveToNextRecord ();
     return *this;
 }
 
 VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
-    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
+    VolumetricIndex *_index,
+    const VolumetricIndex::LeafSector &_sector,
     const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
     : ShapeIntersectionCursorBase (_index, _sector, _shape)
 {
@@ -366,12 +355,12 @@ VolumetricIndex::ShapeIntersectionEditCursor::~ShapeIntersectionEditCursor () no
     }
 }
 
-void *VolumetricIndex::ShapeIntersectionEditCursor::operator * () noexcept
+void *VolumetricIndex::ShapeIntersectionEditCursor::operator* () noexcept
 {
-    return const_cast <void *> (GetRecord ());
+    return const_cast<void *> (GetRecord ());
 }
 
-VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator ~ () noexcept
+VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator~ () noexcept
 {
     assert (!IsFinished ());
     // Record can be stored in many coordinates, therefore deletion by cursor can not be optimized for owner index.
@@ -382,7 +371,7 @@ VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersection
     return *this;
 }
 
-VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator ++ () noexcept
+VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator++ () noexcept
 {
     assert (!IsFinished ());
     // Record can be stored in many coordinates, therefore edition by cursor can not be optimized for owner index.
@@ -393,7 +382,8 @@ VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersection
 }
 
 VolumetricIndex::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
-    VolumetricIndex *_index, const VolumetricIndex::LeafSector &_sector,
+    VolumetricIndex *_index,
+    const VolumetricIndex::LeafSector &_sector,
     const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
     : ShapeIntersectionCursorBase (_index, _sector, _shape)
 {
@@ -451,8 +441,9 @@ VolumetricIndex::RayIntersectionCursorBase::~RayIntersectionCursorBase () noexce
     }
 }
 
-VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
-    VolumetricIndex *_index, const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
+VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (VolumetricIndex *_index,
+                                                                       const VolumetricIndex::RayContainer &_ray,
+                                                                       float _maxDistance) noexcept
     : index (_index),
       distanceTraveled (0.0f),
       ray (_ray),
@@ -468,40 +459,38 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
         index->dimensions[0u].minBorderField,
         [this] (const auto &_operations)
         {
-            using Operations = std::decay_t <decltype (_operations)>;
+            using Operations = std::decay_t<decltype (_operations)>;
             using ValueType = typename Operations::ValueType;
 
             // TODO: For simplicity, we copy data from dimensions into suitable data structure. Maybe optimize this out?
-            AxisAlignedShape <ValueType> bordersShape;
-            const auto *lookupRay = reinterpret_cast <const Ray <ValueType> *> (&ray);
+            AxisAlignedShape<ValueType> bordersShape;
+            const auto *lookupRay = reinterpret_cast<const Ray<ValueType> *> (&ray);
 
             for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
             {
                 const Dimension &dimension = index->dimensions[dimensionIndex];
-                bordersShape.Min (dimensionIndex) = *reinterpret_cast <const ValueType *> (&dimension.globalMinBorder);
-                bordersShape.Max (dimensionIndex) = *reinterpret_cast <const ValueType *> (&dimension.globalMaxBorder);
+                bordersShape.Min (dimensionIndex) = *reinterpret_cast<const ValueType *> (&dimension.globalMinBorder);
+                bordersShape.Max (dimensionIndex) = *reinterpret_cast<const ValueType *> (&dimension.globalMaxBorder);
             }
 
             float distanceToBorders;
-            if (index->CheckRayShapeIntersection (
-                ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&bordersShape),
-                distanceToBorders, currentPoint, _operations))
+            if (index->CheckRayShapeIntersection (ray, *reinterpret_cast<AxisAlignedShapeContainer *> (&bordersShape),
+                                                  distanceToBorders, currentPoint, _operations))
             {
                 distanceTraveled += distanceToBorders;
                 for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
                 {
                     const Dimension &dimension = index->dimensions[dimensionIndex];
                     const SupportedAxisValue leafSize = index->CalculateLeafSize (dimension, _operations);
-                    currentCoordinate[dimensionIndex] = index->CalculateCoordinate (
-                        currentPoint[dimensionIndex], dimension, leafSize, _operations);
+                    currentCoordinate[dimensionIndex] =
+                        index->CalculateCoordinate (currentPoint[dimensionIndex], dimension, leafSize, _operations);
 
                     currentPoint[dimensionIndex] =
                         (currentPoint[dimensionIndex] - _operations.ToFloat (dimension.globalMinBorder)) /
                         _operations.ToFloat (leafSize);
 
                     direction[dimensionIndex] =
-                        static_cast <float> (lookupRay->Direction (dimensionIndex)) /
-                        _operations.ToFloat (leafSize);
+                        static_cast<float> (lookupRay->Direction (dimensionIndex)) / _operations.ToFloat (leafSize);
                 }
 
 #ifndef NDEBUG
@@ -530,8 +519,7 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (
                     currentCoordinate[dimensionIndex] = maxCoordinate;
                 }
             }
-        }
-    );
+        });
 }
 
 bool VolumetricIndex::RayIntersectionCursorBase::IsFinished () const noexcept
@@ -556,7 +544,7 @@ bool VolumetricIndex::RayIntersectionCursorBase::IsFinished () const noexcept
 
 void VolumetricIndex::RayIntersectionCursorBase::MoveToNextRecord () noexcept
 {
-    CursorCommons <RayIntersectionCursorBase>::MoveToNextRecord (*this);
+    CursorCommons<RayIntersectionCursorBase>::MoveToNextRecord (*this);
 }
 
 const void *VolumetricIndex::RayIntersectionCursorBase::GetRecord () const noexcept
@@ -582,21 +570,21 @@ VolumetricIndex *VolumetricIndex::RayIntersectionCursorBase::GetIndex () const n
 
 void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexcept
 {
-    CursorCommons <RayIntersectionCursorBase>::FixCurrentRecordIndex (*this);
+    CursorCommons<RayIntersectionCursorBase>::FixCurrentRecordIndex (*this);
 }
 
 template <typename Operations>
 bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
 {
-    std::size_t closestDimension = std::numeric_limits <std::size_t>::max ();
-    float minT = std::numeric_limits <float>::max ();
+    std::size_t closestDimension = std::numeric_limits<std::size_t>::max ();
+    float minT = std::numeric_limits<float>::max ();
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         if (fabs (direction[dimensionIndex]) > Constants::VolumetricIndex::EPSILON)
         {
             const float step = direction[dimensionIndex] > 0.0f ? 1.0f : 0.0f;
-            const float target = static_cast <float> (currentCoordinate[dimensionIndex]) + step;
+            const float target = static_cast<float> (currentCoordinate[dimensionIndex]) + step;
             const float t = (target - currentPoint[dimensionIndex]) / direction[dimensionIndex];
 
             if (t < minT)
@@ -624,12 +612,12 @@ bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Ope
         currentPoint[dimensionIndex] += minT * direction[dimensionIndex];
     }
 
-    const auto *lookupRay = reinterpret_cast <const Ray <typename Operations::ValueType> *> (&ray);
+    const auto *lookupRay = reinterpret_cast<const Ray<typename Operations::ValueType> *> (&ray);
     float deltaDistance = 0.0f;
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
-        float delta = static_cast <float> (lookupRay->Direction (dimensionIndex)) * minT;
+        float delta = static_cast<float> (lookupRay->Direction (dimensionIndex)) * minT;
         deltaDistance += delta * delta;
     }
 
@@ -638,29 +626,29 @@ bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Ope
 }
 
 template <typename Operations>
-bool VolumetricIndex::RayIntersectionCursorBase::CheckIntersection (
-    const void *_record, const Operations &_operations) const noexcept
+bool VolumetricIndex::RayIntersectionCursorBase::CheckIntersection (const void *_record,
+                                                                    const Operations &_operations) const noexcept
 {
     assert (index);
     // TODO: For simplicity, we copy data from record into suitable data structure. Maybe optimize this out?
-    AxisAlignedShape <typename Operations::ValueType> recordShape;
+    AxisAlignedShape<typename Operations::ValueType> recordShape;
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < index->dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = index->dimensions[dimensionIndex];
         recordShape.Min (dimensionIndex) =
-            *reinterpret_cast <const typename Operations::ValueType *> (dimension.minBorderField.GetValue (_record));
+            *reinterpret_cast<const typename Operations::ValueType *> (dimension.minBorderField.GetValue (_record));
 
         recordShape.Max (dimensionIndex) =
-            *reinterpret_cast <const typename Operations::ValueType *> (dimension.maxBorderField.GetValue (_record));
+            *reinterpret_cast<const typename Operations::ValueType *> (dimension.maxBorderField.GetValue (_record));
     }
 
     float distanceToShape;
-    std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> intersectionPoint;
+    std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> intersectionPoint;
 
-    bool intersects = index->CheckRayShapeIntersection (
-        ray, *reinterpret_cast <AxisAlignedShapeContainer *> (&recordShape),
-        distanceToShape, intersectionPoint, _operations);
+    bool intersects =
+        index->CheckRayShapeIntersection (ray, *reinterpret_cast<AxisAlignedShapeContainer *> (&recordShape),
+                                          distanceToShape, intersectionPoint, _operations);
 
     return intersects && distanceToShape <= maxDistance;
 }
@@ -687,19 +675,20 @@ VolumetricIndex::RayIntersectionReadCursor::~RayIntersectionReadCursor () noexce
     }
 }
 
-const void *VolumetricIndex::RayIntersectionReadCursor::operator * () const noexcept
+const void *VolumetricIndex::RayIntersectionReadCursor::operator* () const noexcept
 {
     return GetRecord ();
 }
 
-VolumetricIndex::RayIntersectionReadCursor &VolumetricIndex::RayIntersectionReadCursor::operator ++ () noexcept
+VolumetricIndex::RayIntersectionReadCursor &VolumetricIndex::RayIntersectionReadCursor::operator++ () noexcept
 {
     MoveToNextRecord ();
     return *this;
 }
 
-VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
-    VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept
+VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (VolumetricIndex *_index,
+                                                                       const RayContainer &_ray,
+                                                                       float _maxDistance) noexcept
     : RayIntersectionCursorBase (_index, _ray, _maxDistance)
 {
     assert (GetIndex ());
@@ -727,12 +716,12 @@ VolumetricIndex::RayIntersectionEditCursor::~RayIntersectionEditCursor () noexce
     }
 }
 
-void *VolumetricIndex::RayIntersectionEditCursor::operator * () noexcept
+void *VolumetricIndex::RayIntersectionEditCursor::operator* () noexcept
 {
-    return const_cast <void *> (GetRecord ());
+    return const_cast<void *> (GetRecord ());
 }
 
-VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEditCursor::operator ~ () noexcept
+VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEditCursor::operator~ () noexcept
 {
     assert (!IsFinished ());
     // Record can be stored in many coordinates, therefore deletion by cursor can not be optimized for owner index.
@@ -743,7 +732,7 @@ VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEdit
     return *this;
 }
 
-VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEditCursor::operator ++ () noexcept
+VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEditCursor::operator++ () noexcept
 {
     assert (!IsFinished ());
     // Record can be stored in many coordinates, therefore edition by cursor can not be optimized for owner index.
@@ -753,8 +742,9 @@ VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEdit
     return *this;
 }
 
-VolumetricIndex::RayIntersectionEditCursor::RayIntersectionEditCursor (
-    VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept
+VolumetricIndex::RayIntersectionEditCursor::RayIntersectionEditCursor (VolumetricIndex *_index,
+                                                                       const RayContainer &_ray,
+                                                                       float _maxDistance) noexcept
     : RayIntersectionCursorBase (_index, _ray, _maxDistance)
 {
     assert (GetIndex ());
@@ -771,8 +761,8 @@ void VolumetricIndex::RayIntersectionEditCursor::BeginRecordEdition () const noe
     }
 }
 
-const InplaceVector <VolumetricIndex::Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &
-VolumetricIndex::GetDimensions () const noexcept
+const InplaceVector<VolumetricIndex::Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS>
+    &VolumetricIndex::GetDimensions () const noexcept
 {
     return dimensions;
 }
@@ -780,23 +770,23 @@ VolumetricIndex::GetDimensions () const noexcept
 VolumetricIndex::ShapeIntersectionReadCursor VolumetricIndex::LookupShapeIntersectionToRead (
     const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
 {
-    return DoWithCorrectTypeOperations (
-        dimensions[0u].minBorderField,
-        [this, &_shape] (const auto &_operations)
-        {
-            return ShapeIntersectionReadCursor (this, CalculateSector (_shape, _operations), _shape);
-        });
+    return DoWithCorrectTypeOperations (dimensions[0u].minBorderField,
+                                        [this, &_shape] (const auto &_operations)
+                                        {
+                                            return ShapeIntersectionReadCursor (
+                                                this, CalculateSector (_shape, _operations), _shape);
+                                        });
 }
 
 VolumetricIndex::ShapeIntersectionEditCursor VolumetricIndex::LookupShapeIntersectionToEdit (
     const VolumetricIndex::AxisAlignedShapeContainer &_shape) noexcept
 {
-    return DoWithCorrectTypeOperations (
-        dimensions[0u].minBorderField,
-        [this, &_shape] (const auto &_operations)
-        {
-            return ShapeIntersectionEditCursor (this, CalculateSector (_shape, _operations), _shape);
-        });
+    return DoWithCorrectTypeOperations (dimensions[0u].minBorderField,
+                                        [this, &_shape] (const auto &_operations)
+                                        {
+                                            return ShapeIntersectionEditCursor (
+                                                this, CalculateSector (_shape, _operations), _shape);
+                                        });
 }
 
 VolumetricIndex::RayIntersectionReadCursor VolumetricIndex::LookupRayIntersectionToRead (
@@ -818,18 +808,17 @@ void VolumetricIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
-std::vector <VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (const void *_record) noexcept
+std::vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (const void *_record) noexcept
 {
-    return std::find_if (
-        records.begin (), records.end (),
-        [_record] (const RecordData &_data)
-        {
-            return _record == _data.record;
-        });
+    return std::find_if (records.begin (), records.end (),
+                         [_record] (const RecordData &_data)
+                         {
+                             return _record == _data.record;
+                         });
 }
 
 void VolumetricIndex::LeafData::DeleteRecord (
-    const std::vector <VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
+    const std::vector<VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
 {
     assert (_recordIterator != records.end ());
     if (_recordIterator + 1 != records.end ())
@@ -840,7 +829,7 @@ void VolumetricIndex::LeafData::DeleteRecord (
     records.pop_back ();
 }
 
-VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <DimensionDescriptor> &_dimensions) noexcept
+VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept
     : IndexBase (_storage),
       dimensions (),
       leaves (),
@@ -851,13 +840,13 @@ VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <Dimensio
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
 
     std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
-    leaves.resize (std::size_t (1u) << (
-        dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
+    leaves.resize (
+        std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
 
 #ifndef NDEBUG
     // Current implementation expects that all fields have same archetype and size.
-    StandardLayout::Field firstDimensionMinField = _storage->GetRecordMapping ().GetField (
-        _dimensions[0u].minBorderField);
+    StandardLayout::Field firstDimensionMinField =
+        _storage->GetRecordMapping ().GetField (_dimensions[0u].minBorderField);
 
     assert (firstDimensionMinField.IsHandleValid ());
     StandardLayout::FieldArchetype expectedArchetype = firstDimensionMinField.GetArchetype ();
@@ -876,25 +865,23 @@ VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector <Dimensio
         assert (maxField.GetArchetype () == expectedArchetype);
         assert (maxField.GetSize () == expectedSize);
 
-        dimensions.EmplaceBack (Dimension {
-            minField, descriptor.globalMinBorder,
-            maxField, descriptor.globalMaxBorder});
+        dimensions.EmplaceBack (Dimension {minField, descriptor.globalMinBorder, maxField, descriptor.globalMaxBorder});
     }
 }
 
 template <typename Operations>
-VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
-    const void *_record, const Operations &_operations) const noexcept
+VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (const void *_record,
+                                                              const Operations &_operations) const noexcept
 {
     LeafSector sector {};
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
         const Dimension &dimension = dimensions[dimensionIndex];
-        const SupportedAxisValue min = *reinterpret_cast <const SupportedAxisValue *> (
-            dimension.minBorderField.GetValue (_record));
+        const SupportedAxisValue min =
+            *reinterpret_cast<const SupportedAxisValue *> (dimension.minBorderField.GetValue (_record));
 
-        const SupportedAxisValue max = *reinterpret_cast <const SupportedAxisValue *> (
-            dimension.maxBorderField.GetValue (_record));
+        const SupportedAxisValue max =
+            *reinterpret_cast<const SupportedAxisValue *> (dimension.maxBorderField.GetValue (_record));
 
         assert (_operations.Compare (min, max) <= 0);
         const SupportedAxisValue leafSize = CalculateLeafSize (dimension, _operations);
@@ -906,10 +893,10 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
 }
 
 template <typename Operations>
-VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
-    const VolumetricIndex::AxisAlignedShapeContainer &_shape, const Operations &_operations) const noexcept
+VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (const VolumetricIndex::AxisAlignedShapeContainer &_shape,
+                                                              const Operations &_operations) const noexcept
 {
-    const auto *lookupShape = reinterpret_cast <const AxisAlignedShape <typename Operations::ValueType> *> (&_shape);
+    const auto *lookupShape = reinterpret_cast<const AxisAlignedShape<typename Operations::ValueType> *> (&_shape);
     LeafSector sector {};
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
@@ -928,55 +915,56 @@ VolumetricIndex::LeafSector VolumetricIndex::CalculateSector (
 }
 
 template <typename Operations>
-VolumetricIndex::SupportedAxisValue VolumetricIndex::CalculateLeafSize (
-    const VolumetricIndex::Dimension &_dimension, const Operations &_operations) const noexcept
+VolumetricIndex::SupportedAxisValue VolumetricIndex::CalculateLeafSize (const VolumetricIndex::Dimension &_dimension,
+                                                                        const Operations &_operations) const noexcept
 {
-    return _operations.Divide (
-        _operations.Subtract (_dimension.globalMaxBorder, _dimension.globalMinBorder),
-        GetMaxLeafCoordinateOnAxis (dimensions.GetCount ()));
+    return _operations.Divide (_operations.Subtract (_dimension.globalMaxBorder, _dimension.globalMinBorder),
+                               GetMaxLeafCoordinateOnAxis (dimensions.GetCount ()));
 }
 
 template <typename Operations>
-std::size_t VolumetricIndex::CalculateCoordinate (
-    const VolumetricIndex::SupportedAxisValue &_value, const VolumetricIndex::Dimension &_dimension,
-    const VolumetricIndex::SupportedAxisValue &_leafSize, const Operations &_operations) const noexcept
+std::size_t VolumetricIndex::CalculateCoordinate (const VolumetricIndex::SupportedAxisValue &_value,
+                                                  const VolumetricIndex::Dimension &_dimension,
+                                                  const VolumetricIndex::SupportedAxisValue &_leafSize,
+                                                  const Operations &_operations) const noexcept
 {
     const std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (dimensions.GetCount ());
-    return std::clamp <std::size_t> (
-        _operations.TruncateToSizeType (_operations.Divide (
-            _operations.Subtract (_value, _dimension.globalMinBorder), _leafSize)),
-        0u, maxCoordinate - 1u);
+    return std::clamp<std::size_t> (_operations.TruncateToSizeType (_operations.Divide (
+                                        _operations.Subtract (_value, _dimension.globalMinBorder), _leafSize)),
+                                    0u, maxCoordinate - 1u);
 }
 
 template <typename Operations>
 bool VolumetricIndex::CheckRayShapeIntersection (
-    const VolumetricIndex::RayContainer &_ray, const VolumetricIndex::AxisAlignedShapeContainer &_shape,
-    float &_distanceOutput, std::array <float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
+    const VolumetricIndex::RayContainer &_ray,
+    const VolumetricIndex::AxisAlignedShapeContainer &_shape,
+    float &_distanceOutput,
+    std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
     const Operations &_operations) const noexcept
 {
-    const auto *lookupRay = reinterpret_cast <const Ray <typename Operations::ValueType> *> (&_ray);
-    const auto *lookupShape = reinterpret_cast <const AxisAlignedShape <typename Operations::ValueType> *> (&_shape);
+    const auto *lookupRay = reinterpret_cast<const Ray<typename Operations::ValueType> *> (&_ray);
+    const auto *lookupShape = reinterpret_cast<const AxisAlignedShape<typename Operations::ValueType> *> (&_shape);
     bool inside = true;
 
     // point = ray.origin + ray.direction * T
     float maxT = 0.0f;
-    std::size_t maxTDimension = std::numeric_limits <std::size_t>::max ();
+    std::size_t maxTDimension = std::numeric_limits<std::size_t>::max ();
 
     const auto calculateT =
         [&_operations, lookupRay] (std::size_t _dimensionIndex, const SupportedAxisValue &_cornerValue)
+    {
+        const float direction = static_cast<float> (lookupRay->Direction (_dimensionIndex));
+        if (fabs (direction) > Constants::VolumetricIndex::EPSILON)
         {
-            const float direction = static_cast <float> (lookupRay->Direction (_dimensionIndex));
-            if (fabs (direction) > Constants::VolumetricIndex::EPSILON)
-            {
-                float distance = _operations.ToFloat (
-                    _operations.Subtract (_cornerValue, lookupRay->Origin (_dimensionIndex)));
-                return distance / direction;
-            }
-            else
-            {
-                return 0.0f;
-            }
-        };
+            float distance =
+                _operations.ToFloat (_operations.Subtract (_cornerValue, lookupRay->Origin (_dimensionIndex)));
+            return distance / direction;
+        }
+        else
+        {
+            return 0.0f;
+        }
+    };
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
@@ -1003,7 +991,7 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     {
         for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
         {
-            _intersectionPointOutput[dimensionIndex] = static_cast <float> (lookupRay->Origin (dimensionIndex));
+            _intersectionPointOutput[dimensionIndex] = static_cast<float> (lookupRay->Origin (dimensionIndex));
         }
 
         _distanceOutput = 0.0f;
@@ -1026,8 +1014,8 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     _distanceOutput = 0.0f;
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
-        const float origin = static_cast <float> (lookupRay->Origin (dimensionIndex));
-        const float direction = static_cast <float> (lookupRay->Direction (dimensionIndex));
+        const float origin = static_cast<float> (lookupRay->Origin (dimensionIndex));
+        const float direction = static_cast<float> (lookupRay->Direction (dimensionIndex));
         const float step = direction * maxT;
 
         _intersectionPointOutput[dimensionIndex] = origin + step;
@@ -1035,8 +1023,8 @@ bool VolumetricIndex::CheckRayShapeIntersection (
 
         if (dimensionIndex != maxTDimension)
         {
-            if (_intersectionPointOutput[dimensionIndex] < static_cast <float> (lookupShape->Min (dimensionIndex)) ||
-                _intersectionPointOutput[dimensionIndex] > static_cast <float> (lookupShape->Max (dimensionIndex)))
+            if (_intersectionPointOutput[dimensionIndex] < static_cast<float> (lookupShape->Min (dimensionIndex)) ||
+                _intersectionPointOutput[dimensionIndex] > static_cast<float> (lookupShape->Max (dimensionIndex)))
             {
                 return false;
             }
@@ -1048,8 +1036,8 @@ bool VolumetricIndex::CheckRayShapeIntersection (
 }
 
 template <typename Callback>
-void VolumetricIndex::ForEachCoordinate (
-    const VolumetricIndex::LeafSector &_sector, const Callback &_callback) const noexcept
+void VolumetricIndex::ForEachCoordinate (const VolumetricIndex::LeafSector &_sector,
+                                         const Callback &_callback) const noexcept
 {
     LeafCoordinate coordinate = _sector.min;
     while (true)
@@ -1080,8 +1068,8 @@ std::size_t VolumetricIndex::GetLeafIndex (const VolumetricIndex::LeafCoordinate
     return result;
 }
 
-bool VolumetricIndex::IsInsideSector (
-    const VolumetricIndex::LeafSector &_sector, const VolumetricIndex::LeafCoordinate &_coordinate) const noexcept
+bool VolumetricIndex::IsInsideSector (const VolumetricIndex::LeafSector &_sector,
+                                      const VolumetricIndex::LeafCoordinate &_coordinate) const noexcept
 {
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
@@ -1095,8 +1083,8 @@ bool VolumetricIndex::IsInsideSector (
     return true;
 }
 
-bool VolumetricIndex::AreEqual (
-    const VolumetricIndex::LeafCoordinate &_left, const VolumetricIndex::LeafCoordinate &_right) const noexcept
+bool VolumetricIndex::AreEqual (const VolumetricIndex::LeafCoordinate &_left,
+                                const VolumetricIndex::LeafCoordinate &_right) const noexcept
 {
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
@@ -1131,8 +1119,8 @@ VolumetricIndex::LeafCoordinate VolumetricIndex::NextInsideSector (
     return _coordinate;
 }
 
-bool VolumetricIndex::AreEqual (
-    const VolumetricIndex::LeafSector &_left, const VolumetricIndex::LeafSector &_right) const noexcept
+bool VolumetricIndex::AreEqual (const VolumetricIndex::LeafSector &_left,
+                                const VolumetricIndex::LeafSector &_right) const noexcept
 {
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
@@ -1161,44 +1149,40 @@ void VolumetricIndex::InsertRecord (const void *_record) noexcept
         recordId = nextRecordId++;
     }
 
-    LeafSector sector = DoWithCorrectTypeOperations (
-        dimensions[0u].minBorderField,
-        [this, _record] (const auto &_operations)
-        {
-            return CalculateSector (_record, _operations);
-        });
+    LeafSector sector = DoWithCorrectTypeOperations (dimensions[0u].minBorderField,
+                                                     [this, _record] (const auto &_operations)
+                                                     {
+                                                         return CalculateSector (_record, _operations);
+                                                     });
 
-    ForEachCoordinate (
-        sector,
-        [this, _record, recordId] (const LeafCoordinate &_coordinate)
-        {
-            std::size_t index = GetLeafIndex (_coordinate);
-            leaves[index].records.emplace_back (RecordData {_record, recordId});
-        });
+    ForEachCoordinate (sector,
+                       [this, _record, recordId] (const LeafCoordinate &_coordinate)
+                       {
+                           std::size_t index = GetLeafIndex (_coordinate);
+                           leaves[index].records.emplace_back (RecordData {_record, recordId});
+                       });
 }
 
 void VolumetricIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
 {
     assert (_record);
-    LeafSector sector = DoWithCorrectTypeOperations (
-        dimensions[0u].minBorderField,
-        [this, _recordBackup] (const auto &_operations)
-        {
-            return CalculateSector (_recordBackup, _operations);
-        });
+    LeafSector sector = DoWithCorrectTypeOperations (dimensions[0u].minBorderField,
+                                                     [this, _recordBackup] (const auto &_operations)
+                                                     {
+                                                         return CalculateSector (_recordBackup, _operations);
+                                                     });
 
     std::size_t recordId;
-    ForEachCoordinate (
-        sector,
-        [this, _record, &recordId] (const LeafCoordinate &_coordinate)
-        {
-            LeafData &leaf = leaves[GetLeafIndex (_coordinate)];
-            auto recordIterator = leaf.FindRecord (_record);
-            assert (recordIterator != leaf.records.end ());
+    ForEachCoordinate (sector,
+                       [this, _record, &recordId] (const LeafCoordinate &_coordinate)
+                       {
+                           LeafData &leaf = leaves[GetLeafIndex (_coordinate)];
+                           auto recordIterator = leaf.FindRecord (_record);
+                           assert (recordIterator != leaf.records.end ());
 
-            recordId = recordIterator->recordId;
-            leaf.DeleteRecord (recordIterator);
-        });
+                           recordId = recordIterator->recordId;
+                           leaf.DeleteRecord (recordIterator);
+                       });
 
     freeRecordIds.emplace_back (recordId);
 }
@@ -1222,35 +1206,33 @@ void VolumetricIndex::OnRecordChanged (const void *_record, const void *_recordB
                 // found and skip unnecessary record search in coordinates that are not excluded.
                 std::size_t recordId = nextRecordId;
 
-                ForEachCoordinate (
-                    oldSector,
-                    [this, _record, &recordId, &newSector] (const LeafCoordinate &_coordinate)
-                    {
-                        bool excluded = IsInsideSector (newSector, _coordinate);
-                        if (excluded || recordId == nextRecordId)
-                        {
-                            LeafData &leaf = leaves[GetLeafIndex (_coordinate)];
-                            auto recordIterator = leaf.FindRecord (_record);
-                            assert (recordIterator != leaf.records.end ());
+                ForEachCoordinate (oldSector,
+                                   [this, _record, &recordId, &newSector] (const LeafCoordinate &_coordinate)
+                                   {
+                                       bool excluded = IsInsideSector (newSector, _coordinate);
+                                       if (excluded || recordId == nextRecordId)
+                                       {
+                                           LeafData &leaf = leaves[GetLeafIndex (_coordinate)];
+                                           auto recordIterator = leaf.FindRecord (_record);
+                                           assert (recordIterator != leaf.records.end ());
 
-                            recordId = recordIterator->recordId;
-                            if (excluded)
-                            {
-                                leaf.DeleteRecord (recordIterator);
-                            }
-                        }
-                    });
+                                           recordId = recordIterator->recordId;
+                                           if (excluded)
+                                           {
+                                               leaf.DeleteRecord (recordIterator);
+                                           }
+                                       }
+                                   });
 
-                ForEachCoordinate (
-                    newSector,
-                    [this, _record, &recordId, &oldSector] (const LeafCoordinate &_coordinate)
-                    {
-                        if (!IsInsideSector (oldSector, _coordinate))
-                        {
-                            std::size_t index = GetLeafIndex (_coordinate);
-                            leaves[index].records.emplace_back (RecordData {_record, recordId});
-                        }
-                    });
+                ForEachCoordinate (newSector,
+                                   [this, _record, &recordId, &oldSector] (const LeafCoordinate &_coordinate)
+                                   {
+                                       if (!IsInsideSector (oldSector, _coordinate))
+                                       {
+                                           std::size_t index = GetLeafIndex (_coordinate);
+                                           leaves[index].records.emplace_back (RecordData {_record, recordId});
+                                       }
+                                   });
             }
         });
 }
@@ -1261,56 +1243,55 @@ void VolumetricIndex::OnWriterClosed () noexcept
 }
 
 template <typename Type>
-int TypeOperations <Type>::Compare (
-    const VolumetricIndex::SupportedAxisValue &_left, const VolumetricIndex::SupportedAxisValue &_right) const noexcept
+int TypeOperations<Type>::Compare (const VolumetricIndex::SupportedAxisValue &_left,
+                                   const VolumetricIndex::SupportedAxisValue &_right) const noexcept
 {
     return comparator.Compare (&_left, &_right);
 }
 
 template <typename Type>
-int TypeOperations <Type>::Compare (const void *_left, const void *_right) const noexcept
+int TypeOperations<Type>::Compare (const void *_left, const void *_right) const noexcept
 {
     return comparator.Compare (_left, _right);
 }
 
 template <typename Type>
-VolumetricIndex::SupportedAxisValue TypeOperations <Type>::Subtract (
+VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Subtract (
     const VolumetricIndex::SupportedAxisValue &_left, const VolumetricIndex::SupportedAxisValue &_right) const noexcept
 {
-    return *reinterpret_cast <const Type *> (&_left) - *reinterpret_cast <const Type *> (&_right);
+    return *reinterpret_cast<const Type *> (&_left) - *reinterpret_cast<const Type *> (&_right);
 }
 
 template <typename Type>
-VolumetricIndex::SupportedAxisValue TypeOperations <Type>::Divide (
+VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Divide (
     const VolumetricIndex::SupportedAxisValue &_value,
     const VolumetricIndex::SupportedAxisValue &_divider) const noexcept
 {
-    return *reinterpret_cast <const Type *> (&_value) / *reinterpret_cast <const Type *> (&_divider);
+    return *reinterpret_cast<const Type *> (&_value) / *reinterpret_cast<const Type *> (&_divider);
 }
 
 template <typename Type>
-VolumetricIndex::SupportedAxisValue
-TypeOperations <Type>::Divide (const VolumetricIndex::SupportedAxisValue &_value, std::size_t divider) const noexcept
+VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Divide (const VolumetricIndex::SupportedAxisValue &_value,
+                                                                  std::size_t divider) const noexcept
 {
     assert (divider);
-    return *reinterpret_cast <const Type *> (&_value) / static_cast <Type> (divider);
+    return *reinterpret_cast<const Type *> (&_value) / static_cast<Type> (divider);
 }
 
 template <typename Type>
-std::size_t TypeOperations <Type>::TruncateToSizeType (
-    const VolumetricIndex::SupportedAxisValue &_value) const noexcept
+std::size_t TypeOperations<Type>::TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept
 {
-    return static_cast <std::size_t> (*reinterpret_cast <const Type *> (&_value));
+    return static_cast<std::size_t> (*reinterpret_cast<const Type *> (&_value));
 }
 
 template <typename Type>
-float TypeOperations <Type>::ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept
+float TypeOperations<Type>::ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept
 {
-    return static_cast <float> (*reinterpret_cast <const Type *> (&_value));
+    return static_cast<float> (*reinterpret_cast<const Type *> (&_value));
 }
 
 template <typename Cursor>
-void CursorCommons <Cursor>::MoveToNextRecord (Cursor &_cursor) noexcept
+void CursorCommons<Cursor>::MoveToNextRecord (Cursor &_cursor) noexcept
 {
     DoWithCorrectTypeOperations (
         _cursor.index->dimensions[0u].minBorderField,
@@ -1320,8 +1301,8 @@ void CursorCommons <Cursor>::MoveToNextRecord (Cursor &_cursor) noexcept
             assert (!_cursor.IsFinished ());
 
             ++_cursor.currentRecordIndex;
-            const VolumetricIndex::LeafData *leaf = &_cursor.index->leaves[
-                _cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
+            const VolumetricIndex::LeafData *leaf =
+                &_cursor.index->leaves[_cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
             bool overflow;
 
             while ((overflow = _cursor.currentRecordIndex >= leaf->records.size ()) ||
@@ -1355,7 +1336,7 @@ void CursorCommons <Cursor>::MoveToNextRecord (Cursor &_cursor) noexcept
 }
 
 template <typename Cursor>
-void CursorCommons <Cursor>::FixCurrentRecordIndex (Cursor &_cursor) noexcept
+void CursorCommons<Cursor>::FixCurrentRecordIndex (Cursor &_cursor) noexcept
 {
     assert (_cursor.index);
     DoWithCorrectTypeOperations (
@@ -1364,8 +1345,8 @@ void CursorCommons <Cursor>::FixCurrentRecordIndex (Cursor &_cursor) noexcept
         {
             if (!_cursor.IsFinished ())
             {
-                const VolumetricIndex::LeafData &leaf = _cursor.index->leaves[
-                    _cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
+                const VolumetricIndex::LeafData &leaf =
+                    _cursor.index->leaves[_cursor.index->GetLeafIndex (_cursor.currentCoordinate)];
 
                 if (_cursor.currentRecordIndex >= leaf.records.size () ||
                     _cursor.visitedRecords[leaf.records[_cursor.currentRecordIndex].recordId] ||

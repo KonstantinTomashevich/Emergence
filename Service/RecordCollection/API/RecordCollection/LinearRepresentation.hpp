@@ -31,7 +31,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit AscendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AscendingReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -47,7 +47,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit AscendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AscendingEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read records, that match criteria,
@@ -64,7 +64,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit DescendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DescendingReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -80,7 +80,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit DescendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DescendingEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Points to value, that defines one of interval borders.
@@ -124,7 +124,8 @@ public:
     StandardLayout::Field GetKeyField () const noexcept;
 
     /// \return Can this representation be safely dropped?
-    /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
+    /// \details Representation can be safely dropped if there is only one reference to it and there is no active
+    ///          cursors.
     bool CanBeDropped () const noexcept;
 
     /// \brief Deletes this linear representation from Collection.
@@ -132,11 +133,11 @@ public:
     void Drop () noexcept;
 
     /// \return True if this and given instances are handles to the same representation.
-    bool operator == (const LinearRepresentation &_other) const noexcept;
+    bool operator== (const LinearRepresentation &_other) const noexcept;
 
-    LinearRepresentation &operator = (const LinearRepresentation &_other) noexcept;
+    LinearRepresentation &operator= (const LinearRepresentation &_other) noexcept;
 
-    LinearRepresentation &operator = (LinearRepresentation &&_other) noexcept;
+    LinearRepresentation &operator= (LinearRepresentation &&_other) noexcept;
 
 private:
     /// Collection constructs representations.

@@ -14,19 +14,18 @@
 namespace Emergence::Query::Test
 {
 template <typename Cursor>
-requires std::is_copy_constructible_v <Cursor>
-Cursor CopyCursor (const Cursor &_other)
+requires std::is_copy_constructible_v<Cursor> Cursor CopyCursor (const Cursor &_other)
 {
     return _other;
 }
 
 template <typename... Variants>
-std::variant <Variants...> CopyCursor (const std::variant <Variants...> &_other)
+std::variant<Variants...> CopyCursor (const std::variant<Variants...> &_other)
 {
     return std::visit (
-        [] (const auto &_cursor) -> std::variant <Variants...>
+        [] (const auto &_cursor) -> std::variant<Variants...>
         {
-            if constexpr (std::is_copy_constructible_v <std::decay_t <decltype (_cursor)>>)
+            if constexpr (std::is_copy_constructible_v<std::decay_t<decltype (_cursor)>>)
             {
                 return _cursor;
             }
@@ -50,9 +49,7 @@ struct CursorData final
     {
     }
 
-    CursorData (const CursorData &_other)
-        : cursor (CopyCursor (_other.cursor)),
-          objectMapping (_other.objectMapping)
+    CursorData (const CursorData &_other) : cursor (CopyCursor (_other.cursor)), objectMapping (_other.objectMapping)
     {
     }
 
@@ -67,50 +64,56 @@ struct CursorData final
 /// \see EMERGENCE_EDIT_CURSOR_OPERATIONS
 /// \details Singleton-value cursors, that do not have increment, are also supported.
 template <typename Cursor>
-struct CursorStorage : public Context::Extension::ObjectStorage <CursorData <Cursor>>
+struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Cursor>>
 {
 };
 
 template <typename T>
-concept ReturnsEditablePointer =
-requires (T _cursor) {
-    { *_cursor } -> std::convertible_to <void *>;
+concept ReturnsEditablePointer = requires (T _cursor)
+{
+    {
+        *_cursor
+        } -> std::convertible_to<void *>;
 };
 
 template <typename T>
-concept AllowsObjectDeletion =
-requires (T _cursor) {
-    { ~_cursor };
+concept AllowsObjectDeletion = requires (T _cursor)
+{
+    {~_cursor};
 };
 
 template <typename T>
-concept Movable =
-requires (T _cursor) {
-    { ++_cursor } -> std::convertible_to <T &>;
+concept Movable = requires (T _cursor)
+{
+    {
+        ++_cursor
+        } -> std::convertible_to<T &>;
 };
 
 template <typename Cursor>
-void AddObject (CursorStorage <Cursor> &_storage, std::string _name,
-                const StandardLayout::Mapping &_objectMapping, Cursor &&_cursor)
+void AddObject (CursorStorage<Cursor> &_storage,
+                std::string _name,
+                const StandardLayout::Mapping &_objectMapping,
+                Cursor &&_cursor)
 {
-    AddObject (_storage, _name, CursorData <Cursor> {std::move (_cursor), _objectMapping});
+    AddObject (_storage, _name, CursorData<Cursor> {std::move (_cursor), _objectMapping});
 }
 
 template <typename Cursor>
-void GetCursor (CursorStorage <Cursor> &_storage, std::string _name)
+void GetCursor (CursorStorage<Cursor> &_storage, std::string _name)
 {
     return GetObject (_storage, _name).cursor;
 }
 
 std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
 {
-    const auto *current = static_cast <const uint8_t *> (_object);
+    const auto *current = static_cast<const uint8_t *> (_object);
     const auto *end = current + _mapping.GetObjectSize ();
     std::string result;
 
     while (current != end)
     {
-        result += std::to_string (static_cast <std::size_t> (*current)) + " ";
+        result += std::to_string (static_cast<std::size_t> (*current)) + " ";
         ++current;
     }
 
@@ -118,9 +121,9 @@ std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void 
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheck &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheck &_task)
 {
-    CursorData <Cursor> &cursorData = GetObject (_storage, _task.name);
+    CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
         [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
         {
@@ -130,10 +133,9 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheck &_t
                 if (object)
                 {
                     bool equal = memcmp (object, _task.expectedObject, _mapping.GetObjectSize ()) == 0u;
-                    CHECK_WITH_MESSAGE (
-                        equal,
-                        "Expected and pointed objects should be equal!\nObject: ", ObjectToString (_mapping, object),
-                        "\nExpected object: ", ObjectToString (_mapping, _task.expectedObject));
+                    CHECK_WITH_MESSAGE (equal, "Expected and pointed objects should be equal!\nObject: ",
+                                        ObjectToString (_mapping, object),
+                                        "\nExpected object: ", ObjectToString (_mapping, _task.expectedObject));
                 }
                 else
                 {
@@ -149,13 +151,13 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheck &_t
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheckAllOrdered &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllOrdered &_task)
 {
-    CursorData <Cursor> &cursorData = GetObject (_storage, _task.name);
+    CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
         [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
         {
-            if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
+            if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
                 std::size_t position = 0u;
                 const void *object;
@@ -175,21 +177,20 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheckAllO
                     if (object && expected)
                     {
                         bool equal = memcmp (object, expected, _mapping.GetObjectSize ()) == 0;
-                        CHECK_WITH_MESSAGE (
-                            equal, "Checking that received object ", object, " and expected object ", expected,
-                            " at position ", position, " are equal.\nReceived: ", ObjectToString (_mapping, object),
-                            "\nExpected: ", ObjectToString (_mapping, expected));
+                        CHECK_WITH_MESSAGE (equal, "Checking that received object ", object, " and expected object ",
+                                            expected, " at position ", position,
+                                            " are equal.\nReceived: ", ObjectToString (_mapping, object),
+                                            "\nExpected: ", ObjectToString (_mapping, expected));
                     }
                     else if (object)
                     {
-                        CHECK_WITH_MESSAGE (
-                            false, "Expecting nothing at position ", position, ", receiving ",
-                            ObjectToString (_mapping, object));
+                        CHECK_WITH_MESSAGE (false, "Expecting nothing at position ", position, ", receiving ",
+                                            ObjectToString (_mapping, object));
                     }
                     else
                     {
-                        CHECK_WITH_MESSAGE (
-                            false, "Expecting ", expected, " at position ", position, ", but receiving nothing");
+                        CHECK_WITH_MESSAGE (false, "Expecting ", expected, " at position ", position,
+                                            ", but receiving nothing");
                     }
 
                     if (object)
@@ -202,22 +203,22 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheckAllO
             }
             else
             {
-                REQUIRE_WITH_MESSAGE(false, "Cursor with name \"", _task.name, "\" must be movable!");
+                REQUIRE_WITH_MESSAGE (false, "Cursor with name \"", _task.name, "\" must be movable!");
             }
         },
         cursorData.cursor);
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheckAllUnordered &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUnordered &_task)
 {
-    CursorData <Cursor> &cursorData = GetObject (_storage, _task.name);
+    CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
         [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
         {
-            if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
+            if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
-                std::vector <const void *> objects;
+                std::vector<const void *> objects;
                 while (const void *object = *_cursor)
                 {
                     objects.emplace_back (object);
@@ -226,7 +227,7 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheckAllU
 
                 // Brute force counting is the most efficient solution there,
                 // because tests check small vectors of objects, usually not more than 5.
-                auto Count = [_mapping] (const std::vector <const void *> &_objects, const void *_objectToSearch)
+                auto Count = [_mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
                 {
                     std::size_t count = 0u;
                     for (const void *_otherObject : _objects)
@@ -254,20 +255,20 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorCheckAllU
             }
             else
             {
-                REQUIRE_WITH_MESSAGE(false, "Cursor with name \"", _task.name, "\" must be movable!");
+                REQUIRE_WITH_MESSAGE (false, "Cursor with name \"", _task.name, "\" must be movable!");
             }
         },
         cursorData.cursor);
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorEdit &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorEdit &_task)
 {
-    CursorData <Cursor> &cursorData = GetObject (_storage, _task.name);
+    CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
         [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
         {
-            if constexpr (ReturnsEditablePointer <std::decay_t <decltype (_cursor)>>)
+            if constexpr (ReturnsEditablePointer<std::decay_t<decltype (_cursor)>>)
             {
                 void *object = *_cursor;
                 CHECK_WITH_MESSAGE (object, "Cursor should not be empty.");
@@ -287,30 +288,30 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorEdit &_ta
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorIncrement &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorIncrement &_task)
 {
     std::visit (
         [&_task] (auto &_cursor)
         {
-            if constexpr (Movable <std::decay_t <decltype (_cursor)>>)
+            if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
                 ++_cursor;
             }
             else
             {
-                REQUIRE_WITH_MESSAGE(false, "Cursor with name \"", _task.name, "\" must be movable!");
+                REQUIRE_WITH_MESSAGE (false, "Cursor with name \"", _task.name, "\" must be movable!");
             }
         },
         GetObject (_storage, _task.name).cursor);
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorDeleteObject &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorDeleteObject &_task)
 {
     std::visit (
         [&_task] (auto &_cursor)
         {
-            if constexpr (AllowsObjectDeletion <std::decay_t <decltype (_cursor)>>)
+            if constexpr (AllowsObjectDeletion<std::decay_t<decltype (_cursor)>>)
             {
                 ~_cursor;
             }
@@ -323,7 +324,7 @@ void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorDeleteObj
 }
 
 template <typename Cursor>
-void ExecuteTask (CursorStorage <Cursor> &_storage, const Tasks::CursorClose &_task)
+void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorClose &_task)
 {
     RemoveObject (_storage, _task.name);
 }

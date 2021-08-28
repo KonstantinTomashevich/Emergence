@@ -34,7 +34,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
 
-        explicit ShapeIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -50,7 +50,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
 
-        explicit ShapeIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read records, that match criteria, specified
@@ -67,7 +67,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
 
-        explicit RayIntersectionReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit RayIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -83,7 +83,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
 
-        explicit RayIntersectionEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit RayIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over VolumetricRepresentation dimensions.
@@ -118,7 +118,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit DimensionIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Defines shape by specifying min-max value pair for each dimension.
@@ -189,7 +189,8 @@ public:
     DimensionIterator DimensionEnd () const noexcept;
 
     /// \return Can this representation be safely dropped?
-    /// \details Representation can be safely dropped if there is only one reference to it and there is no active cursors.
+    /// \details Representation can be safely dropped if there is only one reference to it and there is no active
+    ///          cursors.
     bool CanBeDropped () const noexcept;
 
     /// \brief Deletes this volumetric representation from Collection.
@@ -197,11 +198,11 @@ public:
     void Drop () noexcept;
 
     /// \return True if this and given instances are handles to the same representation.
-    bool operator == (const VolumetricRepresentation &_other) const noexcept;
+    bool operator== (const VolumetricRepresentation &_other) const noexcept;
 
-    VolumetricRepresentation &operator = (const VolumetricRepresentation &_other) noexcept;
+    VolumetricRepresentation &operator= (const VolumetricRepresentation &_other) noexcept;
 
-    VolumetricRepresentation &operator = (VolumetricRepresentation &&_other) noexcept;
+    VolumetricRepresentation &operator= (VolumetricRepresentation &&_other) noexcept;
 
 private:
     /// Collection constructs representations.

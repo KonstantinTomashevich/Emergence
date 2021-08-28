@@ -45,7 +45,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-        explicit Allocator (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection linear representations.
@@ -62,7 +62,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit LinearRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit LinearRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection point representations.
@@ -79,7 +79,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit PointRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit PointRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection volumetric representations.
@@ -96,7 +96,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit VolumetricRepresentationIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit VolumetricRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
@@ -146,13 +146,13 @@ public:
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     PointRepresentation CreatePointRepresentation (
-        const std::vector <StandardLayout::FieldId> &_keyFields) const noexcept;
+        const std::vector<StandardLayout::FieldId> &_keyFields) const noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     /// \invariant All border fields for all dimensions should have same archetype and same size.
     VolumetricRepresentation CreateVolumetricRepresentation (
-        const std::vector <DimensionDescriptor> &_dimensions) const noexcept;
+        const std::vector<DimensionDescriptor> &_dimensions) const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
     LinearRepresentationIterator LinearRepresentationBegin () const noexcept;
@@ -173,9 +173,9 @@ public:
     VolumetricRepresentationIterator VolumetricRepresentationEnd () const noexcept;
 
     /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
-    Collection &operator = (const Collection &_other) = delete;
+    Collection &operator= (const Collection &_other) = delete;
 
-    Collection &operator = (Collection &&_other) noexcept;
+    Collection &operator= (Collection &&_other) noexcept;
 
 private:
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();

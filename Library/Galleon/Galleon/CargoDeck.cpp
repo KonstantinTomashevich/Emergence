@@ -6,7 +6,7 @@ namespace Emergence::Galleon
 {
 struct TypeMappingPredicate final
 {
-    bool operator () (const ContainerBase *_container) const noexcept
+    bool operator() (const ContainerBase *_container) const noexcept
     {
         return _container->GetTypeMapping () == requiredMapping;
     }
@@ -14,8 +14,7 @@ struct TypeMappingPredicate final
     StandardLayout::Mapping requiredMapping;
 };
 
-CargoDeck::CargoDeck (CargoDeck &&_other) noexcept
-    : containers (std::move (_other.containers))
+CargoDeck::CargoDeck (CargoDeck &&_other) noexcept : containers (std::move (_other.containers))
 {
     for (SingletonContainer *container : containers.singleton)
     {
@@ -41,11 +40,10 @@ CargoDeck::~CargoDeck () noexcept
     assert (containers.longTerm.empty ());
 }
 
-Handling::Handle <SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)
+Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)
 {
-    auto iterator = std::find_if (
-        containers.singleton.begin (), containers.singleton.end (),
-        TypeMappingPredicate {_typeMapping});
+    auto iterator =
+        std::find_if (containers.singleton.begin (), containers.singleton.end (), TypeMappingPredicate {_typeMapping});
 
     if (iterator != containers.singleton.end ())
     {
@@ -57,11 +55,10 @@ Handling::Handle <SingletonContainer> CargoDeck::AcquireSingletonContainer (cons
     }
 }
 
-Handling::Handle <ShortTermContainer> CargoDeck::AcquireShortTermContainer (const StandardLayout::Mapping &_typeMapping)
+Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const StandardLayout::Mapping &_typeMapping)
 {
-    auto iterator = std::find_if (
-        containers.shortTerm.begin (), containers.shortTerm.end (),
-        TypeMappingPredicate {_typeMapping});
+    auto iterator =
+        std::find_if (containers.shortTerm.begin (), containers.shortTerm.end (), TypeMappingPredicate {_typeMapping});
 
     if (iterator != containers.shortTerm.end ())
     {
@@ -73,11 +70,10 @@ Handling::Handle <ShortTermContainer> CargoDeck::AcquireShortTermContainer (cons
     }
 }
 
-Handling::Handle <LongTermContainer> CargoDeck::AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping)
+Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping)
 {
-    auto iterator = std::find_if (
-        containers.longTerm.begin (), containers.longTerm.end (),
-        TypeMappingPredicate {_typeMapping});
+    auto iterator =
+        std::find_if (containers.longTerm.begin (), containers.longTerm.end (), TypeMappingPredicate {_typeMapping});
 
     if (iterator != containers.longTerm.end ())
     {
@@ -91,26 +87,23 @@ Handling::Handle <LongTermContainer> CargoDeck::AcquireLongTermContainer (const 
 
 bool CargoDeck::IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (
-        containers.singleton.begin (), containers.singleton.end (),
-        TypeMappingPredicate {_typeMapping}) != containers.singleton.end ();
+    return std::find_if (containers.singleton.begin (), containers.singleton.end (),
+                         TypeMappingPredicate {_typeMapping}) != containers.singleton.end ();
 }
 
 bool CargoDeck::IsShortTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (
-        containers.shortTerm.begin (), containers.shortTerm.end (),
-        TypeMappingPredicate {_typeMapping}) != containers.shortTerm.end ();
+    return std::find_if (containers.shortTerm.begin (), containers.shortTerm.end (),
+                         TypeMappingPredicate {_typeMapping}) != containers.shortTerm.end ();
 }
 
 bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (
-        containers.longTerm.begin (), containers.longTerm.end (),
-        TypeMappingPredicate {_typeMapping}) != containers.longTerm.end ();
+    return std::find_if (containers.longTerm.begin (), containers.longTerm.end (),
+                         TypeMappingPredicate {_typeMapping}) != containers.longTerm.end ();
 }
 
-CargoDeck &CargoDeck::operator = (CargoDeck &&_other) noexcept
+CargoDeck &CargoDeck::operator= (CargoDeck &&_other) noexcept
 {
     if (this != &_other)
     {

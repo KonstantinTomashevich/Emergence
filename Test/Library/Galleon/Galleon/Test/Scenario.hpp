@@ -86,12 +86,12 @@ struct PrepareLongTermInsertQuery : public QueryPreparationBase
 
 struct PrepareLongTermFetchValueQuery : public QueryPreparationBase
 {
-    std::vector <StandardLayout::FieldId> keyFields;
+    std::vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareLongTermModifyValueQuery : public QueryPreparationBase
 {
-    std::vector <StandardLayout::FieldId> keyFields;
+    std::vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareLongTermFetchAscendingRangeQuery : public QueryPreparationBase
@@ -116,115 +116,115 @@ struct PrepareLongTermModifyDescendingRangeQuery : public QueryPreparationBase
 
 struct PrepareLongTermFetchShapeIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareLongTermModifyShapeIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareLongTermFetchRayIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareLongTermModifyRayIntersectionQuery : public QueryPreparationBase
 {
-    std::vector <Query::Test::Sources::Volumetric::Dimension> dimensions;
+    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct InsertObjects
 {
     std::string name;
-    std::vector <const void *> copyFrom;
+    std::vector<const void *> copyFrom;
 };
 
-using Task = std::variant <
-    AcquireSingletonContainer,
-    AcquireShortTermContainer,
-    AcquireLongTermContainer,
-    Move <struct ContainerReferenceTag>,
-    Copy <struct ContainerReferenceTag>,
-    MoveAssign <struct ContainerReferenceTag>,
-    CopyAssign <struct ContainerReferenceTag>,
-    Delete <struct ContainerReferenceTag>,
-    CheckIsSingletonContainerAllocated,
-    CheckIsShortTermContainerAllocated,
-    CheckIsLongTermContainerAllocated,
-    PrepareSingletonFetchQuery,
-    PrepareSingletonModifyQuery,
-    PrepareShortTermInsertQuery,
-    PrepareShortTermFetchQuery,
-    PrepareShortTermModifyQuery,
-    PrepareLongTermInsertQuery,
-    PrepareLongTermFetchValueQuery,
-    PrepareLongTermModifyValueQuery,
-    PrepareLongTermFetchAscendingRangeQuery,
-    PrepareLongTermModifyAscendingRangeQuery,
-    PrepareLongTermFetchDescendingRangeQuery,
-    PrepareLongTermModifyDescendingRangeQuery,
-    PrepareLongTermFetchShapeIntersectionQuery,
-    PrepareLongTermModifyShapeIntersectionQuery,
-    PrepareLongTermFetchRayIntersectionQuery,
-    PrepareLongTermModifyRayIntersectionQuery,
-    Move <struct PreparedQueryTag>,
-    Copy <struct PreparedQueryTag>,
-    Delete <struct PreparedQueryTag>,
-    InsertObjects,
-    QuerySingletonToRead,
-    QuerySingletonToEdit,
-    QueryUnorderedSequenceToRead,
-    QueryUnorderedSequenceToEdit,
-    QueryValueToRead,
-    QueryValueToEdit,
-    QueryAscendingRangeToRead,
-    QueryAscendingRangeToEdit,
-    QueryDescendingRangeToRead,
-    QueryDescendingRangeToEdit,
-    QueryShapeIntersectionToRead,
-    QueryShapeIntersectionToEdit,
-    QueryRayIntersectionToRead,
-    QueryRayIntersectionToEdit,
-    CursorCheck,
-    CursorCheckAllOrdered,
-    CursorCheckAllUnordered,
-    CursorEdit,
-    CursorIncrement,
-    CursorDeleteObject,
-    Move <struct CursorTag>,
-    Copy <struct CursorTag>,
-    Delete <struct CursorTag>,
-    CursorClose>;
+using Task = std::variant<AcquireSingletonContainer,
+                          AcquireShortTermContainer,
+                          AcquireLongTermContainer,
+                          Move<struct ContainerReferenceTag>,
+                          Copy<struct ContainerReferenceTag>,
+                          MoveAssign<struct ContainerReferenceTag>,
+                          CopyAssign<struct ContainerReferenceTag>,
+                          Delete<struct ContainerReferenceTag>,
+                          CheckIsSingletonContainerAllocated,
+                          CheckIsShortTermContainerAllocated,
+                          CheckIsLongTermContainerAllocated,
+                          PrepareSingletonFetchQuery,
+                          PrepareSingletonModifyQuery,
+                          PrepareShortTermInsertQuery,
+                          PrepareShortTermFetchQuery,
+                          PrepareShortTermModifyQuery,
+                          PrepareLongTermInsertQuery,
+                          PrepareLongTermFetchValueQuery,
+                          PrepareLongTermModifyValueQuery,
+                          PrepareLongTermFetchAscendingRangeQuery,
+                          PrepareLongTermModifyAscendingRangeQuery,
+                          PrepareLongTermFetchDescendingRangeQuery,
+                          PrepareLongTermModifyDescendingRangeQuery,
+                          PrepareLongTermFetchShapeIntersectionQuery,
+                          PrepareLongTermModifyShapeIntersectionQuery,
+                          PrepareLongTermFetchRayIntersectionQuery,
+                          PrepareLongTermModifyRayIntersectionQuery,
+                          Move<struct PreparedQueryTag>,
+                          Copy<struct PreparedQueryTag>,
+                          Delete<struct PreparedQueryTag>,
+                          InsertObjects,
+                          QuerySingletonToRead,
+                          QuerySingletonToEdit,
+                          QueryUnorderedSequenceToRead,
+                          QueryUnorderedSequenceToEdit,
+                          QueryValueToRead,
+                          QueryValueToEdit,
+                          QueryAscendingRangeToRead,
+                          QueryAscendingRangeToEdit,
+                          QueryDescendingRangeToRead,
+                          QueryDescendingRangeToEdit,
+                          QueryShapeIntersectionToRead,
+                          QueryShapeIntersectionToEdit,
+                          QueryRayIntersectionToRead,
+                          QueryRayIntersectionToEdit,
+                          CursorCheck,
+                          CursorCheckAllOrdered,
+                          CursorCheckAllUnordered,
+                          CursorEdit,
+                          CursorIncrement,
+                          CursorDeleteObject,
+                          Move<struct CursorTag>,
+                          Copy<struct CursorTag>,
+                          Delete<struct CursorTag>,
+                          CursorClose>;
 
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario);
 
 namespace TestReferenceApiDrivers
 {
-void ForContainerReference (
-    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor);
+void ForContainerReference (const Reference::Test::Scenario &_scenario,
+                            const Query::Test::Storage &_containerDescriptor);
 
-void ForPreparedQuery (
-    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
-    const Task &_queryPreparation);
+void ForPreparedQuery (const Reference::Test::Scenario &_scenario,
+                       const Query::Test::Storage &_containerDescriptor,
+                       const Task &_queryPreparation);
 
-void ForCursor (
-    const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_containerDescriptor,
-    const Query::Test::Task &_query, const void *_cursorExpectedObject);
+void ForCursor (const Reference::Test::Scenario &_scenario,
+                const Query::Test::Storage &_containerDescriptor,
+                const Query::Test::Task &_query,
+                const void *_cursorExpectedObject);
 } // namespace TestReferenceApiDrivers
 
 class Scenario final
 {
 public:
-    explicit Scenario (std::vector <Task> _tasks);
+    explicit Scenario (std::vector<Task> _tasks);
 
 private:
-    friend std::ostream &operator << (std::ostream &_output, const Scenario &_seed);
+    friend std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
 
-    std::vector <Task> tasks;
+    std::vector<Task> tasks;
 };
 
-std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept;
+std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
 
-std::vector <Task> operator + (std::vector <Task> first, const Task &_task) noexcept;
+std::vector<Task> operator+ (std::vector<Task> first, const Task &_task) noexcept;
 } // namespace Emergence::Galleon::Test

@@ -28,11 +28,10 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
 
-        explicit Cursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (
-        ModifyRayIntersectionQuery, Cursor, Ray _ray, float _maxDistance);
+    EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyRayIntersectionQuery, Cursor, Ray _ray, float _maxDistance);
 
     DimensionIterator DimensionBegin () const noexcept;
 
@@ -44,6 +43,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit ModifyRayIntersectionQuery (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit ModifyRayIntersectionQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse

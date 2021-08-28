@@ -25,7 +25,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit AcquiredChunkConstIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AcquiredChunkConstIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over acquired chunks.
@@ -41,7 +41,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit AcquiredChunkIterator (const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \param _chunkSize fixed chunk size.
@@ -93,10 +93,10 @@ public:
     AcquiredChunkIterator EndAcquired () noexcept;
 
     /// \brief Copy assigning memory pool contradicts with its usage practices.
-    Pool &operator = (const Pool &_other) = delete;
+    Pool &operator= (const Pool &_other) = delete;
 
     /// \brief Drops all pages from this pool and captures all pages of given pool.
-    Pool &operator = (Pool &&_other) noexcept;
+    Pool &operator= (Pool &&_other) noexcept;
 
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);

@@ -32,7 +32,7 @@ public:
 
             /// \return Pointer to memory, allocated for the new object.
             /// \invariant Previously allocated object must be initialized before next call.
-            void *operator ++ () noexcept;
+            void *operator++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.
             EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -40,9 +40,9 @@ public:
         private:
             friend class InsertQuery;
 
-            explicit Cursor (Handling::Handle <ShortTermContainer> _container) noexcept;
+            explicit Cursor (Handling::Handle<ShortTermContainer> _container) noexcept;
 
-            Handling::Handle <ShortTermContainer> container;
+            Handling::Handle<ShortTermContainer> container;
         };
 
         InsertQuery (const InsertQuery &_other) noexcept = default;
@@ -53,7 +53,7 @@ public:
 
         Cursor Execute () const noexcept;
 
-        Handling::Handle <ShortTermContainer> GetContainer () const noexcept;
+        Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
@@ -61,9 +61,9 @@ public:
     private:
         friend class ShortTermContainer;
 
-        explicit InsertQuery (Handling::Handle <ShortTermContainer> _container) noexcept;
+        explicit InsertQuery (Handling::Handle<ShortTermContainer> _container) noexcept;
 
-        Handling::Handle <ShortTermContainer> container;
+        Handling::Handle<ShortTermContainer> container;
     };
 
     /// \brief Prepared query, used to gain thread safe readonly access to stored objects.
@@ -78,13 +78,13 @@ public:
         private:
             friend class FetchQuery;
 
-            explicit Cursor (Handling::Handle <ShortTermContainer> _container) noexcept;
+            explicit Cursor (Handling::Handle<ShortTermContainer> _container) noexcept;
 
-            Handling::Handle <ShortTermContainer> container;
+            Handling::Handle<ShortTermContainer> container;
 
-            std::vector <void *>::const_iterator iterator;
+            std::vector<void *>::const_iterator iterator;
 
-            const std::vector <void *>::const_iterator end;
+            const std::vector<void *>::const_iterator end;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept = default;
@@ -96,7 +96,7 @@ public:
 
         Cursor Execute () const noexcept;
 
-        Handling::Handle <ShortTermContainer> GetContainer () const noexcept;
+        Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
@@ -104,9 +104,9 @@ public:
     private:
         friend class ShortTermContainer;
 
-        explicit FetchQuery (Handling::Handle <ShortTermContainer> _container) noexcept;
+        explicit FetchQuery (Handling::Handle<ShortTermContainer> _container) noexcept;
 
-        Handling::Handle <ShortTermContainer> container;
+        Handling::Handle<ShortTermContainer> container;
     };
 
     /// \brief Prepared query, used to gain readwrite access to stored objects.
@@ -121,13 +121,13 @@ public:
         private:
             friend class ModifyQuery;
 
-            explicit Cursor (Handling::Handle <ShortTermContainer> _container) noexcept;
+            explicit Cursor (Handling::Handle<ShortTermContainer> _container) noexcept;
 
-            Handling::Handle <ShortTermContainer> container;
+            Handling::Handle<ShortTermContainer> container;
 
-            std::vector <void *>::iterator iterator;
+            std::vector<void *>::iterator iterator;
 
-            std::vector <void *>::iterator end;
+            std::vector<void *>::iterator end;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept = default;
@@ -138,7 +138,7 @@ public:
 
         Cursor Execute () const noexcept;
 
-        Handling::Handle <ShortTermContainer> GetContainer () const noexcept;
+        Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);
@@ -146,9 +146,9 @@ public:
     private:
         friend class ShortTermContainer;
 
-        explicit ModifyQuery (Handling::Handle <ShortTermContainer> _container) noexcept;
+        explicit ModifyQuery (Handling::Handle<ShortTermContainer> _container) noexcept;
 
-        Handling::Handle <ShortTermContainer> container;
+        Handling::Handle<ShortTermContainer> container;
     };
 
     InsertQuery Insert () noexcept;
@@ -170,7 +170,7 @@ private:
     ~ShortTermContainer () noexcept;
 
     /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
-    std::vector <void *> objects;
+    std::vector<void *> objects;
 
     Memory::Pool pool;
 

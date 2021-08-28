@@ -8,8 +8,8 @@
 
 namespace Emergence::Pegasus
 {
-const InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &
-HashIndex::GetIndexedFields () const noexcept
+const InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &HashIndex::GetIndexedFields ()
+    const noexcept
 {
     return indexedFields;
 }
@@ -21,7 +21,7 @@ void HashIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
-std::size_t HashIndex::Hasher::operator () (const void *_record) const noexcept
+std::size_t HashIndex::Hasher::operator() (const void *_record) const noexcept
 {
     assert (owner);
     assert (_record);
@@ -34,64 +34,62 @@ std::size_t HashIndex::Hasher::operator () (const void *_record) const noexcept
 
         switch (indexedField.GetArchetype ())
         {
-            case StandardLayout::FieldArchetype::INT:
-            case StandardLayout::FieldArchetype::UINT:
-            case StandardLayout::FieldArchetype::FLOAT:
-            case StandardLayout::FieldArchetype::BLOCK:
-            case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::INT:
+        case StandardLayout::FieldArchetype::UINT:
+        case StandardLayout::FieldArchetype::FLOAT:
+        case StandardLayout::FieldArchetype::BLOCK:
+        case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        {
+            hasher.Append (static_cast<const uint8_t *> (indexedField.GetValue (_record)), indexedField.GetSize ());
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::BIT:
+        {
+            // Currently we hash bits as bytes that could have 1 only on given bit offset.
+            uint8_t mask = 1u << indexedField.GetBitOffset ();
+
+            if (*static_cast<const uint8_t *> (indexedField.GetValue (_record)) & mask)
             {
-                hasher.Append (
-                    static_cast <const uint8_t *> (indexedField.GetValue (_record)),
-                    indexedField.GetSize ());
-                break;
+                hasher.Append (mask);
+            }
+            else
+            {
+                hasher.Append (0u);
             }
 
-            case StandardLayout::FieldArchetype::BIT:
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::STRING:
+            const auto *current = static_cast<const uint8_t *> (indexedField.GetValue (_record));
+            const uint8_t *stringEnd = current + indexedField.GetSize ();
+
+            while (*current && current != stringEnd)
             {
-                // Currently we hash bits as bytes that could have 1 only on given bit offset.
-                uint8_t mask = 1u << indexedField.GetBitOffset ();
-
-                if (*static_cast <const uint8_t *> (indexedField.GetValue (_record)) & mask)
-                {
-                    hasher.Append (mask);
-                }
-                else
-                {
-                    hasher.Append (0u);
-                }
-
-                break;
+                hasher.Append (*current);
+                ++current;
             }
 
-            case StandardLayout::FieldArchetype::STRING:
-                const auto *current = static_cast <const uint8_t *> (indexedField.GetValue (_record));
-                const uint8_t *stringEnd = current + indexedField.GetSize ();
-
-                while (*current && current != stringEnd)
-                {
-                    hasher.Append (*current);
-                    ++current;
-                }
-
-                break;
+            break;
         }
     }
 
-    return hasher.GetCurrentValue () % std::numeric_limits <std::size_t>::max ();
+    return hasher.GetCurrentValue () % std::numeric_limits<std::size_t>::max ();
 }
 
-std::size_t HashIndex::Hasher::operator () (const HashIndex::RecordWithBackup &_record) const noexcept
+std::size_t HashIndex::Hasher::operator() (const HashIndex::RecordWithBackup &_record) const noexcept
 {
     return (*this) (_record.backup);
 }
 
-std::size_t HashIndex::Hasher::operator () (const HashIndex::LookupRequest &_request) const noexcept
+std::size_t HashIndex::Hasher::operator() (const HashIndex::LookupRequest &_request) const noexcept
 {
     assert (owner);
     assert (_request.indexedFieldValues);
 
     Hashing::ByteHasher hasher;
-    const auto *currentFieldBegin = static_cast <const uint8_t *> (_request.indexedFieldValues);
+    const auto *currentFieldBegin = static_cast<const uint8_t *> (_request.indexedFieldValues);
 
     for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
     {
@@ -100,53 +98,53 @@ std::size_t HashIndex::Hasher::operator () (const HashIndex::LookupRequest &_req
 
         switch (indexedField.GetArchetype ())
         {
-            case StandardLayout::FieldArchetype::INT:
-            case StandardLayout::FieldArchetype::UINT:
-            case StandardLayout::FieldArchetype::FLOAT:
-            case StandardLayout::FieldArchetype::BLOCK:
-            case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::INT:
+        case StandardLayout::FieldArchetype::UINT:
+        case StandardLayout::FieldArchetype::FLOAT:
+        case StandardLayout::FieldArchetype::BLOCK:
+        case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        {
+            hasher.Append (currentFieldBegin, indexedField.GetSize ());
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::BIT:
+        {
+            // Currently, we hash bits as bytes that could have 1 only on given bit offset.
+            uint8_t mask = 1u << indexedField.GetBitOffset ();
+
+            if (*currentFieldBegin & mask)
             {
-                hasher.Append (currentFieldBegin, indexedField.GetSize ());
-                break;
+                hasher.Append (mask);
+            }
+            else
+            {
+                hasher.Append (0u);
             }
 
-            case StandardLayout::FieldArchetype::BIT:
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::STRING:
+            const auto *current = currentFieldBegin;
+            const uint8_t *stringEnd = current + indexedField.GetSize ();
+
+            while (*current && current != stringEnd)
             {
-                // Currently we hash bits as bytes that could have 1 only on given bit offset.
-                uint8_t mask = 1u << indexedField.GetBitOffset ();
-
-                if (*currentFieldBegin & mask)
-                {
-                    hasher.Append (mask);
-                }
-                else
-                {
-                    hasher.Append (0u);
-                }
-
-                break;
+                hasher.Append (*current);
+                ++current;
             }
 
-            case StandardLayout::FieldArchetype::STRING:
-                const auto *current = currentFieldBegin;
-                const uint8_t *stringEnd = current + indexedField.GetSize ();
-
-                while (*current && current != stringEnd)
-                {
-                    hasher.Append (*current);
-                    ++current;
-                }
-
-                break;
+            break;
         }
 
         currentFieldBegin += indexedField.GetSize ();
     }
 
-    return hasher.GetCurrentValue () % std::numeric_limits <std::size_t>::max ();
+    return hasher.GetCurrentValue () % std::numeric_limits<std::size_t>::max ();
 }
 
-bool HashIndex::Comparator::operator () (const void *_firstRecord, const void *_secondRecord) const noexcept
+bool HashIndex::Comparator::operator() (const void *_firstRecord, const void *_secondRecord) const noexcept
 {
     assert (_firstRecord);
     assert (_secondRecord);
@@ -165,18 +163,18 @@ bool HashIndex::Comparator::operator () (const void *_firstRecord, const void *_
     return true;
 }
 
-bool HashIndex::Comparator::operator () (
-    const void *_record, const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
+bool HashIndex::Comparator::operator() (const void *_record,
+                                        const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
 {
     return _record == _recordWithBackup.record;
 }
 
-bool HashIndex::Comparator::operator () (const void *_record, const HashIndex::LookupRequest &_request) const noexcept
+bool HashIndex::Comparator::operator() (const void *_record, const HashIndex::LookupRequest &_request) const noexcept
 {
     assert (_record);
     assert (_request.indexedFieldValues);
 
-    const auto *currentFieldBegin = static_cast <const uint8_t *> (_request.indexedFieldValues);
+    const auto *currentFieldBegin = static_cast<const uint8_t *> (_request.indexedFieldValues);
 
     for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
     {
@@ -194,13 +192,14 @@ bool HashIndex::Comparator::operator () (const void *_record, const HashIndex::L
     return true;
 }
 
-bool HashIndex::Comparator::operator () (const HashIndex::LookupRequest &_request, const void *_record) const noexcept
+bool HashIndex::Comparator::operator() (const HashIndex::LookupRequest &_request, const void *_record) const noexcept
 {
     return (*this) (_record, _request);
 }
 
-HashIndex::HashIndex (Storage *_owner, std::size_t _initialBuckets,
-                      const std::vector <StandardLayout::FieldId> &_indexedFields)
+HashIndex::HashIndex (Storage *_owner,
+                      std::size_t _initialBuckets,
+                      const std::vector<StandardLayout::FieldId> &_indexedFields)
     : IndexBase (_owner),
       records (_initialBuckets, Hasher {this}, Comparator {this})
 {
@@ -231,9 +230,9 @@ void HashIndex::OnRecordDeleted (const void *_record, const void *_recordBackup)
     // To erase record using iterator unordered multiset must calculate hash once more.
     // But record, to which iterator points, could be changed, therefore hash could be incorrect.
     // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with 
+    // This adhok could be eliminated by addition of alternative queries support (like find with
     // RecordWithBackup) to erase operation.
-    const_cast <void const *&> (*iterator) = _recordBackup;
+    const_cast<void const *&> (*iterator) = _recordBackup;
 
     records.erase (iterator);
 }
@@ -246,12 +245,12 @@ HashIndex::RecordHashSet::iterator HashIndex::DeleteRecordMyself (const RecordHa
     // To erase record using iterator unordered multiset must calculate hash once more.
     // But record, to which iterator points, could be changed, therefore hash could be incorrect.
     // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with 
+    // This adhok could be eliminated by addition of alternative queries support (like find with
     // RecordWithBackup) to erase operation.
-    const_cast <void const *&> (*_position) = storage->GetEditedRecordBackup ();
+    const_cast<void const *&> (*_position) = storage->GetEditedRecordBackup ();
 
     auto next = records.erase (_position);
-    storage->DeleteRecord (const_cast <void *> (record), this);
+    storage->DeleteRecord (const_cast<void *> (record), this);
     return next;
 }
 
@@ -263,9 +262,9 @@ void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup)
     // To extract record using iterator unordered multiset must calculate hash once more.
     // But record, to which iterator points, could be changed, therefore hash could be incorrect.
     // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with 
+    // This adhok could be eliminated by addition of alternative queries support (like find with
     // RecordWithBackup) to extract operation.
-    const_cast <void const *&> (*iterator) = _recordBackup;
+    const_cast<void const *&> (*iterator) = _recordBackup;
 
     // After extraction we must restore node value, because this node will be reinserted later.
     changedNodes.emplace_back (records.extract (iterator)).value () = _record;
@@ -279,7 +278,7 @@ void HashIndex::OnRecordChangedByMe (RecordHashSet::iterator _position) noexcept
     // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
     // This adhok could be eliminated by addition of alternative queries support (like find with
     // RecordWithBackup) to extract operation.
-    const_cast <void const *&> (*_position) = storage->GetEditedRecordBackup ();
+    const_cast<void const *&> (*_position) = storage->GetEditedRecordBackup ();
 
     // After extraction we must restore node value, because this node will be reinserted later.
     changedNodes.emplace_back (records.extract (_position)).value () = record;
@@ -325,13 +324,13 @@ HashIndex::ReadCursor::~ReadCursor () noexcept
     }
 }
 
-const void *HashIndex::ReadCursor::operator * () const noexcept
+const void *HashIndex::ReadCursor::operator* () const noexcept
 {
     assert (index);
     return current != end ? *current : nullptr;
 }
 
-HashIndex::ReadCursor &HashIndex::ReadCursor::operator ++ () noexcept
+HashIndex::ReadCursor &HashIndex::ReadCursor::operator++ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -375,13 +374,13 @@ HashIndex::EditCursor::~EditCursor () noexcept
     }
 }
 
-void *HashIndex::EditCursor::operator * () noexcept
+void *HashIndex::EditCursor::operator* () noexcept
 {
     assert (index);
-    return current != end ? const_cast <void *> (*current) : nullptr;
+    return current != end ? const_cast<void *> (*current) : nullptr;
 }
 
-HashIndex::EditCursor &HashIndex::EditCursor::operator ~ () noexcept
+HashIndex::EditCursor &HashIndex::EditCursor::operator~ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -391,7 +390,7 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator ~ () noexcept
     return *this;
 }
 
-HashIndex::EditCursor &HashIndex::EditCursor::operator ++ () noexcept
+HashIndex::EditCursor &HashIndex::EditCursor::operator++ () noexcept
 {
     assert (index);
     assert (current != end);
@@ -432,13 +431,13 @@ void HashIndex::EditCursor::BeginRecordEdition () const noexcept
 
 HashIndex::ReadCursor HashIndex::LookupToRead (const HashIndex::LookupRequest &_request) noexcept
 {
-    auto[begin, end] = records.equal_range (_request);
+    auto [begin, end] = records.equal_range (_request);
     return HashIndex::ReadCursor (this, begin, end);
 }
 
 HashIndex::EditCursor HashIndex::LookupToEdit (const HashIndex::LookupRequest &_request) noexcept
 {
-    auto[begin, end] = records.equal_range (_request);
+    auto [begin, end] = records.equal_range (_request);
     return HashIndex::EditCursor (this, begin, end);
 }
 } // namespace Emergence::Pegasus

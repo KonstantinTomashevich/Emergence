@@ -30,7 +30,7 @@ private:
     template <typename Index>
     struct IndexHolder
     {
-        std::unique_ptr <Index> index;
+        std::unique_ptr<Index> index;
         Constants::Storage::IndexedFieldMask indexedFieldMask = 0u;
     };
 
@@ -46,9 +46,9 @@ public:
 
         void *Next () noexcept;
 
-        Allocator &operator = (const Allocator &_other) = delete;
+        Allocator &operator= (const Allocator &_other) = delete;
 
-        Allocator &operator = (Allocator &&_other) = delete;
+        Allocator &operator= (Allocator &&_other) = delete;
 
     private:
         friend class Storage;
@@ -62,13 +62,13 @@ public:
     class HashIndexIterator final
     {
     public:
-        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (HashIndexIterator, Handling::Handle <HashIndex>);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (HashIndexIterator, Handling::Handle<HashIndex>);
 
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <
-            Storage::IndexHolder <HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator =
+            InplaceVector<Storage::IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit HashIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -78,13 +78,13 @@ public:
     class OrderedIndexIterator final
     {
     public:
-        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (OrderedIndexIterator, Handling::Handle <OrderedIndex>);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (OrderedIndexIterator, Handling::Handle<OrderedIndex>);
 
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <
-            Storage::IndexHolder <OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector<Storage::IndexHolder<OrderedIndex>,
+                                           Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit OrderedIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -94,13 +94,13 @@ public:
     class VolumetricIndexIterator final
     {
     public:
-        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (VolumetricIndexIterator, Handling::Handle <VolumetricIndex>);
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (VolumetricIndexIterator, Handling::Handle<VolumetricIndex>);
 
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector <
-            Storage::IndexHolder <VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = InplaceVector<Storage::IndexHolder<VolumetricIndex>,
+                                           Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
         explicit VolumetricIndexIterator (BaseIterator _iterator) noexcept;
 
@@ -119,12 +119,12 @@ public:
 
     Allocator AllocateAndInsert () noexcept;
 
-    Handling::Handle <HashIndex> CreateHashIndex (const std::vector <StandardLayout::FieldId> &_indexedFields) noexcept;
+    Handling::Handle<HashIndex> CreateHashIndex (const std::vector<StandardLayout::FieldId> &_indexedFields) noexcept;
 
-    Handling::Handle <OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
+    Handling::Handle<OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
 
-    Handling::Handle <VolumetricIndex> CreateVolumetricIndex (
-        const std::vector <VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
+    Handling::Handle<VolumetricIndex> CreateVolumetricIndex (
+        const std::vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
 
     HashIndexIterator BeginHashIndices () const noexcept;
 
@@ -138,9 +138,9 @@ public:
 
     VolumetricIndexIterator EndVolumetricIndices () const noexcept;
 
-    Storage &operator = (const Storage &_other) = delete;
+    Storage &operator= (const Storage &_other) = delete;
 
-    Storage &operator = (Storage &&_other) noexcept;
+    Storage &operator= (Storage &&_other) noexcept;
 
 private:
     friend class HashIndex;
@@ -207,15 +207,15 @@ private:
 
     struct
     {
-        InplaceVector <IndexHolder <HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> hash;
-        InplaceVector <IndexHolder <OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> ordered;
-        InplaceVector <IndexHolder <VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> volumetric;
+        InplaceVector<IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> hash;
+        InplaceVector<IndexHolder<OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> ordered;
+        InplaceVector<IndexHolder<VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> volumetric;
     } indices;
 
     struct
     {
         StandardLayout::Mapping recordMapping;
-        InplaceVector <IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
+        InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
     } reflection;
 
     struct

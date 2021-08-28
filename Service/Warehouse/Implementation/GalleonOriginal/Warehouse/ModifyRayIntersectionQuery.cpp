@@ -21,19 +21,19 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (ModifyRayIntersectionQuery, QueryImpleme
 
 Cursor ModifyRayIntersectionQuery::Execute (Ray _ray, float _maxDistance) noexcept
 {
-    CursorImplementation cursor = block_cast <QueryImplementation> (data).Execute (_ray, _maxDistance);
-    return Cursor (reinterpret_cast <decltype (Cursor::data) *> (&cursor));
+    CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute (_ray, _maxDistance);
+    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
 }
 
 DimensionIterator ModifyRayIntersectionQuery::DimensionBegin () const noexcept
 {
-    auto iterator = block_cast <QueryImplementation> (data).DimensionBegin ();
-    return DimensionIterator (reinterpret_cast <decltype (DimensionIterator::data) *> (&iterator));
+    auto iterator = block_cast<QueryImplementation> (data).DimensionBegin ();
+    return DimensionIterator (reinterpret_cast<decltype (DimensionIterator::data) *> (&iterator));
 }
 
 DimensionIterator ModifyRayIntersectionQuery::DimensionEnd () const noexcept
 {
-    auto iterator = block_cast <QueryImplementation> (data).DimensionEnd ();
-    return DimensionIterator (reinterpret_cast <decltype (DimensionIterator::data) *> (&iterator));
+    auto iterator = block_cast<QueryImplementation> (data).DimensionEnd ();
+    return DimensionIterator (reinterpret_cast<decltype (DimensionIterator::data) *> (&iterator));
 }
 } // namespace Emergence::Warehouse

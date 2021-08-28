@@ -39,16 +39,16 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     HashIndex (HashIndex &&_other) = delete;
 
-    const InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &
-    GetIndexedFields () const noexcept;
+    const InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &GetIndexedFields ()
+        const noexcept;
 
     void Drop () noexcept;
 
     /// There is no sense to copy assign indices.
-    HashIndex &operator = (const HashIndex &_other) = delete;
+    HashIndex &operator= (const HashIndex &_other) = delete;
 
     /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
-    HashIndex &operator = (HashIndex &&_other) = delete;
+    HashIndex &operator= (HashIndex &&_other) = delete;
 
 private:
     friend class Storage;
@@ -65,11 +65,11 @@ private:
     {
         using is_transparent = void;
 
-        std::size_t operator () (const void *_record) const noexcept;
+        std::size_t operator() (const void *_record) const noexcept;
 
-        std::size_t operator () (const RecordWithBackup &_record) const noexcept;
+        std::size_t operator() (const RecordWithBackup &_record) const noexcept;
 
-        std::size_t operator () (const LookupRequest &_request) const noexcept;
+        std::size_t operator() (const LookupRequest &_request) const noexcept;
 
         HashIndex *owner;
     };
@@ -78,22 +78,23 @@ private:
     {
         using is_transparent = void;
 
-        bool operator () (const void *_firstRecord, const void *_secondRecord) const noexcept;
+        bool operator() (const void *_firstRecord, const void *_secondRecord) const noexcept;
 
-        bool operator () (const void *_record, const RecordWithBackup &_recordWithBackup) const noexcept;
+        bool operator() (const void *_record, const RecordWithBackup &_recordWithBackup) const noexcept;
 
-        bool operator () (const void *_record, const LookupRequest &_request) const noexcept;
+        bool operator() (const void *_record, const LookupRequest &_request) const noexcept;
 
-        bool operator () (const LookupRequest &_request, const void *_record) const noexcept;
+        bool operator() (const LookupRequest &_request, const void *_record) const noexcept;
 
         HashIndex *owner;
     };
 
     // TODO: Custom allocator for better performance?
-    using RecordHashSet = std::unordered_multiset <const void *, Hasher, Comparator>;
+    using RecordHashSet = std::unordered_multiset<const void *, Hasher, Comparator>;
 
-    explicit HashIndex (Storage *_owner, std::size_t _initialBuckets,
-                        const std::vector <StandardLayout::FieldId> &_indexedFields);
+    explicit HashIndex (Storage *_owner,
+                        std::size_t _initialBuckets,
+                        const std::vector<StandardLayout::FieldId> &_indexedFields);
 
     void InsertRecord (const void *_record) noexcept;
 
@@ -107,9 +108,9 @@ private:
 
     void OnWriterClosed () noexcept;
 
-    InplaceVector <StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
+    InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
     RecordHashSet records;
-    std::vector <RecordHashSet::node_type> changedNodes;
+    std::vector<RecordHashSet::node_type> changedNodes;
 
 public:
     class ReadCursor final
@@ -137,9 +138,7 @@ public:
     private:
         friend class HashIndex;
 
-        EditCursor (HashIndex *_index,
-                    RecordHashSet::iterator _begin,
-                    RecordHashSet::iterator _end) noexcept;
+        EditCursor (HashIndex *_index, RecordHashSet::iterator _begin, RecordHashSet::iterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
