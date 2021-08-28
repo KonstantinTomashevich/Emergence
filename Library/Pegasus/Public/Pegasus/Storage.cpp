@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include <API/Common/Implementation/Iterator.hpp>
+
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
 
@@ -48,180 +50,31 @@ Storage::Allocator::Allocator (Storage *_owner)
     owner->RegisterWriter ();
 }
 
-Storage::HashIndexIterator::HashIndexIterator (const Storage::HashIndexIterator &_other) noexcept = default;
+using HashIndexIterator = Storage::HashIndexIterator;
 
-Storage::HashIndexIterator::HashIndexIterator (Storage::HashIndexIterator &&_other) noexcept = default;
-
-Storage::HashIndexIterator::~HashIndexIterator () noexcept = default;
+EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (HashIndexIterator, iterator)
 
 Handling::Handle <HashIndex> Storage::HashIndexIterator::operator * () const noexcept
 {
     return iterator->index.get ();
 }
 
-Storage::HashIndexIterator &Storage::HashIndexIterator::operator ++ () noexcept
-{
-    ++iterator;
-    return *this;
-}
+using OrderedIndexIterator = Storage::OrderedIndexIterator;
 
-Storage::HashIndexIterator Storage::HashIndexIterator::operator ++ (int) noexcept
-{
-    auto oldIterator = iterator;
-    ++iterator;
-    return Storage::HashIndexIterator (oldIterator);
-}
-
-Storage::HashIndexIterator &Storage::HashIndexIterator::operator -- () noexcept
-{
-    --iterator;
-    return *this;
-}
-
-Storage::HashIndexIterator Storage::HashIndexIterator::operator -- (int) noexcept
-{
-    auto oldIterator = iterator;
-    --iterator;
-    return Storage::HashIndexIterator (oldIterator);
-}
-
-bool Storage::HashIndexIterator::operator == (const Storage::HashIndexIterator &_other) const noexcept
-{
-    return iterator == _other.iterator;
-}
-
-bool Storage::HashIndexIterator::operator != (const Storage::HashIndexIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Storage::HashIndexIterator &Storage::HashIndexIterator::operator = (
-    const Storage::HashIndexIterator &_other) noexcept = default;
-
-Storage::HashIndexIterator &Storage::HashIndexIterator::operator = (
-    Storage::HashIndexIterator &&_other) noexcept = default;
-
-Storage::HashIndexIterator::HashIndexIterator (HashIndexIterator::BaseIterator _iterator) noexcept
-    : iterator (std::move (_iterator))
-{
-}
-
-Storage::OrderedIndexIterator::OrderedIndexIterator (const Storage::OrderedIndexIterator &_other) noexcept = default;
-
-Storage::OrderedIndexIterator::OrderedIndexIterator (Storage::OrderedIndexIterator &&_other) noexcept = default;
-
-Storage::OrderedIndexIterator::~OrderedIndexIterator () noexcept = default;
+EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (OrderedIndexIterator, iterator)
 
 Handling::Handle <OrderedIndex> Storage::OrderedIndexIterator::operator * () const noexcept
 {
     return iterator->index.get ();
 }
 
-Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator ++ () noexcept
-{
-    ++iterator;
-    return *this;
-}
+using VolumetricIndexIterator = Storage::VolumetricIndexIterator;
 
-Storage::OrderedIndexIterator Storage::OrderedIndexIterator::operator ++ (int) noexcept
-{
-    auto oldIterator = iterator;
-    ++iterator;
-    return Storage::OrderedIndexIterator (oldIterator);
-}
-
-Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator -- () noexcept
-{
-    --iterator;
-    return *this;
-}
-
-Storage::OrderedIndexIterator Storage::OrderedIndexIterator::operator -- (int) noexcept
-{
-    auto oldIterator = iterator;
-    --iterator;
-    return Storage::OrderedIndexIterator (oldIterator);
-}
-
-bool Storage::OrderedIndexIterator::operator == (const Storage::OrderedIndexIterator &_other) const noexcept
-{
-    return iterator == _other.iterator;
-}
-
-bool Storage::OrderedIndexIterator::operator != (const Storage::OrderedIndexIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator = (
-    const Storage::OrderedIndexIterator &_other) noexcept = default;
-
-Storage::OrderedIndexIterator &Storage::OrderedIndexIterator::operator = (
-    Storage::OrderedIndexIterator &&_other) noexcept = default;
-
-Storage::OrderedIndexIterator::OrderedIndexIterator (OrderedIndexIterator::BaseIterator _iterator) noexcept
-    : iterator (std::move (_iterator))
-{
-}
-
-Storage::VolumetricIndexIterator::VolumetricIndexIterator (
-    const Storage::VolumetricIndexIterator &_other) noexcept = default;
-
-Storage::VolumetricIndexIterator::VolumetricIndexIterator (
-    Storage::VolumetricIndexIterator &&_other) noexcept = default;
-
-Storage::VolumetricIndexIterator::~VolumetricIndexIterator () noexcept = default;
+EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (VolumetricIndexIterator, iterator)
 
 Handling::Handle <VolumetricIndex> Storage::VolumetricIndexIterator::operator * () const noexcept
 {
     return iterator->index.get ();
-}
-
-Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator ++ () noexcept
-{
-    ++iterator;
-    return *this;
-}
-
-Storage::VolumetricIndexIterator Storage::VolumetricIndexIterator::operator ++ (int) noexcept
-{
-    auto oldIterator = iterator;
-    ++iterator;
-    return Storage::VolumetricIndexIterator (oldIterator);
-}
-
-Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator -- () noexcept
-{
-    --iterator;
-    return *this;
-}
-
-Storage::VolumetricIndexIterator Storage::VolumetricIndexIterator::operator -- (int) noexcept
-{
-    auto oldIterator = iterator;
-    --iterator;
-    return Storage::VolumetricIndexIterator (oldIterator);
-}
-
-bool Storage::VolumetricIndexIterator::operator == (const Storage::VolumetricIndexIterator &_other) const noexcept
-{
-    return iterator == _other.iterator;
-}
-
-bool Storage::VolumetricIndexIterator::operator != (const Storage::VolumetricIndexIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator = (
-    const Storage::VolumetricIndexIterator &_other) noexcept = default;
-
-Storage::VolumetricIndexIterator &Storage::VolumetricIndexIterator::operator = (
-    Storage::VolumetricIndexIterator &&_other) noexcept = default;
-
-Storage::VolumetricIndexIterator::VolumetricIndexIterator (VolumetricIndexIterator::BaseIterator _iterator) noexcept
-    : iterator (std::move (_iterator))
-{
 }
 
 Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept

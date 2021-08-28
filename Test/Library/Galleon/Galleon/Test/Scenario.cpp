@@ -280,7 +280,7 @@ void ExecuteTask (ExecutionContext &_context, const InsertObjects &_task)
                          std::is_same_v <QueryType, LongTermContainer::InsertQuery>)
             {
                 auto cursor = _query.Execute ();
-                for (const void *source : _task.copyFrom)
+                for (const void *source: _task.copyFrom)
                 {
                     void *target = ++cursor;
                     memcpy (target, source, _query.GetContainer ()->GetTypeMapping ().GetObjectSize ());
@@ -322,40 +322,38 @@ void ExecuteTask (ExecutionContext &_context, const QueryUnorderedSequenceToRead
 
 void ExecuteTask (ExecutionContext &_context, const QueryUnorderedSequenceToEdit &_task)
 {
-    auto
-        &query = std::get <ShortTermContainer::ModifyQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
+    auto &query = std::get <ShortTermContainer::ModifyQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (), query.Execute ());
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToRead &_task)
 {
-    auto &query =
-        std::get <LongTermContainer::FetchValueQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
+    auto &query = std::get <LongTermContainer::FetchValueQuery> (
+        GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.value));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
 {
-    auto &query =
-        std::get <LongTermContainer::ModifyValueQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
+    auto &query = std::get <LongTermContainer::ModifyValueQuery> (
+        GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.value));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
 {
-    auto &query =
-        std::get <LongTermContainer::FetchAscendingRangeQuery> (GetObject <PreparedQuery> (_context, _task.sourceName));
+    auto &query = std::get <LongTermContainer::FetchAscendingRangeQuery> (
+        GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.minValue, _task.maxValue));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_task)
 {
-    auto &query =
-        std::get <LongTermContainer::ModifyAscendingRangeQuery> (
-            GetObject <PreparedQuery> (_context, _task.sourceName));
+    auto &query = std::get <LongTermContainer::ModifyAscendingRangeQuery> (
+        GetObject <PreparedQuery> (_context, _task.sourceName));
     AddObject <Cursor> (_context, _task.cursorName, query.GetContainer ()->GetTypeMapping (),
                         query.Execute (_task.minValue, _task.maxValue));
 }
@@ -644,56 +642,56 @@ template <>
 Task ImportTask (const QueryAscendingRangeToRead &_task)
 {
     return QueryAscendingRangeToRead {{{_task.sourceName + "::FetchAscending", _task.cursorName},
-                                          _task.minValue, _task.maxValue}};
+                                       _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryAscendingRangeToEdit &_task)
 {
     return QueryAscendingRangeToEdit {{{_task.sourceName + "::ModifyAscending", _task.cursorName},
-                                          _task.minValue, _task.maxValue}};
+                                       _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryDescendingRangeToRead &_task)
 {
     return QueryDescendingRangeToRead {{{_task.sourceName + "::FetchDescending", _task.cursorName},
-                                           _task.minValue, _task.maxValue}};
+                                        _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryDescendingRangeToEdit &_task)
 {
     return QueryDescendingRangeToEdit {{{_task.sourceName + "::ModifyDescending", _task.cursorName},
-                                           _task.minValue, _task.maxValue}};
+                                        _task.minValue, _task.maxValue}};
 }
 
 template <>
 Task ImportTask (const QueryShapeIntersectionToRead &_task)
 {
     return QueryShapeIntersectionToRead {{{_task.sourceName + "::FetchShape", _task.cursorName},
-                                             _task.min, _task.max}};
+                                          _task.min, _task.max}};
 }
 
 template <>
 Task ImportTask (const QueryShapeIntersectionToEdit &_task)
 {
     return QueryShapeIntersectionToEdit {{{_task.sourceName + "::ModifyShape", _task.cursorName},
-                                             _task.min, _task.max}};
+                                          _task.min, _task.max}};
 }
 
 template <>
 Task ImportTask (const QueryRayIntersectionToRead &_task)
 {
     return QueryRayIntersectionToRead {{{_task.sourceName + "::FetchRay", _task.cursorName},
-                                           _task.origin, _task.direction, _task.maxDistance}};
+                                        _task.origin, _task.direction, _task.maxDistance}};
 }
 
 template <>
 Task ImportTask (const QueryRayIntersectionToEdit &_task)
 {
     return QueryRayIntersectionToEdit {{{_task.sourceName + "::ModifyRay", _task.cursorName},
-                                           _task.origin, _task.direction, _task.maxDistance}};
+                                        _task.origin, _task.direction, _task.maxDistance}};
 }
 
 static Task ContainerAcquisitionTaskFromSource (
@@ -1128,7 +1126,11 @@ std::ostream &operator << (std::ostream &_output, const Scenario &_scenario)
 
 std::vector <Task> &operator += (std::vector <Task> &first, const std::vector <Task> &second) noexcept
 {
-    first.insert (first.end (), second.begin (), second.end ());
+    for (const Task &task : second)
+    {
+        first.emplace_back (task);
+    }
+
     return first;
 }
 

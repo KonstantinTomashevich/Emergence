@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <API/Common/Implementation/Cursor.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Pegasus/OrderedIndex.hpp>
@@ -10,144 +12,29 @@
 
 namespace Emergence::RecordCollection
 {
-LinearRepresentation::AscendingReadCursor::AscendingReadCursor (const LinearRepresentation::AscendingReadCursor &_other) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::AscendingReadCursor (
-        block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (_other.data));
-}
+using AscendingReadCursor = LinearRepresentation::AscendingReadCursor;
 
-LinearRepresentation::AscendingReadCursor::AscendingReadCursor (LinearRepresentation::AscendingReadCursor &&_other) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::AscendingReadCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (_other.data)));
-}
+using AscendingReadCursorImplementation = Pegasus::OrderedIndex::AscendingReadCursor;
 
-LinearRepresentation::AscendingReadCursor::~AscendingReadCursor () noexcept
-{
-    block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (data).~AscendingReadCursor ();
-}
+EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (AscendingReadCursor, AscendingReadCursorImplementation)
 
-const void *LinearRepresentation::AscendingReadCursor::operator * () const noexcept
-{
-    return *block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (data);
-}
+using AscendingEditCursor = LinearRepresentation::AscendingEditCursor;
 
-LinearRepresentation::AscendingReadCursor &LinearRepresentation::AscendingReadCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (data);
-    return *this;
-}
+using AscendingEditCursorImplementation = Pegasus::OrderedIndex::AscendingEditCursor;
 
-LinearRepresentation::AscendingReadCursor::AscendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::AscendingReadCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::AscendingReadCursor> (*_data)));
-}
+EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (AscendingEditCursor, AscendingEditCursorImplementation)
 
-LinearRepresentation::AscendingEditCursor::AscendingEditCursor (LinearRepresentation::AscendingEditCursor &&_other) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::AscendingEditCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (_other.data)));
-}
+using DescendingReadCursor = LinearRepresentation::DescendingReadCursor;
 
-LinearRepresentation::AscendingEditCursor::~AscendingEditCursor () noexcept
-{
-    block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data).~AscendingEditCursor ();
-}
+using DescendingReadCursorImplementation = Pegasus::OrderedIndex::DescendingReadCursor;
 
-void *LinearRepresentation::AscendingEditCursor::operator * () noexcept
-{
-    return *block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data);
-}
+EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (DescendingReadCursor, DescendingReadCursorImplementation)
 
-LinearRepresentation::AscendingEditCursor &LinearRepresentation::AscendingEditCursor::operator ~ () noexcept
-{
-    ~block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data);
-    return *this;
-}
+using DescendingEditCursor = LinearRepresentation::DescendingEditCursor;
 
-LinearRepresentation::AscendingEditCursor &LinearRepresentation::AscendingEditCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (data);
-    return *this;
-}
+using DescendingEditCursorImplementation = Pegasus::OrderedIndex::DescendingEditCursor;
 
-LinearRepresentation::AscendingEditCursor::AscendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::AscendingEditCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::AscendingEditCursor> (*_data)));
-}
-
-LinearRepresentation::DescendingReadCursor::DescendingReadCursor (
-    const LinearRepresentation::DescendingReadCursor &_other) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::DescendingReadCursor (
-        block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (_other.data));
-}
-
-LinearRepresentation::DescendingReadCursor::DescendingReadCursor (
-    LinearRepresentation::DescendingReadCursor &&_other) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::DescendingReadCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (_other.data)));
-}
-
-LinearRepresentation::DescendingReadCursor::~DescendingReadCursor () noexcept
-{
-    block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (data).~DescendingReadCursor ();
-}
-
-const void *LinearRepresentation::DescendingReadCursor::operator * () const noexcept
-{
-    return *block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (data);
-}
-
-LinearRepresentation::DescendingReadCursor &LinearRepresentation::DescendingReadCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (data);
-    return *this;
-}
-
-LinearRepresentation::DescendingReadCursor::DescendingReadCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::DescendingReadCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::DescendingReadCursor> (*_data)));
-}
-
-LinearRepresentation::DescendingEditCursor::DescendingEditCursor (
-    LinearRepresentation::DescendingEditCursor &&_other) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::DescendingEditCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (_other.data)));
-}
-
-LinearRepresentation::DescendingEditCursor::~DescendingEditCursor () noexcept
-{
-    block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data).~DescendingEditCursor ();
-}
-
-void *LinearRepresentation::DescendingEditCursor::operator * () noexcept
-{
-    return *block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data);
-}
-
-LinearRepresentation::DescendingEditCursor &LinearRepresentation::DescendingEditCursor::operator ~ () noexcept
-{
-    ~block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data);
-    return *this;
-}
-
-LinearRepresentation::DescendingEditCursor &LinearRepresentation::DescendingEditCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (data);
-    return *this;
-}
-
-LinearRepresentation::DescendingEditCursor::DescendingEditCursor (std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::OrderedIndex::DescendingEditCursor (
-        std::move (block_cast <Pegasus::OrderedIndex::DescendingEditCursor> (*_data)));
-}
+EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (DescendingEditCursor, DescendingEditCursorImplementation)
 
 LinearRepresentation::LinearRepresentation (const LinearRepresentation &_other) noexcept
 {

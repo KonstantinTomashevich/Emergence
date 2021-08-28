@@ -1,5 +1,8 @@
 #include <cassert>
 
+#include <API/Common/Implementation/Cursor.hpp>
+#include <API/Common/Implementation/Iterator.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Pegasus/VolumetricIndex.hpp>
@@ -10,249 +13,46 @@
 
 namespace Emergence::RecordCollection
 {
-VolumetricRepresentation::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
-    const VolumetricRepresentation::ShapeIntersectionReadCursor &_other) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::ShapeIntersectionReadCursor (
-        block_cast <Pegasus::VolumetricIndex::ShapeIntersectionReadCursor> (_other.data));
-}
+using ShapeIntersectionReadCursor = VolumetricRepresentation::ShapeIntersectionReadCursor;
 
-VolumetricRepresentation::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
-    VolumetricRepresentation::ShapeIntersectionReadCursor &&_other) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::ShapeIntersectionReadCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::ShapeIntersectionReadCursor> (_other.data)));
-}
+using ShapeIntersectionReadCursorImplementation = Pegasus::VolumetricIndex::ShapeIntersectionReadCursor;
 
-VolumetricRepresentation::ShapeIntersectionReadCursor::~ShapeIntersectionReadCursor () noexcept
-{
-    block_cast <Pegasus::VolumetricIndex::ShapeIntersectionReadCursor> (data).~ShapeIntersectionReadCursor ();
-}
+EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (
+    ShapeIntersectionReadCursor, ShapeIntersectionReadCursorImplementation)
 
-const void *VolumetricRepresentation::ShapeIntersectionReadCursor::operator * () const noexcept
-{
-    return *block_cast <Pegasus::VolumetricIndex::ShapeIntersectionReadCursor> (data);
-}
+using ShapeIntersectionEditCursor = VolumetricRepresentation::ShapeIntersectionEditCursor;
 
-VolumetricRepresentation::ShapeIntersectionReadCursor &
-VolumetricRepresentation::ShapeIntersectionReadCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::VolumetricIndex::ShapeIntersectionReadCursor> (data);
-    return *this;
-}
+using ShapeIntersectionEditCursorImplementation = Pegasus::VolumetricIndex::ShapeIntersectionEditCursor;
 
-VolumetricRepresentation::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
-    std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::ShapeIntersectionReadCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::ShapeIntersectionReadCursor> (*_data)));
-}
+EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (
+    ShapeIntersectionEditCursor, ShapeIntersectionEditCursorImplementation)
 
-VolumetricRepresentation::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
-    VolumetricRepresentation::ShapeIntersectionEditCursor &&_other) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::ShapeIntersectionEditCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::ShapeIntersectionEditCursor> (_other.data)));
-}
+using RayIntersectionReadCursor = VolumetricRepresentation::RayIntersectionReadCursor;
 
-VolumetricRepresentation::ShapeIntersectionEditCursor::~ShapeIntersectionEditCursor () noexcept
-{
-    block_cast <Pegasus::VolumetricIndex::ShapeIntersectionEditCursor> (data).~ShapeIntersectionEditCursor ();
-}
+using RayIntersectionReadCursorImplementation = Pegasus::VolumetricIndex::RayIntersectionReadCursor;
 
-void *VolumetricRepresentation::ShapeIntersectionEditCursor::operator * () noexcept
-{
-    return *block_cast <Pegasus::VolumetricIndex::ShapeIntersectionEditCursor> (data);
-}
+EMERGENCE_BIND_READ_CURSOR_OPERATIONS_IMPLEMENTATION (
+    RayIntersectionReadCursor, RayIntersectionReadCursorImplementation)
 
-VolumetricRepresentation::ShapeIntersectionEditCursor &
-VolumetricRepresentation::ShapeIntersectionEditCursor::operator ~ () noexcept
-{
-    ~block_cast <Pegasus::VolumetricIndex::ShapeIntersectionEditCursor> (data);
-    return *this;
-}
+using RayIntersectionEditCursor = VolumetricRepresentation::RayIntersectionEditCursor;
 
-VolumetricRepresentation::ShapeIntersectionEditCursor &
-VolumetricRepresentation::ShapeIntersectionEditCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::VolumetricIndex::ShapeIntersectionEditCursor> (data);
-    return *this;
-}
+using RayIntersectionEditCursorImplementation = Pegasus::VolumetricIndex::RayIntersectionEditCursor;
 
-VolumetricRepresentation::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
-    std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::ShapeIntersectionEditCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::ShapeIntersectionEditCursor> (*_data)));
-}
+EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (
+    RayIntersectionEditCursor, RayIntersectionEditCursorImplementation)
 
-VolumetricRepresentation::RayIntersectionReadCursor::RayIntersectionReadCursor (
-    const VolumetricRepresentation::RayIntersectionReadCursor &_other) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::RayIntersectionReadCursor (
-        block_cast <Pegasus::VolumetricIndex::RayIntersectionReadCursor> (_other.data));
-}
+using DimensionIterator = VolumetricRepresentation::DimensionIterator;
 
-VolumetricRepresentation::RayIntersectionReadCursor::RayIntersectionReadCursor (
-    VolumetricRepresentation::RayIntersectionReadCursor &&_other) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::RayIntersectionReadCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::RayIntersectionReadCursor> (_other.data)));
-}
-
-VolumetricRepresentation::RayIntersectionReadCursor::~RayIntersectionReadCursor () noexcept
-{
-    block_cast <Pegasus::VolumetricIndex::RayIntersectionReadCursor> (data).~RayIntersectionReadCursor ();
-}
-
-const void *VolumetricRepresentation::RayIntersectionReadCursor::operator * () const noexcept
-{
-    return *block_cast <Pegasus::VolumetricIndex::RayIntersectionReadCursor> (data);
-}
-
-VolumetricRepresentation::RayIntersectionReadCursor &
-VolumetricRepresentation::RayIntersectionReadCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::VolumetricIndex::RayIntersectionReadCursor> (data);
-    return *this;
-}
-
-VolumetricRepresentation::RayIntersectionReadCursor::RayIntersectionReadCursor (
-    std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::RayIntersectionReadCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::RayIntersectionReadCursor> (*_data)));
-}
-
-VolumetricRepresentation::RayIntersectionEditCursor::RayIntersectionEditCursor (
-    VolumetricRepresentation::RayIntersectionEditCursor &&_other) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::RayIntersectionEditCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (_other.data)));
-}
-
-VolumetricRepresentation::RayIntersectionEditCursor::~RayIntersectionEditCursor () noexcept
-{
-    block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (data).~RayIntersectionEditCursor ();
-}
-
-void *VolumetricRepresentation::RayIntersectionEditCursor::operator * () noexcept
-{
-    return *block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (data);
-}
-
-VolumetricRepresentation::RayIntersectionEditCursor &
-VolumetricRepresentation::RayIntersectionEditCursor::operator ~ () noexcept
-{
-    ~block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (data);
-    return *this;
-}
-
-VolumetricRepresentation::RayIntersectionEditCursor &
-VolumetricRepresentation::RayIntersectionEditCursor::operator ++ () noexcept
-{
-    ++block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (data);
-    return *this;
-}
-
-VolumetricRepresentation::RayIntersectionEditCursor::RayIntersectionEditCursor (
-    std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) Pegasus::VolumetricIndex::RayIntersectionEditCursor (
-        std::move (block_cast <Pegasus::VolumetricIndex::RayIntersectionEditCursor> (*_data)));
-}
-
-using DimensionIteratorBaseType = InplaceVector <
+using DimensionIteratorImplementation = InplaceVector <
     Pegasus::VolumetricIndex::Dimension, Pegasus::Constants::VolumetricIndex::MAX_DIMENSIONS>::ConstIterator;
 
-VolumetricRepresentation::DimensionIterator::DimensionIterator (
-    const VolumetricRepresentation::DimensionIterator &_other) noexcept
-{
-    new (&data) DimensionIteratorBaseType (block_cast <DimensionIteratorBaseType> (_other.data));
-}
-
-VolumetricRepresentation::DimensionIterator::DimensionIterator (
-    VolumetricRepresentation::DimensionIterator &&_other) noexcept
-{
-    new (&data) DimensionIteratorBaseType (std::move (block_cast <DimensionIteratorBaseType> (_other.data)));
-}
-
-VolumetricRepresentation::DimensionIterator::~DimensionIterator () noexcept
-{
-    block_cast <DimensionIteratorBaseType> (data).~DimensionIteratorBaseType ();
-}
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)
 
 VolumetricRepresentation::DimensionIterator::Dimension
 VolumetricRepresentation::DimensionIterator::operator * () const noexcept
 {
-    const Pegasus::VolumetricIndex::Dimension &dimension = *block_cast <DimensionIteratorBaseType> (data);
+    const Pegasus::VolumetricIndex::Dimension &dimension = *block_cast <DimensionIteratorImplementation> (data);
     return {&dimension.globalMinBorder, dimension.minBorderField, &dimension.globalMaxBorder, dimension.maxBorderField};
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator ++ () noexcept
-{
-    ++block_cast <DimensionIteratorBaseType> (data);
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionIterator::operator ++ (int) noexcept
-{
-    auto previous = block_cast <DimensionIteratorBaseType> (data)++;
-    return DimensionIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator -- () noexcept
-{
-    --block_cast <DimensionIteratorBaseType> (data);
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionIterator::operator -- (int) noexcept
-{
-    auto previous = block_cast <DimensionIteratorBaseType> (data)--;
-    return DimensionIterator (reinterpret_cast <decltype (data) *> (&previous));
-}
-
-bool VolumetricRepresentation::DimensionIterator::operator == (
-    const VolumetricRepresentation::DimensionIterator &_other) const noexcept
-{
-    return block_cast <DimensionIteratorBaseType> (data) == block_cast <DimensionIteratorBaseType> (_other.data);
-}
-
-bool VolumetricRepresentation::DimensionIterator::operator != (
-    const VolumetricRepresentation::DimensionIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator = (
-    const VolumetricRepresentation::DimensionIterator &_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~DimensionIterator ();
-        new (this) DimensionIterator (_other);
-    }
-
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator &VolumetricRepresentation::DimensionIterator::operator = (
-    VolumetricRepresentation::DimensionIterator &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~DimensionIterator ();
-        new (this) DimensionIterator (std::move (_other));
-    }
-
-    return *this;
-}
-
-VolumetricRepresentation::DimensionIterator::DimensionIterator (
-    const std::array <uint8_t, DATA_MAX_SIZE> *_data) noexcept
-{
-    new (&data) DimensionIteratorBaseType (std::move (block_cast <DimensionIteratorBaseType> (*_data)));
 }
 
 VolumetricRepresentation::VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept

@@ -165,8 +165,6 @@ public:
 
     ConstIterator End () const noexcept;
 
-    FieldId GetFieldId (const ConstIterator &_iterator) const;
-
     FieldId GetFieldId (const FieldData &_field) const;
 
 private:
