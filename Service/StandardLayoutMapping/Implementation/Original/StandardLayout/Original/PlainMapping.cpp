@@ -1,39 +1,48 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <cassert>
 #include <cstdlib>
 #include <new>
+
+#include <API/Common/Implementation/Iterator.hpp>
 
 #include <StandardLayout/Original/PlainMapping.hpp>
 
 namespace Emergence::StandardLayout
 {
-FieldArchetype FieldData::GetArchetype () const
+FieldArchetype FieldData::GetArchetype () const noexcept
 {
     return archetype;
 }
 
-size_t FieldData::GetOffset () const
+size_t FieldData::GetOffset () const noexcept
 {
     return offset;
 }
 
-size_t FieldData::GetSize () const
+size_t FieldData::GetSize () const noexcept
 {
     return size;
 }
 
-uint_fast8_t FieldData::GetBitOffset () const
+uint_fast8_t FieldData::GetBitOffset () const noexcept
 {
     assert (archetype == FieldArchetype::BIT);
     return bitOffset;
 }
 
-Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const
+Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const noexcept
 {
     assert (archetype == FieldArchetype::NESTED_OBJECT);
     return nestedObjectMapping;
 }
 
-FieldData::FieldData () noexcept : archetype (FieldArchetype::INT), offset (0u), size (0u)
+const char *FieldData::GetName () const noexcept
+{
+    return &name[0u];
+}
+
+FieldData::FieldData () noexcept : archetype (FieldArchetype::INT), offset (0u), size (0u), name {0u}
 {
 }
 
@@ -44,6 +53,7 @@ FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
 {
     assert (archetype != FieldArchetype::BIT);
     assert (archetype != FieldArchetype::NESTED_OBJECT);
+    CopyName (_seed.name);
 }
 
 FieldData::FieldData (FieldData::BitSeed _seed) noexcept
@@ -52,6 +62,7 @@ FieldData::FieldData (FieldData::BitSeed _seed) noexcept
       size (1u),
       bitOffset (_seed.bitOffset)
 {
+    CopyName (_seed.name);
 }
 
 FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
@@ -61,6 +72,7 @@ FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
 {
     assert (nestedObjectMapping);
     size = nestedObjectMapping->GetObjectSize ();
+    CopyName (_seed.name);
 }
 
 FieldData::~FieldData ()
@@ -71,11 +83,19 @@ FieldData::~FieldData ()
     }
 }
 
-PlainMapping::ConstIterator::ConstIterator () noexcept : target (nullptr)
+void FieldData::CopyName (const char *_name) noexcept
 {
+    assert (_name);
+    assert (strlen (_name) < FIELD_NAME_MAX_LENGTH);
+    strncpy (&name[0u], _name, FIELD_NAME_MAX_LENGTH - 1u);
+    name[FIELD_NAME_MAX_LENGTH - 1u] = '\0';
 }
 
-PlainMapping::ConstIterator::ConstIterator (const FieldData *_target) noexcept : target (_target)
+using ConstIterator = PlainMapping::ConstIterator;
+
+EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (ConstIterator, target)
+
+PlainMapping::ConstIterator::ConstIterator () noexcept : target (nullptr)
 {
 }
 
@@ -90,98 +110,6 @@ const FieldData *PlainMapping::ConstIterator::operator-> () const noexcept
     return target;
 }
 
-PlainMapping::ConstIterator &PlainMapping::ConstIterator::operator++ () noexcept
-{
-    return *this += 1u;
-}
-
-PlainMapping::ConstIterator PlainMapping::ConstIterator::operator++ (int) noexcept
-{
-    ConstIterator beforeIncrement (target);
-    *this += 1u;
-    return beforeIncrement;
-}
-
-PlainMapping::ConstIterator &PlainMapping::ConstIterator::operator-- () noexcept
-{
-    return *this -= 1u;
-}
-
-PlainMapping::ConstIterator PlainMapping::ConstIterator::operator-- (int) noexcept
-{
-    ConstIterator beforeDecrement (target);
-    *this -= 1u;
-    return beforeDecrement;
-}
-
-PlainMapping::ConstIterator PlainMapping::ConstIterator::operator+ (ptrdiff_t _steps) const noexcept
-{
-    return PlainMapping::ConstIterator (target + _steps);
-}
-
-PlainMapping::ConstIterator operator+ (ptrdiff_t _steps, const PlainMapping::ConstIterator &_iterator) noexcept
-{
-    return _iterator + _steps;
-}
-
-PlainMapping::ConstIterator &PlainMapping::ConstIterator::operator+= (ptrdiff_t _steps) noexcept
-{
-    target += _steps;
-    return *this;
-}
-
-PlainMapping::ConstIterator PlainMapping::ConstIterator::operator- (ptrdiff_t _steps) const noexcept
-{
-    return PlainMapping::ConstIterator (target - _steps);
-}
-
-PlainMapping::ConstIterator &PlainMapping::ConstIterator::operator-= (ptrdiff_t _steps) noexcept
-{
-    target -= _steps;
-    return *this;
-}
-
-const FieldData &PlainMapping::ConstIterator::operator[] (std::size_t _index) const noexcept
-{
-    assert (target);
-    return target[_index];
-}
-
-ptrdiff_t PlainMapping::ConstIterator::operator- (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return target - _other.target;
-}
-
-bool PlainMapping::ConstIterator::operator== (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return target == _other.target;
-}
-
-bool PlainMapping::ConstIterator::operator!= (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return !(*this == _other);
-}
-
-bool PlainMapping::ConstIterator::operator< (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return target < _other.target;
-}
-
-bool PlainMapping::ConstIterator::operator> (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return _other < *this;
-}
-
-bool PlainMapping::ConstIterator::operator<= (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return !(_other < *this);
-}
-
-bool PlainMapping::ConstIterator::operator>= (const PlainMapping::ConstIterator &_other) const noexcept
-{
-    return !(*this < _other);
-}
-
 std::size_t PlainMapping::GetObjectSize () const noexcept
 {
     return objectSize;
@@ -190,6 +118,11 @@ std::size_t PlainMapping::GetObjectSize () const noexcept
 std::size_t PlainMapping::GetFieldCount () const noexcept
 {
     return fieldCount;
+}
+
+const char *PlainMapping::GetName () const noexcept
+{
+    return &name[0u];
 }
 
 const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
@@ -231,9 +164,13 @@ std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noex
     return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
 }
 
-PlainMapping::PlainMapping (std::size_t _objectSize) noexcept : objectSize (_objectSize)
+PlainMapping::PlainMapping (const char *_name, std::size_t _objectSize) noexcept : objectSize (_objectSize)
 {
     assert (objectSize > 0u);
+    assert (_name);
+    assert (strlen (_name) < MAPPING_NAME_MAX_LENGTH);
+    strncpy (&name[0u], _name, MAPPING_NAME_MAX_LENGTH - 1u);
+    name[MAPPING_NAME_MAX_LENGTH - 1u] = '\0';
 }
 
 PlainMapping::~PlainMapping () noexcept
@@ -275,11 +212,11 @@ PlainMappingBuilder::~PlainMappingBuilder ()
     delete underConstruction;
 }
 
-void PlainMappingBuilder::Begin (std::size_t _objectSize) noexcept
+void PlainMappingBuilder::Begin (const char *_name, std::size_t _objectSize) noexcept
 {
     assert (!underConstruction);
     fieldCapacity = INITIAL_FIELD_CAPACITY;
-    underConstruction = new (fieldCapacity) PlainMapping (_objectSize);
+    underConstruction = new (fieldCapacity) PlainMapping (_name, _objectSize);
 }
 
 Handling::Handle<PlainMapping> PlainMappingBuilder::End () noexcept

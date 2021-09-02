@@ -4,6 +4,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include <API/Common/Iterator.hpp>
+
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
@@ -13,6 +15,11 @@ namespace Emergence::StandardLayout
 {
 class PlainMapping;
 
+/// Field name max length should be big because of projected fields names.
+constexpr std::size_t FIELD_NAME_MAX_LENGTH = 64u;
+
+constexpr std::size_t MAPPING_NAME_MAX_LENGTH = 32u;
+
 class FieldData final
 {
 public:
@@ -20,44 +27,52 @@ public:
     ///        FieldArchetype::BIT and FieldArchetype::NESTED_OBJECT.
     ///
     /// \details If FieldData::archetype is FieldArchetype::NESTED_OBJECT, FieldData must manage nestedObjectMapping as
-    //           counted reference. It's much easier to correctly implement this behaviour if FieldData construction
-    //           and destruction is done only in particular places (currently in PlainMappingBuilder and PlainMapping),
-    //           otherwise custom copy and move constructors will be required. Also, addition of custom move constructor
-    //           would violate realloc-movable requirement and create ambiguity.
+    ///          counted reference. It's much easier to correctly implement this behaviour if FieldData construction
+    ///          and destruction is done only in particular places (currently in PlainMappingBuilder and PlainMapping),
+    ///          otherwise custom copy and move constructors will be required. Also, addition of custom move constructor
+    ///          would violate realloc-movable requirement and create ambiguity.
     struct StandardSeed final
     {
-        FieldArchetype archetype;
+        FieldArchetype archetype = FieldArchetype::UINT;
 
-        std::size_t offset;
+        std::size_t offset = 0u;
 
-        std::size_t size;
+        std::size_t size = 0u;
+
+        const char *name = nullptr;
     };
 
     /// \brief Used to register fields with FieldArchetype::BIT.
     struct BitSeed
     {
-        std::size_t offset;
+        std::size_t offset = 0u;
 
-        uint_fast8_t bitOffset;
+        uint_fast8_t bitOffset = 0u;
+
+        const char *name = nullptr;
     };
 
     /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
     struct NestedObjectSeed
     {
-        std::size_t offset;
+        std::size_t offset = 0u;
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
+
+        const char *name = nullptr;
     };
 
-    FieldArchetype GetArchetype () const;
+    FieldArchetype GetArchetype () const noexcept;
 
-    size_t GetOffset () const;
+    size_t GetOffset () const noexcept;
 
-    size_t GetSize () const;
+    size_t GetSize () const noexcept;
 
-    uint_fast8_t GetBitOffset () const;
+    uint_fast8_t GetBitOffset () const noexcept;
 
-    Handling::Handle<PlainMapping> GetNestedObjectMapping () const;
+    Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
+
+    const char *GetName () const noexcept;
 
 private:
     /// PlainMapping deletes FieldData's.
@@ -77,6 +92,8 @@ private:
 
     ~FieldData ();
 
+    void CopyName (const char *_name) noexcept;
+
     FieldArchetype archetype;
     std::size_t offset;
     std::size_t size;
@@ -87,6 +104,8 @@ private:
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
     };
+
+    std::array<char, FIELD_NAME_MAX_LENGTH> name;
 };
 
 class PlainMapping final : public Handling::HandleableBase
@@ -95,55 +114,11 @@ public:
     class ConstIterator final
     {
     public:
-        using iterator_category = std::random_access_iterator_tag;
-
-        using value_type = const FieldData;
-
-        using difference_type = ptrdiff_t;
-
-        using pointer = value_type *;
-
-        using reference = value_type &;
-
         ConstIterator () noexcept;
 
-        const FieldData &operator* () const noexcept;
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (ConstIterator, const FieldData &);
 
         const FieldData *operator-> () const noexcept;
-
-        ConstIterator &operator++ () noexcept;
-
-        ConstIterator operator++ (int) noexcept;
-
-        ConstIterator &operator-- () noexcept;
-
-        ConstIterator operator-- (int) noexcept;
-
-        ConstIterator operator+ (ptrdiff_t _steps) const noexcept;
-
-        friend ConstIterator operator+ (ptrdiff_t _steps, const ConstIterator &_iterator) noexcept;
-
-        ConstIterator &operator+= (ptrdiff_t _steps) noexcept;
-
-        ConstIterator operator- (ptrdiff_t _steps) const noexcept;
-
-        ConstIterator &operator-= (ptrdiff_t _steps) noexcept;
-
-        const FieldData &operator[] (std::size_t _index) const noexcept;
-
-        ptrdiff_t operator- (const ConstIterator &_other) const noexcept;
-
-        bool operator== (const ConstIterator &_other) const noexcept;
-
-        bool operator!= (const ConstIterator &_other) const noexcept;
-
-        bool operator< (const ConstIterator &_other) const noexcept;
-
-        bool operator> (const ConstIterator &_other) const noexcept;
-
-        bool operator<= (const ConstIterator &_other) const noexcept;
-
-        bool operator>= (const ConstIterator &_other) const noexcept;
 
     private:
         friend class PlainMapping;
@@ -156,6 +131,8 @@ public:
     std::size_t GetObjectSize () const noexcept;
 
     std::size_t GetFieldCount () const noexcept;
+
+    const char *GetName () const noexcept;
 
     const FieldData *GetField (FieldId _field) const noexcept;
 
@@ -178,7 +155,7 @@ private:
     /// \return Size of mapping object, that can hold up to _fieldCapacity fields.
     static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept;
 
-    explicit PlainMapping (std::size_t _objectSize) noexcept;
+    explicit PlainMapping (const char *_name, std::size_t _objectSize) noexcept;
 
     ~PlainMapping () noexcept;
 
@@ -200,6 +177,7 @@ private:
 
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
+    std::array<char, MAPPING_NAME_MAX_LENGTH> name;
     FieldData fields[0u];
 };
 
@@ -212,7 +190,7 @@ class PlainMappingBuilder
 public:
     ~PlainMappingBuilder ();
 
-    void Begin (std::size_t _objectSize) noexcept;
+    void Begin (const char *_name, std::size_t _objectSize) noexcept;
 
     Handling::Handle<PlainMapping> End () noexcept;
 

@@ -84,6 +84,10 @@ public:
     /// \invariant Field archetype is FieldArchetype::NESTED_OBJECT.
     class Mapping GetNestedObjectMapping () const noexcept;
 
+    /// \return Human readable field name.
+    /// \invariant Handle must be valid.
+    const char *GetName () const noexcept;
+
     /// \param _object pointer to structure, that contains this field.
     /// \return Pointer to this field in given structure.
     /// \invariant Handle must be valid.
