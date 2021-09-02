@@ -39,7 +39,7 @@ Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const noexce
 
 const char *FieldData::GetName () const noexcept
 {
-    return &name[0u];
+    return name;
 }
 
 FieldData::FieldData () noexcept : archetype (FieldArchetype::INT), offset (0u), size (0u), name {0u}
@@ -81,14 +81,15 @@ FieldData::~FieldData ()
     {
         nestedObjectMapping.~Handle ();
     }
+
+    free (name);
 }
 
 void FieldData::CopyName (const char *_name) noexcept
 {
     assert (_name);
-    assert (strlen (_name) < FIELD_NAME_MAX_LENGTH);
-    strncpy (&name[0u], _name, FIELD_NAME_MAX_LENGTH - 1u);
-    name[FIELD_NAME_MAX_LENGTH - 1u] = '\0';
+    name = static_cast<char *> (malloc ((strlen (_name) + 1u) * sizeof (char)));
+    strcpy (name, _name);
 }
 
 using ConstIterator = PlainMapping::ConstIterator;
@@ -122,7 +123,7 @@ std::size_t PlainMapping::GetFieldCount () const noexcept
 
 const char *PlainMapping::GetName () const noexcept
 {
-    return &name[0u];
+    return name;
 }
 
 const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
@@ -164,17 +165,18 @@ std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noex
     return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
 }
 
-PlainMapping::PlainMapping (const char *_name, std::size_t _objectSize) noexcept : objectSize (_objectSize)
+PlainMapping::PlainMapping (const char *_name, std::size_t _objectSize) noexcept
+    : objectSize (_objectSize),
+      name (static_cast<char *> (malloc ((strlen (_name) + 1u) * sizeof (char))))
 {
     assert (objectSize > 0u);
     assert (_name);
-    assert (strlen (_name) < MAPPING_NAME_MAX_LENGTH);
-    strncpy (&name[0u], _name, MAPPING_NAME_MAX_LENGTH - 1u);
-    name[MAPPING_NAME_MAX_LENGTH - 1u] = '\0';
+    strcpy (name, _name);
 }
 
 PlainMapping::~PlainMapping () noexcept
 {
+    free (name);
     for (const FieldData &fieldData : *this)
     {
         fieldData.~FieldData ();

@@ -15,11 +15,6 @@ namespace Emergence::StandardLayout
 {
 class PlainMapping;
 
-/// Field name max length should be big because of projected fields names.
-constexpr std::size_t FIELD_NAME_MAX_LENGTH = 64u;
-
-constexpr std::size_t MAPPING_NAME_MAX_LENGTH = 32u;
-
 class FieldData final
 {
 public:
@@ -105,7 +100,10 @@ private:
         Handling::Handle<PlainMapping> nestedObjectMapping;
     };
 
-    std::array<char, FIELD_NAME_MAX_LENGTH> name;
+    /// \details Field name should not be inlined into FieldData object, because it would decrease field array cache
+    ///          coherency: names are rarely accessed, but take a lot of space in comparison to frequently accessed
+    ///          archetype, size and offset information.
+    char *name;
 };
 
 class PlainMapping final : public Handling::HandleableBase
@@ -177,7 +175,11 @@ private:
 
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
-    std::array<char, MAPPING_NAME_MAX_LENGTH> name;
+
+    /// \details Mapping name should not be inlined into PlainMapping object, because it will
+    ///          decrease cache coherency by adding huge chunk of rarely accessed data.
+    char *name;
+
     FieldData fields[0u];
 };
 
