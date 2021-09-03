@@ -17,85 +17,81 @@ using Player = Emergence::Query::Test::Player;
 
 static void ExecuteFetchSingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareFetchSingletonQuery {{Player::Reflection::GetMapping (), {}}},
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareFetchSingletonQuery {{Player::Reflect ().mapping, {}}},
                                                &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareModifySingletonQuery {{Player::Reflection::GetMapping (), {}}},
+                                               PrepareModifySingletonQuery {{Player::Reflect ().mapping, {}}},
                                                &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteInsertShortTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareInsertShortTermQuery {{Player::Reflection::GetMapping (), {}}},
+                                               PrepareInsertShortTermQuery {{Player::Reflect ().mapping, {}}},
                                                &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchSequenceQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareFetchSequenceQuery {{Player::Reflection::GetMapping (), {}}},
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareFetchSequenceQuery {{Player::Reflect ().mapping, {}}},
                                                &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySequenceQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareModifySequenceQuery {{Player::Reflection::GetMapping (), {}}},
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareModifySequenceQuery {{Player::Reflect ().mapping, {}}},
                                                &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteInsertLongTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareInsertLongTermQuery {{Player::Reflection::GetMapping (), {}}},
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareInsertLongTermQuery {{Player::Reflect ().mapping, {}}},
                                                &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareFetchValueQuery {{Player::Reflection::GetMapping (), {}}, {Player::Reflection::id}},
+        _scenario, PrepareFetchValueQuery {{Player::Reflect ().mapping, {}}, {Player::Reflect ().id}},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareModifyValueQuery {{Player::Reflection::GetMapping (), {}}, {Player::Reflection::id}},
+        _scenario, PrepareModifyValueQuery {{Player::Reflect ().mapping, {}}, {Player::Reflect ().id}},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchAscendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareFetchAscendingRangeQuery {{Player::Reflection::GetMapping (), {}}, Player::Reflection::id},
+        _scenario, PrepareFetchAscendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyAscendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareModifyAscendingRangeQuery {{Player::Reflection::GetMapping (), {}}, Player::Reflection::id},
+        _scenario, PrepareModifyAscendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchDescendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareFetchDescendingRangeQuery {{Player::Reflection::GetMapping (), {}}, Player::Reflection::id},
+        _scenario, PrepareFetchDescendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyDescendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario, PrepareModifyDescendingRangeQuery {{Player::Reflection::GetMapping (), {}}, Player::Reflection::id},
+        _scenario, PrepareModifyDescendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
         &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
 }
 
@@ -103,42 +99,35 @@ using BoundingBox = Emergence::Query::Test::BoundingBox;
 
 static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
-    // Prefetch mapping to guarantee that reflection will be ready.
-    BoundingBox::Reflection::GetMapping ();
-
-    return {{-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
-            {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}};
+    return {{-100.0f, BoundingBox::Reflect ().minX, 100.0f, BoundingBox::Reflect ().maxX},
+            {-100.0f, BoundingBox::Reflect ().minY, 100.0f, BoundingBox::Reflect ().maxY}};
 }
 
 static void ExecuteFetchShapeIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario,
-        PrepareFetchShapeIntersectionQuery {{BoundingBox::Reflection::GetMapping (), {}}, GetTestDimensions ()},
+        _scenario, PrepareFetchShapeIntersectionQuery {{BoundingBox::Reflect ().mapping, {}}, GetTestDimensions ()},
         &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteModifyShapeIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario,
-        PrepareModifyShapeIntersectionQuery {{BoundingBox::Reflection::GetMapping (), {}}, GetTestDimensions ()},
+        _scenario, PrepareModifyShapeIntersectionQuery {{BoundingBox::Reflect ().mapping, {}}, GetTestDimensions ()},
         &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteFetchRayIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario,
-        PrepareFetchRayIntersectionQuery {{BoundingBox::Reflection::GetMapping (), {}}, GetTestDimensions ()},
+        _scenario, PrepareFetchRayIntersectionQuery {{BoundingBox::Reflect ().mapping, {}}, GetTestDimensions ()},
         &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteModifyRayIntersectionQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
-        _scenario,
-        PrepareModifyRayIntersectionQuery {{BoundingBox::Reflection::GetMapping (), {}}, GetTestDimensions ()},
+        _scenario, PrepareModifyRayIntersectionQuery {{BoundingBox::Reflect ().mapping, {}}, GetTestDimensions ()},
         &Emergence::Query::Test::BOX_MIN_10_8_4_MAX_11_9_5);
 }
 

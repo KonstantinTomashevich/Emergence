@@ -17,9 +17,7 @@ bool Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker () 
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return {Player::Reflection::GetMapping (),
-            {&HUGO_0_ALIVE_STUNNED},
-            {Sources::Value {"Source", {Player::Reflection::id}}}};
+    return {Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Value {"Source", {Player::Reflect ().id}}}};
 }
 
 static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

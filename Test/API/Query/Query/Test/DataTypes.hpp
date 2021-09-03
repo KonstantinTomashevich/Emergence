@@ -10,18 +10,18 @@ struct Player final
 {
     struct Reflection final
     {
-        Reflection () = delete;
+        StandardLayout::FieldId id;
+        StandardLayout::FieldId name;
 
-        static StandardLayout::Mapping GetMapping ();
+        StandardLayout::FieldId alive;
+        StandardLayout::FieldId stunned;
+        StandardLayout::FieldId poisoned;
+        StandardLayout::FieldId immobilized;
 
-        static StandardLayout::FieldId id;
-        static StandardLayout::FieldId name;
-
-        static StandardLayout::FieldId alive;
-        static StandardLayout::FieldId stunned;
-        static StandardLayout::FieldId poisoned;
-        static StandardLayout::FieldId immobilized;
+        StandardLayout::Mapping mapping;
     };
+
+    static const Reflection &Reflect ();
 
     struct Status final
     {
@@ -52,18 +52,18 @@ struct BoundingBox final
 {
     struct Reflection final
     {
-        Reflection () = delete;
+        StandardLayout::FieldId minX;
+        StandardLayout::FieldId minY;
+        StandardLayout::FieldId minZ;
 
-        static StandardLayout::Mapping GetMapping ();
+        StandardLayout::FieldId maxX;
+        StandardLayout::FieldId maxY;
+        StandardLayout::FieldId maxZ;
 
-        static StandardLayout::FieldId minX;
-        static StandardLayout::FieldId minY;
-        static StandardLayout::FieldId minZ;
-
-        static StandardLayout::FieldId maxX;
-        static StandardLayout::FieldId maxY;
-        static StandardLayout::FieldId maxZ;
+        StandardLayout::Mapping mapping;
     };
+
+    static const Reflection &Reflect ();
 
     float minX = 0.0f;
     float minY = 0.0f;
@@ -79,16 +79,16 @@ struct ScreenRect final
 {
     struct Reflection final
     {
-        Reflection () = delete;
+        StandardLayout::FieldId minX;
+        StandardLayout::FieldId minY;
 
-        static StandardLayout::Mapping GetMapping ();
+        StandardLayout::FieldId maxX;
+        StandardLayout::FieldId maxY;
 
-        static StandardLayout::FieldId minX;
-        static StandardLayout::FieldId minY;
-
-        static StandardLayout::FieldId maxX;
-        static StandardLayout::FieldId maxY;
+        StandardLayout::Mapping mapping;
     };
+
+    static const Reflection &Reflect ();
 
     int16_t minX = 0;
     int16_t minY = 0;
@@ -102,13 +102,13 @@ struct PlayerWithBoundingBox final
 {
     struct Reflection final
     {
-        Reflection () = delete;
+        StandardLayout::FieldId player;
+        StandardLayout::FieldId boundingBox;
 
-        static StandardLayout::Mapping GetMapping ();
-
-        static StandardLayout::FieldId player;
-        static StandardLayout::FieldId boundingBox;
+        StandardLayout::Mapping mapping;
     };
+
+    static const Reflection &Reflect ();
 
     Player player;
     BoundingBox boundingBox;
@@ -120,26 +120,26 @@ struct AllFieldTypesStructure
 {
     struct Reflection final
     {
-        Reflection () = delete;
+        StandardLayout::FieldId int8;
+        StandardLayout::FieldId int16;
+        StandardLayout::FieldId int32;
+        StandardLayout::FieldId int64;
 
-        static Emergence::StandardLayout::Mapping GetMapping ();
+        StandardLayout::FieldId uint8;
+        StandardLayout::FieldId uint16;
+        StandardLayout::FieldId uint32;
+        StandardLayout::FieldId uint64;
 
-        static Emergence::StandardLayout::FieldId int8;
-        static Emergence::StandardLayout::FieldId int16;
-        static Emergence::StandardLayout::FieldId int32;
-        static Emergence::StandardLayout::FieldId int64;
+        StandardLayout::FieldId floating;
+        StandardLayout::FieldId doubleFloating;
 
-        static Emergence::StandardLayout::FieldId uint8;
-        static Emergence::StandardLayout::FieldId uint16;
-        static Emergence::StandardLayout::FieldId uint32;
-        static Emergence::StandardLayout::FieldId uint64;
+        StandardLayout::FieldId block;
+        StandardLayout::FieldId string;
 
-        static Emergence::StandardLayout::FieldId floating;
-        static Emergence::StandardLayout::FieldId doubleFloating;
-
-        static Emergence::StandardLayout::FieldId block;
-        static Emergence::StandardLayout::FieldId string;
+        StandardLayout::Mapping mapping;
     };
+
+    static const Reflection &Reflect ();
 
     int8_t int8 = 0;
     int16_t int16 = 0;

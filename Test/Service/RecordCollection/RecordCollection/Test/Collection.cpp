@@ -23,45 +23,45 @@ TEST_CASE (DropRepresentation)
     using namespace Emergence;
 
     Scenario {
-        Query::Test::PlayerWithBoundingBox::Reflection::GetMapping (),
+        Query::Test::PlayerWithBoundingBox::Reflect ().mapping,
         {
-            CreateLinearRepresentation {"playerName", StandardLayout::ProjectNestedField (
-                                                          Query::Test::PlayerWithBoundingBox::Reflection::player,
-                                                          Query::Test::Player::Reflection::name)},
+            CreateLinearRepresentation {
+                "playerName", StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                                  Query::Test::Player::Reflect ().name)},
 
             CreatePointRepresentation {
                 "playerId",
                 {
-                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::player,
-                                                        Query::Test::Player::Reflection::id),
+                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                        Query::Test::Player::Reflect ().id),
                 }},
 
             CreatePointRepresentation {
                 "playerAlive",
                 {
-                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::player,
-                                                        Query::Test::Player::Reflection::alive),
+                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                        Query::Test::Player::Reflect ().alive),
                 }},
 
             CreateVolumetricRepresentation {
                 "2d",
                 {{
                      -100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::minX),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().minX),
 
                      100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::maxX),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().maxX),
                  },
                  {
                      -100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::minY),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().minY),
 
                      100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::maxY),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().maxY),
                  }}},
 
             OpenAllocator {},

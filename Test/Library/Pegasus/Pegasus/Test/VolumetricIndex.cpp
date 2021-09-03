@@ -11,11 +11,11 @@ using namespace Emergence::Pegasus::Test;
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return {BoundingBox::Reflection::GetMapping (),
+    return {BoundingBox::Reflect ().mapping,
             {&BOX_MIN_10_8_4_MAX_11_9_5},
             {Sources::Volumetric {"Source",
-                                  {{-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
-                                   {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}}}}};
+                                  {{-100.0f, BoundingBox::Reflect ().minX, 100.0f, BoundingBox::Reflect ().maxX},
+                                   {-100.0f, BoundingBox::Reflect ().minY, 100.0f, BoundingBox::Reflect ().maxY}}}}};
 }
 
 static void ExecuteIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

@@ -19,39 +19,39 @@ constexpr uint8_t FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE = 1u << 4u;
 
 static Storage RequestStorage (const std::vector<const void *> &_objects, uint8_t _sources)
 {
-    Storage storage {Player::Reflection::GetMapping (), _objects, {}};
+    Storage storage {Player::Reflect ().mapping, _objects, {}};
 
     assert (_sources > 0u);
     if (_sources & FLAG_PLAYER_ID_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Value {"playerId", {Player::Reflection::id}});
+        storage.sources.emplace_back (Sources::Value {"playerId", {Player::Reflect ().id}});
     }
 
     if (_sources & FLAG_PLAYER_NAME_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Value {"playerName", {Player::Reflection::name}});
+        storage.sources.emplace_back (Sources::Value {"playerName", {Player::Reflect ().name}});
     }
 
     if (_sources & FLAG_PLAYER_NAME_AND_ID_SOURCE)
     {
         storage.sources.emplace_back (Sources::Value {"playerNameAndId",
                                                       {
-                                                          Player::Reflection::name,
-                                                          Player::Reflection::id,
+                                                          Player::Reflect ().name,
+                                                          Player::Reflect ().id,
                                                       }});
     }
 
     if (_sources & FLAG_PLAYER_ALIVE_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Value {"playerAlive", {Player::Reflection::alive}});
+        storage.sources.emplace_back (Sources::Value {"playerAlive", {Player::Reflect ().alive}});
     }
 
     if (_sources & FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE)
     {
         storage.sources.emplace_back (Sources::Value {"playerAliveAndStunned",
                                                       {
-                                                          Player::Reflection::alive,
-                                                          Player::Reflection::stunned,
+                                                          Player::Reflect ().alive,
+                                                          Player::Reflect ().stunned,
                                                       }});
     }
 

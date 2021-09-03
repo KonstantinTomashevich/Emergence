@@ -13,9 +13,9 @@ using namespace Emergence::Pegasus::Test;
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return {Player::Reflection::GetMapping (),
+    return {Player::Reflect ().mapping,
             {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
-            {Sources::Range {"Source", Player::Reflection::id}}};
+            {Sources::Range {"Source", Player::Reflect ().id}}};
 }
 
 static void ExecuteIndexReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

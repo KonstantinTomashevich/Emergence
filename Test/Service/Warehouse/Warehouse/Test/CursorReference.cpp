@@ -18,10 +18,7 @@ static Emergence::StandardLayout::FieldId GetPlayedIdField ()
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
 
-    // Prefetch mapping to guarantee that reflection will be ready.
-    PlayerWithBoundingBox::Reflection::GetMapping ();
-
-    return ProjectNestedField (PlayerWithBoundingBox::Reflection::player, Player::Reflection::id);
+    return ProjectNestedField (PlayerWithBoundingBox::Reflect ().player, Player::Reflect ().id);
 }
 
 static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
@@ -29,25 +26,20 @@ static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTe
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
 
-    // Prefetch mapping to guarantee that reflection will be ready.
-    PlayerWithBoundingBox::Reflection::GetMapping ();
+    const Emergence::StandardLayout::FieldId boundingBoxField = PlayerWithBoundingBox::Reflect ().boundingBox;
 
-    const Emergence::StandardLayout::FieldId boundingBoxField = PlayerWithBoundingBox::Reflection::boundingBox;
-
-    return {{-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minX), 100.0f,
-             ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxX)},
-            {-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minY), 100.0f,
-             ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxY)}};
+    return {{-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().minX), 100.0f,
+             ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().maxX)},
+            {-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().minY), 100.0f,
+             ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().maxY)}};
 }
 
 static std::vector<Emergence::Query::Test::Storage> GetEnvironment ()
 {
     using namespace Emergence::Query::Test;
-    return {{Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"Singleton"}}},
-            {BoundingBox::Reflection::GetMapping (),
-             {&BOX_MIN_10_8_4_MAX_11_9_5},
-             {Sources::UnorderedSequence {"Sequence"}}},
-            {PlayerWithBoundingBox::Reflection::GetMapping (),
+    return {{Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"Singleton"}}},
+            {BoundingBox::Reflect ().mapping, {&BOX_MIN_10_8_4_MAX_11_9_5}, {Sources::UnorderedSequence {"Sequence"}}},
+            {PlayerWithBoundingBox::Reflect ().mapping,
              {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
              {
                  Sources::Value {"Value", {GetPlayedIdField ()}},

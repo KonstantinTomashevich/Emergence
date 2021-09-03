@@ -16,45 +16,45 @@ TEST_CASE (DropIndex)
     using namespace Emergence;
 
     Scenario {
-        Query::Test::PlayerWithBoundingBox::Reflection::GetMapping (),
+        Query::Test::PlayerWithBoundingBox::Reflect ().mapping,
         {
-            CreateOrderedIndex {"playerName", StandardLayout::ProjectNestedField (
-                                                  Query::Test::PlayerWithBoundingBox::Reflection::player,
-                                                  Query::Test::Player::Reflection::name)},
+            CreateOrderedIndex {
+                "playerName", StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                                  Query::Test::Player::Reflect ().name)},
 
             CreateHashIndex {
                 "playerId",
                 {
-                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::player,
-                                                        Query::Test::Player::Reflection::id),
+                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                        Query::Test::Player::Reflect ().id),
                 }},
 
             CreateHashIndex {
                 "playerAlive",
                 {
-                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::player,
-                                                        Query::Test::Player::Reflection::alive),
+                    StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                        Query::Test::Player::Reflect ().alive),
                 }},
 
             CreateVolumetricIndex {
                 "2d",
                 {{
                      -100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::minX),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().minX),
 
                      100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::maxX),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().maxX),
                  },
                  {
                      -100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::minY),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().minY),
 
                      100.0f,
-                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflection::boundingBox,
-                                                         Query::Test::BoundingBox::Reflection::maxY),
+                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                         Query::Test::BoundingBox::Reflect ().maxY),
                  }}},
 
             OpenAllocator {},
