@@ -28,33 +28,33 @@ public:
     ///          would violate realloc-movable requirement and create ambiguity.
     struct StandardSeed final
     {
+        const char *name = nullptr;
+
         FieldArchetype archetype = FieldArchetype::UINT;
 
         std::size_t offset = 0u;
 
         std::size_t size = 0u;
-
-        const char *name = nullptr;
     };
 
     /// \brief Used to register fields with FieldArchetype::BIT.
     struct BitSeed
     {
+        const char *name = nullptr;
+
         std::size_t offset = 0u;
 
         uint_fast8_t bitOffset = 0u;
-
-        const char *name = nullptr;
     };
 
     /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
     struct NestedObjectSeed
     {
+        const char *name = nullptr;
+
         std::size_t offset = 0u;
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
-
-        const char *name = nullptr;
     };
 
     FieldArchetype GetArchetype () const noexcept;

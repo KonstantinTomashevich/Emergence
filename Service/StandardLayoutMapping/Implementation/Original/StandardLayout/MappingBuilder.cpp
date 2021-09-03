@@ -42,89 +42,89 @@ Mapping MappingBuilder::End () noexcept
 FieldId MappingBuilder::RegisterBit (const char *_name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept
 {
     assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField ({_offset, _bitOffset, _name});
+    return static_cast<PlainMappingBuilder *> (handle)->AddField ({_name, _offset, _bitOffset});
 }
 
 FieldId MappingBuilder::RegisterInt8 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::INT, _offset, sizeof (int8_t), _name});
+        {_name, FieldArchetype::INT, _offset, sizeof (int8_t)});
 }
 
 FieldId MappingBuilder::RegisterInt16 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::INT, _offset, sizeof (int16_t), _name});
+        {_name, FieldArchetype::INT, _offset, sizeof (int16_t)});
 }
 
 FieldId MappingBuilder::RegisterInt32 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::INT, _offset, sizeof (int32_t), _name});
+        {_name, FieldArchetype::INT, _offset, sizeof (int32_t)});
 }
 
 FieldId MappingBuilder::RegisterInt64 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::INT, _offset, sizeof (int64_t), _name});
+        {_name, FieldArchetype::INT, _offset, sizeof (int64_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt8 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::UINT, _offset, sizeof (uint8_t), _name});
+        {_name, FieldArchetype::UINT, _offset, sizeof (uint8_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt16 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::UINT, _offset, sizeof (uint16_t), _name});
+        {_name, FieldArchetype::UINT, _offset, sizeof (uint16_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt32 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::UINT, _offset, sizeof (uint32_t), _name});
+        {_name, FieldArchetype::UINT, _offset, sizeof (uint32_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt64 (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::UINT, _offset, sizeof (uint64_t), _name});
+        {_name, FieldArchetype::UINT, _offset, sizeof (uint64_t)});
 }
 
 FieldId MappingBuilder::RegisterFloat (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::FLOAT, _offset, sizeof (float), _name});
+        {_name, FieldArchetype::FLOAT, _offset, sizeof (float)});
 }
 
 FieldId MappingBuilder::RegisterDouble (const char *_name, std::size_t _offset) noexcept
 {
     assert (handle);
     return static_cast<PlainMappingBuilder *> (handle)->AddField (
-        {FieldArchetype::FLOAT, _offset, sizeof (double), _name});
+        {_name, FieldArchetype::FLOAT, _offset, sizeof (double)});
 }
 
 FieldId MappingBuilder::RegisterString (const char *_name, std::size_t _offset, std::size_t _maxSize) noexcept
 {
     assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField ({FieldArchetype::STRING, _offset, _maxSize, _name});
+    return static_cast<PlainMappingBuilder *> (handle)->AddField ({_name, FieldArchetype::STRING, _offset, _maxSize});
 }
 
 FieldId MappingBuilder::RegisterBlock (const char *_name, std::size_t _offset, std::size_t _size) noexcept
 {
     assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField ({FieldArchetype::BLOCK, _offset, _size, _name});
+    return static_cast<PlainMappingBuilder *> (handle)->AddField ({_name, FieldArchetype::BLOCK, _offset, _size});
 }
 
 FieldId MappingBuilder::RegisterNestedObject (const char *_name,
@@ -136,7 +136,7 @@ FieldId MappingBuilder::RegisterNestedObject (const char *_name,
 
     const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (objectMapping.data);
     assert (nestedPlainMapping);
-    FieldId objectFieldId = state->AddField ({_offset, nestedPlainMapping.Get (), _name});
+    FieldId objectFieldId = state->AddField ({_name, _offset, nestedPlainMapping.Get ()});
     const std::string prefix = std::string (_name) + ".";
 
     for (const FieldData &field : *nestedPlainMapping.Get ())
@@ -152,7 +152,7 @@ FieldId MappingBuilder::RegisterNestedObject (const char *_name,
 #ifndef NDEBUG
             nestedFieldId =
 #endif
-                state->AddField ({_offset + field.GetOffset (), field.GetBitOffset (), fullName.c_str ()});
+                state->AddField ({fullName.c_str (), _offset + field.GetOffset (), field.GetBitOffset ()});
             break;
 
         case FieldArchetype::INT:
@@ -164,7 +164,7 @@ FieldId MappingBuilder::RegisterNestedObject (const char *_name,
             nestedFieldId =
 #endif
                 state->AddField (
-                    {field.GetArchetype (), _offset + field.GetOffset (), field.GetSize (), fullName.c_str ()});
+                    {fullName.c_str (), field.GetArchetype (), _offset + field.GetOffset (), field.GetSize ()});
             break;
 
         case FieldArchetype::NESTED_OBJECT:
@@ -174,7 +174,7 @@ FieldId MappingBuilder::RegisterNestedObject (const char *_name,
             nestedFieldId =
 #endif
                 state->AddField (
-                    {_offset + field.GetOffset (), field.GetNestedObjectMapping ().Get (), fullName.c_str ()});
+                    {fullName.c_str (), _offset + field.GetOffset (), field.GetNestedObjectMapping ().Get ()});
             break;
         }
 
