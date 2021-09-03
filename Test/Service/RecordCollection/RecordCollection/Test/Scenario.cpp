@@ -689,7 +689,7 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector<Task> _tasks)
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
 {
-    _output << "Scenario: " << std::endl;
+    _output << "Scenario (on mapping \"" << _scenario.mapping.GetName () << "\"):" << std::endl;
     for (const Task &wrappedTask : _scenario.tasks)
     {
         _output << " - ";

@@ -413,41 +413,38 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
 
 std::ostream &operator<< (std::ostream &_output, const AcquireSingletonContainer &_task)
 {
-    return _output << "Acquire singleton container \"" << _task.name << "\" for mapping "
-                   << *reinterpret_cast<const void *const *> (&_task.mapping) << ".";
+    return _output << "Acquire singleton container \"" << _task.name << "\" for mapping \"" << _task.mapping.GetName ()
+                   << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const AcquireShortTermContainer &_task)
 {
-    return _output << "Acquire short term container \"" << _task.name << "\" for mapping "
-                   << *reinterpret_cast<const void *const *> (&_task.mapping) << ".";
+    return _output << "Acquire short term container \"" << _task.name << "\" for mapping \"" << _task.mapping.GetName ()
+                   << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const AcquireLongTermContainer &_task)
 {
-    return _output << "Acquire long term container \"" << _task.name << "\" for mapping "
-                   << *reinterpret_cast<const void *const *> (&_task.mapping) << ".";
+    return _output << "Acquire long term container \"" << _task.name << "\" for mapping \"" << _task.mapping.GetName ()
+                   << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const CheckIsSingletonContainerAllocated &_task)
 {
-    return _output << "Check is singleton container for mapping "
-                   << *reinterpret_cast<const void *const *> (&_task.mapping)
-                   << " allocated. Expected: " << (_task.expected ? "yes" : "no") << ".";
+    return _output << "Check is singleton container for mapping \"" << _task.mapping.GetName ()
+                   << "\" allocated. Expected: " << (_task.expected ? "yes" : "no") << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const CheckIsShortTermContainerAllocated &_task)
 {
-    return _output << "Check is short term container for mapping "
-                   << *reinterpret_cast<const void *const *> (&_task.mapping)
-                   << " allocated. Expected: " << (_task.expected ? "yes" : "no") << ".";
+    return _output << "Check is short term container for mapping \"" << _task.mapping.GetName ()
+                   << "\" allocated. Expected: " << (_task.expected ? "yes" : "no") << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const CheckIsLongTermContainerAllocated &_task)
 {
-    return _output << "Check is long term container for mapping "
-                   << *reinterpret_cast<const void *const *> (&_task.mapping)
-                   << " allocated. Expected: " << (_task.expected ? "yes" : "no") << ".";
+    return _output << "Check is long term container for mapping \"" << _task.mapping.GetName ()
+                   << "\" allocated. Expected: " << (_task.expected ? "yes" : "no") << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareSingletonFetchQuery &_task)

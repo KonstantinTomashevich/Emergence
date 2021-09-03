@@ -137,7 +137,7 @@ FieldId MappingBuilder::RegisterNestedObject (const char *_name,
     const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (objectMapping.data);
     assert (nestedPlainMapping);
     FieldId objectFieldId = state->AddField ({_offset, nestedPlainMapping.Get (), _name});
-    const std::string prefix = std::string (_name) + "::";
+    const std::string prefix = std::string (_name) + ".";
 
     for (const FieldData &field : *nestedPlainMapping.Get ())
     {
