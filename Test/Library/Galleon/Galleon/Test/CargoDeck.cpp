@@ -109,14 +109,15 @@ TEST_CASE (ManyContainers)
 
     Append (RemapSources (SingletonQuery::EditAndRead (), {{"singleton", "firstSingleton"}}));
 
-    Append ({{
+    Append (
+        {{
              {BoundingBox::Reflect ().mapping, {&BOX_MIN_M2_1_0_MAX_0_4_2}, {Sources::Singleton {"secondSingleton"}}},
-             },
-             {
-                 QuerySingletonToRead {{"secondSingleton", "secondSingleton"}},
-                 CursorCheck {"secondSingleton", &BOX_MIN_M2_1_0_MAX_0_4_2},
-                 CursorClose {"secondSingleton"},
-             }});
+         },
+         {
+             QuerySingletonToRead {{"secondSingleton", "secondSingleton"}},
+             CursorCheck {"secondSingleton", &BOX_MIN_M2_1_0_MAX_0_4_2},
+             CursorClose {"secondSingleton"},
+         }});
 
     Append (RemapSources (UnorderedSequenceQuery::EditAndDelete (), {{"sequence", "firstSequence"}}));
 
