@@ -13,17 +13,17 @@ constexpr uint8_t FLAG_PLAYER_NAME_SOURCE = 1u << 1u;
 
 static Storage RequestPlayerStorage (const std::vector<const void *> &_objects, uint8_t _sources)
 {
-    Storage storage {Player::Reflection::GetMapping (), _objects, {}};
+    Storage storage {Player::Reflect ().mapping, _objects, {}};
 
     assert (_sources > 0u);
     if (_sources & FLAG_PLAYER_ID_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Range {"playerId", Player::Reflection::id});
+        storage.sources.emplace_back (Sources::Range {"playerId", Player::Reflect ().id});
     }
 
     if (_sources & FLAG_PLAYER_NAME_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Range {"playerName", Player::Reflection::name});
+        storage.sources.emplace_back (Sources::Range {"playerName", Player::Reflect ().name});
     }
 
     return storage;
@@ -31,8 +31,7 @@ static Storage RequestPlayerStorage (const std::vector<const void *> &_objects, 
 
 static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
 {
-    StandardLayout::Mapping mapping = AllFieldTypesStructure::Reflection::GetMapping ();
-    return {mapping,
+    return {AllFieldTypesStructure::Reflect ().mapping,
             {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2},
             {
                 Sources::Range {"ordering", _field},
@@ -258,7 +257,7 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
 Scenario OrderingInt8 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int8),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int8),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
@@ -267,7 +266,7 @@ Scenario OrderingInt8 () noexcept
 Scenario OrderingInt16 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int16),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int16),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_0}}}};
@@ -276,7 +275,7 @@ Scenario OrderingInt16 () noexcept
 Scenario OrderingInt32 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int32),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int32),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
@@ -285,7 +284,7 @@ Scenario OrderingInt32 () noexcept
 Scenario OrderingInt64 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::int64),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int64),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}}};
@@ -294,7 +293,7 @@ Scenario OrderingInt64 () noexcept
 Scenario OrderingUInt8 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint8),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint8),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
@@ -303,7 +302,7 @@ Scenario OrderingUInt8 () noexcept
 Scenario OrderingUInt16 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint16),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint16),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
@@ -312,7 +311,7 @@ Scenario OrderingUInt16 () noexcept
 Scenario OrderingUInt32 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint32),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint32),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
@@ -321,7 +320,7 @@ Scenario OrderingUInt32 () noexcept
 Scenario OrderingUInt64 () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::uint64),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint64),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}}};
@@ -330,7 +329,7 @@ Scenario OrderingUInt64 () noexcept
 Scenario OrderingFloat () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::floating),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().floating),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1}}}};
@@ -339,7 +338,7 @@ Scenario OrderingFloat () noexcept
 Scenario OrderingDouble () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::doubleFloating),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().doubleFloating),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2}}}};
@@ -348,7 +347,7 @@ Scenario OrderingDouble () noexcept
 Scenario OrderingBlock () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::block),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().block),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
@@ -357,7 +356,7 @@ Scenario OrderingBlock () noexcept
 Scenario OrderingString () noexcept
 {
     return {{
-                RequestOrderingStorage (AllFieldTypesStructure::Reflection::string),
+                RequestOrderingStorage (AllFieldTypesStructure::Reflect ().string),
             },
             {QueryAscendingRangeToRead {{{"ordering", "all"}, nullptr, nullptr}},
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}}};

@@ -14,19 +14,19 @@ static Emergence::StandardLayout::FieldId GetPlayedIdField ()
 {
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
-    return ProjectNestedField (PlayerWithBoundingBox::Reflection::player, Player::Reflection::id);
+    return ProjectNestedField (PlayerWithBoundingBox::Reflect ().player, Player::Reflect ().id);
 }
 
 static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
-    const Emergence::StandardLayout::FieldId boundingBoxField = PlayerWithBoundingBox::Reflection::boundingBox;
+    const Emergence::StandardLayout::FieldId boundingBoxField = PlayerWithBoundingBox::Reflect ().boundingBox;
 
-    return {{-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minX), 100.0f,
-             ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxX)},
-            {-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflection::minY), 100.0f,
-             ProjectNestedField (boundingBoxField, BoundingBox::Reflection::maxY)}};
+    return {{-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().minX), 100.0f,
+             ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().maxX)},
+            {-100.0f, ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().minY), 100.0f,
+             ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().maxY)}};
 }
 
 static Emergence::Query::Test::Storage GetTestStorage ()
@@ -34,7 +34,7 @@ static Emergence::Query::Test::Storage GetTestStorage ()
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
 
-    return {PlayerWithBoundingBox::Reflection::GetMapping (),
+    return {PlayerWithBoundingBox::Reflect ().mapping,
             {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
             {
                 Sources::Value {"Value", {GetPlayedIdField ()}},

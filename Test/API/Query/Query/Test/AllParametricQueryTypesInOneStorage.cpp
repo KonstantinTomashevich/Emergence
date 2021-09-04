@@ -7,32 +7,30 @@ using namespace Tasks;
 
 Storage RequestStorage ()
 {
-    StandardLayout::Mapping mapping = PlayerWithBoundingBox::Reflection::GetMapping ();
-    return {
-        mapping,
-        {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2, &XAVIER_2_MIN_15_8_50_MAX_19_11_60},
-        {Sources::Value {
-             "playerId",
-             {
-                 StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflection::player, Player::Reflection::id),
-             }},
-         Sources::Range {
-             "playerName",
-             StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflection::player, Player::Reflection::name),
-         },
-         Sources::Volumetric {"2d",
-                              {{-100.0f,
-                                StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflection::boundingBox,
-                                                                    BoundingBox::Reflection::minX),
-                                100.0f,
-                                StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflection::boundingBox,
-                                                                    BoundingBox::Reflection::maxX)},
-                               {-100.0f,
-                                StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflection::boundingBox,
-                                                                    BoundingBox::Reflection::minY),
-                                100.0f,
-                                StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflection::boundingBox,
-                                                                    BoundingBox::Reflection::maxY)}}}}};
+    return {PlayerWithBoundingBox::Reflect ().mapping,
+            {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2, &XAVIER_2_MIN_15_8_50_MAX_19_11_60},
+            {Sources::Value {"playerId",
+                             {
+                                 StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflect ().player,
+                                                                     Player::Reflect ().id),
+                             }},
+             Sources::Range {
+                 "playerName",
+                 StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflect ().player, Player::Reflect ().name),
+             },
+             Sources::Volumetric {"2d",
+                                  {{-100.0f,
+                                    StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                                        BoundingBox::Reflect ().minX),
+                                    100.0f,
+                                    StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                                        BoundingBox::Reflect ().maxX)},
+                                   {-100.0f,
+                                    StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                                        BoundingBox::Reflect ().minY),
+                                    100.0f,
+                                    StandardLayout::ProjectNestedField (PlayerWithBoundingBox::Reflect ().boundingBox,
+                                                                        BoundingBox::Reflect ().maxY)}}}}};
 }
 
 std::vector<Task> PreConditions ()

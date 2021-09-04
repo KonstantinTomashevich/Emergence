@@ -35,6 +35,13 @@ std::size_t Mapping::GetObjectSize () const noexcept
     return handle->GetObjectSize ();
 }
 
+const char *Mapping::GetName () const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    assert (handle);
+    return handle->GetName ();
+}
+
 Field Mapping::GetField (FieldId _field) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);

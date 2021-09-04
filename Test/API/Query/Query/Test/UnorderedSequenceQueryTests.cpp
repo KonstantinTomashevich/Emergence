@@ -7,7 +7,7 @@ using namespace Tasks;
 
 Storage RequestStorage (const std::vector<const void *> &_objects)
 {
-    return {Player::Reflection::GetMapping (), _objects, {Sources::UnorderedSequence {"sequence"}}};
+    return {Player::Reflect ().mapping, _objects, {Sources::UnorderedSequence {"sequence"}}};
 }
 
 Scenario Read () noexcept

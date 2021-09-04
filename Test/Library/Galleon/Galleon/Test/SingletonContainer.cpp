@@ -10,7 +10,7 @@ using namespace Emergence::Galleon::Test;
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return {Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"Source"}}};
+    return {Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"Source"}}};
 }
 
 static void ExecuteContainerReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

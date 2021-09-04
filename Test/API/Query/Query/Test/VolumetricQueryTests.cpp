@@ -13,15 +13,15 @@ constexpr uint8_t FLAG_3D_SOURCE = 1u << 1u;
 
 static Storage RequestBoundingBoxStorage (const std::vector<const void *> &_objects, uint8_t _sources)
 {
-    Storage storage {BoundingBox::Reflection::GetMapping (), _objects, {}};
+    Storage storage {BoundingBox::Reflect ().mapping, _objects, {}};
 
     assert (_sources > 0u);
     if (_sources & FLAG_2D_SOURCE)
     {
         storage.sources.emplace_back (
             Sources::Volumetric {"2d",
-                                 {{-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
-                                  {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY}}});
+                                 {{-100.0f, BoundingBox::Reflect ().minX, 100.0f, BoundingBox::Reflect ().maxX},
+                                  {-100.0f, BoundingBox::Reflect ().minY, 100.0f, BoundingBox::Reflect ().maxY}}});
     }
 
     if (_sources & FLAG_3D_SOURCE)
@@ -29,9 +29,9 @@ static Storage RequestBoundingBoxStorage (const std::vector<const void *> &_obje
         storage.sources.emplace_back (
             Sources::Volumetric {"3d",
                                  {
-                                     {-100.0f, BoundingBox::Reflection::minX, 100.0f, BoundingBox::Reflection::maxX},
-                                     {-100.0f, BoundingBox::Reflection::minY, 100.0f, BoundingBox::Reflection::maxY},
-                                     {-100.0f, BoundingBox::Reflection::minZ, 100.0f, BoundingBox::Reflection::maxZ},
+                                     {-100.0f, BoundingBox::Reflect ().minX, 100.0f, BoundingBox::Reflect ().maxX},
+                                     {-100.0f, BoundingBox::Reflect ().minY, 100.0f, BoundingBox::Reflect ().maxY},
+                                     {-100.0f, BoundingBox::Reflect ().minZ, 100.0f, BoundingBox::Reflect ().maxZ},
                                  }});
     }
 
@@ -40,14 +40,13 @@ static Storage RequestBoundingBoxStorage (const std::vector<const void *> &_obje
 
 static Storage RequestScreenRectStorage (const std::vector<const void *> &_objects)
 {
-    StandardLayout::Mapping mapping = ScreenRect::Reflection::GetMapping ();
-    return {mapping,
+    return {ScreenRect::Reflect ().mapping,
             _objects,
             {Sources::Volumetric {
                 "screenRect",
                 {
-                    {int16_t (-4096), ScreenRect::Reflection::minX, int16_t (4096), ScreenRect::Reflection::maxX},
-                    {int16_t (-4096), ScreenRect::Reflection::minY, int16_t (4096), ScreenRect::Reflection::maxY},
+                    {int16_t (-4096), ScreenRect::Reflect ().minX, int16_t (4096), ScreenRect::Reflect ().maxX},
+                    {int16_t (-4096), ScreenRect::Reflect ().minY, int16_t (4096), ScreenRect::Reflect ().maxY},
                 }}}};
 }
 

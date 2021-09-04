@@ -7,7 +7,7 @@ using namespace Tasks;
 
 Storage RequestStorage ()
 {
-    return {Player::Reflection::GetMapping (), {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"singleton"}}};
+    return {Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"singleton"}}};
 }
 
 Scenario EditAndRead () noexcept

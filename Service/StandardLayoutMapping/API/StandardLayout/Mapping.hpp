@@ -41,6 +41,9 @@ public:
     /// \return User defined object size in bytes including alignment gaps.
     std::size_t GetObjectSize () const noexcept;
 
+    /// \return Readable name for object type, described by this mapping.
+    const char *GetName () const noexcept;
+
     /// \return Pointer to meta of field with given id or `nullptr` if there is no such field.
     Field GetField (FieldId _field) const noexcept;
 

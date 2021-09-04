@@ -398,44 +398,45 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchSingletonQuery &_task)
 {
     return _output << "Prepare fetch singleton query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\".";
+                   << _task.typeMapping.GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifySingletonQuery &_task)
 {
     return _output << "Prepare modify singleton query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\".";
+                   << _task.typeMapping.GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareInsertShortTermQuery &_task)
 {
     return _output << "Prepare insert short term query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\".";
+                   << _task.typeMapping.GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchSequenceQuery &_task)
 {
     return _output << "Prepare fetch sequence query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\".";
+                   << _task.typeMapping.GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifySequenceQuery &_task)
 {
     return _output << "Prepare modify sequence query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\".";
+                   << _task.typeMapping.GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareInsertLongTermQuery &_task)
 {
     return _output << "Prepare insert long term query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\".";
+                   << _task.typeMapping.GetName () << "\".";
 }
 
-std::ostream &operator<< (std::ostream &_output, const std::vector<StandardLayout::FieldId> &_fields)
+std::ostream &operator<< (std::ostream &_output,
+                          const std::pair<StandardLayout::Mapping, std::vector<StandardLayout::FieldId>> &_data)
 {
-    for (StandardLayout::FieldId id : _fields)
+    for (StandardLayout::FieldId id : _data.second)
     {
-        _output << " " << id;
+        _output << " \"" << _data.first.GetField (id).GetName () << "\"";
     }
 
     return _output;
@@ -444,52 +445,55 @@ std::ostream &operator<< (std::ostream &_output, const std::vector<StandardLayou
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchValueQuery &_task)
 {
     return _output << "Prepare fetch value query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on fields" << _task.keyFields
-                   << ".";
+                   << _task.typeMapping.GetName () << "\" on fields"
+                   << std::make_pair (_task.typeMapping, _task.keyFields) << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifyValueQuery &_task)
 {
     return _output << "Prepare modify value query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on fields" << _task.keyFields
-                   << ".";
+                   << _task.typeMapping.GetName () << "\" on fields"
+                   << std::make_pair (_task.typeMapping, _task.keyFields) << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchAscendingRangeQuery &_task)
 {
     return _output << "Prepare fetch ascending range query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on field " << _task.keyField
-                   << ".";
+                   << _task.typeMapping.GetName () << "\" on field \""
+                   << _task.typeMapping.GetField (_task.keyField).GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifyAscendingRangeQuery &_task)
 {
     return _output << "Prepare modify ascending range query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on field " << _task.keyField
-                   << ".";
+                   << _task.typeMapping.GetName () << "\" on field \""
+                   << _task.typeMapping.GetField (_task.keyField).GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchDescendingRangeQuery &_task)
 {
     return _output << "Prepare fetch descending range query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on field " << _task.keyField
-                   << ".";
+                   << _task.typeMapping.GetName () << "\" on field \""
+                   << _task.typeMapping.GetField (_task.keyField).GetName () << "\".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifyDescendingRangeQuery &_task)
 {
     return _output << "Prepare modify descending range query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on field " << _task.keyField
-                   << ".";
+                   << _task.typeMapping.GetName () << "\" on field \""
+                   << _task.typeMapping.GetField (_task.keyField).GetName () << "\".";
 }
 
-std::ostream &operator<< (std::ostream &_output,
-                          const std::vector<Query::Test::Sources::Volumetric::Dimension> &_dimensions)
+std::ostream &operator<< (
+    std::ostream &_output,
+    const std::pair<StandardLayout::Mapping, std::vector<Query::Test::Sources::Volumetric::Dimension>> &_data)
 {
-    for (const auto &dimension : _dimensions)
+    for (const auto &dimension : _data.second)
     {
-        _output << " {minField: " << dimension.minField << ", globalMin: " << dimension.globalMin
-                << ", maxField: " << dimension.maxField << ", globalMax: " << dimension.maxField << "}";
+        _output << " {minField: \"" << _data.first.GetField (dimension.minField).GetName ()
+                << "\", globalMin: " << dimension.globalMin << ", maxField: \""
+                << _data.first.GetField (dimension.maxField).GetName () << "\", globalMax: " << dimension.maxField
+                << "}";
     }
 
     return _output;
@@ -498,29 +502,29 @@ std::ostream &operator<< (std::ostream &_output,
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchShapeIntersectionQuery &_task)
 {
     return _output << "Prepare fetch shape intersections query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on dimensions"
-                   << _task.dimensions << ".";
+                   << _task.typeMapping.GetName () << "\" on dimensions"
+                   << std::make_pair (_task.typeMapping, _task.dimensions) << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifyShapeIntersectionQuery &_task)
 {
     return _output << "Prepare modify shape intersections query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on dimensions"
-                   << _task.dimensions << ".";
+                   << _task.typeMapping.GetName () << "\" on dimensions"
+                   << std::make_pair (_task.typeMapping, _task.dimensions) << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchRayIntersectionQuery &_task)
 {
     return _output << "Prepare fetch ray intersections query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on dimensions"
-                   << _task.dimensions << ".";
+                   << _task.typeMapping.GetName () << "\" on dimensions"
+                   << std::make_pair (_task.typeMapping, _task.dimensions) << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareModifyRayIntersectionQuery &_task)
 {
     return _output << "Prepare modify ray intersections query \"" << _task.queryName << "\" for type mapping \""
-                   << *reinterpret_cast<const void *const *> (&_task.typeMapping) << "\" on dimensions"
-                   << _task.dimensions << ".";
+                   << _task.typeMapping.GetName () << "\" on dimensions"
+                   << std::make_pair (_task.typeMapping, _task.dimensions) << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const InsertObjects &_task)

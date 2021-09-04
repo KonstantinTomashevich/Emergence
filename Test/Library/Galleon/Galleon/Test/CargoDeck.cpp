@@ -24,38 +24,38 @@ TEST_CASE (MoveAssignment)
 
     auto InitSingletonContainer = [&deck] ()
     {
-        auto handle = deck.AcquireSingletonContainer (Player::Reflection::GetMapping ());
+        auto handle = deck.AcquireSingletonContainer (Player::Reflect ().mapping);
         auto modifyQuery = handle->Modify ();
         auto modificationCursor = modifyQuery.Execute ();
 
-        memcpy (*modificationCursor, &HUGO_0_ALIVE_STUNNED, Player::Reflection::GetMapping ().GetObjectSize ());
+        memcpy (*modificationCursor, &HUGO_0_ALIVE_STUNNED, Player::Reflect ().mapping.GetObjectSize ());
         return handle->Fetch ();
     };
 
     auto InitShortTermContainer = [&deck] ()
     {
-        auto handle = deck.AcquireShortTermContainer (Player::Reflection::GetMapping ());
+        auto handle = deck.AcquireShortTermContainer (Player::Reflect ().mapping);
         auto insertQuery = handle->Insert ();
         auto insertCursor = insertQuery.Execute ();
 
-        memcpy (++insertCursor, &HUGO_0_ALIVE_STUNNED, Player::Reflection::GetMapping ().GetObjectSize ());
+        memcpy (++insertCursor, &HUGO_0_ALIVE_STUNNED, Player::Reflect ().mapping.GetObjectSize ());
         return handle->Fetch ();
     };
 
     auto InitLongTermContainer = [&deck] ()
     {
-        auto handle = deck.AcquireLongTermContainer (Player::Reflection::GetMapping ());
+        auto handle = deck.AcquireLongTermContainer (Player::Reflect ().mapping);
         auto insertQuery = handle->Insert ();
 
         // RecordCollection as LongTermContainer backend forbids
         // representation creation during other query execution.
         {
             auto insertCursor = insertQuery.Execute ();
-            memcpy (++insertCursor, &HUGO_0_ALIVE_STUNNED, Player::Reflection::GetMapping ().GetObjectSize ());
-            memcpy (++insertCursor, &KARL_1_ALIVE_IMMOBILIZED, Player::Reflection::GetMapping ().GetObjectSize ());
+            memcpy (++insertCursor, &HUGO_0_ALIVE_STUNNED, Player::Reflect ().mapping.GetObjectSize ());
+            memcpy (++insertCursor, &KARL_1_ALIVE_IMMOBILIZED, Player::Reflect ().mapping.GetObjectSize ());
         }
 
-        return handle->FetchAscendingRange (Player::Reflection::id);
+        return handle->FetchAscendingRange (Player::Reflect ().id);
     };
 
     SingletonContainer::FetchQuery singletonFetch = InitSingletonContainer ();
@@ -64,7 +64,7 @@ TEST_CASE (MoveAssignment)
 
     auto CheckEquality = [] (const void *_object, const void *_source)
     {
-        return memcmp (_object, _source, Player::Reflection::GetMapping ().GetObjectSize ()) == 0;
+        return memcmp (_object, _source, Player::Reflect ().mapping.GetObjectSize ()) == 0;
     };
 
     auto CheckQueries = [&singletonFetch, &shortTermFetch, &longTermFetchRange, &CheckEquality] ()
@@ -109,21 +109,20 @@ TEST_CASE (ManyContainers)
 
     Append (RemapSources (SingletonQuery::EditAndRead (), {{"singleton", "firstSingleton"}}));
 
-    Append ({{
-                 {BoundingBox::Reflection::GetMapping (),
-                  {&BOX_MIN_M2_1_0_MAX_0_4_2},
-                  {Sources::Singleton {"secondSingleton"}}},
-             },
-             {
-                 QuerySingletonToRead {{"secondSingleton", "secondSingleton"}},
-                 CursorCheck {"secondSingleton", &BOX_MIN_M2_1_0_MAX_0_4_2},
-                 CursorClose {"secondSingleton"},
-             }});
+    Append (
+        {{
+             {BoundingBox::Reflect ().mapping, {&BOX_MIN_M2_1_0_MAX_0_4_2}, {Sources::Singleton {"secondSingleton"}}},
+         },
+         {
+             QuerySingletonToRead {{"secondSingleton", "secondSingleton"}},
+             CursorCheck {"secondSingleton", &BOX_MIN_M2_1_0_MAX_0_4_2},
+             CursorClose {"secondSingleton"},
+         }});
 
     Append (RemapSources (UnorderedSequenceQuery::EditAndDelete (), {{"sequence", "firstSequence"}}));
 
     Append ({{
-                 {BoundingBox::Reflection::GetMapping (),
+                 {BoundingBox::Reflect ().mapping,
                   {&BOX_MIN_10_8_4_MAX_11_9_5, &BOX_MIN_M2_1_0_MAX_0_4_2},
                   {Sources::UnorderedSequence {"secondSequence"}}},
              },
