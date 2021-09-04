@@ -30,6 +30,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Services
 
+- **ExportGraph**: exports **VisualGraph** instances to well known formats, like DOT.
+
 ### Libraries
 
 - **APICommon**: contains macros that declare common method and operator sets and implementation binding approaches.
@@ -39,13 +41,13 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - **SyntaxSugar**: contains syntax sugar for other libraries and service implementations. It's sort of always under
   development, because need for the new syntax sugar helpers could arise during development of other modules.
 
+- **VisualGraph**: data structure for runtime state representation in a form of graph. Helps to visualize complex  
+  structures that are created during execution. For example, task dependency graphs or data processing pipelines.
+
 ## Planed modules
 
 ### Services
 
-- **GraphExporter**: allows creating graphs from runtime data and exporting them to well known format, for example DOT.
-  This service helps to visualize complex structures, that are created during game execution. For example, task
-  dependency graphs or data processing pipelines.
 - **TaskOrganizer**: organizes tasks, that can use resources from shared resources list and can depend on each other,
   into acyclic directed graph, if it's possible.
 - **TaskExecutor**: executes tasks, organized into acyclic directed graph. Both sequential and parallel implementations
