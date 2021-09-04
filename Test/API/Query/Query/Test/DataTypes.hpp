@@ -40,10 +40,8 @@ struct Player final
         static constexpr uint8_t FLAG_IMMOBILIZED = 1u << FLAG_IMMOBILIZED_OFFSET;
     };
 
-    static constexpr std::size_t NAME_MAX_SIZE = 32u;
-
     uint32_t id = 0u;
-    std::array<char, NAME_MAX_SIZE> name = {0u};
+    std::array<char, 32u> name = {0u};
     uint8_t status = 0u;
 };
 
@@ -133,8 +131,8 @@ struct AllFieldTypesStructure
         StandardLayout::FieldId floating;
         StandardLayout::FieldId doubleFloating;
 
-        StandardLayout::FieldId block;
         StandardLayout::FieldId string;
+        StandardLayout::FieldId block;
 
         StandardLayout::Mapping mapping;
     };

@@ -2,28 +2,25 @@
 
 #include <StandardLayout/MappingBuilder.hpp>
 
+#include <SyntaxSugar/MappingRegistration.hpp>
+
 namespace Emergence::Query::Test
 {
 const Player::Reflection &Player::Reflect ()
 {
-    static auto reflection = [] () -> Reflection
+    static Reflection reflection = [] ()
     {
-        StandardLayout::MappingBuilder builder;
-        builder.Begin ("Player", sizeof (Player));
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Player)
 
-        return {
-            .id = builder.RegisterUInt32 ("id", offsetof (Player, id)),
-            .name = builder.RegisterString ("name", offsetof (Player, name), Player::NAME_MAX_SIZE),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (id)
+        EMERGENCE_MAPPING_REGISTER_STRING (name)
 
-            .alive = builder.RegisterBit ("alive", offsetof (Player, status), Player::Status::FLAG_ALIVE_OFFSET),
-            .stunned = builder.RegisterBit ("stunned", offsetof (Player, status), Player::Status::FLAG_STUNNED_OFFSET),
-            .poisoned =
-                builder.RegisterBit ("poisoned", offsetof (Player, status), Player::Status::FLAG_POISONED_OFFSET),
-            .immobilized =
-                builder.RegisterBit ("immobilized", offsetof (Player, status), Player::Status::FLAG_IMMOBILIZED_OFFSET),
+        EMERGENCE_MAPPING_REGISTER_BIT (alive, status, Status::FLAG_ALIVE_OFFSET)
+        EMERGENCE_MAPPING_REGISTER_BIT (stunned, status, Status::FLAG_STUNNED_OFFSET)
+        EMERGENCE_MAPPING_REGISTER_BIT (poisoned, status, Status::FLAG_POISONED_OFFSET)
+        EMERGENCE_MAPPING_REGISTER_BIT (immobilized, status, Status::FLAG_IMMOBILIZED_OFFSET)
 
-            .mapping = builder.End (),
-        };
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;
@@ -31,22 +28,19 @@ const Player::Reflection &Player::Reflect ()
 
 const BoundingBox::Reflection &BoundingBox::Reflect ()
 {
-    static auto reflection = [] () -> Reflection
+    static Reflection reflection = [] () -> Reflection
     {
-        StandardLayout::MappingBuilder builder;
-        builder.Begin ("BoundingBox", sizeof (BoundingBox));
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (BoundingBox)
 
-        return {
-            .minX = builder.RegisterFloat ("minX", offsetof (BoundingBox, minX)),
-            .minY = builder.RegisterFloat ("minY", offsetof (BoundingBox, minY)),
-            .minZ = builder.RegisterFloat ("minZ", offsetof (BoundingBox, minZ)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (minX)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (minY)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (minZ)
 
-            .maxX = builder.RegisterFloat ("maxX", offsetof (BoundingBox, maxX)),
-            .maxY = builder.RegisterFloat ("maxY", offsetof (BoundingBox, maxY)),
-            .maxZ = builder.RegisterFloat ("maxZ", offsetof (BoundingBox, maxZ)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (maxX)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (maxY)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (maxZ)
 
-            .mapping = builder.End (),
-        };
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;
@@ -54,20 +48,17 @@ const BoundingBox::Reflection &BoundingBox::Reflect ()
 
 const ScreenRect::Reflection &ScreenRect::Reflect ()
 {
-    static auto reflection = [] () -> Reflection
+    static Reflection reflection = [] () -> Reflection
     {
-        StandardLayout::MappingBuilder builder;
-        builder.Begin ("ScreenRect", sizeof (ScreenRect));
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ScreenRect)
 
-        return {
-            .minX = builder.RegisterInt16 ("minX", offsetof (ScreenRect, minX)),
-            .minY = builder.RegisterInt16 ("minY", offsetof (ScreenRect, minY)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (minX)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (minY)
 
-            .maxX = builder.RegisterInt16 ("maxX", offsetof (ScreenRect, maxX)),
-            .maxY = builder.RegisterInt16 ("maxY", offsetof (ScreenRect, maxY)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (maxX)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (maxY)
 
-            .mapping = builder.End (),
-        };
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;
@@ -75,18 +66,14 @@ const ScreenRect::Reflection &ScreenRect::Reflect ()
 
 const PlayerWithBoundingBox::Reflection &PlayerWithBoundingBox::Reflect ()
 {
-    static auto reflection = [] () -> Reflection
+    static Reflection reflection = [] () -> Reflection
     {
-        StandardLayout::MappingBuilder builder;
-        builder.Begin ("PlayerWithBoundingBox", sizeof (PlayerWithBoundingBox));
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PlayerWithBoundingBox)
 
-        return {
-            .player = builder.RegisterNestedObject ("player", offsetof (PlayerWithBoundingBox, player),
-                                                    Player::Reflect ().mapping),
-            .boundingBox = builder.RegisterNestedObject ("boundingBox", offsetof (PlayerWithBoundingBox, boundingBox),
-                                                         BoundingBox::Reflect ().mapping),
-            .mapping = builder.End (),
-        };
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (player)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (boundingBox)
+
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;
@@ -94,33 +81,27 @@ const PlayerWithBoundingBox::Reflection &PlayerWithBoundingBox::Reflect ()
 
 const AllFieldTypesStructure::Reflection &AllFieldTypesStructure::Reflect ()
 {
-    static auto reflection = [] () -> Reflection
+    static Reflection reflection = [] () -> Reflection
     {
-        StandardLayout::MappingBuilder builder;
-        builder.Begin ("AllFieldTypesStructure", sizeof (AllFieldTypesStructure));
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AllFieldTypesStructure)
 
-        return {
-            .int8 = builder.RegisterInt8 ("int8", offsetof (AllFieldTypesStructure, int8)),
-            .int16 = builder.RegisterInt16 ("int16", offsetof (AllFieldTypesStructure, int16)),
-            .int32 = builder.RegisterInt32 ("int32", offsetof (AllFieldTypesStructure, int32)),
-            .int64 = builder.RegisterInt64 ("int64", offsetof (AllFieldTypesStructure, int64)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (int8)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (int16)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (int32)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (int64)
 
-            .uint8 = builder.RegisterUInt8 ("uint8", offsetof (AllFieldTypesStructure, uint8)),
-            .uint16 = builder.RegisterUInt16 ("uint16", offsetof (AllFieldTypesStructure, uint16)),
-            .uint32 = builder.RegisterUInt32 ("uint32", offsetof (AllFieldTypesStructure, uint32)),
-            .uint64 = builder.RegisterUInt64 ("uint64", offsetof (AllFieldTypesStructure, uint64)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uint8)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uint16)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uint32)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uint64)
 
-            .floating = builder.RegisterFloat ("floating", offsetof (AllFieldTypesStructure, floating)),
-            .doubleFloating =
-                builder.RegisterDouble ("doubleFloating", offsetof (AllFieldTypesStructure, doubleFloating)),
+        EMERGENCE_MAPPING_REGISTER_REGULAR (floating)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (doubleFloating)
 
-            .block = builder.RegisterBlock ("block", offsetof (AllFieldTypesStructure, block),
-                                            sizeof (AllFieldTypesStructure::block)),
+        EMERGENCE_MAPPING_REGISTER_STRING (string)
+        EMERGENCE_MAPPING_REGISTER_BLOCK (block)
 
-            .string = builder.RegisterString ("string", offsetof (AllFieldTypesStructure, string),
-                                              sizeof (AllFieldTypesStructure::string)),
-            .mapping = builder.End (),
-        };
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;
