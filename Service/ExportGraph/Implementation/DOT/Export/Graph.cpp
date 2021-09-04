@@ -6,7 +6,32 @@ namespace Emergence::Export::Graph
 {
 // TODO: Add error logging (no logging service yet).
 
-static bool IsIdValid (const std::string &_id)
+class Context
+{
+public:
+    static bool Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept;
+
+private:
+    static bool IsIdValid (const std::string &_id) noexcept;
+
+    static bool CheckIds (const VisualGraph::Graph &_graph) noexcept;
+
+    explicit Context (std::ostream &output);
+
+    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_graph,
+                                                            std::string pathPrefix = "",
+                                                            const std::string &outerIndentation = "");
+
+    std::ostream &output;
+    std::vector<VisualGraph::Edge> resolvedEdges;
+};
+
+bool Context::Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept
+{
+    return Context {_output}.Process (_graph).has_value ();
+}
+
+bool Context::IsIdValid (const std::string &_id) noexcept
 {
     for (const char &symbol : _id)
     {
@@ -26,30 +51,30 @@ static bool IsIdValid (const std::string &_id)
     return true;
 }
 
-static bool CheckIds (const VisualGraph::Graph &_graph)
+bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 {
     std::unordered_set<std::string> usedIds;
-    for (const VisualGraph::Graph &_subgraph : _graph.subgraphs)
+    for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        if (!IsIdValid (_subgraph.id))
+        if (!IsIdValid (subgraph.id))
         {
             return false;
         }
 
-        if (!usedIds.emplace (_subgraph.id).second)
+        if (!usedIds.emplace (subgraph.id).second)
         {
             return false;
         }
     }
 
-    for (const VisualGraph::Node &_node : _graph.nodes)
+    for (const VisualGraph::Node &node : _graph.nodes)
     {
-        if (!IsIdValid (_node.id))
+        if (!IsIdValid (node.id))
         {
             return false;
         }
 
-        if (!usedIds.emplace (_node.id).second)
+        if (!usedIds.emplace (node.id).second)
         {
             return false;
         }
@@ -58,41 +83,44 @@ static bool CheckIds (const VisualGraph::Graph &_graph)
     return true;
 }
 
-static std::optional<std::unordered_set<std::string>> ExportGraph (const VisualGraph::Graph &_graph,
-                                                                   std::ostream &_output,
-                                                                   std::string pathPrefix,
-                                                                   const std::string &outerIndentation)
+Context::Context (std::ostream &output) : output (output)
+{
+}
+
+std::optional<std::unordered_set<std::string>> Context::Process (const VisualGraph::Graph &_graph,
+                                                                 std::string pathPrefix,
+                                                                 const std::string &outerIndentation)
 {
     if (!CheckIds (_graph))
     {
         return std::nullopt;
     }
 
-    if (pathPrefix.empty ())
+    const bool topLevel = pathPrefix.empty ();
+    std::string indentation = outerIndentation + "    ";
+
+    if (topLevel)
     {
-        _output << outerIndentation << "digraph ";
+        output << outerIndentation << "digraph "
+               << "\"" << _graph.id << "\" {" << std::endl;
     }
     else
     {
-        _output << outerIndentation << "subgraph ";
+        output << outerIndentation << "subgraph "
+               << "\"cluster_" << _graph.id << "\" {" << std::endl;
     }
-
-    std::string indentation = outerIndentation + "    ";
-    _output << "\"" << _graph.id << "\" {" << std::endl << indentation << "compound=true;" << std::endl;
 
     if (_graph.label)
     {
-        _output << indentation << "label=\"" << _graph.label.value () << "\";" << std::endl;
+        output << indentation << "label=\"" << _graph.label.value () << "\";" << std::endl;
     }
 
     std::unordered_set<std::string> nodesInLocalContext;
     pathPrefix += _graph.id + '/';
 
-    for (const VisualGraph::Graph &_subgraph : _graph.subgraphs)
+    for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        std::optional<std::unordered_set<std::string>> subgraphNodes =
-            ExportGraph (_subgraph, _output, pathPrefix, indentation);
-
+        std::optional<std::unordered_set<std::string>> subgraphNodes = Process (subgraph, pathPrefix, indentation);
         if (!subgraphNodes)
         {
             return std::nullopt;
@@ -100,23 +128,23 @@ static std::optional<std::unordered_set<std::string>> ExportGraph (const VisualG
 
         for (const std::string &subgraphNode : subgraphNodes.value ())
         {
-            nodesInLocalContext.emplace (_graph.id + '/' + subgraphNode);
+            nodesInLocalContext.emplace (subgraph.id + '/' + subgraphNode);
         }
     }
 
-    for (const VisualGraph::Node &_node : _graph.nodes)
+    for (const VisualGraph::Node &node : _graph.nodes)
     {
-        _output << indentation << "\"" << pathPrefix + _node.id << "\" [";
-        if (_node.label)
+        output << indentation << "\"" << pathPrefix + node.id << "\" [";
+        if (node.label)
         {
-            _output << "label=\"" << _node.label.value () << "\" ";
+            output << "label=\"" << node.label.value () << "\" ";
         }
 
-        _output << "];" << std::endl;
-        nodesInLocalContext.emplace (_node.id);
+        output << "];" << std::endl;
+        nodesInLocalContext.emplace (node.id);
     }
 
-    for (const VisualGraph::Edge &_edge : _graph.edges)
+    for (VisualGraph::Edge edge : _graph.edges)
     {
         auto PatchContext = [&nodesInLocalContext, &pathPrefix] (const std::string &_id) -> std::string
         {
@@ -130,16 +158,25 @@ static std::optional<std::unordered_set<std::string>> ExportGraph (const VisualG
             }
         };
 
-        _output << indentation << "\"" << PatchContext (_edge.from) << "\" -> \"" << PatchContext (_edge.to) << "\";"
-                << std::endl;
+        edge.from = PatchContext (edge.from);
+        edge.to = PatchContext (edge.to);
+        resolvedEdges.emplace_back (edge);
     }
 
-    _output << outerIndentation << "}";
+    if (topLevel)
+    {
+        for (const VisualGraph::Edge &edge : resolvedEdges)
+        {
+            output << indentation << "\"" << edge.from << "\" -> \"" << edge.to << "\";" << std::endl;
+        }
+    }
+
+    output << outerIndentation << "}" << std::endl;
     return std::move (nodesInLocalContext);
 }
 
 bool Export (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept
 {
-    return ExportGraph (_graph, _output, "", "") != std::nullopt;
+    return Context::Execute (_graph, _output);
 }
 } // namespace Emergence::Export::Graph
