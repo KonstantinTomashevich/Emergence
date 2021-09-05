@@ -20,5 +20,9 @@ VisualGraph::Graph EdgeWithUpperScopeNode () noexcept;
 
 VisualGraph::Graph WithDuplicateGraphIds () noexcept;
 
+VisualGraph::Graph WithIncorrectGraphIds () noexcept;
+
 VisualGraph::Graph WithDuplicateNodeIds () noexcept;
+
+VisualGraph::Graph WithIncorrectNodeIds () noexcept;
 } // namespace Emergence::Export::Graph::Test

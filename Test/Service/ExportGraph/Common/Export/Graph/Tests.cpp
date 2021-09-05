@@ -108,6 +108,19 @@ VisualGraph::Graph WithDuplicateGraphIds () noexcept
             {}};
 }
 
+VisualGraph::Graph WithIncorrectGraphIds () noexcept
+{
+    return {"complex_graph",
+            {},
+            {
+                ChangeId (TwoConnectedNodes (), "/"),
+                ChangeId (TwoConnectedNodes (), "\""),
+                ChangeId (TwoConnectedNodes (), "subgraph"),
+            },
+            {},
+            {}};
+}
+
 VisualGraph::Graph WithDuplicateNodeIds () noexcept
 {
     return {"graph",
@@ -116,6 +129,17 @@ VisualGraph::Graph WithDuplicateNodeIds () noexcept
             {{"a", {}}, {"b", {}}, {"a", {}}},
             {
                 {"a", "b"},
+            }};
+}
+
+VisualGraph::Graph WithIncorrectNodeIds () noexcept
+{
+    return {"graph",
+            {},
+            {},
+            {{"a", {}}, {"\"", {}}, {"/", {}}},
+            {
+                {"a", "/"},
             }};
 }
 } // namespace Emergence::Export::Graph::Test

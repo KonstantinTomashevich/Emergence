@@ -9,20 +9,30 @@ namespace Emergence::Export::Graph
 class Context
 {
 public:
+    /// \brief Tries to export given graph to given stream.
     static bool Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept;
 
 private:
+    /// \return Is given id correct?
     static bool IsIdValid (const std::string &_id) noexcept;
 
+    /// \return Are local ids for subgraphs and nodes of given graph correct and unique?
     static bool CheckIds (const VisualGraph::Graph &_graph) noexcept;
 
     explicit Context (std::ostream &output);
 
-    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_graph,
+    /// \brief Exports given graph and its subgraphs to ::output.
+    /// \return If export was done successfully, returns set of all existing node relative paths for this graph.
+    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_path,
                                                             std::string pathPrefix = "",
                                                             const std::string &outerIndentation = "");
 
     std::ostream &output;
+
+    /// \details DOT creates nodes on demand, therefore referencing node by absolute path before it was declared in its
+    ///          subgraph will result in node creation in incorrect subgraph. We use the simplest solution for this
+    ///          problem: all edges (doesn't matter in which graph edge was declared) are defined in root graph after
+    ///          all subgraphs and nodes. Therefore we store all resolved edges in this array.
     std::vector<VisualGraph::Edge> resolvedEdges;
 };
 
@@ -35,16 +45,9 @@ bool Context::IsIdValid (const std::string &_id) noexcept
 {
     for (const char &symbol : _id)
     {
-        switch (symbol)
+        if (symbol == '\"' || symbol == '/')
         {
-        // Escaped quotes are technically okay, but it's easier to just forbid
-        // them here and there is no real need to put quotes in ids.
-        case '\"':
-        // Slashes are used to define global paths.
-        case '/':
             return false;
-        default:
-            continue;
         }
     }
 
@@ -56,12 +59,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
     std::unordered_set<std::string> usedIds;
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        if (!IsIdValid (subgraph.id))
-        {
-            return false;
-        }
-
-        if (!usedIds.emplace (subgraph.id).second)
+        if (!IsIdValid (subgraph.id) || !usedIds.emplace (subgraph.id).second)
         {
             return false;
         }
@@ -69,12 +67,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 
     for (const VisualGraph::Node &node : _graph.nodes)
     {
-        if (!IsIdValid (node.id))
-        {
-            return false;
-        }
-
-        if (!usedIds.emplace (node.id).second)
+        if (!IsIdValid (node.id) || !usedIds.emplace (node.id).second)
         {
             return false;
         }
@@ -96,10 +89,10 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         return std::nullopt;
     }
 
-    const bool topLevel = pathPrefix.empty ();
+    const bool rootGraph = pathPrefix.empty ();
     std::string indentation = outerIndentation + "    ";
 
-    if (topLevel)
+    if (rootGraph)
     {
         output << outerIndentation << "digraph "
                << "\"" << _graph.id << "\" {" << std::endl;
@@ -107,63 +100,51 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
     else
     {
         output << outerIndentation << "subgraph "
-               << "\"cluster_" << _graph.id << "\" {" << std::endl;
+               << "\"cluster_" << pathPrefix << _graph.id << "\" {" << std::endl;
     }
 
-    if (_graph.label)
-    {
-        output << indentation << "label=\"" << _graph.label.value () << "\";" << std::endl;
-    }
-
-    std::unordered_set<std::string> nodesInLocalContext;
+    output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
+    std::unordered_set<std::string> relativePaths;
     pathPrefix += _graph.id + '/';
 
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        std::optional<std::unordered_set<std::string>> subgraphNodes = Process (subgraph, pathPrefix, indentation);
-        if (!subgraphNodes)
+        std::optional<std::unordered_set<std::string>> subgraphRelativePaths =
+            Process (subgraph, pathPrefix, indentation);
+
+        if (!subgraphRelativePaths)
         {
             return std::nullopt;
         }
 
-        for (const std::string &subgraphNode : subgraphNodes.value ())
+        for (const std::string &subgraphRelativePath : subgraphRelativePaths.value ())
         {
-            nodesInLocalContext.emplace (subgraph.id + '/' + subgraphNode);
+            relativePaths.emplace (subgraph.id + '/' + subgraphRelativePath);
         }
     }
 
     for (const VisualGraph::Node &node : _graph.nodes)
     {
         output << indentation << "\"" << pathPrefix + node.id << "\" [";
-        if (node.label)
-        {
-            output << "label=\"" << node.label.value () << "\" ";
-        }
+        output << "label=\"" << node.label.value_or (node.id) << "\" ";
 
         output << "];" << std::endl;
-        nodesInLocalContext.emplace (node.id);
+        relativePaths.emplace (node.id);
     }
 
     for (VisualGraph::Edge edge : _graph.edges)
     {
-        auto PatchContext = [&nodesInLocalContext, &pathPrefix] (const std::string &_id) -> std::string
+        auto PatchPath = [&relativePaths, &pathPrefix] (const std::string &_path) -> std::string
         {
-            if (nodesInLocalContext.contains (_id))
-            {
-                return pathPrefix + _id;
-            }
-            else
-            {
-                return _id;
-            }
+            return relativePaths.contains (_path) ? pathPrefix + _path : _path;
         };
 
-        edge.from = PatchContext (edge.from);
-        edge.to = PatchContext (edge.to);
+        edge.from = PatchPath (edge.from);
+        edge.to = PatchPath (edge.to);
         resolvedEdges.emplace_back (edge);
     }
 
-    if (topLevel)
+    if (rootGraph)
     {
         for (const VisualGraph::Edge &edge : resolvedEdges)
         {
@@ -172,7 +153,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
     }
 
     output << outerIndentation << "}" << std::endl;
-    return std::move (nodesInLocalContext);
+    return std::move (relativePaths);
 }
 
 bool Export (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept
