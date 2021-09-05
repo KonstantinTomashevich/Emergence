@@ -9,6 +9,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Services
 
+- **ExportGraph**: exports **VisualGraph** instances to well known formats, like DOT.
 - **Hashing**: allows hashing byte sequences.
 - **MemoryPool**: paged memory allocator, inspired by **Boost.Pool**.
 - **RecordCollection**: storage for records of the same type, that provides fast lookups for point, linear and
@@ -25,12 +26,13 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - **Handling**: compact handle-based ownership implementation.
 - **Pegasus**: provides storage and indexing for records of the same type. Optimized for small count of indices. Used to
   implement **RecordCollection**.
+- **VisualGraph**: data structure for runtime state representation in a form of graph. Helps to visualize complex  
+  structures that are created during execution. For example, task dependency graphs or data processing pipelines.
+  Currently, there is no visual attributes except labels: they will be added when need arises.
 
 ## Modules under development
 
 ### Services
-
-- **ExportGraph**: exports **VisualGraph** instances to well known formats, like DOT.
 
 ### Libraries
 
@@ -40,9 +42,6 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 - **SyntaxSugar**: contains syntax sugar for other libraries and service implementations. It's sort of always under
   development, because need for the new syntax sugar helpers could arise during development of other modules.
-
-- **VisualGraph**: data structure for runtime state representation in a form of graph. Helps to visualize complex  
-  structures that are created during execution. For example, task dependency graphs or data processing pipelines.
 
 ## Planed modules
 

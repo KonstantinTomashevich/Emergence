@@ -1,0 +1,164 @@
+#include <unordered_set>
+
+#include <Export/Graph.hpp>
+
+namespace Emergence::Export::Graph
+{
+// TODO: Add error logging (no logging service yet).
+
+class Context
+{
+public:
+    /// \brief Tries to export given graph to given stream.
+    static bool Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept;
+
+private:
+    /// \return Is given id correct?
+    static bool IsIdValid (const std::string &_id) noexcept;
+
+    /// \return Are local ids for subgraphs and nodes of given graph correct and unique?
+    static bool CheckIds (const VisualGraph::Graph &_graph) noexcept;
+
+    explicit Context (std::ostream &output);
+
+    /// \brief Exports given graph and its subgraphs to ::output.
+    /// \return If export was done successfully, returns set of all existing node relative paths for this graph.
+    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_path,
+                                                            std::string pathPrefix = "",
+                                                            const std::string &outerIndentation = "");
+
+    std::ostream &output;
+
+    /// \details DOT creates nodes on demand, therefore referencing node by the absolute path before it was declared in
+    ///          its subgraph will result in node creation in incorrect subgraph. We use the simplest solution for this
+    ///          problem: all edges (doesn't matter in which graph edge was declared) are defined in root graph after
+    ///          all subgraphs and nodes. Therefore we store all resolved edges in this array until all subgraphs and
+    ///          nodes are defined.
+    std::vector<VisualGraph::Edge> resolvedEdges;
+};
+
+bool Context::Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept
+{
+    return Context {_output}.Process (_graph).has_value ();
+}
+
+bool Context::IsIdValid (const std::string &_id) noexcept
+{
+    for (const char &symbol : _id)
+    {
+        if (symbol == '\"' || symbol == '/')
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
+{
+    std::unordered_set<std::string> usedIds;
+    for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
+    {
+        if (!IsIdValid (subgraph.id) || !usedIds.emplace (subgraph.id).second)
+        {
+            return false;
+        }
+    }
+
+    for (const VisualGraph::Node &node : _graph.nodes)
+    {
+        if (!IsIdValid (node.id) || !usedIds.emplace (node.id).second)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+Context::Context (std::ostream &output) : output (output)
+{
+}
+
+std::optional<std::unordered_set<std::string>> Context::Process (const VisualGraph::Graph &_graph,
+                                                                 std::string pathPrefix,
+                                                                 const std::string &outerIndentation)
+{
+    if (!CheckIds (_graph))
+    {
+        return std::nullopt;
+    }
+
+    const bool isSubgraph = !pathPrefix.empty ();
+    std::string indentation = outerIndentation + "    ";
+
+    if (isSubgraph)
+    {
+        output << outerIndentation << "subgraph "
+               << "\"cluster_" << pathPrefix << _graph.id << "\" {" << std::endl;
+    }
+    else
+    {
+        output << outerIndentation << "digraph "
+               << "\"" << _graph.id << "\" {" << std::endl;
+    }
+
+    output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
+    std::unordered_set<std::string> relativePaths;
+    pathPrefix += _graph.id + '/';
+
+    for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
+    {
+        std::optional<std::unordered_set<std::string>> subgraphRelativePaths =
+            Process (subgraph, pathPrefix, indentation);
+
+        if (!subgraphRelativePaths)
+        {
+            return std::nullopt;
+        }
+
+        for (const std::string &subgraphRelativePath : subgraphRelativePaths.value ())
+        {
+            relativePaths.emplace (subgraph.id + '/' + subgraphRelativePath);
+        }
+    }
+
+    for (const VisualGraph::Node &node : _graph.nodes)
+    {
+        output << indentation << "\"" << pathPrefix + node.id << "\" [";
+        output << "label=\"" << node.label.value_or (node.id) << "\" ";
+
+        output << "];" << std::endl;
+        relativePaths.emplace (node.id);
+    }
+
+    for (VisualGraph::Edge edge : _graph.edges)
+    {
+        auto PatchPath = [&relativePaths, &pathPrefix] (const std::string &_path) -> std::string
+        {
+            return relativePaths.contains (_path) ? pathPrefix + _path : _path;
+        };
+
+        edge.from = PatchPath (edge.from);
+        edge.to = PatchPath (edge.to);
+        resolvedEdges.emplace_back (edge);
+    }
+
+    if (!isSubgraph)
+    {
+        for (const VisualGraph::Edge &edge : resolvedEdges)
+        {
+            output << indentation << "\"" << edge.from << "\" -> \"" << edge.to << "\";" << std::endl;
+        }
+    }
+
+    output << outerIndentation << "}" << std::endl;
+    return std::move (relativePaths);
+}
+
+bool Export (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept
+{
+    return Context::Execute (_graph, _output);
+}
+} // namespace Emergence::Export::Graph
