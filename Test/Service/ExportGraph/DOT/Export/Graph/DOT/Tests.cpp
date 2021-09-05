@@ -99,10 +99,10 @@ TEST_CASE (TwoInterconnectedSubgraphs)
     CHECK_EQUAL (expected, stream.str ());
 }
 
-TEST_CASE (SubgraphAndRootNodes)
+TEST_CASE (RelativePathsFromRoot)
 {
     std::stringstream stream;
-    const bool exported = Graph::Export (SubgraphAndRootNodes (), stream);
+    const bool exported = Graph::Export (RelativePathsFromRoot (), stream);
     CHECK (exported);
 
     const std::string expected =
@@ -172,10 +172,10 @@ TEST_CASE (DoubleSubgraphNesting)
     CHECK_EQUAL (expected, stream.str ());
 }
 
-TEST_CASE (EdgeWithUpperScopeNode)
+TEST_CASE (EdgeWithAbsolutePath)
 {
     std::stringstream stream;
-    const bool exported = Graph::Export (EdgeWithUpperScopeNode (), stream);
+    const bool exported = Graph::Export (EdgeWithAbsolutePath (), stream);
     CHECK (exported);
 
     const std::string expected =

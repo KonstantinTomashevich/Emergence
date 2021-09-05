@@ -55,7 +55,7 @@ VisualGraph::Graph TwoInterconnectedSubgraphs () noexcept
             {{"first_subgraph/a", "second_subgraph/b"}}};
 }
 
-VisualGraph::Graph SubgraphAndRootNodes () noexcept
+VisualGraph::Graph RelativePathsFromRoot () noexcept
 {
     return {"complex_graph",
             {},
@@ -72,7 +72,7 @@ VisualGraph::Graph DoubleSubgraphNesting () noexcept
             {},
             {
                 ChangeId (TwoInterconnectedSubgraphs (), "first_subgraph"),
-                ChangeId (SubgraphAndRootNodes (), "second_subgraph"),
+                ChangeId (RelativePathsFromRoot (), "second_subgraph"),
             },
             {{"a", {}}, {"b", {}}},
             {{"a", "second_subgraph/b"},
@@ -80,7 +80,7 @@ VisualGraph::Graph DoubleSubgraphNesting () noexcept
              {"first_subgraph/first_subgraph/a", "second_subgraph/b"}}};
 }
 
-VisualGraph::Graph EdgeWithUpperScopeNode () noexcept
+VisualGraph::Graph EdgeWithAbsolutePath () noexcept
 {
     VisualGraph::Graph firstSubgraph = ChangeId (TwoConnectedNodes (), "first_subgraph");
     firstSubgraph.edges.emplace_back (VisualGraph::Edge {"a", "complex_graph/second_subgraph/b"});

@@ -12,11 +12,11 @@ VisualGraph::Graph TwoSeparateSubgraphs () noexcept;
 
 VisualGraph::Graph TwoInterconnectedSubgraphs () noexcept;
 
-VisualGraph::Graph SubgraphAndRootNodes () noexcept;
+VisualGraph::Graph RelativePathsFromRoot () noexcept;
 
 VisualGraph::Graph DoubleSubgraphNesting () noexcept;
 
-VisualGraph::Graph EdgeWithUpperScopeNode () noexcept;
+VisualGraph::Graph EdgeWithAbsolutePath () noexcept;
 
 VisualGraph::Graph WithDuplicateGraphIds () noexcept;
 

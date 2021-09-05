@@ -25,7 +25,7 @@ struct Edge
     /// \details See more about node paths in Graph documentation.
     std::string from;
 
-    /// \brief Specifies node, to which edge goes, either by local id, absolute or relative path.
+    /// \brief Specifies node, to which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
     std::string to;
 };
@@ -34,7 +34,7 @@ struct Edge
 ///
 /// \par Referencing nodes
 /// \parblock
-/// Node are organized into filesystem-like structure to make node referencing in complex graphs with lots of nesting
+/// Nodes are organized into filesystem-like structure to make node referencing in complex graphs with lots of nesting
 /// easier. Graphs and subgraphs have similar role to directories, where Graph::id is directory name. Nodes have similar
 /// role to files, where Node::id is file name. Therefore any node can be referenced by relative or absolute path,
 /// for example:

@@ -29,10 +29,11 @@ private:
 
     std::ostream &output;
 
-    /// \details DOT creates nodes on demand, therefore referencing node by absolute path before it was declared in its
-    ///          subgraph will result in node creation in incorrect subgraph. We use the simplest solution for this
+    /// \details DOT creates nodes on demand, therefore referencing node by the absolute path before it was declared in
+    ///          its subgraph will result in node creation in incorrect subgraph. We use the simplest solution for this
     ///          problem: all edges (doesn't matter in which graph edge was declared) are defined in root graph after
-    ///          all subgraphs and nodes. Therefore we store all resolved edges in this array.
+    ///          all subgraphs and nodes. Therefore we store all resolved edges in this array until all subgraphs and
+    ///          nodes are defined.
     std::vector<VisualGraph::Edge> resolvedEdges;
 };
 
@@ -89,18 +90,18 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         return std::nullopt;
     }
 
-    const bool rootGraph = pathPrefix.empty ();
+    const bool isSubgraph = !pathPrefix.empty ();
     std::string indentation = outerIndentation + "    ";
 
-    if (rootGraph)
-    {
-        output << outerIndentation << "digraph "
-               << "\"" << _graph.id << "\" {" << std::endl;
-    }
-    else
+    if (isSubgraph)
     {
         output << outerIndentation << "subgraph "
                << "\"cluster_" << pathPrefix << _graph.id << "\" {" << std::endl;
+    }
+    else
+    {
+        output << outerIndentation << "digraph "
+               << "\"" << _graph.id << "\" {" << std::endl;
     }
 
     output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
@@ -144,7 +145,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         resolvedEdges.emplace_back (edge);
     }
 
-    if (rootGraph)
+    if (!isSubgraph)
     {
         for (const VisualGraph::Edge &edge : resolvedEdges)
         {
