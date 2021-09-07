@@ -16,6 +16,8 @@ struct Node
 
     /// \brief Custom label for node. If empty, ::id will be used instead.
     std::optional<std::string> label;
+
+    bool operator==(const Node &_other) const = default;
 };
 
 /// \brief Defines directed edge of a Graph.
@@ -28,6 +30,8 @@ struct Edge
     /// \brief Specifies node, to which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
     std::string to;
+
+    bool operator==(const Edge &_other) const = default;
 };
 
 /// \brief Defines whole graph or subgraph of another graph.
@@ -84,5 +88,21 @@ struct Graph
     /// \brief Edges, declared by this graph.
     /// \warning Other graphs can add edges with nodes from this graph using relative or absolute node paths.
     std::vector<Edge> edges;
+
+    bool operator==(const Graph &_other) const = default;
 };
+
+/// \brief Contains common constants for graphs, that are created from Emergence libraries and services.
+namespace Common::Constants
+{
+/// \brief Root graph should always have this id.
+constexpr const char *DEFAULT_ROOT_GRAPH_ID = "root";
+
+/// \brief Graphs for all StandardLayout::Mapping's should be subgraphs of graph with this name.
+///        And graph with this name should be subgraph of the root graph.
+constexpr const char *DEFAULT_MAPPING_SUBGRAPH = "mapping";
+
+/// \brief StandardLayout::Mapping graph should have node with this name, that has edges with all direct fields.
+constexpr const char *DEFAULT_MAPPING_ROOT_NODE = "<root>";
+}
 } // namespace Emergence::VisualGraph
