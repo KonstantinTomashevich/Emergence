@@ -46,6 +46,9 @@ enum class FieldArchetype
     NESTED_OBJECT,
 };
 
+/// \brief Projected field name is `objectFieldName + PROJECTION_NAME_SEPARATOR + nestedFieldName`.
+constexpr char PROJECTION_NAME_SEPARATOR = '.';
+
 /// \brief Provides read access to information about field.
 ///
 /// \details Mapping of corresponding type should be used to get Field by FieldId.
