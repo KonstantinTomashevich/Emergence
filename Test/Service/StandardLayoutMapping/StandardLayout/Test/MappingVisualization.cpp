@@ -1,4 +1,5 @@
 #include <StandardLayout/MappingVisualization.hpp>
+#include <StandardLayout/Test/MappingVisualization.hpp>
 
 #include <SyntaxSugar/MappingRegistration.hpp>
 
@@ -6,6 +7,11 @@
 
 namespace Emergence::StandardLayout::Test
 {
+bool MappingVisualizationTestIncludeMarker () noexcept
+{
+    return true;
+}
+
 struct NoNesting final
 {
     struct Reflection final

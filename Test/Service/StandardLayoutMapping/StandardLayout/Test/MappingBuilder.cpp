@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <StandardLayout/MappingBuilder.hpp>
+#include <StandardLayout/Test/MappingBuilder.hpp>
 
 #include <Testing/Testing.hpp>
 

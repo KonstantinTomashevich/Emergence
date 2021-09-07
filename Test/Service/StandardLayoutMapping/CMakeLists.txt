@@ -6,6 +6,12 @@ sober_test_begin (StandardLayoutMapping)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    sober_naming_variant_target (StandardLayoutMappingVisualization Original VISUALIZATION_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
+
+    sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${SYNTAX_SUGAR_LIBRARY_TARGET})
+
     # Testing backend requires implementation headers, therefore it's usage as service would trigger separate
     # compilation for all variants. But there is no sense to use different testing backends for each variant,
     # therefore we just link it explicitly.

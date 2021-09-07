@@ -6,7 +6,10 @@ sober_library_begin (StandardLayoutMappingVisualization STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    sober_library_use_service (StandardLayoutMapping PUBLIC)
+    # We link only API headers instead of using whole service to make
+    # sure that visualization will always use provided implementation.
+    sober_naming_service_target (StandardLayoutMapping STANDARD_LAYOUT_MAPPING_TARGET)
+    sober_library_link_library (PUBLIC ${STANDARD_LAYOUT_MAPPING_TARGET})
 
     sober_naming_variant_target (VisualGraph Original VISUAL_GRAPH_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${VISUAL_GRAPH_LIBRARY_TARGET})
