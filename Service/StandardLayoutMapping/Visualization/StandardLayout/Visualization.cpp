@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <functional>
 
-#include <StandardLayout/MappingVisualization.hpp>
+#include <StandardLayout/Visualization.hpp>
 
 namespace Emergence::StandardLayout::Visualization
 {
@@ -9,7 +9,7 @@ VisualGraph::Graph GraphFromMapping (const Mapping &_mapping)
 {
     VisualGraph::Graph graph;
     graph.id = _mapping.GetName ();
-    graph.nodes.emplace_back (VisualGraph::Node {VisualGraph::Common::Constants::DEFAULT_MAPPING_ROOT_NODE, {}});
+    graph.nodes.emplace_back (VisualGraph::Node {MAPPING_ROOT_NODE, {}});
 
     for (StandardLayout::Field field : _mapping)
     {
@@ -27,7 +27,7 @@ VisualGraph::Graph GraphFromMapping (const Mapping &_mapping)
         }
         else
         {
-            edge.from = VisualGraph::Common::Constants::DEFAULT_MAPPING_ROOT_NODE;
+            edge.from = MAPPING_ROOT_NODE;
         }
     }
 

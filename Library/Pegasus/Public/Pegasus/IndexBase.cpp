@@ -9,6 +9,11 @@ bool IndexBase::CanBeDropped () const noexcept
     return GetReferenceCount () <= 1u && activeCursors == 0u;
 }
 
+const StandardLayout::Mapping &IndexBase::GetRecordMapping () const noexcept
+{
+    return storage->GetRecordMapping ();
+}
+
 IndexBase::IndexBase (class Storage *_storage) noexcept : storage (_storage), activeCursors (0u)
 {
     assert (storage);

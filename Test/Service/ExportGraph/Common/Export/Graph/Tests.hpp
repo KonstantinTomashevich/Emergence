@@ -18,6 +18,8 @@ VisualGraph::Graph DoubleSubgraphNesting () noexcept;
 
 VisualGraph::Graph EdgeWithAbsolutePath () noexcept;
 
+VisualGraph::Graph EdgeWithColor () noexcept;
+
 VisualGraph::Graph WithDuplicateGraphIds () noexcept;
 
 VisualGraph::Graph WithIncorrectGraphIds () noexcept;

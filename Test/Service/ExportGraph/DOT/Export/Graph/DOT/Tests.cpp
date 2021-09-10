@@ -23,7 +23,7 @@ TEST_CASE (TwoConnectedNodes)
         "    label=\"graph\";\n"
         "    \"graph/a\" [label=\"a\" ];\n"
         "    \"graph/b\" [label=\"b\" ];\n"
-        "    \"graph/a\" -> \"graph/b\";\n"
+        "    \"graph/a\" -> \"graph/b\" [];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());
@@ -40,7 +40,7 @@ TEST_CASE (TwoConnectedNodesAndLabels)
         "    label=\"Cool Graph\";\n"
         "    \"graph/a\" [label=\"Node A\" ];\n"
         "    \"graph/b\" [label=\"Node B\" ];\n"
-        "    \"graph/a\" -> \"graph/b\";\n"
+        "    \"graph/a\" -> \"graph/b\" [];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());
@@ -65,8 +65,8 @@ TEST_CASE (TwoSeparateSubgraphs)
         "        \"complex_graph/second_subgraph/a\" [label=\"a\" ];\n"
         "        \"complex_graph/second_subgraph/b\" [label=\"b\" ];\n"
         "    }\n"
-        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/first_subgraph/b\";\n"
-        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/b\";\n"
+        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/first_subgraph/b\" [];\n"
+        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());
@@ -91,9 +91,9 @@ TEST_CASE (TwoInterconnectedSubgraphs)
         "        \"complex_graph/second_subgraph/a\" [label=\"a\" ];\n"
         "        \"complex_graph/second_subgraph/b\" [label=\"b\" ];\n"
         "    }\n"
-        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/first_subgraph/b\";\n"
-        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/b\";\n"
-        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/second_subgraph/b\";\n"
+        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/first_subgraph/b\" [];\n"
+        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
+        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());
@@ -115,9 +115,9 @@ TEST_CASE (RelativePathsFromRoot)
         "    }\n"
         "    \"complex_graph/a\" [label=\"a\" ];\n"
         "    \"complex_graph/b\" [label=\"b\" ];\n"
-        "    \"complex_graph/subgraph/a\" -> \"complex_graph/subgraph/b\";\n"
-        "    \"complex_graph/a\" -> \"complex_graph/subgraph/a\";\n"
-        "    \"complex_graph/b\" -> \"complex_graph/subgraph/b\";\n"
+        "    \"complex_graph/subgraph/a\" -> \"complex_graph/subgraph/b\" [];\n"
+        "    \"complex_graph/a\" -> \"complex_graph/subgraph/a\" [];\n"
+        "    \"complex_graph/b\" -> \"complex_graph/subgraph/b\" [];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());
@@ -157,16 +157,18 @@ TEST_CASE (DoubleSubgraphNesting)
         "    }\n"
         "    \"complex_graph/a\" [label=\"a\" ];\n"
         "    \"complex_graph/b\" [label=\"b\" ];\n"
-        "    \"complex_graph/first_subgraph/first_subgraph/a\" -> \"complex_graph/first_subgraph/first_subgraph/b\";\n"
+        "    \"complex_graph/first_subgraph/first_subgraph/a\" -> \"complex_graph/first_subgraph/first_subgraph/b\" "
+        "[];\n"
         "    \"complex_graph/first_subgraph/second_subgraph/a\" -> "
-        "\"complex_graph/first_subgraph/second_subgraph/b\";\n"
-        "    \"complex_graph/first_subgraph/first_subgraph/a\" -> \"complex_graph/first_subgraph/second_subgraph/b\";\n"
-        "    \"complex_graph/second_subgraph/subgraph/a\" -> \"complex_graph/second_subgraph/subgraph/b\";\n"
-        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/subgraph/a\";\n"
-        "    \"complex_graph/second_subgraph/b\" -> \"complex_graph/second_subgraph/subgraph/b\";\n"
-        "    \"complex_graph/a\" -> \"complex_graph/second_subgraph/b\";\n"
-        "    \"complex_graph/b\" -> \"complex_graph/second_subgraph/subgraph/b\";\n"
-        "    \"complex_graph/first_subgraph/first_subgraph/a\" -> \"complex_graph/second_subgraph/b\";\n"
+        "\"complex_graph/first_subgraph/second_subgraph/b\" [];\n"
+        "    \"complex_graph/first_subgraph/first_subgraph/a\" -> \"complex_graph/first_subgraph/second_subgraph/b\" "
+        "[];\n"
+        "    \"complex_graph/second_subgraph/subgraph/a\" -> \"complex_graph/second_subgraph/subgraph/b\" [];\n"
+        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/subgraph/a\" [];\n"
+        "    \"complex_graph/second_subgraph/b\" -> \"complex_graph/second_subgraph/subgraph/b\" [];\n"
+        "    \"complex_graph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
+        "    \"complex_graph/b\" -> \"complex_graph/second_subgraph/subgraph/b\" [];\n"
+        "    \"complex_graph/first_subgraph/first_subgraph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());
@@ -191,9 +193,26 @@ TEST_CASE (EdgeWithAbsolutePath)
         "        \"complex_graph/second_subgraph/a\" [label=\"a\" ];\n"
         "        \"complex_graph/second_subgraph/b\" [label=\"b\" ];\n"
         "    }\n"
-        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/first_subgraph/b\";\n"
-        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/second_subgraph/b\";\n"
-        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/b\";\n"
+        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/first_subgraph/b\" [];\n"
+        "    \"complex_graph/first_subgraph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
+        "    \"complex_graph/second_subgraph/a\" -> \"complex_graph/second_subgraph/b\" [];\n"
+        "}\n";
+
+    CHECK_EQUAL (expected, stream.str ());
+}
+
+TEST_CASE (EdgeWithColor)
+{
+    std::stringstream stream;
+    const bool exported = Graph::Export (EdgeWithColor (), stream);
+    CHECK (exported);
+
+    const std::string expected =
+        "digraph \"graph\" {\n"
+        "    label=\"graph\";\n"
+        "    \"graph/a\" [label=\"a\" ];\n"
+        "    \"graph/b\" [label=\"b\" ];\n"
+        "    \"graph/a\" -> \"graph/b\" [color=\"#FF0000FF\" ];\n"
         "}\n";
 
     CHECK_EQUAL (expected, stream.str ());

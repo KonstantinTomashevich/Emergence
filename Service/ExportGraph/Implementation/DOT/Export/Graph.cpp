@@ -142,14 +142,20 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
         edge.from = PatchPath (edge.from);
         edge.to = PatchPath (edge.to);
-        resolvedEdges.emplace_back (edge);
+        resolvedEdges.emplace_back (std::move (edge));
     }
 
     if (!isSubgraph)
     {
         for (const VisualGraph::Edge &edge : resolvedEdges)
         {
-            output << indentation << "\"" << edge.from << "\" -> \"" << edge.to << "\";" << std::endl;
+            output << indentation << "\"" << edge.from << "\" -> \"" << edge.to << "\" [";
+            if (edge.color)
+            {
+                output << "color=\"" << edge.color.value () << "\" ";
+            }
+
+            output << "];" << std::endl;
         }
     }
 

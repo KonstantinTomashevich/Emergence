@@ -9,6 +9,9 @@ sober_test_begin (RecordCollection)
     sober_naming_variant_target (ContextExtension Original CONTEXT_EXTENSION_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${CONTEXT_EXTENSION_LIBRARY_TARGET})
 
+    sober_naming_variant_target (RecordCollectionVisualization Original VISUALIZATION_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
+
     sober_naming_variant_target (TestQueryAPI Original TEST_QUERY_API_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${TEST_QUERY_API_LIBRARY_TARGET})
 

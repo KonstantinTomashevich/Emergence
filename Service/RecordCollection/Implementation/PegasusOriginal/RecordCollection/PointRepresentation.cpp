@@ -89,6 +89,12 @@ PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const 
     return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
 }
 
+const StandardLayout::Mapping &PointRepresentation::GetTypeMapping () const noexcept
+{
+    assert (handle);
+    return reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ()->GetRecordMapping ();
+}
+
 bool PointRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);

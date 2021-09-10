@@ -2,5 +2,5 @@
 
 namespace Emergence::StandardLayout::Test
 {
-bool MappingVisualizationTestIncludeMarker () noexcept;
+bool VisualizationTestIncludeMarker () noexcept;
 } // namespace Emergence::StandardLayout::Test

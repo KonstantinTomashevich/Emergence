@@ -97,6 +97,12 @@ StandardLayout::Field LinearRepresentation::GetKeyField () const noexcept
     return reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ()->GetIndexedField ();
 }
 
+const StandardLayout::Mapping &LinearRepresentation::GetTypeMapping () const noexcept
+{
+    assert (handle);
+    return reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ()->GetRecordMapping ();
+}
+
 bool LinearRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);

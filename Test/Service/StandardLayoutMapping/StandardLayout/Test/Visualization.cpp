@@ -1,5 +1,5 @@
-#include <StandardLayout/MappingVisualization.hpp>
-#include <StandardLayout/Test/MappingVisualization.hpp>
+#include <StandardLayout/Test/Visualization.hpp>
+#include <StandardLayout/Visualization.hpp>
 
 #include <SyntaxSugar/MappingRegistration.hpp>
 
@@ -7,7 +7,7 @@
 
 namespace Emergence::StandardLayout::Test
 {
-bool MappingVisualizationTestIncludeMarker () noexcept
+bool VisualizationTestIncludeMarker () noexcept
 {
     return true;
 }
@@ -116,11 +116,14 @@ TEST_CASE (NoNesting)
     using namespace Emergence::VisualGraph;
     using namespace Emergence::StandardLayout;
 
-    const char *ROOT = Common::Constants::DEFAULT_MAPPING_ROOT_NODE;
     const Graph result = Visualization::GraphFromMapping (Test::NoNesting::Reflect ().mapping);
-
-    const Graph expected = {
-        "NoNesting", {}, {}, {{ROOT, {}}, {"x", {}}, {"y", {}}, {"z", {}}}, {{ROOT, "x"}, {ROOT, "y"}, {ROOT, "z"}}};
+    const Graph expected = {"NoNesting",
+                            {},
+                            {},
+                            {{Visualization::MAPPING_ROOT_NODE, {}}, {"x", {}}, {"y", {}}, {"z", {}}},
+                            {{Visualization::MAPPING_ROOT_NODE, "x", {}},
+                             {Visualization::MAPPING_ROOT_NODE, "y", {}},
+                             {Visualization::MAPPING_ROOT_NODE, "z", {}}}};
 
     CHECK (result == expected);
 }
@@ -130,13 +133,11 @@ TEST_CASE (OneNestingLevel)
     using namespace Emergence::VisualGraph;
     using namespace Emergence::StandardLayout;
 
-    const char *ROOT = Common::Constants::DEFAULT_MAPPING_ROOT_NODE;
     const Graph result = Visualization::GraphFromMapping (Test::OneNestingLevel::Reflect ().mapping);
-
     const Graph expected = {"OneNestingLevel",
                             {},
                             {},
-                            {{ROOT, {}},
+                            {{Visualization::MAPPING_ROOT_NODE, {}},
                              {"first", {}},
                              {"first.x", "x"},
                              {"first.y", "y"},
@@ -145,14 +146,14 @@ TEST_CASE (OneNestingLevel)
                              {"second.x", "x"},
                              {"second.y", "y"},
                              {"second.z", "z"}},
-                            {{ROOT, "first"},
-                             {"first", "first.x"},
-                             {"first", "first.y"},
-                             {"first", "first.z"},
-                             {ROOT, "second"},
-                             {"second", "second.x"},
-                             {"second", "second.y"},
-                             {"second", "second.z"}}};
+                            {{Visualization::MAPPING_ROOT_NODE, "first", {}},
+                             {"first", "first.x", {}},
+                             {"first", "first.y", {}},
+                             {"first", "first.z", {}},
+                             {Visualization::MAPPING_ROOT_NODE, "second", {}},
+                             {"second", "second.x", {}},
+                             {"second", "second.y", {}},
+                             {"second", "second.z", {}}}};
 
     CHECK (result == expected);
 }
@@ -162,13 +163,11 @@ TEST_CASE (TwoNestingLevels)
     using namespace Emergence::VisualGraph;
     using namespace Emergence::StandardLayout;
 
-    const char *ROOT = Common::Constants::DEFAULT_MAPPING_ROOT_NODE;
     const Graph result = Visualization::GraphFromMapping (Test::TwoNestingLevels::Reflect ().mapping);
-
     const Graph expected = {"TwoNestingLevels",
                             {},
                             {},
-                            {{ROOT, {}},
+                            {{Visualization::MAPPING_ROOT_NODE, {}},
                              {"first", {}},
                              {"first.first", "first"},
                              {"first.first.x", "x"},
@@ -182,19 +181,19 @@ TEST_CASE (TwoNestingLevels)
                              {"second.x", "x"},
                              {"second.y", "y"},
                              {"second.z", "z"}},
-                            {{ROOT, "first"},
-                             {"first", "first.first"},
-                             {"first.first", "first.first.x"},
-                             {"first.first", "first.first.y"},
-                             {"first.first", "first.first.z"},
-                             {"first", "first.second"},
-                             {"first.second", "first.second.x"},
-                             {"first.second", "first.second.y"},
-                             {"first.second", "first.second.z"},
-                             {ROOT, "second"},
-                             {"second", "second.x"},
-                             {"second", "second.y"},
-                             {"second", "second.z"}}};
+                            {{Visualization::MAPPING_ROOT_NODE, "first", {}},
+                             {"first", "first.first", {}},
+                             {"first.first", "first.first.x", {}},
+                             {"first.first", "first.first.y", {}},
+                             {"first.first", "first.first.z", {}},
+                             {"first", "first.second", {}},
+                             {"first.second", "first.second.x", {}},
+                             {"first.second", "first.second.y", {}},
+                             {"first.second", "first.second.z", {}},
+                             {Visualization::MAPPING_ROOT_NODE, "second", {}},
+                             {"second", "second.x", {}},
+                             {"second", "second.y", {}},
+                             {"second", "second.z", {}}}};
 
     CHECK (result == expected);
 }

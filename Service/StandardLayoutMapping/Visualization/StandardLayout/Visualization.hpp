@@ -6,6 +6,9 @@
 
 namespace Emergence::StandardLayout::Visualization
 {
+/// \brief StandardLayout::Mapping graph should have node with this name, that has edges with all direct fields.
+constexpr const char *MAPPING_ROOT_NODE = ".";
+
 /// \brief Creates visual graph from given mapping.
 /// \details
 /// - Graph id is guarantee to be equal to mapping name.

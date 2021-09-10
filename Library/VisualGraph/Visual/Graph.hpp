@@ -6,12 +6,16 @@
 
 namespace Emergence::VisualGraph
 {
+/// \brief Id separator for relative and absolute node paths.
+/// \details See more about node paths in Graph documentation.
+constexpr char NODE_PATH_SEPARATOR = '/';
+
 /// \brief Defines node of a Graph.
 struct Node
 {
     /// \brief Node local id in its graph.
     /// \invariant Unique among nodes of parent graph.
-    /// \invariant Does not contain `"` or `/` characters.
+    /// \invariant Does not contain `"` or NODE_PATH_SEPARATOR characters.
     std::string id;
 
     /// \brief Custom label for node. If empty, ::id will be used instead.
@@ -30,6 +34,9 @@ struct Edge
     /// \brief Specifies node, to which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
     std::string to;
+
+    /// \brief Specifies custom fill color for this edge.
+    std::optional<std::string> color;
 
     bool operator== (const Edge &_other) const = default;
 };
@@ -73,7 +80,7 @@ struct Graph
 {
     /// \brief Graph local id.
     /// \invariant Unique among other subgraphs, that belong to the same parent.
-    /// \invariant Does not contain `"` or `/` characters.
+    /// \invariant Does not contain `"` or NODE_PATH_SEPARATOR characters.
     std::string id;
 
     /// \brief Custom label for graph. If empty, ::id will be used instead.
@@ -96,13 +103,14 @@ struct Graph
 namespace Common::Constants
 {
 /// \brief Root graph should always have this id.
-constexpr const char *DEFAULT_ROOT_GRAPH_ID = "root";
+constexpr const char *DEFAULT_ROOT_GRAPH_ID = ".";
 
 /// \brief Graphs for all StandardLayout::Mapping's should be subgraphs of graph with this name.
 ///        And graph with this name should be subgraph of the root graph.
-constexpr const char *DEFAULT_MAPPING_SUBGRAPH = "mapping";
+constexpr const char *MAPPING_SUBGRAPH = "Mapping";
 
-/// \brief StandardLayout::Mapping graph should have node with this name, that has edges with all direct fields.
-constexpr const char *DEFAULT_MAPPING_ROOT_NODE = "<root>";
+/// \brief Default color for edges, that mapping field users with mapping field nodes.
+/// \details This edges should have special color, otherwise they will blend in with mapping structure edges.
+constexpr const char *MAPPING_FIELD_USAGE_COLOR = "#3F48FEFF";
 } // namespace Common::Constants
 } // namespace Emergence::VisualGraph

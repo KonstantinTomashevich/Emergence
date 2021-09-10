@@ -7,6 +7,7 @@
 
 #include <RecordCollection/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
+#include <RecordCollection/Visualization.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -44,13 +45,11 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Represe
     ~ExecutionContext ();
 
     Collection collection;
-    StandardLayout::Mapping typeMapping;
     std::optional<Collection::Allocator> collectionAllocator;
 };
 
 ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
     : collection (_typeMapping),
-      typeMapping (_typeMapping),
       collectionAllocator ()
 {
 }
@@ -186,7 +185,7 @@ void ExecuteTask (ExecutionContext &_context, const CreatePointRepresentation &_
 
         if (!overflow)
         {
-            CHECK (_context.typeMapping.GetField (_task.keyFields[keyFieldIndex]).IsSame (*iterator));
+            CHECK (_context.collection.GetTypeMapping ().GetField (_task.keyFields[keyFieldIndex]).IsSame (*iterator));
             ++keyFieldIndex;
         }
     }
@@ -198,7 +197,7 @@ void ExecuteTask (ExecutionContext &_context, const CreatePointRepresentation &_
 void ExecuteTask (ExecutionContext &_context, const CreateLinearRepresentation &_task)
 {
     LinearRepresentation representation = _context.collection.CreateLinearRepresentation (_task.keyField);
-    CHECK (_context.typeMapping.GetField (_task.keyField).IsSame (representation.GetKeyField ()));
+    CHECK (_context.collection.GetTypeMapping ().GetField (_task.keyField).IsSame (representation.GetKeyField ()));
 
     AddObject<RepresentationReference> (_context, _task.name, representation);
     IterateOverRepresentations (_context);
@@ -231,11 +230,13 @@ void ExecuteTask (ExecutionContext &_context, const CreateVolumetricRepresentati
         if (!overflow)
         {
             const auto dimension = *iterator;
-            CHECK (
-                _context.typeMapping.GetField (_task.dimensions[dimensionIndex].minField).IsSame (dimension.minField));
+            CHECK (_context.collection.GetTypeMapping ()
+                       .GetField (_task.dimensions[dimensionIndex].minField)
+                       .IsSame (dimension.minField));
 
-            CHECK (
-                _context.typeMapping.GetField (_task.dimensions[dimensionIndex].maxField).IsSame (dimension.maxField));
+            CHECK (_context.collection.GetTypeMapping ()
+                       .GetField (_task.dimensions[dimensionIndex].maxField)
+                       .IsSame (dimension.maxField));
             ++dimensionIndex;
         }
     }
@@ -281,7 +282,7 @@ void ExecuteTask (ExecutionContext &_context, const AllocateAndInit &_task)
 
     if (record)
     {
-        memcpy (record, _task.copyFrom, _context.typeMapping.GetObjectSize ());
+        memcpy (record, _task.copyFrom, _context.collection.GetTypeMapping ().GetObjectSize ());
     }
 }
 
@@ -295,14 +296,16 @@ void ExecuteTask (ExecutionContext &_context, const QueryValueToRead &_task)
 {
     PointRepresentation representation =
         std::get<PointRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping, representation.ReadPoint (_task.value));
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
+                       representation.ReadPoint (_task.value));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryValueToEdit &_task)
 {
     PointRepresentation representation =
         std::get<PointRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping, representation.EditPoint (_task.value));
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
+                       representation.EditPoint (_task.value));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_task)
@@ -310,7 +313,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToRead &_
     LinearRepresentation representation =
         std::get<LinearRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.ReadAscendingInterval (_task.minValue, _task.maxValue));
 }
 
@@ -319,7 +322,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryAscendingRangeToEdit &_
     LinearRepresentation representation =
         std::get<LinearRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.EditAscendingInterval (_task.minValue, _task.maxValue));
 }
 
@@ -328,7 +331,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToRead &
     LinearRepresentation representation =
         std::get<LinearRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.ReadDescendingInterval (_task.minValue, _task.maxValue));
 }
 
@@ -337,7 +340,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &
     LinearRepresentation representation =
         std::get<LinearRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.EditDescendingInterval (_task.minValue, _task.maxValue));
 }
 
@@ -349,7 +352,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
     std::vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.ReadShapeIntersections (&sequence[0u]));
 }
 
@@ -361,7 +364,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
     std::vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.EditShapeIntersections (&sequence[0u]));
 }
 
@@ -373,7 +376,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
     std::vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.ReadRayIntersections (&sequence[0u], _task.maxDistance));
 }
 
@@ -385,7 +388,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
     std::vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
-    AddObject<Cursor> (_context, _task.cursorName, _context.typeMapping,
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
                        representation.EditRayIntersections (&sequence[0u], _task.maxDistance));
 }
 
@@ -535,7 +538,7 @@ static void ExecuteScenario (const Query::Test::Scenario &_scenario, bool _alloc
         tasks.emplace_back (ImportTask (task));
     }
 
-    Scenario (_scenario.storages[0u].dataType, tasks);
+    Scenario {_scenario.storages[0u].dataType, tasks}.Execute ();
 }
 
 void CreateRepresentationsThanAllocateRecords (const Query::Test::Scenario &_scenario)
@@ -612,7 +615,7 @@ void ForRepresentationReference (const Reference::Test::Scenario &_scenario, con
     }
 
     tasks.emplace_back (DropRepresentation {representationName});
-    Scenario {_storage.dataType, tasks};
+    Scenario {_storage.dataType, tasks}.Execute ();
 }
 
 void ForCursor (const Reference::Test::Scenario &_scenario,
@@ -664,18 +667,16 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
     }
 
     tasks.emplace_back (DropRepresentation {representationName});
-    Scenario {_storage.dataType, tasks};
+    Scenario {_storage.dataType, tasks}.Execute ();
 }
 } // namespace ReferenceApiTestImporters
 
-Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector<Task> _tasks)
-    : mapping (std::move (_mapping)),
-      tasks (std::move (_tasks))
+static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_graphOutput) noexcept
 {
-    ExecutionContext context (mapping);
-    LOG ((std::stringstream () << *this).str ());
+    ExecutionContext context {_scenario.mapping};
+    LOG ((std::stringstream () << _scenario).str ());
 
-    for (const Task &wrappedTask : tasks)
+    for (const Task &wrappedTask : _scenario.tasks)
     {
         std::visit (
             [&context] (const auto &_unwrappedTask)
@@ -685,6 +686,23 @@ Scenario::Scenario (StandardLayout::Mapping _mapping, std::vector<Task> _tasks)
             },
             wrappedTask);
     }
+
+    if (_graphOutput)
+    {
+        *_graphOutput = Visualization::GraphFromCollection (context.collection);
+    }
+}
+
+void Scenario::Execute () const noexcept
+{
+    ExecuteScenario (*this, nullptr);
+}
+
+VisualGraph::Graph Scenario::ExecuteAndVisualize () const noexcept
+{
+    VisualGraph::Graph graph;
+    ExecuteScenario (*this, &graph);
+    return graph;
 }
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
