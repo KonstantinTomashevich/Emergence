@@ -114,10 +114,9 @@ void VisualizationDriver::LinkToRepresentation (VisualGraph::Graph &_graph, cons
     edge.from = WAREHOUSE_QUERY_ROOT_NODE;
 
     const RecordCollection::Collection &collection = _query.GetContainer ()->collection;
-    edge.to = GetPathToContainer (_query.GetContainer ()) +
-              RecordCollection::Visualization::GraphId (collection) + VisualGraph::NODE_PATH_SEPARATOR +
-              RecordCollection::Visualization::GraphId (_query.representation) + VisualGraph::NODE_PATH_SEPARATOR +
-              RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
+    edge.to = GetPathToContainer (_query.GetContainer ()) + RecordCollection::Visualization::GraphId (collection) +
+              VisualGraph::NODE_PATH_SEPARATOR + RecordCollection::Visualization::GraphId (_query.representation) +
+              VisualGraph::NODE_PATH_SEPARATOR + RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 }
 
 void VisualizationDriver::PostProcess (

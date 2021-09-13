@@ -153,7 +153,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         {
             if (_path.starts_with (absolutePrefix))
             {
-                return relativePaths.contains (_path.substr (absolutePrefix.size()));
+                return relativePaths.contains (_path.substr (absolutePrefix.size ()));
             }
             else
             {
