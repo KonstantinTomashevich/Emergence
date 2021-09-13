@@ -24,29 +24,22 @@ VisualGraph::Graph GraphFromCollection (const Collection &_collection)
                      VisualGraph::NODE_PATH_SEPARATOR + MAPPING_ROOT_NODE;
     mappingEdge.color = MAPPING_USAGE_COLOR;
 
-    auto connectToCollection = [&graph, &root] (const VisualGraph::Graph &_subgraph)
-    {
-        VisualGraph::Edge &connection = graph.edges.emplace_back ();
-        connection.from = root.id;
-        connection.to = _subgraph.id + VisualGraph::NODE_PATH_SEPARATOR + RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
-    };
-
     for (auto iterator = _collection.LinearRepresentationBegin (); iterator != _collection.LinearRepresentationEnd ();
          ++iterator)
     {
-        connectToCollection (graph.subgraphs.emplace_back (GraphFromLinearRepresentation (*iterator)));
+        graph.subgraphs.emplace_back (GraphFromLinearRepresentation (*iterator));
     }
 
     for (auto iterator = _collection.PointRepresentationBegin (); iterator != _collection.PointRepresentationEnd ();
          ++iterator)
     {
-        connectToCollection (graph.subgraphs.emplace_back (GraphFromPointRepresentation (*iterator)));
+        graph.subgraphs.emplace_back (GraphFromPointRepresentation (*iterator));
     }
 
     for (auto iterator = _collection.VolumetricRepresentationBegin ();
          iterator != _collection.VolumetricRepresentationEnd (); ++iterator)
     {
-        connectToCollection (graph.subgraphs.emplace_back (GraphFromVolumetricRepresentation (*iterator)));
+        graph.subgraphs.emplace_back (GraphFromVolumetricRepresentation (*iterator));
     }
 
     return graph;

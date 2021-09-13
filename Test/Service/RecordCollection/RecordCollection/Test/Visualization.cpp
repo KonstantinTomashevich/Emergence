@@ -92,12 +92,7 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
            {REPRESENTATION_ROOT, mappingPath + "boundingBox.minY", MAPPING_EDGE_COLOR},
            {REPRESENTATION_ROOT, mappingPath + "boundingBox.maxY", MAPPING_EDGE_COLOR}}}},
         {{COLLECTION_ROOT, {}}},
-        {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
-         {COLLECTION_ROOT, "LinearRepresentation {player.name}/.", {}},
-         {COLLECTION_ROOT, "PointRepresentation {player.alive}/.", {}},
-         {COLLECTION_ROOT,
-          "VolumetricRepresentation {{boundingBox.minX, boundingBox.maxX}, {boundingBox.minY, boundingBox.maxY}}/.",
-          {}}}};
+        {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR}}};
 
     CHECK (result == expected);
 }
@@ -127,9 +122,7 @@ TEST_CASE (MultipleInstancesOfLinearRepresentation)
                                            {{REPRESENTATION_ROOT, {}}},
                                            {{REPRESENTATION_ROOT, mappingPath + "name", MAPPING_EDGE_COLOR}}}},
                                          {{COLLECTION_ROOT, {}}},
-                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
-                                          {COLLECTION_ROOT, "LinearRepresentation {id}/.", {}},
-                                          {COLLECTION_ROOT, "LinearRepresentation {name}/.", {}}}};
+                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR}}};
 
     CHECK (result == expected);
 }
@@ -161,9 +154,7 @@ TEST_CASE (MultipleInstancesOfPointRepresentation)
                                            {{REPRESENTATION_ROOT, {}}},
                                            {{REPRESENTATION_ROOT, mappingPath + "name", MAPPING_EDGE_COLOR}}}},
                                          {{COLLECTION_ROOT, {}}},
-                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
-                                          {COLLECTION_ROOT, "PointRepresentation {id, name}/.", {}},
-                                          {COLLECTION_ROOT, "PointRepresentation {name}/.", {}}}};
+                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR}}};
 
     CHECK (result == expected);
 }
@@ -202,31 +193,28 @@ TEST_CASE (MultipleInstancesOfVolumetricRepresentation)
     const std::string mappingPath = GetPathToMappings () + Query::Test::BoundingBox::Reflect ().mapping.GetName () +
                                     VisualGraph::NODE_PATH_SEPARATOR;
 
-    const VisualGraph::Graph expected = {
-        "RecordCollection {BoundingBox}",
-        {},
-        {{"VolumetricRepresentation {{minX, maxX}, {minY, maxY}}",
-          {},
-          {},
-          {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "minX", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxX", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "minY", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxY", MAPPING_EDGE_COLOR}}},
-         {"VolumetricRepresentation {{minX, maxX}, {minY, maxY}, {minZ, maxZ}}",
-          {},
-          {},
-          {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "minX", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxX", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "minY", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxY", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "minZ", MAPPING_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxZ", MAPPING_EDGE_COLOR}}}},
-        {{COLLECTION_ROOT, {}}},
-        {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
-         {COLLECTION_ROOT, "VolumetricRepresentation {{minX, maxX}, {minY, maxY}}/.", {}},
-         {COLLECTION_ROOT, "VolumetricRepresentation {{minX, maxX}, {minY, maxY}, {minZ, maxZ}}/.", {}}}};
+    const VisualGraph::Graph expected = {"RecordCollection {BoundingBox}",
+                                         {},
+                                         {{"VolumetricRepresentation {{minX, maxX}, {minY, maxY}}",
+                                           {},
+                                           {},
+                                           {{REPRESENTATION_ROOT, {}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "minX", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "maxX", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "minY", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "maxY", MAPPING_EDGE_COLOR}}},
+                                          {"VolumetricRepresentation {{minX, maxX}, {minY, maxY}, {minZ, maxZ}}",
+                                           {},
+                                           {},
+                                           {{REPRESENTATION_ROOT, {}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "minX", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "maxX", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "minY", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "maxY", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "minZ", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "maxZ", MAPPING_EDGE_COLOR}}}},
+                                         {{COLLECTION_ROOT, {}}},
+                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR}}};
 
     CHECK (result == expected);
 }
