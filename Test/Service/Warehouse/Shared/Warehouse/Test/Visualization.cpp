@@ -17,12 +17,12 @@ using namespace Emergence::VisualGraph::Common::Constants;
 
 static void CheckResult (const Scenario::Visualization &_result, const VisualizationExpectedResult &_expected)
 {
-    CHECK (_result.registryGraph == _expected.registry);
-    CHECK_EQUAL (_result.queryGraphs.size (), _expected.queries.size ());
+    CHECK (_result.registry == _expected.registry);
+    CHECK_EQUAL (_result.queries.size (), _expected.queries.size ());
 
-    for (std::size_t index = 0u; index < std::min (_result.queryGraphs.size (), _expected.queries.size ()); ++index)
+    for (std::size_t index = 0u; index < std::min (_result.queries.size (), _expected.queries.size ()); ++index)
     {
-        CHECK (_result.queryGraphs[index] == _expected.queries[index]);
+        CHECK (_result.queries[index] == _expected.queries[index]);
     }
 }
 

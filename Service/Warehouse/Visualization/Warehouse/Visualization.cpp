@@ -35,7 +35,7 @@ VisualGraph::Graph BaseGraphForQuery (const Query &_query)
     edgeToMapping.from = root.id;
     edgeToMapping.to = GetPathToMappings () + _query.GetTypeMapping ().GetName () + VisualGraph::NODE_PATH_SEPARATOR +
                        MAPPING_ROOT_NODE;
-    edgeToMapping.color = VisualGraph::Common::Constants::MAPPING_USAGE_COLOR;
+    edgeToMapping.color = MAPPING_USAGE_COLOR;
 
     // Storages are not exposed by API, therefore these connections can only be added by implementation customization.
     _query.AddCustomVisualization (graph);
@@ -49,7 +49,7 @@ static void ConnectToField (VisualGraph::Graph &_graph,
     VisualGraph::Edge &edge = _graph.edges.emplace_back ();
     edge.from = WAREHOUSE_QUERY_ROOT_NODE;
     edge.to = GetPathToMappings () + _mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR + _field.GetName ();
-    edge.color = VisualGraph::Common::Constants::MAPPING_USAGE_COLOR;
+    edge.color = MAPPING_USAGE_COLOR;
 }
 
 static VisualGraph::Graph ConnectToFields (VisualGraph::Graph _graph,

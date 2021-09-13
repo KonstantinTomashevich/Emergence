@@ -36,7 +36,7 @@ public:
         const LongTermContainer::RepresentationQueryBase<RecordCollection::VolumetricRepresentation> &_query);
 
 private:
-    // Forward declare helpers, so they will gain friend access to LongTermContainer.
+    // Forward declare helpers, so they will gain friend access to required classes.
     template <typename Container>
     static std::string GetPathToContainer (const Handling::Handle<Container> &_container);
 

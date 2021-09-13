@@ -52,7 +52,7 @@ private:
 
     friend class LongTermContainer;
 
-    /// VisualizationDriver for Warehouse service should be able to directly access storages.
+    /// VisualizationDriver for Warehouse service should be able to directly access containers.
     friend class VisualizationDriver;
 
     void DetachContainer (SingletonContainer *_container) noexcept;

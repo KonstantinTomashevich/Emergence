@@ -1,4 +1,4 @@
-sober_service_begin (WarehouseVisualizationGraphs)
+sober_service_begin (TestWarehouseVisualizationGraphs)
     sober_naming_variant_target (WarehouseVisualization Original VISUALIZATION_LIBRARY_TARGET)
     sober_service_add_api_dependency (${VISUALIZATION_LIBRARY_TARGET})
 

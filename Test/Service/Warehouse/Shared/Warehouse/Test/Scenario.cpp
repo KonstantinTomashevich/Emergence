@@ -1018,20 +1018,20 @@ static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization 
 
     if (_visualizationOutput)
     {
-        _visualizationOutput->registryGraph = Visualization::GraphFromRegistry (context.registry);
+        _visualizationOutput->registry = Visualization::GraphFromRegistry (context.registry);
         for (const auto &[name, query] : context.Context::Extension::ObjectStorage<PreparedQuery>::objects)
         {
             std::visit (
                 [_visualizationOutput] (const auto &_query)
                 {
-                    _visualizationOutput->queryGraphs.emplace_back (Visualization::GraphFromQuery (_query));
+                    _visualizationOutput->queries.emplace_back (Visualization::GraphFromQuery (_query));
                 },
                 query);
         }
 
         // Order of queries in storage is random, therefore we need to
         // sort them in order to make result checking in tests easier.
-        std::sort (_visualizationOutput->queryGraphs.begin (), _visualizationOutput->queryGraphs.end (),
+        std::sort (_visualizationOutput->queries.begin (), _visualizationOutput->queries.end (),
                    [] (const VisualGraph::Graph &_left, const VisualGraph::Graph &_right)
                    {
                        return _left.id < _right.id;

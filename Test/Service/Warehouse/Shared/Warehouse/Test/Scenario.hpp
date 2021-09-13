@@ -167,8 +167,8 @@ struct Scenario final
 {
     struct Visualization final
     {
-        VisualGraph::Graph registryGraph;
-        std::vector<VisualGraph::Graph> queryGraphs;
+        VisualGraph::Graph registry;
+        std::vector<VisualGraph::Graph> queries;
     };
 
     void Execute () const noexcept;
