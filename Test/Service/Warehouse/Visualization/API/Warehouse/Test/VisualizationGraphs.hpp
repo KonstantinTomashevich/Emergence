@@ -21,5 +21,5 @@ VisualizationExpectedResult Singletons ();
 VisualizationExpectedResult Sequences ();
 
 VisualizationExpectedResult LongTerms ();
-} // namespace Visualization
+} // namespace Graphs
 } // namespace Emergence::Warehouse::Test

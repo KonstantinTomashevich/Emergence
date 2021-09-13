@@ -7,8 +7,8 @@
 
 #include <Testing/Testing.hpp>
 
-#include <Warehouse/Test/Scenario.hpp>
 #include <Warehouse/Registry.hpp>
+#include <Warehouse/Test/Scenario.hpp>
 #include <Warehouse/Visualization.hpp>
 
 namespace Emergence::Warehouse::Test
