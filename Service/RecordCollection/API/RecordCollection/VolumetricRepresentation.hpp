@@ -188,6 +188,9 @@ public:
     /// \return Iterator, that points to ending of dimensions sequence.
     DimensionIterator DimensionEnd () const noexcept;
 
+    /// \seeCollection::GetRecordMapping
+    const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+
     /// \return Can this representation be safely dropped?
     /// \details Representation can be safely dropped if there is only one reference to it and there is no active
     ///          cursors.

@@ -9,8 +9,6 @@
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
-#include <StandardLayout/Field.hpp>
-
 #include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus

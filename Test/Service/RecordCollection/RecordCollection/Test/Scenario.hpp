@@ -13,6 +13,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <Visual/Graph.hpp>
+
 namespace Emergence::RecordCollection::Test
 {
 using namespace Query::Test::Tasks;
@@ -111,17 +113,17 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
                 const void *_expectedPointedObject);
 } // namespace ReferenceApiTestImporters
 
-class Scenario final
+struct Scenario final
 {
-public:
-    Scenario (StandardLayout::Mapping _mapping, std::vector<Task> _tasks);
+    void Execute () const noexcept;
 
-private:
-    friend std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
+    VisualGraph::Graph ExecuteAndVisualize () const noexcept;
 
     StandardLayout::Mapping mapping;
     std::vector<Task> tasks;
 };
+
+std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
 
 std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
 } // namespace Emergence::RecordCollection::Test

@@ -89,7 +89,7 @@ namespace Emergence::Warehouse
 class Registry final
 {
 public:
-    Registry () noexcept;
+    Registry (std::string _name) noexcept;
 
     /// Registry holds lots of objects, therefore it's not optimal to copy it.
     Registry (const Registry &_other) = delete;
@@ -162,6 +162,12 @@ public:
     /// \invariant There is at least one dimension.
     ModifyRayIntersectionQuery ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
                                                       const std::vector<Dimension> &_dimensions) noexcept;
+
+    /// \return Name of this registry, that can be used for debug or visualization purposes.
+    const std::string GetName () const noexcept;
+
+    /// \brief Utility for Warehouse::Visualization, that allows implementation to add custom content to graphs.
+    void AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept;
 
     /// Registry holds lots of objects, therefore it's not optimal to copy assign it.
     Registry &operator= (const Registry &_other) = delete;

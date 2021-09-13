@@ -140,6 +140,12 @@ VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionE
     return DimensionIterator (reinterpret_cast<decltype (DimensionIterator::data) *> (&iterator));
 }
 
+const StandardLayout::Mapping &VolumetricRepresentation::GetTypeMapping () const noexcept
+{
+    assert (handle);
+    return reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ()->GetRecordMapping ();
+}
+
 bool VolumetricRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);

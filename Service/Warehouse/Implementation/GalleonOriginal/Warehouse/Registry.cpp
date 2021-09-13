@@ -5,6 +5,7 @@
 #include <SyntaxSugar/BlockCast.hpp>
 
 #include <Warehouse/Registry.hpp>
+#include <Warehouse/VisualizationDriver.hpp>
 
 namespace Emergence::Warehouse
 {
@@ -49,7 +50,7 @@ std::vector<RecordCollection::Collection::DimensionDescriptor> ConvertDimensions
     return result;
 }
 
-Registry::Registry () noexcept : handle (new Galleon::CargoDeck ())
+Registry::Registry (std::string _name) noexcept : handle (new Galleon::CargoDeck (std::move (_name)))
 {
 }
 
@@ -194,6 +195,18 @@ ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
     auto query = container->ModifyRayIntersection (ConvertDimensions (_typeMapping, _dimensions));
     return ModifyRayIntersectionQuery (reinterpret_cast<decltype (ModifyRayIntersectionQuery::data) *> (&query));
+}
+
+const std::string Registry::GetName () const noexcept
+{
+    assert (handle);
+    return static_cast<Galleon::CargoDeck *> (handle)->GetName ();
+}
+
+void Registry::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept
+{
+    assert (handle);
+    Galleon::VisualizationDriver::PostProcess (_graph, *static_cast<Galleon::CargoDeck *> (handle));
 }
 
 Registry &Registry::operator= (Registry &&_other) noexcept

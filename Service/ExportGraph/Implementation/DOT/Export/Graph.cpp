@@ -4,8 +4,6 @@
 
 namespace Emergence::Export::Graph
 {
-// TODO: Add error logging (no logging service yet).
-
 class Context
 {
 public:
@@ -46,8 +44,9 @@ bool Context::IsIdValid (const std::string &_id) noexcept
 {
     for (const char &symbol : _id)
     {
-        if (symbol == '\"' || symbol == '/')
+        if (symbol == '\"' || symbol == VisualGraph::NODE_PATH_SEPARATOR)
         {
+            // TODO: Log error.
             return false;
         }
     }
@@ -62,6 +61,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
     {
         if (!IsIdValid (subgraph.id) || !usedIds.emplace (subgraph.id).second)
         {
+            // TODO: Log error.
             return false;
         }
     }
@@ -70,6 +70,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
     {
         if (!IsIdValid (node.id) || !usedIds.emplace (node.id).second)
         {
+            // TODO: Log error.
             return false;
         }
     }
@@ -106,7 +107,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
     output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
     std::unordered_set<std::string> relativePaths;
-    pathPrefix += _graph.id + '/';
+    pathPrefix += _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
 
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
@@ -120,7 +121,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
         for (const std::string &subgraphRelativePath : subgraphRelativePaths.value ())
         {
-            relativePaths.emplace (subgraph.id + '/' + subgraphRelativePath);
+            relativePaths.emplace (subgraph.id + VisualGraph::NODE_PATH_SEPARATOR + subgraphRelativePath);
         }
     }
 
@@ -142,14 +143,45 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
         edge.from = PatchPath (edge.from);
         edge.to = PatchPath (edge.to);
-        resolvedEdges.emplace_back (edge);
+        resolvedEdges.emplace_back (std::move (edge));
     }
 
     if (!isSubgraph)
     {
+        const std::string absolutePrefix = _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
+        auto isNodeExists = [&absolutePrefix, &relativePaths] (const std::string &_path)
+        {
+            if (_path.starts_with (absolutePrefix))
+            {
+                return relativePaths.contains (_path.substr (absolutePrefix.size ()));
+            }
+            else
+            {
+                return relativePaths.contains (_path);
+            }
+        };
+
         for (const VisualGraph::Edge &edge : resolvedEdges)
         {
-            output << indentation << "\"" << edge.from << "\" -> \"" << edge.to << "\";" << std::endl;
+            if (!isNodeExists (edge.from))
+            {
+                // TODO: Log warning.
+                continue;
+            }
+
+            if (!isNodeExists (edge.to))
+            {
+                // TODO: Log warning.
+                continue;
+            }
+
+            output << indentation << "\"" << edge.from << "\" -> \"" << edge.to << "\" [";
+            if (edge.color)
+            {
+                output << "color=\"" << edge.color.value () << "\" ";
+            }
+
+            output << "];" << std::endl;
         }
     }
 

@@ -86,6 +86,9 @@ public:
         EMERGENCE_DELETE_ASSIGNMENT (RepresentationQueryBase);
 
     protected:
+        /// VisualizationDriver for Warehouse service should be able to directly access ::representation.
+        friend class VisualizationDriver;
+
         RepresentationQueryBase (Handling::Handle<LongTermContainer> _container,
                                  Representation _representation) noexcept;
 
@@ -332,6 +335,9 @@ private:
     /// Only handles have right to destruct containers.
     template <typename>
     friend class Handling::Handle;
+
+    /// VisualizationDriver for Warehouse service should be able to directly access ::collection.
+    friend class VisualizationDriver;
 
     explicit LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 

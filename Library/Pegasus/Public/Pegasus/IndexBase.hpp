@@ -4,6 +4,8 @@
 
 #include <Handling/HandleableBase.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Pegasus
 {
 /// \brief Minimal base class for all Pegasus indices.
@@ -11,6 +13,8 @@ class IndexBase : public Handling::HandleableBase
 {
 public:
     bool CanBeDropped () const noexcept;
+
+    const StandardLayout::Mapping &GetRecordMapping () const noexcept;
 
 protected:
     friend class Storage;

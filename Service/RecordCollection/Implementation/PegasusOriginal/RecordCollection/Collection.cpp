@@ -128,6 +128,12 @@ VolumetricRepresentation Collection::CreateVolumetricRepresentation (
     return VolumetricRepresentation (index.Get ());
 }
 
+const StandardLayout::Mapping &Collection::GetTypeMapping () const noexcept
+{
+    assert (handle);
+    return static_cast<const Pegasus::Storage *> (handle)->GetRecordMapping ();
+}
+
 Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin () const noexcept
 {
     assert (handle);

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -8,6 +9,7 @@
 
 #include <Warehouse/Registry.hpp>
 #include <Warehouse/Test/Scenario.hpp>
+#include <Warehouse/Visualization.hpp>
 
 namespace Emergence::Warehouse::Test
 {
@@ -61,7 +63,7 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Prepare
 
     ~ExecutionContext ();
 
-    Registry registry;
+    Registry registry {"Test"};
 };
 
 ExecutionContext::~ExecutionContext ()
@@ -759,7 +761,7 @@ void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
             task);
     }
 
-    Scenario {tasks};
+    Scenario {tasks}.Execute ();
 }
 
 namespace TestReferenceApiDrivers
@@ -940,7 +942,7 @@ void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_
             packedTask);
     }
 
-    Scenario {tasks};
+    Scenario {tasks}.Execute ();
 }
 
 void ForCursor (const Reference::Test::Scenario &_scenario,
@@ -994,16 +996,16 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
             packedTask);
     }
 
-    Scenario {tasks};
+    Scenario {tasks}.Execute ();
 }
 } // namespace TestReferenceApiDrivers
 
-Scenario::Scenario (std::vector<Task> _tasks) : tasks (std::move (_tasks))
+static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization *_visualizationOutput) noexcept
 {
     ExecutionContext context;
-    LOG ((std::stringstream () << *this).str ());
+    LOG ((std::stringstream () << _scenario).str ());
 
-    for (const Task &wrappedTask : tasks)
+    for (const Task &wrappedTask : _scenario.tasks)
     {
         std::visit (
             [&context] (const auto &_unwrappedTask)
@@ -1013,6 +1015,40 @@ Scenario::Scenario (std::vector<Task> _tasks) : tasks (std::move (_tasks))
             },
             wrappedTask);
     }
+
+    if (_visualizationOutput)
+    {
+        _visualizationOutput->registry = Visualization::GraphFromRegistry (context.registry);
+        for (const auto &[name, query] : context.Context::Extension::ObjectStorage<PreparedQuery>::objects)
+        {
+            std::visit (
+                [_visualizationOutput] (const auto &_query)
+                {
+                    _visualizationOutput->queries.emplace_back (Visualization::GraphFromQuery (_query));
+                },
+                query);
+        }
+
+        // Order of queries in storage is random, therefore we need to
+        // sort them in order to make result checking in tests easier.
+        std::sort (_visualizationOutput->queries.begin (), _visualizationOutput->queries.end (),
+                   [] (const VisualGraph::Graph &_left, const VisualGraph::Graph &_right)
+                   {
+                       return _left.id < _right.id;
+                   });
+    }
+}
+
+void Scenario::Execute () const noexcept
+{
+    ExecuteScenario (*this, nullptr);
+}
+
+Scenario::Visualization Scenario::ExecuteAndVisualize () const noexcept
+{
+    Scenario::Visualization visualization;
+    ExecuteScenario (*this, &visualization);
+    return visualization;
 }
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)

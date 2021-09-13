@@ -14,7 +14,13 @@ struct TypeMappingPredicate final
     StandardLayout::Mapping requiredMapping;
 };
 
-CargoDeck::CargoDeck (CargoDeck &&_other) noexcept : containers (std::move (_other.containers))
+CargoDeck::CargoDeck (std::string _name) noexcept : name (std::move (_name))
+{
+}
+
+CargoDeck::CargoDeck (CargoDeck &&_other) noexcept
+    : name (std::move (_other.name)),
+      containers (std::move (_other.containers))
 {
     for (SingletonContainer *container : containers.singleton)
     {
@@ -101,6 +107,11 @@ bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_ty
 {
     return std::find_if (containers.longTerm.begin (), containers.longTerm.end (),
                          TypeMappingPredicate {_typeMapping}) != containers.longTerm.end ();
+}
+
+const std::string &CargoDeck::GetName () const noexcept
+{
+    return name;
 }
 
 CargoDeck &CargoDeck::operator= (CargoDeck &&_other) noexcept

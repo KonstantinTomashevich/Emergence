@@ -26,6 +26,9 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (ContainerBase);
 
 protected:
+    /// VisualizationDriver for Warehouse service should be able to directly access ::deck.
+    friend class VisualizationDriver;
+
     explicit ContainerBase (class CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
     ~ContainerBase () noexcept = default;

@@ -16,11 +16,11 @@ TEST_CASE (MoveAssignment)
     using namespace Emergence::Galleon;
     using namespace Emergence::Query::Test;
 
-    CargoDeck deck;
+    CargoDeck deck {"Test"};
     // We test move assignment instead of regular move because it's easier to keep correct destruction order in
     // function scope. Before deck destruction all queries must be destructed, therefore in function scope we can
     // not construct queries after decks.
-    CargoDeck otherDeck;
+    CargoDeck otherDeck {"Temp"};
 
     auto InitSingletonContainer = [&deck] ()
     {

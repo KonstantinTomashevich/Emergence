@@ -1,6 +1,7 @@
 #include <RecordCollection/Test/Collection.hpp>
 #include <RecordCollection/Test/LinearRepresentation.hpp>
 #include <RecordCollection/Test/PointRepresentation.hpp>
+#include <RecordCollection/Test/Visualization.hpp>
 #include <RecordCollection/Test/VolumetricRepresentation.hpp>
 
 #include <Testing/SetupMain.hpp>
@@ -13,6 +14,8 @@ static const bool linearRepresentationTestIncludeMarker =
 
 static const bool pointRepresentationTestIncludeMarker =
     Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker ();
+
+static const bool visualizationTestIncludeMarker = Emergence::RecordCollection::Test::VisualizationTestIncludeMarker ();
 
 static const bool volumetricRepresentationTestIncludeMarker =
     Emergence::RecordCollection::Test::VolumetricRepresentationTestIncludeMarker ();

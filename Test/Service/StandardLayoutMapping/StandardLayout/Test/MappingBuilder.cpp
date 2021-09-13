@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <StandardLayout/MappingBuilder.hpp>
+#include <StandardLayout/Test/MappingBuilder.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -290,7 +291,8 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             CHECK_EQUAL (nestedField.GetSize (), projectedField.GetSize ());
                             CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (), projectedField.GetOffset ());
 
-                            const std::string expectedProjectedName = seed.name + "." + nestedField.GetName ();
+                            const std::string expectedProjectedName =
+                                seed.name + PROJECTION_NAME_SEPARATOR + nestedField.GetName ();
                             CHECK_EQUAL (expectedProjectedName, projectedField.GetName ());
 
                             switch (nestedField.GetArchetype ())

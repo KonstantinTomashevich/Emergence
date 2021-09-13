@@ -1,10 +1,12 @@
+add_subdirectory (Visualization)
+
 sober_test_begin (Warehouse)
-    file (GLOB_RECURSE SOURCES *.cpp)
-    file (GLOB_RECURSE HEADERS *.hpp)
+    file (GLOB_RECURSE SOURCES "Shared/*.cpp")
+    file (GLOB_RECURSE HEADERS "Shared/*.hpp")
     list (APPEND SOURCES ${HEADERS})
 
     sober_library_set_sources ("${SOURCES}")
-    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Shared")
 
     sober_naming_variant_target (ContextExtension Original CONTEXT_EXTENSION_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${CONTEXT_EXTENSION_LIBRARY_TARGET})
@@ -15,6 +17,11 @@ sober_test_begin (Warehouse)
     sober_naming_variant_target (TestReferenceAPI Original TEST_REFERENCE_API_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${TEST_REFERENCE_API_LIBRARY_TARGET})
 
+    sober_naming_variant_target (WarehouseVisualization Original VISUALIZATION_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
+
+    sober_library_use_service (TestWarehouseVisualizationGraphs PRIVATE)
+
     if (MSVC)
         # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
         sober_library_private_compile_options (/EHa)
@@ -24,6 +31,7 @@ sober_test_begin (Warehouse)
     endif ()
 
     sober_test_variant_begin (GalleonOriginal)
+        sober_variant_freeze_implementation (WarehouseVisualizationGraphs Galleon)
     sober_test_variant_end ()
 sober_test_end ()
 

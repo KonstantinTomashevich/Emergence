@@ -92,7 +92,8 @@ TEST_CASE (DropRepresentation)
                                          &Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5,
                                          &Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2,
                                      }},
-        }};
+        }}
+        .Execute ();
 }
 
 END_SUITE

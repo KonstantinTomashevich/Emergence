@@ -4,6 +4,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <Visual/Graph.hpp>
+
 /// \brief Internal macro with common operations for EMERGENCE_READ_ONLY_PREPARED_QUERY_OPERATIONS and
 ///        EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS.
 #define EMERGENCE_PREPARED_QUERY_OPERATIONS_COMMON(Class)                                                              \
@@ -18,7 +20,10 @@
     Emergence::StandardLayout::Mapping GetTypeMapping () const noexcept;                                               \
                                                                                                                        \
     /*! Assigning prepared queries looks counter-intuitive. */                                                         \
-    EMERGENCE_DELETE_ASSIGNMENT (Class)
+    EMERGENCE_DELETE_ASSIGNMENT (Class);                                                                               \
+                                                                                                                       \
+    /*! \brief Utility for Warehouse::Visualization, that allows implementation to add custom content to graphs. */    \
+    void AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept
 
 /// \brief Adds common public methods for read only (fetch) prepared queries.
 #define EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS(Class, Cursor, ...)                                               \

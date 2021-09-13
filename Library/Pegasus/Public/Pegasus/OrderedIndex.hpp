@@ -9,8 +9,6 @@
 
 #include <Pegasus/IndexBase.hpp>
 
-#include <StandardLayout/Field.hpp>
-
 namespace Emergence::Pegasus
 {
 class OrderedIndex final : public IndexBase

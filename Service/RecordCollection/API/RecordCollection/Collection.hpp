@@ -154,6 +154,9 @@ public:
     VolumetricRepresentation CreateVolumetricRepresentation (
         const std::vector<DimensionDescriptor> &_dimensions) const noexcept;
 
+    /// \return Object type mapping for objects, that are stored in this collection.
+    const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+
     /// \return Iterator, that points to beginning of linear representations range.
     LinearRepresentationIterator LinearRepresentationBegin () const noexcept;
 
