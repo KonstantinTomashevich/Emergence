@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <Galleon/LongTermContainer.hpp>
@@ -15,7 +16,7 @@ namespace Emergence::Galleon
 class CargoDeck final
 {
 public:
-    CargoDeck () noexcept = default;
+    CargoDeck (std::string _name) noexcept;
 
     /// CargoDeck manages lots of storages with lots of objects, therefore it's not optimal to copy it.
     CargoDeck (const CargoDeck &_other) = delete;
@@ -37,6 +38,8 @@ public:
 
     bool IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
 
+    const std::string &GetName () const noexcept;
+
     /// CargoDeck manages lots of storages with lots of objects, therefore it's not optimal to copy assign it.
     CargoDeck &operator= (const CargoDeck &_other) = delete;
 
@@ -49,11 +52,16 @@ private:
 
     friend class LongTermContainer;
 
+    /// VisualizationDriver for Warehouse service should be able to directly access storages.
+    friend class VisualizationDriver;
+
     void DetachContainer (SingletonContainer *_container) noexcept;
 
     void DetachContainer (ShortTermContainer *_container) noexcept;
 
     void DetachContainer (LongTermContainer *_container) noexcept;
+
+    std::string name;
 
     struct
     {

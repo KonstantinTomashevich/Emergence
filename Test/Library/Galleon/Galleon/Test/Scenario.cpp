@@ -70,7 +70,7 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Contain
 
     ~ExecutionContext ();
 
-    CargoDeck deck;
+    CargoDeck deck {"Test"};
 };
 
 ExecutionContext::~ExecutionContext ()

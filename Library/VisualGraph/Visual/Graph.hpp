@@ -109,8 +109,29 @@ constexpr const char *DEFAULT_ROOT_GRAPH_ID = ".";
 ///        And graph with this name should be subgraph of the root graph.
 constexpr const char *MAPPING_SUBGRAPH = "Mapping";
 
-/// \brief Default color for edges, that mapping field users with mapping field nodes.
+/// \brief StandardLayout::Mapping graph should have node with this name, that has edges with all direct fields.
+constexpr const char *MAPPING_ROOT_NODE = ".";
+
+/// \brief Default color for edges, that connect mapping users with mapping nodes.
 /// \details This edges should have special color, otherwise they will blend in with mapping structure edges.
-constexpr const char *MAPPING_FIELD_USAGE_COLOR = "#3F48FEFF";
+constexpr const char *MAPPING_USAGE_COLOR = "#3F48FEFF";
+
+/// \brief RecordCollection::Collection graph is guaranteed to have node
+///        with this name, that will be used as root for its graph.
+constexpr const char *RECORD_COLLECTION_ROOT_NODE = ".";
+
+/// \brief RecordCollection representation graph is guaranteed to have node
+///        with this name, that will be used as root for its graph.
+constexpr const char *RECORD_COLLECTION_REPRESENTATION_ROOT_NODE = ".";
+
+/// \brief Graphs for all Warehouse::Registry's should be subgraphs of graph with this name.
+///        And graph with this name should be subgraph of the root graph.
+constexpr const char *WAREHOUSE_REGISTRY_SUBGRAPH = "Registry";
+
+/// \brief Warehouse::Registry graph is guaranteed to have node with this name, that will be used as root for its graph.
+constexpr const char *WAREHOUSE_REGISTRY_ROOT_NODE = ".";
+
+/// \brief Warehouse query graph is guaranteed to have node with this name, that will be used as root for its graph.
+constexpr const char *WAREHOUSE_QUERY_ROOT_NODE = ".";
 } // namespace Common::Constants
 } // namespace Emergence::VisualGraph

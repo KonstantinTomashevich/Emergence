@@ -120,10 +120,10 @@ TEST_CASE (NoNesting)
     const Graph expected = {"NoNesting",
                             {},
                             {},
-                            {{Visualization::MAPPING_ROOT_NODE, {}}, {"x", {}}, {"y", {}}, {"z", {}}},
-                            {{Visualization::MAPPING_ROOT_NODE, "x", {}},
-                             {Visualization::MAPPING_ROOT_NODE, "y", {}},
-                             {Visualization::MAPPING_ROOT_NODE, "z", {}}}};
+                            {{Common::Constants::MAPPING_ROOT_NODE, {}}, {"x", {}}, {"y", {}}, {"z", {}}},
+                            {{Common::Constants::MAPPING_ROOT_NODE, "x", {}},
+                             {Common::Constants::MAPPING_ROOT_NODE, "y", {}},
+                             {Common::Constants::MAPPING_ROOT_NODE, "z", {}}}};
 
     CHECK (result == expected);
 }
@@ -137,7 +137,7 @@ TEST_CASE (OneNestingLevel)
     const Graph expected = {"OneNestingLevel",
                             {},
                             {},
-                            {{Visualization::MAPPING_ROOT_NODE, {}},
+                            {{Common::Constants::MAPPING_ROOT_NODE, {}},
                              {"first", {}},
                              {"first.x", "x"},
                              {"first.y", "y"},
@@ -146,11 +146,11 @@ TEST_CASE (OneNestingLevel)
                              {"second.x", "x"},
                              {"second.y", "y"},
                              {"second.z", "z"}},
-                            {{Visualization::MAPPING_ROOT_NODE, "first", {}},
+                            {{Common::Constants::MAPPING_ROOT_NODE, "first", {}},
                              {"first", "first.x", {}},
                              {"first", "first.y", {}},
                              {"first", "first.z", {}},
-                             {Visualization::MAPPING_ROOT_NODE, "second", {}},
+                             {Common::Constants::MAPPING_ROOT_NODE, "second", {}},
                              {"second", "second.x", {}},
                              {"second", "second.y", {}},
                              {"second", "second.z", {}}}};
@@ -167,7 +167,7 @@ TEST_CASE (TwoNestingLevels)
     const Graph expected = {"TwoNestingLevels",
                             {},
                             {},
-                            {{Visualization::MAPPING_ROOT_NODE, {}},
+                            {{Common::Constants::MAPPING_ROOT_NODE, {}},
                              {"first", {}},
                              {"first.first", "first"},
                              {"first.first.x", "x"},
@@ -181,7 +181,7 @@ TEST_CASE (TwoNestingLevels)
                              {"second.x", "x"},
                              {"second.y", "y"},
                              {"second.z", "z"}},
-                            {{Visualization::MAPPING_ROOT_NODE, "first", {}},
+                            {{Common::Constants::MAPPING_ROOT_NODE, "first", {}},
                              {"first", "first.first", {}},
                              {"first.first", "first.first.x", {}},
                              {"first.first", "first.first.y", {}},
@@ -190,7 +190,7 @@ TEST_CASE (TwoNestingLevels)
                              {"first.second", "first.second.x", {}},
                              {"first.second", "first.second.y", {}},
                              {"first.second", "first.second.z", {}},
-                             {Visualization::MAPPING_ROOT_NODE, "second", {}},
+                             {Common::Constants::MAPPING_ROOT_NODE, "second", {}},
                              {"second", "second.x", {}},
                              {"second", "second.y", {}},
                              {"second", "second.z", {}}}};

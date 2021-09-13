@@ -13,6 +13,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <Visual/Graph.hpp>
+
 namespace Emergence::Warehouse::Test
 {
 using namespace Query::Test::Tasks;
@@ -161,16 +163,22 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
                 const void *_cursorExpectedObject);
 } // namespace TestReferenceApiDrivers
 
-class Scenario final
+struct Scenario final
 {
-public:
-    explicit Scenario (std::vector<Task> _tasks);
+    struct Visualization final
+    {
+        VisualGraph::Graph registryGraph;
+        std::vector<VisualGraph::Graph> queryGraphs;
+    };
 
-private:
-    friend std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
+    void Execute () const noexcept;
+
+    Visualization ExecuteAndVisualize () const noexcept;
 
     std::vector<Task> tasks;
 };
+
+std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
 std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
 

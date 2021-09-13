@@ -6,37 +6,30 @@
 
 namespace Emergence::RecordCollection::Visualization
 {
-/// \brief Collection graph is guaranteed to have node with this name, that will be used as root for its graph.
-constexpr const char *COLLECTION_ROOT_NODE = ".";
-
-/// \brief Representation graph is guaranteed to have node with this name, that will be used as root for its graph.
-constexpr const char *REPRESENTATION_ROOT_NODE = ".";
-
 /// \brief Creates visual graph from given collection.
 /// \details
 /// - Guaranteed to have COLLECTION_ROOT_NODE.
 /// - Guaranteed to have nodes for every child representation.
-VisualGraph::Graph GraphFromCollection (const RecordCollection::Collection &_collection);
+VisualGraph::Graph GraphFromCollection (const Collection &_collection);
 
 /// \brief Creates visual graph from given representation.
-VisualGraph::Graph GraphFromLinearRepresentation (const RecordCollection::LinearRepresentation &_representation);
+VisualGraph::Graph GraphFromLinearRepresentation (const LinearRepresentation &_representation);
 
 /// \brief Creates visual graph from given representation.
-VisualGraph::Graph GraphFromPointRepresentation (const RecordCollection::PointRepresentation &_representation);
+VisualGraph::Graph GraphFromPointRepresentation (const PointRepresentation &_representation);
 
 /// \brief Creates visual graph from given representation.
-VisualGraph::Graph GraphFromVolumetricRepresentation (
-    const RecordCollection::VolumetricRepresentation &_representation);
+VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given collection.
-std::string GraphId (const RecordCollection::Collection &_collection);
+std::string GraphId (const Collection &_collection);
 
 /// \return Id of a graph, that could be created from given representation.
-std::string GraphId (const RecordCollection::LinearRepresentation &_representation);
+std::string GraphId (const LinearRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given representation.
-std::string GraphId (const RecordCollection::PointRepresentation &_representation);
+std::string GraphId (const PointRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given representation.
-std::string GraphId (const RecordCollection::VolumetricRepresentation &_representation);
+std::string GraphId (const VolumetricRepresentation &_representation);
 } // namespace Emergence::RecordCollection::Visualization

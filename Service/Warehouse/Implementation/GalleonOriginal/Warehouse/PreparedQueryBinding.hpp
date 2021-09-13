@@ -2,6 +2,8 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
+#include <Warehouse/VisualizationDriver.hpp>
+
 #define EMERGENCE_BIND_QUERY_COMMON_OPERATIONS(Query, QueryImplementation)                                             \
     Query::Query (const Query &_other) noexcept                                                                        \
     {                                                                                                                  \
@@ -16,6 +18,11 @@
     Query::~Query () noexcept                                                                                          \
     {                                                                                                                  \
         block_cast<QueryImplementation> (data).~QueryImplementation ();                                                \
+    }                                                                                                                  \
+                                                                                                                       \
+    void Query::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept                                     \
+    {                                                                                                                  \
+        Galleon::VisualizationDriver::PostProcess (_graph, block_cast<QueryImplementation> (data));                    \
     }                                                                                                                  \
                                                                                                                        \
     StandardLayout::Mapping Query::GetTypeMapping () const noexcept                                                    \

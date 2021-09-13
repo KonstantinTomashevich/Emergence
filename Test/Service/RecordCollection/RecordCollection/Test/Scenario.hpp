@@ -115,12 +115,12 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 
 struct Scenario final
 {
-    StandardLayout::Mapping mapping;
-    std::vector<Task> tasks;
-
     void Execute () const noexcept;
 
     VisualGraph::Graph ExecuteAndVisualize () const noexcept;
+
+    StandardLayout::Mapping mapping;
+    std::vector<Task> tasks;
 };
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);

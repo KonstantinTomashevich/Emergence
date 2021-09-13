@@ -14,9 +14,10 @@ bool Emergence::RecordCollection::Test::VisualizationTestIncludeMarker () noexce
     return true;
 }
 
-constexpr const char *COLLECTION_ROOT = RecordCollection::Visualization::COLLECTION_ROOT_NODE;
-constexpr const char *REPRESENTATION_ROOT = RecordCollection::Visualization::REPRESENTATION_ROOT_NODE;
-constexpr const char *FIELD_EDGE_COLOR = VisualGraph::Common::Constants::MAPPING_FIELD_USAGE_COLOR;
+constexpr const char *COLLECTION_ROOT = VisualGraph::Common::Constants::RECORD_COLLECTION_ROOT_NODE;
+constexpr const char *MAPPING_EDGE_COLOR = VisualGraph::Common::Constants::MAPPING_USAGE_COLOR;
+constexpr const char *MAPPING_ROOT = VisualGraph::Common::Constants::MAPPING_ROOT_NODE;
+constexpr const char *REPRESENTATION_ROOT = VisualGraph::Common::Constants::RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 
 static std::string GetPathToMappings ()
 {
@@ -76,22 +77,23 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
           {},
           {},
           {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "player.name", FIELD_EDGE_COLOR}}},
+          {{REPRESENTATION_ROOT, mappingPath + "player.name", MAPPING_EDGE_COLOR}}},
          {"PointRepresentation {player.alive}",
           {},
           {},
           {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "player.alive", FIELD_EDGE_COLOR}}},
+          {{REPRESENTATION_ROOT, mappingPath + "player.alive", MAPPING_EDGE_COLOR}}},
          {"VolumetricRepresentation {{boundingBox.minX, boundingBox.maxX}, {boundingBox.minY, boundingBox.maxY}}",
           {},
           {},
           {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "boundingBox.minX", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "boundingBox.maxX", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "boundingBox.minY", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "boundingBox.maxY", FIELD_EDGE_COLOR}}}},
+          {{REPRESENTATION_ROOT, mappingPath + "boundingBox.minX", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "boundingBox.maxX", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "boundingBox.minY", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "boundingBox.maxY", MAPPING_EDGE_COLOR}}}},
         {{COLLECTION_ROOT, {}}},
-        {{COLLECTION_ROOT, "LinearRepresentation {player.name}/.", {}},
+        {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
+         {COLLECTION_ROOT, "LinearRepresentation {player.name}/.", {}},
          {COLLECTION_ROOT, "PointRepresentation {player.alive}/.", {}},
          {COLLECTION_ROOT,
           "VolumetricRepresentation {{boundingBox.minX, boundingBox.maxX}, {boundingBox.minY, boundingBox.maxY}}/.",
@@ -112,21 +114,22 @@ TEST_CASE (MultipleInstancesOfLinearRepresentation)
     const std::string mappingPath =
         GetPathToMappings () + Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
 
-    const VisualGraph::Graph expected = {
-        "RecordCollection {Player}",
-        {},
-        {{"LinearRepresentation {id}",
-          {},
-          {},
-          {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "id", FIELD_EDGE_COLOR}}},
-         {"LinearRepresentation {name}",
-          {},
-          {},
-          {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "name", FIELD_EDGE_COLOR}}}},
-        {{COLLECTION_ROOT, {}}},
-        {{COLLECTION_ROOT, "LinearRepresentation {id}/.", {}}, {COLLECTION_ROOT, "LinearRepresentation {name}/.", {}}}};
+    const VisualGraph::Graph expected = {"RecordCollection {Player}",
+                                         {},
+                                         {{"LinearRepresentation {id}",
+                                           {},
+                                           {},
+                                           {{REPRESENTATION_ROOT, {}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "id", MAPPING_EDGE_COLOR}}},
+                                          {"LinearRepresentation {name}",
+                                           {},
+                                           {},
+                                           {{REPRESENTATION_ROOT, {}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "name", MAPPING_EDGE_COLOR}}}},
+                                         {{COLLECTION_ROOT, {}}},
+                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
+                                          {COLLECTION_ROOT, "LinearRepresentation {id}/.", {}},
+                                          {COLLECTION_ROOT, "LinearRepresentation {name}/.", {}}}};
 
     CHECK (result == expected);
 }
@@ -150,15 +153,16 @@ TEST_CASE (MultipleInstancesOfPointRepresentation)
                                            {},
                                            {},
                                            {{REPRESENTATION_ROOT, {}}},
-                                           {{REPRESENTATION_ROOT, mappingPath + "id", FIELD_EDGE_COLOR},
-                                            {REPRESENTATION_ROOT, mappingPath + "name", FIELD_EDGE_COLOR}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "id", MAPPING_EDGE_COLOR},
+                                            {REPRESENTATION_ROOT, mappingPath + "name", MAPPING_EDGE_COLOR}}},
                                           {"PointRepresentation {name}",
                                            {},
                                            {},
                                            {{REPRESENTATION_ROOT, {}}},
-                                           {{REPRESENTATION_ROOT, mappingPath + "name", FIELD_EDGE_COLOR}}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "name", MAPPING_EDGE_COLOR}}}},
                                          {{COLLECTION_ROOT, {}}},
-                                         {{COLLECTION_ROOT, "PointRepresentation {id, name}/.", {}},
+                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
+                                          {COLLECTION_ROOT, "PointRepresentation {id, name}/.", {}},
                                           {COLLECTION_ROOT, "PointRepresentation {name}/.", {}}}};
 
     CHECK (result == expected);
@@ -205,22 +209,23 @@ TEST_CASE (MultipleInstancesOfVolumetricRepresentation)
           {},
           {},
           {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "minX", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxX", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "minY", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxY", FIELD_EDGE_COLOR}}},
+          {{REPRESENTATION_ROOT, mappingPath + "minX", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "maxX", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "minY", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "maxY", MAPPING_EDGE_COLOR}}},
          {"VolumetricRepresentation {{minX, maxX}, {minY, maxY}, {minZ, maxZ}}",
           {},
           {},
           {{REPRESENTATION_ROOT, {}}},
-          {{REPRESENTATION_ROOT, mappingPath + "minX", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxX", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "minY", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxY", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "minZ", FIELD_EDGE_COLOR},
-           {REPRESENTATION_ROOT, mappingPath + "maxZ", FIELD_EDGE_COLOR}}}},
+          {{REPRESENTATION_ROOT, mappingPath + "minX", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "maxX", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "minY", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "maxY", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "minZ", MAPPING_EDGE_COLOR},
+           {REPRESENTATION_ROOT, mappingPath + "maxZ", MAPPING_EDGE_COLOR}}}},
         {{COLLECTION_ROOT, {}}},
-        {{COLLECTION_ROOT, "VolumetricRepresentation {{minX, maxX}, {minY, maxY}}/.", {}},
+        {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR},
+         {COLLECTION_ROOT, "VolumetricRepresentation {{minX, maxX}, {minY, maxY}}/.", {}},
          {COLLECTION_ROOT, "VolumetricRepresentation {{minX, maxX}, {minY, maxY}, {minZ, maxZ}}/.", {}}}};
 
     CHECK (result == expected);

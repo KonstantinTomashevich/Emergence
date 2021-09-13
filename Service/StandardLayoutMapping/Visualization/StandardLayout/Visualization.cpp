@@ -7,6 +7,8 @@ namespace Emergence::StandardLayout::Visualization
 {
 VisualGraph::Graph GraphFromMapping (const Mapping &_mapping)
 {
+    using namespace VisualGraph::Common::Constants;
+
     VisualGraph::Graph graph;
     graph.id = _mapping.GetName ();
     graph.nodes.emplace_back (VisualGraph::Node {MAPPING_ROOT_NODE, {}});

@@ -4,19 +4,31 @@ namespace Emergence::RecordCollection::Visualization
 {
 using namespace VisualGraph::Common::Constants;
 
-VisualGraph::Graph GraphFromCollection (const RecordCollection::Collection &_collection)
+static std::string GetPathToMappings ()
+{
+    return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
+           VisualGraph::NODE_PATH_SEPARATOR;
+}
+
+VisualGraph::Graph GraphFromCollection (const Collection &_collection)
 {
     VisualGraph::Graph graph;
     graph.id = GraphId (_collection);
 
     VisualGraph::Node &root = graph.nodes.emplace_back ();
-    root.id = COLLECTION_ROOT_NODE;
+    root.id = RECORD_COLLECTION_ROOT_NODE;
+
+    VisualGraph::Edge &mappingEdge = graph.edges.emplace_back ();
+    mappingEdge.from = root.id;
+    mappingEdge.to = GetPathToMappings () + _collection.GetTypeMapping ().GetName () +
+                     VisualGraph::NODE_PATH_SEPARATOR + MAPPING_ROOT_NODE;
+    mappingEdge.color = MAPPING_USAGE_COLOR;
 
     auto connectToCollection = [&graph, &root] (const VisualGraph::Graph &_subgraph)
     {
         VisualGraph::Edge &connection = graph.edges.emplace_back ();
         connection.from = root.id;
-        connection.to = _subgraph.id + VisualGraph::NODE_PATH_SEPARATOR + REPRESENTATION_ROOT_NODE;
+        connection.to = _subgraph.id + VisualGraph::NODE_PATH_SEPARATOR + RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
     };
 
     for (auto iterator = _collection.LinearRepresentationBegin (); iterator != _collection.LinearRepresentationEnd ();
@@ -40,26 +52,20 @@ VisualGraph::Graph GraphFromCollection (const RecordCollection::Collection &_col
     return graph;
 }
 
-static std::string GetPathToMappings ()
-{
-    return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
-}
-
 static VisualGraph::Edge ConnectRepresentationToField (const std::string &_typeName, const std::string &_fieldName)
 {
     VisualGraph::Edge edge;
-    edge.from = REPRESENTATION_ROOT_NODE;
+    edge.from = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
     edge.to = GetPathToMappings () + _typeName + VisualGraph::NODE_PATH_SEPARATOR + _fieldName;
-    edge.color = VisualGraph::Common::Constants::MAPPING_FIELD_USAGE_COLOR;
+    edge.color = VisualGraph::Common::Constants::MAPPING_USAGE_COLOR;
     return edge;
 }
 
-VisualGraph::Graph GraphFromLinearRepresentation (const RecordCollection::LinearRepresentation &_representation)
+VisualGraph::Graph GraphFromLinearRepresentation (const LinearRepresentation &_representation)
 {
     VisualGraph::Graph graph;
     graph.id = GraphId (_representation);
-    graph.nodes.emplace_back ().id = REPRESENTATION_ROOT_NODE;
+    graph.nodes.emplace_back ().id = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 
     graph.edges.emplace_back (ConnectRepresentationToField (_representation.GetTypeMapping ().GetName (),
                                                             _representation.GetKeyField ().GetName ()));
@@ -67,11 +73,11 @@ VisualGraph::Graph GraphFromLinearRepresentation (const RecordCollection::Linear
     return graph;
 }
 
-VisualGraph::Graph GraphFromPointRepresentation (const RecordCollection::PointRepresentation &_representation)
+VisualGraph::Graph GraphFromPointRepresentation (const PointRepresentation &_representation)
 {
     VisualGraph::Graph graph;
     graph.id = GraphId (_representation);
-    graph.nodes.emplace_back ().id = REPRESENTATION_ROOT_NODE;
+    graph.nodes.emplace_back ().id = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 
     for (auto iterator = _representation.KeyFieldBegin (); iterator != _representation.KeyFieldEnd (); ++iterator)
     {
@@ -82,11 +88,11 @@ VisualGraph::Graph GraphFromPointRepresentation (const RecordCollection::PointRe
     return graph;
 }
 
-VisualGraph::Graph GraphFromVolumetricRepresentation (const RecordCollection::VolumetricRepresentation &_representation)
+VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresentation &_representation)
 {
     VisualGraph::Graph graph;
     graph.id = GraphId (_representation);
-    graph.nodes.emplace_back ().id = REPRESENTATION_ROOT_NODE;
+    graph.nodes.emplace_back ().id = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 
     for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
     {

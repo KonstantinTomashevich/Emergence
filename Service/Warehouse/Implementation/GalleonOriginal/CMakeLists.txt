@@ -9,6 +9,9 @@ sober_implementation_begin (GalleonOriginal)
     sober_naming_variant_target (Galleon Original GALLEON_LIBRARY_TARGET)
     sober_implementation_link_library ("${GALLEON_LIBRARY_TARGET}")
 
+    sober_naming_variant_target (RecordCollectionVisualization Original COLLECTION_VISUALIZATION_LIBRARY_TARGET)
+    sober_implementation_link_library ("${COLLECTION_VISUALIZATION_LIBRARY_TARGET}")
+
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_implementation_link_library ("${SYNTAX_SUGAR_LIBRARY_TARGET}")
 sober_implementation_end ()
