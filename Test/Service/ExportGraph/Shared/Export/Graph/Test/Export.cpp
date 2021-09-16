@@ -1,7 +1,20 @@
-#include <Export/Graph/Tests.hpp>
-#include <utility>
+#include <sstream>
 
-namespace Emergence::Export::Graph::Test
+#include <Export/Graph.hpp>
+#include <Export/Graph/Test/Expectation.hpp>
+#include <Export/Graph/Test/Export.hpp>
+
+#include <Testing/Testing.hpp>
+
+using namespace Emergence::Export::Graph;
+using namespace Emergence::Export::Graph::Test;
+
+bool Emergence::Export::Graph::Test::ExportTestIncludeMarker () noexcept
+{
+    return false;
+}
+
+namespace Emergence::Export::Graph::Test::Case
 {
 VisualGraph::Graph TwoConnectedNodes () noexcept
 {
@@ -25,7 +38,7 @@ VisualGraph::Graph TwoConnectedNodesAndLabels () noexcept
             }};
 }
 
-VisualGraph::Graph ChangeId (VisualGraph::Graph _graph, std::string _newId)
+static VisualGraph::Graph ChangeId (VisualGraph::Graph _graph, std::string _newId)
 {
     _graph.id = std::move (_newId);
     return _graph;
@@ -153,4 +166,39 @@ VisualGraph::Graph WithIncorrectNodeIds () noexcept
                 {"a", "/", {}},
             }};
 }
-} // namespace Emergence::Export::Graph::Test
+} // namespace Emergence::Export::Graph::Test::Case
+
+BEGIN_SUITE (Export)
+
+#define POSITIVE_CASE(Name)                                                                                            \
+    TEST_CASE (Name)                                                                                                   \
+    {                                                                                                                  \
+        std::stringstream stream;                                                                                      \
+        const bool exported = Export (Case::Name (), stream);                                                          \
+        CHECK (exported);                                                                                              \
+        CHECK_EQUAL (stream.str (), Expectation::Name ());                                                             \
+    }
+
+POSITIVE_CASE (TwoConnectedNodes)
+POSITIVE_CASE (TwoConnectedNodesAndLabels)
+POSITIVE_CASE (TwoSeparateSubgraphs)
+POSITIVE_CASE (TwoInterconnectedSubgraphs)
+POSITIVE_CASE (RelativePathsFromRoot)
+POSITIVE_CASE (DoubleSubgraphNesting)
+POSITIVE_CASE (EdgeWithAbsolutePath)
+POSITIVE_CASE (EdgeWithColor)
+
+#define NEGATIVE_CASE(Name)                                                                                            \
+    TEST_CASE (Name)                                                                                                   \
+    {                                                                                                                  \
+        std::stringstream stream;                                                                                      \
+        const bool exported = Export (Case::Name (), stream);                                                          \
+        CHECK (!exported);                                                                                             \
+    }
+
+NEGATIVE_CASE (WithDuplicateGraphIds)
+NEGATIVE_CASE (WithIncorrectGraphIds)
+NEGATIVE_CASE (WithDuplicateNodeIds)
+NEGATIVE_CASE (WithIncorrectNodeIds)
+
+END_SUITE
