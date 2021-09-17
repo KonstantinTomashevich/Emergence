@@ -80,42 +80,6 @@ Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
     editedRecordBackup = malloc (reflection.recordMapping.GetObjectSize ());
 }
 
-Storage::Storage (Storage &&_other) noexcept
-    : records (std::move (_other.records)),
-      indices (std::move (_other.indices)),
-      // Copy reflection, since we want source Storage to become valid empty storage for the same record type.
-      reflection (_other.reflection),
-      editedRecordBackup (_other.editedRecordBackup)
-{
-    // Update storage pointers in all moved indices.
-    for (auto &[index, mask] : indices.hash)
-    {
-        index->storage = this;
-    }
-
-    for (auto &[index, mask] : indices.ordered)
-    {
-        index->storage = this;
-    }
-
-    for (auto &[index, mask] : indices.volumetric)
-    {
-        index->storage = this;
-    }
-
-    // Allocate new record buffer for source storage. We capture its record buffer instead
-    // of allocating new for us to preserve correct record edition routine state.
-    _other.editedRecordBackup = malloc (reflection.recordMapping.GetObjectSize ());
-
-    accessCounter.writers = _other.accessCounter.writers;
-    _other.accessCounter.writers = 0u;
-
-    // Move constructor does not declared thread safe, therefore we can copy value like that.
-    std::size_t otherReaders = _other.accessCounter.readers;
-    accessCounter.readers = otherReaders;
-    _other.accessCounter.readers = 0u;
-}
-
 Storage::~Storage () noexcept
 {
     assert (accessCounter.writers == 0u);
@@ -293,17 +257,6 @@ Storage::VolumetricIndexIterator Storage::BeginVolumetricIndices () const noexce
 Storage::VolumetricIndexIterator Storage::EndVolumetricIndices () const noexcept
 {
     return Storage::VolumetricIndexIterator (indices.volumetric.End ());
-}
-
-Storage &Storage::operator= (Storage &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~Storage ();
-        new (this) Storage (std::move (_other));
-    }
-
-    return *this;
 }
 
 void Storage::RegisterReader () noexcept

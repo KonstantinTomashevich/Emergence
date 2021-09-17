@@ -821,7 +821,7 @@ void VolumetricIndex::LeafData::DeleteRecord (
     const std::vector<VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
 {
     assert (_recordIterator != records.end ());
-    if (_recordIterator + 1 != records.end ())
+    if (_recordIterator + 1u != records.end ())
     {
         *_recordIterator = records.back ();
     }

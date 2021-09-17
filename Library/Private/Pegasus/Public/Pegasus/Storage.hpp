@@ -111,7 +111,9 @@ public:
 
     Storage (const Storage &_other) = delete;
 
-    Storage (Storage &&_other) noexcept;
+    /// Move constructor could be useful, but we don't implement it
+    /// because it's useless for RecordCollection implementation.
+    Storage (Storage &&_other) = delete;
 
     ~Storage () noexcept;
 
@@ -140,7 +142,9 @@ public:
 
     Storage &operator= (const Storage &_other) = delete;
 
-    Storage &operator= (Storage &&_other) noexcept;
+    /// Move assign could be useful, but we don't implement it
+    /// because it's useless for RecordCollection implementation.
+    Storage &operator= (Storage &&_other) noexcept = delete;
 
 private:
     friend class HashIndex;

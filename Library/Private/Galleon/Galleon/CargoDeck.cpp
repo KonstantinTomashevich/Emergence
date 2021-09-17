@@ -18,26 +18,6 @@ CargoDeck::CargoDeck (std::string _name) noexcept : name (std::move (_name))
 {
 }
 
-CargoDeck::CargoDeck (CargoDeck &&_other) noexcept
-    : name (std::move (_other.name)),
-      containers (std::move (_other.containers))
-{
-    for (SingletonContainer *container : containers.singleton)
-    {
-        container->deck = this;
-    }
-
-    for (ShortTermContainer *container : containers.shortTerm)
-    {
-        container->deck = this;
-    }
-
-    for (LongTermContainer *container : containers.longTerm)
-    {
-        container->deck = this;
-    }
-}
-
 CargoDeck::~CargoDeck () noexcept
 {
     // Assert that all containers are detached.
@@ -112,17 +92,6 @@ bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_ty
 const std::string &CargoDeck::GetName () const noexcept
 {
     return name;
-}
-
-CargoDeck &CargoDeck::operator= (CargoDeck &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~CargoDeck ();
-        new (this) CargoDeck (std::move (_other));
-    }
-
-    return *this;
 }
 
 void CargoDeck::DetachContainer (SingletonContainer *_container) noexcept
