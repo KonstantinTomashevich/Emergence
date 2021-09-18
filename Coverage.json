@@ -13,7 +13,7 @@
       "Reason": "There is no sense to scan third party libraries coverage."
     },
     {
-      "Prefix": "./Library/Pegasus/Private/Pegasus/RecordUtility.hpp",
+      "Prefix": "./Library/Private/Pegasus/Private/Pegasus/RecordUtility.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
       "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."

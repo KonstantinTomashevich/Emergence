@@ -138,6 +138,8 @@ Scenario EditAndDeleteUsingVolumetricQuery ()
         CursorDeleteObject {"origin = (-3, 0), direction = (2, 1)"},
         CursorCheck {"origin = (-3, 0), direction = (2, 1)", &XAVIER_2_MIN_15_8_50_MAX_19_11_60},
         CursorEdit {"origin = (-3, 0), direction = (2, 1)", &KARL_1_MIN_M2_1_0_MAX_0_4_2},
+        CursorIncrement {"origin = (-3, 0), direction = (2, 1)"},
+        CursorCheck {"origin = (-3, 0), direction = (2, 1)", nullptr},
         CursorClose {"origin = (-3, 0), direction = (2, 1)"},
     };
 

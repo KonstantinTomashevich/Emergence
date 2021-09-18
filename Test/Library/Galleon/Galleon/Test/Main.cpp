@@ -1,1 +1,0 @@
-#include <Testing/SetupMain.hpp>

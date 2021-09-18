@@ -254,6 +254,8 @@ Scenario MultipleSourcesEdition () noexcept
             QueryShapeIntersectionToEdit {{{"2d", "min = (2, 2), max = (10.5, 10.5)"}, {2.0f, 2.0f}, {10.5f, 10.5f}}},
             CursorCheck {"min = (2, 2), max = (10.5, 10.5)", &BOX_MIN_10_8_4_MAX_11_9_5},
             CursorEdit {"min = (2, 2), max = (10.5, 10.5)", &BOX_MIN_M2_1_0_MAX_0_4_2},
+            CursorIncrement {"min = (2, 2), max = (10.5, 10.5)"},
+            CursorCheck {"min = (2, 2), max = (10.5, 10.5)", nullptr},
             CursorClose {"min = (2, 2), max = (10.5, 10.5)"},
 
             QueryShapeIntersectionToRead {{{"2d", "min = (2, 2), max = (10.5, 10.5)"}, {2.0f, 2.0f}, {10.5f, 10.5f}}},
