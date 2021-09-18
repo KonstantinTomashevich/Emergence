@@ -17,13 +17,13 @@ private:
     /// \return Are local ids for subgraphs and nodes of given graph correct and unique?
     static bool CheckIds (const VisualGraph::Graph &_graph) noexcept;
 
-    explicit Context (std::ostream &output);
+    explicit Context (std::ostream &_output);
 
     /// \brief Exports given graph and its subgraphs to ::output.
     /// \return If export was done successfully, returns set of all existing node relative paths for this graph.
     std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_path,
-                                                            std::string pathPrefix = "",
-                                                            const std::string &outerIndentation = "");
+                                                            std::string _pathPrefix = "",
+                                                            const std::string &_outerIndentation = "");
 
     std::ostream &output;
 
@@ -78,41 +78,41 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
     return true;
 }
 
-Context::Context (std::ostream &output) : output (output)
+Context::Context (std::ostream &_output) : output (_output)
 {
 }
 
 std::optional<std::unordered_set<std::string>> Context::Process (const VisualGraph::Graph &_graph,
-                                                                 std::string pathPrefix,
-                                                                 const std::string &outerIndentation)
+                                                                 std::string _pathPrefix,
+                                                                 const std::string &_outerIndentation)
 {
     if (!CheckIds (_graph))
     {
         return std::nullopt;
     }
 
-    const bool isSubgraph = !pathPrefix.empty ();
-    std::string indentation = outerIndentation + "    ";
+    const bool isSubgraph = !_pathPrefix.empty ();
+    std::string indentation = _outerIndentation + "    ";
 
     if (isSubgraph)
     {
-        output << outerIndentation << "subgraph "
-               << "\"cluster_" << pathPrefix << _graph.id << "\" {" << std::endl;
+        output << _outerIndentation << "subgraph "
+               << "\"cluster_" << _pathPrefix << _graph.id << "\" {" << std::endl;
     }
     else
     {
-        output << outerIndentation << "digraph "
+        output << _outerIndentation << "digraph "
                << "\"" << _graph.id << "\" {" << std::endl;
     }
 
     output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
     std::unordered_set<std::string> relativePaths;
-    pathPrefix += _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
+    _pathPrefix += _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
 
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
         std::optional<std::unordered_set<std::string>> subgraphRelativePaths =
-            Process (subgraph, pathPrefix, indentation);
+            Process (subgraph, _pathPrefix, indentation);
 
         if (!subgraphRelativePaths)
         {
@@ -127,7 +127,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
     for (const VisualGraph::Node &node : _graph.nodes)
     {
-        output << indentation << "\"" << pathPrefix + node.id << "\" [";
+        output << indentation << "\"" << _pathPrefix + node.id << "\" [";
         output << "label=\"" << node.label.value_or (node.id) << "\" ";
 
         output << "];" << std::endl;
@@ -136,9 +136,9 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
     for (VisualGraph::Edge edge : _graph.edges)
     {
-        auto PatchPath = [&relativePaths, &pathPrefix] (const std::string &_path) -> std::string
+        auto PatchPath = [&relativePaths, &_pathPrefix] (const std::string &_path) -> std::string
         {
-            return relativePaths.contains (_path) ? pathPrefix + _path : _path;
+            return relativePaths.contains (_path) ? _pathPrefix + _path : _path;
         };
 
         edge.from = PatchPath (edge.from);
@@ -185,7 +185,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         }
     }
 
-    output << outerIndentation << "}" << std::endl;
+    output << _outerIndentation << "}" << std::endl;
     return std::move (relativePaths);
 }
 

@@ -166,7 +166,7 @@ void *UnorderedPool::Acquire () noexcept
 
 void UnorderedPool::Release (void *_chunk) noexcept
 {
-    auto chunk = static_cast<Chunk *> (_chunk);
+    auto *chunk = static_cast<Chunk *> (_chunk);
 
 #ifndef NDEBUG
     {
