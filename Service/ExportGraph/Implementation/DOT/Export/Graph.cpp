@@ -136,13 +136,13 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
     for (VisualGraph::Edge edge : _graph.edges)
     {
-        auto PatchPath = [&relativePaths, &_pathPrefix] (const std::string &_path) -> std::string
+        auto patchPath = [&relativePaths, &_pathPrefix] (const std::string &_path) -> std::string
         {
             return relativePaths.contains (_path) ? _pathPrefix + _path : _path;
         };
 
-        edge.from = PatchPath (edge.from);
-        edge.to = PatchPath (edge.to);
+        edge.from = patchPath (edge.from);
+        edge.to = patchPath (edge.to);
         resolvedEdges.emplace_back (std::move (edge));
     }
 

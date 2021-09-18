@@ -6,9 +6,9 @@
 
 namespace Emergence::StandardLayout
 {
-FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept
+FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
 {
-    return objectField + nestedField + 1u;
+    return _objectField + _nestedField + 1u;
 }
 
 Field::Field () noexcept : handle (nullptr)

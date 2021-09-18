@@ -11,10 +11,10 @@ using FieldId = uint_fast64_t;
 
 /// \brief Defines mapping-independent field space projection rule.
 ///
-/// \param objectField Id of any field in class `Y`, that contains structure of class `X`.
-/// \param nestedField Id of any field from class `X`.
+/// \param _objectField Id of any field in class `Y`, that contains structure of class `X`.
+/// \param _nestedField Id of any field from class `X`.
 /// \return Unique id (among `Y` class fields) for `nestedField` of `X` from `objectField` of `Y`.
-FieldId ProjectNestedField (FieldId objectField, FieldId nestedField) noexcept;
+FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept;
 
 /// \brief Declares field archetype, that can be used to reconstruct actual field type.
 ///
