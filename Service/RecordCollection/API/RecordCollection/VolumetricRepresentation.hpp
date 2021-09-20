@@ -36,8 +36,7 @@ public:
         /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 21u);
 
-        explicit ShapeIntersectionReadCursor (
-            std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
