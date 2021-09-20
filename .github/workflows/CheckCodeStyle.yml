@@ -28,7 +28,12 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
+      - name: LS (debug)
+        working-directory: ${{env.BUILD_DIRECTORY}}
+        run: ls
+
       - name: Check C++ code style using CLang Tools
+        working-directory: ${{env.BUILD_DIRECTORY}}
         # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
         # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd
