@@ -1,8 +1,8 @@
 #!/usr/bin/env pwsh
 
-if ($args.Count -gt 2 -Or $args.Count -lt 1)
+if ($args.Count -gt 1)
 {
-    echo "Usage: <script> <path to compilation database> [clang-tidy-version-major]"
+    echo "Usage: <script> <path to compilation database>"
     exit -1
 }
 
@@ -12,18 +12,7 @@ $CompilationDatabase = $args[0]
 if (-Not(Test-Path $CompilationDatabase -PathType Leaf))
 {
     echo "Unable to open compilation database $CompilationDatabase!"
-    exit - 2
-}
-
-if ($args.Count -eq 2)
-{
-    $CLangTidyExecutable += "-" + $args[1]
-}
-
-if (-Not(Get-Command $CLangTidyExecutable))
-{
-    echo "Unable to find $CLangTidyExecutable in path!"
-    exit -3
+    exit -2
 }
 
 $Sources = @()
