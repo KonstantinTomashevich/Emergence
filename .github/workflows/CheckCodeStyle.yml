@@ -22,7 +22,7 @@ jobs:
           submodules: true
 
       - name: Install CLang Tidy
-        run: sudo apt-get install clang-tidy-12
+        run: sudo apt-get install llvm-toolchain-12
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
