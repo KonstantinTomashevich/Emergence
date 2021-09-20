@@ -32,10 +32,10 @@ jobs:
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          cmake -G Ninja ${{env.GITHUB_WORKSPACE}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Check C++ code style using CLang Tools
-        working-directory: ${{env.GITHUB_WORKSPACE}}
+        working-directory: ${{github.workspace}}
         # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
         # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd

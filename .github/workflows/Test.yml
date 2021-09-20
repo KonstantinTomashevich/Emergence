@@ -64,7 +64,7 @@ jobs:
 
       - name: Collect and check coverage data
         if: env.ENABLE_COVERAGE == 'yes'
-        working-directory: ${{env.GITHUB_WORKSPACE}}
+        working-directory: ${{github.workspace}}
         # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
         # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd
