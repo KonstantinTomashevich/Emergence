@@ -12,7 +12,7 @@ jobs:
         shell: pwsh
 
     env:
-      BUILD_DIRECTORY: ${{github.workspace}}/Build
+      BUILD_DIRECTORY: ${{github.workspace}}\Build
 
     runs-on: windows-latest
     steps:
@@ -35,4 +35,4 @@ jobs:
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           powershell .\Script\CodeStyle\CheckCLangFormat.ps1
-          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}/compile_commands.json"
+          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
