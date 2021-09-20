@@ -14,15 +14,12 @@ jobs:
     env:
       BUILD_DIRECTORY: ${{github.workspace}}/Build
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
-
-      - name: Install CLang Tidy
-        run: sudo apt-get install llvm-toolchain-12
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
@@ -31,8 +28,11 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Check C++ code style using CLang Format
-        run: .\Script\CodeStyle\CheckCLangFormat.ps1 12
-
-      - name: Check C++ code using CLang Tidy
-        run: .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}/compile_commands.json"
+      - name: Check C++ code style using CLang Tools
+        # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
+        # Visual Studio environment, which is currently possible only through standard command line.
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          powershell .\Script\CodeStyle\CheckCLangFormat.ps1
+          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}/compile_commands.json"
