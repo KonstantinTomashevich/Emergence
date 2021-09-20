@@ -26,4 +26,20 @@ foreach ($RootChild in $RootChildren)
     }
 }
 
-& $CLangTidyExecutable $Sources -p="$CompilationDatabase"
+$Output = & $CLangTidyExecutable $Sources -p="$CompilationDatabase"
+$Errors = $Output | Select-String -Pattern "\.((hpp)|(cpp)):[0-9]+:[0-9]+:\serror:"
+
+if ($Errors.Count -gt 0)
+{
+    echo "Check failed! Errors:"
+    foreach ($Error in $Errors)
+    {
+        echo $Error
+    }
+
+    exit -3
+}
+else
+{
+    exit 0
+}
