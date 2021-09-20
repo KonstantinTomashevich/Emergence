@@ -21,12 +21,15 @@ jobs:
         with:
           submodules: true
 
+      - name: Install Ninja
+        run: choco install ninja
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake -G "NMake Makefiles" $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake -G Ninja $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Check C++ code style using CLang Tools
         working-directory: ${{env.GITHUB_WORKSPACE}}
