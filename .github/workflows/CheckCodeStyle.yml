@@ -31,7 +31,7 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: >
           cmake -G Ninja $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-                -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+          -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
 
       - name: Check C++ code style using CLang Tools
         working-directory: ${{env.GITHUB_WORKSPACE}}
