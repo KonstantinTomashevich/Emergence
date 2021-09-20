@@ -43,4 +43,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CodestyleCheckDebug
-          path: ${{env.GITHUB_WORKSPACE}}
+          path: |
+            ${{env.BUILD_DIRECTORY}}
+            ${{env.GITHUB_WORKSPACE}}
