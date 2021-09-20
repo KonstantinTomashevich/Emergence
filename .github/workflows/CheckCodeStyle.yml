@@ -32,4 +32,4 @@ jobs:
         run: .\Script\CodeStyle\CheckCLangFormat.ps1 12
 
       - name: Check C++ code using CLang Tidy
-        run: .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}/compile_commands.json" 12
+        run: .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}/compile_commands.json"
