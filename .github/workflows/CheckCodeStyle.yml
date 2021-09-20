@@ -28,12 +28,8 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: LS (debug)
-        working-directory: ${{env.BUILD_DIRECTORY}}
-        run: ls
-
       - name: Check C++ code style using CLang Tools
-        working-directory: ${{env.BUILD_DIRECTORY}}
+        working-directory: ${{env.GITHUB_WORKSPACE}}
         # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
         # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd
@@ -41,3 +37,10 @@ jobs:
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           powershell .\Script\CodeStyle\CheckCLangFormat.ps1
           powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
+
+      - name: Upload everything (Debug)
+        if: ${{ success() }} || ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: CodestyleCheckDebug
+          path: ${{env.GITHUB_WORKSPACE}}
