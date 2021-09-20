@@ -32,7 +32,7 @@ jobs:
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          cmake -G Ninja $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake -G Ninja ${{env.GITHUB_WORKSPACE}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Check C++ code style using CLang Tools
         working-directory: ${{env.GITHUB_WORKSPACE}}
