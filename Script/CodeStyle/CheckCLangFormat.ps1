@@ -25,3 +25,11 @@ foreach ($RootChild in $RootChildren)
 }
 
 & $CLangFormatExecutable --Werror --dry-run $Sources
+if ($?)
+{
+    exit 0
+}
+else
+{
+    exit -3
+}
