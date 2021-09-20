@@ -37,6 +37,6 @@ jobs:
         # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          powershell .\Script\CodeStyle\CheckCLangFormat.ps1
-          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&     \
+            powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&                                                      \
+            powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
