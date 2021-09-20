@@ -26,7 +26,9 @@ public:
         /// Prepared query constructs cursors.
         friend class ModifyRayIntersectionQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
+        /// Cursor implementation could copy Ray inside to be more cache coherent and Ray could contain doubles,
+        /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 19u);
 
         explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };

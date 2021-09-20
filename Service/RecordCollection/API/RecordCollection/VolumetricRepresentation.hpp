@@ -32,7 +32,9 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
+        /// Cursor implementation could copy Shape inside to be more cache coherent and Shape could contain doubles,
+        /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 21u);
 
         explicit ShapeIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -48,7 +50,8 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 21u);
+        /// About uint64_t: see comment in ShapeIntersectionReadCursor.
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 21u);
 
         explicit ShapeIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -65,7 +68,8 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
+        /// About uint64_t: same as in comment in ShapeIntersectionReadCursor, but for Ray caching.
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 19u);
 
         explicit RayIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -81,7 +85,8 @@ public:
         /// VolumetricRepresentation constructs its cursors.
         friend class VolumetricRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 19u);
+        /// About uint64_t: see comment in RayIntersectionReadCursor.
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 19u);
 
         explicit RayIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };

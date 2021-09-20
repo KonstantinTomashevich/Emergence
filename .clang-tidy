@@ -1,0 +1,53 @@
+---
+Checks: '-*,readability-identifier-naming'
+FormatStyle: file
+HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"
+WarningsAsErrors: '*'
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ClassMemberCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ClassMethodCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.ConstantMemberCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ConstantParamterCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ConstantParameterPrefix
+    value: '_'
+  - key: readability-identifier-naming.EnumCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.EnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.FunctionCase
+    value: 'CamelCase'
+  # `begin` and `end` functions are allowed, because they are used in foreach.
+  # Custom casts are allowed to use `*_cast` names to blend in with standard casts.
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    value: '(begin|end|([a-z]+_cast))'
+  - key: readability-identifier-naming.LocalConstantCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: 'UPPER_CASE'
+  # We need to define _CRT* macros to silence MSVC warnings about C standard functions safety.
+  - key: readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: '_CRT.*'
+  - key: readability-identifier-naming.NamespaceCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ParameterCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ParameterPrefix
+    value: '_'
+  - key: readability-identifier-naming.ScopedEnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.TypeTemplateParameterCase
+    value: 'CamelCase'
+  # TODO: Adhok to silence CLang Tidy internal bug when C++ 20 is used.
+  - key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp
+    value: 'expr-type'
+  - key: readability-identifier-naming.VariableCase
+    value: 'camelBack'
+...

@@ -199,14 +199,14 @@ PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexc
     return static_cast<PlainMapping *> (realloc (this, CalculateMappingSize (_newFieldCapacity)));
 }
 
-PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept
+PlainMapping::ConstIterator begin (const PlainMapping &_mapping) noexcept
 {
-    return mapping.Begin ();
+    return _mapping.Begin ();
 }
 
-PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept
+PlainMapping::ConstIterator end (const PlainMapping &_mapping) noexcept
 {
-    return mapping.End ();
+    return _mapping.End ();
 }
 
 PlainMappingBuilder::~PlainMappingBuilder ()

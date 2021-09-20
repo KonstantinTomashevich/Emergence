@@ -43,7 +43,7 @@
     ._field =                                                                                                          \
         builder.RegisterString (#_field, offsetof (Type, _field),                                                      \
                                 sizeof (decltype (Type::_field)::value_type) *                                         \
-                                    Emergence::MappingRegistration::ExtractArraySize<decltype (Type::_field)>::Value),
+                                    Emergence::MappingRegistration::ExtractArraySize<decltype (Type::_field)>::VALUE),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::BLOCK.
 /// \invariant Class must contain `_field` field of type `std::array`.
@@ -52,7 +52,7 @@
     ._field =                                                                                                          \
         builder.RegisterBlock (#_field, offsetof (Type, _field),                                                       \
                                sizeof (decltype (Type::_field)::value_type) *                                          \
-                                   Emergence::MappingRegistration::ExtractArraySize<decltype (Type::_field)>::Value),
+                                   Emergence::MappingRegistration::ExtractArraySize<decltype (Type::_field)>::VALUE),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::NESTED_OBJECT.
 /// \invariant Class must contain `_field` field of any type, that has static Reflect method that
@@ -100,6 +100,6 @@ struct ExtractArraySize;
 template <typename Type, std::size_t Size>
 struct ExtractArraySize<std::array<Type, Size>>
 {
-    static constexpr std::size_t Value = Size;
+    static constexpr std::size_t VALUE = Size;
 };
 } // namespace Emergence::MappingRegistration

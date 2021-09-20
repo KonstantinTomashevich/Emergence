@@ -183,9 +183,9 @@ private:
     FieldData fields[0u];
 };
 
-PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept;
+PlainMapping::ConstIterator begin (const PlainMapping &_mapping) noexcept;
 
-PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept;
+PlainMapping::ConstIterator end (const PlainMapping &_mapping) noexcept;
 
 class PlainMappingBuilder
 {

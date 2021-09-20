@@ -596,7 +596,7 @@ void OrderedIndex::OnWriterClosed () noexcept
         auto deletedRecordsIterator = deletedRecordIndices.begin ();
         const auto deletedRecordsEnd = deletedRecordIndices.end ();
 
-        auto AdvanceToNextCheckpoint = [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator,
+        auto advanceToNextCheckpoint = [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator,
                                         &deletedRecordsEnd] () -> std::size_t
         {
             std::size_t nextCheckpoint;
@@ -625,10 +625,10 @@ void OrderedIndex::OnWriterClosed () noexcept
         };
 
         std::size_t offset = 0u;
-        std::size_t intervalBegin = AdvanceToNextCheckpoint ();
+        std::size_t intervalBegin = advanceToNextCheckpoint ();
         std::size_t intervalEnd;
 
-        auto OffsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
+        auto offsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
         {
             std::size_t intervalSize = intervalEnd - intervalBegin - 1u;
             assert (intervalSize == 0u || intervalBegin + 1u < records.size ());
@@ -650,13 +650,13 @@ void OrderedIndex::OnWriterClosed () noexcept
 
         while (changedRecordsIterator != changedRecordsEnd || deletedRecordsIterator != deletedRecordsEnd)
         {
-            intervalEnd = AdvanceToNextCheckpoint ();
-            OffsetInterval ();
+            intervalEnd = advanceToNextCheckpoint ();
+            offsetInterval ();
             intervalBegin = intervalEnd;
         }
 
         intervalEnd = records.size ();
-        OffsetInterval ();
+        offsetInterval ();
         records.resize (intervalEnd - offset);
         deletedRecordIndices.clear ();
     }

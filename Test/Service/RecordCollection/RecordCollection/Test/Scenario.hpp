@@ -125,5 +125,5 @@ struct Scenario final
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept;
 } // namespace Emergence::RecordCollection::Test

@@ -36,16 +36,16 @@ uint64_t ExecuteScenario (ByteHasher &_hasher, const Scenario &_scenario)
     for (const auto &operation : _scenario)
     {
         std::visit (
-            [&_hasher] (const auto &unwrappedOperation)
+            [&_hasher] (const auto &_unwrappedOperation)
             {
-                using Type = std::decay_t<decltype (unwrappedOperation)>;
+                using Type = std::decay_t<decltype (_unwrappedOperation)>;
                 if constexpr (std::is_same_v<Type, AppendOne>)
                 {
-                    _hasher.Append (static_cast<const AppendOne &> (unwrappedOperation).byte);
+                    _hasher.Append (static_cast<const AppendOne &> (_unwrappedOperation).byte);
                 }
                 else if constexpr (std::is_same_v<Type, AppendMany>)
                 {
-                    const auto &operation = static_cast<const AppendMany &> (unwrappedOperation);
+                    const auto &operation = static_cast<const AppendMany &> (_unwrappedOperation);
                     REQUIRE (operation.bytes);
                     _hasher.Append (operation.bytes, operation.count);
                 }
@@ -69,9 +69,9 @@ uint64_t ExecuteScenario (const Scenario &_scenario)
 
 BEGIN_SUITE (ByteHasher)
 
-static const uint8_t firstSequence[] = {126u, 74u, 243u, 12u, 63u, 187u};
+static const uint8_t FIRST_SEQUENCE[] = {126u, 74u, 243u, 12u, 63u, 187u};
 
-static const uint8_t secondSequence[] = {11u, 6u, 221u, 154u, 37u};
+static const uint8_t SECOND_SEQUENCE[] = {11u, 6u, 221u, 154u, 37u};
 
 TEST_CASE (OneByte)
 {
@@ -98,7 +98,7 @@ TEST_CASE (OneByteSequences)
 TEST_CASE (OneSequence)
 {
     Emergence::Hashing::Test::Scenario scenario = {
-        Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
+        Emergence::Hashing::Test::AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)},
     };
 
     CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
@@ -108,8 +108,8 @@ TEST_CASE (OneSequence)
 TEST_CASE (OneCompositeSequence)
 {
     Emergence::Hashing::Test::Scenario scenario = {
-        Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
-        Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
+        Emergence::Hashing::Test::AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)},
+        Emergence::Hashing::Test::AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)},
     };
 
     CHECK_EQUAL (Emergence::Hashing::Test::ExecuteScenario (scenario),
@@ -141,22 +141,22 @@ TEST_CASE (DifferentByteSequences)
 TEST_CASE (DifferentSequences)
 {
     CHECK_NOT_EQUAL (Emergence::Hashing::Test::ExecuteScenario ({
-                         Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
+                         Emergence::Hashing::Test::AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)},
                      }),
                      Emergence::Hashing::Test::ExecuteScenario ({
-                         Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
+                         Emergence::Hashing::Test::AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)},
                      }));
 }
 
 TEST_CASE (DifferentCompositeSequences)
 {
     CHECK_NOT_EQUAL (Emergence::Hashing::Test::ExecuteScenario ({
-                         Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
-                         Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
+                         Emergence::Hashing::Test::AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)},
+                         Emergence::Hashing::Test::AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)},
                      }),
                      Emergence::Hashing::Test::ExecuteScenario ({
-                         Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
-                         Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
+                         Emergence::Hashing::Test::AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)},
+                         Emergence::Hashing::Test::AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)},
                      }));
 }
 
@@ -179,13 +179,13 @@ TEST_CASE (DifferentSequencesThroughOneHasher)
     Emergence::Hashing::ByteHasher hasher;
     uint64_t firstResult = Emergence::Hashing::Test::ExecuteScenario (
         hasher, {
-                    Emergence::Hashing::Test::AppendMany {firstSequence, sizeof (firstSequence)},
+                    Emergence::Hashing::Test::AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)},
                 });
 
     hasher.Clear ();
     uint64_t secondResult = Emergence::Hashing::Test::ExecuteScenario (
         hasher, {
-                    Emergence::Hashing::Test::AppendMany {secondSequence, sizeof (secondSequence)},
+                    Emergence::Hashing::Test::AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)},
                 });
 
     CHECK_NOT_EQUAL (firstResult, secondResult);

@@ -724,9 +724,9 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept
 {
-    first.insert (first.end (), second.begin (), second.end ());
-    return first;
+    _first.insert (_first.end (), _second.begin (), _second.end ());
+    return _first;
 }
 } // namespace Emergence::RecordCollection::Test

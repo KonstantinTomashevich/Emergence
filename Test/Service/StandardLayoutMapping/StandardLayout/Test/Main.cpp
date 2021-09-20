@@ -4,6 +4,8 @@
 #include <Testing/SetupMain.hpp>
 
 // Use "include marker", so linker will not omit translation units with autoregistered tests.
-static const bool mappingBuilderTestIncludeMarker = Emergence::StandardLayout::Test::MappingBuilderTestIncludeMarker ();
+static const bool MAPPING_BUILDER_TEST_INCLUDE_MARKER =
+    Emergence::StandardLayout::Test::MappingBuilderTestIncludeMarker ();
 
-static const bool visualizationTestIncludeMarker = Emergence::StandardLayout::Test::VisualizationTestIncludeMarker ();
+static const bool VISUALIZATION_TEST_INCLUDE_MARKER =
+    Emergence::StandardLayout::Test::VisualizationTestIncludeMarker ();

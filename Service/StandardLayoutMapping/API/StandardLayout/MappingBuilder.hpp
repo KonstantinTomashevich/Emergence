@@ -81,7 +81,7 @@ public:
 
     /// \brief Registers nested object using its Mapping.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterNestedObject (const char *_name, std::size_t _offset, const Mapping &objectMapping) noexcept;
+    FieldId RegisterNestedObject (const char *_name, std::size_t _offset, const Mapping &_objectMapping) noexcept;
 
     MappingBuilder &operator= (const MappingBuilder &_other) = delete;
 

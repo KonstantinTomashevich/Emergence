@@ -29,7 +29,7 @@ struct TypeOperations final
                                                 const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
 
     VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                std::size_t divider) const noexcept;
+                                                std::size_t _divider) const noexcept;
 
     std::size_t TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
@@ -1272,10 +1272,10 @@ VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Divide (
 
 template <typename Type>
 VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                                  std::size_t divider) const noexcept
+                                                                  std::size_t _divider) const noexcept
 {
-    assert (divider);
-    return *reinterpret_cast<const Type *> (&_value) / static_cast<Type> (divider);
+    assert (_divider);
+    return *reinterpret_cast<const Type *> (&_value) / static_cast<Type> (_divider);
 }
 
 template <typename Type>

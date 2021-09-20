@@ -180,7 +180,7 @@ struct Scenario final
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept;
 
-std::vector<Task> operator+ (std::vector<Task> first, const Task &_task) noexcept;
+std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task) noexcept;
 } // namespace Emergence::Warehouse::Test

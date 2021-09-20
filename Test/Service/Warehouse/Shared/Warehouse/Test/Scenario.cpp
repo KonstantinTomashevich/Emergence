@@ -769,21 +769,21 @@ namespace TestReferenceApiDrivers
 template <typename T, typename Head, typename... Tail>
 struct OneOf
 {
-    static constexpr bool value = std::is_same_v<T, Head> || OneOf<T, Tail...>::value;
+    static constexpr bool VALUE = std::is_same_v<T, Head> || OneOf<T, Tail...>::VALUE;
 };
 
 template <typename T, typename Head>
 struct OneOf<T, Head>
 {
-    static constexpr bool value = std::is_same_v<T, Head>;
+    static constexpr bool VALUE = std::is_same_v<T, Head>;
 };
 
 template <typename Type>
-concept SingletonQueryPreparation = OneOf<Type, PrepareFetchSingletonQuery, PrepareModifySingletonQuery>::value;
+concept SingletonQueryPreparation = OneOf<Type, PrepareFetchSingletonQuery, PrepareModifySingletonQuery>::VALUE;
 
 template <typename Type>
 concept SequenceQueryPreparation =
-    OneOf<Type, PrepareInsertShortTermQuery, PrepareFetchSequenceQuery, PrepareModifySequenceQuery>::value;
+    OneOf<Type, PrepareInsertShortTermQuery, PrepareFetchSequenceQuery, PrepareModifySequenceQuery>::VALUE;
 
 template <typename Type>
 concept IndexedQueryPreparation = OneOf<Type,
@@ -797,7 +797,7 @@ concept IndexedQueryPreparation = OneOf<Type,
                                         PrepareFetchShapeIntersectionQuery,
                                         PrepareModifyShapeIntersectionQuery,
                                         PrepareFetchRayIntersectionQuery,
-                                        PrepareModifyRayIntersectionQuery>::value;
+                                        PrepareModifyRayIntersectionQuery>::VALUE;
 
 static std::vector<Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void *_object)
 {
@@ -1070,20 +1070,20 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept
 {
-    for (const Task &task : second)
+    for (const Task &task : _second)
     {
-        first.emplace_back (task);
+        _first.emplace_back (task);
     }
 
-    return first;
+    return _first;
 }
 
-std::vector<Task> operator+ (std::vector<Task> first, const Task &_task) noexcept
+std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task) noexcept
 {
-    first.emplace_back (_task);
-    return first;
+    _first.emplace_back (_task);
+    return _first;
 }
 
 } // namespace Emergence::Warehouse::Test

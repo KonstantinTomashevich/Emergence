@@ -214,7 +214,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 {
     CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
-        [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
+        [&_task, mapping {cursorData.objectMapping}] (auto &_cursor)
         {
             if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
@@ -227,12 +227,12 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                 // Brute force counting is the most efficient solution there,
                 // because tests check small vectors of objects, usually not more than 5.
-                auto Count = [_mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
+                auto count = [mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
                 {
                     std::size_t count = 0u;
-                    for (const void *_otherObject : _objects)
+                    for (const void *otherObject : _objects)
                     {
-                        if (memcmp (_objectToSearch, _otherObject, _mapping.GetObjectSize ()) == 0)
+                        if (memcmp (_objectToSearch, otherObject, mapping.GetObjectSize ()) == 0)
                         {
                             ++count;
                         }
@@ -243,13 +243,13 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                 for (const void *objectFromCursor : objects)
                 {
-                    const std::size_t countInCursor = Count (objects, objectFromCursor);
-                    const std::size_t countExpected = Count (_task.expectedObjects, objectFromCursor);
+                    const std::size_t countInCursor = count (objects, objectFromCursor);
+                    const std::size_t countExpected = count (_task.expectedObjects, objectFromCursor);
                     CHECK_EQUAL (countInCursor, countExpected);
 
                     if (countInCursor != countExpected)
                     {
-                        LOG ("Checked object: ", ObjectToString (_mapping, objectFromCursor));
+                        LOG ("Checked object: ", ObjectToString (mapping, objectFromCursor));
                     }
                 }
             }
@@ -266,7 +266,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorEdit &_tas
 {
     CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
-        [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
+        [&_task, mapping {cursorData.objectMapping}] (auto &_cursor)
         {
             if constexpr (ReturnsEditablePointer<std::decay_t<decltype (_cursor)>>)
             {
@@ -276,7 +276,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorEdit &_tas
 
                 if (object)
                 {
-                    memcpy (object, _task.copyFromObject, _mapping.GetObjectSize ());
+                    memcpy (object, _task.copyFromObject, mapping.GetObjectSize ());
                 }
             }
             else
