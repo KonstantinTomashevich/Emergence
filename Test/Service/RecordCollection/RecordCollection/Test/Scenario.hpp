@@ -115,9 +115,9 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 
 struct Scenario final
 {
-    void Execute () const noexcept;
+    void Execute () const;
 
-    VisualGraph::Graph ExecuteAndVisualize () const noexcept;
+    VisualGraph::Graph ExecuteAndVisualize () const;
 
     StandardLayout::Mapping mapping;
     std::vector<Task> tasks;
@@ -125,5 +125,5 @@ struct Scenario final
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept;
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second);
 } // namespace Emergence::RecordCollection::Test

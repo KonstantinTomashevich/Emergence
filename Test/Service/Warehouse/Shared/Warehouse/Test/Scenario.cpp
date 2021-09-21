@@ -1001,7 +1001,7 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 }
 } // namespace TestReferenceApiDrivers
 
-static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization *_visualizationOutput) noexcept
+static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization *_visualizationOutput)
 {
     ExecutionContext context;
     LOG ((std::stringstream () << _scenario).str ());
@@ -1040,12 +1040,12 @@ static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization 
     }
 }
 
-void Scenario::Execute () const noexcept
+void Scenario::Execute () const
 {
     ExecuteScenario (*this, nullptr);
 }
 
-Scenario::Visualization Scenario::ExecuteAndVisualize () const noexcept
+Scenario::Visualization Scenario::ExecuteAndVisualize () const
 {
     Scenario::Visualization visualization;
     ExecuteScenario (*this, &visualization);
@@ -1071,7 +1071,7 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second)
 {
     for (const Task &task : _second)
     {
@@ -1081,7 +1081,7 @@ std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task
     return _first;
 }
 
-std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task) noexcept
+std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task)
 {
     _first.emplace_back (_task);
     return _first;

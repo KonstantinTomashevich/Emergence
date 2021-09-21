@@ -1,7 +1,7 @@
 ---
 # TODO: Currently `noexcept` means: if function will throw something, program should just crash.
 #       Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
-Checks: '-*,bugprone-*,-bugprone-exception-escape,readability-identifier-naming'
+Checks: '-*,bugprone-*,-bugprone-exception-escape,llvm-namespace-comment,readability-identifier-naming'
 FormatStyle: file
 HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"
 WarningsAsErrors: '*'

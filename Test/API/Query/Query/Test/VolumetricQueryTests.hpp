@@ -6,21 +6,21 @@
 
 namespace Emergence::Query::Test::VolumetricQuery
 {
-Scenario RayIntersections2D () noexcept;
+Scenario RayIntersections2D ();
 
-Scenario ShapeIntersections2D () noexcept;
+Scenario ShapeIntersections2D ();
 
-Scenario Duplicates () noexcept;
+Scenario Duplicates ();
 
-Scenario Edition () noexcept;
+Scenario Edition ();
 
-Scenario Intersections3D () noexcept;
+Scenario Intersections3D ();
 
-Scenario MultipleSourcesEdition () noexcept;
+Scenario MultipleSourcesEdition ();
 
-Scenario MultipleSourcesDeletion () noexcept;
+Scenario MultipleSourcesDeletion ();
 
-Scenario IntegerIntersections () noexcept;
+Scenario IntegerIntersections ();
 } // namespace Emergence::Query::Test::VolumetricQuery
 
 #define REGISTER_VOLUMETRIC_QUERY_TEST(Driver, TestName)                                                               \

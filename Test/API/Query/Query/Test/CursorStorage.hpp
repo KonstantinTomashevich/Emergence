@@ -97,7 +97,7 @@ void AddObject (CursorStorage<Cursor> &_storage,
                 const StandardLayout::Mapping &_objectMapping,
                 Cursor &&_cursor)
 {
-    AddObject (_storage, _name, CursorData<Cursor> {std::forward (_cursor), _objectMapping});
+    AddObject (_storage, _name, CursorData<Cursor> {std::forward<Cursor> (_cursor), _objectMapping});
 }
 
 template <typename Cursor>

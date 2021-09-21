@@ -6,43 +6,43 @@
 
 namespace Emergence::Query::Test::RangeQuery
 {
-Scenario SimpleLookups () noexcept;
+Scenario SimpleLookups ();
 
-Scenario OnStringField () noexcept;
+Scenario OnStringField ();
 
-Scenario WithDuplicates () noexcept;
+Scenario WithDuplicates ();
 
-Scenario Edition () noexcept;
+Scenario Edition ();
 
-Scenario Deletion () noexcept;
+Scenario Deletion ();
 
-Scenario EditionAndDeletionFromDescendingCursor () noexcept;
+Scenario EditionAndDeletionFromDescendingCursor ();
 
-Scenario MultipleSourcesEditionAndDeletion () noexcept;
+Scenario MultipleSourcesEditionAndDeletion ();
 
-Scenario OrderingInt8 () noexcept;
+Scenario OrderingInt8 ();
 
-Scenario OrderingInt16 () noexcept;
+Scenario OrderingInt16 ();
 
-Scenario OrderingInt32 () noexcept;
+Scenario OrderingInt32 ();
 
-Scenario OrderingInt64 () noexcept;
+Scenario OrderingInt64 ();
 
-Scenario OrderingUInt8 () noexcept;
+Scenario OrderingUInt8 ();
 
-Scenario OrderingUInt16 () noexcept;
+Scenario OrderingUInt16 ();
 
-Scenario OrderingUInt32 () noexcept;
+Scenario OrderingUInt32 ();
 
-Scenario OrderingUInt64 () noexcept;
+Scenario OrderingUInt64 ();
 
-Scenario OrderingFloat () noexcept;
+Scenario OrderingFloat ();
 
-Scenario OrderingDouble () noexcept;
+Scenario OrderingDouble ();
 
-Scenario OrderingBlock () noexcept;
+Scenario OrderingBlock ();
 
-Scenario OrderingString () noexcept;
+Scenario OrderingString ();
 } // namespace Emergence::Query::Test::RangeQuery
 
 #define REGISTER_RANGE_QUERY_TEST(Driver, TestName)                                                                    \

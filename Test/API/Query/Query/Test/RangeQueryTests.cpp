@@ -38,7 +38,7 @@ static Storage RequestOrderingStorage (const StandardLayout::FieldId &_field)
             }};
 }
 
-Scenario SimpleLookups () noexcept
+Scenario SimpleLookups ()
 {
     return {
         {
@@ -74,7 +74,7 @@ Scenario SimpleLookups () noexcept
         }};
 }
 
-Scenario OnStringField () noexcept
+Scenario OnStringField ()
 {
     return {
         {
@@ -103,7 +103,7 @@ Scenario OnStringField () noexcept
         }};
 }
 
-Scenario WithDuplicates () noexcept
+Scenario WithDuplicates ()
 {
     return {{
                 RequestPlayerStorage ({&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
@@ -127,7 +127,7 @@ Scenario WithDuplicates () noexcept
             }};
 }
 
-Scenario Edition () noexcept
+Scenario Edition ()
 {
     return {{
                 RequestPlayerStorage ({&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
@@ -156,7 +156,7 @@ Scenario Edition () noexcept
             }};
 }
 
-Scenario Deletion () noexcept
+Scenario Deletion ()
 {
     return {
         {
@@ -179,7 +179,7 @@ Scenario Deletion () noexcept
         }};
 }
 
-Scenario EditionAndDeletionFromDescendingCursor () noexcept
+Scenario EditionAndDeletionFromDescendingCursor ()
 {
     return {
         {
@@ -216,7 +216,7 @@ Scenario EditionAndDeletionFromDescendingCursor () noexcept
         }};
 }
 
-Scenario MultipleSourcesEditionAndDeletion () noexcept
+Scenario MultipleSourcesEditionAndDeletion ()
 {
     return {{
                 RequestPlayerStorage ({&XAVIER_2_ALIVE_POISONED, &HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED,
@@ -254,7 +254,7 @@ Scenario MultipleSourcesEditionAndDeletion () noexcept
             }};
 }
 
-Scenario OrderingInt8 () noexcept
+Scenario OrderingInt8 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int8),
@@ -263,7 +263,7 @@ Scenario OrderingInt8 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingInt16 () noexcept
+Scenario OrderingInt16 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int16),
@@ -272,7 +272,7 @@ Scenario OrderingInt16 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_0}}}};
 }
 
-Scenario OrderingInt32 () noexcept
+Scenario OrderingInt32 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int32),
@@ -281,7 +281,7 @@ Scenario OrderingInt32 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingInt64 () noexcept
+Scenario OrderingInt64 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().int64),
@@ -290,7 +290,7 @@ Scenario OrderingInt64 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}}};
 }
 
-Scenario OrderingUInt8 () noexcept
+Scenario OrderingUInt8 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint8),
@@ -299,7 +299,7 @@ Scenario OrderingUInt8 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingUInt16 () noexcept
+Scenario OrderingUInt16 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint16),
@@ -308,7 +308,7 @@ Scenario OrderingUInt16 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingUInt32 () noexcept
+Scenario OrderingUInt32 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint32),
@@ -317,7 +317,7 @@ Scenario OrderingUInt32 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingUInt64 () noexcept
+Scenario OrderingUInt64 ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().uint64),
@@ -326,7 +326,7 @@ Scenario OrderingUInt64 () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_2}}}};
 }
 
-Scenario OrderingFloat () noexcept
+Scenario OrderingFloat ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().floating),
@@ -335,7 +335,7 @@ Scenario OrderingFloat () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingDouble () noexcept
+Scenario OrderingDouble ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().doubleFloating),
@@ -344,7 +344,7 @@ Scenario OrderingDouble () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_1, &ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2}}}};
 }
 
-Scenario OrderingBlock () noexcept
+Scenario OrderingBlock ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().block),
@@ -353,7 +353,7 @@ Scenario OrderingBlock () noexcept
              CursorCheckAllOrdered {"all", {&ALL_FIELD_TYPES_0, &ALL_FIELD_TYPES_2, &ALL_FIELD_TYPES_1}}}};
 }
 
-Scenario OrderingString () noexcept
+Scenario OrderingString ()
 {
     return {{
                 RequestOrderingStorage (AllFieldTypesStructure::Reflect ().string),

@@ -6,13 +6,13 @@
 
 namespace Emergence::Query::Test::UnorderedSequenceQuery
 {
-Scenario Read () noexcept;
+Scenario Read ();
 
-Scenario Edit () noexcept;
+Scenario Edit ();
 
-Scenario Delete () noexcept;
+Scenario Delete ();
 
-Scenario EditAndDelete () noexcept;
+Scenario EditAndDelete ();
 } // namespace Emergence::Query::Test::UnorderedSequenceQuery
 
 #define REGISTER_UNORDERED_SEQUENCE_QUERY_TEST(Driver, TestName)                                                       \

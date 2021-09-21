@@ -672,7 +672,7 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 }
 } // namespace ReferenceApiTestImporters
 
-static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_graphOutput) noexcept
+static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_graphOutput)
 {
     ExecutionContext context {_scenario.mapping};
     LOG ((std::stringstream () << _scenario).str ());
@@ -694,12 +694,12 @@ static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_gra
     }
 }
 
-void Scenario::Execute () const noexcept
+void Scenario::Execute () const
 {
     ExecuteScenario (*this, nullptr);
 }
 
-VisualGraph::Graph Scenario::ExecuteAndVisualize () const noexcept
+VisualGraph::Graph Scenario::ExecuteAndVisualize () const
 {
     VisualGraph::Graph graph;
     ExecuteScenario (*this, &graph);
@@ -725,7 +725,7 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second)
 {
     _first.insert (_first.end (), _second.begin (), _second.end ());
     return _first;
