@@ -6,6 +6,7 @@
 #define EMERGENCE_FORWARD_ITERATOR_OPERATIONS(IteratorClass, ItemClass)                                                \
     IteratorClass (const IteratorClass &_other) noexcept;                                                              \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     IteratorClass (IteratorClass &&_other) noexcept;                                                                   \
                                                                                                                        \
     ~IteratorClass () noexcept;                                                                                        \
@@ -14,27 +15,29 @@
      * \return Item, to which iterator points.                                                                         \
      * \invariant Inside valid bounds, but not in the ending.                                                          \
      */                                                                                                                \
-    ItemClass operator* () const noexcept;                                                                             \
+    ItemClass operator* () const noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */        \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Move to next item.                                                                                       \
      * \invariant Inside valid bounds, but not in the ending.                                                          \
      */                                                                                                                \
-    IteratorClass &operator++ () noexcept;                                                                             \
+    IteratorClass &operator++ () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */        \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Move to next item.                                                                                       \
      * \return Unchanged instance of iterator.                                                                         \
      * \invariant Inside valid bounds, but not in the ending.                                                          \
      */                                                                                                                \
-    IteratorClass operator++ (int) noexcept;                                                                           \
+    IteratorClass operator++ (int) noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */      \
                                                                                                                        \
     bool operator== (const IteratorClass &_other) const noexcept;                                                      \
                                                                                                                        \
     bool operator!= (const IteratorClass &_other) const noexcept;                                                      \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     IteratorClass &operator= (const IteratorClass &_other) noexcept;                                                   \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     IteratorClass &operator= (IteratorClass &&_other) noexcept
 
 /// \brief Extends EMERGENCE_FORWARD_ITERATOR_OPERATIONS with backward movement operations.
@@ -45,11 +48,11 @@
      * \brief Move to previous item.                                                                                   \
      * \invariant Inside valid bounds, but not in the beginning.                                                       \
      */                                                                                                                \
-    IteratorClass &operator-- () noexcept;                                                                             \
+    IteratorClass &operator-- () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */        \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Move to previous item.                                                                                   \
      * \return Unchanged instance of iterator.                                                                         \
      * \invariant Inside valid bounds, but not in the beginning.                                                       \
      */                                                                                                                \
-    IteratorClass operator-- (int) noexcept
+    IteratorClass operator-- (int) noexcept /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */

@@ -11,6 +11,7 @@
 #define EMERGENCE_PREPARED_QUERY_OPERATIONS_COMMON(Class)                                                              \
     Class (const Class &_other) noexcept;                                                                              \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Class (Class &&_other) noexcept;                                                                                   \
                                                                                                                        \
     /*! \invariant There is no active cursors for this query. */                                                       \

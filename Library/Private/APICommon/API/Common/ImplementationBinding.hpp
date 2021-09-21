@@ -12,4 +12,4 @@
 /// \brief Adds implementation handle field with brief documentation comment.
 #define EMERGENCE_BIND_IMPLEMENTATION_HANDLE()                                                                         \
     /*! \brief Implementation handle. */                                                                               \
-    void *handle
+    void *handle /* NOLINT(bugprone-macro-parentheses): Fields can not be enclosed. */

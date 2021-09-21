@@ -10,6 +10,7 @@
         new (&data) ImplementationClass (block_cast<ImplementationClass> (_other.data));                               \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass::ServiceClass (ServiceClass &&_other) noexcept                                                        \
     {                                                                                                                  \
         new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_other.data)));                   \
@@ -25,6 +26,7 @@
         return *block_cast<ImplementationClass> (data);                                                                \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass &ServiceClass::operator++ () noexcept                                                                 \
     {                                                                                                                  \
         ++block_cast<ImplementationClass> (data);                                                                      \
@@ -39,6 +41,7 @@
 /// \brief Binds all edit cursor operations to implementation read cursor.
 /// \see EMERGENCE_EDIT_CURSOR_OPERATIONS
 #define EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION(ServiceClass, ImplementationClass)                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass::ServiceClass (ServiceClass &&_other) noexcept                                                        \
     {                                                                                                                  \
         new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_other.data)));                   \
@@ -54,12 +57,14 @@
         return *block_cast<ImplementationClass> (data);                                                                \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass &ServiceClass::operator~ () noexcept                                                                  \
     {                                                                                                                  \
         ~block_cast<ImplementationClass> (data);                                                                       \
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass &ServiceClass::operator++ () noexcept                                                                 \
     {                                                                                                                  \
         ++block_cast<ImplementationClass> (data);                                                                      \

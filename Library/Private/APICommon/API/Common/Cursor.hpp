@@ -9,6 +9,7 @@
 #define EMERGENCE_READ_CURSOR_OPERATIONS(Class)                                                                        \
     Class (const Class &_other) noexcept;                                                                              \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Class (Class &&_other) noexcept;                                                                                   \
                                                                                                                        \
     ~Class () noexcept;                                                                                                \
@@ -20,7 +21,7 @@
      * \brief Moves cursor to next item.                                                                               \
      * \invariant Cursor should not point to sequence ending.                                                          \
      */                                                                                                                \
-    Class &operator++ () noexcept;                                                                                     \
+    Class &operator++ () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */                \
                                                                                                                        \
     /*! Assigning cursors looks counter intuitive. */                                                                  \
     EMERGENCE_DELETE_ASSIGNMENT (Class)
@@ -36,6 +37,7 @@
      */                                                                                                                \
     Class (const Class &_other) = delete;                                                                              \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Class (Class &&_other) noexcept;                                                                                   \
                                                                                                                        \
     ~Class () noexcept;                                                                                                \
@@ -51,13 +53,13 @@
      * \warning Item type is unknown during compile time, therefore appropriate                                        \
      *          destructor should be called before item deletion.                                                      \
      */                                                                                                                \
-    Class &operator~ () noexcept;                                                                                      \
+    Class &operator~ () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */                 \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Checks current item for changes. Then moves cursor to next item.                                         \
      * \invariant Cursor should not point to ending.                                                                   \
      */                                                                                                                \
-    Class &operator++ () noexcept;                                                                                     \
+    Class &operator++ () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */                \
                                                                                                                        \
     /*! Assigning cursors looks counter intuitive. */                                                                  \
     EMERGENCE_DELETE_ASSIGNMENT (Class)

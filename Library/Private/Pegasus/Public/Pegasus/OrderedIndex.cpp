@@ -664,8 +664,9 @@ void OrderedIndex::OnWriterClosed () noexcept
 
     if (!changedRecords.empty ())
     {
-        if (changedRecords.size () >= static_cast<float> (changedRecords.size () + records.size ()) *
-                                          Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
+        if (static_cast<float> (changedRecords.size ()) >=
+            static_cast<float> (changedRecords.size () + records.size ()) *
+                Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
         {
             MassInsertionExecutor executor = StartMassInsertion ();
             for (const ChangedRecordInfo &info : changedRecords)

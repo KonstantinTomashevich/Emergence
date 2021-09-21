@@ -1,9 +1,14 @@
 ---
-Checks: '-*,readability-identifier-naming'
+# TODO: Currently `noexcept` means: if function will throw something, program should just crash.
+#       Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
+Checks: '-*,bugprone-*,-bugprone-exception-escape,readability-identifier-naming'
 FormatStyle: file
 HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"
 WarningsAsErrors: '*'
 CheckOptions:
+  # We are silencing CRT Secure warnings.
+  - key: bugprone-reserved-identifier.AllowedIdentifiers
+    value: '_CRT_SECURE_NO_WARNINGS'
   - key: readability-identifier-naming.ClassCase
     value: 'CamelCase'
   - key: readability-identifier-naming.ClassMemberCase

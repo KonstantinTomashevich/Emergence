@@ -615,6 +615,7 @@ TEST_CASE (FieldManipulations)
     CHECK (!emptyField);
 
     emptyField = std::move (firstField);
+    // NOLINTNEXTLINE(bugprone-use-after-move): Moved-out fields will have invalid handle.
     CHECK (!firstField);
     CHECK (emptyField);
 
