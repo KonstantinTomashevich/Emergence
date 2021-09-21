@@ -32,7 +32,7 @@ jobs:
         run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Run CLang Format
-        run: powershell .\Script\CodeStyle\CheckCLangFormat.ps1 12
+        run: .\Script\CodeStyle\CheckCLangFormat.ps1 12
 
       - name: Run CLang Tidy
-        run: powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
+        run: .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
