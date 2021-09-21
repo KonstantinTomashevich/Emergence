@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 #include <Pegasus/Constants/OrderedIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>

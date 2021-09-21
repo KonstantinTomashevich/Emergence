@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 
 #include <Galleon/CargoDeck.hpp>
 #include <Galleon/SingletonContainer.hpp>

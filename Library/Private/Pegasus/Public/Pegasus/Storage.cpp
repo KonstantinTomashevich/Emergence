@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <cassert>
+#include <cstring>
 
 #include <API/Common/Implementation/Iterator.hpp>
 

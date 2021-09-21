@@ -1,3 +1,4 @@
+#include <cstring>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
