@@ -14,25 +14,28 @@ jobs:
     env:
       BUILD_DIRECTORY: ${{github.workspace}}\Build
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
 
-      - name: Install Ninja
-        run: choco install ninja
+      - name: Install CLang Tidy
+        run: sudo apt-get install -y clang-tidy
 
       - name: Create build directory
+        working-directory: ${{github.workspace}}
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
-      - name: Configure and run CLang Tools checks
+      - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        shell: cmd
-        run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON &&
-          cd ${{github.workspace}} &&
-          powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
-          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
+        run: cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run CLang Format
+        working-directory: ${{github.workspace}}
+        run: powershell .\Script\CodeStyle\CheckCLangFormat.ps1 12
+
+      - name: Run CLang Tidy
+        working-directory: ${{github.workspace}}
+        run: powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
