@@ -51,8 +51,6 @@ if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
         else ()
             # Exceptions in GCC format.
             add_compile_options (
-                    # Allow raw memory access for classes. It's need for some low level optimizations in reflection.
-                    -Wno-error=class-memaccess
                     # Used by XXHash.
                     -Wno-error=array-bounds)
         endif ()

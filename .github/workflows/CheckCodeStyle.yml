@@ -12,32 +12,31 @@ jobs:
         shell: pwsh
 
     env:
-      BUILD_DIRECTORY: ${{github.workspace}}/Build
+      BUILD_DIRECTORY: ${{github.workspace}}\Build
 
-    runs-on: macos-11
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
 
-      - name: Install CLang Tools
-        shell: bash
-        run: |
-          ln -s "/usr/local/opt/llvm/bin/clang-format" "/usr/local/bin/clang-format"
-          ln -s "/usr/local/opt/llvm/bin/clang-tidy" "/usr/local/bin/clang-tidy"
-          clang-format --version
-          clang-tidy --version
+      - name: Install Ninja
+        run: choco install ninja
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Run CLang Format
-        run: .\Script\CodeStyle\CheckCLangFormat.ps1
-
-      - name: Run CLang Tidy
-        run: .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
+      - name: Check C++ code style using CLang Tools
+        working-directory: ${{github.workspace}}
+        # Code style checking scripts need to call llvm toolset executables, therefore it's required to import
+        # Visual Studio environment, which is currently possible only through standard command line.
+        shell: cmd
+        run: >
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
+          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
