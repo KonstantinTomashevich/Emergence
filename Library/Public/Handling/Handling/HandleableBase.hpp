@@ -16,6 +16,8 @@ public:
     /// It doesn't make sense to move references counters.
     HandleableBase (HandleableBase &&_other) = delete;
 
+    ~HandleableBase () = default;
+
     /// \brief Adds reference to counter.
     /// \invariant ::references should not overflow during increment.
     void RegisterReference () noexcept;

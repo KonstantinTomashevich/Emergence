@@ -1,7 +1,20 @@
 ---
 # TODO: Currently `noexcept` means: if function will throw something, program should just crash.
 #       Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
-Checks: '-*,bugprone-*,-bugprone-exception-escape,llvm-namespace-comment,readability-identifier-naming'
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-exception-escape,
+  cppcoreguidelines-avoid-goto,
+  cppcoreguidelines-avoid-non-const-global-variables,
+  cppcoreguidelines-interfaces-global-init,
+  cppcoreguidelines-narrowing-conversions,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-pro-type-static-cast-downcast,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-special-member-functions,
+  llvm-namespace-comment,
+  readability-identifier-naming
 FormatStyle: file
 HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"
 WarningsAsErrors: '*'

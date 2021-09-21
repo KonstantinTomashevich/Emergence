@@ -17,6 +17,8 @@ public:
 
     AccessCounter (AccessCounter &&_other) noexcept;
 
+    ~AccessCounter () = default;
+
     /// \details Thread safe.
     void RegisterReadAccess () noexcept;
 

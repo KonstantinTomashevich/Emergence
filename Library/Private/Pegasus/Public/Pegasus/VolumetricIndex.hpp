@@ -136,6 +136,8 @@ public:
 
         ~ShapeIntersectionCursorBase () noexcept;
 
+        EMERGENCE_DELETE_ASSIGNMENT (ShapeIntersectionCursorBase);
+
     protected:
         ShapeIntersectionCursorBase (VolumetricIndex *_index,
                                      const LeafSector &_sector,
@@ -207,6 +209,8 @@ public:
         RayIntersectionCursorBase (RayIntersectionCursorBase &&_other) noexcept;
 
         ~RayIntersectionCursorBase () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (RayIntersectionCursorBase);
 
     protected:
         RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
@@ -282,6 +286,8 @@ public:
 
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     VolumetricIndex (VolumetricIndex &&_other) = delete;
+
+    ~VolumetricIndex () = default;
 
     const InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
 

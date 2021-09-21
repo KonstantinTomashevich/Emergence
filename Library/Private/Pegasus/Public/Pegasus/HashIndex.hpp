@@ -37,6 +37,8 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     HashIndex (HashIndex &&_other) = delete;
 
+    ~HashIndex () = default;
+
     const InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &GetIndexedFields ()
         const noexcept;
 

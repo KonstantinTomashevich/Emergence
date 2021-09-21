@@ -151,6 +151,10 @@ public:
         Handling::Handle<ShortTermContainer> container;
     };
 
+    ShortTermContainer (const ShortTermContainer &_other) = delete;
+
+    ShortTermContainer (ShortTermContainer &&_other) = delete;
+
     InsertQuery Insert () noexcept;
 
     FetchQuery Fetch () noexcept;

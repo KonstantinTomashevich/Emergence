@@ -302,6 +302,10 @@ public:
                                     RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
 
+    LongTermContainer (const LongTermContainer &_other) = delete;
+
+    LongTermContainer (LongTermContainer &&_other) = delete;
+
     InsertQuery Insert () noexcept;
 
     FetchValueQuery FetchValue (const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;

@@ -113,6 +113,10 @@ public:
         Handling::Handle<SingletonContainer> container;
     };
 
+    SingletonContainer (const SingletonContainer &_other) = delete;
+
+    SingletonContainer (SingletonContainer &&_other) = delete;
+
     FetchQuery Fetch () noexcept;
 
     ModifyQuery Modify () noexcept;
