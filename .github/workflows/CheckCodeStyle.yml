@@ -24,7 +24,10 @@ jobs:
           submodules: true
 
       - name: Install CLang Tidy
-        run: sudo apt-get install -y clang-tidy-12
+        run: sudo apt-get install -y clang-tidy
+
+      - name: Debug
+        run: clang-tidy --version
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
