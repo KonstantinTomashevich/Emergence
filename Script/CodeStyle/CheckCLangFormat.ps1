@@ -1,17 +1,12 @@
 #!/usr/bin/env pwsh
 
-if ($args.Count -gt 1)
+if ($args.Count -ne 0)
 {
-    echo "Usage: <script> [clang-format-version-major]"
+    echo "Usage: <script>"
     exit -1
 }
 
 $CLangFormatExecutable = "clang-format"
-if ($args.Count -eq 1)
-{
-    $CLangFormatExecutable += "-" + $args[0]
-}
-
 if (-Not(Get-Command $CLangFormatExecutable))
 {
     echo "Unable to find $CLangFormatExecutable in path!"
