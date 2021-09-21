@@ -13,18 +13,13 @@ jobs:
 
     env:
       BUILD_DIRECTORY: ${{github.workspace}}/Build
-      CC: clang-12
-      CXX: clang++-12
 
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
-
-      - name: Install CLang Tidy
-        run: sudo apt-get install -y clang-tidy
 
       - name: Debug
         run: clang-tidy --version
