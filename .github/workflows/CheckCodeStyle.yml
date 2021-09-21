@@ -12,7 +12,7 @@ jobs:
         shell: pwsh
 
     env:
-      BUILD_DIRECTORY: ${{github.workspace}}\Build
+      BUILD_DIRECTORY: ${{github.workspace}}/Build
 
     runs-on: ubuntu-latest
     steps:
@@ -25,17 +25,14 @@ jobs:
         run: sudo apt-get install -y clang-tidy
 
       - name: Create build directory
-        working-directory: ${{github.workspace}}
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake $Env:GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Run CLang Format
-        working-directory: ${{github.workspace}}
         run: powershell .\Script\CodeStyle\CheckCLangFormat.ps1 12
 
       - name: Run CLang Tidy
-        working-directory: ${{github.workspace}}
         run: powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
