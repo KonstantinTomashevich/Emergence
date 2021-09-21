@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <Galleon/CargoDeck.hpp>
 #include <Galleon/LongTermContainer.hpp>
 
