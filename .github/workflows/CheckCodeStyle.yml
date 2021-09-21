@@ -21,8 +21,12 @@ jobs:
         with:
           submodules: true
 
-      - name: Debug
-        run: clang-tidy --version
+      - name: Install CLang Tools
+        shell: bash
+        run: |
+          brew install llvm
+          ln -s "/usr/local/opt/llvm/bin/clang-format" "/usr/local/bin/clang-format"
+          ln -s "/usr/local/opt/llvm/bin/clang-tidy" "/usr/local/bin/clang-tidy"
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
