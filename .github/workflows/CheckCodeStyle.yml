@@ -21,22 +21,15 @@ jobs:
         with:
           submodules: true
 
-      - name: Install Ninja
-        run: choco install ninja
-
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
-      - name: Configure
+      - name: Configure and run CLang Tools checks
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-      - name: Check C++ code style using CLang Tools
-        working-directory: ${{github.workspace}}
-        # Coverage-related scripts need to call llvm toolset executables, therefore it's required to import
-        # Visual Studio environment, which is currently possible only through standard command line.
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          cmake -G "NMake Makefiles" ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON &&
+          cd ${{github.workspace}} &&
           powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
           powershell .\Script\CodeStyle\CheckCLangTidy.ps1 "${{env.BUILD_DIRECTORY}}\compile_commands.json"
