@@ -37,10 +37,18 @@
         return !(*this == _other);                                                                                     \
     }                                                                                                                  \
                                                                                                                        \
-    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     Class &Class::operator= (const Class &_other) noexcept = default;                                                  \
                                                                                                                        \
-    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     Class &Class::operator= (Class &&_other) noexcept = default;                                                       \
                                                                                                                        \
     Class::Class (decltype (baseIteratorField) _baseIterator) noexcept : baseIteratorField (std::move (_baseIterator)) \

@@ -84,6 +84,8 @@ struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Curso
 {
 };
 
+std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object);
+
 template <typename T>
 concept ReturnsEditablePointer = requires (T _cursor)
 {
@@ -119,21 +121,6 @@ template <typename Cursor>
 void GetCursor (CursorStorage<Cursor> &_storage, std::string _name)
 {
     return GetObject (_storage, _name).cursor;
-}
-
-std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
-{
-    const auto *current = static_cast<const uint8_t *> (_object);
-    const auto *end = current + _mapping.GetObjectSize ();
-    std::string result;
-
-    while (current != end)
-    {
-        result += std::to_string (static_cast<std::size_t> (*current)) + " ";
-        ++current;
-    }
-
-    return result;
 }
 
 template <typename Cursor>
