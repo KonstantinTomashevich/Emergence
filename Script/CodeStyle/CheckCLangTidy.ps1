@@ -6,13 +6,6 @@ if ($args.Count -gt 1)
     exit -1
 }
 
-# Not all distributions provide run-clang-tidy.py script, therefore we download it manually.
-$ClangTidyScriptUri =
-"https://raw.githubusercontent.com/llvm-mirror/clang-tools-extra/master/clang-tidy/tool/run-clang-tidy.py"
-
-$CLangTidyScript = "$env:TEMP\run-clang-tidy.py"
-Invoke-WebRequest -Uri $ClangTidyScriptUri -OutFile $CLangTidyScript
-
 $BuildDirectory = $args[0]
 $CompilationDatabase = "$BuildDirectory\compile_commands.json"
 
@@ -22,12 +15,27 @@ if (-Not(Test-Path $CompilationDatabase -PathType Leaf))
     exit -2
 }
 
+# Not all distributions provide run-clang-tidy.py script, therefore we download it manually.
+$ClangTidyScriptUri =
+"https://raw.githubusercontent.com/llvm-mirror/clang-tools-extra/master/clang-tidy/tool/run-clang-tidy.py"
+
+$CLangTidyScript = "$env:TEMP\run-clang-tidy.py"
+Invoke-WebRequest -Uri $ClangTidyScriptUri -OutFile $CLangTidyScript
+
+if (-Not(Test-Path $CLangTidyScript -PathType Leaf))
+{
+    echo "Unable to download run-clang-tidy.py!"
+    exit -3
+}
+
+echo "Running"
 & $CLangTidyScript files="(Executable)|(Library)|(Service)|(Test)" -p="$BuildDirectory"
 if ($?)
 {
+    echo "Finished"
     exit 0
 }
 else
 {
-    exit -3
+    exit -4
 }
