@@ -70,7 +70,7 @@ public:
         using BaseIterator =
             InplaceVector<Storage::IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
-        explicit HashIndexIterator (BaseIterator _iterator) noexcept;
+        explicit HashIndexIterator (BaseIterator _baseIterator) noexcept;
 
         BaseIterator iterator;
     };
@@ -86,7 +86,7 @@ public:
         using BaseIterator = InplaceVector<Storage::IndexHolder<OrderedIndex>,
                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
-        explicit OrderedIndexIterator (BaseIterator _iterator) noexcept;
+        explicit OrderedIndexIterator (BaseIterator _baseIterator) noexcept;
 
         BaseIterator iterator;
     };
@@ -102,7 +102,7 @@ public:
         using BaseIterator = InplaceVector<Storage::IndexHolder<VolumetricIndex>,
                                            Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
 
-        explicit VolumetricIndexIterator (BaseIterator _iterator) noexcept;
+        explicit VolumetricIndexIterator (BaseIterator _baseIterator) noexcept;
 
         BaseIterator iterator;
     };

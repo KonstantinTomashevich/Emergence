@@ -150,7 +150,7 @@ const StandardLayout::Mapping &VolumetricRepresentation::GetTypeMapping () const
 bool VolumetricRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
     Pegasus::VolumetricIndex *index = realHandle.Get ();
 
     // To extract correct result we must temporary unlink index handle.
@@ -164,7 +164,7 @@ bool VolumetricRepresentation::CanBeDropped () const noexcept
 void VolumetricRepresentation::Drop () noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
     Pegasus::VolumetricIndex *index = realHandle.Get ();
 
     // Free handle first, because indices can not be deleted while any handle points to them.

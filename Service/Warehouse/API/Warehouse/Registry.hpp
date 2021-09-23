@@ -164,7 +164,7 @@ public:
                                                                     const std::vector<Dimension> &_dimensions) noexcept;
 
     /// \return Name of this registry, that can be used for debug or visualization purposes.
-    [[nodiscard]] const std::string GetName () const noexcept;
+    [[nodiscard]] std::string GetName () const noexcept;
 
     /// \brief Utility for Warehouse::Visualization, that allows implementation to add custom content to graphs.
     void AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept;

@@ -35,10 +35,8 @@ Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const
     {
         return *iterator;
     }
-    else
-    {
-        return containers.singleton.emplace_back (new (_typeMapping) SingletonContainer (this, _typeMapping));
-    }
+
+    return containers.singleton.emplace_back (new (_typeMapping) SingletonContainer (this, _typeMapping));
 }
 
 Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const StandardLayout::Mapping &_typeMapping)
@@ -50,10 +48,8 @@ Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const
     {
         return *iterator;
     }
-    else
-    {
-        return containers.shortTerm.emplace_back (new ShortTermContainer (this, _typeMapping));
-    }
+
+    return containers.shortTerm.emplace_back (new ShortTermContainer (this, _typeMapping));
 }
 
 Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping)
@@ -65,10 +61,8 @@ Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const S
     {
         return *iterator;
     }
-    else
-    {
-        return containers.longTerm.emplace_back (new LongTermContainer (this, _typeMapping));
-    }
+
+    return containers.longTerm.emplace_back (new LongTermContainer (this, _typeMapping));
 }
 
 bool CargoDeck::IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept

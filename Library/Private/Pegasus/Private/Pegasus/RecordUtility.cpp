@@ -34,14 +34,13 @@ int BitValueComparator::Compare (const void *_firstValue, const void *_secondVal
     {
         return -1;
     }
-    else if (first > second)
+
+    if (first > second)
     {
         return 1;
     }
-    else
-    {
-        return 0;
-    }
+
+    return 0;
 }
 
 int BlockValueComparator::Compare (const void *_firstValue, const void *_secondValue) const noexcept

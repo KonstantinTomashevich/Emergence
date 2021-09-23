@@ -129,7 +129,7 @@ public:
     private:
         friend class PlainMapping;
 
-        explicit ConstIterator (const FieldData *_target) noexcept;
+        explicit ConstIterator (const FieldData *_baseIterator) noexcept;
 
         const FieldData *target {nullptr};
     };
@@ -176,7 +176,7 @@ private:
     /// \brief Allocates mapping object, that can hold up to _fieldCapacity fields.
     ///
     /// \details PlainMapping uses malloc-based allocation to support runtime capacity changes using ::ChangeCapacity.
-    void *operator new (std::size_t, std::size_t _fieldCapacity) noexcept;
+    void *operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept;
 
     /// \brief PlainMapping has custom allocation logic and therefore needs custom deallocator.
     void operator delete (void *_pointer) noexcept;

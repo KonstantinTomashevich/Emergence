@@ -129,10 +129,8 @@ const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
     {
         return &fields[_field];
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 FieldData *PlainMapping::GetField (FieldId _field) noexcept
@@ -180,7 +178,7 @@ PlainMapping::~PlainMapping () noexcept
     }
 }
 
-void *PlainMapping::operator new (std::size_t, std::size_t _fieldCapacity) noexcept
+void *PlainMapping::operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept
 {
     return malloc (CalculateMappingSize (_fieldCapacity));
 }

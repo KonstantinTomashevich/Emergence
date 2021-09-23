@@ -57,9 +57,8 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Represe
     std::optional<Collection::Allocator> collectionAllocator;
 };
 
-ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
-    : collection (_typeMapping),
-      collectionAllocator ()
+ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping) : collection (_typeMapping)
+
 {
 }
 
@@ -277,7 +276,7 @@ void ExecuteTask (ExecutionContext &_context, const DropRepresentation &_task)
     IterateOverRepresentations (_context);
 }
 
-void ExecuteTask (ExecutionContext &_context, const OpenAllocator &)
+void ExecuteTask (ExecutionContext &_context, const OpenAllocator & /*unused*/)
 {
     REQUIRE_WITH_MESSAGE (!_context.collectionAllocator, "There should be no active allocator.");
     _context.collectionAllocator.emplace (_context.collection.AllocateAndInsert ());
@@ -295,7 +294,7 @@ void ExecuteTask (ExecutionContext &_context, const AllocateAndInit &_task)
     }
 }
 
-void ExecuteTask (ExecutionContext &_context, const CloseAllocator &)
+void ExecuteTask (ExecutionContext &_context, const CloseAllocator & /*unused*/)
 {
     REQUIRE_WITH_MESSAGE (_context.collectionAllocator, "There should be active allocator.");
     _context.collectionAllocator.reset ();
@@ -440,7 +439,7 @@ std::ostream &operator<< (std::ostream &_output, const DropRepresentation &_task
     return _output << "Drop representation \"" << _task.name << "\".";
 }
 
-std::ostream &operator<< (std::ostream &_output, const OpenAllocator &)
+std::ostream &operator<< (std::ostream &_output, const OpenAllocator & /*unused*/)
 {
     return _output << "Open allocator.";
 }
@@ -450,7 +449,7 @@ std::ostream &operator<< (std::ostream &_output, const AllocateAndInit &_task)
     return _output << "Allocate record and init from " << _task.copyFrom << ".";
 }
 
-std::ostream &operator<< (std::ostream &_output, const CloseAllocator &)
+std::ostream &operator<< (std::ostream &_output, const CloseAllocator & /*unused*/)
 {
     return _output << "Close allocator.";
 }

@@ -123,7 +123,7 @@ struct Scenario final
     std::vector<Task> tasks;
 };
 
-std::ostream &operator<< (std::ostream &_output, const Scenario &_seed);
+std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
 std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second);
 } // namespace Emergence::RecordCollection::Test

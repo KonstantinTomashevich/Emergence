@@ -182,7 +182,7 @@ ShortTermContainer::ModifyQuery ShortTermContainer::Modify () noexcept
 
 ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
-      objects (),
+
       pool (typeMapping.GetObjectSize ())
 {
 }

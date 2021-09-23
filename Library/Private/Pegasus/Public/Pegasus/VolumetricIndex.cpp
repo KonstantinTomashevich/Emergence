@@ -259,7 +259,7 @@ void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noex
 }
 
 template <typename Operations>
-bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
+bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const Operations & /*unused*/) noexcept
 {
     if (!index->AreEqual (currentCoordinate, sector.max))
     {
@@ -267,10 +267,8 @@ bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const O
         currentCoordinate = index->NextInsideSector (sector, currentCoordinate);
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 template <typename Operations>
@@ -559,10 +557,8 @@ const void *VolumetricIndex::RayIntersectionCursorBase::GetRecord () const noexc
         assert (currentRecordIndex < leaf.records.size ());
         return leaf.records[currentRecordIndex].record;
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 VolumetricIndex *VolumetricIndex::RayIntersectionCursorBase::GetIndex () const noexcept
@@ -576,7 +572,7 @@ void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexce
 }
 
 template <typename Operations>
-bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
+bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations & /*unused*/) noexcept
 {
     std::size_t closestDimension = std::numeric_limits<std::size_t>::max ();
     float minT = std::numeric_limits<float>::max ();
@@ -833,9 +829,7 @@ void VolumetricIndex::LeafData::DeleteRecord (
 
 VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept
     : IndexBase (_storage),
-      dimensions (),
-      leaves (),
-      freeRecordIds (),
+
       nextRecordId (0u)
 {
     assert (!_dimensions.empty ());
@@ -962,10 +956,8 @@ bool VolumetricIndex::CheckRayShapeIntersection (
                 _operations.ToFloat (_operations.Subtract (_cornerValue, lookupRay->Origin (_dimensionIndex)));
             return distance / direction;
         }
-        else
-        {
-            return 0.0f;
-        }
+
+        return 0.0f;
     };
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
@@ -1049,10 +1041,8 @@ void VolumetricIndex::ForEachCoordinate (const VolumetricIndex::LeafSector &_sec
         {
             break;
         }
-        else
-        {
-            coordinate = NextInsideSector (_sector, coordinate);
-        }
+
+        coordinate = NextInsideSector (_sector, coordinate);
     }
 }
 
@@ -1112,10 +1102,8 @@ VolumetricIndex::LeafCoordinate VolumetricIndex::NextInsideSector (
             ++_coordinate[dimensionIndex];
             break;
         }
-        else
-        {
-            _coordinate[dimensionIndex] = _sector.min[dimensionIndex];
-        }
+
+        _coordinate[dimensionIndex] = _sector.min[dimensionIndex];
     }
 
     return _coordinate;

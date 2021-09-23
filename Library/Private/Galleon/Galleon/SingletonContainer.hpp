@@ -138,7 +138,7 @@ private:
     ~SingletonContainer () noexcept;
 
     /// \brief We store singleton instance inside container, therefore we need custom allocator to do this.
-    void *operator new (std::size_t, const StandardLayout::Mapping &_typeMapping) noexcept;
+    void *operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Needed because of custom ::new.
     void operator delete (void *_pointer) noexcept;

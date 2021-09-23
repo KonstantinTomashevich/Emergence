@@ -197,7 +197,7 @@ ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout
     return ModifyRayIntersectionQuery (reinterpret_cast<decltype (ModifyRayIntersectionQuery::data) *> (&query));
 }
 
-const std::string Registry::GetName () const noexcept
+std::string Registry::GetName () const noexcept
 {
     assert (handle);
     return static_cast<Galleon::CargoDeck *> (handle)->GetName ();

@@ -159,7 +159,7 @@ public:
         friend struct CursorCommons;
 
         template <typename Operations>
-        bool MoveToNextCoordinate (const Operations &) noexcept;
+        bool MoveToNextCoordinate (const Operations & /*unused*/) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
@@ -231,7 +231,7 @@ public:
         friend struct CursorCommons;
 
         template <typename Operations>
-        bool MoveToNextCoordinate (const Operations &) noexcept;
+        bool MoveToNextCoordinate (const Operations & /*unused*/) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;

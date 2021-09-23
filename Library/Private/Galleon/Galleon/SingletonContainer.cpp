@@ -114,7 +114,7 @@ SingletonContainer::~SingletonContainer () noexcept
     deck->DetachContainer (this);
 }
 
-void *SingletonContainer::operator new (std::size_t, const StandardLayout::Mapping &_typeMapping) noexcept
+void *SingletonContainer::operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept
 {
     return malloc (sizeof (SingletonContainer) + _typeMapping.GetObjectSize ());
 }

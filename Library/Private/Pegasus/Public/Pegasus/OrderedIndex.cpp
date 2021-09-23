@@ -81,11 +81,9 @@ bool Comparator<BaseComparator>::operator() (const void *_firstRecord,
     {
         return false;
     }
-    else
-    {
-        assert (_secondRecord.backup);
-        return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord.backup)) < 0;
-    }
+
+    assert (_secondRecord.backup);
+    return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord.backup)) < 0;
 }
 
 template <typename BaseComparator>

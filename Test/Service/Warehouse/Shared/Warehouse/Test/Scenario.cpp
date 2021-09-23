@@ -656,19 +656,18 @@ static Task InsertQueryPreparationTaskFromSource (const Query::Test::Source &_so
     {
         return PrepareModifySingletonQuery {{_typeMapping, _queryName}};
     }
-    else if (std::holds_alternative<Query::Test::Sources::UnorderedSequence> (_source))
+
+    if (std::holds_alternative<Query::Test::Sources::UnorderedSequence> (_source))
     {
         return PrepareInsertShortTermQuery {{_typeMapping, _queryName}};
     }
-    else
-    {
-        const bool isParametricSource = std::holds_alternative<Query::Test::Sources::Value> (_source) ||
-                                        std::holds_alternative<Query::Test::Sources::Range> (_source) ||
-                                        std::holds_alternative<Query::Test::Sources::Volumetric> (_source);
 
-        REQUIRE (isParametricSource);
-        return PrepareInsertLongTermQuery {{_typeMapping, _queryName}};
-    }
+    const bool isParametricSource = std::holds_alternative<Query::Test::Sources::Value> (_source) ||
+                                    std::holds_alternative<Query::Test::Sources::Range> (_source) ||
+                                    std::holds_alternative<Query::Test::Sources::Volumetric> (_source);
+
+    REQUIRE (isParametricSource);
+    return PrepareInsertLongTermQuery {{_typeMapping, _queryName}};
 }
 
 static std::vector<Task> ImportStorage (const Query::Test::Storage &_storage)
