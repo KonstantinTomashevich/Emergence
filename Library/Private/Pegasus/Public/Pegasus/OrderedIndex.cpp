@@ -122,8 +122,8 @@ OrderedIndex::AscendingReadCursor::AscendingReadCursor (const OrderedIndex::Asce
 
 OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex::AscendingReadCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -157,8 +157,8 @@ OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
                                                         std::vector<const void *>::const_iterator _begin,
                                                         std::vector<const void *>::const_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -169,8 +169,8 @@ OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
 
 OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex::AscendingEditCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -226,8 +226,8 @@ OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex *_index,
                                                         std::vector<const void *>::iterator _begin,
                                                         std::vector<const void *>::iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -258,8 +258,8 @@ OrderedIndex::DescendingReadCursor::DescendingReadCursor (const OrderedIndex::De
 
 OrderedIndex::DescendingReadCursor::DescendingReadCursor (OrderedIndex::DescendingReadCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -294,8 +294,8 @@ OrderedIndex::DescendingReadCursor::DescendingReadCursor (
     std::vector<const void *>::const_reverse_iterator _begin,
     std::vector<const void *>::const_reverse_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -306,8 +306,8 @@ OrderedIndex::DescendingReadCursor::DescendingReadCursor (
 
 OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex::DescendingEditCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -363,8 +363,8 @@ OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex *_index,
                                                           std::vector<const void *>::reverse_iterator _begin,
                                                           std::vector<const void *>::reverse_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -387,15 +387,15 @@ OrderedIndex::AscendingReadCursor OrderedIndex::LookupToReadAscending (const Ord
                                                                        const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::AscendingReadCursor (this, result.begin, result.end);
+    return {this, result.begin, result.end};
 }
 
 OrderedIndex::DescendingReadCursor OrderedIndex::LookupToReadDescending (const OrderedIndex::Bound &_min,
                                                                          const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::DescendingReadCursor (this, std::vector<const void *>::const_reverse_iterator (result.end),
-                                               std::vector<const void *>::const_reverse_iterator (result.begin));
+    return {this, std::vector<const void *>::const_reverse_iterator (result.end),
+            std::vector<const void *>::const_reverse_iterator (result.begin)};
 }
 
 OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (const OrderedIndex::Bound &_min,
@@ -403,7 +403,7 @@ OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (const Ord
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::AscendingEditCursor (this, result.begin, result.end);
+    return {this, result.begin, result.end};
 }
 
 OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (const OrderedIndex::Bound &_min,
@@ -411,8 +411,8 @@ OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (const O
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::DescendingEditCursor (this, std::vector<const void *>::reverse_iterator (result.end),
-                                               std::vector<const void *>::reverse_iterator (result.begin));
+    return {this, std::vector<const void *>::reverse_iterator (result.end),
+            std::vector<const void *>::reverse_iterator (result.begin)};
 }
 
 StandardLayout::Field OrderedIndex::GetIndexedField () const noexcept

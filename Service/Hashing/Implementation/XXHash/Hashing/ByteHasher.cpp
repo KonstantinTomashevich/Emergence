@@ -19,7 +19,7 @@ ByteHasher::ByteHasher (const ByteHasher &_other) noexcept
 
 ByteHasher::ByteHasher (ByteHasher &&_other) noexcept
 {
-    new (&data) xxh::hash_state64_t (std::move (block_cast<xxh::hash_state64_t> (_other.data)));
+    new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
 }
 
 ByteHasher::~ByteHasher () noexcept

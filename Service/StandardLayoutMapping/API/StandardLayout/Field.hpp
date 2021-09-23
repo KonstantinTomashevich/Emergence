@@ -63,6 +63,7 @@ public:
 
     Field (Field &&_other) noexcept;
 
+    // NOLINTNEXTLINE(performance-trivially-destructible): Implementations may have non-trivial destructors.
     ~Field () noexcept;
 
     /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.

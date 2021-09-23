@@ -42,7 +42,7 @@ const char *FieldData::GetName () const noexcept
     return name;
 }
 
-// NOLINETNEXTLINE(modernize-use-equals-default): Default constructor is implicitly deleted.
+// NOLINTNEXTLINE(modernize-use-equals-default): Default constructor is implicitly deleted.
 FieldData::FieldData () noexcept
 {
 }
@@ -247,7 +247,7 @@ FieldId PlainMappingBuilder::AddField (FieldData::BitSeed _seed) noexcept
 FieldId PlainMappingBuilder::AddField (FieldData::NestedObjectSeed _seed) noexcept
 {
     auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (_seed);
+    new (allocatedField) FieldData (std::move (_seed));
     assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
     return fieldId;
 }

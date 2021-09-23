@@ -44,21 +44,23 @@ std::variant<Variants...> CopyCursor (const std::variant<Variants...> &_other)
 template <typename Cursor>
 struct CursorData final
 {
-    CursorData (Cursor _cursor, StandardLayout::Mapping _objectMapping)
+    CursorData (Cursor _cursor, StandardLayout::Mapping _objectMapping) noexcept
         : cursor (std::move (_cursor)),
           objectMapping (std::move (_objectMapping))
     {
     }
 
-    CursorData (const CursorData &_other) : cursor (CopyCursor (_other.cursor)), objectMapping (_other.objectMapping)
+    CursorData (const CursorData &_other) noexcept
+        : cursor (CopyCursor (_other.cursor)),
+          objectMapping (_other.objectMapping)
     {
     }
 
-    CursorData (CursorData &&_other) = default;
+    CursorData (CursorData &&_other) noexcept = default;
 
     ~CursorData () = default;
 
-    CursorData &operator= (const CursorData &_other)
+    CursorData &operator= (const CursorData &_other) noexcept
     {
         if (this != &_other)
         {
@@ -69,7 +71,7 @@ struct CursorData final
         return *this;
     }
 
-    CursorData &operator= (CursorData &&_other) = default;
+    CursorData &operator= (CursorData &&_other) noexcept = default;
 
     Cursor cursor;
     StandardLayout::Mapping objectMapping;

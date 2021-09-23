@@ -241,7 +241,7 @@ void ValidateCreatedQuery (const std::vector<Dimension> &_dimensions, const Quer
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -249,7 +249,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectio
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -257,7 +257,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersecti
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.FetchRayIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.FetchRayIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -265,7 +265,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQ
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyRayIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }

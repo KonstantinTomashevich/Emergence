@@ -21,6 +21,7 @@ Checks: >
   -modernize-avoid-c-arrays,
   -modernize-replace-disallow-copy-and-assign-macro,
   -modernize-use-trailing-return-type,
+  performance-*,
   readability-identifier-naming
 FormatStyle: file
 HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"

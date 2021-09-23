@@ -794,13 +794,13 @@ VolumetricIndex::ShapeIntersectionEditCursor VolumetricIndex::LookupShapeInterse
 VolumetricIndex::RayIntersectionReadCursor VolumetricIndex::LookupRayIntersectionToRead (
     const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
 {
-    return RayIntersectionReadCursor (this, _ray, _maxDistance);
+    return {this, _ray, _maxDistance};
 }
 
 VolumetricIndex::RayIntersectionEditCursor VolumetricIndex::LookupRayIntersectionToEdit (
     const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
 {
-    return RayIntersectionEditCursor (this, _ray, _maxDistance);
+    return {this, _ray, _maxDistance};
 }
 
 void VolumetricIndex::Drop () noexcept
