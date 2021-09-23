@@ -28,11 +28,9 @@ if (-Not(Test-Path $CLangTidyScript -PathType Leaf))
     exit -3
 }
 
-echo "Running"
-& $CLangTidyScript files="(Executable)|(Library)|(Service)|(Test)" -p="$BuildDirectory"
+python $CLangTidyScript files = "(Executable)|(Library)|(Service)|(Test)" -p="$BuildDirectory"
 if ($?)
 {
-    echo "Finished"
     exit 0
 }
 else
