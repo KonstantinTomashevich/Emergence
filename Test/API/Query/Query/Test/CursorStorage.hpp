@@ -54,7 +54,22 @@ struct CursorData final
     {
     }
 
-    CursorData (CursorData &&_other) noexcept = default;
+    CursorData (CursorData &&_other) = default;
+
+    ~CursorData () = default;
+
+    CursorData &operator= (const CursorData &_other)
+    {
+        if (this != &_other)
+        {
+            this->~CursorData ();
+            new (this) CursorData (_other);
+        }
+
+        return *this;
+    }
+
+    CursorData &operator= (CursorData &&_other) = default;
 
     Cursor cursor;
     StandardLayout::Mapping objectMapping;

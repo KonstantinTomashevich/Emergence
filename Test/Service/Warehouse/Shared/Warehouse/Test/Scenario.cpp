@@ -62,7 +62,15 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Prepare
 {
     ExecutionContext () = default;
 
+    ExecutionContext (const ExecutionContext &_other) = delete;
+
+    ExecutionContext (ExecutionContext &&_other) = delete;
+
     ~ExecutionContext ();
+
+    ExecutionContext &operator= (const ExecutionContext &_other) = delete;
+
+    ExecutionContext &operator= (ExecutionContext &&_other) = delete;
 
     Registry registry {"Test"};
 };

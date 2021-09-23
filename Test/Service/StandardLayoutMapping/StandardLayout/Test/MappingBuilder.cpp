@@ -500,7 +500,7 @@ struct NestedInUnionOneSublevelTest
     char block[32u];
 };
 
-static MappingSeed nestedInUnionOneSublevel {
+static const MappingSeed NESTED_IN_UNION_ONE_SUBLEVEL {
     "NestedInUnionOneSublevel",
     sizeof (NestedInUnionOneSublevelTest),
     {
@@ -521,7 +521,7 @@ struct NestedTwoSublevelsTest
     NestedInUnionOneSublevelTest secondNested;
 };
 
-static MappingSeed nestedTwoSublevels {
+static const MappingSeed NESTED_TWO_SUBLEVELS {
     "NestedTwoSublevels",
     sizeof (NestedTwoSublevelsTest),
     {
@@ -530,7 +530,7 @@ static MappingSeed nestedTwoSublevels {
                                Grow (NESTED_ONE_SUBLEVEL)},
         BlockFieldSeed {{"string", offsetof (NestedTwoSublevelsTest, string)}, sizeof (NestedTwoSublevelsTest::string)},
         NestedObjectFieldSeed {{"secondNested", offsetof (NestedTwoSublevelsTest, secondNested)},
-                               Grow (nestedInUnionOneSublevel)},
+                               Grow (NESTED_IN_UNION_ONE_SUBLEVEL)},
     }};
 } // namespace Emergence::StandardLayout::Test
 
@@ -565,12 +565,12 @@ TEST_CASE (NestedOneSublevel)
 
 TEST_CASE (NestedInUnionOneSublevel)
 {
-    GrowAndTest (nestedInUnionOneSublevel);
+    GrowAndTest (NESTED_IN_UNION_ONE_SUBLEVEL);
 }
 
 TEST_CASE (NestedTwoSublevels)
 {
-    GrowAndTest (nestedTwoSublevels);
+    GrowAndTest (NESTED_TWO_SUBLEVELS);
 }
 
 TEST_CASE (BuildMultipleMappings)
@@ -578,7 +578,7 @@ TEST_CASE (BuildMultipleMappings)
     Emergence::StandardLayout::MappingBuilder builder;
     GrowAndTest (TWO_INTS_CORRECT_ORDER, builder);
     GrowAndTest (UNION_WITH_BASIC_TYPES, builder);
-    GrowAndTest (nestedTwoSublevels, builder);
+    GrowAndTest (NESTED_TWO_SUBLEVELS, builder);
 }
 
 TEST_CASE (BuildMultipleMappingsWhileMovingBuilder)
@@ -590,7 +590,7 @@ TEST_CASE (BuildMultipleMappingsWhileMovingBuilder)
     GrowAndTest (UNION_WITH_BASIC_TYPES, secondBuilder);
 
     firstBuilder = std::move (secondBuilder);
-    GrowAndTest (nestedTwoSublevels, firstBuilder);
+    GrowAndTest (NESTED_TWO_SUBLEVELS, firstBuilder);
 }
 
 TEST_CASE (FieldManipulations)

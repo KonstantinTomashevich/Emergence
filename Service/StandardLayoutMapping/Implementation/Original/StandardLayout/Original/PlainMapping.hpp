@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include <API/Common/Iterator.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
@@ -57,6 +58,11 @@ public:
         Handling::Handle<PlainMapping> nestedObjectMapping;
     };
 
+    /// FieldData could only be moved through reallocation of PlainMapping.
+    FieldData (const FieldData &_other) = delete;
+
+    FieldData (FieldData &&_other) = delete;
+
     FieldArchetype GetArchetype () const noexcept;
 
     size_t GetOffset () const noexcept;
@@ -68,6 +74,8 @@ public:
     Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
 
     const char *GetName () const noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (FieldData);
 
 private:
     /// PlainMapping deletes FieldData's.
@@ -126,6 +134,12 @@ public:
         const FieldData *target = nullptr;
     };
 
+    /// PlainMapping is not designed to be copied.
+    PlainMapping (const PlainMapping &_other) = delete;
+
+    /// PlainMapping is designed to be moved only through reallocation.
+    PlainMapping (PlainMapping &&_other) = delete;
+
     std::size_t GetObjectSize () const noexcept;
 
     std::size_t GetFieldCount () const noexcept;
@@ -141,6 +155,8 @@ public:
     ConstIterator End () const noexcept;
 
     FieldId GetFieldId (const FieldData &_field) const;
+
+    EMERGENCE_DELETE_ASSIGNMENT (PlainMapping);
 
 private:
     /// PlainMappingBuilder handles PlainMapping allocation and construction routine.
@@ -190,6 +206,13 @@ PlainMapping::ConstIterator end (const PlainMapping &_mapping) noexcept;
 class PlainMappingBuilder
 {
 public:
+    PlainMappingBuilder () noexcept = default;
+
+    /// PlainMappingBuilder is not designed to be copied or moved.
+    PlainMappingBuilder (const PlainMappingBuilder &_other) = delete;
+
+    PlainMappingBuilder (PlainMappingBuilder &&_other) = delete;
+
     ~PlainMappingBuilder ();
 
     void Begin (const char *_name, std::size_t _objectSize) noexcept;
@@ -201,6 +224,8 @@ public:
     FieldId AddField (FieldData::BitSeed _seed) noexcept;
 
     FieldId AddField (FieldData::NestedObjectSeed _seed) noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (PlainMappingBuilder);
 
 private:
     static constexpr std::size_t INITIAL_FIELD_CAPACITY = 32u;

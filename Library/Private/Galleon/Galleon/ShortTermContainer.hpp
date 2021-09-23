@@ -161,6 +161,8 @@ public:
 
     ModifyQuery Modify () noexcept;
 
+    EMERGENCE_DELETE_ASSIGNMENT (ShortTermContainer);
+
 private:
     /// CargoDeck constructs containers.
     friend class CargoDeck;

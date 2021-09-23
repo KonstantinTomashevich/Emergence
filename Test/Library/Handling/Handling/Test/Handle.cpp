@@ -35,11 +35,19 @@ public:
         *aliveFlagPointer = true;
     }
 
+    HandleableResource (const HandleableResource &_other) = delete;
+
+    HandleableResource (HandleableResource &&_other) = delete;
+
     ~HandleableResource () noexcept
     {
         REQUIRE (aliveFlagPointer);
         *aliveFlagPointer = false;
     }
+
+    HandleableResource &operator= (const HandleableResource &_other) = delete;
+
+    HandleableResource &operator= (HandleableResource &&_other) = delete;
 
 private:
     bool *aliveFlagPointer;

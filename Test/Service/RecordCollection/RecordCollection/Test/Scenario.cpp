@@ -43,7 +43,15 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Represe
 {
     explicit ExecutionContext (const StandardLayout::Mapping &_typeMapping);
 
+    ExecutionContext (const ExecutionContext &_other) = delete;
+
+    ExecutionContext (ExecutionContext &&_other) = delete;
+
     ~ExecutionContext ();
+
+    ExecutionContext &operator= (const ExecutionContext &_other) = delete;
+
+    ExecutionContext &operator= (ExecutionContext &&_other) = delete;
 
     Collection collection;
     std::optional<Collection::Allocator> collectionAllocator;

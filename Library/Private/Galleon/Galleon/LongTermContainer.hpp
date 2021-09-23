@@ -332,6 +332,8 @@ public:
     ModifyRayIntersectionQuery ModifyRayIntersection (
         const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
+    EMERGENCE_DELETE_ASSIGNMENT (LongTermContainer);
+
 private:
     /// CargoDeck constructs containers.
     friend class CargoDeck;
