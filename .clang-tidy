@@ -17,6 +17,10 @@ Checks: >
   misc-*,
   -misc-no-recursion,
   -misc-non-private-member-variables-in-classes,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-replace-disallow-copy-and-assign-macro,
+  -modernize-use-trailing-return-type,
   readability-identifier-naming
 FormatStyle: file
 HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"

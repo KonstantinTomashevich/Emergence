@@ -11,7 +11,7 @@ namespace Emergence::Galleon
 class AccessCounter final
 {
 public:
-    AccessCounter () noexcept;
+    AccessCounter () noexcept = default;
 
     AccessCounter (const AccessCounter &_other) = delete;
 
@@ -32,10 +32,10 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (AccessCounter);
 
 private:
-    std::atomic_size_t read;
+    std::atomic_size_t read {0u};
 
     static_assert (decltype (read)::is_always_lock_free);
 
-    std::size_t write;
+    std::size_t write {0u};
 };
 } // namespace Emergence::Galleon

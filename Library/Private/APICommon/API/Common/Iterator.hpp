@@ -15,7 +15,7 @@
      * \return Item, to which iterator points.                                                                         \
      * \invariant Inside valid bounds, but not in the ending.                                                          \
      */                                                                                                                \
-    ItemClass operator* () const noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */        \
+    [[nodiscard]] ItemClass operator* () const noexcept; /* NOLINT(bugprone-macro-parentheses) */                      \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Move to next item.                                                                                       \

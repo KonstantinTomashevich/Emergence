@@ -88,7 +88,7 @@ Collection::Allocator Collection::AllocateAndInsert () noexcept
     return Allocator (reinterpret_cast<decltype (Allocator::data) *> (&allocator));
 }
 
-LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::FieldId _keyField) const noexcept
+LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::FieldId _keyField) noexcept
 {
     assert (handle);
     Handling::Handle<Pegasus::OrderedIndex> index =
@@ -97,7 +97,7 @@ LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::Fie
 }
 
 PointRepresentation Collection::CreatePointRepresentation (
-    const std::vector<StandardLayout::FieldId> &_keyFields) const noexcept
+    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     assert (handle);
     Handling::Handle<Pegasus::HashIndex> index = static_cast<Pegasus::Storage *> (handle)->CreateHashIndex (_keyFields);
@@ -105,7 +105,7 @@ PointRepresentation Collection::CreatePointRepresentation (
 }
 
 VolumetricRepresentation Collection::CreateVolumetricRepresentation (
-    const std::vector<DimensionDescriptor> &_dimensions) const noexcept
+    const std::vector<DimensionDescriptor> &_dimensions) noexcept
 {
     assert (handle);
     // Volumetric representation creation is rare operation, therefore it's ok to dynamically allocate vector here.

@@ -25,63 +25,65 @@ public:
 
     /// \brief Finishes mapping construction routine.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    Mapping End () noexcept;
+    [[nodiscard]] Mapping End () noexcept;
 
     /// \brief Registers bit flag.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterBit (const char *_name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept;
+    [[nodiscard]] FieldId RegisterBit (const char *_name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept;
 
     /// \brief Registers 1 byte long integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterInt8 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterInt8 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 2 bytes long integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterInt16 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterInt16 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 4 bytes long integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterInt32 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterInt32 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 8 bytes long integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterInt64 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterInt64 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 1 byte long unsigned integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterUInt8 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterUInt8 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 2 bytes long unsigned integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterUInt16 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterUInt16 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 4 bytes long unsigned integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterUInt32 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterUInt32 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers 8 bytes long unsigned integer.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterUInt64 (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterUInt64 (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers `sizeof (float)` bytes long floating point number.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterFloat (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterFloat (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers `sizeof (double)` bytes long floating point number.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterDouble (const char *_name, std::size_t _offset) noexcept;
+    [[nodiscard]] FieldId RegisterDouble (const char *_name, std::size_t _offset) noexcept;
 
     /// \brief Registers zero terminated string with fixed maximum size.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterString (const char *_name, std::size_t _offset, std::size_t _maxSize) noexcept;
+    [[nodiscard]] FieldId RegisterString (const char *_name, std::size_t _offset, std::size_t _maxSize) noexcept;
 
     /// \brief Registers memory block with given size.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterBlock (const char *_name, std::size_t _offset, std::size_t _size) noexcept;
+    [[nodiscard]] FieldId RegisterBlock (const char *_name, std::size_t _offset, std::size_t _size) noexcept;
 
     /// \brief Registers nested object using its Mapping.
     /// \invariant There is active mapping construction routine, that uses this builder.
-    FieldId RegisterNestedObject (const char *_name, std::size_t _offset, const Mapping &_objectMapping) noexcept;
+    [[nodiscard]] FieldId RegisterNestedObject (const char *_name,
+                                                std::size_t _offset,
+                                                const Mapping &_objectMapping) noexcept;
 
     MappingBuilder &operator= (const MappingBuilder &_other) = delete;
 

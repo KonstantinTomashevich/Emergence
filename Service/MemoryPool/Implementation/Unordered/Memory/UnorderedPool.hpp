@@ -80,11 +80,11 @@ public:
 
     void Clear () noexcept;
 
-    size_t GetAllocatedSpace () const noexcept;
+    [[nodiscard]] size_t GetAllocatedSpace () const noexcept;
 
-    AcquiredChunkConstIterator BeginAcquired () const noexcept;
+    [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
-    AcquiredChunkConstIterator EndAcquired () const noexcept;
+    [[nodiscard]] AcquiredChunkConstIterator EndAcquired () const noexcept;
 
     AcquiredChunkIterator BeginAcquired () noexcept;
 

@@ -116,7 +116,11 @@
         return !(*this == _other);                                                                                     \
     }                                                                                                                  \
                                                                                                                        \
-    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     ServiceClass &ServiceClass::operator= (const ServiceClass &_other) noexcept                                        \
     {                                                                                                                  \
         if (this != &_other)                                                                                           \
@@ -128,7 +132,11 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     ServiceClass &ServiceClass::operator= (ServiceClass &&_other) noexcept                                             \
     {                                                                                                                  \
         if (this != &_other)                                                                                           \

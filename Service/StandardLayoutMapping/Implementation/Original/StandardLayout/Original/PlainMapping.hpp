@@ -63,17 +63,17 @@ public:
 
     FieldData (FieldData &&_other) = delete;
 
-    FieldArchetype GetArchetype () const noexcept;
+    [[nodiscard]] FieldArchetype GetArchetype () const noexcept;
 
-    size_t GetOffset () const noexcept;
+    [[nodiscard]] size_t GetOffset () const noexcept;
 
-    size_t GetSize () const noexcept;
+    [[nodiscard]] size_t GetSize () const noexcept;
 
-    uint_fast8_t GetBitOffset () const noexcept;
+    [[nodiscard]] uint_fast8_t GetBitOffset () const noexcept;
 
-    Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
+    [[nodiscard]] Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
 
-    const char *GetName () const noexcept;
+    [[nodiscard]] const char *GetName () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (FieldData);
 
@@ -97,9 +97,9 @@ private:
 
     void CopyName (const char *_name) noexcept;
 
-    FieldArchetype archetype;
-    std::size_t offset;
-    std::size_t size;
+    FieldArchetype archetype {FieldArchetype::INT};
+    std::size_t offset {0u};
+    std::size_t size {0u};
 
     union
     {
@@ -111,7 +111,7 @@ private:
     /// \details Field name should not be inlined into FieldData object, because it would decrease field array cache
     ///          coherency: names are rarely accessed, but take a lot of space in comparison to frequently accessed
     ///          archetype, size and offset information.
-    char *name;
+    char *name {nullptr};
 };
 
 class PlainMapping final : public Handling::HandleableBase
@@ -120,7 +120,7 @@ public:
     class ConstIterator final
     {
     public:
-        ConstIterator () noexcept;
+        ConstIterator () noexcept = default;
 
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (ConstIterator, const FieldData &);
 
@@ -131,7 +131,7 @@ public:
 
         explicit ConstIterator (const FieldData *_target) noexcept;
 
-        const FieldData *target = nullptr;
+        const FieldData *target {nullptr};
     };
 
     /// PlainMapping is not designed to be copied.
@@ -140,21 +140,21 @@ public:
     /// PlainMapping is designed to be moved only through reallocation.
     PlainMapping (PlainMapping &&_other) = delete;
 
-    std::size_t GetObjectSize () const noexcept;
+    [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 
-    std::size_t GetFieldCount () const noexcept;
+    [[nodiscard]] std::size_t GetFieldCount () const noexcept;
 
-    const char *GetName () const noexcept;
+    [[nodiscard]] const char *GetName () const noexcept;
 
-    const FieldData *GetField (FieldId _field) const noexcept;
+    [[nodiscard]] const FieldData *GetField (FieldId _field) const noexcept;
 
     FieldData *GetField (FieldId _field) noexcept;
 
-    ConstIterator Begin () const noexcept;
+    [[nodiscard]] ConstIterator Begin () const noexcept;
 
-    ConstIterator End () const noexcept;
+    [[nodiscard]] ConstIterator End () const noexcept;
 
-    FieldId GetFieldId (const FieldData &_field) const;
+    [[nodiscard]] FieldId GetFieldId (const FieldData &_field) const;
 
     EMERGENCE_DELETE_ASSIGNMENT (PlainMapping);
 

@@ -51,9 +51,9 @@ public:
 
         ~InsertQuery () noexcept = default;
 
-        Cursor Execute () const noexcept;
+        [[nodiscard]] Cursor Execute () const noexcept;
 
-        Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
@@ -94,9 +94,9 @@ public:
         /// \invariant There is no cursors for this query. Otherwise cursor deletion will not be thread safe.
         ~FetchQuery () noexcept = default;
 
-        Cursor Execute () const noexcept;
+        [[nodiscard]] Cursor Execute () const noexcept;
 
-        Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
@@ -136,9 +136,9 @@ public:
 
         ~ModifyQuery () noexcept = default;
 
-        Cursor Execute () const noexcept;
+        [[nodiscard]] Cursor Execute () const noexcept;
 
-        Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<ShortTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);

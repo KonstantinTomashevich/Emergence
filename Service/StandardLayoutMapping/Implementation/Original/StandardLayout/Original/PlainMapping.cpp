@@ -42,7 +42,8 @@ const char *FieldData::GetName () const noexcept
     return name;
 }
 
-FieldData::FieldData () noexcept : archetype (FieldArchetype::INT), offset (0u), size (0u), name {0u}
+// NOLINETNEXTLINE(modernize-use-equals-default): Default constructor is implicitly deleted.
+FieldData::FieldData () noexcept
 {
 }
 
@@ -95,10 +96,6 @@ void FieldData::CopyName (const char *_name) noexcept
 using ConstIterator = PlainMapping::ConstIterator;
 
 EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (ConstIterator, target)
-
-PlainMapping::ConstIterator::ConstIterator () noexcept : target (nullptr)
-{
-}
 
 const FieldData &PlainMapping::ConstIterator::operator* () const noexcept
 {

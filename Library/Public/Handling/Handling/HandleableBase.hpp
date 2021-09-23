@@ -27,7 +27,7 @@ public:
     void UnregisterReference () noexcept;
 
     /// \return ::references
-    uintptr_t GetReferenceCount () const noexcept;
+    [[nodiscard]] uintptr_t GetReferenceCount () const noexcept;
 
     /// It doesn't make sense to copy assign references counters.
     HandleableBase &operator= (const HandleableBase &_other) = delete;
@@ -37,10 +37,10 @@ public:
 
 protected:
     /// \brief Initializes ::references to zero.
-    HandleableBase ();
+    HandleableBase () = default;
 
 private:
     /// \brief Internal reference counter.
-    uintptr_t references;
+    uintptr_t references {0u};
 };
 } // namespace Emergence::Handling

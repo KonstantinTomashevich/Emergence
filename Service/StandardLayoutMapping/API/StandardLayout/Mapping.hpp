@@ -39,27 +39,27 @@ public:
     ~Mapping () noexcept;
 
     /// \return User defined object size in bytes including alignment gaps.
-    std::size_t GetObjectSize () const noexcept;
+    [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 
     /// \return Readable name for object type, described by this mapping.
-    const char *GetName () const noexcept;
+    [[nodiscard]] const char *GetName () const noexcept;
 
     /// \return Pointer to meta of field with given id or `nullptr` if there is no such field.
-    Field GetField (FieldId _field) const noexcept;
+    [[nodiscard]] Field GetField (FieldId _field) const noexcept;
 
     /// \return Iterator, that points to beginning of fields range.
-    FieldIterator Begin () const noexcept;
+    [[nodiscard]] FieldIterator Begin () const noexcept;
 
     /// \return Iterator, that points to ending of fields range.
-    FieldIterator End () const noexcept;
+    [[nodiscard]] FieldIterator End () const noexcept;
 
     /// \return Id of field, to which iterator points.
     /// \invariant Inside valid bounds, but not in the ending.
-    FieldId GetFieldId (const FieldIterator &_iterator) const noexcept;
+    [[nodiscard]] FieldId GetFieldId (const FieldIterator &_iterator) const noexcept;
 
     /// \return Id of given field.
     /// \invariant Given field belongs to this mapping.
-    FieldId GetFieldId (const Field &_field) const noexcept;
+    [[nodiscard]] FieldId GetFieldId (const Field &_field) const noexcept;
 
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator== (const Mapping &_other) const noexcept;

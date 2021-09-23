@@ -15,7 +15,7 @@
     ~Class () noexcept;                                                                                                \
                                                                                                                        \
     /*! \return Pointer to current item or nullptr if cursor points to ending. */                                      \
-    const void *operator* () const noexcept;                                                                           \
+    [[nodiscard]] const void *operator* () const noexcept;                                                             \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Moves cursor to next item.                                                                               \
@@ -43,7 +43,7 @@
     ~Class () noexcept;                                                                                                \
                                                                                                                        \
     /*! \return Pointer to current item or nullptr if cursor points to ending. */                                      \
-    void *operator* () noexcept;                                                                                       \
+    [[nodiscard]] void *operator* () noexcept;                                                                         \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Deletes current item from collection and moves to next item.                                             \

@@ -78,13 +78,13 @@ public:
     void Clear () noexcept;
 
     /// \return How much memory pool currently holds?
-    std::size_t GetAllocatedSpace () const noexcept;
+    [[nodiscard]] std::size_t GetAllocatedSpace () const noexcept;
 
     /// \return Iterator, that points to beginning of acquired chunks sequence.
-    AcquiredChunkConstIterator BeginAcquired () const noexcept;
+    [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
     /// \return Iterator, that points to ending of acquired chunks sequence.
-    AcquiredChunkConstIterator EndAcquired () const noexcept;
+    [[nodiscard]] AcquiredChunkConstIterator EndAcquired () const noexcept;
 
     /// \return Iterator, that points to beginning of acquired chunks sequence.
     AcquiredChunkIterator BeginAcquired () noexcept;

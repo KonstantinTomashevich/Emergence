@@ -35,9 +35,9 @@ public:
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchRayIntersectionQuery, Cursor, Ray _ray, float _maxDistance);
 
-    DimensionIterator DimensionBegin () const noexcept;
+    [[nodiscard]] DimensionIterator DimensionBegin () const noexcept;
 
-    DimensionIterator DimensionEnd () const noexcept;
+    [[nodiscard]] DimensionIterator DimensionEnd () const noexcept;
 
 private:
     /// Registry constructs prepared queries.

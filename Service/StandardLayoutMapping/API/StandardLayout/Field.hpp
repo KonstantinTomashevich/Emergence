@@ -67,45 +67,45 @@ public:
 
     /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.
     /// \invariant Handle must be valid.
-    FieldArchetype GetArchetype () const noexcept;
+    [[nodiscard]] FieldArchetype GetArchetype () const noexcept;
 
     /// \return Field offset in mapped structure in bytes.
     /// \invariant Handle must be valid.
-    std::size_t GetOffset () const noexcept;
+    [[nodiscard]] std::size_t GetOffset () const noexcept;
 
     /// \return Field size in bytes, excluding suffix alignment gap, but including internal gaps.
     /// \invariant Handle must be valid.
-    std::size_t GetSize () const noexcept;
+    [[nodiscard]] std::size_t GetSize () const noexcept;
 
     /// \return Offset of required bit in byte, pointed by #offset. Always less than 8u.
     /// \invariant Handle must be valid.
     /// \invariant Field archetype is FieldArchetype::BIT.
-    std::size_t GetBitOffset () const noexcept;
+    [[nodiscard]] std::size_t GetBitOffset () const noexcept;
 
     /// \return Mapping, that describes nested object fields.
     /// \invariant Handle must be valid.
     /// \invariant Field archetype is FieldArchetype::NESTED_OBJECT.
-    class Mapping GetNestedObjectMapping () const noexcept;
+    [[nodiscard]] class Mapping GetNestedObjectMapping () const noexcept;
 
     /// \return Human readable field name.
     /// \invariant Handle must be valid.
-    const char *GetName () const noexcept;
+    [[nodiscard]] const char *GetName () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
     /// \return Pointer to this field in given structure.
     /// \invariant Handle must be valid.
     /// \invariant _object is not `nullptr`.
-    void *GetValue (void *_object) const noexcept;
+    [[nodiscard]] void *GetValue (void *_object) const noexcept;
 
     /// \brief Const version of ::GetValue(void *).
-    const void *GetValue (const void *_object) const noexcept;
+    [[nodiscard]] const void *GetValue (const void *_object) const noexcept;
 
     /// \return Is given field handle points to the same field of the same mapping as this field handle?
     /// \invariant Handle must be valid.
-    bool IsSame (const Field &_other) const noexcept;
+    [[nodiscard]] bool IsSame (const Field &_other) const noexcept;
 
     /// \return Is field ::handle valid?
-    bool IsHandleValid () const noexcept;
+    [[nodiscard]] bool IsHandleValid () const noexcept;
 
     /// \return ::IsHandleValid ()
     explicit operator bool () const noexcept;

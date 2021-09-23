@@ -47,6 +47,7 @@ using DimensionIteratorImplementation =
     InplaceVector<Pegasus::VolumetricIndex::Dimension,
                   Pegasus::Constants::VolumetricIndex::MAX_DIMENSIONS>::ConstIterator;
 
+// NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)
 
 VolumetricRepresentation::DimensionIterator::Dimension VolumetricRepresentation::DimensionIterator::operator* ()

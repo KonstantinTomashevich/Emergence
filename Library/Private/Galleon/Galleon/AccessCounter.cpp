@@ -4,10 +4,6 @@
 
 namespace Emergence::Galleon
 {
-AccessCounter::AccessCounter () noexcept : read (0u), write (0u)
-{
-}
-
 AccessCounter::AccessCounter (AccessCounter &&_other) noexcept : read (_other.read.load ()), write (_other.write)
 {
     _other.read = 0u;

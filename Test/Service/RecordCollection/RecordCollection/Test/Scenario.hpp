@@ -117,7 +117,7 @@ struct Scenario final
 {
     void Execute () const;
 
-    VisualGraph::Graph ExecuteAndVisualize () const;
+    [[nodiscard]] VisualGraph::Graph ExecuteAndVisualize () const;
 
     StandardLayout::Mapping mapping;
     std::vector<Task> tasks;

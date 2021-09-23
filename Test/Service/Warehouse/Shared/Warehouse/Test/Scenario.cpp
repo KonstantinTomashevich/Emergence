@@ -1043,6 +1043,7 @@ static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization 
         std::sort (_visualizationOutput->queries.begin (), _visualizationOutput->queries.end (),
                    [] (const VisualGraph::Graph &_left, const VisualGraph::Graph &_right)
                    {
+                       // NOLINTNEXTLINE(modernize-use-nullptr): CLang Tidy bugs out and replaces < with nullptr.
                        return _left.id < _right.id;
                    });
     }

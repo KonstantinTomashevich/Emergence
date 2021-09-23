@@ -98,9 +98,9 @@ public:
 
         AxisValue &Max (std::size_t _dimensionIndex) noexcept;
 
-        const AxisValue &Min (std::size_t _dimensionIndex) const noexcept;
+        [[nodiscard]] const AxisValue &Min (std::size_t _dimensionIndex) const noexcept;
 
-        const AxisValue &Max (std::size_t _dimensionIndex) const noexcept;
+        [[nodiscard]] const AxisValue &Max (std::size_t _dimensionIndex) const noexcept;
     };
 
     /// \brief Memory block, that can fit AxisAlignedShape of any supported type.
@@ -143,13 +143,13 @@ public:
                                      const LeafSector &_sector,
                                      const AxisAlignedShapeContainer &_shape) noexcept;
 
-        bool IsFinished () const noexcept;
+        [[nodiscard]] bool IsFinished () const noexcept;
 
         void MoveToNextRecord () noexcept;
 
-        const void *GetRecord () const noexcept;
+        [[nodiscard]] const void *GetRecord () const noexcept;
 
-        VolumetricIndex *GetIndex () const noexcept;
+        [[nodiscard]] VolumetricIndex *GetIndex () const noexcept;
 
         /// Check CursorCommons::FixCurrentRecordIndex for explanation.
         void FixCurrentRecordIndex () noexcept;
@@ -215,13 +215,13 @@ public:
     protected:
         RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
 
-        bool IsFinished () const noexcept;
+        [[nodiscard]] bool IsFinished () const noexcept;
 
         void MoveToNextRecord () noexcept;
 
-        const void *GetRecord () const noexcept;
+        [[nodiscard]] const void *GetRecord () const noexcept;
 
-        VolumetricIndex *GetIndex () const noexcept;
+        [[nodiscard]] VolumetricIndex *GetIndex () const noexcept;
 
         /// Check CursorCommons::FixCurrentRecordIndex for explanation.
         void FixCurrentRecordIndex () noexcept;

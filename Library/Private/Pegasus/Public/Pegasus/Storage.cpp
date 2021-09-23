@@ -41,7 +41,7 @@ void *Storage::Allocator::Next () noexcept
     return current;
 }
 
-Storage::Allocator::Allocator (Storage *_owner) : owner (_owner), current (nullptr)
+Storage::Allocator::Allocator (Storage *_owner) : owner (_owner)
 {
     assert (owner);
     owner->RegisterWriter ();

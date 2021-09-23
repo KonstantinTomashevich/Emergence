@@ -188,18 +188,18 @@ public:
     RayIntersectionEditCursor EditRayIntersections (Ray _ray, float _rayLength) noexcept;
 
     /// \return Iterator, that points to beginning of dimensions sequence.
-    DimensionIterator DimensionBegin () const noexcept;
+    [[nodiscard]] DimensionIterator DimensionBegin () const noexcept;
 
     /// \return Iterator, that points to ending of dimensions sequence.
-    DimensionIterator DimensionEnd () const noexcept;
+    [[nodiscard]] DimensionIterator DimensionEnd () const noexcept;
 
     /// \seeCollection::GetRecordMapping
-    const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+    [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;
 
     /// \return Can this representation be safely dropped?
     /// \details Representation can be safely dropped if there is only one reference to it and there is no active
     ///          cursors.
-    bool CanBeDropped () const noexcept;
+    [[nodiscard]] bool CanBeDropped () const noexcept;
 
     /// \brief Deletes this volumetric representation from Collection.
     /// \invariant ::CanBeDropped

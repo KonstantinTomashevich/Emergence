@@ -100,71 +100,71 @@ public:
     ~Registry () noexcept;
 
     /// \brief Prepare FetchSingletonQuery for given type.
-    FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Prepare ModifySingletonQuery for given type.
-    ModifySingletonQuery ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] ModifySingletonQuery ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Prepare InsertShortTermQuery for given type.
-    InsertShortTermQuery InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] InsertShortTermQuery InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Prepare FetchSequenceQuery for given type.
-    FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Prepare ModifySequenceQuery for given type.
-    ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Prepare InsertLongTermQuery for given type.
-    InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Prepare FetchValueQuery for given type on given key fields.
     /// \invariant There is at least one key field.
-    FetchValueQuery FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    [[nodiscard]] FetchValueQuery FetchValue (const StandardLayout::Mapping &_typeMapping,
+                                              const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     /// \brief Prepare ModifyValueQuery for given type on given key fields.
     /// \invariant There is at least one key field.
-    ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
-                                  const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    [[nodiscard]] ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
+                                                const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     /// \brief Prepare FetchAscendingRangeQuery for given type on given key field.
-    FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                  StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                StandardLayout::FieldId _keyField) noexcept;
 
     /// \brief Prepare ModifyAscendingRangeQuery for given type on given key field.
-    ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                    StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                  StandardLayout::FieldId _keyField) noexcept;
 
     /// \brief Prepare FetchDescendingRangeQuery for given type on given key field.
-    FetchDescendingRangeQuery FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                    StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] FetchDescendingRangeQuery FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                  StandardLayout::FieldId _keyField) noexcept;
 
     /// \brief Prepare ModifyDescendingRangeQuery for given type on given key field.
-    ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                      StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                    StandardLayout::FieldId _keyField) noexcept;
 
     /// \brief Prepare FetchShapeIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    FetchShapeIntersectionQuery FetchShapeIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                        const std::vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] FetchShapeIntersectionQuery FetchShapeIntersection (
+        const StandardLayout::Mapping &_typeMapping, const std::vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare ModifyShapeIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    ModifyShapeIntersectionQuery ModifyShapeIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                          const std::vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] ModifyShapeIntersectionQuery ModifyShapeIntersection (
+        const StandardLayout::Mapping &_typeMapping, const std::vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare FetchRayIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    FetchRayIntersectionQuery FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                    const std::vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
+                                                                  const std::vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare ModifyRayIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    ModifyRayIntersectionQuery ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                      const std::vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
+                                                                    const std::vector<Dimension> &_dimensions) noexcept;
 
     /// \return Name of this registry, that can be used for debug or visualization purposes.
-    const std::string GetName () const noexcept;
+    [[nodiscard]] const std::string GetName () const noexcept;
 
     /// \brief Utility for Warehouse::Visualization, that allows implementation to add custom content to graphs.
     void AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept;

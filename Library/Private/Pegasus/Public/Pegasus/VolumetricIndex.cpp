@@ -17,23 +17,25 @@ struct TypeOperations final
 {
     using ValueType = Type;
 
-    int Compare (const VolumetricIndex::SupportedAxisValue &_left,
-                 const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
+    [[nodiscard]] int Compare (const VolumetricIndex::SupportedAxisValue &_left,
+                               const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
     int Compare (const void *_left, const void *_right) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Subtract (const VolumetricIndex::SupportedAxisValue &_left,
-                                                  const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
+    [[nodiscard]] VolumetricIndex::SupportedAxisValue Subtract (
+        const VolumetricIndex::SupportedAxisValue &_left,
+        const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
+    [[nodiscard]] VolumetricIndex::SupportedAxisValue Divide (
+        const VolumetricIndex::SupportedAxisValue &_value,
+        const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                std::size_t _divider) const noexcept;
+    [[nodiscard]] VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
+                                                              std::size_t _divider) const noexcept;
 
-    std::size_t TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
+    [[nodiscard]] std::size_t TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
-    float ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
+    [[nodiscard]] float ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
 private:
     NumericValueComparator<Type> comparator {};
@@ -953,7 +955,7 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     const auto calculateT =
         [&_operations, lookupRay] (std::size_t _dimensionIndex, const SupportedAxisValue &_cornerValue)
     {
-        const float direction = static_cast<float> (lookupRay->Direction (_dimensionIndex));
+        const auto direction = static_cast<float> (lookupRay->Direction (_dimensionIndex));
         if (fabs (direction) > Constants::VolumetricIndex::EPSILON)
         {
             float distance =
@@ -1014,8 +1016,8 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     _distanceOutput = 0.0f;
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
-        const float origin = static_cast<float> (lookupRay->Origin (dimensionIndex));
-        const float direction = static_cast<float> (lookupRay->Direction (dimensionIndex));
+        const auto origin = static_cast<float> (lookupRay->Origin (dimensionIndex));
+        const auto direction = static_cast<float> (lookupRay->Direction (dimensionIndex));
         const float step = direction * maxT;
 
         _intersectionPointOutput[dimensionIndex] = origin + step;

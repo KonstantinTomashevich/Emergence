@@ -30,6 +30,7 @@ using KeyFieldIterator = PointRepresentation::KeyFieldIterator;
 using KeyFieldIteratorImplementation =
     InplaceVector<StandardLayout::Field, Pegasus::Constants::HashIndex::MAX_INDEXED_FIELDS>::ConstIterator;
 
+// NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (KeyFieldIterator, KeyFieldIteratorImplementation)
 
 StandardLayout::Field PointRepresentation::KeyFieldIterator::operator* () const noexcept

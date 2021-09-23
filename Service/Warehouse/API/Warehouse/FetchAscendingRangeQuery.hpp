@@ -33,7 +33,7 @@ public:
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchAscendingRangeQuery, Cursor, Bound _min, Bound _max);
 
-    StandardLayout::Field GetKeyField () const noexcept;
+    [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
 private:
     /// Registry constructs prepared queries.

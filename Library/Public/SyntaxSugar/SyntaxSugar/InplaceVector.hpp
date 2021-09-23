@@ -19,7 +19,8 @@ public:
 
     /// \brief Constructs empty inplace vector.
     /// \warning Default constructor called for all items in ::values, because std::array is base container.
-    InplaceVector () noexcept requires std::is_nothrow_default_constructible_v<Item>;
+    InplaceVector () noexcept requires std::is_nothrow_default_constructible_v<Item>
+    = default;
 
     /// \brief Copies values from given inplace vector.
     InplaceVector (const InplaceVector &_other) noexcept requires std::is_nothrow_copy_constructible_v<Item>;
@@ -33,15 +34,15 @@ public:
 
     Iterator End () noexcept;
 
-    ConstIterator Begin () const noexcept;
+    [[nodiscard]] ConstIterator Begin () const noexcept;
 
-    ConstIterator End () const noexcept;
+    [[nodiscard]] ConstIterator End () const noexcept;
 
     /// \return ::count.
-    std::size_t GetCount () const noexcept;
+    [[nodiscard]] std::size_t GetCount () const noexcept;
 
     /// \return is vector empty?
-    bool Empty () const noexcept;
+    [[nodiscard]] bool Empty () const noexcept;
 
     /// \brief Constructs new item in next free slot.
     /// \return Reference to constructed item.
@@ -71,15 +72,9 @@ public:
     Item &operator[] (std::size_t _index) noexcept;
 
 private:
-    std::size_t count;
-    std::array<Item, Capacity> values;
+    std::size_t count {0u};
+    std::array<Item, Capacity> values {};
 };
-
-template <typename Item, std::size_t Capacity>
-InplaceVector<Item, Capacity>::InplaceVector () noexcept requires std::is_nothrow_default_constructible_v<Item>
-    : count (0u), values ()
-{
-}
 
 template <typename Item, std::size_t Capacity>
 InplaceVector<Item, Capacity>::InplaceVector (

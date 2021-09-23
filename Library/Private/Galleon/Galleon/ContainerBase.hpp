@@ -20,7 +20,7 @@ public:
 
     ContainerBase (ContainerBase &&_other) = delete;
 
-    const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+    [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;
 
     /// Containers are managed by CargoDeck, therefore they can not be assigned.
     EMERGENCE_DELETE_ASSIGNMENT (ContainerBase);

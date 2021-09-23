@@ -29,7 +29,7 @@ public:
     void Clear () noexcept;
 
     /// \return 64-bit hash value for current state.
-    uint64_t GetCurrentValue () const noexcept;
+    [[nodiscard]] uint64_t GetCurrentValue () const noexcept;
 
     ByteHasher &operator= (const ByteHasher &_other) noexcept;
 

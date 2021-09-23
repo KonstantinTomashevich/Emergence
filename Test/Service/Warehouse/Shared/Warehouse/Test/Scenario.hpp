@@ -173,7 +173,7 @@ struct Scenario final
 
     void Execute () const;
 
-    Visualization ExecuteAndVisualize () const;
+    [[nodiscard]] Visualization ExecuteAndVisualize () const;
 
     std::vector<Task> tasks;
 };

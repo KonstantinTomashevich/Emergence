@@ -18,7 +18,7 @@
     ~Class () noexcept;                                                                                                \
                                                                                                                        \
     /*! \return Mapping for type, with which this query works. */                                                      \
-    Emergence::StandardLayout::Mapping GetTypeMapping () const noexcept;                                               \
+    [[nodiscard]] Emergence::StandardLayout::Mapping GetTypeMapping () const noexcept;                                 \
                                                                                                                        \
     /*! Assigning prepared queries looks counter-intuitive. */                                                         \
     EMERGENCE_DELETE_ASSIGNMENT (Class);                                                                               \
@@ -34,7 +34,7 @@
      * \details Thread safe.                                                                                           \
      * \invariant There is no modification or insertion cursors for ::GetTypeMapping type in registry.                 \
      */                                                                                                                \
-    Cursor Execute (__VA_ARGS__) noexcept;
+    [[nodiscard]] Cursor Execute (__VA_ARGS__) noexcept;
 
 /// \brief Adds common public methods for editable (insert and modify) prepared queries.
 #define EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS(Class, Cursor, ...)                                               \

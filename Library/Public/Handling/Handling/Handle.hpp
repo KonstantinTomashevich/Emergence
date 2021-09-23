@@ -45,7 +45,7 @@ public:
     ~Handle () noexcept;
 
     /// \return ::instance
-    Type *Get () const noexcept;
+    [[nodiscard]] Type *Get () const noexcept;
 
     /// \return ::instance
     Type *operator-> () const noexcept;
