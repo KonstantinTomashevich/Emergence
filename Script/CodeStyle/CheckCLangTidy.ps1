@@ -2,12 +2,19 @@
 
 if ($args.Count -gt 1)
 {
-    echo "Usage: <script> <path to compilation database>"
+    echo "Usage: <script> <path to build directory>"
     exit -1
 }
 
-$CLangTidyExecutable = "clang-tidy"
-$CompilationDatabase = $args[0]
+# Not all distributions provide run-clang-tidy.py script, therefore we download it manually.
+$ClangTidyScriptUri =
+"https://raw.githubusercontent.com/llvm-mirror/clang-tools-extra/master/clang-tidy/tool/run-clang-tidy.py"
+
+$CLangTidyScript = "$env:TEMP\run-clang-tidy.py"
+Invoke-WebRequest -Uri $ClangTidyScriptUri -OutFile $CLangTidyScript
+
+$BuildDirectory = $args[0]
+$CompilationDatabase = "$BuildDirectory\compile_commands.json"
 
 if (-Not(Test-Path $CompilationDatabase -PathType Leaf))
 {
@@ -15,18 +22,7 @@ if (-Not(Test-Path $CompilationDatabase -PathType Leaf))
     exit -2
 }
 
-$Sources = @()
-$RootChildren = Get-ChildItem -Directory
-
-foreach ($RootChild in $RootChildren)
-{
-    if (($RootChild.Name -ne "ThirdParty") -and ($RootChild.Name -ne "Build"))
-    {
-        $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp"
-    }
-}
-
-& $CLangTidyExecutable $Sources -p="$CompilationDatabase"
+& $CLangTidyScript files="(Executable)|(Library)|(Service)|(Test)" -p="$BuildDirectory"
 if ($?)
 {
     exit 0
