@@ -30,6 +30,7 @@ using KeyFieldIterator = PointRepresentation::KeyFieldIterator;
 using KeyFieldIteratorImplementation =
     InplaceVector<StandardLayout::Field, Pegasus::Constants::HashIndex::MAX_INDEXED_FIELDS>::ConstIterator;
 
+// NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (KeyFieldIterator, KeyFieldIteratorImplementation)
 
 StandardLayout::Field PointRepresentation::KeyFieldIterator::operator* () const noexcept
@@ -98,7 +99,7 @@ const StandardLayout::Mapping &PointRepresentation::GetTypeMapping () const noex
 bool PointRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
     Pegasus::HashIndex *index = realHandle.Get ();
 
     // To extract correct result we must temporary unlink index handle.
@@ -112,7 +113,7 @@ bool PointRepresentation::CanBeDropped () const noexcept
 void PointRepresentation::Drop () noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
     Pegasus::HashIndex *index = realHandle.Get ();
 
     // Free handle first, because indices can not be deleted while any handle points to them.

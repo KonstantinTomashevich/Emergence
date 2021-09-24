@@ -58,7 +58,7 @@ static Storage RequestStorage (const std::vector<const void *> &_objects, uint8_
     return storage;
 }
 
-Scenario SimpleLookup () noexcept
+Scenario SimpleLookup ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ID_SOURCE),
@@ -71,7 +71,7 @@ Scenario SimpleLookup () noexcept
             }};
 }
 
-Scenario LookupForNonExistentObject () noexcept
+Scenario LookupForNonExistentObject ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ID_SOURCE),
@@ -86,7 +86,7 @@ Scenario LookupForNonExistentObject () noexcept
             }};
 }
 
-Scenario LookupForMany () noexcept
+Scenario LookupForMany ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED},
@@ -98,7 +98,7 @@ Scenario LookupForMany () noexcept
             }};
 }
 
-Scenario LookupAndEdit () noexcept
+Scenario LookupAndEdit ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_ID_SOURCE),
@@ -115,7 +115,7 @@ Scenario LookupAndEdit () noexcept
             }};
 }
 
-Scenario OnStringField () noexcept
+Scenario OnStringField ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_NAME_SOURCE),
@@ -128,7 +128,7 @@ Scenario OnStringField () noexcept
             }};
 }
 
-Scenario OnTwoFields () noexcept
+Scenario OnTwoFields ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED}, FLAG_PLAYER_NAME_AND_ID_SOURCE),
@@ -141,7 +141,7 @@ Scenario OnTwoFields () noexcept
             }};
 }
 
-Scenario OnBitField () noexcept
+Scenario OnBitField ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &DUPLICATE_0_IMMOBILIZED},
@@ -168,7 +168,7 @@ Scenario OnBitField () noexcept
             }};
 }
 
-Scenario OnTwoBitFields () noexcept
+Scenario OnTwoBitFields ()
 {
     return {
         {
@@ -182,7 +182,7 @@ Scenario OnTwoBitFields () noexcept
         }};
 }
 
-Scenario MultipleSourcesEdition () noexcept
+Scenario MultipleSourcesEdition ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
@@ -214,7 +214,7 @@ Scenario MultipleSourcesEdition () noexcept
             }};
 }
 
-Scenario MultipleSourcesDeletion () noexcept
+Scenario MultipleSourcesDeletion ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},

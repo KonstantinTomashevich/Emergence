@@ -141,39 +141,39 @@ public:
 
     /// \brief Adds LinearRepresentation to Collection, which sorts records by value of given _keyField.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    LinearRepresentation CreateLinearRepresentation (StandardLayout::FieldId _keyField) const noexcept;
+    [[nodiscard]] LinearRepresentation CreateLinearRepresentation (StandardLayout::FieldId _keyField) noexcept;
 
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
-    PointRepresentation CreatePointRepresentation (
-        const std::vector<StandardLayout::FieldId> &_keyFields) const noexcept;
+    [[nodiscard]] PointRepresentation CreatePointRepresentation (
+        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     /// \invariant All border fields for all dimensions should have same archetype and same size.
-    VolumetricRepresentation CreateVolumetricRepresentation (
-        const std::vector<DimensionDescriptor> &_dimensions) const noexcept;
+    [[nodiscard]] VolumetricRepresentation CreateVolumetricRepresentation (
+        const std::vector<DimensionDescriptor> &_dimensions) noexcept;
 
     /// \return Object type mapping for objects, that are stored in this collection.
-    const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+    [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;
 
     /// \return Iterator, that points to beginning of linear representations range.
-    LinearRepresentationIterator LinearRepresentationBegin () const noexcept;
+    [[nodiscard]] LinearRepresentationIterator LinearRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of linear representations range.
-    LinearRepresentationIterator LinearRepresentationEnd () const noexcept;
+    [[nodiscard]] LinearRepresentationIterator LinearRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of point representations range.
-    PointRepresentationIterator PointRepresentationBegin () const noexcept;
+    [[nodiscard]] PointRepresentationIterator PointRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of point representations range.
-    PointRepresentationIterator PointRepresentationEnd () const noexcept;
+    [[nodiscard]] PointRepresentationIterator PointRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of volumetric representations range.
-    VolumetricRepresentationIterator VolumetricRepresentationBegin () const noexcept;
+    [[nodiscard]] VolumetricRepresentationIterator VolumetricRepresentationBegin () const noexcept;
 
     /// \return Iterator, that points to ending of volumetric representations range.
-    VolumetricRepresentationIterator VolumetricRepresentationEnd () const noexcept;
+    [[nodiscard]] VolumetricRepresentationIterator VolumetricRepresentationEnd () const noexcept;
 
     /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
     Collection &operator= (const Collection &_other) = delete;

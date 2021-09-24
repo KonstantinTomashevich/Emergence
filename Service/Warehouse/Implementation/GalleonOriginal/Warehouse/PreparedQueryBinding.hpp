@@ -10,6 +10,7 @@
         new (&data) QueryImplementation (block_cast<QueryImplementation> (_other.data));                               \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Query::Query (Query &&_other) noexcept                                                                             \
     {                                                                                                                  \
         new (&data) QueryImplementation (std::move (block_cast<QueryImplementation> (_other.data)));                   \

@@ -308,8 +308,8 @@ HashIndex::ReadCursor::ReadCursor (const HashIndex::ReadCursor &_other) noexcept
 
 HashIndex::ReadCursor::ReadCursor (HashIndex::ReadCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -343,8 +343,8 @@ HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
                                    RecordHashSet::const_iterator _begin,
                                    RecordHashSet::const_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     ++index->activeCursors;
@@ -353,8 +353,8 @@ HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
 
 HashIndex::EditCursor::EditCursor (HashIndex::EditCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -411,8 +411,8 @@ HashIndex::EditCursor::EditCursor (HashIndex *_index,
                                    RecordHashSet::iterator _begin,
                                    RecordHashSet::iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     ++index->activeCursors;
@@ -432,12 +432,12 @@ void HashIndex::EditCursor::BeginRecordEdition () const noexcept
 HashIndex::ReadCursor HashIndex::LookupToRead (const HashIndex::LookupRequest &_request) noexcept
 {
     auto [begin, end] = records.equal_range (_request);
-    return HashIndex::ReadCursor (this, begin, end);
+    return {this, begin, end};
 }
 
 HashIndex::EditCursor HashIndex::LookupToEdit (const HashIndex::LookupRequest &_request) noexcept
 {
     auto [begin, end] = records.equal_range (_request);
-    return HashIndex::EditCursor (this, begin, end);
+    return {this, begin, end};
 }
 } // namespace Emergence::Pegasus

@@ -8,26 +8,28 @@
 #define EMERGENCE_IMPLEMENT_FORWARD_ITERATOR_OPERATIONS_AS_WRAPPER(Class, baseIteratorField)                           \
     Class::Class (const Class &_other) noexcept = default;                                                             \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Class::Class (Class &&_other) noexcept = default;                                                                  \
                                                                                                                        \
     Class::~Class () noexcept = default;                                                                               \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Class &Class::operator++ () noexcept                                                                               \
     {                                                                                                                  \
-        ++baseIteratorField;                                                                                           \
+        ++(baseIteratorField);                                                                                         \
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
     Class Class::operator++ (int) noexcept                                                                             \
     {                                                                                                                  \
         auto oldIterator = baseIteratorField;                                                                          \
-        ++baseIteratorField;                                                                                           \
+        ++(baseIteratorField);                                                                                         \
         return Class (oldIterator);                                                                                    \
     }                                                                                                                  \
                                                                                                                        \
     bool Class::operator== (const Class &_other) const noexcept                                                        \
     {                                                                                                                  \
-        return baseIteratorField == _other.baseIteratorField;                                                          \
+        return (baseIteratorField) == _other.baseIteratorField;                                                        \
     }                                                                                                                  \
                                                                                                                        \
     bool Class::operator!= (const Class &_other) const noexcept                                                        \
@@ -35,8 +37,18 @@
         return !(*this == _other);                                                                                     \
     }                                                                                                                  \
                                                                                                                        \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     Class &Class::operator= (const Class &_other) noexcept = default;                                                  \
                                                                                                                        \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     Class &Class::operator= (Class &&_other) noexcept = default;                                                       \
                                                                                                                        \
     Class::Class (decltype (baseIteratorField) _baseIterator) noexcept : baseIteratorField (std::move (_baseIterator)) \
@@ -49,16 +61,17 @@
 #define EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER(Class, baseIteratorField)                     \
     EMERGENCE_IMPLEMENT_FORWARD_ITERATOR_OPERATIONS_AS_WRAPPER (Class, baseIteratorField)                              \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     Class &Class::operator-- () noexcept                                                                               \
     {                                                                                                                  \
-        --baseIteratorField;                                                                                           \
+        --(baseIteratorField);                                                                                         \
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
     Class Class::operator-- (int) noexcept                                                                             \
     {                                                                                                                  \
         auto oldIterator = baseIteratorField;                                                                          \
-        --baseIteratorField;                                                                                           \
+        --(baseIteratorField);                                                                                         \
         return Class (oldIterator);                                                                                    \
     }
 
@@ -69,6 +82,7 @@
         new (&data) ImplementationClass (block_cast<ImplementationClass> (_other.data));                               \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass::ServiceClass (ServiceClass &&_other) noexcept                                                        \
     {                                                                                                                  \
         new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_other.data)));                   \
@@ -79,6 +93,7 @@
         block_cast<ImplementationClass> (data).~ImplementationClass ();                                                \
     }                                                                                                                  \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass &ServiceClass::operator++ () noexcept                                                                 \
     {                                                                                                                  \
         ++block_cast<ImplementationClass> (data);                                                                      \
@@ -101,6 +116,11 @@
         return !(*this == _other);                                                                                     \
     }                                                                                                                  \
                                                                                                                        \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     ServiceClass &ServiceClass::operator= (const ServiceClass &_other) noexcept                                        \
     {                                                                                                                  \
         if (this != &_other)                                                                                           \
@@ -112,6 +132,11 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
+    /*                                                                                                                 \
+     * 1. Types can not be enclosed.                                                                                   \
+     * 2. CLang Tidy raises this warning if parameter is using alias.                                                  \
+     */                                                                                                                \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     ServiceClass &ServiceClass::operator= (ServiceClass &&_other) noexcept                                             \
     {                                                                                                                  \
         if (this != &_other)                                                                                           \
@@ -133,6 +158,7 @@
 #define EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION(ServiceClass, ImplementationClass)             \
     EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (ServiceClass, ImplementationClass)                      \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     ServiceClass &ServiceClass::operator-- () noexcept                                                                 \
     {                                                                                                                  \
         --block_cast<ImplementationClass> (data);                                                                      \

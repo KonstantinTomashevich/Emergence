@@ -6,11 +6,12 @@
 #include <Warehouse/Test/Visualization.hpp>
 
 // Use "include marker", so linker will not omit translation units with autoregistered tests.
-static const bool cursorReferenceTestIncludeMarker = Emergence::Warehouse::Test::CursorReferenceTestIncludeMarker ();
+static const bool CURSOR_REFERENCE_TEST_INCLUDE_MARKER =
+    Emergence::Warehouse::Test::CursorReferenceTestIncludeMarker ();
 
-static const bool preparedQueryReferenceTestIncludeMarker =
+static const bool PREPARED_QUERY_REFERENCE_TEST_INCLUDE_MARKER =
     Emergence::Warehouse::Test::PreparedQueryReferenceTestIncludeMarker ();
 
-static const bool queryAPITestIncludeMarker = Emergence::Warehouse::Test::QueryAPITestIncludeMarker ();
+static const bool QUERY_API_TEST_INCLUDE_MARKER = Emergence::Warehouse::Test::QueryAPITestIncludeMarker ();
 
-static const bool visualizationTestIncludeMarker = Emergence::Warehouse::Test::VisualizationTestIncludeMarker ();
+static const bool VISUALIZATION_TEST_INCLUDE_MARKER = Emergence::Warehouse::Test::VisualizationTestIncludeMarker ();

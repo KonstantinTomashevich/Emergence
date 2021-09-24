@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 #include <Pegasus/Constants/OrderedIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>
@@ -80,11 +81,9 @@ bool Comparator<BaseComparator>::operator() (const void *_firstRecord,
     {
         return false;
     }
-    else
-    {
-        assert (_secondRecord.backup);
-        return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord.backup)) < 0;
-    }
+
+    assert (_secondRecord.backup);
+    return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord.backup)) < 0;
 }
 
 template <typename BaseComparator>
@@ -121,8 +120,8 @@ OrderedIndex::AscendingReadCursor::AscendingReadCursor (const OrderedIndex::Asce
 
 OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex::AscendingReadCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -156,8 +155,8 @@ OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
                                                         std::vector<const void *>::const_iterator _begin,
                                                         std::vector<const void *>::const_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -168,8 +167,8 @@ OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
 
 OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex::AscendingEditCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -225,8 +224,8 @@ OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex *_index,
                                                         std::vector<const void *>::iterator _begin,
                                                         std::vector<const void *>::iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -257,8 +256,8 @@ OrderedIndex::DescendingReadCursor::DescendingReadCursor (const OrderedIndex::De
 
 OrderedIndex::DescendingReadCursor::DescendingReadCursor (OrderedIndex::DescendingReadCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -293,8 +292,8 @@ OrderedIndex::DescendingReadCursor::DescendingReadCursor (
     std::vector<const void *>::const_reverse_iterator _begin,
     std::vector<const void *>::const_reverse_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -305,8 +304,8 @@ OrderedIndex::DescendingReadCursor::DescendingReadCursor (
 
 OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex::DescendingEditCursor &&_other) noexcept
     : index (_other.index),
-      current (std::move (_other.current)),
-      end (std::move (_other.end))
+      current (_other.current),
+      end (_other.end)
 {
     assert (index);
     _other.index = nullptr;
@@ -362,8 +361,8 @@ OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex *_index,
                                                           std::vector<const void *>::reverse_iterator _begin,
                                                           std::vector<const void *>::reverse_iterator _end) noexcept
     : index (_index),
-      current (std::move (_begin)),
-      end (std::move (_end))
+      current (_begin),
+      end (_end)
 {
     assert (index);
     assert (current <= end);
@@ -386,15 +385,15 @@ OrderedIndex::AscendingReadCursor OrderedIndex::LookupToReadAscending (const Ord
                                                                        const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::AscendingReadCursor (this, result.begin, result.end);
+    return {this, result.begin, result.end};
 }
 
 OrderedIndex::DescendingReadCursor OrderedIndex::LookupToReadDescending (const OrderedIndex::Bound &_min,
                                                                          const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::DescendingReadCursor (this, std::vector<const void *>::const_reverse_iterator (result.end),
-                                               std::vector<const void *>::const_reverse_iterator (result.begin));
+    return {this, std::vector<const void *>::const_reverse_iterator (result.end),
+            std::vector<const void *>::const_reverse_iterator (result.begin)};
 }
 
 OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (const OrderedIndex::Bound &_min,
@@ -402,7 +401,7 @@ OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (const Ord
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::AscendingEditCursor (this, result.begin, result.end);
+    return {this, result.begin, result.end};
 }
 
 OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (const OrderedIndex::Bound &_min,
@@ -410,8 +409,8 @@ OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (const O
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
-    return OrderedIndex::DescendingEditCursor (this, std::vector<const void *>::reverse_iterator (result.end),
-                                               std::vector<const void *>::reverse_iterator (result.begin));
+    return {this, std::vector<const void *>::reverse_iterator (result.end),
+            std::vector<const void *>::reverse_iterator (result.begin)};
 }
 
 StandardLayout::Field OrderedIndex::GetIndexedField () const noexcept
@@ -596,7 +595,7 @@ void OrderedIndex::OnWriterClosed () noexcept
         auto deletedRecordsIterator = deletedRecordIndices.begin ();
         const auto deletedRecordsEnd = deletedRecordIndices.end ();
 
-        auto AdvanceToNextCheckpoint = [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator,
+        auto advanceToNextCheckpoint = [&changedRecordsIterator, &changedRecordsEnd, &deletedRecordsIterator,
                                         &deletedRecordsEnd] () -> std::size_t
         {
             std::size_t nextCheckpoint;
@@ -625,10 +624,10 @@ void OrderedIndex::OnWriterClosed () noexcept
         };
 
         std::size_t offset = 0u;
-        std::size_t intervalBegin = AdvanceToNextCheckpoint ();
+        std::size_t intervalBegin = advanceToNextCheckpoint ();
         std::size_t intervalEnd;
 
-        auto OffsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
+        auto offsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
         {
             std::size_t intervalSize = intervalEnd - intervalBegin - 1u;
             assert (intervalSize == 0u || intervalBegin + 1u < records.size ());
@@ -650,21 +649,22 @@ void OrderedIndex::OnWriterClosed () noexcept
 
         while (changedRecordsIterator != changedRecordsEnd || deletedRecordsIterator != deletedRecordsEnd)
         {
-            intervalEnd = AdvanceToNextCheckpoint ();
-            OffsetInterval ();
+            intervalEnd = advanceToNextCheckpoint ();
+            offsetInterval ();
             intervalBegin = intervalEnd;
         }
 
         intervalEnd = records.size ();
-        OffsetInterval ();
+        offsetInterval ();
         records.resize (intervalEnd - offset);
         deletedRecordIndices.clear ();
     }
 
     if (!changedRecords.empty ())
     {
-        if (changedRecords.size () >= static_cast<float> (changedRecords.size () + records.size ()) *
-                                          Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
+        if (static_cast<float> (changedRecords.size ()) >=
+            static_cast<float> (changedRecords.size () + records.size ()) *
+                Constants::OrderedIndex::MINIMUM_CHANGED_RECORDS_RATIO_TO_TRIGGER_FULL_RESORT)
         {
             MassInsertionExecutor executor = StartMassInsertion ();
             for (const ChangedRecordInfo &info : changedRecords)

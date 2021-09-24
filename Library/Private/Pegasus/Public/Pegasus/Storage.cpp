@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <cassert>
+#include <cstring>
 
 #include <API/Common/Implementation/Iterator.hpp>
 
@@ -40,7 +41,7 @@ void *Storage::Allocator::Next () noexcept
     return current;
 }
 
-Storage::Allocator::Allocator (Storage *_owner) : owner (_owner), current (nullptr)
+Storage::Allocator::Allocator (Storage *_owner) : owner (_owner)
 {
     assert (owner);
     owner->RegisterWriter ();

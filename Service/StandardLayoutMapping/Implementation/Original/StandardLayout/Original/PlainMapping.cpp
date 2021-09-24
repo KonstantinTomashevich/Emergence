@@ -42,7 +42,8 @@ const char *FieldData::GetName () const noexcept
     return name;
 }
 
-FieldData::FieldData () noexcept : archetype (FieldArchetype::INT), offset (0u), size (0u), name {0u}
+// NOLINTNEXTLINE(modernize-use-equals-default): Default constructor is implicitly deleted.
+FieldData::FieldData () noexcept
 {
 }
 
@@ -92,25 +93,6 @@ void FieldData::CopyName (const char *_name) noexcept
     strcpy (name, _name);
 }
 
-using ConstIterator = PlainMapping::ConstIterator;
-
-EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (ConstIterator, target)
-
-PlainMapping::ConstIterator::ConstIterator () noexcept : target (nullptr)
-{
-}
-
-const FieldData &PlainMapping::ConstIterator::operator* () const noexcept
-{
-    assert (target);
-    return *target;
-}
-
-const FieldData *PlainMapping::ConstIterator::operator-> () const noexcept
-{
-    return target;
-}
-
 std::size_t PlainMapping::GetObjectSize () const noexcept
 {
     return objectSize;
@@ -132,32 +114,25 @@ const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
     {
         return &fields[_field];
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
-FieldData *PlainMapping::GetField (FieldId _field) noexcept
+const FieldData *PlainMapping::Begin () const noexcept
 {
-    return const_cast<FieldData *> (const_cast<const PlainMapping *> (this)->GetField (_field));
+    return &fields[0u];
 }
 
-PlainMapping::ConstIterator PlainMapping::Begin () const noexcept
+const FieldData *PlainMapping::End () const noexcept
 {
-    return PlainMapping::ConstIterator (&fields[0u]);
-}
-
-PlainMapping::ConstIterator PlainMapping::End () const noexcept
-{
-    return PlainMapping::ConstIterator (&fields[fieldCount]);
+    return &fields[fieldCount];
 }
 
 FieldId PlainMapping::GetFieldId (const FieldData &_field) const
 {
-    assert (&_field >= Begin ().target);
-    assert (&_field < End ().target);
-    return &_field - Begin ().target;
+    assert (&_field >= Begin ());
+    assert (&_field < End ());
+    return &_field - Begin ();
 }
 
 std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noexcept
@@ -183,7 +158,7 @@ PlainMapping::~PlainMapping () noexcept
     }
 }
 
-void *PlainMapping::operator new (std::size_t, std::size_t _fieldCapacity) noexcept
+void *PlainMapping::operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept
 {
     return malloc (CalculateMappingSize (_fieldCapacity));
 }
@@ -199,14 +174,14 @@ PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexc
     return static_cast<PlainMapping *> (realloc (this, CalculateMappingSize (_newFieldCapacity)));
 }
 
-PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept
+const FieldData *begin (const PlainMapping &_mapping) noexcept
 {
-    return mapping.Begin ();
+    return _mapping.Begin ();
 }
 
-PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept
+const FieldData *end (const PlainMapping &_mapping) noexcept
 {
-    return mapping.End ();
+    return _mapping.End ();
 }
 
 PlainMappingBuilder::~PlainMappingBuilder ()
@@ -250,7 +225,7 @@ FieldId PlainMappingBuilder::AddField (FieldData::BitSeed _seed) noexcept
 FieldId PlainMappingBuilder::AddField (FieldData::NestedObjectSeed _seed) noexcept
 {
     auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (_seed);
+    new (allocatedField) FieldData (std::move (_seed));
     assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
     return fieldId;
 }
@@ -267,10 +242,7 @@ std::pair<FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept
 
     FieldId fieldId = underConstruction->fieldCount;
     ++underConstruction->fieldCount;
-
-    FieldData *allocated = underConstruction->GetField (fieldId);
-    assert (allocated);
-    return {fieldId, allocated};
+    return {fieldId, &underConstruction->fields[fieldId]};
 }
 
 void PlainMappingBuilder::ReallocateMapping (std::size_t _fieldCapacity) noexcept

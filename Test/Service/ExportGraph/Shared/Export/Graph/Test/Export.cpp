@@ -16,7 +16,7 @@ bool Emergence::Export::Graph::Test::ExportTestIncludeMarker () noexcept
 
 namespace Emergence::Export::Graph::Test::Case
 {
-static VisualGraph::Graph TwoConnectedNodes () noexcept
+static VisualGraph::Graph TwoConnectedNodes ()
 {
     return {"graph",
             {},
@@ -27,7 +27,7 @@ static VisualGraph::Graph TwoConnectedNodes () noexcept
             }};
 }
 
-static VisualGraph::Graph TwoConnectedNodesAndLabels () noexcept
+static VisualGraph::Graph TwoConnectedNodesAndLabels ()
 {
     return {"graph",
             "Cool Graph",
@@ -44,7 +44,7 @@ static VisualGraph::Graph ChangeId (VisualGraph::Graph _graph, std::string _newI
     return _graph;
 }
 
-static VisualGraph::Graph TwoSeparateSubgraphs () noexcept
+static VisualGraph::Graph TwoSeparateSubgraphs ()
 {
     return {"complex_graph",
             {},
@@ -56,7 +56,7 @@ static VisualGraph::Graph TwoSeparateSubgraphs () noexcept
             {}};
 }
 
-static VisualGraph::Graph TwoInterconnectedSubgraphs () noexcept
+static VisualGraph::Graph TwoInterconnectedSubgraphs ()
 {
     return {"complex_graph",
             {},
@@ -68,7 +68,7 @@ static VisualGraph::Graph TwoInterconnectedSubgraphs () noexcept
             {{"first_subgraph/a", "second_subgraph/b", {}}}};
 }
 
-static VisualGraph::Graph RelativePathsFromRoot () noexcept
+static VisualGraph::Graph RelativePathsFromRoot ()
 {
     return {"complex_graph",
             {},
@@ -79,7 +79,7 @@ static VisualGraph::Graph RelativePathsFromRoot () noexcept
             {{"a", "subgraph/a", {}}, {"b", "subgraph/b", {}}}};
 }
 
-static VisualGraph::Graph DoubleSubgraphNesting () noexcept
+static VisualGraph::Graph DoubleSubgraphNesting ()
 {
     return {"complex_graph",
             {},
@@ -93,7 +93,7 @@ static VisualGraph::Graph DoubleSubgraphNesting () noexcept
              {"first_subgraph/first_subgraph/a", "second_subgraph/b", {}}}};
 }
 
-static VisualGraph::Graph EdgeWithAbsolutePath () noexcept
+static VisualGraph::Graph EdgeWithAbsolutePath ()
 {
     VisualGraph::Graph firstSubgraph = ChangeId (TwoConnectedNodes (), "first_subgraph");
     firstSubgraph.edges.emplace_back (VisualGraph::Edge {"a", "complex_graph/second_subgraph/b", {}});
@@ -108,7 +108,7 @@ static VisualGraph::Graph EdgeWithAbsolutePath () noexcept
             {}};
 }
 
-static VisualGraph::Graph EdgeWithColor () noexcept
+static VisualGraph::Graph EdgeWithColor ()
 {
     return {"graph",
             {},
@@ -119,7 +119,7 @@ static VisualGraph::Graph EdgeWithColor () noexcept
             }};
 }
 
-static VisualGraph::Graph WithDuplicateGraphIds () noexcept
+static VisualGraph::Graph WithDuplicateGraphIds ()
 {
     return {"complex_graph",
             {},
@@ -132,7 +132,7 @@ static VisualGraph::Graph WithDuplicateGraphIds () noexcept
             {}};
 }
 
-static VisualGraph::Graph WithIncorrectGraphIds () noexcept
+static VisualGraph::Graph WithIncorrectGraphIds ()
 {
     return {"complex_graph",
             {},
@@ -145,7 +145,7 @@ static VisualGraph::Graph WithIncorrectGraphIds () noexcept
             {}};
 }
 
-static VisualGraph::Graph WithDuplicateNodeIds () noexcept
+static VisualGraph::Graph WithDuplicateNodeIds ()
 {
     return {"graph",
             {},
@@ -156,7 +156,7 @@ static VisualGraph::Graph WithDuplicateNodeIds () noexcept
             }};
 }
 
-static VisualGraph::Graph WithIncorrectNodeIds () noexcept
+static VisualGraph::Graph WithIncorrectNodeIds ()
 {
     return {"graph",
             {},

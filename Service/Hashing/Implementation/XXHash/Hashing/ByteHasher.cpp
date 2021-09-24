@@ -12,6 +12,16 @@ ByteHasher::ByteHasher () noexcept
     new (&data) xxh::hash_state64_t ();
 }
 
+ByteHasher::ByteHasher (const ByteHasher &_other) noexcept
+{
+    new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
+}
+
+ByteHasher::ByteHasher (ByteHasher &&_other) noexcept
+{
+    new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
+}
+
 ByteHasher::~ByteHasher () noexcept
 {
     block_cast<xxh::hash_state64_t> (data).~hash_state_t ();
@@ -36,5 +46,26 @@ void ByteHasher::Clear () noexcept
 uint64_t ByteHasher::GetCurrentValue () const noexcept
 {
     return block_cast<xxh::hash_state64_t> (data).digest ();
+}
+
+ByteHasher &ByteHasher::operator= (const ByteHasher &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~ByteHasher ();
+        new (this) ByteHasher (_other);
+    }
+
+    return *this;
+}
+ByteHasher &ByteHasher::operator= (ByteHasher &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~ByteHasher ();
+        new (this) ByteHasher (std::move (_other));
+    }
+
+    return *this;
 }
 } // namespace Emergence::Hashing

@@ -143,13 +143,12 @@ int NumericValueComparator<Type>::Compare (const void *_firstValue, const void *
     {
         return -1;
     }
-    else if (*static_cast<const Type *> (_firstValue) > *static_cast<const Type *> (_secondValue))
+
+    if (*static_cast<const Type *> (_firstValue) > *static_cast<const Type *> (_secondValue))
     {
         return 1;
     }
-    else
-    {
-        return 0;
-    }
+
+    return 0;
 }
 } // namespace Emergence::Pegasus

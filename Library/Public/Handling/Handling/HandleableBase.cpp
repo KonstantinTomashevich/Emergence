@@ -20,8 +20,4 @@ uintptr_t HandleableBase::GetReferenceCount () const noexcept
 {
     return references;
 }
-
-HandleableBase::HandleableBase () : references (0u)
-{
-}
 } // namespace Emergence::Handling

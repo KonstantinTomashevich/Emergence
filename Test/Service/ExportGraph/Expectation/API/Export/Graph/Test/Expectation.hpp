@@ -4,19 +4,19 @@
 
 namespace Emergence::Export::Graph::Test::Expectation
 {
-std::string TwoConnectedNodes () noexcept;
+std::string TwoConnectedNodes ();
 
-std::string TwoConnectedNodesAndLabels () noexcept;
+std::string TwoConnectedNodesAndLabels ();
 
-std::string TwoSeparateSubgraphs () noexcept;
+std::string TwoSeparateSubgraphs ();
 
-std::string TwoInterconnectedSubgraphs () noexcept;
+std::string TwoInterconnectedSubgraphs ();
 
-std::string RelativePathsFromRoot () noexcept;
+std::string RelativePathsFromRoot ();
 
-std::string DoubleSubgraphNesting () noexcept;
+std::string DoubleSubgraphNesting ();
 
-std::string EdgeWithAbsolutePath () noexcept;
+std::string EdgeWithAbsolutePath ();
 
-std::string EdgeWithColor () noexcept;
+std::string EdgeWithColor ();
 } // namespace Emergence::Export::Graph::Test::Expectation

@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include <API/Common/Iterator.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
@@ -57,17 +58,24 @@ public:
         Handling::Handle<PlainMapping> nestedObjectMapping;
     };
 
-    FieldArchetype GetArchetype () const noexcept;
+    /// FieldData could only be moved through reallocation of PlainMapping.
+    FieldData (const FieldData &_other) = delete;
 
-    size_t GetOffset () const noexcept;
+    FieldData (FieldData &&_other) = delete;
 
-    size_t GetSize () const noexcept;
+    [[nodiscard]] FieldArchetype GetArchetype () const noexcept;
 
-    uint_fast8_t GetBitOffset () const noexcept;
+    [[nodiscard]] size_t GetOffset () const noexcept;
 
-    Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
+    [[nodiscard]] size_t GetSize () const noexcept;
 
-    const char *GetName () const noexcept;
+    [[nodiscard]] uint_fast8_t GetBitOffset () const noexcept;
+
+    [[nodiscard]] Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
+
+    [[nodiscard]] const char *GetName () const noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (FieldData);
 
 private:
     /// PlainMapping deletes FieldData's.
@@ -89,9 +97,9 @@ private:
 
     void CopyName (const char *_name) noexcept;
 
-    FieldArchetype archetype;
-    std::size_t offset;
-    std::size_t size;
+    FieldArchetype archetype {FieldArchetype::INT};
+    std::size_t offset {0u};
+    std::size_t size {0u};
 
     union
     {
@@ -103,44 +111,33 @@ private:
     /// \details Field name should not be inlined into FieldData object, because it would decrease field array cache
     ///          coherency: names are rarely accessed, but take a lot of space in comparison to frequently accessed
     ///          archetype, size and offset information.
-    char *name;
+    char *name {nullptr};
 };
 
 class PlainMapping final : public Handling::HandleableBase
 {
 public:
-    class ConstIterator final
-    {
-    public:
-        ConstIterator () noexcept;
+    /// PlainMapping is not designed to be copied.
+    PlainMapping (const PlainMapping &_other) = delete;
 
-        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (ConstIterator, const FieldData &);
+    /// PlainMapping is designed to be moved only through reallocation.
+    PlainMapping (PlainMapping &&_other) = delete;
 
-        const FieldData *operator-> () const noexcept;
+    [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 
-    private:
-        friend class PlainMapping;
+    [[nodiscard]] std::size_t GetFieldCount () const noexcept;
 
-        explicit ConstIterator (const FieldData *_target) noexcept;
+    [[nodiscard]] const char *GetName () const noexcept;
 
-        const FieldData *target = nullptr;
-    };
+    [[nodiscard]] const FieldData *GetField (FieldId _field) const noexcept;
 
-    std::size_t GetObjectSize () const noexcept;
+    [[nodiscard]] const FieldData *Begin () const noexcept;
 
-    std::size_t GetFieldCount () const noexcept;
+    [[nodiscard]] const FieldData *End () const noexcept;
 
-    const char *GetName () const noexcept;
+    [[nodiscard]] FieldId GetFieldId (const FieldData &_field) const;
 
-    const FieldData *GetField (FieldId _field) const noexcept;
-
-    FieldData *GetField (FieldId _field) noexcept;
-
-    ConstIterator Begin () const noexcept;
-
-    ConstIterator End () const noexcept;
-
-    FieldId GetFieldId (const FieldData &_field) const;
+    EMERGENCE_DELETE_ASSIGNMENT (PlainMapping);
 
 private:
     /// PlainMappingBuilder handles PlainMapping allocation and construction routine.
@@ -160,7 +157,7 @@ private:
     /// \brief Allocates mapping object, that can hold up to _fieldCapacity fields.
     ///
     /// \details PlainMapping uses malloc-based allocation to support runtime capacity changes using ::ChangeCapacity.
-    void *operator new (std::size_t, std::size_t _fieldCapacity) noexcept;
+    void *operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept;
 
     /// \brief PlainMapping has custom allocation logic and therefore needs custom deallocator.
     void operator delete (void *_pointer) noexcept;
@@ -183,13 +180,20 @@ private:
     FieldData fields[0u];
 };
 
-PlainMapping::ConstIterator begin (const PlainMapping &mapping) noexcept;
+const FieldData *begin (const PlainMapping &_mapping) noexcept;
 
-PlainMapping::ConstIterator end (const PlainMapping &mapping) noexcept;
+const FieldData *end (const PlainMapping &_mapping) noexcept;
 
 class PlainMappingBuilder
 {
 public:
+    PlainMappingBuilder () noexcept = default;
+
+    /// PlainMappingBuilder is not designed to be copied or moved.
+    PlainMappingBuilder (const PlainMappingBuilder &_other) = delete;
+
+    PlainMappingBuilder (PlainMappingBuilder &&_other) = delete;
+
     ~PlainMappingBuilder ();
 
     void Begin (const char *_name, std::size_t _objectSize) noexcept;
@@ -201,6 +205,8 @@ public:
     FieldId AddField (FieldData::BitSeed _seed) noexcept;
 
     FieldId AddField (FieldData::NestedObjectSeed _seed) noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (PlainMappingBuilder);
 
 private:
     static constexpr std::size_t INITIAL_FIELD_CAPACITY = 32u;

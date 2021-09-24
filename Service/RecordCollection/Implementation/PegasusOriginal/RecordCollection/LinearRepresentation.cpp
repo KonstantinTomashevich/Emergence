@@ -106,7 +106,7 @@ const StandardLayout::Mapping &LinearRepresentation::GetTypeMapping () const noe
 bool LinearRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle);
     Pegasus::OrderedIndex *index = realHandle.Get ();
 
     // To extract correct result we must temporary unlink index handle.
@@ -120,7 +120,7 @@ bool LinearRepresentation::CanBeDropped () const noexcept
 void LinearRepresentation::Drop () noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle);
     Pegasus::OrderedIndex *index = realHandle.Get ();
 
     // Free handle first, because indices can not be deleted while any handle points to them.

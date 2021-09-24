@@ -1,3 +1,4 @@
+#include <cstring>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -42,15 +43,22 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Represe
 {
     explicit ExecutionContext (const StandardLayout::Mapping &_typeMapping);
 
+    ExecutionContext (const ExecutionContext &_other) = delete;
+
+    ExecutionContext (ExecutionContext &&_other) = delete;
+
     ~ExecutionContext ();
+
+    ExecutionContext &operator= (const ExecutionContext &_other) = delete;
+
+    ExecutionContext &operator= (ExecutionContext &&_other) = delete;
 
     Collection collection;
     std::optional<Collection::Allocator> collectionAllocator;
 };
 
-ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
-    : collection (_typeMapping),
-      collectionAllocator ()
+ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping) : collection (_typeMapping)
+
 {
 }
 
@@ -268,7 +276,7 @@ void ExecuteTask (ExecutionContext &_context, const DropRepresentation &_task)
     IterateOverRepresentations (_context);
 }
 
-void ExecuteTask (ExecutionContext &_context, const OpenAllocator &)
+void ExecuteTask (ExecutionContext &_context, const OpenAllocator & /*unused*/)
 {
     REQUIRE_WITH_MESSAGE (!_context.collectionAllocator, "There should be no active allocator.");
     _context.collectionAllocator.emplace (_context.collection.AllocateAndInsert ());
@@ -286,7 +294,7 @@ void ExecuteTask (ExecutionContext &_context, const AllocateAndInit &_task)
     }
 }
 
-void ExecuteTask (ExecutionContext &_context, const CloseAllocator &)
+void ExecuteTask (ExecutionContext &_context, const CloseAllocator & /*unused*/)
 {
     REQUIRE_WITH_MESSAGE (_context.collectionAllocator, "There should be active allocator.");
     _context.collectionAllocator.reset ();
@@ -431,7 +439,7 @@ std::ostream &operator<< (std::ostream &_output, const DropRepresentation &_task
     return _output << "Drop representation \"" << _task.name << "\".";
 }
 
-std::ostream &operator<< (std::ostream &_output, const OpenAllocator &)
+std::ostream &operator<< (std::ostream &_output, const OpenAllocator & /*unused*/)
 {
     return _output << "Open allocator.";
 }
@@ -441,7 +449,7 @@ std::ostream &operator<< (std::ostream &_output, const AllocateAndInit &_task)
     return _output << "Allocate record and init from " << _task.copyFrom << ".";
 }
 
-std::ostream &operator<< (std::ostream &_output, const CloseAllocator &)
+std::ostream &operator<< (std::ostream &_output, const CloseAllocator & /*unused*/)
 {
     return _output << "Close allocator.";
 }
@@ -671,7 +679,7 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 }
 } // namespace ReferenceApiTestImporters
 
-static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_graphOutput) noexcept
+static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_graphOutput)
 {
     ExecutionContext context {_scenario.mapping};
     LOG ((std::stringstream () << _scenario).str ());
@@ -693,12 +701,12 @@ static void ExecuteScenario (const Scenario &_scenario, VisualGraph::Graph *_gra
     }
 }
 
-void Scenario::Execute () const noexcept
+void Scenario::Execute () const
 {
     ExecuteScenario (*this, nullptr);
 }
 
-VisualGraph::Graph Scenario::ExecuteAndVisualize () const noexcept
+VisualGraph::Graph Scenario::ExecuteAndVisualize () const
 {
     VisualGraph::Graph graph;
     ExecuteScenario (*this, &graph);
@@ -724,9 +732,9 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second)
 {
-    first.insert (first.end (), second.begin (), second.end ());
-    return first;
+    _first.insert (_first.end (), _second.begin (), _second.end ());
+    return _first;
 }
 } // namespace Emergence::RecordCollection::Test

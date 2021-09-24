@@ -129,12 +129,12 @@ FieldId MappingBuilder::RegisterBlock (const char *_name, std::size_t _offset, s
 
 FieldId MappingBuilder::RegisterNestedObject (const char *_name,
                                               std::size_t _offset,
-                                              const Mapping &objectMapping) noexcept
+                                              const Mapping &_objectMapping) noexcept
 {
     assert (handle);
     auto *state = static_cast<PlainMappingBuilder *> (handle);
 
-    const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (objectMapping.data);
+    const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (_objectMapping.data);
     assert (nestedPlainMapping);
     FieldId objectFieldId = state->AddField ({_name, _offset, nestedPlainMapping.Get ()});
     const std::string prefix = std::string (_name) + PROJECTION_NAME_SEPARATOR;

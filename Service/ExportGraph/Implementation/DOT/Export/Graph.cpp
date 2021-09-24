@@ -21,7 +21,7 @@ private:
 
     /// \brief Exports given graph and its subgraphs to ::output.
     /// \return If export was done successfully, returns set of all existing node relative paths for this graph.
-    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_path,
+    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_graph,
                                                             std::string _pathPrefix = "",
                                                             const std::string &_outerIndentation = "");
 
@@ -155,10 +155,8 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
             {
                 return relativePaths.contains (_path.substr (absolutePrefix.size ()));
             }
-            else
-            {
-                return relativePaths.contains (_path);
-            }
+
+            return relativePaths.contains (_path);
         };
 
         for (const VisualGraph::Edge &edge : resolvedEdges)

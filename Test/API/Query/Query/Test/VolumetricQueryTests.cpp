@@ -50,7 +50,7 @@ static Storage RequestScreenRectStorage (const std::vector<const void *> &_objec
                 }}}};
 }
 
-Scenario RayIntersections2D () noexcept
+Scenario RayIntersections2D ()
 {
     return {
         {
@@ -120,7 +120,7 @@ Scenario RayIntersections2D () noexcept
         }};
 }
 
-Scenario ShapeIntersections2D () noexcept
+Scenario ShapeIntersections2D ()
 {
     return {
         {
@@ -147,7 +147,7 @@ Scenario ShapeIntersections2D () noexcept
         }};
 }
 
-Scenario Duplicates () noexcept
+Scenario Duplicates ()
 {
     return {
         {
@@ -168,7 +168,7 @@ Scenario Duplicates () noexcept
         }};
 }
 
-Scenario Edition () noexcept
+Scenario Edition ()
 {
     return {
         {
@@ -188,7 +188,7 @@ Scenario Edition () noexcept
         }};
 }
 
-Scenario Intersections3D () noexcept
+Scenario Intersections3D ()
 {
     return {
         {
@@ -238,7 +238,7 @@ Scenario Intersections3D () noexcept
         }};
 }
 
-Scenario MultipleSourcesEdition () noexcept
+Scenario MultipleSourcesEdition ()
 {
     return {
         {
@@ -274,7 +274,7 @@ Scenario MultipleSourcesEdition () noexcept
         }};
 }
 
-Scenario MultipleSourcesDeletion () noexcept
+Scenario MultipleSourcesDeletion ()
 {
     return {
         {
@@ -302,7 +302,7 @@ Scenario MultipleSourcesDeletion () noexcept
         }};
 }
 
-Scenario IntegerIntersections () noexcept
+Scenario IntegerIntersections ()
 {
     return {{
                 RequestScreenRectStorage (

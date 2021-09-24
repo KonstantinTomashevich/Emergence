@@ -10,7 +10,7 @@ Storage RequestStorage (const std::vector<const void *> &_objects)
     return {Player::Reflect ().mapping, _objects, {Sources::UnorderedSequence {"sequence"}}};
 }
 
-Scenario Read () noexcept
+Scenario Read ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
@@ -20,7 +20,7 @@ Scenario Read () noexcept
                                       {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}}}};
 }
 
-Scenario Edit () noexcept
+Scenario Edit ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
@@ -42,7 +42,7 @@ Scenario Edit () noexcept
                  "cursor", {&KARL_0_ALIVE_IMMOBILIZED, &KARL_0_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}}}};
 }
 
-Scenario Delete () noexcept
+Scenario Delete ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
@@ -60,7 +60,7 @@ Scenario Delete () noexcept
              CursorCheckAllUnordered {"cursor", {}}}};
 }
 
-Scenario EditAndDelete () noexcept
+Scenario EditAndDelete ()
 {
     return {{
                 RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),

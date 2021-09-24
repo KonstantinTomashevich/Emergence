@@ -2,7 +2,7 @@
 
 namespace Emergence::Export::Graph::Test::Expectation
 {
-std::string TwoConnectedNodes () noexcept
+std::string TwoConnectedNodes ()
 {
     return "digraph \"graph\" {\n"
            "    label=\"graph\";\n"
@@ -12,7 +12,7 @@ std::string TwoConnectedNodes () noexcept
            "}\n";
 }
 
-std::string TwoConnectedNodesAndLabels () noexcept
+std::string TwoConnectedNodesAndLabels ()
 {
     return "digraph \"graph\" {\n"
            "    label=\"Cool Graph\";\n"
@@ -22,7 +22,7 @@ std::string TwoConnectedNodesAndLabels () noexcept
            "}\n";
 }
 
-std::string TwoSeparateSubgraphs () noexcept
+std::string TwoSeparateSubgraphs ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -41,7 +41,7 @@ std::string TwoSeparateSubgraphs () noexcept
            "}\n";
 }
 
-std::string TwoInterconnectedSubgraphs () noexcept
+std::string TwoInterconnectedSubgraphs ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -61,7 +61,7 @@ std::string TwoInterconnectedSubgraphs () noexcept
            "}\n";
 }
 
-std::string RelativePathsFromRoot () noexcept
+std::string RelativePathsFromRoot ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -78,7 +78,7 @@ std::string RelativePathsFromRoot () noexcept
            "}\n";
 }
 
-std::string DoubleSubgraphNesting () noexcept
+std::string DoubleSubgraphNesting ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -123,7 +123,7 @@ std::string DoubleSubgraphNesting () noexcept
            "}\n";
 }
 
-std::string EdgeWithAbsolutePath () noexcept
+std::string EdgeWithAbsolutePath ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -143,7 +143,7 @@ std::string EdgeWithAbsolutePath () noexcept
            "}\n";
 }
 
-std::string EdgeWithColor () noexcept
+std::string EdgeWithColor ()
 {
     return "digraph \"graph\" {\n"
            "    label=\"graph\";\n"

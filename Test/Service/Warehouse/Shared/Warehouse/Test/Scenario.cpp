@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstring>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -61,7 +62,15 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Prepare
 {
     ExecutionContext () = default;
 
+    ExecutionContext (const ExecutionContext &_other) = delete;
+
+    ExecutionContext (ExecutionContext &&_other) = delete;
+
     ~ExecutionContext ();
+
+    ExecutionContext &operator= (const ExecutionContext &_other) = delete;
+
+    ExecutionContext &operator= (ExecutionContext &&_other) = delete;
 
     Registry registry {"Test"};
 };
@@ -232,7 +241,7 @@ void ValidateCreatedQuery (const std::vector<Dimension> &_dimensions, const Quer
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -240,7 +249,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectio
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -248,7 +257,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersecti
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.FetchRayIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.FetchRayIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -256,7 +265,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQ
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyRayIntersectionQuery &_task)
 {
     const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
-    const auto query = _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions);
+    auto query = _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
 }
@@ -647,19 +656,18 @@ static Task InsertQueryPreparationTaskFromSource (const Query::Test::Source &_so
     {
         return PrepareModifySingletonQuery {{_typeMapping, _queryName}};
     }
-    else if (std::holds_alternative<Query::Test::Sources::UnorderedSequence> (_source))
+
+    if (std::holds_alternative<Query::Test::Sources::UnorderedSequence> (_source))
     {
         return PrepareInsertShortTermQuery {{_typeMapping, _queryName}};
     }
-    else
-    {
-        const bool isParametricSource = std::holds_alternative<Query::Test::Sources::Value> (_source) ||
-                                        std::holds_alternative<Query::Test::Sources::Range> (_source) ||
-                                        std::holds_alternative<Query::Test::Sources::Volumetric> (_source);
 
-        REQUIRE (isParametricSource);
-        return PrepareInsertLongTermQuery {{_typeMapping, _queryName}};
-    }
+    const bool isParametricSource = std::holds_alternative<Query::Test::Sources::Value> (_source) ||
+                                    std::holds_alternative<Query::Test::Sources::Range> (_source) ||
+                                    std::holds_alternative<Query::Test::Sources::Volumetric> (_source);
+
+    REQUIRE (isParametricSource);
+    return PrepareInsertLongTermQuery {{_typeMapping, _queryName}};
 }
 
 static std::vector<Task> ImportStorage (const Query::Test::Storage &_storage)
@@ -769,21 +777,21 @@ namespace TestReferenceApiDrivers
 template <typename T, typename Head, typename... Tail>
 struct OneOf
 {
-    static constexpr bool value = std::is_same_v<T, Head> || OneOf<T, Tail...>::value;
+    static constexpr bool VALUE = std::is_same_v<T, Head> || OneOf<T, Tail...>::VALUE;
 };
 
 template <typename T, typename Head>
 struct OneOf<T, Head>
 {
-    static constexpr bool value = std::is_same_v<T, Head>;
+    static constexpr bool VALUE = std::is_same_v<T, Head>;
 };
 
 template <typename Type>
-concept SingletonQueryPreparation = OneOf<Type, PrepareFetchSingletonQuery, PrepareModifySingletonQuery>::value;
+concept SingletonQueryPreparation = OneOf<Type, PrepareFetchSingletonQuery, PrepareModifySingletonQuery>::VALUE;
 
 template <typename Type>
 concept SequenceQueryPreparation =
-    OneOf<Type, PrepareInsertShortTermQuery, PrepareFetchSequenceQuery, PrepareModifySequenceQuery>::value;
+    OneOf<Type, PrepareInsertShortTermQuery, PrepareFetchSequenceQuery, PrepareModifySequenceQuery>::VALUE;
 
 template <typename Type>
 concept IndexedQueryPreparation = OneOf<Type,
@@ -797,7 +805,7 @@ concept IndexedQueryPreparation = OneOf<Type,
                                         PrepareFetchShapeIntersectionQuery,
                                         PrepareModifyShapeIntersectionQuery,
                                         PrepareFetchRayIntersectionQuery,
-                                        PrepareModifyRayIntersectionQuery>::value;
+                                        PrepareModifyRayIntersectionQuery>::VALUE;
 
 static std::vector<Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void *_object)
 {
@@ -1000,7 +1008,7 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 }
 } // namespace TestReferenceApiDrivers
 
-static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization *_visualizationOutput) noexcept
+static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization *_visualizationOutput)
 {
     ExecutionContext context;
     LOG ((std::stringstream () << _scenario).str ());
@@ -1034,17 +1042,18 @@ static void ExecuteScenario (const Scenario &_scenario, Scenario::Visualization 
         std::sort (_visualizationOutput->queries.begin (), _visualizationOutput->queries.end (),
                    [] (const VisualGraph::Graph &_left, const VisualGraph::Graph &_right)
                    {
+                       // NOLINTNEXTLINE(modernize-use-nullptr): CLang Tidy bugs out and replaces < with nullptr.
                        return _left.id < _right.id;
                    });
     }
 }
 
-void Scenario::Execute () const noexcept
+void Scenario::Execute () const
 {
     ExecuteScenario (*this, nullptr);
 }
 
-Scenario::Visualization Scenario::ExecuteAndVisualize () const noexcept
+Scenario::Visualization Scenario::ExecuteAndVisualize () const
 {
     Scenario::Visualization visualization;
     ExecuteScenario (*this, &visualization);
@@ -1070,20 +1079,20 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second)
 {
-    for (const Task &task : second)
+    for (const Task &task : _second)
     {
-        first.emplace_back (task);
+        _first.emplace_back (task);
     }
 
-    return first;
+    return _first;
 }
 
-std::vector<Task> operator+ (std::vector<Task> first, const Task &_task) noexcept
+std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task)
 {
-    first.emplace_back (_task);
-    return first;
+    _first.emplace_back (_task);
+    return _first;
 }
 
 } // namespace Emergence::Warehouse::Test

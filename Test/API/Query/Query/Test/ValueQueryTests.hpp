@@ -6,25 +6,25 @@
 
 namespace Emergence::Query::Test::ValueQuery
 {
-Scenario SimpleLookup () noexcept;
+Scenario SimpleLookup ();
 
-Scenario LookupForNonExistentObject () noexcept;
+Scenario LookupForNonExistentObject ();
 
-Scenario LookupForMany () noexcept;
+Scenario LookupForMany ();
 
-Scenario LookupAndEdit () noexcept;
+Scenario LookupAndEdit ();
 
-Scenario OnStringField () noexcept;
+Scenario OnStringField ();
 
-Scenario OnTwoFields () noexcept;
+Scenario OnTwoFields ();
 
-Scenario OnBitField () noexcept;
+Scenario OnBitField ();
 
-Scenario OnTwoBitFields () noexcept;
+Scenario OnTwoBitFields ();
 
-Scenario MultipleSourcesEdition () noexcept;
+Scenario MultipleSourcesEdition ();
 
-Scenario MultipleSourcesDeletion () noexcept;
+Scenario MultipleSourcesDeletion ();
 } // namespace Emergence::Query::Test::ValueQuery
 
 #define REGISTER_VALUE_QUERY_TEST(Driver, TestName)                                                                    \

@@ -55,9 +55,9 @@ public:
 
         ~InsertQuery () noexcept = default;
 
-        Cursor Execute () const noexcept;
+        [[nodiscard]] Cursor Execute () const noexcept;
 
-        Handling::Handle<LongTermContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<LongTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (InsertQuery);
@@ -80,7 +80,7 @@ public:
 
         ~RepresentationQueryBase () noexcept;
 
-        Handling::Handle<LongTermContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<LongTermContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (RepresentationQueryBase);
@@ -106,9 +106,9 @@ public:
 
         Cursor Execute (RecordCollection::PointRepresentation::Point _values) noexcept;
 
-        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldBegin () const noexcept;
+        [[nodiscard]] RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldBegin () const noexcept;
 
-        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldEnd () const noexcept;
+        [[nodiscard]] RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -127,9 +127,9 @@ public:
 
         Cursor Execute (RecordCollection::PointRepresentation::Point _values) noexcept;
 
-        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldBegin () const noexcept;
+        [[nodiscard]] RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldBegin () const noexcept;
 
-        RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldEnd () const noexcept;
+        [[nodiscard]] RecordCollection::PointRepresentation::KeyFieldIterator KeyFieldEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -148,7 +148,7 @@ public:
         Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
                         RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
-        StandardLayout::Field GetKeyField () const noexcept;
+        [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -167,7 +167,7 @@ public:
         Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
                         RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
-        StandardLayout::Field GetKeyField () const noexcept;
+        [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -186,7 +186,7 @@ public:
         Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
                         RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
-        StandardLayout::Field GetKeyField () const noexcept;
+        [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -206,7 +206,7 @@ public:
         Cursor Execute (RecordCollection::LinearRepresentation::KeyFieldValue _min,
                         RecordCollection::LinearRepresentation::KeyFieldValue _max) noexcept;
 
-        StandardLayout::Field GetKeyField () const noexcept;
+        [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -225,9 +225,9 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Shape _shape) noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -247,9 +247,9 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Shape _shape) noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -269,9 +269,9 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Ray _ray, float _maxDistance) noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -291,9 +291,9 @@ public:
 
         Cursor Execute (RecordCollection::VolumetricRepresentation::Ray _ray, float _maxDistance) noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionBegin () const noexcept;
 
-        RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
+        [[nodiscard]] RecordCollection::VolumetricRepresentation::DimensionIterator DimensionEnd () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -301,6 +301,10 @@ public:
         ModifyRayIntersectionQuery (Handling::Handle<LongTermContainer> _container,
                                     RecordCollection::VolumetricRepresentation _representation) noexcept;
     };
+
+    LongTermContainer (const LongTermContainer &_other) = delete;
+
+    LongTermContainer (LongTermContainer &&_other) = delete;
 
     InsertQuery Insert () noexcept;
 
@@ -327,6 +331,8 @@ public:
 
     ModifyRayIntersectionQuery ModifyRayIntersection (
         const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (LongTermContainer);
 
 private:
     /// CargoDeck constructs containers.

@@ -11,13 +11,13 @@ namespace Emergence::StandardLayout
 {
 using FieldIterator = Mapping::FieldIterator;
 
-using FieldIteratorImplementation = PlainMapping::ConstIterator;
+using FieldIteratorImplementation = const FieldData *;
 
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (FieldIterator, FieldIteratorImplementation)
 
 Field Mapping::FieldIterator::operator* () const noexcept
 {
-    return Field (const_cast<FieldData *> (&*block_cast<const PlainMapping::ConstIterator> (data)));
+    return Field (block_cast<FieldData *> (data));
 }
 
 Mapping::Mapping (const Mapping &_other) noexcept : Mapping (&_other.data)
@@ -46,7 +46,7 @@ Field Mapping::GetField (FieldId _field) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
     assert (handle);
-    return Field (handle->GetField (_field));
+    return Field (const_cast<FieldData *> (handle->GetField (_field)));
 }
 
 bool Mapping::operator== (const Mapping &_other) const noexcept
@@ -64,7 +64,7 @@ Mapping::FieldIterator Mapping::Begin () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
     assert (handle);
-    PlainMapping::ConstIterator iterator = handle->Begin ();
+    const FieldData *iterator = handle->Begin ();
     return FieldIterator (reinterpret_cast<decltype (FieldIterator::data) *> (&iterator));
 }
 
@@ -72,7 +72,7 @@ Mapping::FieldIterator Mapping::End () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
     assert (handle);
-    PlainMapping::ConstIterator iterator = handle->End ();
+    const FieldData *iterator = handle->End ();
     return FieldIterator (reinterpret_cast<decltype (FieldIterator::data) *> (&iterator));
 }
 

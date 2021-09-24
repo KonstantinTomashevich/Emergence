@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include <API/Common/Shortcuts.hpp>
+
 namespace Emergence::Memory
 {
 class UnorderedPool final
@@ -15,8 +17,6 @@ public:
     class AcquiredChunkConstIterator final
     {
     public:
-        ~AcquiredChunkConstIterator () noexcept = default;
-
         const void *operator* () const noexcept;
 
         AcquiredChunkConstIterator &operator++ () noexcept;
@@ -45,8 +45,6 @@ public:
     class AcquiredChunkIterator final
     {
     public:
-        ~AcquiredChunkIterator () noexcept = default;
-
         void *operator* () const noexcept;
 
         AcquiredChunkIterator &operator++ () noexcept;
@@ -82,15 +80,17 @@ public:
 
     void Clear () noexcept;
 
-    size_t GetAllocatedSpace () const noexcept;
+    [[nodiscard]] size_t GetAllocatedSpace () const noexcept;
 
-    AcquiredChunkConstIterator BeginAcquired () const noexcept;
+    [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
-    AcquiredChunkConstIterator EndAcquired () const noexcept;
+    [[nodiscard]] AcquiredChunkConstIterator EndAcquired () const noexcept;
 
     AcquiredChunkIterator BeginAcquired () noexcept;
 
     AcquiredChunkIterator EndAcquired () noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (UnorderedPool);
 
 private:
     struct Chunk

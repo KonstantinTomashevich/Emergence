@@ -14,6 +14,7 @@
 template <typename Target, std::size_t _blockSize>
 const Target &block_cast (const std::array<uint8_t, _blockSize> &_memoryBlock)
 {
+    // NOLINTNEXTLINE(bugprone-sizeof-expression): Target could be pointer and CLang Tidy flags `sizeof(pointer)`.
     static_assert (sizeof (Target) <= _blockSize);
     return *reinterpret_cast<const Target *> (&_memoryBlock);
 }

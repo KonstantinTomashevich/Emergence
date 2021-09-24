@@ -50,9 +50,9 @@ public:
         /// \invariant There is no cursors for this query. Otherwise cursor deletion will not be thread safe.
         ~FetchQuery () noexcept = default;
 
-        Cursor Execute () const noexcept;
+        [[nodiscard]] Cursor Execute () const noexcept;
 
-        Handling::Handle<SingletonContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<SingletonContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (FetchQuery);
@@ -98,9 +98,9 @@ public:
 
         ~ModifyQuery () noexcept = default;
 
-        Cursor Execute () const noexcept;
+        [[nodiscard]] Cursor Execute () const noexcept;
 
-        Handling::Handle<SingletonContainer> GetContainer () const noexcept;
+        [[nodiscard]] Handling::Handle<SingletonContainer> GetContainer () const noexcept;
 
         /// Assigning prepared queries looks counter intuitive.
         EMERGENCE_DELETE_ASSIGNMENT (ModifyQuery);
@@ -113,9 +113,15 @@ public:
         Handling::Handle<SingletonContainer> container;
     };
 
+    SingletonContainer (const SingletonContainer &_other) = delete;
+
+    SingletonContainer (SingletonContainer &&_other) = delete;
+
     FetchQuery Fetch () noexcept;
 
     ModifyQuery Modify () noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (SingletonContainer);
 
 private:
     /// CargoDeck constructs containers.
@@ -132,7 +138,7 @@ private:
     ~SingletonContainer () noexcept;
 
     /// \brief We store singleton instance inside container, therefore we need custom allocator to do this.
-    void *operator new (std::size_t, const StandardLayout::Mapping &_typeMapping) noexcept;
+    void *operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept;
 
     /// \brief Needed because of custom ::new.
     void operator delete (void *_pointer) noexcept;

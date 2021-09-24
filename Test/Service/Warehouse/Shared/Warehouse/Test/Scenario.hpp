@@ -171,16 +171,16 @@ struct Scenario final
         std::vector<VisualGraph::Graph> queries;
     };
 
-    void Execute () const noexcept;
+    void Execute () const;
 
-    Visualization ExecuteAndVisualize () const noexcept;
+    [[nodiscard]] Visualization ExecuteAndVisualize () const;
 
     std::vector<Task> tasks;
 };
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
-std::vector<Task> &operator+= (std::vector<Task> &first, const std::vector<Task> &second) noexcept;
+std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second);
 
-std::vector<Task> operator+ (std::vector<Task> first, const Task &_task) noexcept;
+std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task);
 } // namespace Emergence::Warehouse::Test

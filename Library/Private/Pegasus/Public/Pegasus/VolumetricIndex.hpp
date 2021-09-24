@@ -98,9 +98,9 @@ public:
 
         AxisValue &Max (std::size_t _dimensionIndex) noexcept;
 
-        const AxisValue &Min (std::size_t _dimensionIndex) const noexcept;
+        [[nodiscard]] const AxisValue &Min (std::size_t _dimensionIndex) const noexcept;
 
-        const AxisValue &Max (std::size_t _dimensionIndex) const noexcept;
+        [[nodiscard]] const AxisValue &Max (std::size_t _dimensionIndex) const noexcept;
     };
 
     /// \brief Memory block, that can fit AxisAlignedShape of any supported type.
@@ -136,18 +136,20 @@ public:
 
         ~ShapeIntersectionCursorBase () noexcept;
 
+        EMERGENCE_DELETE_ASSIGNMENT (ShapeIntersectionCursorBase);
+
     protected:
         ShapeIntersectionCursorBase (VolumetricIndex *_index,
                                      const LeafSector &_sector,
                                      const AxisAlignedShapeContainer &_shape) noexcept;
 
-        bool IsFinished () const noexcept;
+        [[nodiscard]] bool IsFinished () const noexcept;
 
         void MoveToNextRecord () noexcept;
 
-        const void *GetRecord () const noexcept;
+        [[nodiscard]] const void *GetRecord () const noexcept;
 
-        VolumetricIndex *GetIndex () const noexcept;
+        [[nodiscard]] VolumetricIndex *GetIndex () const noexcept;
 
         /// Check CursorCommons::FixCurrentRecordIndex for explanation.
         void FixCurrentRecordIndex () noexcept;
@@ -157,7 +159,7 @@ public:
         friend struct CursorCommons;
 
         template <typename Operations>
-        bool MoveToNextCoordinate (const Operations &) noexcept;
+        bool MoveToNextCoordinate (const Operations & /*unused*/) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
@@ -208,16 +210,18 @@ public:
 
         ~RayIntersectionCursorBase () noexcept;
 
+        EMERGENCE_DELETE_ASSIGNMENT (RayIntersectionCursorBase);
+
     protected:
         RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
 
-        bool IsFinished () const noexcept;
+        [[nodiscard]] bool IsFinished () const noexcept;
 
         void MoveToNextRecord () noexcept;
 
-        const void *GetRecord () const noexcept;
+        [[nodiscard]] const void *GetRecord () const noexcept;
 
-        VolumetricIndex *GetIndex () const noexcept;
+        [[nodiscard]] VolumetricIndex *GetIndex () const noexcept;
 
         /// Check CursorCommons::FixCurrentRecordIndex for explanation.
         void FixCurrentRecordIndex () noexcept;
@@ -227,7 +231,7 @@ public:
         friend struct CursorCommons;
 
         template <typename Operations>
-        bool MoveToNextCoordinate (const Operations &) noexcept;
+        bool MoveToNextCoordinate (const Operations & /*unused*/) noexcept;
 
         template <typename Operations>
         bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
@@ -282,6 +286,8 @@ public:
 
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     VolumetricIndex (VolumetricIndex &&_other) = delete;
+
+    ~VolumetricIndex () = default;
 
     const InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
 

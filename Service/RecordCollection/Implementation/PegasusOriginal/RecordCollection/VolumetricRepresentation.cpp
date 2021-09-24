@@ -47,6 +47,7 @@ using DimensionIteratorImplementation =
     InplaceVector<Pegasus::VolumetricIndex::Dimension,
                   Pegasus::Constants::VolumetricIndex::MAX_DIMENSIONS>::ConstIterator;
 
+// NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)
 
 VolumetricRepresentation::DimensionIterator::Dimension VolumetricRepresentation::DimensionIterator::operator* ()
@@ -149,7 +150,7 @@ const StandardLayout::Mapping &VolumetricRepresentation::GetTypeMapping () const
 bool VolumetricRepresentation::CanBeDropped () const noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
     Pegasus::VolumetricIndex *index = realHandle.Get ();
 
     // To extract correct result we must temporary unlink index handle.
@@ -163,7 +164,7 @@ bool VolumetricRepresentation::CanBeDropped () const noexcept
 void VolumetricRepresentation::Drop () noexcept
 {
     assert (handle);
-    auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
+    const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
     Pegasus::VolumetricIndex *index = realHandle.Get ();
 
     // Free handle first, because indices can not be deleted while any handle points to them.

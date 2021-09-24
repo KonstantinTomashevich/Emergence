@@ -110,65 +110,66 @@ Mapping Grow (MappingSeed &_seed, MappingBuilder &_builder)
     for (FieldSeed &packedSeed : _seed.fields)
     {
         std::visit (
-            [&_builder] (auto &seed)
+            [&_builder] (auto &_seed)
             {
-                using Seed = std::decay_t<decltype (seed)>;
+                using Seed = std::decay_t<decltype (_seed)>;
 
                 if constexpr (std::is_same_v<Seed, BitFieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterBit (seed.name.c_str (), seed.offset, seed.bitOffset);
+                    _seed.recordedId = _builder.RegisterBit (_seed.name.c_str (), _seed.offset, _seed.bitOffset);
                 }
                 else if constexpr (std::is_same_v<Seed, Int8FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterInt8 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterInt8 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, Int16FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterInt16 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterInt16 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, Int32FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterInt32 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterInt32 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, Int64FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterInt64 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterInt64 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, UInt8FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterUInt8 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterUInt8 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, UInt16FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterUInt16 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterUInt16 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, UInt32FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterUInt32 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterUInt32 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, UInt64FieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterUInt64 (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterUInt64 (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, FloatFieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterFloat (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterFloat (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, DoubleFieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterDouble (seed.name.c_str (), seed.offset);
+                    _seed.recordedId = _builder.RegisterDouble (_seed.name.c_str (), _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, StringFieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterString (seed.name.c_str (), seed.offset, seed.maxSize);
+                    _seed.recordedId = _builder.RegisterString (_seed.name.c_str (), _seed.offset, _seed.maxSize);
                 }
                 else if constexpr (std::is_same_v<Seed, BlockFieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterBlock (seed.name.c_str (), seed.offset, seed.size);
+                    _seed.recordedId = _builder.RegisterBlock (_seed.name.c_str (), _seed.offset, _seed.size);
                 }
                 else if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                 {
-                    seed.recordedId = _builder.RegisterNestedObject (seed.name.c_str (), seed.offset, seed.typeMapping);
+                    _seed.recordedId =
+                        _builder.RegisterNestedObject (_seed.name.c_str (), _seed.offset, _seed.typeMapping);
                 }
             },
             packedSeed);
@@ -192,24 +193,24 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
     for (FieldSeed &packedSeed : _seed.fields)
     {
         std::visit (
-            [&mapping, &idsFound] (auto &seed)
+            [&mapping, &idsFound] (auto &_seed)
             {
-                using Seed = std::decay_t<decltype (seed)>;
-                LOG ("Checking field ", seed.name, "...");
-                Field field = mapping.GetField (seed.recordedId);
+                using Seed = std::decay_t<decltype (_seed)>;
+                LOG ("Checking field ", _seed.name, "...");
+                Field field = mapping.GetField (_seed.recordedId);
 
                 CHECK (field.IsHandleValid ());
-                CHECK_EQUAL (seed.name, field.GetName ());
+                CHECK_EQUAL (_seed.name, field.GetName ());
 
                 if (field.IsHandleValid ())
                 {
-                    CHECK_EQUAL (field.GetOffset (), seed.offset);
+                    CHECK_EQUAL (field.GetOffset (), _seed.offset);
 
                     if constexpr (std::is_same_v<Seed, BitFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), 1u);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BIT);
-                        CHECK_EQUAL (field.GetBitOffset (), seed.bitOffset);
+                        CHECK_EQUAL (field.GetBitOffset (), _seed.bitOffset);
                     }
                     else if constexpr (std::is_same_v<Seed, Int8FieldSeed>)
                     {
@@ -263,28 +264,28 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                     }
                     else if constexpr (std::is_same_v<Seed, StringFieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), seed.maxSize);
+                        CHECK_EQUAL (field.GetSize (), _seed.maxSize);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::STRING);
                     }
                     else if constexpr (std::is_same_v<Seed, BlockFieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), seed.size);
+                        CHECK_EQUAL (field.GetSize (), _seed.size);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BLOCK);
                     }
                     else if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), seed.typeMapping.GetObjectSize ());
+                        CHECK_EQUAL (field.GetSize (), _seed.typeMapping.GetObjectSize ());
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::NESTED_OBJECT);
-                        CHECK (field.GetNestedObjectMapping () == seed.typeMapping);
+                        CHECK (field.GetNestedObjectMapping () == _seed.typeMapping);
 
-                        Mapping::FieldIterator iterator = seed.typeMapping.Begin ();
-                        Mapping::FieldIterator end = seed.typeMapping.End ();
+                        Mapping::FieldIterator iterator = _seed.typeMapping.Begin ();
+                        Mapping::FieldIterator end = _seed.typeMapping.End ();
 
                         while (iterator != end)
                         {
                             Field nestedField = *iterator;
                             Field projectedField = mapping.GetField (
-                                ProjectNestedField (seed.recordedId, seed.typeMapping.GetFieldId (iterator)));
+                                ProjectNestedField (_seed.recordedId, _seed.typeMapping.GetFieldId (iterator)));
 
                             CHECK (projectedField.IsHandleValid ());
                             CHECK_EQUAL (nestedField.GetArchetype (), projectedField.GetArchetype ());
@@ -292,7 +293,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (), projectedField.GetOffset ());
 
                             const std::string expectedProjectedName =
-                                seed.name + PROJECTION_NAME_SEPARATOR + nestedField.GetName ();
+                                _seed.name + PROJECTION_NAME_SEPARATOR + nestedField.GetName ();
                             CHECK_EQUAL (expectedProjectedName, projectedField.GetName ());
 
                             switch (nestedField.GetArchetype ())
@@ -317,18 +318,18 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                     }
                 }
 
-                CHECK_EQUAL (idsFound.count (seed.recordedId), 0u);
-                idsFound.insert (seed.recordedId);
+                CHECK_EQUAL (idsFound.count (_seed.recordedId), 0u);
+                idsFound.insert (_seed.recordedId);
 
                 if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                 {
-                    Mapping::FieldIterator iterator = seed.typeMapping.Begin ();
-                    Mapping::FieldIterator end = seed.typeMapping.End ();
+                    Mapping::FieldIterator iterator = _seed.typeMapping.Begin ();
+                    Mapping::FieldIterator end = _seed.typeMapping.End ();
 
                     while (iterator != end)
                     {
                         FieldId projectedId =
-                            ProjectNestedField (seed.recordedId, seed.typeMapping.GetFieldId (iterator));
+                            ProjectNestedField (_seed.recordedId, _seed.typeMapping.GetFieldId (iterator));
 
                         CHECK_EQUAL (idsFound.count (projectedId), 0u);
                         idsFound.insert (projectedId);
@@ -362,19 +363,19 @@ struct TwoIntsTest
     int16_t second;
 };
 
-static const MappingSeed twoIntsCorrectOrder {"TwoInts",
-                                              sizeof (TwoIntsTest),
-                                              {
-                                                  UInt32FieldSeed {{"first", offsetof (TwoIntsTest, first)}},
-                                                  Int16FieldSeed {{"second", offsetof (TwoIntsTest, second)}},
-                                              }};
+static const MappingSeed TWO_INTS_CORRECT_ORDER {"TwoInts",
+                                                 sizeof (TwoIntsTest),
+                                                 {
+                                                     UInt32FieldSeed {{"first", offsetof (TwoIntsTest, first)}},
+                                                     Int16FieldSeed {{"second", offsetof (TwoIntsTest, second)}},
+                                                 }};
 
-static const MappingSeed twoIntsReversedOrder {"TwoInts",
-                                               sizeof (TwoIntsTest),
-                                               {
-                                                   Int16FieldSeed {{"second", offsetof (TwoIntsTest, second)}},
-                                                   UInt32FieldSeed {{"first", offsetof (TwoIntsTest, first)}},
-                                               }};
+static const MappingSeed TWO_INTS_REVERSED_ORDER {"TwoInts",
+                                                  sizeof (TwoIntsTest),
+                                                  {
+                                                      Int16FieldSeed {{"second", offsetof (TwoIntsTest, second)}},
+                                                      UInt32FieldSeed {{"first", offsetof (TwoIntsTest, first)}},
+                                                  }};
 
 struct AllBasicTypesTest final
 {
@@ -397,7 +398,7 @@ struct AllBasicTypesTest final
     char string[24u];
 };
 
-static const MappingSeed allBasicTypes {
+static const MappingSeed ALL_BASIC_TYPES {
     "AllBasicTypes",
     sizeof (AllBasicTypesTest),
     {
@@ -446,7 +447,7 @@ struct UnionWithBasicTypesTest
     uint64_t nonUnionFlags;
 };
 
-static const MappingSeed unionWithBasicTypes {
+static const MappingSeed UNION_WITH_BASIC_TYPES {
     "UnionWithBasicTypes",
     sizeof (UnionWithBasicTypesTest),
     {
@@ -475,14 +476,15 @@ struct NestedOneSublevelTest
     char block[32u];
 };
 
-static const MappingSeed nestedOneSublevel {
+static const MappingSeed NESTED_ONE_SUBLEVEL {
     "NestedOneSublevel",
     sizeof (NestedOneSublevelTest),
     {
         UInt64FieldSeed {{"uint64", offsetof (NestedOneSublevelTest, uint64)}},
         NestedObjectFieldSeed {{"firstNested", offsetof (NestedOneSublevelTest, firstNested)},
-                               Grow (twoIntsCorrectOrder)},
-        NestedObjectFieldSeed {{"secondNested", offsetof (NestedOneSublevelTest, secondNested)}, Grow (allBasicTypes)},
+                               Grow (TWO_INTS_CORRECT_ORDER)},
+        NestedObjectFieldSeed {{"secondNested", offsetof (NestedOneSublevelTest, secondNested)},
+                               Grow (ALL_BASIC_TYPES)},
         BlockFieldSeed {{"block", offsetof (NestedOneSublevelTest, block)}, sizeof (NestedOneSublevelTest::block)},
     }};
 
@@ -498,15 +500,15 @@ struct NestedInUnionOneSublevelTest
     char block[32u];
 };
 
-static MappingSeed nestedInUnionOneSublevel {
+static const MappingSeed NESTED_IN_UNION_ONE_SUBLEVEL {
     "NestedInUnionOneSublevel",
     sizeof (NestedInUnionOneSublevelTest),
     {
         UInt64FieldSeed {{"uint64", offsetof (NestedInUnionOneSublevelTest, uint64)}},
         NestedObjectFieldSeed {{"firstNested", offsetof (NestedInUnionOneSublevelTest, firstNested)},
-                               Grow (twoIntsCorrectOrder)},
+                               Grow (TWO_INTS_CORRECT_ORDER)},
         NestedObjectFieldSeed {{"secondNested", offsetof (NestedInUnionOneSublevelTest, secondNested)},
-                               Grow (allBasicTypes)},
+                               Grow (ALL_BASIC_TYPES)},
         BlockFieldSeed {{"block", offsetof (NestedInUnionOneSublevelTest, block)},
                         sizeof (NestedOneSublevelTest::block)},
     }};
@@ -519,16 +521,16 @@ struct NestedTwoSublevelsTest
     NestedInUnionOneSublevelTest secondNested;
 };
 
-static MappingSeed nestedTwoSublevels {
+static const MappingSeed NESTED_TWO_SUBLEVELS {
     "NestedTwoSublevels",
     sizeof (NestedTwoSublevelsTest),
     {
         FloatFieldSeed {{"floating", offsetof (NestedTwoSublevelsTest, floating)}},
         NestedObjectFieldSeed {{"firstNested", offsetof (NestedTwoSublevelsTest, firstNested)},
-                               Grow (nestedOneSublevel)},
+                               Grow (NESTED_ONE_SUBLEVEL)},
         BlockFieldSeed {{"string", offsetof (NestedTwoSublevelsTest, string)}, sizeof (NestedTwoSublevelsTest::string)},
         NestedObjectFieldSeed {{"secondNested", offsetof (NestedTwoSublevelsTest, secondNested)},
-                               Grow (nestedInUnionOneSublevel)},
+                               Grow (NESTED_IN_UNION_ONE_SUBLEVEL)},
     }};
 } // namespace Emergence::StandardLayout::Test
 
@@ -538,62 +540,62 @@ BEGIN_SUITE (MappingBuilder)
 
 TEST_CASE (TwoIntsCorrectOrder)
 {
-    GrowAndTest (twoIntsCorrectOrder);
+    GrowAndTest (TWO_INTS_CORRECT_ORDER);
 }
 
 TEST_CASE (TwoIntsReversedOrder)
 {
-    GrowAndTest (twoIntsReversedOrder);
+    GrowAndTest (TWO_INTS_REVERSED_ORDER);
 }
 
 TEST_CASE (AllBasicTypes)
 {
-    GrowAndTest (allBasicTypes);
+    GrowAndTest (ALL_BASIC_TYPES);
 }
 
 TEST_CASE (UnionsWithBasicTypes)
 {
-    GrowAndTest (unionWithBasicTypes);
+    GrowAndTest (UNION_WITH_BASIC_TYPES);
 }
 
 TEST_CASE (NestedOneSublevel)
 {
-    GrowAndTest (nestedOneSublevel);
+    GrowAndTest (NESTED_ONE_SUBLEVEL);
 }
 
 TEST_CASE (NestedInUnionOneSublevel)
 {
-    GrowAndTest (nestedInUnionOneSublevel);
+    GrowAndTest (NESTED_IN_UNION_ONE_SUBLEVEL);
 }
 
 TEST_CASE (NestedTwoSublevels)
 {
-    GrowAndTest (nestedTwoSublevels);
+    GrowAndTest (NESTED_TWO_SUBLEVELS);
 }
 
 TEST_CASE (BuildMultipleMappings)
 {
     Emergence::StandardLayout::MappingBuilder builder;
-    GrowAndTest (twoIntsCorrectOrder, builder);
-    GrowAndTest (unionWithBasicTypes, builder);
-    GrowAndTest (nestedTwoSublevels, builder);
+    GrowAndTest (TWO_INTS_CORRECT_ORDER, builder);
+    GrowAndTest (UNION_WITH_BASIC_TYPES, builder);
+    GrowAndTest (NESTED_TWO_SUBLEVELS, builder);
 }
 
 TEST_CASE (BuildMultipleMappingsWhileMovingBuilder)
 {
     Emergence::StandardLayout::MappingBuilder firstBuilder;
-    GrowAndTest (twoIntsCorrectOrder, firstBuilder);
+    GrowAndTest (TWO_INTS_CORRECT_ORDER, firstBuilder);
 
     Emergence::StandardLayout::MappingBuilder secondBuilder (std::move (firstBuilder));
-    GrowAndTest (unionWithBasicTypes, secondBuilder);
+    GrowAndTest (UNION_WITH_BASIC_TYPES, secondBuilder);
 
     firstBuilder = std::move (secondBuilder);
-    GrowAndTest (nestedTwoSublevels, firstBuilder);
+    GrowAndTest (NESTED_TWO_SUBLEVELS, firstBuilder);
 }
 
 TEST_CASE (FieldManipulations)
 {
-    Emergence::StandardLayout::Mapping mapping = Grow (twoIntsCorrectOrder);
+    Emergence::StandardLayout::Mapping mapping = Grow (TWO_INTS_CORRECT_ORDER);
     auto iterator = mapping.Begin ();
 
     REQUIRE (iterator != mapping.End ());
@@ -613,6 +615,7 @@ TEST_CASE (FieldManipulations)
     CHECK (!emptyField);
 
     emptyField = std::move (firstField);
+    // NOLINTNEXTLINE(bugprone-use-after-move): Moved-out fields will have invalid handle.
     CHECK (!firstField);
     CHECK (emptyField);
 
@@ -623,7 +626,7 @@ TEST_CASE (FieldManipulations)
 
 TEST_CASE (FieldsIteration)
 {
-    Emergence::StandardLayout::Mapping mapping = Grow (twoIntsCorrectOrder);
+    Emergence::StandardLayout::Mapping mapping = Grow (TWO_INTS_CORRECT_ORDER);
     auto iterator = mapping.Begin ();
 
     Emergence::StandardLayout::Field firstField = *iterator++;
@@ -661,9 +664,9 @@ TEST_CASE (FieldsIteration)
 
 TEST_CASE (MappingEquality)
 {
-    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMapping = Grow (twoIntsCorrectOrder);
+    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMapping = Grow (TWO_INTS_CORRECT_ORDER);
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingCopy = twoIntsCorrectOrderMapping;
-    Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (twoIntsReversedOrder);
+    Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (TWO_INTS_REVERSED_ORDER);
 
     CHECK (twoIntsCorrectOrderMapping == twoIntsCorrectOrderMapping);
     CHECK (twoIntsCorrectOrderMappingCopy == twoIntsCorrectOrderMappingCopy);

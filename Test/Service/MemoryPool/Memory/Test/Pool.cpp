@@ -226,6 +226,7 @@ TEST_CASE (ReleaseDoesNotInvalidateIterator)
 
     // Must be greater than 1. If it's greater than 1, value should not matter.
     constexpr std::size_t itemsToAcquire = 5u;
+    items.reserve (itemsToAcquire);
 
     for (std::size_t index = 0u; index < itemsToAcquire; ++index)
     {
@@ -258,29 +259,29 @@ TEST_CASE (ReleaseDoesNotInvalidateIterator)
 
 TEST_CASE (CursorConstructionAndAssignment)
 {
-    auto Test = [] (const auto begin)
+    auto test = [] (const auto _begin)
     {
-        auto next = begin;
+        auto next = _begin;
         auto previous = next++;
 
-        CHECK (begin != next);
+        CHECK (_begin != next);
         CHECK (previous != next);
-        CHECK (previous == begin);
+        CHECK (previous == _begin);
 
-        CHECK_NOT_EQUAL (*begin, *next);
+        CHECK_NOT_EQUAL (*_begin, *next);
         CHECK_NOT_EQUAL (*previous, *next);
-        CHECK_EQUAL (*previous, *begin);
+        CHECK_EQUAL (*previous, *_begin);
 
-        next = begin;
-        CHECK (begin == next);
+        next = _begin;
+        CHECK (_begin == next);
         CHECK (previous == next);
-        CHECK_EQUAL (*next, *begin);
+        CHECK_EQUAL (*next, *_begin);
     };
 
     FullPoolContext context;
     // Test both mutable and const iterators.
-    Test (context.pool.BeginAcquired ());
-    Test (const_cast<const Emergence::Memory::Pool &> (context.pool).BeginAcquired ());
+    test (context.pool.BeginAcquired ());
+    test (const_cast<const Emergence::Memory::Pool &> (context.pool).BeginAcquired ());
 }
 
 END_SUITE

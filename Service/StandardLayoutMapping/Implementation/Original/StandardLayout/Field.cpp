@@ -24,9 +24,7 @@ Field::Field (Field &&_other) noexcept : Field (_other.handle)
     _other.handle = nullptr;
 }
 
-Field::~Field () noexcept
-{
-}
+Field::~Field () noexcept = default;
 
 FieldArchetype Field::GetArchetype () const noexcept
 {

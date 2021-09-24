@@ -45,7 +45,7 @@ public:
     ~Handle () noexcept;
 
     /// \return ::instance
-    Type *Get () const noexcept;
+    [[nodiscard]] Type *Get () const noexcept;
 
     /// \return ::instance
     Type *operator-> () const noexcept;
@@ -115,6 +115,7 @@ Type *Handle<Type>::operator-> () const noexcept
 }
 
 template <typename Type>
+// NOLINTNEXTLINE(bugprone-unhandled-self-assignment): Self assignment is handled, looks like a clang tidy bug.
 Handle<Type> &Handle<Type>::operator= (const Handle &_other) noexcept
 {
     if (this != &_other)

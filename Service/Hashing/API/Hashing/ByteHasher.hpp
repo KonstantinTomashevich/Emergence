@@ -13,6 +13,10 @@ class ByteHasher final
 public:
     ByteHasher () noexcept;
 
+    ByteHasher (const ByteHasher &_other) noexcept;
+
+    ByteHasher (ByteHasher &&_other) noexcept;
+
     ~ByteHasher () noexcept;
 
     /// \brief Modifies current state by appending given byte.
@@ -25,7 +29,11 @@ public:
     void Clear () noexcept;
 
     /// \return 64-bit hash value for current state.
-    uint64_t GetCurrentValue () const noexcept;
+    [[nodiscard]] uint64_t GetCurrentValue () const noexcept;
+
+    ByteHasher &operator= (const ByteHasher &_other) noexcept;
+
+    ByteHasher &operator= (ByteHasher &&_other) noexcept;
 
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 10u);

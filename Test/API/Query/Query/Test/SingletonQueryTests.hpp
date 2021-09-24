@@ -6,9 +6,7 @@
 
 namespace Emergence::Query::Test::SingletonQuery
 {
-Scenario EditAndRead () noexcept;
-
-Scenario CursorManipulations () noexcept;
+Scenario EditAndRead ();
 } // namespace Emergence::Query::Test::SingletonQuery
 
 #define REGISTER_SINGLETON_QUERY_TEST(Driver, TestName)                                                                \

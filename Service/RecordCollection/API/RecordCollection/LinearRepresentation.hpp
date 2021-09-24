@@ -121,15 +121,15 @@ public:
     DescendingEditCursor EditDescendingInterval (KeyFieldValue _min, KeyFieldValue _max) noexcept;
 
     /// \return Field, by which records are sorted in this linear representation.
-    StandardLayout::Field GetKeyField () const noexcept;
+    [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
     /// \see Collection::GetRecordMapping
-    const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+    [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;
 
     /// \return Can this representation be safely dropped?
     /// \details Representation can be safely dropped if there is only one reference to it and there is no active
     ///          cursors.
-    bool CanBeDropped () const noexcept;
+    [[nodiscard]] bool CanBeDropped () const noexcept;
 
     /// \brief Deletes this linear representation from Collection.
     /// \invariant ::CanBeDropped

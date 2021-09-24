@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <string>
 #include <unordered_map>
 
@@ -43,17 +44,34 @@ std::variant<Variants...> CopyCursor (const std::variant<Variants...> &_other)
 template <typename Cursor>
 struct CursorData final
 {
-    CursorData (Cursor _cursor, StandardLayout::Mapping _objectMapping)
+    CursorData (Cursor _cursor, StandardLayout::Mapping _objectMapping) noexcept
         : cursor (std::move (_cursor)),
           objectMapping (std::move (_objectMapping))
     {
     }
 
-    CursorData (const CursorData &_other) : cursor (CopyCursor (_other.cursor)), objectMapping (_other.objectMapping)
+    CursorData (const CursorData &_other) noexcept
+        : cursor (CopyCursor (_other.cursor)),
+          objectMapping (_other.objectMapping)
     {
     }
 
     CursorData (CursorData &&_other) noexcept = default;
+
+    ~CursorData () = default;
+
+    CursorData &operator= (const CursorData &_other) noexcept
+    {
+        if (this != &_other)
+        {
+            this->~CursorData ();
+            new (this) CursorData (_other);
+        }
+
+        return *this;
+    }
+
+    CursorData &operator= (CursorData &&_other) noexcept = default;
 
     Cursor cursor;
     StandardLayout::Mapping objectMapping;
@@ -67,6 +85,21 @@ template <typename Cursor>
 struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Cursor>>
 {
 };
+
+inline std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
+{
+    const auto *current = static_cast<const uint8_t *> (_object);
+    const auto *end = current + _mapping.GetObjectSize ();
+    std::string result;
+
+    while (current != end)
+    {
+        result += std::to_string (static_cast<std::size_t> (*current)) + " ";
+        ++current;
+    }
+
+    return result;
+}
 
 template <typename T>
 concept ReturnsEditablePointer = requires (T _cursor)
@@ -96,28 +129,13 @@ void AddObject (CursorStorage<Cursor> &_storage,
                 const StandardLayout::Mapping &_objectMapping,
                 Cursor &&_cursor)
 {
-    AddObject (_storage, _name, CursorData<Cursor> {std::move (_cursor), _objectMapping});
+    AddObject (_storage, _name, CursorData<Cursor> {std::forward<Cursor> (_cursor), _objectMapping});
 }
 
 template <typename Cursor>
 void GetCursor (CursorStorage<Cursor> &_storage, std::string _name)
 {
     return GetObject (_storage, _name).cursor;
-}
-
-std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
-{
-    const auto *current = static_cast<const uint8_t *> (_object);
-    const auto *end = current + _mapping.GetObjectSize ();
-    std::string result;
-
-    while (current != end)
-    {
-        result += std::to_string (static_cast<std::size_t> (*current)) + " ";
-        ++current;
-    }
-
-    return result;
 }
 
 template <typename Cursor>
@@ -214,7 +232,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 {
     CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
-        [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
+        [&_task, mapping {cursorData.objectMapping}] (auto &_cursor)
         {
             if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
@@ -227,12 +245,12 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                 // Brute force counting is the most efficient solution there,
                 // because tests check small vectors of objects, usually not more than 5.
-                auto Count = [_mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
+                auto count = [mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
                 {
                     std::size_t count = 0u;
-                    for (const void *_otherObject : _objects)
+                    for (const void *otherObject : _objects)
                     {
-                        if (memcmp (_objectToSearch, _otherObject, _mapping.GetObjectSize ()) == 0)
+                        if (memcmp (_objectToSearch, otherObject, mapping.GetObjectSize ()) == 0)
                         {
                             ++count;
                         }
@@ -243,13 +261,13 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                 for (const void *objectFromCursor : objects)
                 {
-                    const std::size_t countInCursor = Count (objects, objectFromCursor);
-                    const std::size_t countExpected = Count (_task.expectedObjects, objectFromCursor);
+                    const std::size_t countInCursor = count (objects, objectFromCursor);
+                    const std::size_t countExpected = count (_task.expectedObjects, objectFromCursor);
                     CHECK_EQUAL (countInCursor, countExpected);
 
                     if (countInCursor != countExpected)
                     {
-                        LOG ("Checked object: ", ObjectToString (_mapping, objectFromCursor));
+                        LOG ("Checked object: ", ObjectToString (mapping, objectFromCursor));
                     }
                 }
             }
@@ -266,7 +284,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorEdit &_tas
 {
     CursorData<Cursor> &cursorData = GetObject (_storage, _task.name);
     std::visit (
-        [&_task, _mapping {cursorData.objectMapping}] (auto &_cursor)
+        [&_task, mapping {cursorData.objectMapping}] (auto &_cursor)
         {
             if constexpr (ReturnsEditablePointer<std::decay_t<decltype (_cursor)>>)
             {
@@ -276,7 +294,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorEdit &_tas
 
                 if (object)
                 {
-                    memcpy (object, _task.copyFromObject, _mapping.GetObjectSize ());
+                    memcpy (object, _task.copyFromObject, mapping.GetObjectSize ());
                 }
             }
             else

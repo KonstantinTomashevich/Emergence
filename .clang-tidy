@@ -1,0 +1,91 @@
+---
+# Currently, `noexcept` means if function will throw something, program should just crash.
+# Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
+#
+# We disable -readability-function-cognitive-complexity and -readability-magic-numbers,
+# because they trigger shitstorm in tests. Might be reconsidered later.
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-exception-escape,
+  cppcoreguidelines-avoid-goto,
+  cppcoreguidelines-avoid-non-const-global-variables,
+  cppcoreguidelines-interfaces-global-init,
+  cppcoreguidelines-narrowing-conversions,
+  cppcoreguidelines-pro-type-cstyle-cast,
+  cppcoreguidelines-pro-type-static-cast-downcast,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-special-member-functions,
+  llvm-namespace-comment,
+  misc-*,
+  -misc-no-recursion,
+  -misc-non-private-member-variables-in-classes,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-replace-disallow-copy-and-assign-macro,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-function-cognitive-complexity,
+  -readability-implicit-bool-conversion,
+  -readability-magic-numbers,
+  -readability-uppercase-literal-suffix,
+  -readability-use-anyofallof
+FormatStyle: file
+HeaderFilterRegex: "Executable|Library|Service|Test"
+WarningsAsErrors: '*'
+CheckOptions:
+  # We are silencing CRT Secure warnings.
+  - key: bugprone-reserved-identifier.AllowedIdentifiers
+    value: '_CRT_SECURE_NO_WARNINGS'
+  # It's more reasonable to count macros as functions, but there is no option for it.
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: 'true'
+  - key: readability-identifier-naming.ClassCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ClassMemberCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ClassMethodCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.ConstantMemberCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ConstantParamterCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ConstantParameterPrefix
+    value: '_'
+  - key: readability-identifier-naming.EnumCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.EnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.FunctionCase
+    value: 'CamelCase'
+  # `begin` and `end` functions are allowed, because they are used in foreach.
+  # Custom casts are allowed to use `*_cast` names to blend in with standard casts.
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    value: '(begin|end|([a-z]+_cast))'
+  - key: readability-identifier-naming.LocalConstantCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: 'UPPER_CASE'
+  # We need to define _CRT* macros to silence MSVC warnings about C standard functions safety.
+  - key: readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: '_CRT.*'
+  - key: readability-identifier-naming.NamespaceCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ParameterCase
+    value: 'camelBack'
+  - key: readability-identifier-naming.ParameterPrefix
+    value: '_'
+  - key: readability-identifier-naming.ScopedEnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.TypeTemplateParameterCase
+    value: 'CamelCase'
+  # TODO: Adhok to silence CLang Tidy internal bug when C++ 20 is used.
+  - key: readability-identifier-naming.TypeTemplateParameterIgnoredRegexp
+    value: 'expr-type'
+  - key: readability-identifier-naming.VariableCase
+    value: 'camelBack'
+...

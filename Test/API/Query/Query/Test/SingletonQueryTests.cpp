@@ -10,7 +10,7 @@ Storage RequestStorage ()
     return {Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"singleton"}}};
 }
 
-Scenario EditAndRead () noexcept
+Scenario EditAndRead ()
 {
     return {{
                 RequestStorage (),

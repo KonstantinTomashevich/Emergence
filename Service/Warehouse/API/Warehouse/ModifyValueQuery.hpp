@@ -33,9 +33,9 @@ public:
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyValueQuery, Cursor, ValueSequence _values);
 
-    KeyFieldIterator KeyFieldBegin () const noexcept;
+    [[nodiscard]] KeyFieldIterator KeyFieldBegin () const noexcept;
 
-    KeyFieldIterator KeyFieldEnd () const noexcept;
+    [[nodiscard]] KeyFieldIterator KeyFieldEnd () const noexcept;
 
 private:
     /// Registry constructs prepared queries.

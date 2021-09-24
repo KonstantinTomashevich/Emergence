@@ -17,23 +17,25 @@ struct TypeOperations final
 {
     using ValueType = Type;
 
-    int Compare (const VolumetricIndex::SupportedAxisValue &_left,
-                 const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
+    [[nodiscard]] int Compare (const VolumetricIndex::SupportedAxisValue &_left,
+                               const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
     int Compare (const void *_left, const void *_right) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Subtract (const VolumetricIndex::SupportedAxisValue &_left,
-                                                  const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
+    [[nodiscard]] VolumetricIndex::SupportedAxisValue Subtract (
+        const VolumetricIndex::SupportedAxisValue &_left,
+        const VolumetricIndex::SupportedAxisValue &_right) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
+    [[nodiscard]] VolumetricIndex::SupportedAxisValue Divide (
+        const VolumetricIndex::SupportedAxisValue &_value,
+        const VolumetricIndex::SupportedAxisValue &_divider) const noexcept;
 
-    VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                std::size_t divider) const noexcept;
+    [[nodiscard]] VolumetricIndex::SupportedAxisValue Divide (const VolumetricIndex::SupportedAxisValue &_value,
+                                                              std::size_t _divider) const noexcept;
 
-    std::size_t TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
+    [[nodiscard]] std::size_t TruncateToSizeType (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
-    float ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
+    [[nodiscard]] float ToFloat (const VolumetricIndex::SupportedAxisValue &_value) const noexcept;
 
 private:
     NumericValueComparator<Type> comparator {};
@@ -257,7 +259,7 @@ void VolumetricIndex::ShapeIntersectionCursorBase::FixCurrentRecordIndex () noex
 }
 
 template <typename Operations>
-bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
+bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const Operations & /*unused*/) noexcept
 {
     if (!index->AreEqual (currentCoordinate, sector.max))
     {
@@ -265,10 +267,8 @@ bool VolumetricIndex::ShapeIntersectionCursorBase::MoveToNextCoordinate (const O
         currentCoordinate = index->NextInsideSector (sector, currentCoordinate);
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 template <typename Operations>
@@ -557,10 +557,8 @@ const void *VolumetricIndex::RayIntersectionCursorBase::GetRecord () const noexc
         assert (currentRecordIndex < leaf.records.size ());
         return leaf.records[currentRecordIndex].record;
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 VolumetricIndex *VolumetricIndex::RayIntersectionCursorBase::GetIndex () const noexcept
@@ -574,7 +572,7 @@ void VolumetricIndex::RayIntersectionCursorBase::FixCurrentRecordIndex () noexce
 }
 
 template <typename Operations>
-bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations &) noexcept
+bool VolumetricIndex::RayIntersectionCursorBase::MoveToNextCoordinate (const Operations & /*unused*/) noexcept
 {
     std::size_t closestDimension = std::numeric_limits<std::size_t>::max ();
     float minT = std::numeric_limits<float>::max ();
@@ -792,13 +790,13 @@ VolumetricIndex::ShapeIntersectionEditCursor VolumetricIndex::LookupShapeInterse
 VolumetricIndex::RayIntersectionReadCursor VolumetricIndex::LookupRayIntersectionToRead (
     const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
 {
-    return RayIntersectionReadCursor (this, _ray, _maxDistance);
+    return {this, _ray, _maxDistance};
 }
 
 VolumetricIndex::RayIntersectionEditCursor VolumetricIndex::LookupRayIntersectionToEdit (
     const VolumetricIndex::RayContainer &_ray, float _maxDistance) noexcept
 {
-    return RayIntersectionEditCursor (this, _ray, _maxDistance);
+    return {this, _ray, _maxDistance};
 }
 
 void VolumetricIndex::Drop () noexcept
@@ -831,9 +829,7 @@ void VolumetricIndex::LeafData::DeleteRecord (
 
 VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept
     : IndexBase (_storage),
-      dimensions (),
-      leaves (),
-      freeRecordIds (),
+
       nextRecordId (0u)
 {
     assert (!_dimensions.empty ());
@@ -953,17 +949,15 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     const auto calculateT =
         [&_operations, lookupRay] (std::size_t _dimensionIndex, const SupportedAxisValue &_cornerValue)
     {
-        const float direction = static_cast<float> (lookupRay->Direction (_dimensionIndex));
+        const auto direction = static_cast<float> (lookupRay->Direction (_dimensionIndex));
         if (fabs (direction) > Constants::VolumetricIndex::EPSILON)
         {
             float distance =
                 _operations.ToFloat (_operations.Subtract (_cornerValue, lookupRay->Origin (_dimensionIndex)));
             return distance / direction;
         }
-        else
-        {
-            return 0.0f;
-        }
+
+        return 0.0f;
     };
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
@@ -1014,8 +1008,8 @@ bool VolumetricIndex::CheckRayShapeIntersection (
     _distanceOutput = 0.0f;
     for (std::size_t dimensionIndex = 0u; dimensionIndex < dimensions.GetCount (); ++dimensionIndex)
     {
-        const float origin = static_cast<float> (lookupRay->Origin (dimensionIndex));
-        const float direction = static_cast<float> (lookupRay->Direction (dimensionIndex));
+        const auto origin = static_cast<float> (lookupRay->Origin (dimensionIndex));
+        const auto direction = static_cast<float> (lookupRay->Direction (dimensionIndex));
         const float step = direction * maxT;
 
         _intersectionPointOutput[dimensionIndex] = origin + step;
@@ -1047,10 +1041,8 @@ void VolumetricIndex::ForEachCoordinate (const VolumetricIndex::LeafSector &_sec
         {
             break;
         }
-        else
-        {
-            coordinate = NextInsideSector (_sector, coordinate);
-        }
+
+        coordinate = NextInsideSector (_sector, coordinate);
     }
 }
 
@@ -1110,10 +1102,8 @@ VolumetricIndex::LeafCoordinate VolumetricIndex::NextInsideSector (
             ++_coordinate[dimensionIndex];
             break;
         }
-        else
-        {
-            _coordinate[dimensionIndex] = _sector.min[dimensionIndex];
-        }
+
+        _coordinate[dimensionIndex] = _sector.min[dimensionIndex];
     }
 
     return _coordinate;
@@ -1272,10 +1262,10 @@ VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Divide (
 
 template <typename Type>
 VolumetricIndex::SupportedAxisValue TypeOperations<Type>::Divide (const VolumetricIndex::SupportedAxisValue &_value,
-                                                                  std::size_t divider) const noexcept
+                                                                  std::size_t _divider) const noexcept
 {
-    assert (divider);
-    return *reinterpret_cast<const Type *> (&_value) / static_cast<Type> (divider);
+    assert (_divider);
+    return *reinterpret_cast<const Type *> (&_value) / static_cast<Type> (_divider);
 }
 
 template <typename Type>
