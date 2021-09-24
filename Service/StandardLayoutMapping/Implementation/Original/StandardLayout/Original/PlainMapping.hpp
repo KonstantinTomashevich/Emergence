@@ -117,23 +117,6 @@ private:
 class PlainMapping final : public Handling::HandleableBase
 {
 public:
-    class ConstIterator final
-    {
-    public:
-        ConstIterator () noexcept = default;
-
-        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (ConstIterator, const FieldData &);
-
-        const FieldData *operator-> () const noexcept;
-
-    private:
-        friend class PlainMapping;
-
-        explicit ConstIterator (const FieldData *_baseIterator) noexcept;
-
-        const FieldData *target {nullptr};
-    };
-
     /// PlainMapping is not designed to be copied.
     PlainMapping (const PlainMapping &_other) = delete;
 
@@ -148,11 +131,9 @@ public:
 
     [[nodiscard]] const FieldData *GetField (FieldId _field) const noexcept;
 
-    FieldData *GetField (FieldId _field) noexcept;
+    [[nodiscard]] const FieldData *Begin () const noexcept;
 
-    [[nodiscard]] ConstIterator Begin () const noexcept;
-
-    [[nodiscard]] ConstIterator End () const noexcept;
+    [[nodiscard]] const FieldData *End () const noexcept;
 
     [[nodiscard]] FieldId GetFieldId (const FieldData &_field) const;
 
@@ -199,9 +180,9 @@ private:
     FieldData fields[0u];
 };
 
-PlainMapping::ConstIterator begin (const PlainMapping &_mapping) noexcept;
+const FieldData *begin (const PlainMapping &_mapping) noexcept;
 
-PlainMapping::ConstIterator end (const PlainMapping &_mapping) noexcept;
+const FieldData *end (const PlainMapping &_mapping) noexcept;
 
 class PlainMappingBuilder
 {

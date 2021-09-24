@@ -1,8 +1,9 @@
 ---
-# TODO: Currently `noexcept` means: if function will throw something, program should just crash.
-#       Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
-# TODO: -readability-function-cognitive-complexity and -readability-magic-numbers are disabled, because they
-#       trigger shitstorm on tests. Think about enabling them later.
+# Currently, `noexcept` means if function will throw something, program should just crash.
+# Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
+#
+# We disable -readability-function-cognitive-complexity and -readability-magic-numbers,
+# because they trigger shitstorm in tests. Might be reconsidered later.
 Checks: >
   -*,
   bugprone-*,
@@ -32,7 +33,7 @@ Checks: >
   -readability-uppercase-literal-suffix,
   -readability-use-anyofallof
 FormatStyle: file
-HeaderFilterRegex: "(Executable)|(Library)|(Service)|(Test)"
+HeaderFilterRegex: "Executable|Library|Service|Test"
 WarningsAsErrors: '*'
 CheckOptions:
   # We are silencing CRT Secure warnings.

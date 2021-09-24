@@ -28,7 +28,7 @@ if (-Not(Test-Path $CLangTidyScript -PathType Leaf))
     exit -3
 }
 
-python $CLangTidyScript files = "(Executable)|(Library)|(Service)|(Test)" -p="$BuildDirectory"
+python $CLangTidyScript files = "Executable|Library|Service|Test" -p="$BuildDirectory"
 if ($?)
 {
     exit 0
