@@ -24,7 +24,7 @@ sober_test_begin (Warehouse)
 
     if (MSVC)
         # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
-        sober_library_private_compile_options (/EHa)
+        sober_library_private_compile_options (/EHs)
 
         # Scenario object file is too big for MSVC default configuration, therefore we need to increase object size.
         sober_library_private_compile_options (/bigobj)

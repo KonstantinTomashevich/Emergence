@@ -6,59 +6,63 @@ option (EMERGENCE_COMPILE_TIME_TRACE "Requests compiler to print time trace. Sup
 option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable code coverage reporting." OFF)
 option (EMERGENCE_TREAT_WARNINGS_AS_ERRORS "Enables \"treat warnings as errors\" compiler policy for all targets." ON)
 
-if (EMERGENCE_COMPILE_TIME_TRACE)
-    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
-        add_compile_options (-ftime-trace)
-    else ()
-        # TODO: Alternatives for other compilers?
-        message (FATAL_ERROR "Currently time tracing is supported only for CLang.")
-    endif ()
-endif ()
-
-if (EMERGENCE_ENABLE_COVERAGE)
-    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
-        add_compile_options (-fprofile-instr-generate -fcoverage-mapping)
-    else ()
-        add_compile_options (--coverage)
-        add_link_options (--coverage)
-    endif ()
-endif ()
-
-if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
-    if (MSVC)
-        add_compile_options (
-                /W4 /WX
-                # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
-                /wd4200
-                # Anonymous structs increase readability in some cases.
-                /wd4201
-                # Assignments inside conditional statements increase readability in some cases.
-                /wd4706)
-    else ()
-        add_compile_options (-Wall -Wextra -Werror)
-
+# We can not add common compile here, because they would affect third party libraries compilation.
+# Therefore every Emergence root source directory must call this function to setup compile options.
+function (add_common_compile_options)
+    if (EMERGENCE_COMPILE_TIME_TRACE)
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
-            # Exceptions in CLang format. Also, pedantic is enabled only on CLang,
-            # because there is no pedantic exceptions on GCC.
-            add_compile_options (
-                    -pedantic
-                    # Anonymous structs increase readability in some cases.
-                    -Wno-gnu-anonymous-struct
-                    # Nested anonymous types are allowed, because they are useful with unions.
-                    -Wno-nested-anon-types
-                    # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
-                    -Wno-zero-length-array)
+            add_compile_options (-ftime-trace)
         else ()
-            # Exceptions in GCC format.
-            add_compile_options (
-                    # Used by XXHash.
-                    -Wno-error=array-bounds)
+            # TODO: Alternatives for other compilers?
+            message (FATAL_ERROR "Currently time tracing is supported only for CLang.")
         endif ()
     endif ()
-endif ()
 
-if (MSVC)
-    # MSVC debug iterators are not only slow, but they also eat lots of memory and force service
-    # APIs to request additional memory for service iterators. Therefore they are disabled.
-    add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
-endif ()
+    if (EMERGENCE_ENABLE_COVERAGE)
+        if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
+            add_compile_options (-fprofile-instr-generate -fcoverage-mapping)
+        else ()
+            add_compile_options (--coverage)
+            add_link_options (--coverage)
+        endif ()
+    endif ()
+
+    if (EMERGENCE_TREAT_WARNINGS_AS_ERRORS)
+        if (MSVC)
+            add_compile_options (
+                    /W4 /WX
+                    # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
+                    /wd4200
+                    # Anonymous structs increase readability in some cases.
+                    /wd4201
+                    # Assignments inside conditional statements increase readability in some cases.
+                    /wd4706)
+        else ()
+            add_compile_options (-Wall -Wextra -Werror)
+
+            if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")
+                # Exceptions in CLang format. Also, pedantic is enabled only on CLang,
+                # because there is no pedantic exceptions on GCC.
+                add_compile_options (
+                        -pedantic
+                        # Anonymous structs increase readability in some cases.
+                        -Wno-gnu-anonymous-struct
+                        # Nested anonymous types are allowed, because they are useful with unions.
+                        -Wno-nested-anon-types
+                        # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
+                        -Wno-zero-length-array)
+            else ()
+                # Exceptions in GCC format.
+                add_compile_options (
+                        # Used by XXHash.
+                        -Wno-error=array-bounds)
+            endif ()
+        endif ()
+    endif ()
+
+    if (MSVC)
+        # MSVC debug iterators are not only slow, but they also eat lots of memory and force service
+        # APIs to request additional memory for service iterators. Therefore they are disabled.
+        add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
+    endif ()
+endfunction ()
