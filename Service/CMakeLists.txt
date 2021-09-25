@@ -1,5 +1,6 @@
 add_subdirectory (ExportGraph)
 add_subdirectory (Hashing)
+add_subdirectory (Log)
 add_subdirectory (MemoryPool)
 add_subdirectory (RecordCollection)
 add_subdirectory (StandardLayoutMapping)
