@@ -28,9 +28,6 @@ struct Base
 {
     /// \brief Only messages with equal or greater level are printed.
     Level minimumAcceptedLevel = Level::VERBOSE;
-
-    /// \brief Messages with this level or greater inform logger that flush should be done right now.
-    Level minimumFlushLevel = Level::VERBOSE;
 };
 
 /// \brief Prints messages to standard output.
@@ -62,29 +59,33 @@ class Logger final
 {
 public:
     /// \brief Constructs logger, that prints messages to given sinks.
-    Logger (const std::vector<Sink> &_sinks) noexcept;
+    /// \param _forceFlushOn After message with this message or above appears, all messages will be flushed right away.
+    /// \param _sinks List of sinks for this logger.
+    Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
 
     /// Loggers are not guaranteed to safely share some sinks, for example Sinks::File.
-    Logger (const Logger &_logger) = default;
+    Logger (const Logger &_other) = delete;
 
-    Logger (Logger &&_logger) noexcept;
+    Logger (Logger &&_other) noexcept;
 
     ~Logger () noexcept;
 
     /// \brief Logs message with given level. Thread safe.
+    /// \details Not guaranteed to flush right away if _level is lower than force flush level.
+    ///          If there is no messages with force flush level, logger is guaranteed to flush messages periodically.
     void Log (Level _level, const std::string &_message) noexcept;
 
     /// It looks counter intuitive to move assign loggers.
     EMERGENCE_DELETE_ASSIGNMENT (Logger);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 36u);
 };
 
 namespace GlobalLogger
 {
 /// \brief Initializes shared global logger instance.
-void Init (const std::vector<Sink> &_sinks) noexcept;
+void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
 
 /// \return Shared global logger or nullptr if it's not initialized.
 Logger *Get () noexcept;

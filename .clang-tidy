@@ -9,7 +9,6 @@ Checks: >
   bugprone-*,
   -bugprone-exception-escape,
   cppcoreguidelines-avoid-goto,
-  cppcoreguidelines-avoid-non-const-global-variables,
   cppcoreguidelines-interfaces-global-init,
   cppcoreguidelines-narrowing-conversions,
   cppcoreguidelines-pro-type-cstyle-cast,
