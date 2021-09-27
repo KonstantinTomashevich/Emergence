@@ -18,7 +18,7 @@ std::optional<std::size_t> ExtractThreadIndexFromMessage (const std::string &_me
     }
 
     static_assert (THREAD_COUNT <= 10u);
-    char indexChar = _message.at (index + THREAD_PREFIX.size ());
+    const char indexChar = _message.at (index + THREAD_PREFIX.size ());
 
     if (indexChar >= '0' && indexChar <= '9')
     {
