@@ -6,7 +6,7 @@
 
 using namespace Emergence::Log;
 
-void ThreadFunction (Logger &_logger, int _index)
+void ThreadFunction (Logger &_logger, std::size_t _index)
 {
     auto log = [&_logger, _index] (Level _level, const char *_message)
     {
