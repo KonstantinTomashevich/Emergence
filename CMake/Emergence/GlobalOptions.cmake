@@ -59,10 +59,11 @@ function (add_common_compile_options)
             endif ()
         endif ()
     endif ()
-
-    if (MSVC)
-        # MSVC debug iterators are not only slow, but they also eat lots of memory and force service
-        # APIs to request additional memory for service iterators. Therefore they are disabled.
-        add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
-    endif ()
 endfunction ()
+
+if (MSVC)
+    # MSVC debug iterators are not only slow, but they also eat lots of memory and force service
+    # APIs to request additional memory for service iterators. Therefore they are disabled.
+    # We add this flag even to ThirdParty compilation to avoid link-time mismatches.
+    add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
+endif ()

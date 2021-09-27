@@ -62,7 +62,10 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const std::vect
     // Loggers do not share sinks (except stdout and stderr), therefore there is no need for unique names.
     : logger (spdlog::logger ("Logger"))
 {
+    // Logger should accept all messages: only sinks should filter messages by level.
+    logger.set_level (ToSPDLogLevel (Level::VERBOSE));
     logger.flush_on (ToSPDLogLevel (_forceFlushOn));
+
     for (const Sink &sink : _sinks)
     {
         std::visit (
@@ -75,7 +78,7 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const std::vect
                 };
 
                 // We use single threaded sinks here, because we can more efficiently
-                // protect them from multithread access using atomic flag in ::Log.
+                // protect them from multithread access using ::locked.
                 if constexpr (std::is_same_v<Sinks::StandardOut, std::decay_t<decltype (_config)>>)
                 {
                     addSink (std::make_shared<spdlog::sinks::stdout_color_sink_st> ());
