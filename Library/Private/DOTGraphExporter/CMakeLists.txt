@@ -6,7 +6,7 @@ sober_library_begin (GraphDOTExporter STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    sober_library_use_service (Log PRIVATE)
+    sober_library_use_service (PRIVATE Log)
 
     sober_naming_variant_target (VisualGraph Original VISUAL_GRAPH_TARGET)
     sober_library_link_library (PUBLIC ${VISUAL_GRAPH_TARGET})
