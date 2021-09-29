@@ -43,7 +43,7 @@ function Find-Coverage-Data-Recursive([String]$Directory)
 {
     $Children = Get-ChildItem $Directory
     $ScanResult = [PSCustomObject]@{
-        RawProfileData= @()
+        RawProfileData = @()
         Executables = @()
     }
 
@@ -111,21 +111,25 @@ echo "Merging found profile data."
 $MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
 llvm-profdata merge $RawProfileData -o $MergedProfdata
 
-$ExesArguments = ""
+$ExecutablesAsArguments = ""
 foreach ($Executable in $ScanResult.Executables)
 {
-    $ExesArguments += "-object `"$Executable`" "
+    $ExecutablesAsArguments += "-object `"$Executable`" "
 }
 
-# Call operators are used below, because otherwise all executable are merged into one argument.
+# Expression invokations are used below, because otherwise all executable are merged into one argument.
+
 echo "Exporting full source coverage."
 $FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName
-& "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExesArguments > $FullSourceCoverage"
+Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
 
 echo "Exporting textual coverage report."
 $FullReport = Join-Path $OutputDirectory $Configuration.TextualReportFileName
-& "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExesArguments > $FullReport"
+Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
 
 echo "Exporting json coverage report."
 $FullReportJson = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-& "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExesArguments > $FullReportJson"
+Invoke-Expression @"
+llvm-cov export -format=text -summary-only
+-instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson
+"@
