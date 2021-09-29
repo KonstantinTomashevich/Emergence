@@ -111,22 +111,21 @@ echo "Merging found profile data."
 $MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
 llvm-profdata merge $RawProfileData -o $MergedProfdata
 
-$ExecutablesAsArguments = ""
+$ExesArguments = ""
 foreach ($Executable in $ScanResult.Executables)
 {
-    $ExecutablesAsArguments += "-object `"$Executable`" "
+    $ExesArguments += "-object `"$Executable`" "
 }
 
-# TODO: Expression invokations are used below, because otherwise all executable are merged into one argument.
-
+# Call operators are used below, because otherwise all executable are merged into one argument.
 echo "Exporting full source coverage."
 $FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName
-Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
+& "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExesArguments > $FullSourceCoverage"
 
 echo "Exporting textual coverage report."
 $FullReport = Join-Path $OutputDirectory $Configuration.TextualReportFileName
-Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
+& "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExesArguments > $FullReport"
 
 echo "Exporting json coverage report."
 $FullReportJson = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"
+& "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExesArguments > $FullReportJson"
