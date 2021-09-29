@@ -117,7 +117,7 @@ foreach ($Executable in $ScanResult.Executables)
     $ExecutablesAsArguments += "-object `"$Executable`" "
 }
 
-# Expression invokations are used below, because otherwise all executable are merged into one argument.
+# TODO: Expression invokations are used below, because otherwise all executable are merged into one argument.
 
 echo "Exporting full source coverage."
 $FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName
@@ -129,7 +129,4 @@ Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $Executabl
 
 echo "Exporting json coverage report."
 $FullReportJson = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-Invoke-Expression @"
-llvm-cov export -format=text -summary-only
--instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson
-"@
+Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"
