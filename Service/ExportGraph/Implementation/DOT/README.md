@@ -1,4 +1,5 @@
 # ExportGraph::DOT
 
-[ExportGraph](../../README.md) implementation, that uses [DOT Language](https://graphviz.org/doc/info/lang.html) as
-export format.
+[ExportGraph](../../README.md) implementation, that
+uses [DOTGraphExporter](../../../../Library/Private/DOTGraphExporter/README.md)
+library Original variant as backend.

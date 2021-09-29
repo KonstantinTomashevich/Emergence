@@ -43,7 +43,7 @@ function Find-Coverage-Data-Recursive([String]$Directory)
 {
     $Children = Get-ChildItem $Directory
     $ScanResult = [PSCustomObject]@{
-        RawProfileData= @()
+        RawProfileData = @()
         Executables = @()
     }
 

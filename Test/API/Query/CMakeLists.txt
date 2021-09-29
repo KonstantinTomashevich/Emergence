@@ -17,7 +17,7 @@ sober_library_begin (TestQueryAPI STATIC)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)
-        sober_library_private_compile_options (/EHa)
+        sober_library_private_compile_options (/EHs)
     endif ()
 
     sober_variant_begin (Original)

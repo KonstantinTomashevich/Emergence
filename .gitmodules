@@ -7,3 +7,6 @@
 [submodule "ThirdParty/doctest"]
 	path = ThirdParty/doctest
 	url = https://github.com/onqtam/doctest
+[submodule "ThirdParty/spdlog"]
+	path = ThirdParty/spdlog
+	url = https://github.com/gabime/spdlog
