@@ -26,7 +26,6 @@ public:
 
     ~LoggerImplementation () noexcept = default;
 
-    /// \brief Logs message with given level. Thread safe.
     void Log (Level _level, const std::string &_message) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (LoggerImplementation);

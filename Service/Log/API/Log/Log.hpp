@@ -51,19 +51,19 @@ struct File final : public Base
 };
 } // namespace Sinks
 
-/// \brief Variant, that contains configuration for any available sink.
+/// \brief Variant, that contains configuration for any available sink type.
 using Sink = std::variant<Sinks::StandardOut, Sinks::StandardError, Sinks::File>;
 
-/// \brief Allows logging messages to given sequence of sinks.
+/// \brief Allows logging messages to given set of sinks.
 class Logger final
 {
 public:
     /// \brief Constructs logger, that prints messages to given sinks.
-    /// \param _forceFlushOn After message with this message or above appears, all messages will be flushed right away.
+    /// \param _forceFlushOn After message with this level or above appears, all messages will be flushed right away.
     /// \param _sinks List of sinks for this logger.
     Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
 
-    /// Loggers are not guaranteed to safely share some sinks, for example Sinks::File.
+    /// It looks counter intuitive to copy loggers.
     Logger (const Logger &_other) = delete;
 
     Logger (Logger &&_other) noexcept;
@@ -75,7 +75,7 @@ public:
     ///          If there is no messages with force flush level, logger is guaranteed to flush messages periodically.
     void Log (Level _level, const std::string &_message) noexcept;
 
-    /// It looks counter intuitive to move assign loggers.
+    /// It looks counter intuitive to assign loggers.
     EMERGENCE_DELETE_ASSIGNMENT (Logger);
 
 private:

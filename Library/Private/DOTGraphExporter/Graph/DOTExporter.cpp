@@ -146,8 +146,8 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
             {
                 if (Log::Logger *log = Log::GlobalLogger::Get ())
                 {
-                    log->Log (Log::Level::ERROR, "Unable to add edge \"" + edge.from + "\" -> \"" + edge.to +
-                                                     "\": source node not found!");
+                    log->Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" + edge.to +
+                                                       "\": source node not found!");
                 }
 
                 continue;
@@ -157,8 +157,8 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
             {
                 if (Log::Logger *log = Log::GlobalLogger::Get ())
                 {
-                    log->Log (Log::Level::ERROR, "Unable to add edge \"" + edge.from + "\" -> \"" + edge.to +
-                                                     "\": target node not found!");
+                    log->Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" + edge.to +
+                                                       "\": target node not found!");
                 }
 
                 continue;

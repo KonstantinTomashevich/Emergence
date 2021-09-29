@@ -6,8 +6,8 @@ option (EMERGENCE_COMPILE_TIME_TRACE "Requests compiler to print time trace. Sup
 option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable code coverage reporting." OFF)
 option (EMERGENCE_TREAT_WARNINGS_AS_ERRORS "Enables \"treat warnings as errors\" compiler policy for all targets." ON)
 
-# We can not add common compile here, because they would affect third party libraries compilation.
-# Therefore every Emergence root source directory must call this function to setup compile options.
+# We can not add common compile options here, because they would affect third party libraries compilation.
+# Therefore every Emergence root source directory must call this function to setup compile options locally.
 function (add_common_compile_options)
     if (EMERGENCE_COMPILE_TIME_TRACE)
         if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^.*Clang$")

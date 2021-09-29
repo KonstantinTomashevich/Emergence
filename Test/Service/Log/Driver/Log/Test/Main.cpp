@@ -8,8 +8,8 @@ constexpr int RESULT_ERROR = 1u;
 
 constexpr int ARGUMENT_LOGGER = 1u;
 
-constexpr const char *STDOUT_FILE = "StdOut.log";
-constexpr const char *STDERR_FILE = "StdErr.log";
+constexpr const char *STANDARD_OUT_FILE = "StandardOut.log";
+constexpr const char *STANDARD_ERROR_FILE = "StandardError.log";
 
 using namespace Emergence::Log;
 
@@ -145,7 +145,9 @@ int main (int _argumentCount, const char **_arguments)
     }
 
     std::cout << "Executing logger \"" << _arguments[ARGUMENT_LOGGER] << "\"..." << std::endl;
-    const std::string command = _arguments[ARGUMENT_LOGGER] + std::string (" > ") + STDOUT_FILE + " 2> " + STDERR_FILE;
+    const std::string command =
+        _arguments[ARGUMENT_LOGGER] + std::string (" > ") + STANDARD_OUT_FILE + " 2> " + STANDARD_ERROR_FILE;
+
     system (command.c_str ());
     std::cout << "Execution finished." << std::endl;
     std::size_t errorsDetected = 0u;
@@ -166,8 +168,8 @@ int main (int _argumentCount, const char **_arguments)
 
     checkFile (Test::GLOBAL_LOG_FILE_NAME, Test::GLOBAL_FILE_MINIMUM_LEVEL);
     checkFile (Test::CUSTOM_LOG_FILE_NAME, Test::CUSTOM_FILE_MINIMUM_LEVEL);
-    checkFile (STDOUT_FILE, Test::STANDARD_OUT_MINIMUM_LEVEL);
-    checkFile (STDERR_FILE, Test::STANDARD_ERROR_MINIMUM_LEVEL);
+    checkFile (STANDARD_OUT_FILE, Test::STANDARD_OUT_MINIMUM_LEVEL);
+    checkFile (STANDARD_ERROR_FILE, Test::STANDARD_ERROR_MINIMUM_LEVEL);
 
     std::cout << "Total errors count: " << errorsDetected << "." << std::endl;
     return errorsDetected == 0u ? RESULT_OK : RESULT_ERROR;

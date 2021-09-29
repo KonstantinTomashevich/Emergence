@@ -1,40 +1,40 @@
 set (IMPLEMENTATIONS_TO_TEST SPDLog)
 
 sober_library_begin (TestLogShared STATIC)
-file (GLOB_RECURSE SOURCES "Shared/*.cpp")
-file (GLOB_RECURSE HEADERS "Shared/*.hpp")
-list (APPEND SOURCES ${HEADERS})
+    file (GLOB_RECURSE SOURCES "Shared/*.cpp")
+    file (GLOB_RECURSE HEADERS "Shared/*.hpp")
+    list (APPEND SOURCES ${HEADERS})
 
-sober_library_set_sources ("${SOURCES}")
-sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Shared")
+    sober_library_set_sources ("${SOURCES}")
+    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Shared")
 
-# We need Log API to define Log::Level constants, but we don't need actual implementation here.
-sober_naming_service_target (Log LOG_API)
-sober_library_link_library (PUBLIC ${LOG_API})
+    # We need Log API to define Log::Level constants, but we don't need actual implementation here.
+    sober_naming_service_target (Log LOG_API)
+    sober_library_link_library (PUBLIC ${LOG_API})
 
-sober_variant_begin (Original)
-sober_variant_end ()
+    sober_variant_begin (Original)
+    sober_variant_end ()
 sober_library_end ()
 
 sober_naming_variant_target (TestLogShared Original LOG_TEST_SHARED_LIBRARY)
 
 sober_library_begin (TestLogApp STATIC)
-file (GLOB_RECURSE SOURCES "App/*.cpp")
-file (GLOB_RECURSE HEADERS "App/*.hpp")
-list (APPEND SOURCES ${HEADERS})
+    file (GLOB_RECURSE SOURCES "App/*.cpp")
+    file (GLOB_RECURSE HEADERS "App/*.hpp")
+    list (APPEND SOURCES ${HEADERS})
 
-sober_library_set_sources ("${SOURCES}")
-sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/App")
+    sober_library_set_sources ("${SOURCES}")
+    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/App")
 
-sober_library_link_library (PRIVATE ${LOG_TEST_SHARED_LIBRARY})
-# TODO: Maybe use scope-name format for sober_library_use_service too?
-sober_library_use_service (Log PRIVATE)
+    sober_library_link_library (PRIVATE ${LOG_TEST_SHARED_LIBRARY})
+    # TODO: Maybe use scope-name format for sober_library_use_service too?
+    sober_library_use_service (Log PRIVATE)
 
-foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
-    sober_variant_begin (${IMPLEMENTATION})
-    sober_variant_freeze_implementation (Log ${IMPLEMENTATION})
-    sober_variant_end ()
-endforeach ()
+    foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
+        sober_variant_begin (${IMPLEMENTATION})
+            sober_variant_freeze_implementation (Log ${IMPLEMENTATION})
+        sober_variant_end ()
+    endforeach ()
 sober_library_end ()
 
 add_executable (TestLogDriver "${CMAKE_CURRENT_SOURCE_DIR}/Driver/Log/Test/Main.cpp")
