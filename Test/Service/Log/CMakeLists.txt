@@ -27,8 +27,7 @@ sober_library_begin (TestLogApp STATIC)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/App")
 
     sober_library_link_library (PRIVATE ${LOG_TEST_SHARED_LIBRARY})
-    # TODO: Maybe use scope-name format for sober_library_use_service too?
-    sober_library_use_service (Log PRIVATE)
+    sober_library_use_service (PRIVATE Log)
 
     foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
         sober_variant_begin (${IMPLEMENTATION})

@@ -4,7 +4,7 @@ sober_library_begin (ContextExtension INTERFACE)
     sober_library_set_sources ("${HEADERS}")
     sober_library_include_directory (INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    sober_library_use_service (Testing INTERFACE)
+    sober_library_use_service (INTERFACE Testing)
     sober_variant_begin (Original)
     sober_variant_end ()
 sober_library_end ()

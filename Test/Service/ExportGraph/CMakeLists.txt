@@ -14,7 +14,7 @@ sober_test_begin (ExportGraph)
     sober_naming_variant_target (Testing Doctest TESTING_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${TESTING_LIBRARY_TARGET})
 
-    sober_library_use_service (TestExportGraphExpectation PRIVATE)
+    sober_library_use_service (PRIVATE TestExportGraphExpectation)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)
