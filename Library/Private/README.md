@@ -8,3 +8,6 @@ library. Therefore, **private** libraries are not designed for direct usage:
 - They are tested only as parts of corresponding services.
 
 Therefore, it's advised to not use these libraries directly, unless it's absolutely necessary.
+
+Utility libraries, that are not designed for use outside of [Emergence](../../README.md), for
+example [APICommon](./APICommon/README.md), are private libraries too.
