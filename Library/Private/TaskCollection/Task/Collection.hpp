@@ -4,12 +4,12 @@
 #include <string>
 #include <vector>
 
-namespace Emergence::Task
+namespace Emergence
 {
 /// \brief Intermediate structure for storing tasks that may depend on each other.
 /// \details This format is designed for transporting information about tasks from one library to another.
 ///          It's not designed to be modified after initial construction and setup.
-struct Collection
+struct TaskCollection
 {
     /// \brief Contains info about one tasks.
     struct Item
@@ -27,4 +27,4 @@ struct Collection
     /// \brief Contains information about all tasks in this collection.
     std::vector<Item> tasks;
 };
-} // namespace Emergence::Task
+} // namespace Emergence

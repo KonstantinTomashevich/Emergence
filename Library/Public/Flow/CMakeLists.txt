@@ -8,8 +8,14 @@ sober_library_begin (Flow STATIC)
 
     sober_library_use_service (PRIVATE Log)
 
+    sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
+    sober_library_link_library (PUBLIC ${API_COMMON_LIBRARY_TARGET})
+
     sober_naming_variant_target (TaskCollection Original TASK_COLLECTION_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${TASK_COLLECTION_LIBRARY_TARGET})
+
+    sober_naming_variant_target (VisualGraph Original VISUAL_GRAPH_LIBRARY_TARGET)
+    sober_library_link_library (PUBLIC ${VISUAL_GRAPH_LIBRARY_TARGET})
 
     sober_variant_begin (Original)
     sober_variant_end ()
