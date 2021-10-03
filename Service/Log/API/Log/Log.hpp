@@ -87,16 +87,8 @@ namespace GlobalLogger
 /// \brief Initializes shared global logger instance.
 void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
 
-/// \return Shared global logger or nullptr if it's not initialized.
-Logger *Get () noexcept;
-
-/// \brief Shortcut, that calls Logger::Log on global logger if it exists.
-inline void Log (Level _level, const std::string &_message)
-{
-    if (Logger *globalLogger = Get ())
-    {
-        globalLogger->Log (_level, _message);
-    }
-}
+/// \brief If global logger is initialized, logs message with given level through it. Thread safe.
+/// \see Logger::Log
+void Log (Level _level, const std::string &_message) noexcept;
 }; // namespace GlobalLogger
 } // namespace Emergence::Log

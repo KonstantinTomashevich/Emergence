@@ -145,9 +145,12 @@ void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
     globalLogger = std::make_unique<Logger> (_forceFlushOn, _sinks);
 }
 
-Logger *Get () noexcept
+void Log (Level _level, const std::string &_message) noexcept
 {
-    return globalLogger.get ();
+    if (globalLogger)
+    {
+        globalLogger->Log (_level, _message);
+    }
 }
 } // namespace GlobalLogger
 } // namespace Emergence::Log
