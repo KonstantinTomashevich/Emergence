@@ -308,6 +308,8 @@ TaskCollection TaskGraph::ExportCollection () const noexcept
     return collection;
 }
 
+// If asserts are not enabled, CLang Tidy advises to convert this function to static, which is not correct.
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void TaskGraph::AssertNodeNameUniqueness ([[maybe_unused]] const char *_name) const noexcept
 {
     assert (std::find_if (tasks.begin (), tasks.end (),

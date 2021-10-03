@@ -225,10 +225,10 @@ TEST_CASE (ReleaseDoesNotInvalidateIterator)
     std::vector<void *> items;
 
     // Must be greater than 1. If it's greater than 1, value should not matter.
-    constexpr std::size_t itemsToAcquire = 5u;
-    items.reserve (itemsToAcquire);
+    constexpr std::size_t ITEMS_TO_ACQUIRE = 5u;
+    items.reserve (ITEMS_TO_ACQUIRE);
 
-    for (std::size_t index = 0u; index < itemsToAcquire; ++index)
+    for (std::size_t index = 0u; index < ITEMS_TO_ACQUIRE; ++index)
     {
         items.emplace_back (pool.Acquire ());
     }
