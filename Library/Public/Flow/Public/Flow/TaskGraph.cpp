@@ -94,7 +94,9 @@ bool GraphVisitor::VisitNode (const Graph &_graph, std::size_t _index) noexcept
     return true;
 }
 
-bool EnsureConcurrencySafety (const Graph &_graph, const std::vector<std::bitset<MAX_GRAPH_NODES>> &_reachable) noexcept
+bool EnsureConcurrencySafety (const Graph &_graph,
+                              const std::vector<std::bitset<MAX_GRAPH_NODES>> &_reachable,
+                              const std::vector<std::string> &_resourceNames) noexcept
 {
     bool safe = true;
     for (std::size_t primaryNodeIndex = 0u; primaryNodeIndex < _graph.nodes.size (); ++primaryNodeIndex)
@@ -104,21 +106,60 @@ bool EnsureConcurrencySafety (const Graph &_graph, const std::vector<std::bitset
              ++secondaryNodeIndex)
         {
             const GraphNode &secondaryNode = _graph.nodes[secondaryNodeIndex];
-            const bool concurrentModificationPossible = (primaryNode.readAccess & secondaryNode.writeAccess).any () ||
-                                                        (primaryNode.writeAccess & secondaryNode.readAccess).any () ||
-                                                        (primaryNode.writeAccess & secondaryNode.writeAccess).any ();
+            const std::bitset<MAX_RESOURCES> readWriteCollision = primaryNode.readAccess & secondaryNode.writeAccess;
+            const std::bitset<MAX_RESOURCES> writeReadCollision = primaryNode.writeAccess & secondaryNode.readAccess;
+            const std::bitset<MAX_RESOURCES> writeWriteCollision = primaryNode.writeAccess & secondaryNode.writeAccess;
 
-            if (concurrentModificationPossible)
+            if (readWriteCollision.any () || writeReadCollision.any () || writeWriteCollision.any ())
             {
                 const bool preventedThroughDependencies = _reachable[primaryNodeIndex].test (secondaryNodeIndex) ||
                                                           _reachable[secondaryNodeIndex].test (primaryNodeIndex);
 
                 if (!preventedThroughDependencies)
                 {
-                    // TODO: Better logging.
-                    Log::GlobalLogger::Log (
-                        Log::Level::ERROR, "TaskGraph: Race condition is possible between tasks \"" + primaryNode.name +
-                                               "\" and \"" + secondaryNode.name + "\"!");
+                    std::string error = "TaskGraph: Race condition is possible between tasks \"" + primaryNode.name +
+                                        "\" and \"" + secondaryNode.name + "\"! ";
+
+                    auto appendCollision = [&error, &_resourceNames] (const std::bitset<MAX_RESOURCES> &_collision)
+                    {
+                        bool firstItem = true;
+                        for (std::size_t index = 0u; index < _collision.size (); ++index)
+                        {
+                            if (_collision.test (index))
+                            {
+                                if (!firstItem)
+                                {
+                                    error.append (", ");
+                                }
+
+                                error.append (_resourceNames[index]);
+                                firstItem = false;
+                            }
+                        }
+                    };
+
+                    if (readWriteCollision.any ())
+                    {
+                        error.append ("First task reads and second task writes ");
+                        appendCollision (readWriteCollision);
+                        error.append (".");
+                    }
+
+                    if (writeReadCollision.any ())
+                    {
+                        error.append ("First task writes and second task reads ");
+                        appendCollision (writeReadCollision);
+                        error.append (".");
+                    }
+
+                    if (writeWriteCollision.any ())
+                    {
+                        error.append ("First task writes and second task writes ");
+                        appendCollision (writeWriteCollision);
+                        error.append (".");
+                    }
+
+                    Log::GlobalLogger::Log (Log::Level::ERROR, error);
                     safe = false;
                 }
             }
@@ -245,7 +286,7 @@ TaskCollection TaskGraph::ExportCollection () const noexcept
         }
     }
 
-    if (!EnsureConcurrencySafety (graph, visitor.reachable))
+    if (!EnsureConcurrencySafety (graph, visitor.reachable, resources))
     {
         return {};
     }
