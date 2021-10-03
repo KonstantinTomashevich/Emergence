@@ -3,16 +3,13 @@
 #include <optional>
 #include <unordered_map>
 
+#include <Flow/Constants.hpp>
 #include <Flow/TaskGraph.hpp>
 
 #include <Log/Log.hpp>
 
 namespace Emergence::Flow
 {
-// TODO: Compile-time bitset is temporary solution, must be replaced with runtime-initialized size bitset later.
-static constexpr std::size_t MAX_RESOURCES = 128u;
-static constexpr std::size_t MAX_NODES = 128u;
-
 struct GraphNode final
 {
     std::string name;
@@ -37,7 +34,7 @@ enum class VisitationState
 struct GraphVisitor
 {
     std::vector<VisitationState> nodeStates;
-    std::vector<std::bitset<MAX_NODES>> reachable;
+    std::vector<std::bitset<MAX_GRAPH_NODES>> reachable;
 
     void Prepare (const Graph &_graph) noexcept;
 
@@ -97,7 +94,7 @@ bool GraphVisitor::VisitNode (const Graph &_graph, std::size_t _index) noexcept
     return true;
 }
 
-bool EnsureConcurrencySafety (const Graph &_graph, const std::vector<std::bitset<MAX_NODES>> &_reachable) noexcept
+bool EnsureConcurrencySafety (const Graph &_graph, const std::vector<std::bitset<MAX_GRAPH_NODES>> &_reachable) noexcept
 {
     bool safe = true;
     for (std::size_t primaryNodeIndex = 0u; primaryNodeIndex < _graph.nodes.size (); ++primaryNodeIndex)
