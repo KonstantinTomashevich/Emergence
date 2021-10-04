@@ -36,7 +36,7 @@ public:
 
     ~TaskRegister () = default;
 
-    void AddTask (Task _task) noexcept;
+    void RegisterTask (Task _task) noexcept;
 
     void RegisterCheckpoint (const char *_name) noexcept;
 

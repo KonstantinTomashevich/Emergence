@@ -154,7 +154,7 @@ bool EnsureConcurrencySafety (const Graph &_graph,
 
                     if (writeWriteCollision.any ())
                     {
-                        error.append ("First task writes and second task writes ");
+                        error.append ("Both tasks write ");
                         appendCollision (writeWriteCollision);
                         error.append (".");
                     }
@@ -169,7 +169,7 @@ bool EnsureConcurrencySafety (const Graph &_graph,
     return safe;
 }
 
-void TaskRegister::AddTask (Task _task) noexcept
+void TaskRegister::RegisterTask (Task _task) noexcept
 {
     AssertNodeNameUniqueness (_task.name.c_str ());
     tasks.emplace_back (std::move (_task));
@@ -278,6 +278,8 @@ TaskCollection TaskRegister::ExportCollection () const noexcept
     }
 
     GraphVisitor visitor;
+    visitor.Prepare (graph);
+
     for (std::size_t index = 0u; index < graph.nodes.size (); ++index)
     {
         if (!visitor.VisitNode (graph, index))
@@ -399,8 +401,10 @@ bool TaskRegister::BuildGraph (struct Graph *_graph) const noexcept
                                                                resource + "\" of task \"" + task.name + "\"!");
                 noErrors = false;
             }
-
-            node.readAccess.set (iterator->second);
+            else
+            {
+                node.readAccess.set (iterator->second);
+            }
         }
 
         for (const std::string &resource : task.writeAccess)
@@ -412,16 +416,17 @@ bool TaskRegister::BuildGraph (struct Graph *_graph) const noexcept
                                                                resource + "\" of task \"" + task.name + "\"!");
                 noErrors = false;
             }
-
-            if (node.readAccess.test (iterator->second))
+            else if (node.readAccess.test (iterator->second))
             {
                 Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Resource \"" + resource + "\" of task \"" +
                                                                task.name +
                                                                "\" used both in read access in write access lists!");
                 noErrors = false;
             }
-
-            node.writeAccess.set (iterator->second);
+            else
+            {
+                node.writeAccess.set (iterator->second);
+            }
         }
 
         if (!nameToNodeIndex.emplace (task.name, _graph->nodes.size () - 1u).second)
