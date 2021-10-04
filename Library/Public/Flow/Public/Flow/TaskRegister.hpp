@@ -24,17 +24,17 @@ struct Task
     std::vector<std::string> dependencyOf;
 };
 
-class TaskGraph final
+class TaskRegister final
 {
 public:
-    TaskGraph () = default;
+    TaskRegister () = default;
 
-    /// Copying task graphs is counter-intuitive.
-    TaskGraph (const TaskGraph &_other) = delete;
+    /// Copying task registers is counter-intuitive.
+    TaskRegister (const TaskRegister &_other) = delete;
 
-    TaskGraph (TaskGraph &&_other) = default;
+    TaskRegister (TaskRegister &&_other) = default;
 
-    ~TaskGraph () = default;
+    ~TaskRegister () = default;
 
     void AddTask (Task _task) noexcept;
 
@@ -46,8 +46,8 @@ public:
 
     [[nodiscard]] TaskCollection ExportCollection () const noexcept;
 
-    /// Assigning task graphs is counter-intuitive.
-    EMERGENCE_DELETE_ASSIGNMENT (TaskGraph);
+    /// Assigning task registers is counter-intuitive.
+    EMERGENCE_DELETE_ASSIGNMENT (TaskRegister);
 
 private:
     void AssertNodeNameUniqueness (const char *_name) const noexcept;

@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include <Flow/Constants.hpp>
-#include <Flow/TaskGraph.hpp>
+#include <Flow/TaskRegister.hpp>
 
 #include <Log/Log.hpp>
 
@@ -169,25 +169,25 @@ bool EnsureConcurrencySafety (const Graph &_graph,
     return safe;
 }
 
-void TaskGraph::AddTask (Task _task) noexcept
+void TaskRegister::AddTask (Task _task) noexcept
 {
     AssertNodeNameUniqueness (_task.name.c_str ());
     tasks.emplace_back (std::move (_task));
 }
 
-void TaskGraph::RegisterCheckpoint (const char *_name) noexcept
+void TaskRegister::RegisterCheckpoint (const char *_name) noexcept
 {
     AssertNodeNameUniqueness (_name);
     checkpoints.emplace_back (_name);
 }
 
-void TaskGraph::RegisterResource (const char *_name) noexcept
+void TaskRegister::RegisterResource (const char *_name) noexcept
 {
     assert (std::find (resources.begin (), resources.end (), _name) == resources.end ());
     resources.emplace_back (_name);
 }
 
-VisualGraph::Graph TaskGraph::ExportVisual (bool _exportResources) const noexcept
+VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noexcept
 {
     constexpr const char *ROOT_ID = "TaskGraph";
     constexpr const char *RESOURCE_GRAPH_ID = "Resources";
@@ -269,7 +269,7 @@ VisualGraph::Graph TaskGraph::ExportVisual (bool _exportResources) const noexcep
     return root;
 }
 
-TaskCollection TaskGraph::ExportCollection () const noexcept
+TaskCollection TaskRegister::ExportCollection () const noexcept
 {
     Graph graph;
     if (!BuildGraph (&graph))
@@ -348,7 +348,7 @@ TaskCollection TaskGraph::ExportCollection () const noexcept
 
 // If asserts are not enabled, CLang Tidy advises to convert this function to static, which is not correct.
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-void TaskGraph::AssertNodeNameUniqueness ([[maybe_unused]] const char *_name) const noexcept
+void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] const char *_name) const noexcept
 {
     assert (std::find_if (tasks.begin (), tasks.end (),
                           [_name] (const Task &_task)
@@ -359,7 +359,7 @@ void TaskGraph::AssertNodeNameUniqueness ([[maybe_unused]] const char *_name) co
     assert (std::find (checkpoints.begin (), checkpoints.end (), _name) == checkpoints.end ());
 }
 
-bool TaskGraph::BuildGraph (struct Graph *_graph) const noexcept
+bool TaskRegister::BuildGraph (struct Graph *_graph) const noexcept
 {
     bool noErrors = true;
     std::unordered_map<std::string, std::size_t> nameToNodeIndex;
