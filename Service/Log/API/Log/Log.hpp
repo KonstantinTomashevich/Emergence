@@ -85,10 +85,11 @@ private:
 namespace GlobalLogger
 {
 /// \brief Initializes shared global logger instance.
-void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
+/// \invariant Should not be called more than once.
+void Init (Level _forceFlushOn = Level::ERROR, const std::vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
 
-/// \brief If global logger is initialized, logs message with given level through it. Thread safe.
-/// \see Logger::Log
+/// \brief Executes Logger::Log using global logger instance.
+/// \details If ::Init was not called previously, it would be called with default arguments.
 void Log (Level _level, const std::string &_message) noexcept;
 }; // namespace GlobalLogger
 } // namespace Emergence::Log

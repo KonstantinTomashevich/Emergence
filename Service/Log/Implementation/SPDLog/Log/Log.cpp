@@ -147,10 +147,12 @@ void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
 
 void Log (Level _level, const std::string &_message) noexcept
 {
-    if (globalLogger)
+    if (!globalLogger)
     {
-        globalLogger->Log (_level, _message);
+        Init ();
     }
+
+    globalLogger->Log (_level, _message);
 }
 } // namespace GlobalLogger
 } // namespace Emergence::Log
