@@ -222,7 +222,8 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
         if (_exportResources)
         {
-            auto addResourceEdge = [&root] (const std::string &_task, const std::string &_resource) -> VisualGraph::Edge &
+            auto addResourceEdge = [&root] (const std::string &_task,
+                                            const std::string &_resource) -> VisualGraph::Edge &
             {
                 VisualGraph::Edge &edge = root.edges.emplace_back ();
                 edge.from = VISUAL_PIPELINE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _task;
