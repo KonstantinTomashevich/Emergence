@@ -27,6 +27,16 @@ struct Task
 class TaskRegister final
 {
 public:
+    inline static const std::string VISUAL_ROOT_GRAPH_ID = "TaskGraph";
+    inline static const std::string VISUAL_RESOURCE_GRAPH_ID = "Resources";
+    inline static const std::string VISUAL_PIPELINE_GRAPH_ID = "Pipeline";
+
+    inline static const std::string VISUAL_TASK_LABEL_SUFFIX = " (Task)";
+    inline static const std::string VISUAL_CHECKPOINT_LABEL_SUFFIX = " (Checkpoint)";
+
+    inline static const std::string VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
+    inline static const std::string VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
+
     TaskRegister () = default;
 
     /// Copying task registers is counter-intuitive.

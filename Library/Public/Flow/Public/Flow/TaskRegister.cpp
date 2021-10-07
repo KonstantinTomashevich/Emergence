@@ -189,20 +189,13 @@ void TaskRegister::RegisterResource (const char *_name) noexcept
 
 VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noexcept
 {
-    constexpr const char *ROOT_ID = "TaskGraph";
-    constexpr const char *RESOURCE_GRAPH_ID = "Resources";
-    constexpr const char *PIPELINE_GRAPH_ID = "Pipeline";
-
-    constexpr const char *READ_ACCESS_COLOR = "#0000FFFF";
-    constexpr const char *WRITE_ACCESS_COLOR = "#FF0000FF";
-
     VisualGraph::Graph root;
-    root.id = ROOT_ID;
+    root.id = VISUAL_ROOT_GRAPH_ID;
 
     if (_exportResources)
     {
         VisualGraph::Graph &resourceGraph = root.subgraphs.emplace_back ();
-        resourceGraph.id = RESOURCE_GRAPH_ID;
+        resourceGraph.id = VISUAL_RESOURCE_GRAPH_ID;
 
         for (const std::string &resource : resources)
         {
@@ -212,39 +205,39 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
     }
 
     VisualGraph::Graph &pipelineGraph = root.subgraphs.emplace_back ();
-    pipelineGraph.id = PIPELINE_GRAPH_ID;
+    pipelineGraph.id = VISUAL_PIPELINE_GRAPH_ID;
 
     for (const std::string &checkpoint : checkpoints)
     {
         VisualGraph::Node &node = pipelineGraph.nodes.emplace_back ();
         node.id = checkpoint;
-        node.label = checkpoint + " (Checkpoint)";
+        node.label = checkpoint + VISUAL_CHECKPOINT_LABEL_SUFFIX;
     }
 
     for (const Task &task : tasks)
     {
         VisualGraph::Node &node = pipelineGraph.nodes.emplace_back ();
         node.id = task.name;
-        node.label = task.name + " (Task)";
+        node.label = task.name + VISUAL_TASK_LABEL_SUFFIX;
 
         if (_exportResources)
         {
-            auto addResourceEdge = [&root] (const std::string &_task, const std::string &_resource)
+            auto addResourceEdge = [&root] (const std::string &_task, const std::string &_resource) -> VisualGraph::Edge &
             {
                 VisualGraph::Edge &edge = root.edges.emplace_back ();
-                edge.from = PIPELINE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _task;
-                edge.to = RESOURCE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _resource;
+                edge.from = VISUAL_PIPELINE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _task;
+                edge.to = VISUAL_RESOURCE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _resource;
                 return edge;
             };
 
             for (const std::string &resource : task.readAccess)
             {
-                addResourceEdge (node.id, resource).color = READ_ACCESS_COLOR;
+                addResourceEdge (node.id, resource).color = VISUAL_READ_ACCESS_COLOR;
             }
 
             for (const std::string &resource : task.writeAccess)
             {
-                addResourceEdge (node.id, resource).color = WRITE_ACCESS_COLOR;
+                addResourceEdge (node.id, resource).color = VISUAL_WRITE_ACCESS_COLOR;
             }
         }
 
