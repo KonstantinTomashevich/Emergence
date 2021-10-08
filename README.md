@@ -25,6 +25,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Libraries
 
+- [Flow](./Library/Public/Flow/README.md): compact user-friendly task registration interface, that verifies registered
+  tasks and their meta.
 - [Handling](./Library/Public/Handling/README.md): compact handle-based ownership implementation.
 - [SyntaxSugar](./Library/Public/SyntaxSugar/README.md): contains syntax sugar for other libraries and service
   implementations.

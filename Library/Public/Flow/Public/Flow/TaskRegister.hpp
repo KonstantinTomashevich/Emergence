@@ -12,18 +12,33 @@
 
 namespace Emergence::Flow
 {
+/// \brief Contains all useful information about tasks.
 struct Task
 {
+    /// \brief Task name is used for dependency connection, logging and debugging.
+    /// \invariant Must be unique among tasks and checkpoints.
     std::string name;
+
+    /// \see TaskCollection::Item::task
     std::function<void ()> executor;
 
+    /// \brief Names of resources, that are read by this task.
     std::vector<std::string> readAccess;
+
+    /// \brief Names of resources, that are modified by this task.
+    /// \invariant If task both reads and modifies one resources, this resource
+    ///            should be added to ::writeAccess, but not to ::readAccess.
     std::vector<std::string> writeAccess;
 
+    /// \brief Names of tasks, on which this task depends.
     std::vector<std::string> dependsOn;
+
+    /// \brief Names of tasks, to which this task injects itself as dependency.
     std::vector<std::string> dependencyOf;
 };
 
+/// \brief Allows user to register tasks and export result as task collection or visual graph.
+/// \details Registration order doesn't matter: all verification will be done during ::ExportCollection.
 class TaskRegister final
 {
 public:
@@ -46,14 +61,27 @@ public:
 
     ~TaskRegister () = default;
 
+    /// \brief Registers given task.
     void RegisterTask (Task _task) noexcept;
 
+    /// \brief Registers new checkpoint with given name.
+    /// \invariant Checkpoint name should be unique among checkpoints and tasks.
     void RegisterCheckpoint (const char *_name) noexcept;
 
+    /// \brief Registers new resources with given name.
+    /// \invariant Resource name should be unique.
     void RegisterResource (const char *_name) noexcept;
 
+    /// \brief Exports registered tasks, checkpoints and resources as visual graph.
+    /// \param _exportResources Should resources be exported?
     [[nodiscard]] VisualGraph::Graph ExportVisual (bool _exportResources) const noexcept;
 
+    /// \brief Verifies registered data and exports it as task collection.
+    /// \return Valid collection or empty collection if verification failed.
+    /// \details Verifier checks that there is:
+    ///          - No missing dependencies and resources.
+    ///          - No dependency cycles.
+    ///          - No data access races.
     [[nodiscard]] TaskCollection ExportCollection () const noexcept;
 
     /// Assigning task registers is counter-intuitive.
