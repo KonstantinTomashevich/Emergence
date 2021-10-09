@@ -88,9 +88,9 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (TaskRegister);
 
 private:
-    void AssertNodeNameUniqueness (const char *_name) const noexcept;
+    friend class TaskGraph;
 
-    bool BuildGraph (struct Graph *_graph) const noexcept;
+    void AssertNodeNameUniqueness (const char *_name) const noexcept;
 
     std::vector<Task> tasks;
     std::vector<std::string> checkpoints;

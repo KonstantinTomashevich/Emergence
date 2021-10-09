@@ -10,117 +10,318 @@
 
 namespace Emergence::Flow
 {
-struct GraphNode final
+class TaskGraph final
 {
-    std::string name;
-    std::optional<std::size_t> sourceTaskIndex;
-    std::bitset<MAX_RESOURCES> readAccess;
-    std::bitset<MAX_RESOURCES> writeAccess;
+public:
+    static std::optional<TaskGraph> Build (const TaskRegister &_register) noexcept;
+
+    [[nodiscard]] TaskCollection ExportCollection () const noexcept;
+
+private:
+    struct Node final
+    {
+        std::string name;
+        std::optional<std::size_t> sourceTaskIndex;
+        std::bitset<MAX_RESOURCES> readAccess;
+        std::bitset<MAX_RESOURCES> writeAccess;
+    };
+
+    TaskGraph () = default;
+
+    [[nodiscard]] bool Verify () const noexcept;
+
+    const TaskRegister *source = nullptr;
+    std::vector<Node> nodes;
+    std::vector<std::vector<std::size_t>> edges;
 };
 
-struct Graph final
+std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexcept
 {
-    std::vector<GraphNode> nodes;
-    std::unordered_map<std::size_t, std::vector<std::size_t>> edges;
-};
+    bool noErrors = true;
+    TaskGraph graph;
+    graph.source = &_register;
+    std::unordered_map<std::string, std::size_t> nameToNodeIndex;
 
-enum class VisitationState
-{
-    UNVISITED,
-    WAITING_FOR_RESULTS,
-    READY,
-};
+    for (const std::string &checkpoint : _register.checkpoints)
+    {
+        Node &node = graph.nodes.emplace_back ();
+        node.name = checkpoint;
 
-struct GraphVisitor
-{
-    std::vector<VisitationState> nodeStates;
-    std::vector<std::bitset<MAX_GRAPH_NODES>> reachable;
+        if (!nameToNodeIndex.emplace (checkpoint, graph.nodes.size () - 1u).second)
+        {
+            Log::GlobalLogger::Log (Log::Level::ERROR,
+                                    "TaskGraph: Task|Checkpoint name \"" + checkpoint + "\" is used more than once!");
+            noErrors = false;
+        }
+    }
 
-    void Prepare (const Graph &_graph) noexcept;
+    std::unordered_map<std::string, std::size_t> resourceNameToIndex;
+    for (std::size_t index = 0u; index < _register.resources.size (); ++index)
+    {
+        resourceNameToIndex.emplace (_register.resources[index], index);
+    }
 
-    bool VisitNode (const Graph &_graph, std::size_t _index) noexcept;
-};
+    for (std::size_t index = 0u; index < _register.tasks.size (); ++index)
+    {
+        const Task &task = _register.tasks[index];
+        Node &node = graph.nodes.emplace_back ();
+        node.name = task.name;
+        node.sourceTaskIndex = index;
 
-void GraphVisitor::Prepare (const Graph &_graph) noexcept
-{
-    nodeStates.clear ();
-    nodeStates.resize (_graph.nodes.size (), VisitationState::UNVISITED);
+        for (const std::string &resource : task.readAccess)
+        {
+            auto iterator = resourceNameToIndex.find (resource);
+            if (iterator == resourceNameToIndex.end ())
+            {
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find read access resource \"" +
+                                                               resource + "\" of task \"" + task.name + "\"!");
+                noErrors = false;
+            }
+            else
+            {
+                node.readAccess.set (iterator->second);
+            }
+        }
 
-    reachable.clear ();
-    reachable.resize (_graph.nodes.size ());
+        graph.edges.resize (graph.nodes.size ());
+        for (const std::string &resource : task.writeAccess)
+        {
+            auto iterator = resourceNameToIndex.find (resource);
+            if (iterator == resourceNameToIndex.end ())
+            {
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find write access resource \"" +
+                                                               resource + "\" of task \"" + task.name + "\"!");
+                noErrors = false;
+            }
+            else if (node.readAccess.test (iterator->second))
+            {
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Resource \"" + resource + "\" of task \"" +
+                                                               task.name +
+                                                               "\" used both in read access in write access lists!");
+                noErrors = false;
+            }
+            else
+            {
+                node.writeAccess.set (iterator->second);
+            }
+        }
+
+        if (!nameToNodeIndex.emplace (task.name, graph.nodes.size () - 1u).second)
+        {
+            Log::GlobalLogger::Log (Log::Level::ERROR,
+                                    "TaskGraph: Task|Checkpoint name \"" + task.name + "\" is used more than once!");
+            noErrors = false;
+        }
+    }
+
+    for (const Task &task : _register.tasks)
+    {
+        std::size_t taskIndex = nameToNodeIndex.at (task.name);
+        for (const std::string &target : task.dependencyOf)
+        {
+            auto iterator = nameToNodeIndex.find (target);
+            if (iterator == nameToNodeIndex.end ())
+            {
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find target \"" + target +
+                                                               "\" of task \"" + task.name + "\"!");
+                noErrors = false;
+            }
+            else
+            {
+                graph.edges[taskIndex].emplace_back (iterator->second);
+            }
+        }
+
+        for (const std::string &dependency : task.dependsOn)
+        {
+            auto iterator = nameToNodeIndex.find (dependency);
+            if (iterator == nameToNodeIndex.end ())
+            {
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find dependency \"" + dependency +
+                                                               "\" of task \"" + task.name + "\"!");
+                noErrors = false;
+            }
+            else
+            {
+                graph.edges[iterator->second].emplace_back (taskIndex);
+            }
+        }
+    }
+
+    if (noErrors)
+    {
+        return graph;
+    }
+
+    return std::nullopt;
 }
 
-bool GraphVisitor::VisitNode (const Graph &_graph, std::size_t _index) noexcept
+TaskCollection TaskGraph::ExportCollection () const noexcept
 {
-    switch (nodeStates[_index])
+    assert (source);
+    if (Verify ())
     {
-    case VisitationState::WAITING_FOR_RESULTS:
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "TaskGraph: Cycle found during visitation, printing out all nodes in stack.");
-        Log::GlobalLogger::Log (Log::Level::ERROR, _graph.nodes[_index].name);
-        return false;
-
-    case VisitationState::UNVISITED:
-    {
-        nodeStates[_index] = VisitationState::WAITING_FOR_RESULTS;
-        auto edges = _graph.edges.find (_index);
-
-        if (edges != _graph.edges.end ())
+        TaskCollection collection;
+        for (const Task &task : source->tasks)
         {
-            for (std::size_t child : edges->second)
+            TaskCollection::Item &item = collection.tasks.emplace_back ();
+            item.name = task.name;
+            item.task = task.executor;
+        }
+
+        auto emplaceWithoutDuplication = [] (std::vector<std::size_t> &_indices, std::size_t _index)
+        {
+            if (std::find (_indices.begin (), _indices.end (), _index) == _indices.end ())
             {
-                reachable[_index].set (child);
-                if (VisitNode (_graph, child))
+                _indices.emplace_back (_index);
+            }
+        };
+
+        for (std::size_t sourceIndex = 0u; sourceIndex < edges.size (); ++sourceIndex)
+        {
+            const std::vector<std::size_t> &targetIndices = edges[sourceIndex];
+            const Node &sourceNode = nodes[sourceIndex];
+
+            // We process only tasks as sources.
+            if (sourceNode.sourceTaskIndex)
+            {
+                for (std::size_t targetIndex : targetIndices)
                 {
-                    reachable[_index] |= reachable[child];
-                }
-                else
-                {
-                    Log::GlobalLogger::Log (Log::Level::ERROR, _graph.nodes[_index].name);
-                    return false;
+                    const Node &targetNode = nodes[targetIndex];
+
+                    // Target is task: just add dependency.
+                    if (targetNode.sourceTaskIndex)
+                    {
+                        emplaceWithoutDuplication (
+                            collection.tasks[targetNode.sourceTaskIndex.value ()].dependencyIndices,
+                            sourceNode.sourceTaskIndex.value ());
+                    }
+                    // Target is checkpoint: source should be dependency of all checkpoint targets.
+                    else
+                    {
+                        const std::vector<std::size_t> &checkpointTargets = edges[targetIndex];
+                        for (std::size_t checkpointTargetIndex : checkpointTargets)
+                        {
+                            const Node &checkpointTargetNode = nodes[checkpointTargetIndex];
+                            // Checkpoints can not depend on other checkpoints.
+                            assert (checkpointTargetNode.sourceTaskIndex);
+
+                            emplaceWithoutDuplication (
+                                collection.tasks[checkpointTargetNode.sourceTaskIndex.value ()].dependencyIndices,
+                                sourceNode.sourceTaskIndex.value ());
+                        }
+                    }
                 }
             }
         }
 
-        nodeStates[_index] = VisitationState::READY;
-        [[fallthrough]];
+        return collection;
     }
 
-    case VisitationState::READY:
-        return true;
-    }
-
-    assert (false);
-    return true;
+    return {};
 }
 
-bool EnsureConcurrencySafety (const Graph &_graph,
-                              const std::vector<std::bitset<MAX_GRAPH_NODES>> &_reachable,
-                              const std::vector<std::string> &_resourceNames) noexcept
+bool TaskGraph::Verify () const noexcept
 {
-    bool safe = true;
-    for (std::size_t primaryNodeIndex = 0u; primaryNodeIndex < _graph.nodes.size (); ++primaryNodeIndex)
+    assert (source);
+
+    // Firstly, we need to traverse graph using DFS to find cycles, if they exist, and collect reachability matrix.
+
+    enum class VisitationState
     {
-        const GraphNode &primaryNode = _graph.nodes[primaryNodeIndex];
-        for (std::size_t secondaryNodeIndex = primaryNodeIndex + 1u; secondaryNodeIndex < _graph.nodes.size ();
+        UNVISITED,
+        WAITING_FOR_RESULTS,
+        READY,
+    };
+
+    struct
+    {
+        std::vector<VisitationState> nodeStates;
+        std::vector<std::bitset<MAX_GRAPH_NODES>> reachable;
+
+        bool VisitNode (const TaskGraph &_graph, std::size_t _index) noexcept
+        {
+            switch (nodeStates[_index])
+            {
+            case VisitationState::WAITING_FOR_RESULTS:
+                Log::GlobalLogger::Log (Log::Level::ERROR,
+                                        "TaskGraph: Cycle found during visitation, printing out all nodes in stack.");
+                Log::GlobalLogger::Log (Log::Level::ERROR, _graph.nodes[_index].name);
+                return false;
+
+            case VisitationState::UNVISITED:
+            {
+                nodeStates[_index] = VisitationState::WAITING_FOR_RESULTS;
+                const std::vector<std::size_t> &nodeEdges = _graph.edges[_index];
+
+                for (std::size_t child : nodeEdges)
+                {
+                    reachable[_index].set (child);
+                    if (VisitNode (_graph, child))
+                    {
+                        reachable[_index] |= reachable[child];
+                    }
+                    else
+                    {
+                        Log::GlobalLogger::Log (Log::Level::ERROR, _graph.nodes[_index].name);
+                        return false;
+                    }
+                }
+
+                nodeStates[_index] = VisitationState::READY;
+                [[fallthrough]];
+            }
+
+            case VisitationState::READY:
+                return true;
+            }
+
+            assert (false);
+            return true;
+        }
+    } visitor;
+
+    visitor.nodeStates.resize (nodes.size (), VisitationState::UNVISITED);
+    visitor.reachable.resize (nodes.size ());
+
+    bool anyCycles = false;
+    for (std::size_t nodeIndex = 0u; nodeIndex < nodes.size (); ++nodeIndex)
+    {
+        anyCycles |= !visitor.VisitNode (*this, nodeIndex);
+    }
+
+    if (anyCycles)
+    {
+        return false;
+    }
+
+    // Graph contains no cycles, therefore we can search for possible
+    // data races using access masks and reachability matrix.
+    bool anyDataRaces = true;
+
+    for (std::size_t primaryNodeIndex = 0u; primaryNodeIndex < nodes.size (); ++primaryNodeIndex)
+    {
+        const Node &primaryNode = nodes[primaryNodeIndex];
+        for (std::size_t secondaryNodeIndex = primaryNodeIndex + 1u; secondaryNodeIndex < nodes.size ();
              ++secondaryNodeIndex)
         {
-            const GraphNode &secondaryNode = _graph.nodes[secondaryNodeIndex];
+            const Node &secondaryNode = nodes[secondaryNodeIndex];
             const std::bitset<MAX_RESOURCES> readWriteCollision = primaryNode.readAccess & secondaryNode.writeAccess;
             const std::bitset<MAX_RESOURCES> writeReadCollision = primaryNode.writeAccess & secondaryNode.readAccess;
             const std::bitset<MAX_RESOURCES> writeWriteCollision = primaryNode.writeAccess & secondaryNode.writeAccess;
 
             if (readWriteCollision.any () || writeReadCollision.any () || writeWriteCollision.any ())
             {
-                const bool preventedThroughDependencies = _reachable[primaryNodeIndex].test (secondaryNodeIndex) ||
-                                                          _reachable[secondaryNodeIndex].test (primaryNodeIndex);
+                const bool preventedThroughDependencies =
+                    visitor.reachable[primaryNodeIndex].test (secondaryNodeIndex) ||
+                    visitor.reachable[secondaryNodeIndex].test (primaryNodeIndex);
 
                 if (!preventedThroughDependencies)
                 {
                     std::string error = "TaskGraph: Race condition is possible between tasks \"" + primaryNode.name +
                                         "\" and \"" + secondaryNode.name + "\"! ";
 
-                    auto appendCollision = [&error, &_resourceNames] (const std::bitset<MAX_RESOURCES> &_collision)
+                    auto appendCollision = [&error, this] (const std::bitset<MAX_RESOURCES> &_collision)
                     {
                         bool firstItem = true;
                         for (std::size_t index = 0u; index < _collision.size (); ++index)
@@ -132,7 +333,7 @@ bool EnsureConcurrencySafety (const Graph &_graph,
                                     error.append (", ");
                                 }
 
-                                error.append (_resourceNames[index]);
+                                error.append (source->resources[index]);
                                 firstItem = false;
                             }
                         }
@@ -160,13 +361,13 @@ bool EnsureConcurrencySafety (const Graph &_graph,
                     }
 
                     Log::GlobalLogger::Log (Log::Level::ERROR, error);
-                    safe = false;
+                    anyDataRaces = true;
                 }
             }
         }
     }
 
-    return safe;
+    return !anyDataRaces;
 }
 
 void TaskRegister::RegisterTask (Task _task) noexcept
@@ -265,81 +466,12 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
 TaskCollection TaskRegister::ExportCollection () const noexcept
 {
-    Graph graph;
-    if (!BuildGraph (&graph))
+    if (std::optional<TaskGraph> graph = TaskGraph::Build (*this))
     {
-        return {};
+        return graph.value ().ExportCollection ();
     }
 
-    GraphVisitor visitor;
-    visitor.Prepare (graph);
-
-    for (std::size_t index = 0u; index < graph.nodes.size (); ++index)
-    {
-        if (!visitor.VisitNode (graph, index))
-        {
-            return {};
-        }
-    }
-
-    if (!EnsureConcurrencySafety (graph, visitor.reachable, resources))
-    {
-        return {};
-    }
-
-    TaskCollection collection;
-    for (const Task &task : tasks)
-    {
-        TaskCollection::Item &item = collection.tasks.emplace_back ();
-        item.name = task.name;
-        item.task = task.executor;
-    }
-
-    auto emplaceWithoutDuplication = [] (std::vector<std::size_t> &_indices, std::size_t _index)
-    {
-        if (std::find (_indices.begin (), _indices.end (), _index) == _indices.end ())
-        {
-            _indices.emplace_back (_index);
-        }
-    };
-
-    for (const auto &[sourceIndex, targetIndices] : graph.edges)
-    {
-        const GraphNode &source = graph.nodes[sourceIndex];
-
-        // We process only tasks as sources.
-        if (source.sourceTaskIndex)
-        {
-            for (std::size_t targetIndex : targetIndices)
-            {
-                const GraphNode &target = graph.nodes[targetIndex];
-
-                // Target is task: just add dependency.
-                if (target.sourceTaskIndex)
-                {
-                    emplaceWithoutDuplication (collection.tasks[target.sourceTaskIndex.value ()].dependencyIndices,
-                                               source.sourceTaskIndex.value ());
-                }
-                // Target is checkpoint: source should be dependency of all checkpoint targets.
-                else
-                {
-                    std::vector<std::size_t> &checkpointTargets = graph.edges[targetIndex];
-                    for (std::size_t checkpointTargetIndex : checkpointTargets)
-                    {
-                        const GraphNode &checkpointTarget = graph.nodes[checkpointTargetIndex];
-                        // Checkpoints can not depend on other checkpoints.
-                        assert (checkpointTarget.sourceTaskIndex);
-
-                        emplaceWithoutDuplication (
-                            collection.tasks[checkpointTarget.sourceTaskIndex.value ()].dependencyIndices,
-                            source.sourceTaskIndex.value ());
-                    }
-                }
-            }
-        }
-    }
-
-    return collection;
+    return {};
 }
 
 // If asserts are not enabled, CLang Tidy advises to convert this function to static, which is not correct.
@@ -353,118 +485,5 @@ void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] const char *_name)
                           }) == tasks.end ());
 
     assert (std::find (checkpoints.begin (), checkpoints.end (), _name) == checkpoints.end ());
-}
-
-bool TaskRegister::BuildGraph (struct Graph *_graph) const noexcept
-{
-    bool noErrors = true;
-    std::unordered_map<std::string, std::size_t> nameToNodeIndex;
-
-    for (const std::string &checkpoint : checkpoints)
-    {
-        GraphNode &node = _graph->nodes.emplace_back ();
-        node.name = checkpoint;
-
-        if (!nameToNodeIndex.emplace (checkpoint, _graph->nodes.size () - 1u).second)
-        {
-            Log::GlobalLogger::Log (Log::Level::ERROR,
-                                    "TaskGraph: Task|Checkpoint name \"" + checkpoint + "\" is used more than once!");
-            noErrors = false;
-        }
-    }
-
-    std::unordered_map<std::string, std::size_t> resourceNameToIndex;
-    for (std::size_t index = 0u; index < resources.size (); ++index)
-    {
-        resourceNameToIndex.emplace (resources[index], index);
-    }
-
-    for (std::size_t index = 0u; index < tasks.size (); ++index)
-    {
-        const Task &task = tasks[index];
-        GraphNode &node = _graph->nodes.emplace_back ();
-        node.name = task.name;
-        node.sourceTaskIndex = index;
-
-        for (const std::string &resource : task.readAccess)
-        {
-            auto iterator = resourceNameToIndex.find (resource);
-            if (iterator == resourceNameToIndex.end ())
-            {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find read access resource \"" +
-                                                               resource + "\" of task \"" + task.name + "\"!");
-                noErrors = false;
-            }
-            else
-            {
-                node.readAccess.set (iterator->second);
-            }
-        }
-
-        for (const std::string &resource : task.writeAccess)
-        {
-            auto iterator = resourceNameToIndex.find (resource);
-            if (iterator == resourceNameToIndex.end ())
-            {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find write access resource \"" +
-                                                               resource + "\" of task \"" + task.name + "\"!");
-                noErrors = false;
-            }
-            else if (node.readAccess.test (iterator->second))
-            {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Resource \"" + resource + "\" of task \"" +
-                                                               task.name +
-                                                               "\" used both in read access in write access lists!");
-                noErrors = false;
-            }
-            else
-            {
-                node.writeAccess.set (iterator->second);
-            }
-        }
-
-        if (!nameToNodeIndex.emplace (task.name, _graph->nodes.size () - 1u).second)
-        {
-            Log::GlobalLogger::Log (Log::Level::ERROR,
-                                    "TaskGraph: Task|Checkpoint name \"" + task.name + "\" is used more than once!");
-            noErrors = false;
-        }
-    }
-
-    for (const Task &task : tasks)
-    {
-        std::size_t taskIndex = nameToNodeIndex.at (task.name);
-        for (const std::string &target : task.dependencyOf)
-        {
-            auto iterator = nameToNodeIndex.find (target);
-            if (iterator == nameToNodeIndex.end ())
-            {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find target \"" + target +
-                                                               "\" of task \"" + task.name + "\"!");
-                noErrors = false;
-            }
-            else
-            {
-                _graph->edges[taskIndex].emplace_back (iterator->second);
-            }
-        }
-
-        for (const std::string &dependency : task.dependsOn)
-        {
-            auto iterator = nameToNodeIndex.find (dependency);
-            if (iterator == nameToNodeIndex.end ())
-            {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find dependency \"" + dependency +
-                                                               "\" of task \"" + task.name + "\"!");
-                noErrors = false;
-            }
-            else
-            {
-                _graph->edges[iterator->second].emplace_back (taskIndex);
-            }
-        }
-    }
-
-    return noErrors;
 }
 } // namespace Emergence::Flow
