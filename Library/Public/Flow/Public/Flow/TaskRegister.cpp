@@ -193,8 +193,8 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
                     if (targetNode.sourceTaskIndex)
                     {
                         emplaceWithoutDuplication (
-                            collection.tasks[targetNode.sourceTaskIndex.value ()].dependencyIndices,
-                            sourceNode.sourceTaskIndex.value ());
+                            collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
+                            targetNode.sourceTaskIndex.value ());
                     }
                     // Target is checkpoint: source should be dependency of all checkpoint targets.
                     else
@@ -207,8 +207,8 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
                             assert (checkpointTargetNode.sourceTaskIndex);
 
                             emplaceWithoutDuplication (
-                                collection.tasks[checkpointTargetNode.sourceTaskIndex.value ()].dependencyIndices,
-                                sourceNode.sourceTaskIndex.value ());
+                                collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
+                                checkpointTargetNode.sourceTaskIndex.value ());
                         }
                     }
                 }
