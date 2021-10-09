@@ -297,7 +297,7 @@ bool TaskGraph::Verify () const noexcept
 
     // Graph contains no cycles, therefore we can search for possible
     // data races using access masks and reachability matrix.
-    bool anyDataRaces = true;
+    bool anyDataRaces = false;
 
     for (std::size_t primaryNodeIndex = 0u; primaryNodeIndex < nodes.size (); ++primaryNodeIndex)
     {
