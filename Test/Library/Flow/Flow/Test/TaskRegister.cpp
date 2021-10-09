@@ -46,7 +46,7 @@ struct CollectionExpectation final
     std::vector<Task> tasks;
 };
 
-static void Check (const TaskCollection &_result, const CollectionExpectation &_expectation)
+static void Check (const Emergence::Task::Collection &_result, const CollectionExpectation &_expectation)
 {
     CHECK_EQUAL (_result.tasks.size (), _expectation.tasks.size ());
     const std::size_t tasksToCheck = std::min (_result.tasks.size (), _expectation.tasks.size ());

@@ -81,7 +81,7 @@ public:
     ///          - No missing dependencies and resources.
     ///          - No dependency cycles.
     ///          - No data access races.
-    [[nodiscard]] TaskCollection ExportCollection () const noexcept;
+    [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
     /// Assigning task registers is counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (TaskRegister);

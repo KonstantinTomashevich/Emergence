@@ -15,7 +15,7 @@ class TaskGraph final
 public:
     static std::optional<TaskGraph> Build (const TaskRegister &_register) noexcept;
 
-    [[nodiscard]] TaskCollection ExportCollection () const noexcept;
+    [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
 private:
     struct Node final
@@ -156,15 +156,15 @@ std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexce
     return std::nullopt;
 }
 
-TaskCollection TaskGraph::ExportCollection () const noexcept
+Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
 {
     assert (source);
     if (Verify ())
     {
-        TaskCollection collection;
+        Emergence::Task::Collection collection;
         for (const Task &task : source->tasks)
         {
-            TaskCollection::Item &item = collection.tasks.emplace_back ();
+            Emergence::Task::Collection::Item &item = collection.tasks.emplace_back ();
             item.name = task.name;
             item.task = task.executor;
         }
@@ -459,7 +459,7 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
     return root;
 }
 
-TaskCollection TaskRegister::ExportCollection () const noexcept
+Emergence::Task::Collection TaskRegister::ExportCollection () const noexcept
 {
     if (std::optional<TaskGraph> graph = TaskGraph::Build (*this))
     {
