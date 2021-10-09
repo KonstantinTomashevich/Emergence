@@ -15,11 +15,7 @@ bool Context::IsIdValid (const std::string &_id) noexcept
     {
         if (symbol == '\"' || symbol == VisualGraph::NODE_PATH_SEPARATOR)
         {
-            if (Log::Logger *log = Log::GlobalLogger::Get ())
-            {
-                log->Log (Log::Level::ERROR, "Id \"" + _id + "\" contains forbidden symbols!");
-            }
-
+            Log::GlobalLogger::Log (Log::Level::ERROR, "Id \"" + _id + "\" contains forbidden symbols!");
             return false;
         }
     }
@@ -32,26 +28,28 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
     std::unordered_set<std::string> usedIds;
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        if (!IsIdValid (subgraph.id) || !usedIds.emplace (subgraph.id).second)
+        if (!IsIdValid (subgraph.id))
         {
-            if (Log::Logger *log = Log::GlobalLogger::Get ())
-            {
-                log->Log (Log::Level::ERROR, "Subgraph id \"" + subgraph.id + "\" used more than once!");
-            }
+            return false;
+        }
 
+        if (!usedIds.emplace (subgraph.id).second)
+        {
+            Log::GlobalLogger::Log (Log::Level::ERROR, "Subgraph id \"" + subgraph.id + "\" used more than once!");
             return false;
         }
     }
 
     for (const VisualGraph::Node &node : _graph.nodes)
     {
-        if (!IsIdValid (node.id) || !usedIds.emplace (node.id).second)
+        if (!IsIdValid (node.id))
         {
-            if (Log::Logger *log = Log::GlobalLogger::Get ())
-            {
-                log->Log (Log::Level::ERROR, "Node id \"" + node.id + "\" used more than once!");
-            }
+            return false;
+        }
 
+        if (!usedIds.emplace (node.id).second)
+        {
+            Log::GlobalLogger::Log (Log::Level::ERROR, "Node id \"" + node.id + "\" used more than once!");
             return false;
         }
     }
@@ -144,23 +142,15 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         {
             if (!isNodeExists (edge.from))
             {
-                if (Log::Logger *log = Log::GlobalLogger::Get ())
-                {
-                    log->Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" + edge.to +
-                                                       "\": source node not found!");
-                }
-
+                Log::GlobalLogger::Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" +
+                                                                 edge.to + "\": source node not found!");
                 continue;
             }
 
             if (!isNodeExists (edge.to))
             {
-                if (Log::Logger *log = Log::GlobalLogger::Get ())
-                {
-                    log->Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" + edge.to +
-                                                       "\": target node not found!");
-                }
-
+                Log::GlobalLogger::Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" +
+                                                                 edge.to + "\": target node not found!");
                 continue;
             }
 

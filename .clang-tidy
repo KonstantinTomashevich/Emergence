@@ -51,10 +51,12 @@ CheckOptions:
     value: 'UPPER_CASE'
   - key: readability-identifier-naming.ConstantMemberCase
     value: 'camelBack'
-  - key: readability-identifier-naming.ConstantParamterCase
+  - key: readability-identifier-naming.ConstantParameterCase
     value: 'camelBack'
   - key: readability-identifier-naming.ConstantParameterPrefix
     value: '_'
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: 'UPPER_CASE'
   - key: readability-identifier-naming.EnumCase
     value: 'CamelCase'
   - key: readability-identifier-naming.EnumConstantCase

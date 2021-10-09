@@ -122,10 +122,10 @@ Handling::Handle<HashIndex> Storage::CreateHashIndex (
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
-    constexpr std::size_t defaultInitialBuckets = 32u;
+    constexpr std::size_t DEFAULT_INITIAL_BUCKETS = 32u;
 
     IndexHolder<HashIndex> &holder = indices.hash.EmplaceBack (IndexHolder<HashIndex> {
-        std::unique_ptr<HashIndex> (new HashIndex (this, defaultInitialBuckets, _indexedFields)), 0u});
+        std::unique_ptr<HashIndex> (new HashIndex (this, DEFAULT_INITIAL_BUCKETS, _indexedFields)), 0u});
 
     for (const StandardLayout::Field &indexedField : holder.index->GetIndexedFields ())
     {

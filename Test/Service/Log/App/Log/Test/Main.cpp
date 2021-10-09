@@ -12,7 +12,7 @@ void ThreadFunction (Logger &_logger, std::size_t _index)
     {
         std::string message = Test::AddThreadIndexToMessage (_index, _message);
         _logger.Log (_level, message);
-        GlobalLogger::Get ()->Log (_level, message);
+        GlobalLogger::Log (_level, message);
     };
 
     for (std::size_t iteration = 1u; iteration <= Test::ITERATIONS; ++iteration)
