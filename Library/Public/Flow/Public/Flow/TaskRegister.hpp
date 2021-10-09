@@ -12,7 +12,7 @@
 
 namespace Emergence::Flow
 {
-/// \brief Contains all useful information about tasks.
+/// \brief Contains all useful information about task.
 struct Task
 {
     /// \brief Task name is used for dependency connection, logging and debugging.
@@ -26,8 +26,7 @@ struct Task
     std::vector<std::string> readAccess;
 
     /// \brief Names of resources, that are modified by this task.
-    /// \invariant If task both reads and modifies one resources, this resource
-    ///            should be added to ::writeAccess, but not to ::readAccess.
+    /// \invariant If task both reads and modifies one resources, this resource should only be added to ::writeAccess.
     std::vector<std::string> writeAccess;
 
     /// \brief Names of tasks, on which this task depends.
@@ -68,7 +67,7 @@ public:
     /// \invariant Checkpoint name should be unique among checkpoints and tasks.
     void RegisterCheckpoint (const char *_name) noexcept;
 
-    /// \brief Registers new resources with given name.
+    /// \brief Registers new resource with given name.
     /// \invariant Resource name should be unique.
     void RegisterResource (const char *_name) noexcept;
 

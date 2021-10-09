@@ -83,7 +83,6 @@ std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexce
             }
         }
 
-        graph.edges.resize (graph.nodes.size ());
         for (const std::string &resource : task.writeAccess)
         {
             auto iterator = resourceNameToIndex.find (resource);
@@ -114,6 +113,7 @@ std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexce
         }
     }
 
+    graph.edges.resize (graph.nodes.size ());
     for (const Task &task : _register.tasks)
     {
         std::size_t taskIndex = nameToNodeIndex.at (task.name);
@@ -225,7 +225,7 @@ bool TaskGraph::Verify () const noexcept
 {
     assert (source);
 
-    // Firstly, we need to traverse graph using DFS to find cycles, if they exist, and collect reachability matrix.
+    // Firstly, we need to traverse graph using DFS to find cycles and collect reachability matrix.
 
     enum class VisitationState
     {
@@ -284,42 +284,37 @@ bool TaskGraph::Verify () const noexcept
     visitor.nodeStates.resize (nodes.size (), VisitationState::UNVISITED);
     visitor.reachable.resize (nodes.size ());
 
-    bool anyCycles = false;
     for (std::size_t nodeIndex = 0u; nodeIndex < nodes.size (); ++nodeIndex)
     {
-        anyCycles |= !visitor.VisitNode (*this, nodeIndex);
-    }
-
-    if (anyCycles)
-    {
-        return false;
+        if (!visitor.VisitNode (*this, nodeIndex))
+        {
+            return false;
+        }
     }
 
     // Graph contains no cycles, therefore we can search for possible
     // data races using access masks and reachability matrix.
     bool anyDataRaces = false;
 
-    for (std::size_t primaryNodeIndex = 0u; primaryNodeIndex < nodes.size (); ++primaryNodeIndex)
+    for (std::size_t firstNodeIndex = 0u; firstNodeIndex < nodes.size (); ++firstNodeIndex)
     {
-        const Node &primaryNode = nodes[primaryNodeIndex];
-        for (std::size_t secondaryNodeIndex = primaryNodeIndex + 1u; secondaryNodeIndex < nodes.size ();
-             ++secondaryNodeIndex)
+        const Node &firstNode = nodes[firstNodeIndex];
+        for (std::size_t secondNodeIndex = firstNodeIndex + 1u; secondNodeIndex < nodes.size (); ++secondNodeIndex)
         {
-            const Node &secondaryNode = nodes[secondaryNodeIndex];
-            const std::bitset<MAX_RESOURCES> readWriteCollision = primaryNode.readAccess & secondaryNode.writeAccess;
-            const std::bitset<MAX_RESOURCES> writeReadCollision = primaryNode.writeAccess & secondaryNode.readAccess;
-            const std::bitset<MAX_RESOURCES> writeWriteCollision = primaryNode.writeAccess & secondaryNode.writeAccess;
+            const Node &secondNode = nodes[secondNodeIndex];
+            const bool canBeExecutedSimultaneously = !visitor.reachable[firstNodeIndex].test (secondNodeIndex) &&
+                                                     !visitor.reachable[secondNodeIndex].test (firstNodeIndex);
 
-            if (readWriteCollision.any () || writeReadCollision.any () || writeWriteCollision.any ())
+            if (canBeExecutedSimultaneously)
             {
-                const bool preventedThroughDependencies =
-                    visitor.reachable[primaryNodeIndex].test (secondaryNodeIndex) ||
-                    visitor.reachable[secondaryNodeIndex].test (primaryNodeIndex);
+                const std::bitset<MAX_RESOURCES> readWriteCollision = firstNode.readAccess & secondNode.writeAccess;
+                const std::bitset<MAX_RESOURCES> writeReadCollision = firstNode.writeAccess & secondNode.readAccess;
+                const std::bitset<MAX_RESOURCES> writeWriteCollision = firstNode.writeAccess & secondNode.writeAccess;
 
-                if (!preventedThroughDependencies)
+                if (readWriteCollision.any () || writeReadCollision.any () || writeWriteCollision.any ())
                 {
-                    std::string error = "TaskGraph: Race condition is possible between tasks \"" + primaryNode.name +
-                                        "\" and \"" + secondaryNode.name + "\"! ";
+                    std::string error = "TaskGraph: Race condition is possible between tasks \"" + firstNode.name +
+                                        "\" and \"" + secondNode.name + "\"! ";
 
                     auto appendCollision = [&error, this] (const std::bitset<MAX_RESOURCES> &_collision)
                     {

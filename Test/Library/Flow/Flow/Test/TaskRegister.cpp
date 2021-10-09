@@ -68,15 +68,7 @@ static void Check (const TaskCollection &_result, const CollectionExpectation &_
         {
             LOG ("Checking dependency at index ", dependencyIndex, ".");
             std::size_t resultIndex = result.dependencyIndices[dependencyIndex];
-
-            if (resultIndex < _expectation.tasks.size ())
-            {
-                CHECK_EQUAL (_expectation.tasks[resultIndex].name, expectation.dependencies[dependencyIndex]);
-            }
-            else
-            {
-                CHECK_WITH_MESSAGE (false, "Result index ", resultIndex, " is too big!");
-            }
+            CHECK_EQUAL (_expectation.tasks[resultIndex].name, expectation.dependencies[dependencyIndex]);
         }
     }
 }
@@ -352,7 +344,7 @@ TEST_CASE (TrivialSafeResourceUsageWithCollision)
 
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();
     expected.edges.emplace_back (Emergence::VisualGraph::Edge {
-        "Pipeline/B2", "Resources/R2", Emergence::Flow::TaskRegister::VISUAL_WRITE_ACCESS_COLOR});
+        TaskNodePath ("B2"), ResourceNodePath ("R2"), Emergence::Flow::TaskRegister::VISUAL_WRITE_ACCESS_COLOR});
     CHECK (result == expected);
 }
 
