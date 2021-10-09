@@ -13,7 +13,7 @@ class Executor final
 public:
     /// \brief Constructs executor for given task collection.
     /// \invariant There is no dependency cycles in given task collection.
-    explicit Executor (const Collection &_tasks) noexcept;
+    explicit Executor (const Collection &_collection) noexcept;
 
     /// Copying executors is counter-intuitive.
     Executor (const Executor &_other) = delete;

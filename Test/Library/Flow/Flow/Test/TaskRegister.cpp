@@ -253,11 +253,7 @@ TEST_CASE (ChainedSafeResourceUsage)
                   {"Join"},
                   {"R1", "R2", "R3"}})
                .ExportCollection (),
-           {{{"A", {"B1", "B2"}},
-             {"B1", {"C1"}},
-             {"C1", {}},
-             {"B2", {"C2"}},
-             {"C2", {}}}});
+           {{{"A", {"B1", "B2"}}, {"B1", {"C1"}}, {"C1", {}}, {"B2", {"C2"}}, {"C2", {}}}});
 }
 
 TEST_CASE (ReadWriteCollision)
