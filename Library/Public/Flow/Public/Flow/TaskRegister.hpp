@@ -79,9 +79,9 @@ public:
     /// \return Valid collection or empty collection if verification failed.
     /// \details Verifier checks that there is:
     ///          - No missing dependencies and resources.
-    ///          - No dependency cycles.
+    ///          - No circular dependencies.
     ///          - No data access races.
-    [[nodiscard]] TaskCollection ExportCollection () const noexcept;
+    [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
     /// Assigning task registers is counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (TaskRegister);

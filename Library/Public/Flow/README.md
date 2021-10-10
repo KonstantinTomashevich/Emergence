@@ -12,6 +12,6 @@ provides some additional features:
 - Resource usage registration: tasks can declare read and write accesses to registered resources. This allows Flow to
   detect possible data races between tasks.
 - Verification: if Flow exports non-empty [TaskCollection](../../Private/TaskCollection/README.md), than it's guaranteed
-  that there is no cycles, missing dependencies and data races.
+  that there is circular dependencies, missing dependencies and data races.
 - Visualization: even if there are mistakes in registered tasks, whole pipeline with resource usage could be visualized
   as [VisualGraph](../VisualGraph/README.md). It's much easier to pinpoint issues visually.

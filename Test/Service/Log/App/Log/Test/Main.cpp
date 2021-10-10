@@ -49,7 +49,7 @@ void ThreadFunction (Logger &_logger, std::size_t _index)
     }
 }
 
-int main (int /* unused */, char ** /* unused */)
+int main (int /*unused*/, char ** /*unused*/)
 {
     GlobalLogger::Init (Level::ERROR, {
                                           Sinks::StandardOut {{Test::STANDARD_OUT_MINIMUM_LEVEL}},

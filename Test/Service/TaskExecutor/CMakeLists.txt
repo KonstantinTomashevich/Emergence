@@ -1,4 +1,4 @@
-sober_test_begin (Hashing)
+sober_test_begin (TaskExecutor)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
     list (APPEND SOURCES ${HEADERS})
@@ -6,7 +6,6 @@ sober_test_begin (Hashing)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    # TODO: This is used EVERYWHERE. Make special sober function for that, like sober_use_frozen_service.
     # Testing backend requires implementation headers, therefore it's usage as service would trigger separate
     # compilation for all variants. But there is no sense to use different testing backends for each variant,
     # therefore we just link it explicitly.
@@ -18,9 +17,9 @@ sober_test_begin (Hashing)
         sober_library_private_compile_options (/EHs)
     endif ()
 
-    sober_test_variant_begin (XXHash)
+    sober_test_variant_begin (Sequential)
     sober_test_variant_end ()
 sober_test_end ()
 
-sober_naming_test_collection (Hashing COLLECTION_NAME)
+sober_naming_test_collection (TaskExecutor COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")

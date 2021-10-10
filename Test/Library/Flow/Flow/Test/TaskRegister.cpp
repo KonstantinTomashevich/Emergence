@@ -40,13 +40,13 @@ struct CollectionExpectation final
     struct Task
     {
         std::string name;
-        std::vector<std::string> dependencies;
+        std::vector<std::string> dependantTasks;
     };
 
     std::vector<Task> tasks;
 };
 
-static void Check (const TaskCollection &_result, const CollectionExpectation &_expectation)
+static void Check (const Emergence::Task::Collection &_result, const CollectionExpectation &_expectation)
 {
     CHECK_EQUAL (_result.tasks.size (), _expectation.tasks.size ());
     const std::size_t tasksToCheck = std::min (_result.tasks.size (), _expectation.tasks.size ());
@@ -60,15 +60,15 @@ static void Check (const TaskCollection &_result, const CollectionExpectation &_
         CHECK_EQUAL (result.name, expectation.name);
         // Unfortunately, we can not check task executors equality, because it's not supported by std::function.
 
-        CHECK_EQUAL (result.dependencyIndices.size (), expectation.dependencies.size ());
-        const std::size_t dependenciesToCheck =
-            std::min (result.dependencyIndices.size (), expectation.dependencies.size ());
+        CHECK_EQUAL (result.dependantTasksIndices.size (), expectation.dependantTasks.size ());
+        const std::size_t dependantTasksToCheck =
+            std::min (result.dependantTasksIndices.size (), expectation.dependantTasks.size ());
 
-        for (std::size_t dependencyIndex = 0u; dependencyIndex < dependenciesToCheck; ++dependencyIndex)
+        for (std::size_t dependantTaskIndex = 0u; dependantTaskIndex < dependantTasksToCheck; ++dependantTaskIndex)
         {
-            LOG ("Checking dependency at index ", dependencyIndex, ".");
-            std::size_t resultIndex = result.dependencyIndices[dependencyIndex];
-            CHECK_EQUAL (_expectation.tasks[resultIndex].name, expectation.dependencies[dependencyIndex]);
+            LOG ("Checking dependant task at index ", dependantTaskIndex, ".");
+            std::size_t resultIndex = result.dependantTasksIndices[dependantTaskIndex];
+            CHECK_EQUAL (_expectation.tasks[resultIndex].name, expectation.dependantTasks[dependantTaskIndex]);
         }
     }
 }
@@ -139,7 +139,7 @@ TEST_CASE (Sequence)
                {},
                {}})
             .ExportCollection (),
-        {{{"A", {}}, {"B", {"A"}}, {"C", {"B"}}}});
+        {{{"A", {"B"}}, {"B", {"C"}}, {"C", {}}}});
 }
 
 TEST_CASE (SequenceWithCheckpoint)
@@ -147,7 +147,7 @@ TEST_CASE (SequenceWithCheckpoint)
     using namespace Emergence::Flow::Test;
     Check (
         Grow ({{{"A", nullptr, {}, {}, {}, {"B"}}, {"C", nullptr, {}, {}, {"B"}, {}}}, {"B"}, {}}).ExportCollection (),
-        {{{"A", {}}, {"C", {"A"}}}});
+        {{{"A", {"C"}}, {"C", {}}}});
 }
 
 TEST_CASE (CheckpointAsBarrier)
@@ -162,7 +162,7 @@ TEST_CASE (CheckpointAsBarrier)
                   {"Join"},
                   {}})
                .ExportCollection (),
-           {{{"A1", {}}, {"A2", {}}, {"B1", {"A1", "A2"}}, {"B2", {"A1", "A2"}}}});
+           {{{"A1", {"B1", "B2"}}, {"A2", {"B1", "B2"}}, {"B1", {}}, {"B2", {}}}});
 }
 
 TEST_CASE (ComplexDependencies)
@@ -180,16 +180,16 @@ TEST_CASE (ComplexDependencies)
                   {"Join1", "Join2"},
                   {}})
                .ExportCollection (),
-           {{{"A1", {}},
-             {"A2", {}},
-             {"A3", {}},
-             {"A4", {}},
-             {"A5", {}},
-             {"B1", {"A1", "A2", "A3", "A4"}},
-             {"B2", {"A1", "A2", "A5", "B1"}}}});
+           {{{"A1", {"B1", "B2"}},
+             {"A2", {"B1", "B2"}},
+             {"A3", {"B1"}},
+             {"A4", {"B1"}},
+             {"A5", {"B2"}},
+             {"B1", {"B2"}},
+             {"B2", {}}}});
 }
 
-TEST_CASE (TrivialCycle)
+TEST_CASE (TrivialCircularDependency)
 {
     using namespace Emergence::Flow::Test;
     Check (
@@ -201,7 +201,7 @@ TEST_CASE (TrivialCycle)
         {});
 }
 
-TEST_CASE (ComplexCycle)
+TEST_CASE (ComplexCircularDependency)
 {
     using namespace Emergence::Flow::Test;
     Check (Grow ({{
@@ -237,7 +237,7 @@ TEST_CASE (TrivialSafeResourceUsage)
 {
     using namespace Emergence::Flow::Test;
     Check (Grow (TRIVIAL_SAFE_RESOURCE_USAGE_SEED).ExportCollection (),
-           {{{"A1", {}}, {"A2", {}}, {"B1", {"A1", "A2"}}, {"B2", {"A1", "A2"}}}});
+           {{{"A1", {"B1", "B2"}}, {"A2", {"B1", "B2"}}, {"B1", {}}, {"B2", {}}}});
 }
 
 TEST_CASE (ChainedSafeResourceUsage)
@@ -253,7 +253,7 @@ TEST_CASE (ChainedSafeResourceUsage)
                   {"Join"},
                   {"R1", "R2", "R3"}})
                .ExportCollection (),
-           {{{"A", {}}, {"B1", {"A"}}, {"C1", {"B1"}}, {"B2", {"A"}}, {"C2", {"B2"}}}});
+           {{{"A", {"B1", "B2"}}, {"B1", {"C1"}}, {"C1", {}}, {"B2", {"C2"}}, {"C2", {}}}});
 }
 
 TEST_CASE (ReadWriteCollision)
@@ -321,7 +321,7 @@ TEST_CASE (TrivialSafeResourceUsageWithResources)
     CHECK (result == expected);
 }
 
-TEST_CASE (TrivialSafeResourceUsageWithIntroducedCycle)
+TEST_CASE (TrivialSafeResourceUsageWithIntroducedCircularDependency)
 {
     using namespace Emergence::Flow::Test;
 

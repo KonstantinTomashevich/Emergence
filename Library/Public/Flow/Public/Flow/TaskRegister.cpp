@@ -15,7 +15,7 @@ class TaskGraph final
 public:
     static std::optional<TaskGraph> Build (const TaskRegister &_register) noexcept;
 
-    [[nodiscard]] TaskCollection ExportCollection () const noexcept;
+    [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
 private:
     struct Node final
@@ -156,15 +156,15 @@ std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexce
     return std::nullopt;
 }
 
-TaskCollection TaskGraph::ExportCollection () const noexcept
+Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
 {
     assert (source);
     if (Verify ())
     {
-        TaskCollection collection;
+        Emergence::Task::Collection collection;
         for (const Task &task : source->tasks)
         {
-            TaskCollection::Item &item = collection.tasks.emplace_back ();
+            Emergence::Task::Collection::Item &item = collection.tasks.emplace_back ();
             item.name = task.name;
             item.task = task.executor;
         }
@@ -193,8 +193,8 @@ TaskCollection TaskGraph::ExportCollection () const noexcept
                     if (targetNode.sourceTaskIndex)
                     {
                         emplaceWithoutDuplication (
-                            collection.tasks[targetNode.sourceTaskIndex.value ()].dependencyIndices,
-                            sourceNode.sourceTaskIndex.value ());
+                            collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
+                            targetNode.sourceTaskIndex.value ());
                     }
                     // Target is checkpoint: source should be dependency of all checkpoint targets.
                     else
@@ -207,8 +207,8 @@ TaskCollection TaskGraph::ExportCollection () const noexcept
                             assert (checkpointTargetNode.sourceTaskIndex);
 
                             emplaceWithoutDuplication (
-                                collection.tasks[checkpointTargetNode.sourceTaskIndex.value ()].dependencyIndices,
-                                sourceNode.sourceTaskIndex.value ());
+                                collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
+                                checkpointTargetNode.sourceTaskIndex.value ());
                         }
                     }
                 }
@@ -225,7 +225,7 @@ bool TaskGraph::Verify () const noexcept
 {
     assert (source);
 
-    // Firstly, we need to traverse graph using DFS to find cycles and collect reachability matrix.
+    // Firstly, we need to traverse graph using DFS to find circular dependencies and collect reachability matrix.
 
     enum class VisitationState
     {
@@ -244,8 +244,10 @@ bool TaskGraph::Verify () const noexcept
             switch (nodeStates[_index])
             {
             case VisitationState::WAITING_FOR_RESULTS:
-                Log::GlobalLogger::Log (Log::Level::ERROR,
-                                        "TaskGraph: Cycle found during visitation, printing out all nodes in stack.");
+                Log::GlobalLogger::Log (
+                    Log::Level::ERROR,
+                    "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
+
                 Log::GlobalLogger::Log (Log::Level::ERROR, _graph.nodes[_index].name);
                 return false;
 
@@ -292,8 +294,8 @@ bool TaskGraph::Verify () const noexcept
         }
     }
 
-    // Graph contains no cycles, therefore we can search for possible
-    // data races using access masks and reachability matrix.
+    // Graph contains no circular dependencies, therefore we can search
+    // for possible data races using access masks and reachability matrix.
     bool anyDataRaces = false;
 
     for (std::size_t firstNodeIndex = 0u; firstNodeIndex < nodes.size (); ++firstNodeIndex)
@@ -459,7 +461,7 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
     return root;
 }
 
-TaskCollection TaskRegister::ExportCollection () const noexcept
+Emergence::Task::Collection TaskRegister::ExportCollection () const noexcept
 {
     if (std::optional<TaskGraph> graph = TaskGraph::Build (*this))
     {
