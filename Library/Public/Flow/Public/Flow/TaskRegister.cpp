@@ -225,7 +225,7 @@ bool TaskGraph::Verify () const noexcept
 {
     assert (source);
 
-    // Firstly, we need to traverse graph using DFS to find cycles and collect reachability matrix.
+    // Firstly, we need to traverse graph using DFS to find circular dependencies and collect reachability matrix.
 
     enum class VisitationState
     {
@@ -244,8 +244,10 @@ bool TaskGraph::Verify () const noexcept
             switch (nodeStates[_index])
             {
             case VisitationState::WAITING_FOR_RESULTS:
-                Log::GlobalLogger::Log (Log::Level::ERROR,
-                                        "TaskGraph: Cycle found during visitation, printing out all nodes in stack.");
+                Log::GlobalLogger::Log (
+                    Log::Level::ERROR,
+                    "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
+
                 Log::GlobalLogger::Log (Log::Level::ERROR, _graph.nodes[_index].name);
                 return false;
 
@@ -292,8 +294,8 @@ bool TaskGraph::Verify () const noexcept
         }
     }
 
-    // Graph contains no cycles, therefore we can search for possible
-    // data races using access masks and reachability matrix.
+    // Graph contains no circular dependencies, therefore we can search
+    // for possible data races using access masks and reachability matrix.
     bool anyDataRaces = false;
 
     for (std::size_t firstNodeIndex = 0u; firstNodeIndex < nodes.size (); ++firstNodeIndex)

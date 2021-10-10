@@ -189,7 +189,7 @@ TEST_CASE (ComplexDependencies)
              {"B2", {}}}});
 }
 
-TEST_CASE (TrivialCycle)
+TEST_CASE (TrivialCircularDependency)
 {
     using namespace Emergence::Flow::Test;
     Check (
@@ -201,7 +201,7 @@ TEST_CASE (TrivialCycle)
         {});
 }
 
-TEST_CASE (ComplexCycle)
+TEST_CASE (ComplexCircularDependency)
 {
     using namespace Emergence::Flow::Test;
     Check (Grow ({{
@@ -321,7 +321,7 @@ TEST_CASE (TrivialSafeResourceUsageWithResources)
     CHECK (result == expected);
 }
 
-TEST_CASE (TrivialSafeResourceUsageWithIntroducedCycle)
+TEST_CASE (TrivialSafeResourceUsageWithIntroducedCircularDependency)
 {
     using namespace Emergence::Flow::Test;
 

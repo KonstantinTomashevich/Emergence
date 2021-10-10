@@ -14,7 +14,7 @@ public:
     /// \brief Constructs executor for given task collection.
     /// \param _maximumChildThreads Limits count of child threads, used by implementation
     ///                             (ignored by single threaded implementations).
-    /// \invariant There is no dependency cycles in given task collection.
+    /// \invariant There is no circular dependencies in given task collection.
     explicit Executor (const Collection &_collection, std::size_t _maximumChildThreads) noexcept;
 
     /// Copying executors is counter-intuitive.

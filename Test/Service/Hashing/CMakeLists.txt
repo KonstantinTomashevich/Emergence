@@ -6,6 +6,7 @@ sober_test_begin (Hashing)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    # TODO: This is used EVERYWHERE. Make special sober function for that, like sober_use_frozen_service.
     # Testing backend requires implementation headers, therefore it's usage as service would trigger separate
     # compilation for all variants. But there is no sense to use different testing backends for each variant,
     # therefore we just link it explicitly.
