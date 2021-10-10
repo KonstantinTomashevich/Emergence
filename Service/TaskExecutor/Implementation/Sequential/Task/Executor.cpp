@@ -27,7 +27,9 @@ private:
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection) noexcept
 {
     orderedTasks.reserve (_collection.tasks.size ());
-    std::vector<std::size_t> dependenciesLeft {_collection.tasks.size (), 0u};
+    // We can not use {count, value} constructor here, because some compilers parse it as initializer list.
+    std::vector<std::size_t> dependenciesLeft;
+    dependenciesLeft.resize (_collection.tasks.size (), 0u);
 
     for (const Collection::Item &item : _collection.tasks)
     {
@@ -78,7 +80,8 @@ void ExecutorImplementation::Execute () const noexcept
     }
 }
 
-Executor::Executor (const Collection &_collection) noexcept : handle (new ExecutorImplementation (_collection))
+Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexcept
+    : handle (new ExecutorImplementation (_collection))
 {
 }
 
