@@ -12,11 +12,7 @@ sober_test_begin (StandardLayoutMapping)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
-    # Testing backend requires implementation headers, therefore it's usage as service would trigger separate
-    # compilation for all variants. But there is no sense to use different testing backends for each variant,
-    # therefore we just link it explicitly.
-    sober_naming_variant_target (Testing Doctest TESTING_LIBRARY_TARGET)
-    sober_library_link_library (PRIVATE ${TESTING_LIBRARY_TARGET})
+    sober_library_use_shared_service (PRIVATE Testing Doctest)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)

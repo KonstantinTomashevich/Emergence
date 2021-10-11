@@ -9,7 +9,7 @@ target_include_directories (TestHandlingOriginal PRIVATE "${CMAKE_CURRENT_SOURCE
 sober_naming_variant_target (ContextExtension Original CONTEXT_EXTENSION_LIBRARY_TARGET)
 sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
 sober_naming_variant_target (TestReferenceAPI Original TEST_REFERENCE_API_LIBRARY_TARGET)
-sober_naming_variant_target (Testing Doctest TESTING_LIBRARY_TARGET)
+sober_naming_implementation_target (Testing Doctest TESTING_LIBRARY_TARGET)
 
 target_link_libraries (
         TestHandlingOriginal PRIVATE
