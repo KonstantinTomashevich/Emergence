@@ -40,12 +40,12 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         }
     }
 
-    std::queue<std::size_t> resolvedTasks;
+    std::vector<std::size_t> resolvedTasks;
     for (std::size_t index = 0u; index < dependenciesLeft.size (); ++index)
     {
         if (dependenciesLeft[index] == 0u)
         {
-            resolvedTasks.emplace (index);
+            resolvedTasks.emplace_back (index);
         }
     }
 
@@ -53,8 +53,8 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
     while (!resolvedTasks.empty ())
     {
         ++resolvedTasksCount;
-        std::size_t taskIndex = resolvedTasks.front ();
-        resolvedTasks.pop ();
+        std::size_t taskIndex = resolvedTasks.back ();
+        resolvedTasks.pop_back ();
 
         assert (taskIndex < _collection.tasks.size ());
         orderedTasks.emplace_back (_collection.tasks[taskIndex].task);
@@ -63,7 +63,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         {
             if (--dependenciesLeft[dependantIndex] == 0u)
             {
-                resolvedTasks.emplace (dependantIndex);
+                resolvedTasks.emplace_back (dependantIndex);
             }
         }
     }
@@ -95,7 +95,7 @@ Executor::~Executor () noexcept
     delete static_cast<ExecutorImplementation *> (handle);
 }
 
-void Executor::Execute () const noexcept
+void Executor::Execute () noexcept
 {
     assert (handle);
     static_cast<ExecutorImplementation *> (handle)->Execute ();
