@@ -1,4 +1,5 @@
 #include <atomic>
+#include <bitset>
 #include <cassert>
 #include <thread>
 #include <vector>
@@ -7,6 +8,8 @@
 
 namespace Emergence::Task
 {
+static constexpr std::size_t MAX_WORKERS = 64u;
+
 class ExecutorImplementation final
 {
 public:
@@ -39,6 +42,7 @@ private:
     std::vector<Task> tasks;
     std::vector<std::size_t> entryTaskIndices;
     std::vector<std::jthread> workers;
+    std::bitset<MAX_WORKERS> workerActive;
 
     std::atomic_flag modifyingTaskQueue;
     std::atomic_flag taskQueueNotEmptyOrAllTasksFinished;
@@ -81,11 +85,12 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
 
     assert (!entryTaskIndices.empty ());
     workers.reserve (_workers);
+    assert (_workers < MAX_WORKERS);
 
     for (std::size_t workerIndex = 0u; workerIndex < _workers; ++workerIndex)
     {
         workers.emplace_back (
-            [this] ()
+            [this, workerIndex] ()
             {
                 while (true)
                 {
@@ -95,7 +100,9 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
                         return;
                     }
 
+                    workerActive.set (workerIndex, true);
                     WorkerMain ();
+                    workerActive.set (workerIndex, false);
                 }
             });
     }
@@ -136,7 +143,10 @@ void ExecutorImplementation::Execute () noexcept
     WorkerMain ();
     workersAwake.clear ();
 
-    // TODO: Somehow wait till all workers finish executing WorkerMain.
+    while (workerActive.any ())
+    {
+        std::this_thread::yield ();
+    }
 }
 
 void ExecutorImplementation::WorkerMain () noexcept
