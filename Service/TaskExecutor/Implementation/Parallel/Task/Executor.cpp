@@ -60,7 +60,7 @@ private:
 };
 
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection, std::size_t _workers) noexcept
-    : workerExecutionBarrier (static_cast <ptrdiff_t > (_workers + 1u))
+    : workerExecutionBarrier (static_cast<ptrdiff_t> (_workers + 1u))
 {
     tasks.resize (_collection.tasks.size ());
     for (std::size_t taskIndex = 0u; taskIndex < tasks.size (); ++taskIndex)
