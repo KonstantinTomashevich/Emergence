@@ -1,5 +1,5 @@
 #include <atomic>
-#include <bitset>
+#include <barrier>
 #include <cassert>
 #include <thread>
 #include <vector>
@@ -8,8 +8,6 @@
 
 namespace Emergence::Task
 {
-static constexpr std::size_t MAX_WORKERS = 64u;
-
 class ExecutorImplementation final
 {
 public:
@@ -34,15 +32,21 @@ private:
 
         std::size_t dependencyCount = 0u;
 
+        /// \brief Count of dependencies left for this task in current or next execution.
+        /// \invariant After executor initialization and after every execution of this task ::dependenciesLeftThisRun
+        //             should be equal to ::dependencyCount.
         std::size_t dependenciesLeftThisRun = 0u;
     };
 
     void WorkerMain () noexcept;
 
     std::vector<Task> tasks;
+
+    /// \brief We cache entry tasks to make ::taskQueue initialization in ::Execute faster.
     std::vector<std::size_t> entryTaskIndices;
+
+    std::atomic_unsigned_lock_free workersActive = 0u;
     std::vector<std::jthread> workers;
-    std::bitset<MAX_WORKERS> workerActive;
 
     std::atomic_flag modifyingTaskQueue;
     std::atomic_flag taskQueueNotEmptyOrAllTasksFinished;
@@ -51,11 +55,12 @@ private:
     std::size_t tasksInExecution = 0u;
     std::vector<std::size_t> tasksQueue;
 
-    std::atomic_flag workersAwake;
+    std::barrier<> workerExecutionBarrier;
     bool terminating = false;
 };
 
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection, std::size_t _workers) noexcept
+    : workerExecutionBarrier (static_cast <ptrdiff_t > (_workers + 1u))
 {
     tasks.resize (_collection.tasks.size ());
     for (std::size_t taskIndex = 0u; taskIndex < tasks.size (); ++taskIndex)
@@ -85,24 +90,23 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
 
     assert (!entryTaskIndices.empty ());
     workers.reserve (_workers);
-    assert (_workers < MAX_WORKERS);
 
     for (std::size_t workerIndex = 0u; workerIndex < _workers; ++workerIndex)
     {
         workers.emplace_back (
-            [this, workerIndex] ()
+            [this] ()
             {
                 while (true)
                 {
-                    workersAwake.wait (false);
+                    workerExecutionBarrier.arrive_and_wait ();
                     if (terminating)
                     {
                         return;
                     }
 
-                    workerActive.set (workerIndex, true);
+                    ++workersActive;
                     WorkerMain ();
-                    workerActive.set (workerIndex, false);
+                    --workersActive;
                 }
             });
     }
@@ -111,8 +115,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
 ExecutorImplementation::~ExecutorImplementation () noexcept
 {
     terminating = true;
-    workersAwake.test_and_set ();
-    workersAwake.notify_all ();
+    workerExecutionBarrier.arrive_and_wait ();
 
     for (std::jthread &worker : workers)
     {
@@ -128,22 +131,18 @@ void ExecutorImplementation::Execute () noexcept
         return;
     }
 
-    assert (!workersAwake.test ());
+    assert (workersActive == 0u);
     assert (!modifyingTaskQueue.test ());
-
     tasksQueue = entryTaskIndices;
     taskQueueNotEmptyOrAllTasksFinished.test_and_set ();
 
     tasksFinished = 0u;
     tasksInExecution = 0u;
 
-    workersAwake.test_and_set ();
-    workersAwake.notify_all ();
-
+    workerExecutionBarrier.arrive_and_wait ();
     WorkerMain ();
-    workersAwake.clear ();
 
-    while (workerActive.any ())
+    while (workersActive > 0u)
     {
         std::this_thread::yield ();
     }
