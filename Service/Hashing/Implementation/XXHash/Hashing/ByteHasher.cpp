@@ -9,50 +9,42 @@ namespace Emergence::Hashing
 {
 ByteHasher::ByteHasher () noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     new (&data) xxh::hash_state64_t ();
 }
 
 ByteHasher::ByteHasher (const ByteHasher &_other) noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
 }
 
 ByteHasher::ByteHasher (ByteHasher &&_other) noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
 }
 
 ByteHasher::~ByteHasher () noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     block_cast<xxh::hash_state64_t> (data).~hash_state_t ();
 }
 
 void ByteHasher::Append (uint8_t _byte) noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     block_cast<xxh::hash_state64_t> (data).update (&_byte, 1u);
 }
 
 void ByteHasher::Append (const uint8_t *_bytes, std::size_t _count) noexcept
 {
     assert (_bytes);
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     block_cast<xxh::hash_state64_t> (data).update (_bytes, _count);
 }
 
 void ByteHasher::Clear () noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     block_cast<xxh::hash_state64_t> (data).reset ();
 }
 
 uint64_t ByteHasher::GetCurrentValue () const noexcept
 {
-    // NOLINTNEXTLINE(portability-simd-intrinsics): XXHash uses some special intrinsics, but it's ok for now.
     return block_cast<xxh::hash_state64_t> (data).digest ();
 }
 
