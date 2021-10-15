@@ -32,9 +32,9 @@ private:
 
         std::size_t dependencyCount = 0u;
 
-        /// \brief Count of dependencies left for this task in current or next execution.
-        /// \invariant After executor initialization and after every execution of this task ::dependenciesLeftThisRun
-        //             should be equal to ::dependencyCount.
+        /// \brief Count of unresolved dependencies for this task in current execution.
+        /// \invariant After executor initialization and after every execution of this task
+        ///            ::dependenciesLeftThisRun should be equal to ::dependencyCount.
         std::size_t dependenciesLeftThisRun = 0u;
     };
 
@@ -192,14 +192,14 @@ void ExecutorImplementation::WorkerMain () noexcept
                 const bool allTasksFinished = tasksFinished == tasks.size ();
 
                 // There is no tasks in execution and not all tasks are finished,
-                // but task queue is empty -- looks like classic deadlock.
+                // but task queue is empty -- looks like a classic deadlock.
                 const bool deadlockDetected = !allTasksFinished && tasksInExecution == 0u;
 
                 assert (!deadlockDetected);
                 exit = allTasksFinished || deadlockDetected;
             }
 
-            // If there is no tasks and if we are not in exit routine, we should inform
+            // If there is no tasks and if we are not exiting, we should inform
             // other workers that there is no sense to check task queue right now.
             if (tasksQueue.empty () && !exit)
             {
