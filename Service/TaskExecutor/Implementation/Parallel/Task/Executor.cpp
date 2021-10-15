@@ -109,7 +109,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
                 while (true)
                 {
                     workerExecutionBarrier.arrive_and_wait ();
-                    if (terminating.test ())
+                    if (terminating.test (std::memory_order_acquire))
                     {
                         return;
                     }
@@ -125,7 +125,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
 ExecutorImplementation::~ExecutorImplementation () noexcept
 {
     // Set termination flag and awake all workers.
-    terminating.test_and_set ();
+    terminating.test_and_set (std::memory_order_acquire);
     workerExecutionBarrier.arrive_and_wait ();
 
     for (std::jthread &worker : workers)
@@ -147,7 +147,7 @@ void ExecutorImplementation::Execute () noexcept
     assert (!modifyingTaskQueue.test ());
 
     tasksQueue = entryTaskIndices;
-    taskQueueNotEmptyOrAllTasksFinished.test_and_set ();
+    taskQueueNotEmptyOrAllTasksFinished.test_and_set (std::memory_order_acquire);
 
     // Awake workers and switch main thread to worker mode.
     workerExecutionBarrier.arrive_and_wait ();
@@ -167,16 +167,14 @@ void ExecutorImplementation::WorkerMain () noexcept
 {
     while (true)
     {
-        // TODO: Think about memory order.
-
         Task *currentTask = nullptr;
 
         // Extracting next available task from queue.
         while (!currentTask)
         {
-            taskQueueNotEmptyOrAllTasksFinished.wait (false);
+            taskQueueNotEmptyOrAllTasksFinished.wait (false, std::memory_order_acquire);
 
-            while (modifyingTaskQueue.test_and_set ())
+            while (modifyingTaskQueue.test_and_set (std::memory_order_acquire))
             {
                 std::this_thread::yield ();
             }
@@ -205,10 +203,10 @@ void ExecutorImplementation::WorkerMain () noexcept
             // other workers that there is no sense to check task queue right now.
             if (tasksQueue.empty () && !exit)
             {
-                taskQueueNotEmptyOrAllTasksFinished.clear ();
+                taskQueueNotEmptyOrAllTasksFinished.clear (std::memory_order_release);
             }
 
-            modifyingTaskQueue.clear ();
+            modifyingTaskQueue.clear (std::memory_order_release);
 
             if (exit)
             {
@@ -221,7 +219,7 @@ void ExecutorImplementation::WorkerMain () noexcept
         currentTask->dependenciesLeftThisRun = currentTask->dependencyCount;
 
         // Registering successful task execution and unlocking dependant tasks.
-        while (modifyingTaskQueue.test_and_set ())
+        while (modifyingTaskQueue.test_and_set (std::memory_order_acquire))
         {
             std::this_thread::yield ();
         }
@@ -242,11 +240,11 @@ void ExecutorImplementation::WorkerMain () noexcept
         // we should resume other workers to make them able to grab tasks or exit.
         if ((taskQueueWasEmpty && !tasksQueue.empty ()) || tasksFinished == tasks.size ())
         {
-            taskQueueNotEmptyOrAllTasksFinished.test_and_set ();
+            taskQueueNotEmptyOrAllTasksFinished.test_and_set (std::memory_order_seq_cst);
             taskQueueNotEmptyOrAllTasksFinished.notify_all ();
         }
 
-        modifyingTaskQueue.clear ();
+        modifyingTaskQueue.clear (std::memory_order_release);
     }
 }
 
