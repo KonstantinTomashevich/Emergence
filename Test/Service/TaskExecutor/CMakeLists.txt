@@ -14,6 +14,9 @@ sober_test_begin (TaskExecutor)
 
     sober_test_variant_begin (Sequential)
     sober_test_variant_end ()
+
+    sober_test_variant_begin (Parallel)
+    sober_test_variant_end ()
 sober_test_end ()
 
 sober_naming_test_collection (TaskExecutor COLLECTION_NAME)

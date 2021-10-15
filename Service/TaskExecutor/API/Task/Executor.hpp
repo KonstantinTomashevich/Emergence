@@ -26,7 +26,7 @@ public:
 
     /// \brief Starts task execution and returns only when all tasks are finished.
     /// \details Implementations may use their own threads to execute tasks.
-    void Execute () const noexcept;
+    void Execute () noexcept;
 
     /// Assigning executors is counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Executor);

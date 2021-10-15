@@ -106,13 +106,13 @@ void LoggerImplementation::Log (Level _level, const std::string &_message) noexc
     spdlog::level::level_enum level = ToSPDLogLevel (_level);
 
     // Usually there is no sense to print ton of logs in production, therefore it's better to use flag based spin lock.
-    while (locked.test_and_set ())
+    while (locked.test_and_set (std::memory_order_acquire))
     {
         std::this_thread::yield ();
     }
 
     logger.log (level, _message);
-    locked.clear ();
+    locked.clear (std::memory_order_release);
 }
 
 Logger::Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept

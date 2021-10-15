@@ -1,13 +1,22 @@
 ---
+# In some situations (line UnorderedPool constructor) it's impossible to make parameters unswappable. There are several
+# cases like that, therefore bugprone-easily-swappable-parameters is disabled.
+#
 # Currently, `noexcept` means if function will throw something, program should just crash.
 # Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
+# bugprone-unhandled-exception-at-new is disabled for the same reason.
 #
 # We disable -readability-function-cognitive-complexity and -readability-magic-numbers,
 # because they trigger shitstorm in tests. Might be reconsidered later.
+#
+# XXHash uses some intrinsics, that are not guaranteed to be portable. There is no way to ignore
+# portability-simd-intrinsics only in ByteHasher.cpp, therefore it is ignored everywhere.
 Checks: >
   -*,
   bugprone-*,
+  -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
+  -bugprone-unhandled-exception-at-new,
   cppcoreguidelines-avoid-goto,
   cppcoreguidelines-interfaces-global-init,
   cppcoreguidelines-narrowing-conversions,
@@ -25,6 +34,7 @@ Checks: >
   -modernize-use-trailing-return-type,
   performance-*,
   portability-*,
+  -portability-simd-intrinsics,
   readability-*,
   -readability-function-cognitive-complexity,
   -readability-implicit-bool-conversion,

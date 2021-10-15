@@ -45,7 +45,7 @@ void GrowAndTest (const Seed &_seed)
         {
             using namespace std::chrono_literals;
             privateInterval.start = std::chrono::high_resolution_clock::now ();
-            std::this_thread::sleep_for (10ns);
+            std::this_thread::sleep_for (1us);
             privateInterval.end = std::chrono::high_resolution_clock::now ();
         };
 
