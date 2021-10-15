@@ -1,5 +1,5 @@
 #include <cassert>
-#include <queue>
+#include <stack>
 
 #include <Task/Executor.hpp>
 
@@ -40,12 +40,12 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         }
     }
 
-    std::vector<std::size_t> resolvedTasks;
+    std::stack<std::size_t> resolvedTasks;
     for (std::size_t index = 0u; index < dependenciesLeft.size (); ++index)
     {
         if (dependenciesLeft[index] == 0u)
         {
-            resolvedTasks.emplace_back (index);
+            resolvedTasks.push (index);
         }
     }
 
@@ -53,8 +53,8 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
     while (!resolvedTasks.empty ())
     {
         ++resolvedTasksCount;
-        std::size_t taskIndex = resolvedTasks.back ();
-        resolvedTasks.pop_back ();
+        std::size_t taskIndex = resolvedTasks.top ();
+        resolvedTasks.pop ();
 
         assert (taskIndex < _collection.tasks.size ());
         orderedTasks.emplace_back (_collection.tasks[taskIndex].task);
@@ -63,7 +63,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         {
             if (--dependenciesLeft[dependantIndex] == 0u)
             {
-                resolvedTasks.emplace_back (dependantIndex);
+                resolvedTasks.push (dependantIndex);
             }
         }
     }
