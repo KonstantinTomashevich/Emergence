@@ -20,7 +20,8 @@ sober_test_begin (Warehouse)
     sober_naming_variant_target (WarehouseVisualization Original VISUALIZATION_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
 
-    sober_library_use_service (PRIVATE TestWarehouseVisualizationGraphs)
+    sober_library_use_service (PER_VARIANT PRIVATE TestWarehouseVisualizationGraphs)
+    sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
 
     if (MSVC)
         # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

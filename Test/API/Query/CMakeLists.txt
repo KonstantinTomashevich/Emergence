@@ -12,8 +12,8 @@ sober_library_begin (TestQueryAPI STATIC)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
-    sober_library_use_service (PUBLIC StandardLayoutMapping)
-    sober_library_use_service (PUBLIC Testing)
+    sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
+    sober_library_use_service (SHARED PUBLIC Testing)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)

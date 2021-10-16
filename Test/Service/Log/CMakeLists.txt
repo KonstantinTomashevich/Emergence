@@ -8,9 +8,7 @@ sober_library_begin (TestLogShared STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Shared")
 
-    # We need Log API to define Log::Level constants, but we don't need actual implementation here.
-    sober_naming_service_target (Log LOG_API)
-    sober_library_link_library (PUBLIC ${LOG_API})
+    sober_library_use_service (EXPECTED PUBLIC Log)
 
     sober_variant_begin (Original)
     sober_variant_end ()
@@ -27,7 +25,7 @@ sober_library_begin (TestLogApp STATIC)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/App")
 
     sober_library_link_library (PRIVATE ${LOG_TEST_SHARED_LIBRARY})
-    sober_library_use_service (PRIVATE Log)
+    sober_library_use_service (PER_VARIANT PRIVATE Log)
 
     foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
         sober_variant_begin (${IMPLEMENTATION})

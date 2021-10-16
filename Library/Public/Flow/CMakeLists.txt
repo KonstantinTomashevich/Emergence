@@ -8,8 +8,8 @@ sober_library_begin (Flow STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public")
 
-    sober_library_use_service (PRIVATE FlowConstants)
-    sober_library_use_service (PRIVATE Log)
+    sober_library_use_service (EXPECTED PRIVATE Log)
+    sober_library_use_service (PER_VARIANT PRIVATE FlowConstants)
 
     sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${API_COMMON_LIBRARY_TARGET})
