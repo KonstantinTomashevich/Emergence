@@ -25,8 +25,7 @@ target_link_libraries ("${GAME_NAME}EditorLauncher" PUBLIC "${EDITOR_TARGET}")
 
 set_target_properties ("${GAME_NAME}EditorLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Editor")
+
 copy_shared_libraries ("${GAME_NAME}EditorLauncher")
 use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Editor" RenderSystem_Direct3D11)
-
-set (RESOURCES_CONFIG "[General]\nFileSystem=../Assets\n")
-file (WRITE "${GAME_OUTPUT_DIRECTORY}/Editor/resources.cfg" "${RESOURCES_CONFIG}")
+link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Editor")

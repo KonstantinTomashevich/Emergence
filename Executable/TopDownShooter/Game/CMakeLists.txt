@@ -28,6 +28,4 @@ set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES
 
 copy_shared_libraries ("${GAME_NAME}GameLauncher")
 use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Game" RenderSystem_Direct3D11)
-
-set (RESOURCES_CONFIG "[General]\nFileSystem=../Assets\n")
-file (WRITE "${GAME_OUTPUT_DIRECTORY}/Game/resources.cfg" "${RESOURCES_CONFIG}")
+link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Game")
