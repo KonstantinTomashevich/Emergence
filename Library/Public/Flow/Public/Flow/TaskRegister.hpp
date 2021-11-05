@@ -83,6 +83,9 @@ public:
     ///          - No data access races.
     [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
+    /// \brief Remove all registered tasks, checkpoints and resources.
+    void Clear () noexcept;
+
     /// Assigning task registers is counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (TaskRegister);
 
