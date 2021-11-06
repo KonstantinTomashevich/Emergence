@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 #include <StandardLayout/MappingBuilder.hpp>
 
@@ -62,6 +63,36 @@
     ._field =                                                                                                          \
         builder.RegisterNestedObject (#_field, offsetof (Type, _field), decltype (Type::_field)::Reflect ().mapping),
 
+/// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::INT,
+///        FieldArchetype::UINT or FieldArchetype::FLOAT elements.
+/// \invariant Class must contain `_field` field of type `std::array`.
+/// \invariant Class reflection structure name must contain `_field` field,
+///            in which registered field id for each array element will be stored.
+#define EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY(_field)                                                               \
+    ._field = Emergence::MappingRegistration::RegisterArray<decltype (Type::_field)> (                                 \
+        #_field,                                                                                                       \
+        [&builder] (std::size_t _index, const char *_itemName)                                                         \
+        {                                                                                                              \
+            using ItemType = decltype (Type::_field)::value_type;                                                      \
+            using Registrar = Emergence::MappingRegistration::RegularFieldRegistrar<ItemType>;                         \
+            return (builder.*Registrar::Register) (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType));   \
+        }),
+
+/// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::NESTED_OBJECT elements.
+/// \invariant Class must contain `_field` field of type `std::array`. Element type should have static Reflect method
+///            that returns reflection structure for that type.
+/// \invariant Class reflection structure name must contain `_field` field,
+///            in which registered field id for each array element will be stored.
+#define EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY(_field)                                                         \
+    ._field = Emergence::MappingRegistration::RegisterArray<decltype (Type::_field)> (                                 \
+        #_field,                                                                                                       \
+        [&builder] (std::size_t _index, const char *_itemName)                                                         \
+        {                                                                                                              \
+            using ItemType = decltype (Type::_field)::value_type;                                                      \
+            return builder.RegisterNestedObject (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType),      \
+                                                 ItemType::Reflect ().mapping);                                        \
+        }),
+
 namespace Emergence::MappingRegistration
 {
 /// \brief Utility structure, used to detect registration method for regular fields.
@@ -102,4 +133,19 @@ struct ExtractArraySize<std::array<Type, Size>>
 {
     static constexpr std::size_t VALUE = Size;
 };
+
+template <typename ArrayType, typename ElementRegistrar>
+auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegistrar)
+{
+    std::array<StandardLayout::FieldId, MappingRegistration::ExtractArraySize<ArrayType>::VALUE> result;
+    std::string namePrefix = std::string (_fieldName) + '[';
+
+    for (std::size_t index = 0u; index < result.size (); ++index)
+    {
+        std::string fieldName = namePrefix + std::to_string (index) + ']';
+        result[index] = _elementRegistrar (index, fieldName.c_str ());
+    }
+
+    return result;
+}
 } // namespace Emergence::MappingRegistration
