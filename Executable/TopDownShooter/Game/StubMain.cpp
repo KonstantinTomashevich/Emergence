@@ -1,8 +1,12 @@
+#include <Log/Log.hpp>
+
 #include <OgreApplicationContext.h>
 #include <OgreEntity.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
 #include <OgreTimer.h>
+
+#include <Input/InputAccumulator.hpp>
 
 int main (int /*unused*/, char ** /*unused*/)
 {
@@ -52,18 +56,38 @@ int main (int /*unused*/, char ** /*unused*/)
 
     application.getRenderWindow ()->addViewport (camera);
 
-    while (!application.getRoot ()->endRenderingQueued ())
     {
-        constexpr const uint64_t msPeriod = 3000u;
-        const uint64_t msLocal = application.getRoot ()->getTimer ()->getMilliseconds () % msPeriod;
-        const float angle = Ogre::Math::PI * 2.0f * (static_cast<float> (msLocal) / static_cast<float> (msPeriod));
+        std::vector<KeyboardActionTrigger> keyboardActions {
+            {InputAction {0u}, {{OgreBites::Keycode {'w'}, false}}},
+            {InputAction {1u}, {{OgreBites::Keycode {'a'}, false}}},
+            {InputAction {2u}, {{OgreBites::Keycode {'s'}, false}}},
+            {InputAction {3u}, {{OgreBites::Keycode {'d'}, false}}},
+            {InputAction {4u}, {{OgreBites::Keycode {'q'}, true}}},
+            {InputAction {6u}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}}};
 
-        Ogre::Vector3 lookTarget {cos (angle), -1.0f, sin (angle)};
-        lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
+        InputAccumulator normalAccumulator {&application, keyboardActions};
 
-        playerNode->setPosition (cos(angle) * 2.0f, 0.0f, sin(angle) * 2.0f);
+        while (!application.getRoot ()->endRenderingQueued ())
+        {
+            constexpr const uint64_t MS_PERIOD = 3000u;
+            const uint64_t msGlobal = application.getRoot ()->getTimer ()->getMilliseconds ();
+            const uint64_t msLocal = msGlobal % MS_PERIOD;
+            const float angle = Ogre::Math::PI * 2.0f * (static_cast<float> (msLocal) / static_cast<float> (MS_PERIOD));
 
-        application.getRoot ()->renderOneFrame ();
+            Ogre::Vector3 lookTarget {cos (angle), -1.0f, sin (angle)};
+            lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
+
+            playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
+
+            InputAction action;
+            while (normalAccumulator.PopNextAction (action, msGlobal))
+            {
+                using namespace Emergence::Log;
+                GlobalLogger::Log (Level::INFO, "Received action: " + std::to_string(action.id) + ".");
+            }
+
+            application.getRoot ()->renderOneFrame ();
+        }
     }
 
     application.closeApp ();
