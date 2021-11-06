@@ -66,6 +66,8 @@ public:
     Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
         const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    void SetExecutor (std::function<void ()> _executor) noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (TaskConstructor);
 
 private:

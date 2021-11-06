@@ -126,6 +126,11 @@ Warehouse::ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
     return parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions);
 }
 
+void TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
+{
+    task.executor = std::move (_executor);
+}
+
 TaskConstructor::TaskConstructor (PipelineBuilder *_parent, const char *_name) noexcept : parent (_parent)
 {
     assert (parent);
