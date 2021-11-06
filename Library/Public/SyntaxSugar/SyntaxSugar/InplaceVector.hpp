@@ -28,6 +28,8 @@ public:
     /// \brief Moves values from given inplace vector and leaves it empty.
     InplaceVector (InplaceVector &&_other) noexcept requires std::is_nothrow_move_constructible_v<Item>;
 
+    InplaceVector (std::initializer_list<Item> _initializer) noexcept requires std::is_nothrow_move_assignable_v<Item>;
+
     ~InplaceVector () noexcept = default;
 
     Iterator Begin () noexcept;
@@ -95,6 +97,18 @@ InplaceVector<Item, Capacity>::InplaceVector (
     : count (_other.count), values (std::move (_other.values))
 {
     _other.Clear ();
+}
+
+template <typename Item, std::size_t Capacity>
+InplaceVector<Item, Capacity>::InplaceVector (
+    std::initializer_list<Item> _initializer) noexcept requires std::is_nothrow_move_assignable_v<Item>
+    : count (_initializer.size ()), values ()
+{
+    assert (count <= Capacity);
+    for (std::size_t index = 0u; index < count; ++index)
+    {
+        values[index] = std::move (data (_initializer)[index]);
+    }
 }
 
 template <typename Item, std::size_t Capacity>
