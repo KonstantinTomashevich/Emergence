@@ -83,7 +83,7 @@ int main (int /*unused*/, char ** /*unused*/)
             while (normalAccumulator.PopNextAction (action, msGlobal))
             {
                 using namespace Emergence::Log;
-                GlobalLogger::Log (Level::INFO, "Received action: " + std::to_string(action.id) + ".");
+                GlobalLogger::Log (Level::INFO, "Received action: " + std::to_string (action.id) + ".");
             }
 
             application.getRoot ()->renderOneFrame ();
