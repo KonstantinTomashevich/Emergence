@@ -5,7 +5,11 @@
 
 #include <Memory/StackAllocator.hpp>
 
+#include <StandardLayout/MappingBuilder.hpp>
+
 #include <String/ConstReference.hpp>
+
+#include <SyntaxSugar/MappingRegistration.hpp>
 
 namespace Emergence::String
 {
@@ -35,6 +39,10 @@ static const char *RegisterValue (const std::string_view &_value)
     return iterator->data ();
 }
 
+ConstReference::ConstReference (const char *_value) noexcept : ConstReference (std::string_view {_value})
+{
+}
+
 ConstReference::ConstReference (const std::string_view &_value) noexcept : value (RegisterValue (_value))
 {
 }
@@ -42,5 +50,17 @@ ConstReference::ConstReference (const std::string_view &_value) noexcept : value
 const char *ConstReference::Value () const noexcept
 {
     return value;
+}
+
+const ConstReference::Reflection &ConstReference::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (String::ConstReference)
+        EMERGENCE_MAPPING_REGISTER_POINTER_AS_UINT (value)
+        EMERGENCE_MAPPING_REGISTRATION_END ()
+    }();
+
+    return reflection;
 }
 } // namespace Emergence::String

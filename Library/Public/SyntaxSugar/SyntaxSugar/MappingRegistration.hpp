@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <string>
 
@@ -93,6 +94,12 @@
                                                  ItemType::Reflect ().mapping);                                        \
         }),
 
+/// \brief Helper for mapping static registration. Registers any pointer field as FieldArchetype::UINT.
+/// \invariant Class must contain `_field` field.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
+#define EMERGENCE_MAPPING_REGISTER_POINTER_AS_UINT(_field)                                                             \
+    ._field = Emergence::MappingRegistration::RegisterPointerAsUInt (builder, #_field, offsetof (Type, _field)),
+
 namespace Emergence::MappingRegistration
 {
 /// \brief Utility structure, used to detect registration method for regular fields.
@@ -147,5 +154,20 @@ auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegi
     }
 
     return result;
+}
+
+inline StandardLayout::FieldId RegisterPointerAsUInt (StandardLayout::MappingBuilder &_builder,
+                                                      const char *_name,
+                                                      std::size_t _offset)
+{
+    if constexpr (sizeof (intptr_t) == sizeof (uint64_t))
+    {
+        return _builder.RegisterUInt64 (_name, _offset);
+    }
+    else
+    {
+        assert (sizeof (intptr_t) == sizeof (uint32_t));
+        return _builder.RegisterUInt32 (_name, _offset);
+    }
 }
 } // namespace Emergence::MappingRegistration

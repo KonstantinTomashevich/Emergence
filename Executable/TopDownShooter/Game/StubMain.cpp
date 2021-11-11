@@ -58,12 +58,12 @@ int main (int /*unused*/, char ** /*unused*/)
 
     {
         std::vector<KeyboardActionTrigger> keyboardActions {
-            {InputAction {0u}, {{OgreBites::Keycode {'w'}, false}}},
-            {InputAction {1u}, {{OgreBites::Keycode {'a'}, false}}},
-            {InputAction {2u}, {{OgreBites::Keycode {'s'}, false}}},
-            {InputAction {3u}, {{OgreBites::Keycode {'d'}, false}}},
-            {InputAction {4u}, {{OgreBites::Keycode {'q'}, true}}},
-            {InputAction {6u}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}}};
+            {InputAction {"Forward"}, {{OgreBites::Keycode {'w'}, false}}},
+            {InputAction {"Left"}, {{OgreBites::Keycode {'a'}, false}}},
+            {InputAction {"Backward"}, {{OgreBites::Keycode {'s'}, false}}},
+            {InputAction {"Right"}, {{OgreBites::Keycode {'d'}, false}}},
+            {InputAction {"Ability"}, {{OgreBites::Keycode {'q'}, true}}},
+            {InputAction {"Dash"}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}}};
 
         InputAccumulator normalAccumulator {&application, keyboardActions};
 
@@ -83,7 +83,7 @@ int main (int /*unused*/, char ** /*unused*/)
             while (normalAccumulator.PopNextAction (action, msGlobal))
             {
                 using namespace Emergence::Log;
-                GlobalLogger::Log (Level::INFO, "Received action: " + std::to_string (action.id) + ".");
+                GlobalLogger::Log (Level::INFO, "Received action: " + std::string (action.id.Value ()) + ".");
             }
 
             application.getRoot ()->renderOneFrame ();

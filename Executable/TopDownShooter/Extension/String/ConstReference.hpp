@@ -1,18 +1,34 @@
 #pragma once
 
 #include <type_traits>
+#include <string_view>
+
+#include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::String
 {
 class ConstReference final
 {
 public:
-    explicit ConstReference (const std::string_view &_value) noexcept;
+    ConstReference () = default;
+
+    ConstReference (const char *_value) noexcept;
+
+    ConstReference (const std::string_view &_value) noexcept;
 
     [[nodiscard]] const char *Value () const noexcept;
 
 private:
     const char *value = nullptr;
+
+public:
+    struct Reflection final
+    {
+        StandardLayout::FieldId value;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 } // namespace Emergence::String
 

@@ -5,6 +5,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <String/ConstReference.hpp>
+
 struct InputAction final
 {
     constexpr static const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
@@ -12,13 +14,13 @@ struct InputAction final
 
     InputAction () noexcept = default;
 
-    InputAction (uint64_t _id) noexcept;
+    InputAction (const Emergence::String::ConstReference &_id) noexcept;
 
-    InputAction (uint64_t _id, const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept;
+    InputAction (const Emergence::String::ConstReference &_id, const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept;
 
-    InputAction (uint64_t _id, const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept;
+    InputAction (const Emergence::String::ConstReference &_id, const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept;
 
-    uint64_t id = 0u;
+    Emergence::String::ConstReference id;
 
     union
     {
