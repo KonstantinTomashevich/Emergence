@@ -45,10 +45,6 @@ private:
     /// \details We cache entry tasks to make ::taskQueue initialization in ::Execute faster.
     std::vector<std::size_t> entryTaskIndices;
 
-    /// \details ::Execute should not exit until all workers are paused. To check it we use this counter.
-    ///          Worker is active while it executes ::WorkerMain.
-    std::atomic_unsigned_lock_free workersActive = 0u;
-
     std::vector<std::jthread> workers;
 
     /// \details Task queue modification is rare and chance that different threads are fighting for modification access
@@ -62,7 +58,10 @@ private:
     std::size_t tasksInExecution = 0u;
     std::vector<std::size_t> tasksQueue;
 
-    /// \details When there is no work to be done, workers are paused at this barrier.
+    /// \details Workers are paused at this barrier in two cases:
+    ///          - They are waiting for new execution routine.
+    ///          - They finished executing ::WorkerMain during current routine. Waiting here is used
+    ///            to ensure that all workers will be stopped when main thread exits from ::Execute.
     std::barrier<> workerExecutionBarrier;
 
     /// \details Informs workers that they should exit. Used only in destructor.
@@ -114,9 +113,8 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
                         return;
                     }
 
-                    ++workersActive;
                     WorkerMain ();
-                    --workersActive;
+                    workerExecutionBarrier.arrive_and_wait ();
                 }
             });
     }
@@ -142,8 +140,7 @@ void ExecutorImplementation::Execute () noexcept
         return;
     }
 
-    // Ensure that synchronization variables are in clean state.
-    assert (workersActive == 0u);
+    // Ensure that synchronization variable is in clean state.
     assert (!modifyingTaskQueue.test ());
 
     tasksQueue = entryTaskIndices;
@@ -152,11 +149,7 @@ void ExecutorImplementation::Execute () noexcept
     // Awake workers and switch main thread to worker mode.
     workerExecutionBarrier.arrive_and_wait ();
     WorkerMain ();
-
-    while (workersActive > 0u)
-    {
-        std::this_thread::yield ();
-    }
+    workerExecutionBarrier.arrive_and_wait ();
 
     // Clear shared state after execution.
     tasksFinished = 0u;
