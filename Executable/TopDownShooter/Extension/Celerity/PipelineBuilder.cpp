@@ -163,6 +163,7 @@ Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
         world->pipelines.emplace_back (new Pipeline (taskRegister.ExportCollection (), _maximumChildThreads));
 
     taskRegister.Clear ();
+    registeredResources.clear ();
     return newPipeline.get ();
 }
 

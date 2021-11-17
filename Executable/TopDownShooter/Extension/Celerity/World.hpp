@@ -12,15 +12,17 @@ namespace Emergence::Celerity
 class World final
 {
 public:
+    explicit World (std::string _name) noexcept;
+
     World (const World &_other) = delete;
 
     World (World &&_other) = delete;
 
     ~World () = default;
 
-    explicit World (std::string _name) noexcept;
-
     EMERGENCE_DELETE_ASSIGNMENT (World);
+
+    Warehouse::FetchSingletonQuery FetchSingletonForExternalUse (const StandardLayout::Mapping &_mapping) noexcept;
 
     // TODO: Rules for automatic edition/addition/deletion event firing.
 
