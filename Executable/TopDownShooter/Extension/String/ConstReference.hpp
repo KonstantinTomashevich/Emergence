@@ -18,6 +18,10 @@ public:
 
     [[nodiscard]] const char *Value () const noexcept;
 
+    bool operator== (const ConstReference &_other) const;
+
+    bool operator!= (const ConstReference &_other) const;
+
 private:
     const char *value = nullptr;
 

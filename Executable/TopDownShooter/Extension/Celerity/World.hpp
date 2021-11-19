@@ -22,7 +22,9 @@ public:
 
     EMERGENCE_DELETE_ASSIGNMENT (World);
 
-    Warehouse::FetchSingletonQuery FetchSingletonForExternalUse (const StandardLayout::Mapping &_mapping) noexcept;
+    Warehouse::FetchSingletonQuery FetchSingletonExternally (const StandardLayout::Mapping &_mapping) noexcept;
+
+    Warehouse::ModifySingletonQuery ModifySingletonExternally (const StandardLayout::Mapping &_mapping) noexcept;
 
     // TODO: Rules for automatic edition/addition/deletion event firing.
 

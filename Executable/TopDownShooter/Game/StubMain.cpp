@@ -10,7 +10,9 @@
 #include <OgreRoot.h>
 #include <OgreTimer.h>
 
-#include <Input/InputAccumulator.hpp>
+#include <Input/FixedInputMappingSingleton.hpp>
+#include <Input/InputCollection.hpp>
+#include <Input/NormalInputMappingSingleton.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 
@@ -22,24 +24,59 @@ class WorldUpdater final
 public:
     explicit WorldUpdater (OgreBites::ApplicationContext *_application, Emergence::Celerity::World *_world)
         : application (_application),
-          fetchTime (_world->FetchSingletonForExternalUse (TimeSingleton::Reflect ().mapping))
+          fetchTime (_world->FetchSingletonExternally (TimeSingleton::Reflect ().mapping))
     {
         Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
 
         pipelineBuilder.Begin ();
         TimeSynchronization::AddFixedUpdateTask (application->getRoot ()->getTimer (), pipelineBuilder, 1.0f / 30.0f);
+        InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
         pipelineBuilder.Begin ();
         TimeSynchronization::AddNormalUpdateTask (application->getRoot ()->getTimer (), pipelineBuilder);
+        InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         normalUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
+
+        auto modifyFixedInput = _world->ModifySingletonExternally (FixedInputMappingSingleton::Reflect ().mapping);
+        auto *fixedInput = static_cast<FixedInputMappingSingleton *> (*modifyFixedInput.Execute ());
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Forward", "Movement"}, {{OgreBites::Keycode {'w'}, false}}});
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Left", "Movement"}, {{OgreBites::Keycode {'a'}, false}}});
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Backward", "Movement"}, {{OgreBites::Keycode {'s'}, false}}});
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Right", "Movement"}, {{OgreBites::Keycode {'d'}, false}}});
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Explode", "Ability"}, {{OgreBites::Keycode {'q'}, true}}});
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (KeyboardActionTrigger {
+            InputAction {"Dash", "Ability"}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}});
+
+        auto modifyNormalInput = _world->ModifySingletonExternally (NormalInputMappingSingleton::Reflect ().mapping);
+        auto *normalInput = static_cast<NormalInputMappingSingleton *> (*modifyNormalInput.Execute ());
+
+        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Up", "Menu"}, {{OgreBites::Keycode {'1'}, true}}});
+
+        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Down", "Menu"}, {{OgreBites::Keycode {'2'}, true}}});
+
+        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Confirm", "Menu"}, {{OgreBites::Keycode {'e'}, true}}});
     }
 
     void Execute ()
     {
-        // Intentionally lift right access to time singleton, because we are expecting changes from pipelines.
+        // Intentionally lift read access to time singleton, because we are expecting changes from pipelines.
         const auto *time = static_cast<const TimeSingleton *> (*fetchTime.Execute ());
         application->pollEvents ();
 
@@ -109,16 +146,6 @@ int main (int /*unused*/, char ** /*unused*/)
     Emergence::Celerity::World world {"World"};
     WorldUpdater worldUpdater {&application, &world};
 
-    std::vector<KeyboardActionTrigger> keyboardActions {
-        {InputAction {"Forward"}, {{OgreBites::Keycode {'w'}, false}}},
-        {InputAction {"Left"}, {{OgreBites::Keycode {'a'}, false}}},
-        {InputAction {"Backward"}, {{OgreBites::Keycode {'s'}, false}}},
-        {InputAction {"Right"}, {{OgreBites::Keycode {'d'}, false}}},
-        {InputAction {"Ability"}, {{OgreBites::Keycode {'q'}, true}}},
-        {InputAction {"Dash"}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}}};
-
-    InputAccumulator normalAccumulator {&application, keyboardActions};
-
     while (!application.getRoot ()->endRenderingQueued ())
     {
         worldUpdater.Execute ();
@@ -130,16 +157,7 @@ int main (int /*unused*/, char ** /*unused*/)
 
         Ogre::Vector3 lookTarget {cos (angle), -1.0f, sin (angle)};
         lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
-
         playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
-
-        InputAction action;
-        while (normalAccumulator.PopNextAction (action, msGlobal))
-        {
-            using namespace Emergence::Log;
-            GlobalLogger::Log (Level::INFO, "Received action: " + std::string (action.id.Value ()) + ".");
-        }
-
         application.getRoot ()->renderOneFrame ();
     }
 

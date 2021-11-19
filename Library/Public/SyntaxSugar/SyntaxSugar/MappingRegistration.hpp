@@ -6,6 +6,8 @@
 
 #include <StandardLayout/MappingBuilder.hpp>
 
+#include <SyntaxSugar/InplaceVector.hpp>
+
 /// \brief Helper for mapping static registration. Contains beginning of registration functor.
 /// \invariant Class reflection structure name must be Class::Reflection.
 /// \see EMERGENCE_MAPPING_REGISTRATION_END
@@ -37,6 +39,15 @@
 #define EMERGENCE_MAPPING_REGISTER_REGULAR(_field)                                                                     \
     ._field = (builder.*Emergence::MappingRegistration::RegularFieldRegistrar<decltype (Type::_field)>::Register) (    \
         #_field, offsetof (Type, _field)),
+
+/// \brief Helper for mapping static registration. Registers enum field as field with FieldArchetype::INT,
+///        FieldArchetype::UINT or FieldArchetype::FLOAT.
+/// \invariant Class must contain `_field` field.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
+#define EMERGENCE_MAPPING_REGISTER_ENUM_AS_REGULAR(_field)                                                             \
+    ._field =                                                                                                          \
+        (builder.*Emergence::MappingRegistration::RegularFieldRegistrar<                                               \
+                      std::underlying_type_t<decltype (Type::_field)>>::Register) (#_field, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
 /// \invariant Class must contain `_field` field of type `std::array`.
@@ -139,6 +150,12 @@ template <typename Type, std::size_t Size>
 struct ExtractArraySize<std::array<Type, Size>>
 {
     static constexpr std::size_t VALUE = Size;
+};
+
+template <typename Type, std::size_t Capacity>
+struct ExtractArraySize<InplaceVector<Type, Capacity>>
+{
+    static constexpr std::size_t VALUE = Capacity;
 };
 
 template <typename ArrayType, typename ElementRegistrar>

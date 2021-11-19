@@ -52,6 +52,16 @@ const char *ConstReference::Value () const noexcept
     return value;
 }
 
+bool ConstReference::operator== (const ConstReference &_other) const
+{
+    return value == _other.value;
+}
+
+bool ConstReference::operator!= (const ConstReference &_other) const
+{
+    return !(_other == *this);
+}
+
 const ConstReference::Reflection &ConstReference::Reflect () noexcept
 {
     static Reflection reflection = [] ()

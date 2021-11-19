@@ -13,6 +13,10 @@ template <typename Item, std::size_t Capacity>
 class InplaceVector
 {
 public:
+    using ValueType = Item;
+
+    using value_type = ValueType;
+
     using Iterator = typename std::array<Item, Capacity>::iterator;
 
     using ConstIterator = typename std::array<Item, Capacity>::const_iterator;
@@ -42,6 +46,9 @@ public:
 
     /// \return ::count.
     [[nodiscard]] std::size_t GetCount () const noexcept;
+
+    /// \return Capacity
+    [[nodiscard]] std::size_t GetCapacity () const noexcept;
 
     /// \return is vector empty?
     [[nodiscard]] bool Empty () const noexcept;
@@ -136,6 +143,12 @@ std::size_t InplaceVector<Item, Capacity>::GetCount () const noexcept
 }
 
 template <typename Item, std::size_t Capacity>
+std::size_t InplaceVector<Item, Capacity>::GetCapacity () const noexcept
+{
+    return Capacity;
+}
+
+template <typename Item, std::size_t Capacity>
 bool InplaceVector<Item, Capacity>::Empty () const noexcept
 {
     return count == 0u;
@@ -156,7 +169,12 @@ template <typename Item, std::size_t Capacity>
 void InplaceVector<Item, Capacity>::Clear () noexcept requires std::is_nothrow_default_constructible_v<Item>
 {
     count = 0u;
-    values = {};
+
+    // There is no sense to clear trivial items.
+    if constexpr (!std::is_trivial_v<Item>)
+    {
+        values = {};
+    }
 }
 
 template <typename Item, std::size_t Capacity>
