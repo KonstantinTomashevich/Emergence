@@ -8,7 +8,6 @@
 #include <OgreEntity.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
-#include <OgreTimer.h>
 
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>
@@ -24,18 +23,18 @@ class WorldUpdater final
 public:
     explicit WorldUpdater (OgreBites::ApplicationContext *_application, Emergence::Celerity::World *_world)
         : application (_application),
-          fetchTime (_world->FetchSingletonExternally (TimeSingleton::Reflect ().mapping))
+          modifyTime (_world->ModifySingletonExternally (TimeSingleton::Reflect ().mapping))
     {
         Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
 
         pipelineBuilder.Begin ();
-        TimeSynchronization::AddFixedUpdateTask (application->getRoot ()->getTimer (), pipelineBuilder, 1.0f / 30.0f);
+        TimeSynchronization::AddFixedUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
         pipelineBuilder.Begin ();
-        TimeSynchronization::AddNormalUpdateTask (application->getRoot ()->getTimer (), pipelineBuilder);
+        TimeSynchronization::AddNormalUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         normalUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
@@ -72,17 +71,33 @@ public:
 
         normalInput->inputMapping.keyboardTriggers.EmplaceBack (
             KeyboardActionTrigger {InputAction {"Confirm", "Menu"}, {{OgreBites::Keycode {'e'}, true}}});
+
+        auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
+        time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 60.0f);
+        time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 30.0f);
     }
 
     void Execute ()
     {
-        // Intentionally lift read access to time singleton, because we are expecting changes from pipelines.
-        const auto *time = static_cast<const TimeSingleton *> (*fetchTime.Execute ());
+        // Intentionally lift write access to time singleton, because we are expecting changes from pipelines.
+        auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
         application->pollEvents ();
 
-        while (time->fixedTimeS < time->normalTimeS)
+        const uint64_t timeDifference = time->normalTimeUs > time->fixedTimeUs ?
+                                            time->normalTimeUs - time->fixedTimeUs :
+                                            time->fixedTimeUs - time->normalTimeUs;
+
+        if (timeDifference < 1000000u)
         {
-            fixedUpdate->Execute ();
+            while (time->fixedTimeUs < time->normalTimeUs)
+            {
+                fixedUpdate->Execute ();
+            }
+        }
+        else
+        {
+            // Looks like we were sitting on breakpoint. In this case we will just assume that no time elapsed.
+            time->fixedTimeUs = time->normalTimeUs;
         }
 
         normalUpdate->Execute ();
@@ -90,7 +105,7 @@ public:
 
 private:
     OgreBites::ApplicationContext *application;
-    Emergence::Warehouse::FetchSingletonQuery fetchTime;
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
     Emergence::Celerity::Pipeline *fixedUpdate = nullptr;
     Emergence::Celerity::Pipeline *normalUpdate = nullptr;
 };
@@ -143,22 +158,24 @@ int main (int /*unused*/, char ** /*unused*/)
 
     application.getRenderWindow ()->addViewport (camera);
 
-    Emergence::Celerity::World world {"World"};
-    WorldUpdater worldUpdater {&application, &world};
-
-    while (!application.getRoot ()->endRenderingQueued ())
     {
-        worldUpdater.Execute ();
+        Emergence::Celerity::World world {"World"};
+        WorldUpdater worldUpdater {&application, &world};
 
-        constexpr const uint64_t MS_PERIOD = 3000u;
-        const uint64_t msGlobal = application.getRoot ()->getTimer ()->getMilliseconds ();
-        const uint64_t msLocal = msGlobal % MS_PERIOD;
-        const float angle = Ogre::Math::PI * 2.0f * (static_cast<float> (msLocal) / static_cast<float> (MS_PERIOD));
+        while (!application.getRoot ()->endRenderingQueued ())
+        {
+            worldUpdater.Execute ();
 
-        Ogre::Vector3 lookTarget {cos (angle), -1.0f, sin (angle)};
-        lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
-        playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
-        application.getRoot ()->renderOneFrame ();
+            constexpr const uint64_t MS_PERIOD = 3000u;
+            const uint64_t msGlobal = application.getRoot ()->getTimer ()->getMilliseconds ();
+            const uint64_t msLocal = msGlobal % MS_PERIOD;
+            const float angle = Ogre::Math::PI * 2.0f * (static_cast<float> (msLocal) / static_cast<float> (MS_PERIOD));
+
+            Ogre::Vector3 lookTarget {cos (angle), -1.0f, sin (angle)};
+            lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
+            playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
+            application.getRoot ()->renderOneFrame ();
+        }
     }
 
     application.closeApp ();

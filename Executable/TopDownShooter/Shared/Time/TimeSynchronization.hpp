@@ -6,9 +6,7 @@
 
 namespace TimeSynchronization
 {
-void AddFixedUpdateTask (Ogre::Timer *_timer,
-                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                         float _fixedFrameDurationS) noexcept;
+void AddFixedUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 
-void AddNormalUpdateTask (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
+void AddNormalUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace TimeSynchronization

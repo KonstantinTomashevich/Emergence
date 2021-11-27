@@ -7,6 +7,11 @@ World::World (std::string _name) noexcept : registry (std::move (_name))
 {
 }
 
+std::uintptr_t World::GetNextObjectId () noexcept
+{
+    return objectIdCounter++;
+}
+
 Warehouse::FetchSingletonQuery World::FetchSingletonExternally (const StandardLayout::Mapping &_mapping) noexcept
 {
     return registry.FetchSingleton (_mapping);

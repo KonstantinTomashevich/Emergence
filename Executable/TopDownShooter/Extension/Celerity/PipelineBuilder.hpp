@@ -16,7 +16,7 @@ class TaskConstructor final
 public:
     TaskConstructor (const TaskConstructor &_other) = delete;
 
-    TaskConstructor (TaskConstructor &&_other) = delete;
+    TaskConstructor (TaskConstructor &&_other) noexcept;
 
     ~TaskConstructor () noexcept;
 
@@ -68,7 +68,12 @@ public:
 
     void SetExecutor (std::function<void ()> _executor) noexcept;
 
-    EMERGENCE_DELETE_ASSIGNMENT (TaskConstructor);
+    World *GetWorld () const noexcept;
+
+    TaskConstructor &operator= (const TaskConstructor &_other) = delete;
+
+    /// Move-assignment is allowed, because it makes construction of several tasks from one function easier.
+    TaskConstructor &operator= (TaskConstructor &&_other) noexcept;
 
 private:
     friend class PipelineBuilder;

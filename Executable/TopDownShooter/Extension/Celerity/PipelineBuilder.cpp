@@ -4,10 +4,19 @@
 
 namespace Emergence::Celerity
 {
+TaskConstructor::TaskConstructor (TaskConstructor &&_other) noexcept
+    : parent (_other.parent),
+      task (std::move (_other.task))
+{
+    _other.parent = nullptr;
+}
+
 TaskConstructor::~TaskConstructor () noexcept
 {
-    assert (parent);
-    parent->FinishTaskRegistration (std::move (task));
+    if (parent)
+    {
+        parent->FinishTaskRegistration (std::move (task));
+    }
 }
 
 void TaskConstructor::DependOn (const char *_taskOrCheckpoint) noexcept
@@ -129,6 +138,22 @@ Warehouse::ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
 void TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
 {
     task.executor = std::move (_executor);
+}
+
+World *TaskConstructor::GetWorld () const noexcept
+{
+    return parent->world;
+}
+
+TaskConstructor &TaskConstructor::operator= (TaskConstructor &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~TaskConstructor ();
+        new (this) TaskConstructor (std::move (_other));
+    }
+
+    return *this;
 }
 
 TaskConstructor::TaskConstructor (PipelineBuilder *_parent, const char *_name) noexcept : parent (_parent)
