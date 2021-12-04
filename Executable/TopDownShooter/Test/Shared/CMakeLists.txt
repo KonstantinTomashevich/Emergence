@@ -1,0 +1,34 @@
+sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
+    file (GLOB_RECURSE HEADERS *.hpp)
+    file (GLOB_RECURSE SOURCES *.cpp)
+    list (APPEND SOURCES ${HEADERS})
+
+    sober_library_set_sources ("${SOURCES}")
+    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    sober_naming_variant_target ("${GAME_NAME}Shared" Original SHARED_TARGET)
+    sober_library_link_library (PUBLIC ${SHARED_TARGET})
+
+    sober_library_use_service (PER_VARIANT PRIVATE Log)
+    sober_library_use_service (PER_VARIANT PRIVATE StandardLayoutMapping)
+    sober_library_use_service (SHARED PRIVATE Testing)
+
+    # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
+    if (MSVC)
+        sober_library_private_compile_options (/EHs)
+    endif ()
+
+    sober_variant_begin (Original)
+    sober_variant_end ()
+sober_library_end ()
+
+add_executable ("${GAME_NAME}SharedTestLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+sober_naming_variant_target ("${GAME_NAME}SharedTest" Original GAME_TARGET)
+target_link_libraries ("${GAME_NAME}SharedTestLauncher" PUBLIC "${GAME_TARGET}")
+
+set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
+
+copy_shared_libraries ("${GAME_NAME}SharedTestLauncher")
+use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Test/Shared" RenderSystem_Direct3D11)
+link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Test/Shared")

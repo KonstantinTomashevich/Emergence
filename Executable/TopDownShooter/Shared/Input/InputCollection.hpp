@@ -6,9 +6,9 @@
 
 namespace InputCollection
 {
-void AddFixedUpdateTask (OgreBites::ApplicationContext *_application,
+void AddFixedUpdateTask (OgreBites::ApplicationContextBase *_application,
                          Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 
-void AddNormalUpdateTask (OgreBites::ApplicationContext *_application,
+void AddNormalUpdateTask (OgreBites::ApplicationContextBase *_application,
                           Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace InputCollection

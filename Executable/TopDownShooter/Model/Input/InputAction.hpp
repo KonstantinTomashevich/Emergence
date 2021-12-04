@@ -31,6 +31,10 @@ struct InputAction final
         std::array<float, MAX_REAL_PARAMETERS> real;
     };
 
+    bool operator== (const InputAction &_other) const;
+
+    bool operator!= (const InputAction &_other) const;
+
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId id;

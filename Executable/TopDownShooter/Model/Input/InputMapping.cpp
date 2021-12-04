@@ -42,6 +42,38 @@ const InputSubscription::Reflection &InputSubscription::Reflect () noexcept
     return reflection;
 }
 
+void InputMapping::UnsubscribeListener (std::uintptr_t _listenerId)
+{
+    auto iterator = subscriptions.Begin ();
+    while (iterator != subscriptions.End ())
+    {
+        if (iterator->listenerId == _listenerId)
+        {
+            iterator = subscriptions.EraseExchangingWithLast (iterator);
+        }
+        else
+        {
+            ++iterator;
+        }
+    }
+}
+
+void InputMapping::UnsubscribeGroup (Emergence::String::ConstReference _group)
+{
+    auto iterator = subscriptions.Begin ();
+    while (iterator != subscriptions.End ())
+    {
+        if (iterator->group == _group)
+        {
+            iterator = subscriptions.EraseExchangingWithLast (iterator);
+        }
+        else
+        {
+            ++iterator;
+        }
+    }
+}
+
 const InputMapping::Reflection &InputMapping::Reflect () noexcept
 {
     static Reflection reflection = [] ()
@@ -49,7 +81,6 @@ const InputMapping::Reflection &InputMapping::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputMapping)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyboardTriggers)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (subscriptions)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (currentFrameActions)
         EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 

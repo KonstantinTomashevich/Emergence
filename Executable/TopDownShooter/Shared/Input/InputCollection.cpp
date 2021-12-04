@@ -14,7 +14,7 @@ namespace InputCollection
 class InputCollector final : public OgreBites::InputListener
 {
 public:
-    InputCollector (OgreBites::ApplicationContext *_application,
+    InputCollector (OgreBites::ApplicationContextBase *_application,
                     const Emergence::StandardLayout::Mapping &_singleton,
                     Emergence::StandardLayout::FieldId _mappingField,
                     Emergence::Celerity::TaskConstructor &_constructor) noexcept;
@@ -36,19 +36,23 @@ public:
 private:
     Emergence::Warehouse::ModifySingletonQuery modifySingleton;
     Emergence::Warehouse::ModifyValueQuery modifyListenersById;
+    Emergence::Warehouse::ModifyAscendingRangeQuery modifyListeners;
 
-    OgreBites::ApplicationContext *application;
+    OgreBites::ApplicationContextBase *application;
     Emergence::StandardLayout::Mapping singleton;
     Emergence::StandardLayout::Field mappingField;
+    std::vector<InputAction> frameActionsBuffer;
 };
 
-InputCollector::InputCollector (OgreBites::ApplicationContext *_application,
+InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
                                 const Emergence::StandardLayout::Mapping &_singleton,
                                 Emergence::StandardLayout::FieldId _mappingField,
                                 Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : modifySingleton (_constructor.ModifySingleton (_singleton)),
       modifyListenersById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
                                                      {InputListenerObject::Reflect ().objectId})),
+      modifyListeners (_constructor.ModifyAscendingRange (InputListenerObject::Reflect ().mapping,
+                                                          InputListenerObject::Reflect ().objectId)),
       application (_application),
       singleton (_singleton),
       mappingField (_singleton.GetField (_mappingField))
@@ -70,42 +74,63 @@ void InputCollector::Execute () noexcept
     auto singletonCursor = modifySingleton.Execute ();
     auto *mapping = static_cast<InputMapping *> (mappingField.GetValue (*singletonCursor));
 
+    // We need to clean actions in all listeners, otherwise old data might be left in unsubscribed listeners.
+    {
+        auto cursor = modifyListeners.Execute (nullptr, nullptr);
+        while (*cursor)
+        {
+            auto *listener = static_cast<InputListenerObject *> (*cursor);
+            listener->actions.Clear ();
+            ++cursor;
+        }
+    }
+
+    for (KeyboardActionTrigger &trigger : mapping->keyboardTriggers)
+    {
+        bool satisfied = true;
+        for (KeyRequirement &requirement : trigger.requirements)
+        {
+            if (requirement.justPressed)
+            {
+                satisfied &= requirement.currentKeyState == KeyState::JUST_PRESSED;
+            }
+            else
+            {
+                satisfied &= requirement.currentKeyState == KeyState::JUST_PRESSED ||
+                             requirement.currentKeyState == KeyState::PRESSED;
+            }
+        }
+
+        if (satisfied)
+        {
+            frameActionsBuffer.emplace_back (trigger.action);
+        }
+    }
+
     for (const InputSubscription &subscription : mapping->subscriptions)
     {
         auto listenerCursor = modifyListenersById.Execute (&subscription.listenerId);
         auto *listener = static_cast<InputListenerObject *> (*listenerCursor);
-        listener->actions.Clear ();
-    }
 
-    for (const InputAction &action : mapping->currentFrameActions)
-    {
-        for (const InputSubscription &subscription : mapping->subscriptions)
+        for (const InputAction &action : frameActionsBuffer)
         {
-            if (subscription.group == action.group)
+            if (subscription.group == action.group && listener->actions.GetCount () < listener->actions.GetCapacity ())
             {
-                auto listenerCursor = modifyListenersById.Execute (&subscription.listenerId);
-                auto *listener = static_cast<InputListenerObject *> (*listenerCursor);
-
-                if (listener->actions.GetCount () < listener->actions.GetCapacity ())
-                {
-                    listener->actions.EmplaceBack (action);
-                }
+                listener->actions.EmplaceBack (action);
             }
         }
     }
 
-    mapping->currentFrameActions.Clear ();
+    frameActionsBuffer.clear ();
 }
 
 bool InputCollector::keyPressed (const OgreBites::KeyboardEvent &_event)
 {
     auto singletonCursor = modifySingleton.Execute ();
     auto *mapping = static_cast<InputMapping *> (mappingField.GetValue (*singletonCursor));
-    bool anySatisfied = false;
 
     for (KeyboardActionTrigger &trigger : mapping->keyboardTriggers)
     {
-        bool satisfied = true;
         for (KeyRequirement &requirement : trigger.requirements)
         {
             if (requirement.key == _event.keysym.sym)
@@ -122,29 +147,10 @@ bool InputCollector::keyPressed (const OgreBites::KeyboardEvent &_event)
                     break;
                 }
             }
-
-            if (requirement.justPressed)
-            {
-                satisfied &= requirement.currentKeyState == KeyState::JUST_PRESSED;
-            }
-            else
-            {
-                satisfied &= requirement.currentKeyState == KeyState::JUST_PRESSED ||
-                             requirement.currentKeyState == KeyState::PRESSED;
-            }
-        }
-
-        if (satisfied)
-        {
-            anySatisfied = true;
-            if (mapping->currentFrameActions.GetCount () < mapping->currentFrameActions.GetCapacity ())
-            {
-                mapping->currentFrameActions.EmplaceBack (trigger.action);
-            }
         }
     }
 
-    return anySatisfied;
+    return OgreBites::InputListener::keyPressed (_event);
 }
 bool InputCollector::keyReleased (const OgreBites::KeyboardEvent &_event)
 {
@@ -165,7 +171,7 @@ bool InputCollector::keyReleased (const OgreBites::KeyboardEvent &_event)
     return false;
 }
 
-void AddFixedUpdateTask (OgreBites::ApplicationContext *_application,
+void AddFixedUpdateTask (OgreBites::ApplicationContextBase *_application,
                          Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector");
@@ -177,7 +183,7 @@ void AddFixedUpdateTask (OgreBites::ApplicationContext *_application,
         });
 }
 
-void AddNormalUpdateTask (OgreBites::ApplicationContext *_application,
+void AddNormalUpdateTask (OgreBites::ApplicationContextBase *_application,
                           Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector");

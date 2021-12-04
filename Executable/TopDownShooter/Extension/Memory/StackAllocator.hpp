@@ -28,6 +28,7 @@ public:
 
     void Rollback (const RollbackMarker &_marker) noexcept;
 
+    // TODO: Alignment.
     void *Acquire (size_t _bytes) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (StackAllocator);

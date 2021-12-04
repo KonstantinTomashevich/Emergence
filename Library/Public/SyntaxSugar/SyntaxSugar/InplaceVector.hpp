@@ -196,7 +196,7 @@ typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::
     }
 
     --count;
-    return last;
+    return _iterator;
 }
 
 template <typename Item, std::size_t Capacity>

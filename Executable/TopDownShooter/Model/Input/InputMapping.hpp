@@ -50,7 +50,7 @@ struct KeyboardActionTrigger final
 struct InputSubscription final
 {
     Emergence::String::ConstReference group;
-    std::uint64_t listenerId = INVALID_OBJECT_ID;
+    std::uintptr_t listenerId = INVALID_OBJECT_ID;
 
     struct Reflection final
     {
@@ -64,19 +64,20 @@ struct InputSubscription final
 
 struct InputMapping final
 {
-    constexpr static const std::size_t MAX_KEYBOARD_TRIGGERS = 16u;
+    constexpr static const std::size_t MAX_KEYBOARD_TRIGGERS = 32u;
     constexpr static const std::size_t MAX_SUBSCRIPTIONS = 16u;
-    constexpr static const std::size_t ACTION_BUFFER_SIZE = 64u;
 
     Emergence::InplaceVector<KeyboardActionTrigger, MAX_KEYBOARD_TRIGGERS> keyboardTriggers;
     Emergence::InplaceVector<InputSubscription, MAX_SUBSCRIPTIONS> subscriptions;
-    Emergence::InplaceVector<InputAction, ACTION_BUFFER_SIZE> currentFrameActions;
+
+    void UnsubscribeListener (std::uintptr_t _listenerId);
+
+    void UnsubscribeGroup (Emergence::String::ConstReference _group);
 
     struct Reflection final
     {
         std::array<Emergence::StandardLayout::FieldId, MAX_KEYBOARD_TRIGGERS> keyboardTriggers;
         std::array<Emergence::StandardLayout::FieldId, MAX_SUBSCRIPTIONS> subscriptions;
-        std::array<Emergence::StandardLayout::FieldId, ACTION_BUFFER_SIZE> currentFrameActions;
         Emergence::StandardLayout::Mapping mapping;
     };
 

@@ -27,6 +27,19 @@ InputAction::InputAction (const Emergence::String::ConstReference &_id,
     real = _real;
 }
 
+bool InputAction::operator== (const InputAction &_other) const
+{
+    return id == _other.id &&
+           group == _other.group &&
+           // We check byte-to-byte equality of action parameters by checking their discrete representation.
+           discrete == _other.discrete;
+}
+
+bool InputAction::operator!= (const InputAction &_other) const
+{
+    return !(_other == *this);
+}
+
 const InputAction::Reflection &InputAction::Reflect () noexcept
 {
     static Reflection reflection = [] ()
