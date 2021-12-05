@@ -32,3 +32,6 @@ set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
 copy_shared_libraries ("${GAME_NAME}SharedTestLauncher")
 use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Test/Shared" RenderSystem_Direct3D11)
 link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Test/Shared")
+
+add_test (NAME "Test${GAME_NAME}SharedRunner" COMMAND "${GAME_NAME}SharedTestLauncher")
+add_dependencies (EmergenceTests "${GAME_NAME}SharedTestLauncher")

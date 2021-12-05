@@ -20,5 +20,5 @@ private:
 
     ~SharedApplicationContext () noexcept;
 
-    OgreBites::ApplicationContextBase context;
+    OgreBites::ApplicationContextBase *context = nullptr;
 };
