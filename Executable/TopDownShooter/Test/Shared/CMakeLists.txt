@@ -26,12 +26,14 @@ add_executable ("${GAME_NAME}SharedTestLauncher" "${SOBER_TEST_RUNNER_STUB_SOURC
 sober_naming_variant_target ("${GAME_NAME}SharedTest" Original GAME_TARGET)
 target_link_libraries ("${GAME_NAME}SharedTestLauncher" PUBLIC "${GAME_TARGET}")
 
+set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
 set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
+        RUNTIME_OUTPUT_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
 
 copy_shared_libraries ("${GAME_NAME}SharedTestLauncher")
-use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Test/Shared" RenderSystem_Direct3D11)
-link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Test/Shared")
+use_ogre_plugins ("${RUNNER_OUTPUT_DIRECTORY}" RenderSystem_Direct3D11)
+link_resources_for_development ("${RUNNER_OUTPUT_DIRECTORY}")
 
-add_test (NAME "Test${GAME_NAME}SharedRunner" COMMAND "${GAME_NAME}SharedTestLauncher")
+add_test (NAME "Test${GAME_NAME}SharedRunner" COMMAND "${GAME_NAME}SharedTestLauncher"
+        WORKING_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
 add_dependencies (EmergenceTests "${GAME_NAME}SharedTestLauncher")
