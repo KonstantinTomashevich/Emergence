@@ -29,6 +29,12 @@ function (use_ogre_plugins OUTPUT_DIRECTORY)
     foreach (PLUGIN ${ARGN})
         set (LIBRARY_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}${PLUGIN}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
+        # Prefix might be omitted if we use with MSVC SDK with GCC compiler,
+        # which is not very good, but it's needed in some cases.
+        if (NOT EXISTS "${OGRE_PLUGIN_DIR}/${LIBRARY_NAME}")
+            set (LIBRARY_NAME "${PLUGIN}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        endif ()
+
         file (COPY_FILE
                 "${OGRE_PLUGIN_DIR}/${LIBRARY_NAME}" "${OUTPUT_DIRECTORY}/${LIBRARY_NAME}" ONLY_IF_DIFFERENT)
     endforeach ()
