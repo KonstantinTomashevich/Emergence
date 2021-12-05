@@ -18,7 +18,7 @@ $RootChildren = Get-ChildItem -Directory
 
 foreach ($RootChild in $RootChildren)
 {
-    if (($RootChild.Name -ne "ThirdParty") -and ($RootChild.Name -ne "Build"))
+    if (($RootChild.Name -ne "ThirdParty") -and ($RootChild.Name -ne "Build") -and ($RootChild.Name -ne "Dependency"))
     {
         $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp"
     }
