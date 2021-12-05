@@ -1,7 +1,9 @@
-#pragma warning(push, 0)
+#include <MuteWarnings.hpp>
+
+BEGIN_MUTING_WARNING
 #include <OgreApplicationContext.h>
 #include <OgreRoot.h>
-#pragma warning(pop)
+END_MUTING_WARNING
 
 int main (int /*unused*/, char ** /*unused*/)
 {

@@ -1,8 +1,10 @@
+#include <MuteWarnings.hpp>
+
 #include <cassert>
 
-#pragma warning(push, 0)
+BEGIN_MUTING_WARNING
 #include <OgreRoot.h>
-#pragma warning(pop)
+END_MUTING_WARNING
 
 #include <Test/SharedApplicationContext.hpp>
 

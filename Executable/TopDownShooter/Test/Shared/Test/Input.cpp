@@ -1,9 +1,11 @@
+#include <MuteWarnings.hpp>
+
 #include <unordered_map>
 #include <variant>
 
-#pragma warning(push, 0)
+BEGIN_MUTING_WARNING
 #include <OgreInput.h>
-#pragma warning(pop)
+END_MUTING_WARNING
 
 #include <Log/Log.hpp>
 

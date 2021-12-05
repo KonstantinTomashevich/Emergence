@@ -1,15 +1,17 @@
+#include <MuteWarnings.hpp>
+
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/World.hpp>
 
 #include <Log/Log.hpp>
 
-#pragma warning(push, 0)
+BEGIN_MUTING_WARNING
 #include <OgreApplicationContext.h>
 #include <OgreEntity.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
-#pragma warning(pop)
+END_MUTING_WARNING
 
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>

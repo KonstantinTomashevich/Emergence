@@ -1,8 +1,10 @@
+#include <MuteWarnings.hpp>
+
 #pragma once
 
-#pragma warning(push, 0)
+BEGIN_MUTING_WARNING
 #include <OgreApplicationContext.h>
-#pragma warning(pop)
+END_MUTING_WARNING
 
 class SharedApplicationContext final
 {
