@@ -29,8 +29,7 @@ InputAction::InputAction (const Emergence::String::ConstReference &_id,
 
 bool InputAction::operator== (const InputAction &_other) const
 {
-    return id == _other.id &&
-           group == _other.group &&
+    return id == _other.id && group == _other.group &&
            // We check byte-to-byte equality of action parameters by checking their discrete representation.
            discrete == _other.discrete;
 }

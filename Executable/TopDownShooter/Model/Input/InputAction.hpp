@@ -14,12 +14,15 @@ struct InputAction final
 
     InputAction () noexcept = default;
 
-    InputAction (const Emergence::String::ConstReference &_id, const Emergence::String::ConstReference &_group) noexcept;
+    InputAction (const Emergence::String::ConstReference &_id,
+                 const Emergence::String::ConstReference &_group) noexcept;
 
-    InputAction (const Emergence::String::ConstReference &_id, const Emergence::String::ConstReference &_group,
+    InputAction (const Emergence::String::ConstReference &_id,
+                 const Emergence::String::ConstReference &_group,
                  const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept;
 
-    InputAction (const Emergence::String::ConstReference &_id, const Emergence::String::ConstReference &_group,
+    InputAction (const Emergence::String::ConstReference &_id,
+                 const Emergence::String::ConstReference &_group,
                  const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept;
 
     Emergence::String::ConstReference id;

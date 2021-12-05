@@ -112,6 +112,6 @@ private:
 
     World *world;
     Flow::TaskRegister taskRegister;
-    std::unordered_set <std::string> registeredResources;
+    std::unordered_set<std::string> registeredResources;
 };
 } // namespace Emergence::Celerity
