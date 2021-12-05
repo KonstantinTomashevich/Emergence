@@ -1,6 +1,8 @@
 #include <cassert>
 
+#pragma warning(push, 0)
 #include <OgreRoot.h>
+#pragma warning(pop)
 
 #include <Test/SharedApplicationContext.hpp>
 

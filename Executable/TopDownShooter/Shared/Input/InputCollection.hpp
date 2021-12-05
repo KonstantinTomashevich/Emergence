@@ -2,7 +2,9 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
+#pragma warning(push, 0)
 #include <OgreApplicationContext.h>
+#pragma warning(pop)
 
 namespace InputCollection
 {

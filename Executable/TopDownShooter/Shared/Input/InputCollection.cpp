@@ -1,6 +1,8 @@
 #include <cassert>
 
+#pragma warning(push, 0)
 #include <OgreInput.h>
+#pragma warning(pop)
 
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>

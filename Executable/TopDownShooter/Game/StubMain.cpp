@@ -4,10 +4,12 @@
 
 #include <Log/Log.hpp>
 
+#pragma warning(push, 0)
 #include <OgreApplicationContext.h>
 #include <OgreEntity.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
+#pragma warning(pop)
 
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>

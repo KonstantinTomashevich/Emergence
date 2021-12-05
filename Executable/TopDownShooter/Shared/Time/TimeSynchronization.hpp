@@ -2,7 +2,9 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
+#pragma warning(push, 0)
 #include <OgreTimer.h>
+#pragma warning(pop)
 
 namespace TimeSynchronization
 {

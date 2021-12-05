@@ -1,7 +1,9 @@
 #include <unordered_map>
 #include <variant>
 
+#pragma warning(push, 0)
 #include <OgreInput.h>
+#pragma warning(pop)
 
 #include <Log/Log.hpp>
 

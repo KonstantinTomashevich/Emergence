@@ -1,5 +1,7 @@
+#pragma warning(push, 0)
 #include <OgreApplicationContext.h>
 #include <OgreRoot.h>
+#pragma warning(pop)
 
 int main (int /*unused*/, char ** /*unused*/)
 {
