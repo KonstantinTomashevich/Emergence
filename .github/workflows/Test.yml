@@ -39,7 +39,7 @@ jobs:
           key: ${{runner.os}}-dependencies
 
       - name: Setup dependencies
-        run: >
+        run: |
           .\Script\Dependency\OGRE.ps1 ${{runner.os}}
           echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV
 

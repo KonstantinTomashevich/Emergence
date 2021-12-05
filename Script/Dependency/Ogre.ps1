@@ -7,13 +7,13 @@ if ($args.Count -ne 1)
 }
 
 $Platform = $args[0]
-if ($Platform -eq "windows-latest")
+if ($Platform -eq "Windows")
 {
     $OgreSDK = "https://dl.cloudsmith.io/public/ogrecave/ogre/raw/files/ogre-sdk-v13.2.0-msvc141-x64.zip"
 }
 else
 {
-    echo "Only 'windows-latest' platform is supported right now."
+    echo "Only 'Windows' platform is supported right now."
     exit -2
 }
 
