@@ -24,12 +24,12 @@ public:
 
     ~StackAllocator ();
 
-    RollbackMarker CreateRollbackMarker () const noexcept;
+    [[nodiscard]] RollbackMarker CreateRollbackMarker () const noexcept;
 
     void Rollback (const RollbackMarker &_marker) noexcept;
 
     // TODO: Alignment.
-    void *Acquire (size_t _bytes) noexcept;
+    [[nodiscard]] void *Acquire (size_t _bytes) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (StackAllocator);
 

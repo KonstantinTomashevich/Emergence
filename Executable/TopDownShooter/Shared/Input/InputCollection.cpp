@@ -23,7 +23,7 @@ public:
 
     InputCollector (InputCollector &&_other) = delete;
 
-    ~InputCollector () noexcept;
+    ~InputCollector () noexcept final;
 
     void Execute () noexcept;
 

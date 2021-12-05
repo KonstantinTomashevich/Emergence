@@ -20,7 +20,7 @@ static const char *RegisterValue (const std::string_view &_value)
         return nullptr;
     }
 
-    constexpr const std::size_t STRING_BUFFER_MAX_SIZE = 5u * 1024u * 1024u;
+    constexpr const std::size_t STRING_BUFFER_MAX_SIZE = 5u << 20u; // 5 MB.
     static Memory::StackAllocator buffer {STRING_BUFFER_MAX_SIZE};
 
     // Right now we use std hash map for simplicity.

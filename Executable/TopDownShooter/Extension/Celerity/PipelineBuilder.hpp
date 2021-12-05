@@ -24,51 +24,53 @@ public:
 
     void MakeDependencyOf (const char *_taskOrCheckpoint) noexcept;
 
-    Warehouse::FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
+    [[nodiscard]] Warehouse::FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
 
-    Warehouse::ModifySingletonQuery ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] Warehouse::ModifySingletonQuery ModifySingleton (
+        const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    Warehouse::InsertShortTermQuery InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] Warehouse::InsertShortTermQuery InsertShortTerm (
+        const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    Warehouse::FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] Warehouse::FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    Warehouse::ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] Warehouse::ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    Warehouse::InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] Warehouse::InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    Warehouse::FetchValueQuery FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                           const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    [[nodiscard]] Warehouse::FetchValueQuery FetchValue (
+        const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
-    Warehouse::ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
-                                             const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    [[nodiscard]] Warehouse::ModifyValueQuery ModifyValue (
+        const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
-    Warehouse::FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                             StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] Warehouse::FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                           StandardLayout::FieldId _keyField) noexcept;
 
-    Warehouse::ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                               StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] Warehouse::ModifyAscendingRangeQuery ModifyAscendingRange (
+        const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
 
-    Warehouse::FetchDescendingRangeQuery FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                               StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] Warehouse::FetchDescendingRangeQuery FetchDescendingRange (
+        const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
 
-    Warehouse::ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                                 StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] Warehouse::ModifyDescendingRangeQuery ModifyDescendingRange (
+        const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
 
-    Warehouse::FetchShapeIntersectionQuery FetchShapeIntersection (
+    [[nodiscard]] Warehouse::FetchShapeIntersectionQuery FetchShapeIntersection (
         const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    Warehouse::ModifyShapeIntersectionQuery ModifyShapeIntersection (
+    [[nodiscard]] Warehouse::ModifyShapeIntersectionQuery ModifyShapeIntersection (
         const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    Warehouse::FetchRayIntersectionQuery FetchRayIntersection (
+    [[nodiscard]] Warehouse::FetchRayIntersectionQuery FetchRayIntersection (
         const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
+    [[nodiscard]] Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
         const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     void SetExecutor (std::function<void ()> _executor) noexcept;
 
-    World *GetWorld () const noexcept;
+    [[nodiscard]] World *GetWorld () const noexcept;
 
     TaskConstructor &operator= (const TaskConstructor &_other) = delete;
 
@@ -97,18 +99,18 @@ public:
 
     void Begin () noexcept;
 
-    TaskConstructor AddTask (const char *_name) noexcept;
+    [[nodiscard]] TaskConstructor AddTask (const char *_name) noexcept;
 
     void AddCheckpoint (const char *_name) noexcept;
 
-    Pipeline *End (std::size_t _maximumChildThreads) noexcept;
+    [[nodiscard]] Pipeline *End (std::size_t _maximumChildThreads) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PipelineBuilder);
 
 private:
     friend class TaskConstructor;
 
-    void FinishTaskRegistration (Flow::Task task) noexcept;
+    void FinishTaskRegistration (Flow::Task _task) noexcept;
 
     World *world;
     Flow::TaskRegister taskRegister;

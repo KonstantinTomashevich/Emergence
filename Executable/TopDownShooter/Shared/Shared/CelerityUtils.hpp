@@ -5,4 +5,4 @@
 namespace Emergence::Celerity
 {
 void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept;
-}
+} // namespace Emergence::Celerity
