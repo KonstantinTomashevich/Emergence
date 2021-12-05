@@ -32,6 +32,17 @@ jobs:
         with:
           submodules: true
 
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ./Dependency
+          key: ${{runner.os}}-dependencies
+
+      - name: Setup dependencies
+        run: >
+          .\Script\Dependency\OGRE.ps1 ${{runner.os}}
+          echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
