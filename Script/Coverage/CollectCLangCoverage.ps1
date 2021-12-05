@@ -121,12 +121,36 @@ foreach ($Executable in $ScanResult.Executables)
 
 echo "Exporting full source coverage."
 $FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName
-Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
+
+try
+{
+    Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
+}
+catch
+{
+    exit 7
+}
 
 echo "Exporting textual coverage report."
 $FullReport = Join-Path $OutputDirectory $Configuration.TextualReportFileName
-Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
+
+try
+{
+    Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
+}
+catch
+{
+    exit 8
+}
 
 echo "Exporting json coverage report."
 $FullReportJson = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"
+
+try
+{
+    Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"
+}
+catch
+{
+    exit 7
+}
