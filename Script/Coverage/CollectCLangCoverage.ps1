@@ -111,6 +111,12 @@ echo "Merging found profile data."
 $MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
 llvm-profdata merge $RawProfileData -o $MergedProfdata
 
+if (-Not(Test-Path $ConfigurationFile -PathType Leaf))
+{
+    echo "Unable to merge profdata!"
+    exit 8
+}
+
 $ExecutablesAsArguments = ""
 foreach ($Executable in $ScanResult.Executables)
 {
@@ -121,36 +127,12 @@ foreach ($Executable in $ScanResult.Executables)
 
 echo "Exporting full source coverage."
 $FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName
-
-try
-{
-    Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
-}
-catch
-{
-    exit 7
-}
+Invoke-Expression "llvm-cov show -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullSourceCoverage"
 
 echo "Exporting textual coverage report."
 $FullReport = Join-Path $OutputDirectory $Configuration.TextualReportFileName
-
-try
-{
-    Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
-}
-catch
-{
-    exit 8
-}
+Invoke-Expression "llvm-cov report -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReport"
 
 echo "Exporting json coverage report."
 $FullReportJson = Join-Path $OutputDirectory $Configuration.JsonReportFileName
-
-try
-{
-    Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"
-}
-catch
-{
-    exit 7
-}
+Invoke-Expression "llvm-cov export -format=text -summary-only -instr-profile=`"$MergedProfdata`" $ExecutablesAsArguments > $FullReportJson"
