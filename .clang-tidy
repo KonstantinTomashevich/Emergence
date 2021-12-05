@@ -6,6 +6,9 @@
 # Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
 # bugprone-unhandled-exception-at-new is disabled for the same reason.
 #
+# Some third party libraries like OGRE prefer to forward declare most of their classes and therefore trigger
+# bugprone-forward-declaration-namespace warning. It's better to ignore this warning than to add unnecessary includes.
+#
 # We disable -readability-function-cognitive-complexity and -readability-magic-numbers,
 # because they trigger shitstorm in tests. Might be reconsidered later.
 #
@@ -16,6 +19,7 @@ Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
+  -bugprone-forward-declaration-namespace,
   -bugprone-unhandled-exception-at-new,
   cppcoreguidelines-avoid-goto,
   cppcoreguidelines-interfaces-global-init,
