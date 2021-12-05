@@ -111,7 +111,7 @@ echo "Merging found profile data."
 $MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
 llvm-profdata merge $RawProfileData -o $MergedProfdata
 
-if (-Not(Test-Path $ConfigurationFile -PathType Leaf))
+if (-Not(Test-Path $MergedProfdata -PathType Leaf))
 {
     echo "Unable to merge profdata!"
     exit 8
