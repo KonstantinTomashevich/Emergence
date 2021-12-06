@@ -16,7 +16,7 @@ jobs:
         # Only Windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-latest ]
-        toolchain: [ Clang, MSVC ]
+        toolchain: [ CLangCL, CLang, MSVC ]
 
     defaults:
       run:
@@ -43,22 +43,33 @@ jobs:
           .\Script\Dependency\OGRE.ps1 ${{runner.os}}
           echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV
 
+      - name: Install Ninja
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        run: choco install ninja
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Enable coverage check
-        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang' && matrix.build_type == 'Debug'
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLangCL' && matrix.build_type == 'Debug'
         run: |
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
           echo "LLVM_PROFILE_FILE=%m.profraw" >> $Env:GITHUB_ENV
 
       - name: Select CLangCL toolset
-        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLangCL'
         run: |
           echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
+
+      - name: Select CLang toolset
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        run: |
+          echo "CMAKE_GENERATOR=-G `"Ninja Multi-Config`"" >> $Env:GITHUB_ENV
+          echo "CC=clang" >> $Env:GITHUB_ENV
+          echo "CC=clang++" >> $Env:GITHUB_ENV
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
