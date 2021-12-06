@@ -74,7 +74,7 @@ jobs:
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          cmake -G "Ninja Multi-Config" $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE
+          cmake -G "Ninja Multi-Config" ${{github.workspace}} ${{env.CMAKE_ENABLE_COVERAGE}}
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
@@ -86,7 +86,6 @@ jobs:
 
       - name: Collect and check coverage data
         if: env.ENABLE_COVERAGE == 'yes'
-        working-directory: ${{github.workspace}}
         # We need to import Visual Studio environment to find compilers, which is not possible through powershell.
         shell: cmd
         run: >
