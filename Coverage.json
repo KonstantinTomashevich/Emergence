@@ -13,6 +13,16 @@
       "Reason": "There is no sense to scan third party libraries coverage."
     },
     {
+      "Prefix": "./Dependency/",
+      "Action": "Exclude",
+      "Reason": "There is no sense to scan dependency coverage."
+    },
+    {
+      "Prefix": "./Executable/TopDownShooter",
+      "Action": "Exclude",
+      "Reason": "Still in early experimental stages of development."
+    },
+    {
       "Prefix": "./Library/Private/Pegasus/Private/Pegasus/RecordUtility.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
@@ -29,11 +39,6 @@
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Error-checking code can not be covered if tests are not failing."
-    },
-    {
-      "Prefix": "./Executable/TopDownShooter",
-      "Action": "Exclude",
-      "Reason": "Still in early experimental stages of development."
     }
   ]
 }
