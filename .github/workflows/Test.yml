@@ -51,7 +51,7 @@ jobs:
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Enable coverage check
-        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLangCL' && matrix.build_type == 'Debug'
+        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang' && matrix.build_type == 'Debug'
         run: |
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
@@ -59,10 +59,7 @@ jobs:
 
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLangCL'
-        run: |
-          echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
-          $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
-          echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
+        run: echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
 
       - name: Select CLang toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
@@ -89,12 +86,9 @@ jobs:
 
       - name: Collect and check coverage data
         if: env.ENABLE_COVERAGE == 'yes'
-        # We need to import Visual Studio environment to find llvm tools, which is not possible through powershell.
+        # We use CMD instead of PowerShell because of convenient && operator.
         shell: cmd
         run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
-          llvm-cov --version &&
-          where llvm-cov &&
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}} ${{matrix.build_type}} &&
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
