@@ -17,7 +17,6 @@ jobs:
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-latest ]
         toolchain: [ Clang, MSVC ]
-      fail-fast: false # TODO: Temporary
 
     defaults:
       run:
@@ -43,9 +42,6 @@ jobs:
         run: |
           .\Script\Dependency\OGRE.ps1 ${{runner.os}}
           echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV
-
-      - name: Install Ninja
-        run: choco install ninja
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
@@ -79,11 +75,11 @@ jobs:
 
       - name: Collect and check coverage data
         if: env.ENABLE_COVERAGE == 'yes'
-        # TODO: Unneeded if we export path?
-        # We need to import Visual Studio environment to find compilers, which is not possible through powershell.
+        # We need to import Visual Studio environment to find llvm tools, which is not possible through powershell.
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          llvm-cov --version &&
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}} ${{matrix.build_type}} &&
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
