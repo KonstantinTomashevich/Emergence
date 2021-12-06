@@ -69,7 +69,7 @@ jobs:
         run: |
           echo "CMAKE_GENERATOR=-G `"Ninja Multi-Config`"" >> $Env:GITHUB_ENV
           echo "CC=clang" >> $Env:GITHUB_ENV
-          echo "CC=clang++" >> $Env:GITHUB_ENV
+          echo "CXX=clang++" >> $Env:GITHUB_ENV
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
