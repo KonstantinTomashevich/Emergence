@@ -83,7 +83,7 @@ $Errors = @()
 for ($Index = 0; $Index -lt $Files.Count; ++$Index)
 {
     $File = $Files[$Index]
-    $FileName = $File.filename
+    $FileName = $File.filename.Replace("/", "\")
     $Excluded = 0
     [Double]$MinimumCoverageForFile = $MinimumCoveragePercent
 

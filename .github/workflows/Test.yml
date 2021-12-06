@@ -89,6 +89,8 @@ jobs:
         # We use CMD instead of PowerShell because of convenient && operator.
         shell: cmd
         run: >
+          clang --version &&
+          clang++ --version &&
           llvm-cov --version &&
           where llvm-cov &&
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}} ${{matrix.build_type}} &&
