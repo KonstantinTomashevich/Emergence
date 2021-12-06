@@ -93,6 +93,5 @@ jobs:
         with:
           name: Test and coverage results (${{matrix.build_type}}, ${{matrix.os}}, ${{matrix.toolchain}})
           path: |
-            ${{env.BUILD_DIRECTORY}}/**/*.profraw
             ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
             ${{env.BUILD_DIRECTORY}}/Testing/Temporary
