@@ -17,6 +17,7 @@ jobs:
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-latest ]
         toolchain: [ Clang, MSVC ]
+      fail-fast: false # TODO: Temporary
 
     defaults:
       run:
