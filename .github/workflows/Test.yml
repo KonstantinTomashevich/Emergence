@@ -58,15 +58,19 @@ jobs:
 
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
-        run: echo "TOOLSET=clangcl" >> $Env:GITHUB_ENV
+        run: |
+          echo "CC=clangcl" >> $Env:GITHUB_ENV
+          echo "CXX=clangcl" >> $Env:GITHUB_ENV
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
-        run: echo "TOOLSET=v142" >> $Env:GITHUB_ENV
+        run: |
+          echo "CC=cl" >> $Env:GITHUB_ENV
+          echo "CXX=cl" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: cmake -G "Ninja Multi-Config" $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE -T $Env:TOOLSET
+        run: cmake -G "Ninja Multi-Config" $Env:GITHUB_WORKSPACE $Env:CMAKE_ENABLE_COVERAGE
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
