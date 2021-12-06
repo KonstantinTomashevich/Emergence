@@ -1,11 +1,11 @@
-#include <MuteWarnings.hpp>
+#include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <unordered_map>
 #include <variant>
 
-BEGIN_MUTING_WARNING
+BEGIN_MUTING_WARNINGS
 #include <OgreInput.h>
-END_MUTING_WARNING
+END_MUTING_WARNINGS
 
 #include <Log/Log.hpp>
 

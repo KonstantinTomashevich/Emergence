@@ -1,12 +1,12 @@
 #pragma once
 
-#include <MuteWarnings.hpp>
+#include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <Celerity/PipelineBuilder.hpp>
 
-BEGIN_MUTING_WARNING
+BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
-END_MUTING_WARNING
+END_MUTING_WARNINGS
 
 namespace InputCollection
 {

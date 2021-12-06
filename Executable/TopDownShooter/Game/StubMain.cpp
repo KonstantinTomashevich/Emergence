@@ -1,4 +1,4 @@
-#include <MuteWarnings.hpp>
+#include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
@@ -6,12 +6,12 @@
 
 #include <Log/Log.hpp>
 
-BEGIN_MUTING_WARNING
+BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
 #include <OgreEntity.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
-END_MUTING_WARNING
+END_MUTING_WARNINGS
 
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>

@@ -1,9 +1,9 @@
-#include <MuteWarnings.hpp>
+#include <SyntaxSugar/MuteWarnings.hpp>
 
-BEGIN_MUTING_WARNING
+BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
 #include <OgreRoot.h>
-END_MUTING_WARNING
+END_MUTING_WARNINGS
 
 int main (int /*unused*/, char ** /*unused*/)
 {

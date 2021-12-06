@@ -1,10 +1,10 @@
-#include <MuteWarnings.hpp>
+#include <SyntaxSugar/MuteWarnings.hpp>
 
 #pragma once
 
-BEGIN_MUTING_WARNING
+BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
-END_MUTING_WARNING
+END_MUTING_WARNINGS
 
 class SharedApplicationContext final
 {

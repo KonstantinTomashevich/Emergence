@@ -50,7 +50,9 @@ function (add_common_compile_options)
                         # Nested anonymous types are allowed, because they are useful with unions.
                         -Wno-nested-anon-types
                         # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
-                        -Wno-zero-length-array)
+                        -Wno-zero-length-array
+                        # In some cases zero-arguments variadics are intentional and allows better customizations.
+                        -Wno-gnu-zero-variadic-macro-arguments)
             else ()
                 # Exceptions in GCC format.
                 add_compile_options (
@@ -61,9 +63,13 @@ function (add_common_compile_options)
     endif ()
 endfunction ()
 
+# Debug iterators and containers are not only slow, but they also eat lots of memory and force
+# service APIs to request additional memory for service iterators. Therefore they are disabled.
+# We add this flag even to ThirdParty compilation to avoid link-time mismatches.
 if (MSVC)
-    # MSVC debug iterators are not only slow, but they also eat lots of memory and force service
-    # APIs to request additional memory for service iterators. Therefore they are disabled.
-    # We add this flag even to ThirdParty compilation to avoid link-time mismatches.
     add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
+else ()
+    add_compile_options (-D_ITERATOR_DEBUG_LEVEL=0)
+    # TODO: Currently we use only Microsoft STD library (even on LLVM on Windows).
+    #       Appropriate defines should be added when this approach changes.
 endif ()
