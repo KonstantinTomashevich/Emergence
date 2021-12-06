@@ -58,23 +58,25 @@ jobs:
 
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
+        # We need to import Visual Studio environment to find compilers, which is not possible through powershell.
+        shell: cmd
         run: |
-          echo "CC=clangcl" >> $Env:GITHUB_ENV
-          echo "CXX=clangcl" >> $Env:GITHUB_ENV
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          powershell "echo \"CC=$((Get-Command clang-cl).Source)\" >> $Env:GITHUB_ENV"
+          powershell "echo \"CXX=$((Get-Command clang-cl).Source)\" >> $Env:GITHUB_ENV"
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
+        # We need to import Visual Studio environment to find compilers, which is not possible through powershell.
+        shell: cmd
         run: |
-          echo "CC=cl" >> $Env:GITHUB_ENV
-          echo "CXX=cl" >> $Env:GITHUB_ENV
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          powershell "echo \"CC=$((Get-Command cl).Source)\" >> $Env:GITHUB_ENV"
+          powershell "echo \"CXX=$((Get-Command cl).Source)\" >> $Env:GITHUB_ENV"
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        # We need to import Visual Studio environment to find compilers, which is not possible through powershell.
-        shell: cmd
-        run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          cmake -G "Ninja Multi-Config" ${{github.workspace}} ${{env.CMAKE_ENABLE_COVERAGE}}
+        run: cmake -G "Ninja Multi-Config" ${{github.workspace}} ${{env.CMAKE_ENABLE_COVERAGE}}
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
