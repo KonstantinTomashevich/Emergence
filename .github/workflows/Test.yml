@@ -80,6 +80,7 @@ jobs:
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
           llvm-cov --version &&
+          where llvm-cov &&
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}} ${{matrix.build_type}} &&
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
