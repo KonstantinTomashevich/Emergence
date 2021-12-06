@@ -63,9 +63,9 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          echo CC=clang-cl >> ${{env.GITHUB_ENV}}
-          echo CXX=clang-cl >> ${{env.GITHUB_ENV}}
-          echo PATH=%PATH% >> ${{env.GITHUB_ENV}}
+          echo CC=clang-cl >> %GITHUB_ENV%
+          echo CXX=clang-cl >> %GITHUB_ENV%
+          echo PATH=%PATH% >> %GITHUB_ENV%
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
@@ -73,9 +73,9 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          echo CC=cl >> ${{env.GITHUB_ENV}}
-          echo CXX=cl >> ${{env.GITHUB_ENV}}
-          echo PATH=%PATH% >> ${{env.GITHUB_ENV}}
+          echo CC=cl >> %GITHUB_ENV%
+          echo CXX=cl >> %GITHUB_ENV%
+          echo PATH=%PATH% >> %GITHUB_ENV%
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
