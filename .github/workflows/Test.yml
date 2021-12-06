@@ -63,8 +63,9 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          powershell "echo \"CC=$((Get-Command clang-cl).Source)\" >> $Env:GITHUB_ENV"
-          powershell "echo \"CXX=$((Get-Command clang-cl).Source)\" >> $Env:GITHUB_ENV"
+          echo CC=clang-cl >> ${{env.GITHUB_ENV}}
+          echo CXX=clang-cl >> ${{env.GITHUB_ENV}}
+          echo PATH=%PATH% >> ${{env.GITHUB_ENV}}
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
@@ -72,8 +73,9 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          powershell "echo \"CC=$((Get-Command cl).Source)\" >> $Env:GITHUB_ENV"
-          powershell "echo \"CXX=$((Get-Command cl).Source)\" >> $Env:GITHUB_ENV"
+          echo CC=cl >> ${{env.GITHUB_ENV}}
+          echo CXX=cl >> ${{env.GITHUB_ENV}}
+          echo PATH=%PATH% >> ${{env.GITHUB_ENV}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
@@ -89,6 +91,7 @@ jobs:
 
       - name: Collect and check coverage data
         if: env.ENABLE_COVERAGE == 'yes'
+        # TODO: Unneeded if we export path?
         # We need to import Visual Studio environment to find compilers, which is not possible through powershell.
         shell: cmd
         run: >
