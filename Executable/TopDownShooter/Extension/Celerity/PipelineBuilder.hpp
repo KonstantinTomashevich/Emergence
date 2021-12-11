@@ -77,6 +77,8 @@ public:
     /// Move-assignment is allowed, because it makes construction of several tasks from one function easier.
     TaskConstructor &operator= (TaskConstructor &&_other) noexcept;
 
+    // TODO: Ability to create one showstarter and one finalizer task per pipeline.
+
 private:
     friend class PipelineBuilder;
 

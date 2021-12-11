@@ -43,7 +43,7 @@ jobs:
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       # It would be easier to check coverage using independent LLVM installation instead of CLangCL,
-      # but it somehow reports profile version mismatches that I can not repeat and resolve on my local installation.
+      # but it somehow reports profile version mismatches that I can not reproduce on my local installation.
       - name: Enable coverage check
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLangCL' && matrix.build_type == 'Debug'
         run: |

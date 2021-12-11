@@ -66,10 +66,4 @@ endfunction ()
 # Debug iterators and containers are not only slow, but they also eat lots of memory and force
 # service APIs to request additional memory for service iterators. Therefore they are disabled.
 # We add this flag even to ThirdParty compilation to avoid link-time mismatches.
-if (MSVC)
-    add_compile_options (/D_ITERATOR_DEBUG_LEVEL=0)
-else ()
-    add_compile_options (-D_ITERATOR_DEBUG_LEVEL=0)
-    # TODO: Currently we use only Microsoft STD library (even on LLVM on Windows).
-    #       Appropriate defines should be added when this approach changes.
-endif ()
+add_compile_definitions (_ITERATOR_DEBUG_LEVEL=0)
