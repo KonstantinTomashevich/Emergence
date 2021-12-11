@@ -1,6 +1,7 @@
 #include <vector>
 
-#include <Memory/Pool.hpp>
+// TODO: This is what remains of old testing stuff for old library. Rework to test both new pools.
+#include <Memory/OrderedPool.hpp>
 #include <Memory/Test/Pool.hpp>
 
 #include <Testing/Testing.hpp>
@@ -24,13 +25,13 @@ struct TestItem
 
 TEST_CASE (AcquireNotNull)
 {
-    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
     CHECK (pool.Acquire ());
 }
 
 TEST_CASE (MultipleAcquiresDoNotOverlap)
 {
-    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
     auto *first = static_cast<TestItem *> (pool.Acquire ());
     auto *second = static_cast<TestItem *> (pool.Acquire ());
 
@@ -51,7 +52,7 @@ TEST_CASE (MultipleAcquiresDoNotOverlap)
 
 TEST_CASE (MemoryReused)
 {
-    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
@@ -71,7 +72,7 @@ void CheckPoolItemVectorsEquality (const std::vector<void *> &_first, const std:
     }
 }
 
-void CheckPoolIteration (Emergence::Memory::Pool &_pool, const std::vector<void *> &_expectedItems)
+void CheckPoolIteration (Emergence::Memory::OrderedPool &_pool, const std::vector<void *> &_expectedItems)
 {
     std::vector<void *> itemsFromIteration;
     for (void *item : _pool)
@@ -82,7 +83,7 @@ void CheckPoolIteration (Emergence::Memory::Pool &_pool, const std::vector<void 
     CheckPoolItemVectorsEquality (_expectedItems, itemsFromIteration);
     itemsFromIteration.clear ();
 
-    for (const void *item : const_cast<const Emergence::Memory::Pool &> (_pool))
+    for (const void *item : const_cast<const Emergence::Memory::OrderedPool &> (_pool))
     {
         itemsFromIteration.emplace_back (const_cast<void *> (item));
     }
@@ -105,7 +106,7 @@ struct FullPoolContext
         CHECK_EQUAL (pool.GetAllocatedSpace (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
     }
 
-    Emergence::Memory::Pool pool {sizeof (TestItem), PAGE_CAPACITY};
+    Emergence::Memory::OrderedPool pool {sizeof (TestItem), PAGE_CAPACITY};
     std::vector<void *> items;
 };
 
@@ -157,7 +158,7 @@ TEST_CASE (Clear)
 TEST_CASE (Move)
 {
     FullPoolContext context;
-    Emergence::Memory::Pool newPool (std::move (context.pool));
+    Emergence::Memory::OrderedPool newPool (std::move (context.pool));
 
     CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
     CHECK_EQUAL (newPool.GetAllocatedSpace (),
@@ -170,13 +171,13 @@ TEST_CASE (Move)
 
 TEST_CASE (IterateEmpty)
 {
-    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
     CHECK (pool.BeginAcquired () == pool.EndAcquired ());
 }
 
 TEST_CASE (IterationFirstItem)
 {
-    Emergence::Memory::Pool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
     void *first = pool.Acquire ();
     void *second = pool.Acquire ();
 
@@ -219,44 +220,6 @@ TEST_CASE (IterateFullWithGaps)
     CheckPoolIteration (context.pool, context.items);
 }
 
-TEST_CASE (ReleaseDoesNotInvalidateIterator)
-{
-    Emergence::Memory::Pool pool {sizeof (TestItem)};
-    std::vector<void *> items;
-
-    // Must be greater than 1. If it's greater than 1, value should not matter.
-    constexpr std::size_t ITEMS_TO_ACQUIRE = 5u;
-    items.reserve (ITEMS_TO_ACQUIRE);
-
-    for (std::size_t index = 0u; index < ITEMS_TO_ACQUIRE; ++index)
-    {
-        items.emplace_back (pool.Acquire ());
-    }
-
-    std::vector<void *> itemsFromIteration;
-    auto iterator = pool.BeginAcquired ();
-    auto end = pool.EndAcquired ();
-
-    // Release first item, that is not pointed by iterator.
-    for (auto iteratorToDelete = items.begin (); iteratorToDelete != items.end (); ++iteratorToDelete)
-    {
-        if (*iteratorToDelete != *iterator)
-        {
-            pool.Release (*iteratorToDelete);
-            items.erase (iteratorToDelete);
-            break;
-        }
-    }
-
-    while (iterator != end)
-    {
-        itemsFromIteration.emplace_back (*iterator);
-        ++iterator;
-    }
-
-    CheckPoolItemVectorsEquality (items, itemsFromIteration);
-}
-
 TEST_CASE (CursorConstructionAndAssignment)
 {
     auto test = [] (const auto _begin)
@@ -281,7 +244,7 @@ TEST_CASE (CursorConstructionAndAssignment)
     FullPoolContext context;
     // Test both mutable and const iterators.
     test (context.pool.BeginAcquired ());
-    test (const_cast<const Emergence::Memory::Pool &> (context.pool).BeginAcquired ());
+    test (const_cast<const Emergence::Memory::OrderedPool &> (context.pool).BeginAcquired ());
 }
 
 END_SUITE

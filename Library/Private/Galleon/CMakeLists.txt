@@ -7,7 +7,7 @@ sober_library_begin (Galleon STATIC)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
     sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
-    sober_library_use_service (PER_VARIANT PUBLIC MemoryPool)
+    sober_library_use_service (PER_VARIANT PUBLIC Memory)
     sober_library_use_service (PER_VARIANT PUBLIC RecordCollection)
 
     sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)

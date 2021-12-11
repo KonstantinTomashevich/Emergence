@@ -8,7 +8,7 @@
 
 #include <Handling/Handle.hpp>
 
-#include <Memory/Pool.hpp>
+#include <Memory/OrderedPool.hpp>
 
 #include <Pegasus/Constants/Storage.hpp>
 #include <Pegasus/HashIndex.hpp>
@@ -207,7 +207,7 @@ private:
     void UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
     // TODO: Automatically shrink pool from time to time?
-    Memory::Pool records;
+    Memory::OrderedPool records;
 
     struct
     {

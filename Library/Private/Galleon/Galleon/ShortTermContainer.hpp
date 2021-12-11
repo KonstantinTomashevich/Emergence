@@ -8,7 +8,7 @@
 #include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
 
-#include <Memory/Pool.hpp>
+#include <Memory/OrderedPool.hpp>
 
 namespace Emergence::Galleon
 {
@@ -178,7 +178,7 @@ private:
     /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
     std::vector<void *> objects;
 
-    Memory::Pool pool;
+    Memory::OrderedPool pool;
 
     AccessCounter accessCounter;
 };

@@ -1,4 +1,4 @@
-sober_test_begin (MemoryPool)
+sober_test_begin (Memory)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
     list (APPEND SOURCES ${HEADERS})
@@ -12,9 +12,9 @@ sober_test_begin (MemoryPool)
         sober_library_private_compile_options (/EHs)
     endif ()
 
-    sober_test_variant_begin (Unordered)
+    sober_test_variant_begin (Original)
     sober_test_variant_end ()
 sober_test_end ()
 
-sober_naming_test_collection (MemoryPool COLLECTION_NAME)
+sober_naming_test_collection (Memory COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")

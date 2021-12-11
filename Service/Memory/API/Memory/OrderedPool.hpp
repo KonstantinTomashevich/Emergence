@@ -8,12 +8,16 @@
 
 namespace Emergence::Memory
 {
-/// \brief Allocator, that manages memory chunks with fixed size. Based on simple segregated storage idea.
-class Pool final
+/// \brief Allocator, that manages memory chunks with fixed size.
+/// \details Ensures that newly acquired chunk always has lowest possible address. This strategy allows to provide
+///          acquired chunk iteration and shrink operation with reasonable performance. Also it slightly increases
+///          cache coherence.
+/// \warning Allocation and deallocation operations are rather slow due to the need to maintain ordering.
+///          If you need to actively allocate and dealocate objects, use UnorderedPool.
+class OrderedPool final
 {
 public:
     /// \brief Allows const iteration over acquired chunks.
-    /// \warning Not all implementations are well-suited for iteration. In some cases iteration could be quite slow.
     class AcquiredChunkConstIterator final
     {
     public:
@@ -21,15 +25,14 @@ public:
 
     private:
         /// Pool constructs iterators.
-        friend class Pool;
+        friend class OrderedPool;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
 
         explicit AcquiredChunkConstIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \brief Allows iteration over acquired chunks.
-    /// \warning Not all implementations are well-suited for iteration. In some cases iteration could be quite slow.
     class AcquiredChunkIterator final
     {
     public:
@@ -37,40 +40,42 @@ public:
 
     private:
         /// Pool constructs iterators.
-        friend class Pool;
+        friend class OrderedPool;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
 
         explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
     /// \param _chunkSize fixed chunk size.
     /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
-    explicit Pool (std::size_t _chunkSize) noexcept;
+    explicit OrderedPool (std::size_t _chunkSize) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
     /// \see ::Pool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
-    Pool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+    OrderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
 
     /// \brief Copying memory pool contradicts with its usage practices.
-    Pool (const Pool &_other) = delete;
+    OrderedPool (const OrderedPool &_other) = delete;
 
     // \brief Captures pages of given pool and leaves that pool empty.
-    Pool (Pool &&_other) noexcept;
+    OrderedPool (OrderedPool &&_other) noexcept;
 
-    ~Pool () noexcept;
+    ~OrderedPool () noexcept;
 
     /// \brief Acquires memory chunk for new item.
     /// \return Memory chunk or nullptr on failure.
+    /// \warning Invalidates iterators.
     void *Acquire () noexcept;
 
     /// \brief Releases given memory chunk.
     /// \invariant Chunk belongs to this pool.
-    /// \warning Invalidates iterator, that points to this record.
+    /// \warning Invalidates iterators.
     void Release (void *_chunk) noexcept;
 
     /// \brief Releases all empty pages.
+    /// \warning Invalidates iterators.
     void Shrink () noexcept;
 
     /// \brief Releases all pages.
@@ -93,24 +98,24 @@ public:
     AcquiredChunkIterator EndAcquired () noexcept;
 
     /// \brief Copy assigning memory pool contradicts with its usage practices.
-    Pool &operator= (const Pool &_other) = delete;
+    OrderedPool &operator= (const OrderedPool &_other) = delete;
 
     /// \brief Drops all pages from this pool and captures all pages of given pool.
-    Pool &operator= (Pool &&_other) noexcept;
+    OrderedPool &operator= (OrderedPool &&_other) noexcept;
 
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
 };
 
 /// \brief Wraps Pool::BeginAcquired for foreach sentences.
-Pool::AcquiredChunkConstIterator begin (const Pool &_pool) noexcept;
+OrderedPool::AcquiredChunkConstIterator begin (const OrderedPool &_pool) noexcept;
 
 /// \brief Wraps Pool::EndAcquired for foreach sentences.
-Pool::AcquiredChunkConstIterator end (const Pool &_pool) noexcept;
+OrderedPool::AcquiredChunkConstIterator end (const OrderedPool &_pool) noexcept;
 
 /// \brief Wraps Pool::BeginAcquired for foreach sentences.
-Pool::AcquiredChunkIterator begin (Pool &_pool) noexcept;
+OrderedPool::AcquiredChunkIterator begin (OrderedPool &_pool) noexcept;
 
 /// \brief Wraps Pool::EndAcquired for foreach sentences.
-Pool::AcquiredChunkIterator end (Pool &_pool) noexcept;
+OrderedPool::AcquiredChunkIterator end (OrderedPool &_pool) noexcept;
 } // namespace Emergence::Memory
