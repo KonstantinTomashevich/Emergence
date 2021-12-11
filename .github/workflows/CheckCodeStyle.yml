@@ -19,7 +19,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/CheckoutWithDependencies
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/SetupDependencies
 
       - name: Install Ninja
         run: choco install ninja

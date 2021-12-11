@@ -28,7 +28,12 @@ jobs:
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout
-        uses: actions/CheckoutWithDependencies
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/SetupDependencies
 
       - name: Install Ninja
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
