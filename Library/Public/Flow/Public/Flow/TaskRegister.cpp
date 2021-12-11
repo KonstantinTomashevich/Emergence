@@ -471,6 +471,13 @@ Emergence::Task::Collection TaskRegister::ExportCollection () const noexcept
     return {};
 }
 
+void TaskRegister::Clear () noexcept
+{
+    tasks.clear ();
+    checkpoints.clear ();
+    resources.clear ();
+}
+
 // If asserts are not enabled, CLang Tidy advises to convert this function to static, which is not correct.
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] const char *_name) const noexcept

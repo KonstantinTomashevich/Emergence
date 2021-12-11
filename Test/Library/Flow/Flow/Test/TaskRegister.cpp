@@ -14,24 +14,28 @@ struct Seed
     std::vector<std::string> resources;
 };
 
-TaskRegister Grow (const Seed &_seed)
+void Grow (const Seed &_seed, TaskRegister &_reusableRegister)
 {
-    TaskRegister taskRegister;
     for (const Task &task : _seed.tasks)
     {
-        taskRegister.RegisterTask (task);
+        _reusableRegister.RegisterTask (task);
     }
 
     for (const std::string &checkpoint : _seed.checkpoints)
     {
-        taskRegister.RegisterCheckpoint (checkpoint.c_str ());
+        _reusableRegister.RegisterCheckpoint (checkpoint.c_str ());
     }
 
     for (const std::string &resource : _seed.resources)
     {
-        taskRegister.RegisterResource (resource.c_str ());
+        _reusableRegister.RegisterResource (resource.c_str ());
     }
+}
 
+TaskRegister Grow (const Seed &_seed)
+{
+    TaskRegister taskRegister;
+    Grow (_seed, taskRegister);
     return taskRegister;
 }
 
@@ -127,6 +131,34 @@ VisualGraph::Graph GetTrivialSafeResourceUsageGraph ()
          {TaskNodePath ("B2"), ResourceNodePath ("R3"), TaskRegister::VISUAL_WRITE_ACCESS_COLOR}},
     };
 }
+
+CollectionExpectation GetTrivialSafeResourceUsageExpectation ()
+{
+    return {{{"A1", {"B1", "B2"}}, {"A2", {"B1", "B2"}}, {"B1", {}}, {"B2", {}}}};
+}
+
+static const Seed COMPLEX_DEPENDENCIES_SEED {{
+                                                 {"A1", nullptr, {}, {}, {}, {"Join1"}},
+                                                 {"A2", nullptr, {}, {}, {}, {"Join1"}},
+                                                 {"A3", nullptr, {}, {}, {}, {"Join2"}},
+                                                 {"A4", nullptr, {}, {}, {}, {"Join2"}},
+                                                 {"A5", nullptr, {}, {}, {}, {}},
+                                                 {"B1", nullptr, {}, {}, {"Join1", "Join2"}, {}},
+                                                 {"B2", nullptr, {}, {}, {"Join1", "A5", "B1"}, {}},
+                                             },
+                                             {"Join1", "Join2"},
+                                             {}};
+
+CollectionExpectation GetComplexDependenciesExpectation ()
+{
+    return {{{"A1", {"B1", "B2"}},
+             {"A2", {"B1", "B2"}},
+             {"A3", {"B1"}},
+             {"A4", {"B1"}},
+             {"A5", {"B2"}},
+             {"B1", {"B2"}},
+             {"B2", {}}}};
+}
 } // namespace Emergence::Flow::Test
 
 BEGIN_SUITE (ExportCollection)
@@ -168,25 +200,7 @@ TEST_CASE (CheckpointAsBarrier)
 TEST_CASE (ComplexDependencies)
 {
     using namespace Emergence::Flow::Test;
-    Check (Grow ({{
-                      {"A1", nullptr, {}, {}, {}, {"Join1"}},
-                      {"A2", nullptr, {}, {}, {}, {"Join1"}},
-                      {"A3", nullptr, {}, {}, {}, {"Join2"}},
-                      {"A4", nullptr, {}, {}, {}, {"Join2"}},
-                      {"A5", nullptr, {}, {}, {}, {}},
-                      {"B1", nullptr, {}, {}, {"Join1", "Join2"}, {}},
-                      {"B2", nullptr, {}, {}, {"Join1", "A5", "B1"}, {}},
-                  },
-                  {"Join1", "Join2"},
-                  {}})
-               .ExportCollection (),
-           {{{"A1", {"B1", "B2"}},
-             {"A2", {"B1", "B2"}},
-             {"A3", {"B1"}},
-             {"A4", {"B1"}},
-             {"A5", {"B2"}},
-             {"B1", {"B2"}},
-             {"B2", {}}}});
+    Check (Grow (COMPLEX_DEPENDENCIES_SEED).ExportCollection (), GetComplexDependenciesExpectation ());
 }
 
 TEST_CASE (TrivialCircularDependency)
@@ -236,8 +250,7 @@ TEST_CASE (DuplicateResourceUsageInAccessMask)
 TEST_CASE (TrivialSafeResourceUsage)
 {
     using namespace Emergence::Flow::Test;
-    Check (Grow (TRIVIAL_SAFE_RESOURCE_USAGE_SEED).ExportCollection (),
-           {{{"A1", {"B1", "B2"}}, {"A2", {"B1", "B2"}}, {"B1", {}}, {"B2", {}}}});
+    Check (Grow (TRIVIAL_SAFE_RESOURCE_USAGE_SEED).ExportCollection (), GetTrivialSafeResourceUsageExpectation ());
 }
 
 TEST_CASE (ChainedSafeResourceUsage)
@@ -294,6 +307,18 @@ TEST_CASE (ResourceNotExists)
     Check (
         Grow ({{{"A", nullptr, {}, {"R1"}, {}, {}}, {"B", nullptr, {}, {"R2"}, {}, {}}}, {}, {}}).ExportCollection (),
         {});
+}
+
+TEST_CASE (ReuseTaskRegister)
+{
+    using namespace Emergence::Flow::Test;
+    Emergence::Flow::TaskRegister taskRegister;
+    Grow (TRIVIAL_SAFE_RESOURCE_USAGE_SEED, taskRegister);
+    Check (taskRegister.ExportCollection (), GetTrivialSafeResourceUsageExpectation ());
+
+    taskRegister.Clear ();
+    Grow (COMPLEX_DEPENDENCIES_SEED, taskRegister);
+    Check (taskRegister.ExportCollection (), GetComplexDependenciesExpectation ());
 }
 
 END_SUITE

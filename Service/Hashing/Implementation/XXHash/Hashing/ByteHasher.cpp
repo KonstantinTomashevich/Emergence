@@ -1,5 +1,10 @@
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <cassert>
+
+BEGIN_MUTING_WARNINGS
 #include <xxhash.hpp>
+END_MUTING_WARNINGS
 
 #include <Hashing/ByteHasher.hpp>
 

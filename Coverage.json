@@ -1,5 +1,5 @@
 {
-  "InputDirectory": "./Test/",
+  "Filter": "^*\\\\Test\\\\*",
   "OutputDirectory": "./Coverage/Temporary/",
   "MergedProfileDataFilename": "Emergence.profdata",
   "FullSourceCoverageFileName": "SourceCoverage.txt",
@@ -11,6 +11,16 @@
       "Prefix": "./ThirdParty/",
       "Action": "Exclude",
       "Reason": "There is no sense to scan third party libraries coverage."
+    },
+    {
+      "Prefix": "./Dependency/",
+      "Action": "Exclude",
+      "Reason": "There is no sense to scan dependency coverage."
+    },
+    {
+      "Prefix": "./Executable/TopDownShooter",
+      "Action": "Exclude",
+      "Reason": "Still in early experimental stages of development."
     },
     {
       "Prefix": "./Library/Private/Pegasus/Private/Pegasus/RecordUtility.hpp",

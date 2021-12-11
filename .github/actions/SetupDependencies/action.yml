@@ -1,0 +1,16 @@
+# Downloads binary dependencies either from cache or network.
+name: 'Setup dependencies'
+runs:
+  using: "composite"
+  steps:
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ./Dependency
+        key: ${{runner.os}}-dependencies
+
+    - name: Setup dependencies
+      shell: pwsh
+      run: |
+        .\Script\Dependency\OGRE.ps1 ${{runner.os}}
+        echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV

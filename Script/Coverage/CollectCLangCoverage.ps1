@@ -3,13 +3,18 @@
 # TODO: Currently works only on Windows, because only way in powershell
 #       to check that file is executable is to check its extension.
 
-if ($args.Count -ne 1)
+if (($args.Count -ne 1) -and ($args.Count -ne 2))
 {
-    echo "Usage: <script> <path to binary dir>"
+    echo "Usage: <script> <path to binary dir> [selected build config]"
     exit 1
 }
 
 $BinaryDirectory = $args[0]
+if ($args.Count -eq 2)
+{
+    $SelectedBuildConfig = $args[1]
+}
+
 if (-Not(Test-Path $BinaryDirectory -PathType Container))
 {
     echo "Unable to find given binary directory `"$BinaryDirectory`"!"
@@ -36,8 +41,22 @@ if (-Not(Get-Command llvm-cov))
 }
 
 $Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
-$InputDirectory = Join-Path $BinaryDirectory $Configuration.InputDirectory
-echo "Scanning `"$InputDirectory`" for CLang coverage information."
+$Filter = $Configuration.Filter
+echo "Scanning `"$BinaryDirectory`" for CLang coverage information that matches filter `"$Filter`"."
+
+function Belongs-To-Selected-Build-Config ([String]$DirectoryName)
+{
+    if ($SelectedBuildConfig -ne $null)
+    {
+        if (($DirectoryName -eq "Release") -or ($DirectoryName -eq "Debug") -or ($DirectoryName -eq "RelWithDebInfo"))
+        {
+            $DirectoryName -eq $SelectedBuildConfig
+            return
+        }
+    }
+
+    $True
+}
 
 function Find-Coverage-Data-Recursive([String]$Directory)
 {
@@ -54,24 +73,30 @@ function Find-Coverage-Data-Recursive([String]$Directory)
 
         if (Test-Path $Item -PathType Container)
         {
-            $ChildResult = Find-Coverage-Data-Recursive $Item
-            $ScanResult.RawProfileData += $ChildResult.RawProfileData
-            $ScanResult.Executables += $ChildResult.Executables
+            if (Belongs-To-Selected-Build-Config $Child)
+            {
+                $ChildResult = Find-Coverage-Data-Recursive $Item
+                $ScanResult.RawProfileData += $ChildResult.RawProfileData
+                $ScanResult.Executables += $ChildResult.Executables
+            }
         }
-        elseif ($Extension -eq ".profraw")
+        elseif ($Item -match $Filter)
         {
-            $ScanResult.RawProfileData += $Item
-        }
-        elseif ($Extension -eq ".exe")
-        {
-            $ScanResult.Executables += $Item
+            if ($Extension -eq ".profraw")
+            {
+                $ScanResult.RawProfileData += $Item
+            }
+            elseif ($Extension -eq ".exe")
+            {
+                $ScanResult.Executables += $Item
+            }
         }
     }
 
     $ScanResult
 }
 
-$ScanResult = Find-Coverage-Data-Recursive $InputDirectory
+$ScanResult = Find-Coverage-Data-Recursive $BinaryDirectory
 $RawProfileData = $ScanResult.RawProfileData
 $Executables = $ScanResult.Executables
 
@@ -110,6 +135,12 @@ if (-Not(Test-Path $OutputDirectory))
 echo "Merging found profile data."
 $MergedProfdata = Join-Path $OutputDirectory $Configuration.MergedProfileDataFilename
 llvm-profdata merge $RawProfileData -o $MergedProfdata
+
+if (-Not(Test-Path $MergedProfdata -PathType Leaf))
+{
+    echo "Unable to merge profdata!"
+    exit 8
+}
 
 $ExecutablesAsArguments = ""
 foreach ($Executable in $ScanResult.Executables)

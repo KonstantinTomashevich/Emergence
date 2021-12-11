@@ -365,7 +365,7 @@ private:
 };
 
 template <typename Representation>
-LongTermContainer::RepresentationQueryBase<Representation>::~RepresentationQueryBase () noexcept
+LongTermContainer::RepresentationQueryBase<Representation>::~RepresentationQueryBase<Representation> () noexcept
 {
     // If prepared query was moved out, representation call will result in undefined behaviour.
     // Therefore, we should check container reference first. It will be null of query was moved out.

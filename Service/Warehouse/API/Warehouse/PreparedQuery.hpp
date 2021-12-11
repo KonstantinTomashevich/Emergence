@@ -34,7 +34,7 @@
      * \details Thread safe.                                                                                           \
      * \invariant There is no modification or insertion cursors for ::GetTypeMapping type in registry.                 \
      */                                                                                                                \
-    [[nodiscard]] Cursor Execute (__VA_ARGS__) noexcept;
+    [[nodiscard]] Cursor Execute (__VA_ARGS__) noexcept
 
 /// \brief Adds common public methods for editable (insert and modify) prepared queries.
 #define EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS(Class, Cursor, ...)                                               \

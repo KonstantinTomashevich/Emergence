@@ -1,0 +1,30 @@
+
+material WallTileBorder
+{
+	technique
+	{
+		pass 
+		{
+			ambient 0.1 0.1 0.1 1
+			diffuse 0.233015 0.233015 0.233015 1
+			specular 0.4 0.4 0.4 1 10
+		}
+
+	}
+
+}
+
+material WallTileCenter
+{
+	technique
+	{
+		pass 
+		{
+			ambient 0.1 0.1 0.1 1
+			diffuse 0.496923 0.496923 0.496923 1
+			specular 0.4 0.4 0.4 1 10
+		}
+
+	}
+
+}
