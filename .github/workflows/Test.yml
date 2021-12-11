@@ -32,8 +32,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup Dependencies
-        uses: ./.github/actions/SetupDependencies
+      - name: Setup dependencies
+        uses: ./.github/actions/SetupDependencies.yml
 
       - name: Install Ninja
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
