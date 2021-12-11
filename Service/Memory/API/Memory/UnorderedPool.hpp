@@ -53,4 +53,4 @@ public:
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
 };
-}
+} // namespace Emergence::Memory
