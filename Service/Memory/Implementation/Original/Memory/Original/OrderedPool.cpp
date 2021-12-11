@@ -209,7 +209,7 @@ void *OrderedPool::Acquire () noexcept
         }
 
         currentChunk->nextFree = nullptr;
-        topFreeChunk = &newPage->chunks[0u];;
+        topFreeChunk = &newPage->chunks[0u];
         assert (pageCount + 1u > pageCount);
         ++pageCount;
     }
