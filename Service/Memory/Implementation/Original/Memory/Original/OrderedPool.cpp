@@ -316,6 +316,8 @@ OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noex
 {
     return AcquiredChunkConstIterator {this};
 }
+
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It's more readable to keep End* methods as members.
 OrderedPool::AcquiredChunkConstIterator OrderedPool::EndAcquired () const noexcept
 {
     return AcquiredChunkConstIterator {};
@@ -325,6 +327,7 @@ OrderedPool::AcquiredChunkIterator OrderedPool::BeginAcquired () noexcept
 {
     return AcquiredChunkIterator {const_cast<const OrderedPool *> (this)->BeginAcquired ()};
 }
+
 OrderedPool::AcquiredChunkIterator OrderedPool::EndAcquired () noexcept
 {
     return AcquiredChunkIterator {const_cast<const OrderedPool *> (this)->EndAcquired ()};
