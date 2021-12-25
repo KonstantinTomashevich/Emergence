@@ -96,6 +96,22 @@ void Move ()
     CHECK (context.pool.Acquire ());
     CHECK (newPool.Acquire ());
 }
+
+template <typename Pool>
+void MoveAssign ()
+{
+    FullPoolContext<Pool> firstContext;
+    FullPoolContext<Pool> secondContext;
+    secondContext.pool = std::move (firstContext.pool);
+
+    CHECK_EQUAL (firstContext.pool.GetAllocatedSpace (), 0u);
+    CHECK_EQUAL (secondContext.pool.GetAllocatedSpace (),
+                 FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
+
+    // Acquire one item from each pool to ensure that they are in working state.
+    CHECK (firstContext.pool.Acquire ());
+    CHECK (secondContext.pool.Acquire ());
+}
 } // namespace Emergence::Memory::Test::Pool
 
 #define SHARED_POOL_TEST(ImplementationClass, TestName)                                                                \
@@ -109,4 +125,5 @@ void Move ()
     SHARED_POOL_TEST (ImplementationClass, MultipleAcquiresDoNotOverlap)                                               \
     SHARED_POOL_TEST (ImplementationClass, MemoryReused)                                                               \
     SHARED_POOL_TEST (ImplementationClass, Clear)                                                                      \
-    SHARED_POOL_TEST (ImplementationClass, Move)
+    SHARED_POOL_TEST (ImplementationClass, Move)                                                                       \
+    SHARED_POOL_TEST (ImplementationClass, MoveAssign)
