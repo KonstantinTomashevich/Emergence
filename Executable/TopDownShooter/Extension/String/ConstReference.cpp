@@ -3,7 +3,7 @@
 #include <cassert>
 #include <unordered_set>
 
-#include <Memory/StackAllocator.hpp>
+#include <Memory/Stack.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 
@@ -21,7 +21,7 @@ static const char *RegisterValue (const std::string_view &_value)
     }
 
     constexpr const std::size_t STRING_BUFFER_MAX_SIZE = 5u << 20u; // 5 MB.
-    static Memory::StackAllocator buffer {STRING_BUFFER_MAX_SIZE};
+    static Memory::Stack buffer {STRING_BUFFER_MAX_SIZE};
 
     // Right now we use std hash map for simplicity.
     static std::unordered_set<std::string_view> stringRegister;
