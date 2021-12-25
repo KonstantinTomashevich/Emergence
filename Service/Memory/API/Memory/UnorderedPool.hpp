@@ -13,11 +13,11 @@ namespace Emergence::Memory
 class UnorderedPool final
 {
 public:
-    /// \param _chunkSize fixed chunk size.
+    /// \param _chunkSize Fixed chunk size.
     /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
     explicit UnorderedPool (std::size_t _chunkSize) noexcept;
 
-    /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
+    /// \param _preferredPageCapacity Allocator will create pages with given capacity, if possible.
     /// \see ::UnorderedPool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
     UnorderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
@@ -25,7 +25,7 @@ public:
     /// \brief Copying memory pool contradicts with its usage practices.
     UnorderedPool (const UnorderedPool &_other) = delete;
 
-    // \brief Captures pages of given pool and leaves that pool empty.
+    /// \brief Captures pages of given pool and leaves that pool empty.
     UnorderedPool (UnorderedPool &&_other) noexcept;
 
     ~UnorderedPool () noexcept;

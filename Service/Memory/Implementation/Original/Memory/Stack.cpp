@@ -15,24 +15,29 @@ Stack::Stack (Stack &&_other) noexcept
     new (&data) Original::Stack (std::move (block_cast<Original::Stack> (_other.data)));
 }
 
-Stack::~Stack ()
+Stack::~Stack () noexcept
 {
     block_cast<Original::Stack> (data).~Stack ();
 }
 
-void *Stack::Acquire (size_t _chunkSize) noexcept
+void *Stack::Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept
 {
-    return block_cast<Original::Stack> (data).Acquire (_chunkSize);
+    return block_cast<Original::Stack> (data).Acquire (_chunkSize, _alignAs);
 }
 
-const void *Stack::Top () const noexcept
+const void *Stack::Head () const noexcept
 {
-    return block_cast<Original::Stack> (data).Top ();
+    return block_cast<Original::Stack> (data).Head ();
 }
 
-void Stack::Release (const void *_newTop) noexcept
+void Stack::Release (const void *_newHead) noexcept
 {
-    block_cast<Original::Stack> (data).Release (_newTop);
+    block_cast<Original::Stack> (data).Release (_newHead);
+}
+
+void Stack::Clear () noexcept
+{
+    block_cast<Original::Stack> (data).Clear ();
 }
 
 size_t Stack::GetFreeSize () const noexcept

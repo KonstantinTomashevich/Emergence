@@ -15,13 +15,15 @@ public:
 
     Stack (Stack &&_other) noexcept;
 
-    ~Stack ();
+    ~Stack () noexcept;
 
-    [[nodiscard]] void *Acquire (size_t _chunkSize) noexcept;
+    [[nodiscard]] void *Acquire (size_t _chunkSize, uintptr_t _alignAs = sizeof (uintptr_t)) noexcept;
 
-    [[nodiscard]] const void *Top () const noexcept;
+    [[nodiscard]] const void *Head () const noexcept;
 
-    void Release (const void *_newTop) noexcept;
+    void Release (const void *_newHead) noexcept;
+
+    void Clear () noexcept;
 
     [[nodiscard]] size_t GetFreeSize () const noexcept;
 
@@ -30,6 +32,6 @@ public:
 private:
     void *start = nullptr;
     void *end = nullptr;
-    void *top = nullptr;
+    void *head = nullptr;
 };
 } // namespace Emergence::Memory::Original

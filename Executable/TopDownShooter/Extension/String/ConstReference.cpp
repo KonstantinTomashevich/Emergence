@@ -29,7 +29,7 @@ static const char *RegisterValue (const std::string_view &_value)
     auto iterator = stringRegister.find (_value);
     if (iterator == stringRegister.end ())
     {
-        char *space = static_cast<char *> (buffer.Acquire (_value.size () + 1u));
+        char *space = static_cast<char *> (buffer.Acquire (_value.size () + 1u, 1u));
         strcpy (space, _value.data ());
         auto [insertionIterator, result] = stringRegister.emplace (space);
         assert (result);
