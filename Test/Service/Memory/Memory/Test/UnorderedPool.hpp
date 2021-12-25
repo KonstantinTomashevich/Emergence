@@ -2,5 +2,5 @@
 
 namespace Emergence::Memory::Test
 {
-bool PoolTestIncludeMarker () noexcept;
+bool UnorderedPoolTestIncludeMarker () noexcept;
 } // namespace Emergence::Memory::Test

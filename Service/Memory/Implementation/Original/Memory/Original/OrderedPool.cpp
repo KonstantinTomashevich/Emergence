@@ -248,18 +248,11 @@ void OrderedPool::Shrink () noexcept
     Page *currentPage = topPage;
     Chunk *currentFreeChunk = topFreeChunk;
 
-    while (currentPage)
+    while (currentPage && currentFreeChunk)
     {
-        while (currentFreeChunk < &currentPage->chunks[0u])
-        {
-            currentFreeChunk = currentFreeChunk->nextFree;
-
-            // All pages from this and above are fully filled, therefore shrink is finished.
-            if (!currentFreeChunk)
-            {
-                return;
-            }
-        }
+        // Due to the ordering and shrink logic, this assert should always be true.
+        // It's left here to highlight that this case is impossible in current algorithm.
+        assert (currentFreeChunk >= &currentPage->chunks[0u]);
 
         // Count free chunks that belong to this page.
         std::size_t pageFreeChunks = 0u;
