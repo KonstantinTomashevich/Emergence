@@ -50,22 +50,16 @@
                       std::underlying_type_t<decltype (Type::_field)>>::Register) (#_field, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
-/// \invariant Class must contain `_field` field of type `std::array`.
+/// \invariant Class must contain `_field` field of any type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_STRING(_field)                                                                      \
-    ._field =                                                                                                          \
-        builder.RegisterString (#_field, offsetof (Type, _field),                                                      \
-                                sizeof (decltype (Type::_field)::value_type) *                                         \
-                                    Emergence::MappingRegistration::ExtractArraySize<decltype (Type::_field)>::VALUE),
+    ._field = builder.RegisterString (#_field, offsetof (Type, _field), sizeof (Type::_field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::BLOCK.
-/// \invariant Class must contain `_field` field of type `std::array`.
+/// \invariant Class must contain `_field` field of any type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_BLOCK(_field)                                                                       \
-    ._field =                                                                                                          \
-        builder.RegisterBlock (#_field, offsetof (Type, _field),                                                       \
-                               sizeof (decltype (Type::_field)::value_type) *                                          \
-                                   Emergence::MappingRegistration::ExtractArraySize<decltype (Type::_field)>::VALUE),
+    ._field = builder.RegisterBlock (#_field, offsetof (Type, _field), sizeof (Type::_field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::NESTED_OBJECT.
 /// \invariant Class must contain `_field` field of any type, that has static Reflect method that

@@ -7,7 +7,7 @@
 namespace Emergence::Memory
 {
 // TODO: Common memory usage monitor that allows to differentiate data by unique ids?
-//       Ids can be created through String::ConstReference usage, for example.
+//       Ids can be created through Memory::UniqueString usage, for example.
 
 /// \brief Allocator, that manages memory chunks with fixed size. Optimized for allocation and deallocation performance.
 class UnorderedPool final

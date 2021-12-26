@@ -46,35 +46,37 @@ public:
         auto modifyFixedInput = _world->ModifySingletonExternally (FixedInputMappingSingleton::Reflect ().mapping);
         auto *fixedInput = static_cast<FixedInputMappingSingleton *> (*modifyFixedInput.Execute ());
 
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Forward", "Movement"}, {{OgreBites::Keycode {'w'}, false}}});
+        using namespace Emergence::Memory::Literals;
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Left", "Movement"}, {{OgreBites::Keycode {'a'}, false}}});
+            KeyboardActionTrigger {InputAction {"Forward"_us, "Movement"_us}, {{OgreBites::Keycode {'w'}, false}}});
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Backward", "Movement"}, {{OgreBites::Keycode {'s'}, false}}});
+            KeyboardActionTrigger {InputAction {"Left"_us, "Movement"_us}, {{OgreBites::Keycode {'a'}, false}}});
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Right", "Movement"}, {{OgreBites::Keycode {'d'}, false}}});
+            KeyboardActionTrigger {InputAction {"Backward"_us, "Movement"_us}, {{OgreBites::Keycode {'s'}, false}}});
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Explode", "Ability"}, {{OgreBites::Keycode {'q'}, true}}});
+            KeyboardActionTrigger {InputAction {"Right"_us, "Movement"_us}, {{OgreBites::Keycode {'d'}, false}}});
+
+        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
+            KeyboardActionTrigger {InputAction {"Explode"_us, "Ability"_us}, {{OgreBites::Keycode {'q'}, true}}});
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (KeyboardActionTrigger {
-            InputAction {"Dash", "Ability"}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}});
+            InputAction {"Dash"_us, "Ability"_us}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}});
 
         auto modifyNormalInput = _world->ModifySingletonExternally (NormalInputMappingSingleton::Reflect ().mapping);
         auto *normalInput = static_cast<NormalInputMappingSingleton *> (*modifyNormalInput.Execute ());
 
         normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Up", "Menu"}, {{OgreBites::Keycode {'1'}, true}}});
+            KeyboardActionTrigger {InputAction {"Up"_us, "Menu"_us}, {{OgreBites::Keycode {'1'}, true}}});
 
         normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Down", "Menu"}, {{OgreBites::Keycode {'2'}, true}}});
+            KeyboardActionTrigger {InputAction {"Down"_us, "Menu"_us}, {{OgreBites::Keycode {'2'}, true}}});
 
         normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Confirm", "Menu"}, {{OgreBites::Keycode {'e'}, true}}});
+            KeyboardActionTrigger {InputAction {"Confirm"_us, "Menu"_us}, {{OgreBites::Keycode {'e'}, true}}});
 
         auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
         time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 60.0f);
