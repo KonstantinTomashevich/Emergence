@@ -68,7 +68,7 @@ struct hash<Emergence::Memory::UniqueString>
 {
     std::size_t operator() (const Emergence::Memory::UniqueString &_string) const noexcept
     {
-        return reinterpret_cast<std::size_t> (_string.Hash ());
+        return static_cast<std::size_t> (_string.Hash ());
     }
 };
 } // namespace std

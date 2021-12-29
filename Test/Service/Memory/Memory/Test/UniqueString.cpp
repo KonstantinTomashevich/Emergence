@@ -61,7 +61,9 @@ TEST_CASE (Hash)
     CHECK (first.Hash () != second.Hash ());
     CHECK (first.Hash () == firstAgain.Hash ());
     CHECK (second.Hash () != firstAgain.Hash ());
-    CHECK (first.Hash () == std::hash<Emergence::Memory::UniqueString> {}(firstAgain));
+
+    CHECK (std::hash<Emergence::Memory::UniqueString> {}(first) ==
+           std::hash<Emergence::Memory::UniqueString> {}(firstAgain));
 }
 
 END_SUITE
