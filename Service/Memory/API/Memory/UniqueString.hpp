@@ -7,13 +7,19 @@
 
 namespace Emergence::Memory
 {
+/// \brief Provides fast comparison, hashing and trivial destruction for immutable strings.
 class UniqueString final
 {
 public:
+    /// \brief Constructs immutable empty string.
     UniqueString () noexcept;
 
+    /// \brief Constructs immutable string from given null-terminated string.
+    /// \details If there is no UniqueString instance with equal content, then content of given string will be copied.
     explicit UniqueString (const char *_string) noexcept;
 
+    /// \brief Constructs immutable string from given string.
+    /// \details If there is no UniqueString instance with equal content, then content of given string will be copied.
     explicit UniqueString (const std::string_view &_string) noexcept;
 
     /// All implementations must be trivially copyable.
@@ -25,8 +31,11 @@ public:
     /// All implementations must be trivially destructible.
     ~UniqueString () noexcept = default;
 
+    /// \return Pointer to stored null-terminated string.
     [[nodiscard]] const char *operator* () const noexcept;
 
+    /// \return Hash of stored string. Guaranteed to be unique,
+    ///         but can not be stored in files or shared through processes.
     [[nodiscard]] uintptr_t Hash () const noexcept;
 
     [[nodiscard]] bool operator== (const UniqueString &_other) const noexcept;
