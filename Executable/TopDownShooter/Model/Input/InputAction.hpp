@@ -14,8 +14,7 @@ struct InputAction final
 
     InputAction () noexcept = default;
 
-    InputAction (const Emergence::Memory::UniqueString &_id,
-                 const Emergence::Memory::UniqueString &_group) noexcept;
+    InputAction (const Emergence::Memory::UniqueString &_id, const Emergence::Memory::UniqueString &_group) noexcept;
 
     InputAction (const Emergence::Memory::UniqueString &_id,
                  const Emergence::Memory::UniqueString &_group,

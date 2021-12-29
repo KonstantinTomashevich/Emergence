@@ -151,9 +151,9 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeGroup>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       std::string ("[Configurator] Unsubscribe all listeners from group \"") +
-                                           *_step.id + "\".");
+                    GlobalLogger::Log (
+                        Level::INFO,
+                        std::string ("[Configurator] Unsubscribe all listeners from group \"") + *_step.id + "\".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
