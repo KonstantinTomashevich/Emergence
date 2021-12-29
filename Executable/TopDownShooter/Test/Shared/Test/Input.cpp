@@ -23,6 +23,8 @@ END_MUTING_WARNINGS
 
 using namespace Emergence::Celerity;
 
+using namespace Emergence::Memory::Literals;
+
 bool InputTestIncludeMarker () noexcept
 {
     return true;
@@ -52,7 +54,7 @@ struct UnsubscribeListener
 
 struct UnsubscribeGroup
 {
-    Emergence::String::ConstReference id;
+    Emergence::Memory::UniqueString id;
 };
 
 struct FireEvent
@@ -132,7 +134,7 @@ void Configurator::Execute ()
                 {
                     GlobalLogger::Log (Level::INFO, "[Configurator] Subscribe listener " +
                                                         std::to_string (_step.subscription.listenerId) +
-                                                        " to group \"" + _step.subscription.group.Value () + "\".");
+                                                        " to group \"" + *_step.subscription.group + "\".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
@@ -149,9 +151,9 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeGroup>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       std::string ("[Configurator] Unsubscribe all listeners from group \"") +
-                                           _step.id.Value () + "\".");
+                    GlobalLogger::Log (
+                        Level::INFO,
+                        std::string ("[Configurator] Unsubscribe all listeners from group \"") + *_step.id + "\".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
@@ -307,8 +309,8 @@ TEST_CASE (SubscriptionManagement)
     char aButton = 'a';
     char bButton = 'b';
 
-    InputAction aDown {"ADown", "A"};
-    InputAction bDown {"BDown", "B"};
+    InputAction aDown {"ADown"_us, "A"_us};
+    InputAction bDown {"BDown"_us, "B"_us};
 
     RunTest (
         {
@@ -316,18 +318,18 @@ TEST_CASE (SubscriptionManagement)
             KeyboardActionTrigger {bDown, {{bButton, false}}},
         },
         {
-            {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A", 0u}}, Steps::CreateListener {1u},
-              Steps::AddSubscription {{"B", 1u}}},
+            {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}}, Steps::CreateListener {1u},
+              Steps::AddSubscription {{"B"_us, 1u}}},
              {}},
             {{KeyboardEvent (aButton, OgreBites::KEYDOWN), KeyboardEvent (bButton, OgreBites::KEYDOWN)},
              {{0u, {aDown}}, {1u, {bDown}}}},
-            {{Steps::AddSubscription {{"B", 0u}}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
+            {{Steps::AddSubscription {{"B"_us, 0u}}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
               KeyboardEvent (bButton, OgreBites::KEYDOWN)},
              {{0u, {aDown, bDown}}, {1u, {bDown}}}},
-            {{Steps::UnsubscribeGroup {"B"}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
+            {{Steps::UnsubscribeGroup {"B"_us}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
               KeyboardEvent (bButton, OgreBites::KEYDOWN)},
              {{0u, {aDown}}, {1u, {}}}},
-            {{Steps::AddSubscription {{"B", 0u}}, Steps::AddSubscription {{"B", 1u}},
+            {{Steps::AddSubscription {{"B"_us, 0u}}, Steps::AddSubscription {{"B"_us, 1u}},
               KeyboardEvent (aButton, OgreBites::KEYDOWN), KeyboardEvent (bButton, OgreBites::KEYDOWN)},
              {{0u, {aDown, bDown}}, {1u, {bDown}}}},
             {{Steps::UnsubscribeListener {0u}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
@@ -341,12 +343,12 @@ TEST_CASE (KeyboardTriggers)
     char firstButton = 'q';
     char secondButton = 'w';
 
-    InputAction firstDown {"FirstDown", "Test"};
-    InputAction firstJustPressed {"FirstJustPressed", "Test"};
+    InputAction firstDown {"FirstDown"_us, "Test"_us};
+    InputAction firstJustPressed {"FirstJustPressed"_us, "Test"_us};
 
-    InputAction bothDown {"BothDown", "Test"};
-    InputAction bothJustPressed {"BothJustPressed", "Test"};
-    InputAction firstJustPressedSecondDown {"FirstJustPressedSecondDown", "Test"};
+    InputAction bothDown {"BothDown"_us, "Test"_us};
+    InputAction bothJustPressed {"BothJustPressed"_us, "Test"_us};
+    InputAction firstJustPressedSecondDown {"FirstJustPressedSecondDown"_us, "Test"_us};
 
     RunTest (
         {
@@ -357,7 +359,7 @@ TEST_CASE (KeyboardTriggers)
             KeyboardActionTrigger {firstJustPressedSecondDown, {{firstButton, true}, {secondButton, false}}},
         },
         {
-            {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test", 0u}}}, {}},
+            {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
             {{KeyboardEvent (firstButton, OgreBites::KEYDOWN)}, {{0u, {firstDown, firstJustPressed}}}},
             {{KeyboardEvent (firstButton, OgreBites::KEYDOWN)}, {{0u, {firstDown}}}},
             {{KeyboardEvent (firstButton, OgreBites::KEYUP)}, {{0u, {}}}},

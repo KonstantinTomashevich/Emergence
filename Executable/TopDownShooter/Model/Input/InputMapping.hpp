@@ -49,7 +49,7 @@ struct KeyboardActionTrigger final
 
 struct InputSubscription final
 {
-    Emergence::String::ConstReference group;
+    Emergence::Memory::UniqueString group;
     std::uintptr_t listenerId = INVALID_OBJECT_ID;
 
     struct Reflection final
@@ -72,7 +72,7 @@ struct InputMapping final
 
     void UnsubscribeListener (std::uintptr_t _listenerId);
 
-    void UnsubscribeGroup (Emergence::String::ConstReference _group);
+    void UnsubscribeGroup (Emergence::Memory::UniqueString _group);
 
     struct Reflection final
     {

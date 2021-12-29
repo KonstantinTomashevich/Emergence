@@ -1,5 +1,8 @@
 #!/usr/bin/env pwsh
 
+# TODO: If file wasn't used at all (and therefore has 0% coverage), it will not be listed and coverage report
+#       and will not trigger coverage error. This behaviour seems incorrect.
+
 if ($args.Count -ne 1)
 {
     echo "Usage: <script> <path to binary dir>"

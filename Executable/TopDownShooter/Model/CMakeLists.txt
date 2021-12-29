@@ -12,6 +12,7 @@ sober_library_begin ("${GAME_NAME}Model" STATIC)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
+    sober_library_use_service (EXPECTED PUBLIC Memory)
     sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
 
     sober_variant_begin (Original)

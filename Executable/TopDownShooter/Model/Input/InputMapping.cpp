@@ -34,7 +34,7 @@ const InputSubscription::Reflection &InputSubscription::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputSubscription)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (group)
+        EMERGENCE_MAPPING_REGISTER_BLOCK (group)
         EMERGENCE_MAPPING_REGISTER_REGULAR (listenerId)
         EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
@@ -58,7 +58,7 @@ void InputMapping::UnsubscribeListener (std::uintptr_t _listenerId)
     }
 }
 
-void InputMapping::UnsubscribeGroup (Emergence::String::ConstReference _group)
+void InputMapping::UnsubscribeGroup (Emergence::Memory::UniqueString _group)
 {
     auto iterator = subscriptions.Begin ();
     while (iterator != subscriptions.End ())

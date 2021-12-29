@@ -3,9 +3,9 @@
 #include <array>
 #include <cstdint>
 
-#include <StandardLayout/Mapping.hpp>
+#include <Memory/UniqueString.hpp>
 
-#include <String/ConstReference.hpp>
+#include <StandardLayout/Mapping.hpp>
 
 struct InputAction final
 {
@@ -14,19 +14,18 @@ struct InputAction final
 
     InputAction () noexcept = default;
 
-    InputAction (const Emergence::String::ConstReference &_id,
-                 const Emergence::String::ConstReference &_group) noexcept;
+    InputAction (const Emergence::Memory::UniqueString &_id, const Emergence::Memory::UniqueString &_group) noexcept;
 
-    InputAction (const Emergence::String::ConstReference &_id,
-                 const Emergence::String::ConstReference &_group,
+    InputAction (const Emergence::Memory::UniqueString &_id,
+                 const Emergence::Memory::UniqueString &_group,
                  const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept;
 
-    InputAction (const Emergence::String::ConstReference &_id,
-                 const Emergence::String::ConstReference &_group,
+    InputAction (const Emergence::Memory::UniqueString &_id,
+                 const Emergence::Memory::UniqueString &_group,
                  const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept;
 
-    Emergence::String::ConstReference id;
-    Emergence::String::ConstReference group;
+    Emergence::Memory::UniqueString id;
+    Emergence::Memory::UniqueString group;
 
     union
     {
