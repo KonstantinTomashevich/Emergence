@@ -71,7 +71,7 @@ public:
 
     /// \brief Releases given memory chunk.
     /// \invariant Chunk belongs to this pool.
-    /// \warning Invalidates iterators.
+    /// \warning Invalidates iterator, that points to released chunk.
     void Release (void *_chunk) noexcept;
 
     /// \brief Releases all empty pages.

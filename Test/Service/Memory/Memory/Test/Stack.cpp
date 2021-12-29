@@ -115,7 +115,7 @@ TEST_CASE (Move)
     Emergence::Memory::Stack movedStack {std::move (stack)};
     CHECK_EQUAL (movedStack.Head (), cachedHead);
 
-    // Acquire to check usability;
+    // Acquire to check usability.
     [[maybe_unused]] void *secondRecord = movedStack.Acquire (128u);
 }
 
@@ -130,7 +130,7 @@ TEST_CASE (MoveAssign)
     anotherStack = std::move (stack);
     CHECK_EQUAL (anotherStack.Head (), cachedHead);
 
-    // Acquire to check usability;
+    // Acquire to check usability.
     [[maybe_unused]] void *secondRecord = anotherStack.Acquire (128u);
 }
 

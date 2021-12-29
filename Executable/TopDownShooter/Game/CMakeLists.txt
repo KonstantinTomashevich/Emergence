@@ -10,6 +10,8 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_library_link_library (PUBLIC ${SHARED_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
+    sober_library_use_service (PER_VARIANT PRIVATE Memory)
+    sober_library_use_service (PER_VARIANT PRIVATE RecordCollection)
     sober_library_use_service (PER_VARIANT PRIVATE StandardLayoutMapping)
 
     sober_variant_begin (Original)

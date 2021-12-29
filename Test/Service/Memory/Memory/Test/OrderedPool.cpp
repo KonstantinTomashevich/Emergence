@@ -117,6 +117,8 @@ void CheckPoolIteration (Emergence::Memory::OrderedPool &_pool, const std::vecto
 
     auto checkPoolItemVectorsEquality = [] (const std::vector<void *> &_first, const std::vector<void *> &_second)
     {
+        CHECK_EQUAL (_first.size (), _second.size ());
+
         // Check that there is no duplicates in first vector.
         for (auto iterator = _first.begin (); iterator != _first.end (); ++iterator)
         {

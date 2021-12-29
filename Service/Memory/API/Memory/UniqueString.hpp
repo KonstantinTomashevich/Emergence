@@ -35,7 +35,7 @@ public:
     [[nodiscard]] const char *operator* () const noexcept;
 
     /// \return Hash of stored string. Guaranteed to be unique,
-    ///         but can not be stored in files or shared through processes.
+    ///         but can not be stored in files or shared between processes.
     [[nodiscard]] uintptr_t Hash () const noexcept;
 
     [[nodiscard]] bool operator== (const UniqueString &_other) const noexcept;

@@ -8,10 +8,13 @@
 #include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
 
-#include <Memory/OrderedPool.hpp>
+#include <Memory/UnorderedPool.hpp>
 
 namespace Emergence::Galleon
 {
+// TODO: Short term container was planned to be event container with possibility of release-all mechanics.
+//       Maybe we should reevaluate current implementation to make it fit better for its real purpose?
+
 /// \brief Container for objects that are created and destroyed frequently.
 class ShortTermContainer final : public ContainerBase
 {
@@ -178,7 +181,7 @@ private:
     /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
     std::vector<void *> objects;
 
-    Memory::OrderedPool pool;
+    Memory::UnorderedPool pool;
 
     AccessCounter accessCounter;
 };

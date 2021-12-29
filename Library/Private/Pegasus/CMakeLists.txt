@@ -10,8 +10,8 @@ sober_library_begin (Pegasus STATIC)
     sober_library_include_directory (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
 
     sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
+    sober_library_use_service (EXPECTED PUBLIC Memory)
     sober_library_use_service (PER_VARIANT PRIVATE Hashing)
-    sober_library_use_service (PER_VARIANT PUBLIC Memory)
     sober_library_use_service (PER_VARIANT PUBLIC PegasusConstants)
 
     sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
