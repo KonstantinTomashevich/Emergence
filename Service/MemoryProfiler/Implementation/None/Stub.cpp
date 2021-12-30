@@ -1,3 +1,2 @@
-#include <Memory/Profiler/Core.hpp>
-#include <Memory/Profiler/Event.hpp>
-#include <Memory/Profiler/Group.hpp>
+#include <Memory/Profiler/Capture.hpp>
+#include <Memory/Profiler/Registry.hpp>
