@@ -4,6 +4,9 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/UniqueString.hpp>
+#include <Memory/Profiler/Registry.hpp>
+
 namespace Emergence::Memory::Original
 {
 class UnorderedPool final
@@ -14,7 +17,7 @@ private:
     struct Chunk;
 
 public:
-    UnorderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept;
+    UnorderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept;
 
     UnorderedPool (const UnorderedPool &_other) = delete;
 
@@ -57,5 +60,6 @@ private:
     size_t pageCount;
     Page *topPage;
     Chunk *topFreeChunk;
+    Profiler::Registry registry;
 };
 } // namespace Emergence::Memory::Original

@@ -4,6 +4,8 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
+#include <Memory/UniqueString.hpp>
+
 namespace Emergence::Memory
 {
 /// \brief Allocator, that manages preallocated memory block through stack-like interface.
@@ -13,8 +15,9 @@ namespace Emergence::Memory
 class Stack final
 {
 public:
+    /// \param _groupId Memory allocation group id for profiling.
     /// \param _capacity Stack capacity in bytes.
-    explicit Stack (size_t _capacity) noexcept;
+    explicit Stack (UniqueString _groupId, size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -47,6 +50,6 @@ public:
     Stack &operator= (Stack &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
 };
 } // namespace Emergence::Memory

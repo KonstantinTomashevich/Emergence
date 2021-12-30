@@ -148,12 +148,13 @@ OrderedPool::AcquiredChunkIterator::AcquiredChunkIterator (AcquiredChunkConstIte
 {
 }
 
-OrderedPool::OrderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept
+OrderedPool::OrderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept
     : pageCapacity (_pageCapacity),
       chunkSize (_chunkSize),
       pageCount (0u),
       topPage (nullptr),
-      topFreeChunk (nullptr)
+      topFreeChunk (nullptr),
+      registry (_groupId)
 {
     assert (_pageCapacity > 0u);
     assert (_chunkSize >= sizeof (Chunk));
@@ -164,7 +165,8 @@ OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
       chunkSize (_other.chunkSize),
       pageCount (_other.pageCount),
       topPage (_other.topPage),
-      topFreeChunk (_other.topFreeChunk)
+      topFreeChunk (_other.topFreeChunk),
+      registry (std::move (_other.registry))
 {
     _other.pageCount = 0u;
     _other.topPage = nullptr;
@@ -180,6 +182,9 @@ void *OrderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
+        registry.Allocate (sizeof (Page) + pageCapacity * chunkSize);
+        registry.Acquire (sizeof (Page));
+
         Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         Page *insertPageBefore = topPage;
         Page *insertPageAfter = nullptr;
@@ -214,6 +219,7 @@ void *OrderedPool::Acquire () noexcept
         ++pageCount;
     }
 
+    registry.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
     return acquired;
@@ -221,6 +227,7 @@ void *OrderedPool::Acquire () noexcept
 
 void OrderedPool::Release (void *_chunk) noexcept
 {
+    registry.Release (chunkSize);
     auto *chunk = static_cast<Chunk *> (_chunk);
     Chunk *insertChunkAfter = nullptr;
     Chunk *insertChunkBefore = topFreeChunk;
@@ -270,6 +277,10 @@ void OrderedPool::Shrink () noexcept
             // All chunks in current page are free, therefore we can safely release it.
             Page *nextPage = currentPage->next;
             free (currentPage);
+
+            registry.Release (sizeof (Page));
+            registry.Free (sizeof (Page) + pageCapacity * chunkSize);
+
             currentPage = nextPage;
             --pageCount;
 
@@ -295,6 +306,9 @@ void OrderedPool::Clear () noexcept
     Page *page = topPage;
     while (page)
     {
+        registry.Release (sizeof (Page));
+        registry.Free (sizeof (Page) + pageCapacity * chunkSize);
+
         Page *next = page->next;
         free (page);
         page = next;

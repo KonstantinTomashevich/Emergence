@@ -4,6 +4,8 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
+#include <Memory/UniqueString.hpp>
+
 namespace Emergence::Memory
 {
 // TODO: Common memory usage monitor that allows to differentiate data by unique ids?
@@ -13,14 +15,15 @@ namespace Emergence::Memory
 class UnorderedPool final
 {
 public:
+    /// \param _groupId Memory allocation group id for profiling.
     /// \param _chunkSize Fixed chunk size.
     /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
-    explicit UnorderedPool (std::size_t _chunkSize) noexcept;
+    explicit UnorderedPool (UniqueString _groupId, std::size_t _chunkSize) noexcept;
 
     /// \param _preferredPageCapacity Allocator will create pages with given capacity, if possible.
     /// \see ::UnorderedPool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
-    UnorderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+    UnorderedPool (UniqueString _groupId, std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
 
     /// \brief Copying memory pool contradicts with its usage practices.
     UnorderedPool (const UnorderedPool &_other) = delete;
@@ -51,6 +54,6 @@ public:
     UnorderedPool &operator= (UnorderedPool &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
 };
 } // namespace Emergence::Memory

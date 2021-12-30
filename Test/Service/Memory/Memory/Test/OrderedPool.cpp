@@ -12,6 +12,7 @@ bool OrderedPoolTestIncludeMarker () noexcept
 }
 } // namespace Emergence::Memory::Test
 
+using namespace Emergence::Memory::Literals;
 using namespace Emergence::Memory::Test::Pool;
 
 BEGIN_SUITE (OrderedPool)
@@ -88,13 +89,13 @@ TEST_CASE (Move)
 
 TEST_CASE (IterateEmpty)
 {
-    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {"Test"_us, sizeof (TestItem)};
     CHECK (pool.BeginAcquired () == pool.EndAcquired ());
 }
 
 TEST_CASE (IterationFirstItem)
 {
-    Emergence::Memory::OrderedPool pool {sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {"Test"_us, sizeof (TestItem)};
     void *first = pool.Acquire ();
     void *second = pool.Acquire ();
 

@@ -32,13 +32,16 @@ void *OrderedPool::AcquiredChunkIterator::operator* () const noexcept
 
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-OrderedPool::OrderedPool (std::size_t _chunkSize) noexcept : OrderedPool (_chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+OrderedPool::OrderedPool (Memory::UniqueString _groupId, std::size_t _chunkSize) noexcept
+    : OrderedPool (_groupId, _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
-OrderedPool::OrderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept
+OrderedPool::OrderedPool (Memory::UniqueString _groupId,
+                          std::size_t _chunkSize,
+                          std::size_t _preferredPageCapacity) noexcept
 {
-    new (&data) Original::OrderedPool (_chunkSize, _preferredPageCapacity);
+    new (&data) Original::OrderedPool (_groupId, _chunkSize, _preferredPageCapacity);
 }
 
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept

@@ -5,9 +5,9 @@
 
 namespace Emergence::Memory
 {
-Stack::Stack (size_t _capacity) noexcept
+Stack::Stack (Memory::UniqueString _groupId, size_t _capacity) noexcept
 {
-    new (&data) Original::Stack (_capacity);
+    new (&data) Original::Stack (_groupId, _capacity);
 }
 
 Stack::Stack (Stack &&_other) noexcept

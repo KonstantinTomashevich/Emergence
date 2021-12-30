@@ -7,14 +7,16 @@ namespace Emergence::Memory
 {
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-UnorderedPool::UnorderedPool (std::size_t _chunkSize) noexcept
-    : UnorderedPool (_chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+UnorderedPool::UnorderedPool (Memory::UniqueString _groupId, std::size_t _chunkSize) noexcept
+    : UnorderedPool (_groupId, _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
-UnorderedPool::UnorderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept
+UnorderedPool::UnorderedPool (Memory::UniqueString _groupId,
+                              std::size_t _chunkSize,
+                              std::size_t _preferredPageCapacity) noexcept
 {
-    new (&data) Original::UnorderedPool (_chunkSize, _preferredPageCapacity);
+    new (&data) Original::UnorderedPool (_groupId, _chunkSize, _preferredPageCapacity);
 }
 
 UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept

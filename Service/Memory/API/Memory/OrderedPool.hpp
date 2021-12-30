@@ -6,6 +6,8 @@
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
 
+#include <Memory/UniqueString.hpp>
+
 namespace Emergence::Memory
 {
 /// \brief Allocator, that manages memory chunks with fixed size.
@@ -47,14 +49,15 @@ public:
         explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    /// \param _chunkSize fixed chunk size.
+    /// \param _groupId Memory allocation group id for profiling.
+    /// \param _chunkSize Fixed chunk size.
     /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
-    explicit OrderedPool (std::size_t _chunkSize) noexcept;
+    explicit OrderedPool (UniqueString _groupId, std::size_t _chunkSize) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
     /// \see ::Pool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
-    OrderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+    OrderedPool (UniqueString _groupId, std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
 
     /// \brief Copying memory pool contradicts with its usage practices.
     OrderedPool (const OrderedPool &_other) = delete;
@@ -104,7 +107,7 @@ public:
     OrderedPool &operator= (OrderedPool &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
 };
 
 /// \brief Wraps Pool::BeginAcquired for foreach sentences.

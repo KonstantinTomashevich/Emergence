@@ -182,7 +182,8 @@ ShortTermContainer::ModifyQuery ShortTermContainer::Modify () noexcept
 
 ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
-      pool (typeMapping.GetObjectSize ())
+      // TODO: Think about better group id selection.
+      pool (Memory::UniqueString {typeMapping.GetName ()}, typeMapping.GetObjectSize ())
 {
 }
 

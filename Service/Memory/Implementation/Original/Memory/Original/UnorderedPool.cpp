@@ -5,12 +5,13 @@
 
 namespace Emergence::Memory::Original
 {
-UnorderedPool::UnorderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept
+UnorderedPool::UnorderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept
     : pageCapacity (_pageCapacity),
       chunkSize (_chunkSize),
       pageCount (0u),
       topPage (nullptr),
-      topFreeChunk (nullptr)
+      topFreeChunk (nullptr),
+      registry (_groupId)
 {
     assert (_pageCapacity > 0u);
     assert (_chunkSize >= sizeof (Chunk));
@@ -21,7 +22,8 @@ UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
       chunkSize (_other.chunkSize),
       pageCount (_other.pageCount),
       topPage (_other.topPage),
-      topFreeChunk (_other.topFreeChunk)
+      topFreeChunk (_other.topFreeChunk),
+      registry (std::move (_other.registry))
 {
     _other.pageCount = 0u;
     _other.topPage = nullptr;
@@ -37,6 +39,9 @@ void *UnorderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
+        registry.Allocate (sizeof (Page) + pageCapacity * chunkSize);
+        registry.Acquire (sizeof (Page));
+
         Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         newPage->next = topPage;
         topPage = newPage;
@@ -55,6 +60,7 @@ void *UnorderedPool::Acquire () noexcept
         ++pageCount;
     }
 
+    registry.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
     return acquired;
@@ -62,6 +68,7 @@ void *UnorderedPool::Acquire () noexcept
 
 void UnorderedPool::Release (void *_chunk) noexcept
 {
+    registry.Release (chunkSize);
     auto *chunk = static_cast<Chunk *> (_chunk);
     chunk->nextFree = topFreeChunk;
     topFreeChunk = chunk;
@@ -72,6 +79,9 @@ void UnorderedPool::Clear () noexcept
     Page *page = topPage;
     while (page)
     {
+        registry.Release (sizeof (Page));
+        registry.Free (sizeof (Page) + pageCapacity * chunkSize);
+
         Page *next = page->next;
         free (page);
         page = next;

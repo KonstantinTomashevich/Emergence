@@ -75,7 +75,9 @@ Handling::Handle<VolumetricIndex> Storage::VolumetricIndexIterator::operator* ()
 }
 
 Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
-    : records (_recordMapping.GetObjectSize ()),
+    // TODO: Think about better group id selection.
+    // TODO: Transform all custom allocations into Memory service based ones.
+    : records (Memory::UniqueString {_recordMapping.GetName ()}, _recordMapping.GetObjectSize ()),
       reflection {.recordMapping = std::move (_recordMapping)}
 {
     editedRecordBackup = malloc (reflection.recordMapping.GetObjectSize ());

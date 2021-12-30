@@ -4,12 +4,15 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/UniqueString.hpp>
+#include <Memory/Profiler/Registry.hpp>
+
 namespace Emergence::Memory::Original
 {
 class Stack final
 {
 public:
-    explicit Stack (size_t _capacity) noexcept;
+    explicit Stack (Memory::UniqueString _groupId, size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -33,5 +36,6 @@ private:
     void *start = nullptr;
     void *end = nullptr;
     void *head = nullptr;
+    Profiler::Registry registry;
 };
 } // namespace Emergence::Memory::Original

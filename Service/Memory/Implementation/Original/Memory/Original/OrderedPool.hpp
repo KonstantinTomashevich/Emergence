@@ -5,6 +5,9 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/UniqueString.hpp>
+#include <Memory/Profiler/Registry.hpp>
+
 namespace Emergence::Memory::Original
 {
 class OrderedPool final
@@ -46,7 +49,7 @@ public:
         AcquiredChunkConstIterator base;
     };
 
-    OrderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept;
+    OrderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept;
 
     OrderedPool (const OrderedPool &_other) = delete;
 
@@ -99,5 +102,6 @@ private:
     size_t pageCount;
     Page *topPage;
     Chunk *topFreeChunk;
+    Profiler::Registry registry;
 };
 } // namespace Emergence::Memory::Original

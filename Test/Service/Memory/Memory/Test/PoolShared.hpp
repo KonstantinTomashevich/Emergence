@@ -1,9 +1,13 @@
 #include <vector>
 
+#include <Memory/UniqueString.hpp>
+
 #include <Testing/Testing.hpp>
 
 namespace Emergence::Memory::Test::Pool
 {
+using namespace Emergence::Memory::Literals;
+
 struct TestItem
 {
     uint64_t integer;
@@ -27,21 +31,21 @@ struct FullPoolContext
         CHECK_EQUAL (pool.GetAllocatedSpace (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
     }
 
-    Pool pool {sizeof (TestItem), PAGE_CAPACITY};
+    Pool pool {"Test"_us, sizeof (TestItem), PAGE_CAPACITY};
     std::vector<void *> items;
 };
 
 template <typename Pool>
 void AcquireNotNull ()
 {
-    Pool pool {sizeof (TestItem)};
+    Pool pool {"Test"_us, sizeof (TestItem)};
     CHECK (pool.Acquire ());
 }
 
 template <typename Pool>
 void MultipleAcquiresDoNotOverlap ()
 {
-    Pool pool {sizeof (TestItem)};
+    Pool pool {"Test"_us, sizeof (TestItem)};
     auto *first = static_cast<TestItem *> (pool.Acquire ());
     auto *second = static_cast<TestItem *> (pool.Acquire ());
 
@@ -63,7 +67,7 @@ void MultipleAcquiresDoNotOverlap ()
 template <typename Pool>
 void MemoryReused ()
 {
-    Pool pool {sizeof (TestItem)};
+    Pool pool {"Test"_us, sizeof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
