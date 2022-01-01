@@ -201,7 +201,10 @@ HashIndex::HashIndex (Storage *_owner,
                       std::size_t _initialBuckets,
                       const std::vector<StandardLayout::FieldId> &_indexedFields)
     : IndexBase (_owner),
-      records (_initialBuckets, Hasher {this}, Comparator {this})
+      records (_initialBuckets,
+               Hasher {this},
+               Comparator {this},
+               Memory::HeapSTD<const void *> {Memory::UniqueString {"MultiSet"}})
 {
     assert (!_indexedFields.empty ());
     assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);

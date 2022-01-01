@@ -10,6 +10,8 @@
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
+#include <Memory/Heap.hpp>
+
 #include <Pegasus/Constants/HashIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
@@ -89,8 +91,7 @@ private:
         HashIndex *owner;
     };
 
-    // TODO: Custom allocator for better performance?
-    using RecordHashSet = std::unordered_multiset<const void *, Hasher, Comparator>;
+    using RecordHashSet = std::unordered_multiset<const void *, Hasher, Comparator, Memory::HeapSTD<const void *>>;
 
     explicit HashIndex (Storage *_owner,
                         std::size_t _initialBuckets,
