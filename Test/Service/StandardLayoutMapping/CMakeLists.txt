@@ -15,6 +15,8 @@ sober_test_begin (StandardLayoutMapping)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
+    sober_library_use_service (SHARED PRIVATE Memory)
+    sober_library_use_service (SHARED PRIVATE MemoryProfiler)
     sober_library_use_service (SHARED PRIVATE Testing)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

@@ -2,9 +2,12 @@
 
 #include <optional>
 #include <string>
-#include <vector>
 
-namespace Emergence::VisualGraph
+#include <Container/Vector.hpp>
+
+namespace Emergence
+{
+namespace VisualGraph
 {
 /// \brief Id separator for relative and absolute node paths.
 /// \details See more about node paths in Graph documentation.
@@ -87,14 +90,14 @@ struct Graph
     std::optional<std::string> label;
 
     /// \brief Child graphs, that should be drawn as internal clusters.
-    std::vector<Graph> subgraphs;
+    Container::Vector<Graph> subgraphs;
 
     /// \brief Nodes of this graph.
-    std::vector<Node> nodes;
+    Container::Vector<Node> nodes;
 
     /// \brief Edges, declared by this graph.
     /// \warning Other graphs can add edges with nodes from this graph using relative or absolute node paths.
-    std::vector<Edge> edges;
+    Container::Vector<Edge> edges;
 
     bool operator== (const Graph &_other) const = default;
 };
@@ -134,4 +137,29 @@ constexpr const char *WAREHOUSE_REGISTRY_ROOT_NODE = ".";
 /// \brief Warehouse query graph is guaranteed to have node with this name, that will be used as root for its graph.
 constexpr const char *WAREHOUSE_QUERY_ROOT_NODE = ".";
 } // namespace Common::Constants
-} // namespace Emergence::VisualGraph
+} // namespace VisualGraph
+
+namespace Memory
+{
+/// \brief Default allocation group for visual graph nodes.
+template <>
+struct DefaultAllocationGroup<VisualGraph::Node>
+{
+    static const UniqueString ID;
+};
+
+/// \brief Default allocation group for visual graph edges.
+template <>
+struct DefaultAllocationGroup<VisualGraph::Edge>
+{
+    static const UniqueString ID;
+};
+
+/// \brief Default allocation group for visual graphs.
+template <>
+struct DefaultAllocationGroup<VisualGraph::Graph>
+{
+    static const UniqueString ID;
+};
+} // namespace Memory
+} // namespace Emergence

@@ -9,6 +9,7 @@
 #include <StandardLayout/MappingBuilder.hpp>
 
 // TODO: Find a better module for this file. Then revisit all Container library links.
+//       Maybe put it inside StandardLayoutMapping service? But it would add Container dependency to this service.
 
 /// \brief Helper for mapping static registration. Contains beginning of registration functor.
 /// \invariant Class reflection structure name must be Class::Reflection.

@@ -52,6 +52,9 @@ private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 };
 
+template <typename Type>
+struct DefaultAllocationGroup;
+
 /// \brief Wraps Heap into C++ STD Allocator requirements.
 template <typename Type>
 class HeapSTD final
@@ -61,6 +64,11 @@ public:
 
     using is_always_equal = std::true_type;
 
+    HeapSTD () noexcept : heap (DefaultAllocationGroup<Type>::ID)
+    {
+    }
+
+    /// \details Intentionally implicit to make container initialization easier.
     HeapSTD (UniqueString _groupId) noexcept : heap (_groupId)
     {
     }
