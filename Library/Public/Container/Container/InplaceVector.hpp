@@ -4,7 +4,7 @@
 #include <cassert>
 #include <concepts>
 
-namespace Emergence
+namespace Emergence::Container
 {
 // TODO: Add tests for InplaceVector?
 
@@ -293,4 +293,4 @@ typename InplaceVector<Item, Capacity>::ConstIterator end (const InplaceVector<I
 {
     return _vector.End ();
 }
-} // namespace Emergence
+} // namespace Emergence::Container

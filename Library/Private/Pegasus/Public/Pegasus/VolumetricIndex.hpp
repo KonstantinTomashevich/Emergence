@@ -4,12 +4,12 @@
 
 #include <API/Common/Cursor.hpp>
 
+#include <Container/InplaceVector.hpp>
+
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
-
-#include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus
 {
@@ -73,6 +73,8 @@ public:
 
         SupportedAxisValue globalMaxBorder = 0u;
     };
+
+    using DimensionVector = Container::InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS>;
 
     /// Used only for index construction. ::Dimension is according dimension representation of constructed index.
     struct DimensionDescriptor final
@@ -289,7 +291,7 @@ public:
 
     ~VolumetricIndex () = default;
 
-    const InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
+    const DimensionVector &GetDimensions () const noexcept;
 
     ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShapeContainer &_shape) noexcept;
 
@@ -378,7 +380,7 @@ private:
 
     void OnWriterClosed () noexcept;
 
-    InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> dimensions;
+    DimensionVector dimensions;
 
     // TODO: For now we use simplified approach and work only with leaves, therefore reducing octree into grid.
     //       This approach is problematic because it significantly limits count of subdivisions.

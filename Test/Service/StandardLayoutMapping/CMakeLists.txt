@@ -6,6 +6,9 @@ sober_test_begin (StandardLayoutMapping)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE "${CONTAINER_LIBRARY_TARGET}")
+
     sober_naming_variant_target (StandardLayoutMappingVisualization Original VISUALIZATION_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
 

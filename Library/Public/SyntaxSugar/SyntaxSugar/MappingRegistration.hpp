@@ -4,9 +4,11 @@
 #include <cstdint>
 #include <string>
 
+#include <Container/InplaceVector.hpp>
+
 #include <StandardLayout/MappingBuilder.hpp>
 
-#include <SyntaxSugar/InplaceVector.hpp>
+// TODO: Find a better module for this file. Then revisit all Container library links.
 
 /// \brief Helper for mapping static registration. Contains beginning of registration functor.
 /// \invariant Class reflection structure name must be Class::Reflection.
@@ -141,7 +143,7 @@ struct ExtractArraySize<std::array<Type, Size>>
 };
 
 template <typename Type, std::size_t Capacity>
-struct ExtractArraySize<InplaceVector<Type, Capacity>>
+struct ExtractArraySize<Container::InplaceVector<Type, Capacity>>
 {
     static constexpr std::size_t VALUE = Capacity;
 };

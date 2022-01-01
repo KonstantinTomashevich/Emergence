@@ -27,6 +27,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Libraries
 
+- [Container](./Library/Public/Container/README.md): template container proxies and implementations.
 - [Flow](./Library/Public/Flow/README.md): compact user-friendly task registration library. It verifies that there is no
   circular dependencies, no missing dependencies and no data races between registered tasks.
 - [Handling](./Library/Public/Handling/README.md): compact handle-based ownership implementation.

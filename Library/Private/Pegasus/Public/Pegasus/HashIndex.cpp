@@ -8,8 +8,7 @@
 
 namespace Emergence::Pegasus
 {
-const InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &HashIndex::GetIndexedFields ()
-    const noexcept
+const HashIndex::IndexedFieldVector &HashIndex::GetIndexedFields () const noexcept
 {
     return indexedFields;
 }

@@ -17,7 +17,7 @@ struct TimeSingleton final
 
     /// Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
-    Emergence::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
+    Emergence::Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
     uint64_t fixedStartUs = 0u;
     Emergence::RunningAverage<30u> averageFixedRealDurationS;

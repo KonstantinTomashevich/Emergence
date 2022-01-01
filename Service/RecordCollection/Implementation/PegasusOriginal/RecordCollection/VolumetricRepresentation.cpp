@@ -43,9 +43,7 @@ EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (RayIntersectionEditCursor,
 
 using DimensionIterator = VolumetricRepresentation::DimensionIterator;
 
-using DimensionIteratorImplementation =
-    InplaceVector<Pegasus::VolumetricIndex::Dimension,
-                  Pegasus::Constants::VolumetricIndex::MAX_DIMENSIONS>::ConstIterator;
+using DimensionIteratorImplementation = Emergence::Pegasus::VolumetricIndex::DimensionVector::ConstIterator;
 
 // NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)

@@ -17,6 +17,9 @@ sober_library_begin (Pegasus STATIC)
     sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${API_COMMON_LIBRARY_TARGET})
 
+    sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
+    sober_library_link_library (PUBLIC "${CONTAINER_LIBRARY_TARGET}")
+
     sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${HANDLING_LIBRARY_TARGET})
 

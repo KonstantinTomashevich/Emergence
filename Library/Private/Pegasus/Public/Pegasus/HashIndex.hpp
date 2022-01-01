@@ -7,6 +7,8 @@
 
 #include <API/Common/Cursor.hpp>
 
+#include <Container/InplaceVector.hpp>
+
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
@@ -15,13 +17,14 @@
 #include <Pegasus/Constants/HashIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
-#include <SyntaxSugar/InplaceVector.hpp>
-
 namespace Emergence::Pegasus
 {
 class HashIndex final : public IndexBase
 {
 public:
+    using IndexedFieldVector =
+        Container::InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS>;
+
     struct LookupRequest final
     {
         /// \brief Pointer to an array with values for indexed field, used for lookup.
@@ -41,8 +44,7 @@ public:
 
     ~HashIndex () = default;
 
-    const InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &GetIndexedFields ()
-        const noexcept;
+    const IndexedFieldVector &GetIndexedFields () const noexcept;
 
     void Drop () noexcept;
 
@@ -109,7 +111,7 @@ private:
 
     void OnWriterClosed () noexcept;
 
-    InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
+    IndexedFieldVector indexedFields;
     RecordHashSet records;
     std::vector<RecordHashSet::node_type> changedNodes;
 

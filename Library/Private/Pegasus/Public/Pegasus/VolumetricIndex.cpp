@@ -759,8 +759,7 @@ void VolumetricIndex::RayIntersectionEditCursor::BeginRecordEdition () const noe
     }
 }
 
-const InplaceVector<VolumetricIndex::Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS>
-    &VolumetricIndex::GetDimensions () const noexcept
+const VolumetricIndex::DimensionVector &VolumetricIndex::GetDimensions () const noexcept
 {
     return dimensions;
 }

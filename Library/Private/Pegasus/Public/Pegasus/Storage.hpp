@@ -6,6 +6,8 @@
 
 #include <API/Common/Iterator.hpp>
 
+#include <Container/InplaceVector.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Memory/OrderedPool.hpp>
@@ -16,8 +18,6 @@
 #include <Pegasus/VolumetricIndex.hpp>
 
 #include <StandardLayout/Mapping.hpp>
-
-#include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus
 {
@@ -35,6 +35,10 @@ private:
     };
 
 public:
+    template <typename Index>
+    using IndexVector =
+        Container::InplaceVector<Storage::IndexHolder<Index>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>;
+
     class Allocator final
     {
     public:
@@ -67,8 +71,7 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator =
-            InplaceVector<Storage::IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = IndexVector<HashIndex>::ConstIterator;
 
         explicit HashIndexIterator (BaseIterator _baseIterator) noexcept;
 
@@ -83,8 +86,7 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector<Storage::IndexHolder<OrderedIndex>,
-                                           Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = IndexVector<OrderedIndex>::ConstIterator;
 
         explicit OrderedIndexIterator (BaseIterator _baseIterator) noexcept;
 
@@ -99,8 +101,7 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector<Storage::IndexHolder<VolumetricIndex>,
-                                           Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = IndexVector<VolumetricIndex>::ConstIterator;
 
         explicit VolumetricIndexIterator (BaseIterator _baseIterator) noexcept;
 
@@ -211,15 +212,15 @@ private:
 
     struct
     {
-        InplaceVector<IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> hash;
-        InplaceVector<IndexHolder<OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> ordered;
-        InplaceVector<IndexHolder<VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> volumetric;
+        IndexVector<HashIndex> hash;
+        IndexVector<OrderedIndex> ordered;
+        IndexVector<VolumetricIndex> volumetric;
     } indices;
 
     struct
     {
         StandardLayout::Mapping recordMapping;
-        InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
+        Container::InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
     } reflection;
 
     struct
