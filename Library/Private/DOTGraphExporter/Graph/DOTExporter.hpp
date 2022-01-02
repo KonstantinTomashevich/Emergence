@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_set>
 
+#include <Container/Vector.hpp>
+
 #include <Visual/Graph.hpp>
 
 namespace Emergence::Graph::DOTExporter
@@ -16,6 +18,8 @@ public:
     static bool Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept;
 
 private:
+    static const Memory::UniqueString ALLOCATION_GROUP;
+
     /// \return Is given id correct?
     static bool IsIdValid (const std::string &_id) noexcept;
 
@@ -37,6 +41,6 @@ private:
     ///          problem: all edges (doesn't matter in which graph edge was declared) are defined in root graph after
     ///          all subgraphs and nodes. Therefore we store all resolved edges in this array until all subgraphs and
     ///          nodes are defined.
-    std::vector<VisualGraph::Edge> resolvedEdges;
+    Container::Vector<VisualGraph::Edge> resolvedEdges {ALLOCATION_GROUP};
 };
 } // namespace Emergence::Graph::DOTExporter
