@@ -2,7 +2,7 @@
 
 #include <Hashing/ByteHasher.hpp>
 
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 #include <Pegasus/HashIndex.hpp>
 #include <Pegasus/RecordUtility.hpp>

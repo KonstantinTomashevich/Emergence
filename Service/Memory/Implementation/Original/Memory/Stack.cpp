@@ -5,9 +5,9 @@
 
 namespace Emergence::Memory
 {
-Stack::Stack (Memory::UniqueString _groupId, size_t _capacity) noexcept
+Stack::Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept
 {
-    new (&data) Original::Stack (_groupId, _capacity);
+    new (&data) Original::Stack (std::move (_group), _capacity);
 }
 
 Stack::Stack (Stack &&_other) noexcept
@@ -43,6 +43,11 @@ void Stack::Clear () noexcept
 size_t Stack::GetFreeSize () const noexcept
 {
     return block_cast<Original::Stack> (data).GetFreeSize ();
+}
+
+const Profiler::AllocationGroup &Stack::GetAllocationGroup () const noexcept
+{
+    return block_cast<Original::Stack> (data).GetAllocationGroup ();
 }
 
 Stack &Stack::operator= (Stack &&_other) noexcept

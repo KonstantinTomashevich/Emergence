@@ -5,11 +5,11 @@
 
 namespace Emergence::Memory::Original
 {
-Stack::Stack (Memory::UniqueString _groupId, size_t _capacity) noexcept
+Stack::Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept
     : start (malloc (_capacity)),
-      registry (_groupId)
+      group (std::move (_group))
 {
-    registry.Allocate (_capacity);
+    group.Allocate (_capacity);
     end = static_cast<uint8_t *> (start) + _capacity;
     head = start;
 }
@@ -18,7 +18,7 @@ Stack::Stack (Stack &&_other) noexcept
     : start (_other.start),
       end (_other.end),
       head (_other.head),
-      registry (std::move (_other.registry))
+      group (std::move (_other.group))
 {
     _other.start = nullptr;
     _other.end = nullptr;
@@ -28,7 +28,7 @@ Stack::Stack (Stack &&_other) noexcept
 Stack::~Stack () noexcept
 {
     free (start);
-    registry.Free (static_cast<size_t> (reinterpret_cast<uintptr_t> (end) - reinterpret_cast<uintptr_t> (start)));
+    group.Free (static_cast<size_t> (reinterpret_cast<uintptr_t> (end) - reinterpret_cast<uintptr_t> (start)));
 }
 
 void *Stack::Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept
@@ -38,12 +38,12 @@ void *Stack::Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept
     {
         const uintptr_t step = _alignAs - alignmentStep;
         head = static_cast<uint8_t *> (head) + step;
-        registry.Acquire (static_cast<size_t> (step));
+        group.Acquire (static_cast<size_t> (step));
     }
 
     void *allocated = head;
     head = static_cast<uint8_t *> (head) + _chunkSize;
-    registry.Acquire (_chunkSize);
+    group.Acquire (_chunkSize);
     return allocated;
 }
 
@@ -57,19 +57,23 @@ void Stack::Release (const void *_newHead) noexcept
     assert (_newHead > start);
     assert (_newHead <= head);
 
-    registry.Release (
-        static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (_newHead)));
+    group.Release (static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (_newHead)));
     head = const_cast<void *> (_newHead);
 }
 
 void Stack::Clear () noexcept
 {
-    registry.Release (static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (start)));
+    group.Release (static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (start)));
     head = start;
 }
 
 size_t Stack::GetFreeSize () const noexcept
 {
     return static_cast<uint8_t *> (end) - static_cast<uint8_t *> (head);
+}
+
+const Profiler::AllocationGroup &Stack::GetAllocationGroup () const noexcept
+{
+    return group;
 }
 } // namespace Emergence::Memory::Original

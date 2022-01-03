@@ -1,7 +1,7 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/World.hpp>
 
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Celerity
 {

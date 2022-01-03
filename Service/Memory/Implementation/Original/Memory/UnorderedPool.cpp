@@ -7,16 +7,16 @@ namespace Emergence::Memory
 {
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-UnorderedPool::UnorderedPool (Memory::UniqueString _groupId, std::size_t _chunkSize) noexcept
-    : UnorderedPool (_groupId, _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize) noexcept
+    : UnorderedPool (std::move (_group), _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
-UnorderedPool::UnorderedPool (Memory::UniqueString _groupId,
+UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group,
                               std::size_t _chunkSize,
                               std::size_t _preferredPageCapacity) noexcept
 {
-    new (&data) Original::UnorderedPool (_groupId, _chunkSize, _preferredPageCapacity);
+    new (&data) Original::UnorderedPool (std::move (_group), _chunkSize, _preferredPageCapacity);
 }
 
 UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
@@ -44,9 +44,9 @@ void UnorderedPool::Clear () noexcept
     block_cast<Original::UnorderedPool> (data).Clear ();
 }
 
-std::size_t UnorderedPool::GetAllocatedSpace () const noexcept
+const Profiler::AllocationGroup &UnorderedPool::GetAllocationGroup () const noexcept
 {
-    return block_cast<Original::UnorderedPool> (data).GetAllocatedSpace ();
+    return block_cast<Original::UnorderedPool> (data).GetAllocationGroup ();
 }
 
 UnorderedPool &UnorderedPool::operator= (UnorderedPool &&_other) noexcept

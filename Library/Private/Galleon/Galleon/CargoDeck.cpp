@@ -2,7 +2,7 @@
 
 #include <Galleon/CargoDeck.hpp>
 
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Galleon
 {

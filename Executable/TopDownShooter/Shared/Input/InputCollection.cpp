@@ -6,10 +6,14 @@ BEGIN_MUTING_WARNINGS
 #include <OgreInput.h>
 END_MUTING_WARNINGS
 
+#include <Container/Vector.hpp>
+
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>
 #include <Input/InputListenerObject.hpp>
 #include <Input/NormalInputMappingSingleton.hpp>
+
+#include <Memory/Profiler/Registry.hpp>
 
 #include <Shared/Checkpoint.hpp>
 
@@ -45,8 +49,13 @@ private:
     OgreBites::ApplicationContextBase *application;
     Emergence::StandardLayout::Mapping singleton;
     Emergence::StandardLayout::Field mappingField;
-    std::vector<InputAction> frameActionsBuffer;
+    Emergence::Container::Vector<InputAction> frameActionsBuffer;
 };
+
+namespace MP = Emergence::Memory::Profiler;
+
+static const Emergence::Memory::UniqueString INPUT_COLLECTOR {"InputCollector"};
+static const Emergence::Memory::UniqueString FRAME_ACTIONS_BUFFER {"FrameActionsBuffer"};
 
 InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
                                 const Emergence::StandardLayout::Mapping &_singleton,
@@ -59,7 +68,9 @@ InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
                                                           InputListenerObject::Reflect ().objectId)),
       application (_application),
       singleton (_singleton),
-      mappingField (_singleton.GetField (_mappingField))
+      mappingField (_singleton.GetField (_mappingField)),
+      frameActionsBuffer (
+          MP::ConstructWithinGroup<decltype (frameActionsBuffer)> (INPUT_COLLECTOR, FRAME_ACTIONS_BUFFER))
 {
     assert (_application);
     assert (mappingField.GetNestedObjectMapping () == InputMapping::Reflect ().mapping);

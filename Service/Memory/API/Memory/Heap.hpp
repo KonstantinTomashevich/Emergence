@@ -4,7 +4,7 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
-#include <Memory/UniqueString.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Memory
 {
@@ -14,8 +14,7 @@ namespace Emergence::Memory
 class Heap final
 {
 public:
-    /// \param _groupId Memory allocation group id for profiling.
-    explicit Heap (UniqueString _groupId) noexcept;
+    explicit Heap (Profiler::AllocationGroup _group) noexcept;
 
     /// Copying memory allocator looks counter-intuitive.
     Heap (const Heap &_other) = delete;
@@ -37,18 +36,17 @@ public:
     ///               log information to memory profiler.
     void Release (void *_record, size_t _bytes) noexcept;
 
+    /// \return Allocation group to which this allocator belongs.
+    /// \warning Group will report zero memory usage if it is a placeholder or
+    ///          if executable is linked to no-profile implementation.
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
+
     /// Copy assigning memory allocator looks counter-intuitive.
     Heap &operator= (const Heap &_other) = delete;
 
     Heap &operator= (Heap &&_other) noexcept;
 
 private:
-    template <typename Type>
-    friend class HeapSTD;
-
-    /// \return Memory allocation group id, needed for HeadSTD.
-    [[nodiscard]] UniqueString GetGroupId () const noexcept;
-
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 };
 
@@ -64,21 +62,21 @@ public:
 
     using is_always_equal = std::true_type;
 
-    HeapSTD () noexcept : heap (DefaultAllocationGroup<Type>::ID)
+    HeapSTD () noexcept : heap (Profiler::AllocationGroup {DefaultAllocationGroup<Type>::ID})
     {
     }
 
     /// \details Intentionally implicit to make container initialization easier.
-    HeapSTD (UniqueString _groupId) noexcept : heap (_groupId)
+    HeapSTD (const Profiler::AllocationGroup &_group) noexcept : heap (_group)
     {
     }
 
     template <typename Other>
-    HeapSTD ([[maybe_unused]] const HeapSTD<Other> &_other) noexcept : HeapSTD (_other.heap.GetGroupId ())
+    HeapSTD ([[maybe_unused]] const HeapSTD<Other> &_other) noexcept : HeapSTD (_other.heap.GetAllocationGroup ())
     {
     }
 
-    HeapSTD (const HeapSTD &_other) noexcept : HeapSTD (_other.heap.GetGroupId ())
+    HeapSTD (const HeapSTD &_other) noexcept : HeapSTD (_other.heap.GetAllocationGroup ())
     {
     }
 

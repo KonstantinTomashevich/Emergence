@@ -2,7 +2,7 @@
 #include <cassert>
 #include <cstring>
 
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 #include <Pegasus/Constants/OrderedIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>

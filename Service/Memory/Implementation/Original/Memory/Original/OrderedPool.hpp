@@ -5,8 +5,7 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
-#include <Memory/UniqueString.hpp>
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Memory::Original
 {
@@ -49,7 +48,7 @@ public:
         AcquiredChunkConstIterator base;
     };
 
-    OrderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept;
 
     OrderedPool (const OrderedPool &_other) = delete;
 
@@ -65,8 +64,6 @@ public:
 
     void Clear () noexcept;
 
-    [[nodiscard]] size_t GetAllocatedSpace () const noexcept;
-
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
     [[nodiscard]] AcquiredChunkConstIterator EndAcquired () const noexcept;
@@ -74,6 +71,8 @@ public:
     [[nodiscard]] AcquiredChunkIterator BeginAcquired () noexcept;
 
     [[nodiscard]] AcquiredChunkIterator EndAcquired () noexcept;
+
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (OrderedPool);
 
@@ -99,9 +98,8 @@ private:
 
     const size_t pageCapacity;
     const size_t chunkSize;
-    size_t pageCount;
     Page *topPage;
     Chunk *topFreeChunk;
-    Profiler::Registry registry;
+    Profiler::AllocationGroup group;
 };
 } // namespace Emergence::Memory::Original

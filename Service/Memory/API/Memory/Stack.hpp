@@ -4,7 +4,7 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
-#include <Memory/UniqueString.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Memory
 {
@@ -15,9 +15,8 @@ namespace Emergence::Memory
 class Stack final
 {
 public:
-    /// \param _groupId Memory allocation group id for profiling.
     /// \param _capacity Stack capacity in bytes.
-    explicit Stack (UniqueString _groupId, size_t _capacity) noexcept;
+    explicit Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -41,7 +40,13 @@ public:
     void Clear () noexcept;
 
     /// \return How many free bytes left?
+    /// \details Not based on memory profiler implementation, therefore guaranteed to be always correct.
     [[nodiscard]] size_t GetFreeSize () const noexcept;
+
+    /// \return Allocation group to which this allocator belongs.
+    /// \warning Group will report zero memory usage if it is a placeholder or
+    ///          if executable is linked to no-profile implementation.
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     /// \brief Copy assigning stack contradicts with its usage practices.
     Stack &operator= (const Stack &_other) = delete;

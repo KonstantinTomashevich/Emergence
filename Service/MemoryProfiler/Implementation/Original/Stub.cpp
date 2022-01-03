@@ -1,152 +1,169 @@
+#include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/Profiler/Capture.hpp>
-#include <Memory/Profiler/Registry.hpp>
 
 namespace Emergence::Memory::Profiler
 {
 // TODO: Empty stubs are temporary inserted for linking.
 
-GroupPrefix::GroupPrefix ([[maybe_unused]] UniqueString _id) noexcept
+AllocationGroup::PlacedOnStack::~PlacedOnStack ()
 {
 }
 
-GroupPrefix::~GroupPrefix () noexcept
+AllocationGroup::PlacedOnStack::PlacedOnStack (void *_handle) noexcept : handle (_handle)
 {
+    handle = _handle;
 }
 
-bool Registry::Iterator::operator== ([[maybe_unused]] const Registry::Iterator &_other) const noexcept
+bool AllocationGroup::Iterator::operator== ([[maybe_unused]] const AllocationGroup::Iterator &_other) const noexcept
 {
     return false;
 }
 
-Registry::Iterator &Registry::Iterator::operator++ () noexcept
+AllocationGroup::Iterator &AllocationGroup::Iterator::operator++ () noexcept
 {
     return *this;
 }
 
-Registry::Iterator Registry::Iterator::operator++ (int) noexcept
+AllocationGroup::Iterator AllocationGroup::Iterator::operator++ (int) noexcept
 {
-    return Registry::Iterator (nullptr);
+    return AllocationGroup::Iterator (nullptr);
 }
 
-Registry Registry::Iterator::operator* () const noexcept
+AllocationGroup AllocationGroup::Iterator::operator* () const noexcept
 {
-    return Registry (Memory::UniqueString ());
+    return AllocationGroup (Memory::UniqueString ());
 }
 
-Registry::Iterator::Iterator ([[maybe_unused]] const Registry::Iterator &_other) noexcept
-{
-}
-
-Registry::Iterator::Iterator ([[maybe_unused]] Registry::Iterator &&_other) noexcept
+AllocationGroup::Iterator::Iterator ([[maybe_unused]] const AllocationGroup::Iterator &_other) noexcept
 {
 }
 
-Registry::Iterator &Registry::Iterator::operator= ([[maybe_unused]] const Registry::Iterator &_other) noexcept
+AllocationGroup::Iterator::Iterator ([[maybe_unused]] AllocationGroup::Iterator &&_other) noexcept
+{
+}
+
+AllocationGroup::Iterator &AllocationGroup::Iterator::operator= (
+    [[maybe_unused]] const AllocationGroup::Iterator &_other) noexcept
 {
     return *this;
 }
-Registry::Iterator &Registry::Iterator::operator= ([[maybe_unused]] Registry::Iterator &&_other) noexcept
+AllocationGroup::Iterator &AllocationGroup::Iterator::operator= (
+    [[maybe_unused]] AllocationGroup::Iterator &&_other) noexcept
 {
     return *this;
 }
 
-Registry::Iterator::~Iterator () noexcept
+AllocationGroup::Iterator::~Iterator () noexcept
 {
 }
 
-bool Registry::Iterator::operator!= ([[maybe_unused]] const Registry::Iterator &_other) const noexcept
+bool AllocationGroup::Iterator::operator!= ([[maybe_unused]] const AllocationGroup::Iterator &_other) const noexcept
 {
     return false;
 }
 
-Registry::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+AllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     data = *_data;
 }
 
-Registry::Registry ([[maybe_unused]] UniqueString _id) noexcept
+AllocationGroup::AllocationGroup ([[maybe_unused]] UniqueString _id) noexcept
 {
 }
 
-Registry::Iterator Registry::BeginGlobal () noexcept
-{
-    return Registry::Iterator (nullptr);
-}
-
-Registry::Iterator Registry::EndGlobal () noexcept
-{
-    return Registry::Iterator (nullptr);
-}
-
-Registry::Registry ([[maybe_unused]] const Registry &_other) noexcept
+AllocationGroup::AllocationGroup ([[maybe_unused]] const AllocationGroup &_parent,
+                                  [[maybe_unused]] UniqueString _id) noexcept
 {
 }
 
-Registry::Registry ([[maybe_unused]] Registry &&_other) noexcept
+AllocationGroup::AllocationGroup ([[maybe_unused]] const AllocationGroup &_other) noexcept
 {
 }
 
-Registry::~Registry () noexcept
+AllocationGroup::AllocationGroup ([[maybe_unused]] AllocationGroup &&_other) noexcept
 {
 }
 
-void Registry::Allocate ([[maybe_unused]] size_t _bytesCount) noexcept
+AllocationGroup::~AllocationGroup () noexcept
 {
 }
 
-void Registry::Acquire ([[maybe_unused]] size_t _bytesCount) noexcept
+AllocationGroup AllocationGroup::Root () noexcept
+{
+    return AllocationGroup ();
+}
+
+AllocationGroup AllocationGroup::Top () noexcept
+{
+    return AllocationGroup ();
+}
+
+AllocationGroup::AllocationGroup () noexcept
 {
 }
 
-void Registry::Release ([[maybe_unused]] size_t _bytesCount) noexcept
+AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () noexcept
+{
+    return AllocationGroup::PlacedOnStack (nullptr);
+}
+
+void AllocationGroup::Allocate ([[maybe_unused]] size_t _bytesCount) noexcept
 {
 }
 
-void Registry::Free ([[maybe_unused]] size_t _bytesCount) noexcept
+void AllocationGroup::Acquire ([[maybe_unused]] size_t _bytesCount) noexcept
 {
 }
 
-Registry::Iterator Registry::BeginChildren () noexcept
+void AllocationGroup::Release ([[maybe_unused]] size_t _bytesCount) noexcept
 {
-    return Registry::Iterator (nullptr);
 }
 
-Registry::Iterator Registry::EndChildren () noexcept
+void AllocationGroup::Free ([[maybe_unused]] size_t _bytesCount) noexcept
 {
-    return Registry::Iterator (nullptr);
 }
 
-UniqueString Registry::GetId () const noexcept
+AllocationGroup::Iterator AllocationGroup::BeginChildren () noexcept
+{
+    return AllocationGroup::Iterator (nullptr);
+}
+
+AllocationGroup::Iterator AllocationGroup::EndChildren () noexcept
+{
+    return AllocationGroup::Iterator (nullptr);
+}
+
+UniqueString AllocationGroup::GetId () const noexcept
 {
     return UniqueString ();
 }
 
-size_t Registry::GetAcquired () const noexcept
+size_t AllocationGroup::GetAcquired () const noexcept
 {
     return 0;
 }
 
-size_t Registry::GetReserved () const noexcept
+size_t AllocationGroup::GetReserved () const noexcept
 {
     return 0;
 }
 
-size_t Registry::GetTotal () const noexcept
+size_t AllocationGroup::GetTotal () const noexcept
 {
     return 0;
 }
 
-Registry &Registry::operator= ([[maybe_unused]] const Registry &_other) noexcept
+AllocationGroup &AllocationGroup::operator= ([[maybe_unused]] const AllocationGroup &_other) noexcept
 {
     return *this;
 }
 
-Registry &Registry::operator= ([[maybe_unused]] Registry &&_other) noexcept
+AllocationGroup &AllocationGroup::operator= ([[maybe_unused]] AllocationGroup &&_other) noexcept
 {
     return *this;
 }
 
-Registry::Registry (void *_handle) noexcept
+AllocationGroup::AllocationGroup (void *_handle) noexcept : handle (_handle)
 {
     handle = _handle;
 }

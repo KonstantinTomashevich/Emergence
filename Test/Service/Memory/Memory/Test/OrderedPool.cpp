@@ -39,7 +39,7 @@ TEST_CASE (SuccessfullShrink)
     }
 
     context.pool.Shrink ();
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (),
                  (PoolContext::PAGES_TO_FILL - 1u) * PoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item to ensure that pool is in working state.
@@ -56,7 +56,7 @@ TEST_CASE (UnsuccessfullShrink)
     }
 
     context.pool.Shrink ();
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (),
                  PoolContext::PAGES_TO_FILL * PoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item to ensure that pool is in working state.
@@ -67,7 +67,7 @@ TEST_CASE (Clear)
 {
     PoolContext context;
     context.pool.Clear ();
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
 
     // Acquire one item to ensure that pool is in working state.
     CHECK (context.pool.Acquire ());
@@ -78,8 +78,8 @@ TEST_CASE (Move)
     PoolContext context;
     Emergence::Memory::OrderedPool newPool (std::move (context.pool));
 
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
-    CHECK_EQUAL (newPool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
+    CHECK_EQUAL (newPool.GetAllocationGroup ().GetTotal (),
                  PoolContext::PAGES_TO_FILL * PoolContext::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item from each pool to ensure that they are in working state.
@@ -89,13 +89,13 @@ TEST_CASE (Move)
 
 TEST_CASE (IterateEmpty)
 {
-    Emergence::Memory::OrderedPool pool {"Test"_us, sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
     CHECK (pool.BeginAcquired () == pool.EndAcquired ());
 }
 
 TEST_CASE (IterationFirstItem)
 {
-    Emergence::Memory::OrderedPool pool {"Test"_us, sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
     void *first = pool.Acquire ();
     void *second = pool.Acquire ();
 

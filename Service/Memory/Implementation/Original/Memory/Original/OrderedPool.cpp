@@ -148,13 +148,12 @@ OrderedPool::AcquiredChunkIterator::AcquiredChunkIterator (AcquiredChunkConstIte
 {
 }
 
-OrderedPool::OrderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept
+OrderedPool::OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept
     : pageCapacity (_pageCapacity),
       chunkSize (_chunkSize),
-      pageCount (0u),
       topPage (nullptr),
       topFreeChunk (nullptr),
-      registry (_groupId)
+      group (std::move(_group))
 {
     assert (_pageCapacity > 0u);
     assert (_chunkSize >= sizeof (Chunk));
@@ -163,12 +162,10 @@ OrderedPool::OrderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
     : pageCapacity (_other.pageCapacity),
       chunkSize (_other.chunkSize),
-      pageCount (_other.pageCount),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk),
-      registry (std::move (_other.registry))
+      group (std::move (_other.group))
 {
-    _other.pageCount = 0u;
     _other.topPage = nullptr;
     _other.topFreeChunk = nullptr;
 }
@@ -182,8 +179,8 @@ void *OrderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
-        registry.Allocate (sizeof (Page) + pageCapacity * chunkSize);
-        registry.Acquire (sizeof (Page));
+        group.Allocate (sizeof (Page) + pageCapacity * chunkSize);
+        group.Acquire (sizeof (Page));
 
         Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         Page *insertPageBefore = topPage;
@@ -215,11 +212,9 @@ void *OrderedPool::Acquire () noexcept
 
         currentChunk->nextFree = nullptr;
         topFreeChunk = &newPage->chunks[0u];
-        assert (pageCount + 1u > pageCount);
-        ++pageCount;
     }
 
-    registry.Acquire (chunkSize);
+    group.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
     return acquired;
@@ -227,7 +222,7 @@ void *OrderedPool::Acquire () noexcept
 
 void OrderedPool::Release (void *_chunk) noexcept
 {
-    registry.Release (chunkSize);
+    group.Release (chunkSize);
     auto *chunk = static_cast<Chunk *> (_chunk);
     Chunk *insertChunkAfter = nullptr;
     Chunk *insertChunkBefore = topFreeChunk;
@@ -278,12 +273,10 @@ void OrderedPool::Shrink () noexcept
             Page *nextPage = currentPage->next;
             free (currentPage);
 
-            registry.Release (sizeof (Page));
-            registry.Free (sizeof (Page) + pageCapacity * chunkSize);
+            group.Release (sizeof (Page));
+            group.Free (sizeof (Page) + pageCapacity * chunkSize);
 
             currentPage = nextPage;
-            --pageCount;
-
             if (previousPage)
             {
                 previousPage->next = currentPage;
@@ -306,15 +299,14 @@ void OrderedPool::Clear () noexcept
     Page *page = topPage;
     while (page)
     {
-        registry.Release (sizeof (Page));
-        registry.Free (sizeof (Page) + pageCapacity * chunkSize);
+        group.Release (sizeof (Page));
+        group.Free (sizeof (Page) + pageCapacity * chunkSize);
 
         Page *next = page->next;
         free (page);
         page = next;
     }
 
-    pageCount = 0u;
     topPage = nullptr;
     topFreeChunk = nullptr;
 }
@@ -340,8 +332,8 @@ OrderedPool::AcquiredChunkIterator OrderedPool::EndAcquired () noexcept
     return AcquiredChunkIterator {const_cast<const OrderedPool *> (this)->EndAcquired ()};
 }
 
-size_t OrderedPool::GetAllocatedSpace () const noexcept
+const Profiler::AllocationGroup &OrderedPool::GetAllocationGroup () const noexcept
 {
-    return pageCount * pageCapacity * chunkSize;
+    return group;
 }
 } // namespace Emergence::Memory::Original

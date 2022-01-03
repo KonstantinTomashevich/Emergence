@@ -38,6 +38,9 @@ public:
 
     ~Mapping () noexcept;
 
+    // TODO: Add default constructor and destructor as optional properties?
+    //       It will solve some unpleasant problems in data management libraries.
+
     /// \return User defined object size in bytes including alignment gaps.
     [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 

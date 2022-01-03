@@ -5,13 +5,12 @@
 
 namespace Emergence::Memory::Original
 {
-UnorderedPool::UnorderedPool (Memory::UniqueString _groupId, size_t _chunkSize, size_t _pageCapacity) noexcept
+UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept
     : pageCapacity (_pageCapacity),
       chunkSize (_chunkSize),
-      pageCount (0u),
       topPage (nullptr),
       topFreeChunk (nullptr),
-      registry (_groupId)
+      group (std::move (_group))
 {
     assert (_pageCapacity > 0u);
     assert (_chunkSize >= sizeof (Chunk));
@@ -20,12 +19,10 @@ UnorderedPool::UnorderedPool (Memory::UniqueString _groupId, size_t _chunkSize, 
 UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
     : pageCapacity (_other.pageCapacity),
       chunkSize (_other.chunkSize),
-      pageCount (_other.pageCount),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk),
-      registry (std::move (_other.registry))
+      group (std::move (_other.group))
 {
-    _other.pageCount = 0u;
     _other.topPage = nullptr;
     _other.topFreeChunk = nullptr;
 }
@@ -39,8 +36,8 @@ void *UnorderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
-        registry.Allocate (sizeof (Page) + pageCapacity * chunkSize);
-        registry.Acquire (sizeof (Page));
+        group.Allocate (sizeof (Page) + pageCapacity * chunkSize);
+        group.Acquire (sizeof (Page));
 
         Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         newPage->next = topPage;
@@ -56,11 +53,9 @@ void *UnorderedPool::Acquire () noexcept
 
         currentChunk->nextFree = nullptr;
         topFreeChunk = &newPage->chunks[0u];
-        assert (pageCount + 1u > pageCount);
-        ++pageCount;
     }
 
-    registry.Acquire (chunkSize);
+    group.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
     return acquired;
@@ -68,7 +63,7 @@ void *UnorderedPool::Acquire () noexcept
 
 void UnorderedPool::Release (void *_chunk) noexcept
 {
-    registry.Release (chunkSize);
+    group.Release (chunkSize);
     auto *chunk = static_cast<Chunk *> (_chunk);
     chunk->nextFree = topFreeChunk;
     topFreeChunk = chunk;
@@ -79,21 +74,20 @@ void UnorderedPool::Clear () noexcept
     Page *page = topPage;
     while (page)
     {
-        registry.Release (sizeof (Page));
-        registry.Free (sizeof (Page) + pageCapacity * chunkSize);
+        group.Release (sizeof (Page));
+        group.Free (sizeof (Page) + pageCapacity * chunkSize);
 
         Page *next = page->next;
         free (page);
         page = next;
     }
 
-    pageCount = 0u;
     topPage = nullptr;
     topFreeChunk = nullptr;
 }
 
-size_t UnorderedPool::GetAllocatedSpace () const noexcept
+const Profiler::AllocationGroup &UnorderedPool::GetAllocationGroup () const noexcept
 {
-    return pageCount * pageCapacity * chunkSize;
+    return group;
 }
 } // namespace Emergence::Memory::Original

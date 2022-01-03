@@ -13,6 +13,8 @@ sober_library_begin ("${GAME_NAME}Shared" STATIC)
     sober_library_link_library (PUBLIC OgreRTShaderSystem)
 
     sober_library_use_service (EXPECTED PRIVATE Log)
+    sober_library_use_service (EXPECTED PRIVATE Memory)
+    sober_library_use_service (EXPECTED PRIVATE MemoryProfiler)
 
     sober_variant_begin (Original)
     sober_variant_end ()

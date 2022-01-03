@@ -1,5 +1,6 @@
 #include <vector>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/UniqueString.hpp>
 
 #include <Testing/Testing.hpp>
@@ -28,24 +29,24 @@ struct FullPoolContext
             items.emplace_back (pool.Acquire ());
         }
 
-        CHECK_EQUAL (pool.GetAllocatedSpace (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
+        CHECK_EQUAL (pool.GetAllocationGroup ().GetTotal (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
     }
 
-    Pool pool {"Test"_us, sizeof (TestItem), PAGE_CAPACITY};
+    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem), PAGE_CAPACITY};
     std::vector<void *> items;
 };
 
 template <typename Pool>
 void AcquireNotNull ()
 {
-    Pool pool {"Test"_us, sizeof (TestItem)};
+    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
     CHECK (pool.Acquire ());
 }
 
 template <typename Pool>
 void MultipleAcquiresDoNotOverlap ()
 {
-    Pool pool {"Test"_us, sizeof (TestItem)};
+    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
     auto *first = static_cast<TestItem *> (pool.Acquire ());
     auto *second = static_cast<TestItem *> (pool.Acquire ());
 
@@ -67,7 +68,7 @@ void MultipleAcquiresDoNotOverlap ()
 template <typename Pool>
 void MemoryReused ()
 {
-    Pool pool {"Test"_us, sizeof (TestItem)};
+    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
@@ -80,7 +81,7 @@ void Clear ()
 {
     FullPoolContext<Pool> context;
     context.pool.Clear ();
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
 
     // Acquire one item to ensure that pool is in working state.
     CHECK (context.pool.Acquire ());
@@ -92,8 +93,8 @@ void Move ()
     FullPoolContext<Pool> context;
     Pool newPool (std::move (context.pool));
 
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
-    CHECK_EQUAL (newPool.GetAllocatedSpace (),
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
+    CHECK_EQUAL (newPool.GetAllocationGroup ().GetTotal (),
                  FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item from each pool to ensure that they are in working state.
@@ -108,8 +109,8 @@ void MoveAssign ()
     FullPoolContext<Pool> secondContext;
     secondContext.pool = std::move (firstContext.pool);
 
-    CHECK_EQUAL (firstContext.pool.GetAllocatedSpace (), 0u);
-    CHECK_EQUAL (secondContext.pool.GetAllocatedSpace (),
+    CHECK_EQUAL (firstContext.pool.GetAllocationGroup ().GetTotal (), 0u);
+    CHECK_EQUAL (secondContext.pool.GetAllocationGroup ().GetTotal (),
                  FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
 
     // Acquire one item from each pool to ensure that they are in working state.

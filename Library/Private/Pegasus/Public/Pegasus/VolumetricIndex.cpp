@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>

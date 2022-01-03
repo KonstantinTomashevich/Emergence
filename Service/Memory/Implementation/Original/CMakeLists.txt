@@ -8,7 +8,4 @@ sober_implementation_begin (Original)
 
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_implementation_link_library ("${SYNTAX_SUGAR_LIBRARY_TARGET}")
-
-    sober_naming_service_target (MemoryProfiler MEMORY_PROFILER_API_TARGET)
-    sober_implementation_link_library ("${MEMORY_PROFILER_API_TARGET}")
 sober_implementation_end ()

@@ -32,14 +32,15 @@ static const char *RegisterValue (const std::string_view &_value)
 
         constexpr const std::size_t STRING_STACK_SIZE = 1u << 20u; // 1 MB.
 
+        static Profiler::AllocationGroup allocationGroup {Profiler::AllocationGroup::Root (),
+                                                          Memory::UniqueString {MEMORY_PROFILING_GROUP_ID}};
+
         // For flexibility, we dynamically allocate new string stacks instead of using one big stack.
-        static UnorderedPool stacksPool {Memory::UniqueString {MEMORY_PROFILING_GROUP_ID}, sizeof (Stack),
-                                         STACK_POOL_PAGE_CAPACITY};
+        static UnorderedPool stacksPool {allocationGroup, sizeof (Stack), STACK_POOL_PAGE_CAPACITY};
 
         // Usually, unique strings are quite small (<100 characters), therefore it's ok to use
         // only last allocated stack instead of trying to insert into all allocated stacks.
-        static auto *lastStack =
-            new (stacksPool.Acquire ()) Stack (Memory::UniqueString {MEMORY_PROFILING_GROUP_ID}, STRING_STACK_SIZE);
+        static auto *lastStack = new (stacksPool.Acquire ()) Stack (allocationGroup, STRING_STACK_SIZE);
 
         // Right now we use unordered set for simplicity.
         static std::unordered_set<std::string_view> stringRegister;
@@ -51,8 +52,7 @@ static const char *RegisterValue (const std::string_view &_value)
             if (lastStack->GetFreeSize () < _value.size () + 1u)
             {
                 // Current stack is full, we need a new one.
-                lastStack = new (stacksPool.Acquire ())
-                    Stack (Memory::UniqueString {MEMORY_PROFILING_GROUP_ID}, STRING_STACK_SIZE);
+                lastStack = new (stacksPool.Acquire ()) Stack (allocationGroup, STRING_STACK_SIZE);
             }
 
             char *space = static_cast<char *> (lastStack->Acquire (_value.size () + 1u, 1u));

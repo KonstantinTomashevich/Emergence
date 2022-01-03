@@ -17,6 +17,8 @@ bool StackTestIncludeMarker () noexcept
 
 using namespace Emergence::Memory::Literals;
 
+static Emergence::Memory::Profiler::AllocationGroup testAllocationGroup {"Test"_us};
+
 BEGIN_SUITE (Stack)
 
 TEST_CASE (AcquireNoOverlap)
@@ -24,7 +26,7 @@ TEST_CASE (AcquireNoOverlap)
     const char first[] = "Hello, world!\0";
     const char second[] = "Lets check the overwrite!\0";
 
-    Emergence::Memory::Stack stack {"Test"_us, 1024u};
+    Emergence::Memory::Stack stack {testAllocationGroup, 1024u};
     char *firstTarget = static_cast<char *> (stack.Acquire (sizeof (first), 1u));
     char *secondTarget = static_cast<char *> (stack.Acquire (sizeof (second), 1u));
 
@@ -37,7 +39,7 @@ TEST_CASE (AcquireNoOverlap)
 
 TEST_CASE (AcquireAlignment)
 {
-    Emergence::Memory::Stack stack {"Test"_us, 1024u};
+    Emergence::Memory::Stack stack {testAllocationGroup, 1024u};
 #define CHECK_ALIGNMENT(Size, Alignment)                                                                               \
     CHECK_EQUAL (reinterpret_cast<uintptr_t> (stack.Acquire (Size, Alignment)) % (Alignment), 0u)
 
@@ -57,7 +59,7 @@ TEST_CASE (AcquireAlignment)
 
 TEST_CASE (ClearAndReuse)
 {
-    Emergence::Memory::Stack stack {"Test"_us, 1024u};
+    Emergence::Memory::Stack stack {testAllocationGroup, 1024u};
     void *firstRecord = stack.Acquire (225u);
     stack.Clear ();
 
@@ -67,7 +69,7 @@ TEST_CASE (ClearAndReuse)
 
 TEST_CASE (ReleaseAndReuse)
 {
-    Emergence::Memory::Stack stack {"Test"_us, 1024u};
+    Emergence::Memory::Stack stack {testAllocationGroup, 1024u};
     [[maybe_unused]] void *historicalShift = stack.Acquire (225u);
     const void *cachedHead = stack.Head ();
 
@@ -88,7 +90,7 @@ TEST_CASE (ReleaseAndReuse)
 TEST_CASE (FreeSize)
 {
     constexpr size_t STACK_SIZE = 1024u;
-    Emergence::Memory::Stack stack {"Test"_us, STACK_SIZE};
+    Emergence::Memory::Stack stack {testAllocationGroup, STACK_SIZE};
     CHECK_EQUAL (stack.GetFreeSize (), STACK_SIZE);
 
     [[maybe_unused]] void *stub1 = stack.Acquire (6u, 1u);
@@ -110,7 +112,7 @@ TEST_CASE (FreeSize)
 
 TEST_CASE (Move)
 {
-    Emergence::Memory::Stack stack {"Test"_us, 1024u};
+    Emergence::Memory::Stack stack {testAllocationGroup, 1024u};
     [[maybe_unused]] void *firstRecord = stack.Acquire (32u);
     const void *cachedHead = stack.Head ();
 
@@ -123,8 +125,8 @@ TEST_CASE (Move)
 
 TEST_CASE (MoveAssign)
 {
-    Emergence::Memory::Stack stack {"Test"_us, 1024u};
-    Emergence::Memory::Stack anotherStack {"Test"_us, 1024u};
+    Emergence::Memory::Stack stack {testAllocationGroup, 1024u};
+    Emergence::Memory::Stack anotherStack {testAllocationGroup, 1024u};
 
     [[maybe_unused]] void *firstRecord = stack.Acquire (32u);
     const void *cachedHead = stack.Head ();

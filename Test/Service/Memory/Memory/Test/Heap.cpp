@@ -18,12 +18,16 @@ bool HeapTestIncludeMarker () noexcept
 
 using namespace Emergence::Memory::Literals;
 
+static Emergence::Memory::Profiler::AllocationGroup testAllocationGroup {"Test"_us};
+
+BEGIN_SUITE (Heap)
+
 TEST_CASE (AcquireNoOverlap)
 {
     static const char *firstString = "Hello, world!";
     static const char *secondString = "Hello, world again!";
 
-    Emergence::Memory::Heap heap {"Test"_us};
+    Emergence::Memory::Heap heap {testAllocationGroup};
     void *first = heap.Acquire (strlen (firstString) + 1u);
     void *second = heap.Acquire (strlen (secondString) + 1u);
 
@@ -40,7 +44,7 @@ TEST_CASE (AcquireNoOverlap)
 TEST_CASE (AcquireAlignment)
 {
     constexpr std::size_t SIZE = 128u;
-    Emergence::Memory::Heap heap {"Test"_us};
+    Emergence::Memory::Heap heap {testAllocationGroup};
     void *record = heap.Acquire (SIZE);
 
     CHECK_EQUAL (reinterpret_cast<uintptr_t> (record) % sizeof (uintptr_t), 0u);
@@ -50,10 +54,10 @@ TEST_CASE (AcquireAlignment)
 TEST_CASE (Resize)
 {
     static const char *string = "Hello, world!";
-    const std::size_t SIZE = strlen (string) + 1u;
+    static const std::size_t SIZE = strlen (string) + 1u;
     constexpr std::size_t NEW_SIZE = 1024u;
 
-    Emergence::Memory::Heap heap {"Test"_us};
+    Emergence::Memory::Heap heap {testAllocationGroup};
     void *record = heap.Acquire (SIZE);
 
     strcpy (reinterpret_cast<char *> (record), string);
@@ -67,7 +71,7 @@ TEST_CASE (Resize)
 TEST_CASE (HeapSTD)
 {
     std::vector<uintptr_t, Emergence::Memory::HeapSTD<uintptr_t>> vector {
-        Emergence::Memory::HeapSTD<uintptr_t> {"Test"_us}};
+        Emergence::Memory::HeapSTD<uintptr_t> {testAllocationGroup}};
 
     vector.reserve (8u);
     for (size_t index = 0u; index < 1024; ++index)
@@ -80,3 +84,5 @@ TEST_CASE (HeapSTD)
         CHECK_EQUAL (vector[index], index);
     }
 }
+
+END_SUITE

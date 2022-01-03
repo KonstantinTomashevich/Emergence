@@ -21,7 +21,8 @@ enum class EventType
 
 struct Event final
 {
-    UniqueString registryId;
+    // TODO: We can not just use group IDs, because they are hierarchical.
+    uint64_t groupUID = 0u;
 
     EventType type = EventType::ALLOCATE;
 
@@ -34,17 +35,17 @@ struct Event final
     size_t startOfCapture = 0u;
 };
 
-class CapturedRegistry final
+class CapturedGroup final
 {
 public:
     class Iterator final
     {
     public:
-        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, CapturedRegistry);
+        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, CapturedGroup);
 
     private:
-        /// Registry constructs iterators.
-        friend class CapturedRegistry;
+        /// CapturedGroup constructs iterators.
+        friend class CapturedGroup;
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
@@ -66,7 +67,7 @@ public:
 private:
     friend class Capture;
 
-    CapturedRegistry (const void *_handle) noexcept;
+    CapturedGroup (const void *_handle) noexcept;
 
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
@@ -83,21 +84,21 @@ public:
 
     ~Capture () = default;
 
-    const Event &Begin () const noexcept;
+    const Event &EventBegin () const noexcept;
 
-    const Event &Current () const noexcept;
+    const Event &EventCurrent () const noexcept;
 
-    const Event *GoToNext () noexcept;
+    const Event *GoToNextEvent () noexcept;
 
-    const Event *GoToPrevious () noexcept;
+    const Event *GoToPreviousEvent () noexcept;
 
-    const CapturedRegistry::Iterator BeginInitial () const noexcept;
+    CapturedGroup InitialRoot () const noexcept;
 
-    const CapturedRegistry::Iterator EndInitial () const noexcept;
+    CapturedGroup GetInitialGroupByUID (uint64_t _uid) const noexcept;
 
-    const CapturedRegistry::Iterator BeginCurrent () const noexcept;
+    CapturedGroup CurrentRoot () const noexcept;
 
-    const CapturedRegistry::Iterator EndCurrent () const noexcept;
+    CapturedGroup GetCurrentGroupByUID (uint64_t _uid) const noexcept;
 
     /// Assigning captures seems counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Capture);
