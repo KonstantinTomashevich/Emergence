@@ -52,12 +52,12 @@ struct PrepareInsertLongTermQuery : public QueryPreparationBase
 
 struct PrepareFetchValueQuery : public QueryPreparationBase
 {
-    std::vector<StandardLayout::FieldId> keyFields;
+    Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareModifyValueQuery : public QueryPreparationBase
 {
-    std::vector<StandardLayout::FieldId> keyFields;
+    Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareFetchAscendingRangeQuery : public QueryPreparationBase

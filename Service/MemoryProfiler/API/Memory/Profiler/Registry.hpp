@@ -17,6 +17,13 @@ public:
     ~GroupPrefix () noexcept;
 };
 
+template <typename T, typename... Args>
+T ConstructWithinGroup (UniqueString _groupId, Args... _args)
+{
+    GroupPrefix prefix {_groupId};
+    return T {std::forward<Args> (_args)...};
+}
+
 class Registry final
 {
 public:

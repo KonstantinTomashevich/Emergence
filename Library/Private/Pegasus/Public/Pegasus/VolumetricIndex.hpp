@@ -5,6 +5,7 @@
 #include <API/Common/Cursor.hpp>
 
 #include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
 
 #include <Handling/HandleableBase.hpp>
 
@@ -172,7 +173,7 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        std::vector<bool> visitedRecords;
+        Container::Vector<bool> visitedRecords {Memory::UniqueString {"ShapeIntersectionVisitationMask"}};
     };
 
     class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
@@ -256,7 +257,7 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        std::vector<bool> visitedRecords;
+        Container::Vector<bool> visitedRecords {Memory::UniqueString {"RayIntersectionVisitationMask"}};
     };
 
     class RayIntersectionReadCursor final : private RayIntersectionCursorBase
@@ -325,15 +326,15 @@ private:
 
     struct LeafData final
     {
-        std::vector<RecordData> records;
+        Container::Vector<RecordData> records;
 
-        std::vector<RecordData>::iterator FindRecord (const void *_record) noexcept;
+        Container::Vector<RecordData>::iterator FindRecord (const void *_record) noexcept;
 
         /// \brief Deletes record from leaf using "exchange with last" strategy.
-        void DeleteRecord (const std::vector<RecordData>::iterator &_recordIterator) noexcept;
+        void DeleteRecord (const Container::Vector<RecordData>::iterator &_recordIterator) noexcept;
     };
 
-    VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept;
+    VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept;
 
     template <typename Operations>
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
@@ -384,8 +385,8 @@ private:
 
     // TODO: For now we use simplified approach and work only with leaves, therefore reducing octree into grid.
     //       This approach is problematic because it significantly limits count of subdivisions.
-    std::vector<LeafData> leaves;
-    std::vector<std::size_t> freeRecordIds;
+    Container::Vector<LeafData> leaves;
+    Container::Vector<std::size_t> freeRecordIds;
     std::size_t nextRecordId;
 };
 

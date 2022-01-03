@@ -6,6 +6,8 @@
 
 #include <Celerity/Pipeline.hpp>
 
+#include <Container/Vector.hpp>
+
 #include <Warehouse/Registry.hpp>
 
 namespace Emergence::Celerity
@@ -13,7 +15,7 @@ namespace Emergence::Celerity
 class World final
 {
 public:
-    explicit World (std::string _name) noexcept;
+    explicit World (Memory::UniqueString _name) noexcept;
 
     World (const World &_other) = delete;
 
@@ -36,7 +38,7 @@ private:
     friend class TaskConstructor;
 
     Warehouse::Registry registry;
-    std::vector<std::unique_ptr<Pipeline>> pipelines;
+    Container::Vector<std::unique_ptr<Pipeline>> pipelines;
     std::atomic_unsigned_lock_free objectIdCounter;
 };
 } // namespace Emergence::Celerity

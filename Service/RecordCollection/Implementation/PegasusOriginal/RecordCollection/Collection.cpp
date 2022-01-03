@@ -8,7 +8,9 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
-namespace Emergence::RecordCollection
+namespace Emergence
+{
+namespace RecordCollection
 {
 Collection::Allocator::Allocator (Collection::Allocator &&_other) noexcept
 {
@@ -97,7 +99,7 @@ LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::Fie
 }
 
 PointRepresentation Collection::CreatePointRepresentation (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     assert (handle);
     Handling::Handle<Pegasus::HashIndex> index = static_cast<Pegasus::Storage *> (handle)->CreateHashIndex (_keyFields);
@@ -105,11 +107,11 @@ PointRepresentation Collection::CreatePointRepresentation (
 }
 
 VolumetricRepresentation Collection::CreateVolumetricRepresentation (
-    const std::vector<DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
 {
     assert (handle);
     // Volumetric representation creation is rare operation, therefore it's ok to dynamically allocate vector here.
-    std::vector<Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions;
+    Container::Vector<Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions {_dimensions.get_allocator ()};
     convertedDimensions.reserve (_dimensions.size ());
 
     for (const DimensionDescriptor &dimension : _dimensions)
@@ -196,4 +198,11 @@ Collection &Collection::operator= (Collection &&_other) noexcept
 
     return *this;
 }
-} // namespace Emergence::RecordCollection
+} // namespace RecordCollection
+
+namespace Memory
+{
+const UniqueString DefaultAllocationGroup<RecordCollection::Collection::DimensionDescriptor>::ID {
+    "DimensionConfiguration"};
+} // namespace Memory
+} // namespace Emergence

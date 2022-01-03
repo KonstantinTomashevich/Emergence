@@ -213,7 +213,7 @@ void ExecuteTask (ExecutionContext &_context, const CreateLinearRepresentation &
 
 void ExecuteTask (ExecutionContext &_context, const CreateVolumetricRepresentation &_task)
 {
-    std::vector<Collection::DimensionDescriptor> convertedDescriptors;
+    Container::Vector<Collection::DimensionDescriptor> convertedDescriptors;
     convertedDescriptors.reserve (_task.dimensions.size ());
 
     for (const Query::Test::Sources::Volumetric::Dimension &dimension : _task.dimensions)

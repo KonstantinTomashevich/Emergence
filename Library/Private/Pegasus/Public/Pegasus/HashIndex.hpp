@@ -8,6 +8,7 @@
 #include <API/Common/Cursor.hpp>
 
 #include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
 
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
@@ -97,7 +98,7 @@ private:
 
     explicit HashIndex (Storage *_owner,
                         std::size_t _initialBuckets,
-                        const std::vector<StandardLayout::FieldId> &_indexedFields);
+                        const Container::Vector<StandardLayout::FieldId> &_indexedFields);
 
     void InsertRecord (const void *_record) noexcept;
 
@@ -113,7 +114,7 @@ private:
 
     IndexedFieldVector indexedFields;
     RecordHashSet records;
-    std::vector<RecordHashSet::node_type> changedNodes;
+    Container::Vector<RecordHashSet::node_type> changedNodes;
 
 public:
     class ReadCursor final

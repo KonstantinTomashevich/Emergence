@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cassert>
 
+#include <Memory/Profiler/Registry.hpp>
+
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
@@ -209,9 +211,10 @@ VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
       sector (_sector),
       shape (_shape),
       currentCoordinate (sector.min),
-      currentRecordIndex (0u),
-      visitedRecords (index->nextRecordId, false)
+      currentRecordIndex (0u)
 {
+    visitedRecords.resize (index->nextRecordId, false);
+
     assert (index);
 #ifndef NDEBUG
     std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (index->dimensions.GetCount ());
@@ -448,9 +451,9 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (Volumetri
       distanceTraveled (0.0f),
       ray (_ray),
       maxDistance (_maxDistance),
-      currentRecordIndex (0u),
-      visitedRecords (index->nextRecordId, false)
+      currentRecordIndex (0u)
 {
+    visitedRecords.resize (index->nextRecordId, false);
     assert (index);
     assert (maxDistance >= 0.0f);
     ++index->activeCursors;
@@ -805,7 +808,8 @@ void VolumetricIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
-std::vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (const void *_record) noexcept
+Container::Vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (
+    const void *_record) noexcept
 {
     return std::find_if (records.begin (), records.end (),
                          [_record] (const RecordData &_data)
@@ -815,7 +819,7 @@ std::vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::Fi
 }
 
 void VolumetricIndex::LeafData::DeleteRecord (
-    const std::vector<VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
+    const Container::Vector<VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
 {
     assert (_recordIterator != records.end ());
     if (_recordIterator + 1u != records.end ())
@@ -826,17 +830,29 @@ void VolumetricIndex::LeafData::DeleteRecord (
     records.pop_back ();
 }
 
-VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept
-    : IndexBase (_storage),
+namespace MP = Memory::Profiler;
 
+static const Memory::UniqueString VOLUMETRIC_INDEX {"VolumetricIndex"};
+static const Memory::UniqueString LEAVES {"Leaves"};
+static const Memory::UniqueString FREE_RECORD_IDS {"FreeRecordIds"};
+
+VolumetricIndex::VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
+    : IndexBase (_storage),
+      leaves (MP::ConstructWithinGroup<decltype (leaves)> (VOLUMETRIC_INDEX, LEAVES)),
+      freeRecordIds (MP::ConstructWithinGroup<decltype (freeRecordIds)> (VOLUMETRIC_INDEX, FREE_RECORD_IDS)),
       nextRecordId (0u)
 {
     assert (!_dimensions.empty ());
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
 
-    std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
-    leaves.resize (
-        std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
+    const std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+
+    {
+        MP::GroupPrefix prefix {VOLUMETRIC_INDEX};
+        leaves.resize (
+            std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)),
+            LeafData {.records {leaves.get_allocator ()}});
+    }
 
 #ifndef NDEBUG
     // Current implementation expects that all fields have same archetype and size.

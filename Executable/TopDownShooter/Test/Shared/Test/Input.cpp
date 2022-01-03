@@ -245,7 +245,7 @@ void AddValidatorTask (PipelineBuilder &_pipelineBuilder, std::vector<FrameExpec
 void RunTest (const std::vector<KeyboardActionTrigger> &_keyboardTriggers,
               const std::vector<std::pair<FrameConfiguration, FrameExpectation>> &_frames)
 {
-    World world {"TestWorld"};
+    World world {"TestWorld"_us};
     PipelineBuilder pipelineBuilder {&world};
 
     // In test definitions it's much more convenient to read config->expectation pairs than two separate vectors,

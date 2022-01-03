@@ -2,6 +2,8 @@
 
 #include <Hashing/ByteHasher.hpp>
 
+#include <Memory/Profiler/Registry.hpp>
+
 #include <Pegasus/HashIndex.hpp>
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
@@ -196,11 +198,17 @@ bool HashIndex::Comparator::operator() (const HashIndex::LookupRequest &_request
     return (*this) (_record, _request);
 }
 
+static const Memory::UniqueString HASH_INDEX {"HashIndex"};
+static const Memory::UniqueString MULTI_SET {"MultiSet"};
+static const Memory::UniqueString CHANGED_NODES {"ChangedNodes"};
+
 HashIndex::HashIndex (Storage *_owner,
                       std::size_t _initialBuckets,
-                      const std::vector<StandardLayout::FieldId> &_indexedFields)
+                      const Container::Vector<StandardLayout::FieldId> &_indexedFields)
     : IndexBase (_owner),
-      records (_initialBuckets, Hasher {this}, Comparator {this}, Memory::UniqueString {"MultiSet"})
+      records (Memory::Profiler::ConstructWithinGroup<decltype (records)> (
+          HASH_INDEX, _initialBuckets, Hasher {this}, Comparator {this}, MULTI_SET)),
+      changedNodes (Memory::Profiler::ConstructWithinGroup<decltype (changedNodes)> (HASH_INDEX, CHANGED_NODES))
 {
     assert (!_indexedFields.empty ());
     assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);

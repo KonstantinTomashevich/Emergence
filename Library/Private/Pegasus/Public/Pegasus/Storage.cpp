@@ -120,7 +120,7 @@ Storage::Allocator Storage::AllocateAndInsert () noexcept
 }
 
 Handling::Handle<HashIndex> Storage::CreateHashIndex (
-    const std::vector<StandardLayout::FieldId> &_indexedFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_indexedFields) noexcept
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);
@@ -194,7 +194,7 @@ Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fiel
 }
 
 Handling::Handle<VolumetricIndex> Storage::CreateVolumetricIndex (
-    const std::vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
 {
     assert (accessCounter.writers == 0u);
     assert (accessCounter.readers == 0u);

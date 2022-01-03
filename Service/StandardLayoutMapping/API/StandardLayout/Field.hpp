@@ -4,7 +4,12 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
-namespace Emergence::StandardLayout
+#include <Memory/Heap.hpp>
+#include <Memory/UniqueString.hpp>
+
+namespace Emergence
+{
+namespace StandardLayout
 {
 /// \brief Mapped field unique identifier.
 using FieldId = uint_fast64_t;
@@ -123,4 +128,15 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
-} // namespace Emergence::StandardLayout
+} // namespace StandardLayout
+
+namespace Memory
+{
+/// \brief Default allocation group for field identifiers.
+template <>
+struct DefaultAllocationGroup<StandardLayout::FieldId>
+{
+    static const UniqueString ID;
+};
+} // namespace Memory
+} // namespace Emergence

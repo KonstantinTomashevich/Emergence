@@ -65,7 +65,7 @@ template <typename Container>
 std::string VisualizationDriver::GetPathToContainer (const Handling::Handle<Container> &_container)
 {
     return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + WAREHOUSE_REGISTRY_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR + _container->deck->GetName () + VisualGraph::NODE_PATH_SEPARATOR +
+           VisualGraph::NODE_PATH_SEPARATOR + *_container->deck->GetName () + VisualGraph::NODE_PATH_SEPARATOR +
            GraphId (*_container.Get ()) + VisualGraph::NODE_PATH_SEPARATOR;
 }
 

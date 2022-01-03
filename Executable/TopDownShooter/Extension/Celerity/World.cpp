@@ -1,9 +1,17 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/World.hpp>
 
+#include <Memory/Profiler/Registry.hpp>
+
 namespace Emergence::Celerity
 {
-World::World (std::string _name) noexcept : registry (std::move (_name))
+namespace MP = Memory::Profiler;
+
+static const Memory::UniqueString PIPELINES_VECTOR {"PipelineVector"};
+
+World::World (Memory::UniqueString _name) noexcept
+    : registry (_name),
+      pipelines (MP::ConstructWithinGroup<decltype (pipelines)> (_name, PIPELINES_VECTOR))
 {
 }
 

@@ -256,13 +256,13 @@ LongTermContainer::InsertQuery LongTermContainer::Insert () noexcept
 }
 
 LongTermContainer::FetchValueQuery LongTermContainer::FetchValue (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     return {this, AcquirePointRepresentation (_keyFields)};
 }
 
 LongTermContainer::ModifyValueQuery LongTermContainer::ModifyValue (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     return {this, AcquirePointRepresentation (_keyFields)};
 }
@@ -292,25 +292,25 @@ LongTermContainer::ModifyDescendingRangeQuery LongTermContainer::ModifyDescendin
 }
 
 LongTermContainer::FetchShapeIntersectionQuery LongTermContainer::FetchShapeIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::ModifyShapeIntersectionQuery LongTermContainer::ModifyShapeIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::FetchRayIntersectionQuery LongTermContainer::FetchRayIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::ModifyRayIntersectionQuery LongTermContainer::ModifyRayIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
@@ -338,7 +338,7 @@ RecordCollection::LinearRepresentation LongTermContainer::AcquireLinearRepresent
 }
 
 RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentation (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     for (auto iterator = collection.PointRepresentationBegin (); iterator != collection.PointRepresentationEnd ();
          ++iterator)
@@ -374,7 +374,7 @@ RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentat
 }
 
 RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricRepresentation (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     for (auto iterator = collection.VolumetricRepresentationBegin ();
          iterator != collection.VolumetricRepresentationEnd (); ++iterator)

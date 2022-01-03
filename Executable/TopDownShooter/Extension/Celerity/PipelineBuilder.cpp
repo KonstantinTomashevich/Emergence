@@ -66,14 +66,14 @@ Warehouse::InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLa
 }
 
 Warehouse::FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                                        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+                                                        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchValue (_typeMapping, _keyFields);
 }
 
 Warehouse::ModifyValueQuery TaskConstructor::ModifyValue (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifyValue (_typeMapping, _keyFields);
@@ -108,28 +108,28 @@ Warehouse::ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (
 }
 
 Warehouse::FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchShapeIntersection (_typeMapping, _dimensions);
 }
 
 Warehouse::ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions);
 }
 
 Warehouse::FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchRayIntersection (_typeMapping, _dimensions);
 }
 
 Warehouse::ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions);

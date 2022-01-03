@@ -5,6 +5,14 @@ namespace Emergence::Memory::Profiler
 {
 // TODO: Empty stubs are temporary inserted for linking.
 
+GroupPrefix::GroupPrefix ([[maybe_unused]] UniqueString _id) noexcept
+{
+}
+
+GroupPrefix::~GroupPrefix () noexcept
+{
+}
+
 bool Registry::Iterator::operator== ([[maybe_unused]] const Registry::Iterator &_other) const noexcept
 {
     return false;

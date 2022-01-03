@@ -72,7 +72,7 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Prepare
 
     ExecutionContext &operator= (ExecutionContext &&_other) = delete;
 
-    Registry registry {"Test"};
+    Registry registry {Memory::UniqueString {"Test"}};
 };
 
 ExecutionContext::~ExecutionContext ()
@@ -81,11 +81,11 @@ ExecutionContext::~ExecutionContext ()
     Context::Extension::ObjectStorage<PreparedQuery>::objects.clear ();
 }
 
-std::vector<Warehouse::Dimension> ConvertDimensions (
+Container::Vector<Warehouse::Dimension> ConvertDimensions (
     const StandardLayout::Mapping &_typeMapping,
     const std::vector<Query::Test::Sources::Volumetric::Dimension> &_dimensions)
 {
-    std::vector<Warehouse::Dimension> convertedDimensions;
+    Container::Vector<Warehouse::Dimension> convertedDimensions;
     convertedDimensions.reserve (_dimensions.size ());
 
     for (const Query::Test::Sources::Volumetric::Dimension &dimension : _dimensions)
@@ -147,7 +147,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareInsertLongTermQuery &
 
 template <typename Query>
 void ValidateCreatedQuery (const StandardLayout::Mapping &_typeMapping,
-                           const std::vector<StandardLayout::FieldId> &_keyFields,
+                           const Container::Vector<StandardLayout::FieldId> &_keyFields,
                            const Query &_query)
 {
     auto queryIterator = _query.KeyFieldBegin ();
@@ -215,7 +215,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareModifyDescendingRange
 }
 
 template <typename Query>
-void ValidateCreatedQuery (const std::vector<Dimension> &_dimensions, const Query &_query)
+void ValidateCreatedQuery (const Container::Vector<Dimension> &_dimensions, const Query &_query)
 {
     auto queryIterator = _query.DimensionBegin ();
     auto expectedIterator = _dimensions.begin ();
@@ -240,7 +240,7 @@ void ValidateCreatedQuery (const std::vector<Dimension> &_dimensions, const Quer
 
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectionQuery &_task)
 {
-    const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const Container::Vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
     auto query = _context.registry.FetchShapeIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
@@ -248,7 +248,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareFetchShapeIntersectio
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersectionQuery &_task)
 {
-    const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const Container::Vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
     auto query = _context.registry.ModifyShapeIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
@@ -256,7 +256,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareModifyShapeIntersecti
 
 void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQuery &_task)
 {
-    const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const Container::Vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
     auto query = _context.registry.FetchRayIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
@@ -264,7 +264,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareFetchRayIntersectionQ
 
 void ExecuteTask (ExecutionContext &_context, const PrepareModifyRayIntersectionQuery &_task)
 {
-    const std::vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
+    const Container::Vector<Dimension> dimensions = ConvertDimensions (_task.typeMapping, _task.dimensions);
     auto query = _context.registry.ModifyRayIntersection (_task.typeMapping, dimensions);
     ValidateCreatedQuery (dimensions, query);
     AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
@@ -443,7 +443,7 @@ std::ostream &operator<< (std::ostream &_output, const PrepareInsertLongTermQuer
 }
 
 std::ostream &operator<< (std::ostream &_output,
-                          const std::pair<StandardLayout::Mapping, std::vector<StandardLayout::FieldId>> &_data)
+                          const std::pair<StandardLayout::Mapping, Container::Vector<StandardLayout::FieldId>> &_data)
 {
     for (StandardLayout::FieldId id : _data.second)
     {

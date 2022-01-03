@@ -2,12 +2,14 @@
 
 namespace Emergence::Warehouse::Visualization
 {
+// TODO: Recheck allocation grouping correctmess in all visualizators.
+
 using namespace VisualGraph::Common::Constants;
 
 VisualGraph::Graph GraphFromRegistry (const Registry &_registry)
 {
     VisualGraph::Graph graph;
-    graph.id = _registry.GetName ();
+    graph.id = *_registry.GetName ();
 
     VisualGraph::Node &root = graph.nodes.emplace_back ();
     root.id = WAREHOUSE_QUERY_ROOT_NODE;

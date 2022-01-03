@@ -2,6 +2,8 @@
 #include <cassert>
 #include <cstring>
 
+#include <Memory/Profiler/Registry.hpp>
+
 #include <Pegasus/Constants/OrderedIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>
 #include <Pegasus/RecordUtility.hpp>
@@ -152,8 +154,8 @@ OrderedIndex::AscendingReadCursor &OrderedIndex::AscendingReadCursor::operator++
 }
 
 OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
-                                                        std::vector<const void *>::const_iterator _begin,
-                                                        std::vector<const void *>::const_iterator _end) noexcept
+                                                        Container::Vector<const void *>::const_iterator _begin,
+                                                        Container::Vector<const void *>::const_iterator _end) noexcept
     : index (_index),
       current (_begin),
       end (_end)
@@ -221,8 +223,8 @@ OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator++
 }
 
 OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex *_index,
-                                                        std::vector<const void *>::iterator _begin,
-                                                        std::vector<const void *>::iterator _end) noexcept
+                                                        Container::Vector<const void *>::iterator _begin,
+                                                        Container::Vector<const void *>::iterator _end) noexcept
     : index (_index),
       current (_begin),
       end (_end)
@@ -289,8 +291,8 @@ OrderedIndex::DescendingReadCursor &OrderedIndex::DescendingReadCursor::operator
 
 OrderedIndex::DescendingReadCursor::DescendingReadCursor (
     OrderedIndex *_index,
-    std::vector<const void *>::const_reverse_iterator _begin,
-    std::vector<const void *>::const_reverse_iterator _end) noexcept
+    Container::Vector<const void *>::const_reverse_iterator _begin,
+    Container::Vector<const void *>::const_reverse_iterator _end) noexcept
     : index (_index),
       current (_begin),
       end (_end)
@@ -357,9 +359,10 @@ OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator
     return *this;
 }
 
-OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex *_index,
-                                                          std::vector<const void *>::reverse_iterator _begin,
-                                                          std::vector<const void *>::reverse_iterator _end) noexcept
+OrderedIndex::DescendingEditCursor::DescendingEditCursor (
+    OrderedIndex *_index,
+    Container::Vector<const void *>::reverse_iterator _begin,
+    Container::Vector<const void *>::reverse_iterator _end) noexcept
     : index (_index),
       current (_begin),
       end (_end)
@@ -392,8 +395,8 @@ OrderedIndex::DescendingReadCursor OrderedIndex::LookupToReadDescending (const O
                                                                          const OrderedIndex::Bound &_max) noexcept
 {
     InternalLookupResult result = InternalLookup (_min, _max);
-    return {this, std::vector<const void *>::const_reverse_iterator (result.end),
-            std::vector<const void *>::const_reverse_iterator (result.begin)};
+    return {this, Container::Vector<const void *>::const_reverse_iterator (result.end),
+            Container::Vector<const void *>::const_reverse_iterator (result.begin)};
 }
 
 OrderedIndex::AscendingEditCursor OrderedIndex::LookupToEditAscending (const OrderedIndex::Bound &_min,
@@ -409,8 +412,8 @@ OrderedIndex::DescendingEditCursor OrderedIndex::LookupToEditDescending (const O
 {
     hasEditCursor = true;
     InternalLookupResult result = InternalLookup (_min, _max);
-    return {this, std::vector<const void *>::reverse_iterator (result.end),
-            std::vector<const void *>::reverse_iterator (result.begin)};
+    return {this, Container::Vector<const void *>::reverse_iterator (result.end),
+            Container::Vector<const void *>::reverse_iterator (result.begin)};
 }
 
 StandardLayout::Field OrderedIndex::GetIndexedField () const noexcept
@@ -458,9 +461,19 @@ OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner
 #endif
 }
 
+namespace MP = Memory::Profiler;
+
+static const Memory::UniqueString ORDERED_INDEX {"OrderedIndex"};
+static const Memory::UniqueString RECORDS {"Records"};
+static const Memory::UniqueString CHANGED_RECORDS {"ChangedRecords"};
+static const Memory::UniqueString DELETED_INDICES {"DeletedIndices"};
+
 OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField)
     : IndexBase (_owner),
-      indexedField (_owner->GetRecordMapping ().GetField (_indexedField))
+      indexedField (_owner->GetRecordMapping ().GetField (_indexedField)),
+      records (MP::ConstructWithinGroup<decltype (records)> (ORDERED_INDEX, RECORDS)),
+      changedRecords (MP::ConstructWithinGroup<decltype (changedRecords)> (ORDERED_INDEX, CHANGED_RECORDS)),
+      deletedRecordIndices (MP::ConstructWithinGroup<decltype (deletedRecordIndices)> (ORDERED_INDEX, DELETED_INDICES))
 {
     assert (indexedField.IsHandleValid ());
 }
@@ -491,8 +504,8 @@ OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (const OrderedIn
         });
 }
 
-std::vector<const void *>::const_iterator OrderedIndex::LocateRecord (const void *_record,
-                                                                      const void *_recordBackup) const noexcept
+Container::Vector<const void *>::const_iterator OrderedIndex::LocateRecord (const void *_record,
+                                                                            const void *_recordBackup) const noexcept
 {
     auto iterator = DoWithCorrectComparator (indexedField,
                                              [this, _record, _recordBackup] (auto _comparator)
@@ -538,7 +551,7 @@ void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBack
     records.erase (iterator);
 }
 
-void OrderedIndex::DeleteRecordMyself (const std::vector<const void *>::iterator &_position) noexcept
+void OrderedIndex::DeleteRecordMyself (const Container::Vector<const void *>::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     std::size_t index = _position - records.begin ();
@@ -548,7 +561,7 @@ void OrderedIndex::DeleteRecordMyself (const std::vector<const void *>::iterator
     storage->DeleteRecord (const_cast<void *> (*_position), this);
 }
 
-void OrderedIndex::DeleteRecordMyself (const std::vector<const void *>::reverse_iterator &_position) noexcept
+void OrderedIndex::DeleteRecordMyself (const Container::Vector<const void *>::reverse_iterator &_position) noexcept
 {
     assert (_position != records.rend ());
     std::size_t index = records.rend () - _position - 1u;
@@ -568,7 +581,7 @@ void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBack
     records.erase (iterator);
 }
 
-void OrderedIndex::OnRecordChangedByMe (const std::vector<const void *>::iterator &_position) noexcept
+void OrderedIndex::OnRecordChangedByMe (const Container::Vector<const void *>::iterator &_position) noexcept
 {
     assert (_position != records.end ());
     std::size_t index = _position - records.begin ();
@@ -577,7 +590,7 @@ void OrderedIndex::OnRecordChangedByMe (const std::vector<const void *>::iterato
     changedRecords.emplace_back (ChangedRecordInfo {index, *_position});
 }
 
-void OrderedIndex::OnRecordChangedByMe (const std::vector<const void *>::reverse_iterator &_position) noexcept
+void OrderedIndex::OnRecordChangedByMe (const Container::Vector<const void *>::reverse_iterator &_position) noexcept
 {
     assert (_position != records.rend ());
     std::size_t index = records.rend () - _position - 1u;
@@ -634,7 +647,7 @@ void OrderedIndex::OnWriterClosed () noexcept
 
 #ifndef NDEBUG
             // Interval begin can be out of bounds only if interval size is zero. It's ok, because memcpy skips
-            // zero-size intervals. But debug version of std::vector throws out of bounds exception, therefore
+            // zero-size intervals. But debug version of Container::Vector throws out of bounds exception, therefore
             // we add this `if` in debug build. In release build it's skipped to improve performance.
             if (intervalBegin + 1u < records.size ())
             {

@@ -22,6 +22,8 @@ END_MUTING_WARNINGS
 #include <Time/TimeSingleton.hpp>
 #include <Time/TimeSynchronization.hpp>
 
+using namespace Emergence::Memory::Literals;
+
 class WorldUpdater final
 {
 public:
@@ -45,8 +47,6 @@ public:
 
         auto modifyFixedInput = _world->ModifySingletonExternally (FixedInputMappingSingleton::Reflect ().mapping);
         auto *fixedInput = static_cast<FixedInputMappingSingleton *> (*modifyFixedInput.Execute ());
-
-        using namespace Emergence::Memory::Literals;
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
             KeyboardActionTrigger {InputAction {"Forward"_us, "Movement"_us}, {{OgreBites::Keycode {'w'}, false}}});
@@ -165,7 +165,7 @@ int main (int /*unused*/, char ** /*unused*/)
     application.getRenderWindow ()->addViewport (camera);
 
     {
-        Emergence::Celerity::World world {"World"};
+        Emergence::Celerity::World world {"World"_us};
         WorldUpdater worldUpdater {&application, &world};
 
         while (!application.getRoot ()->endRenderingQueued ())

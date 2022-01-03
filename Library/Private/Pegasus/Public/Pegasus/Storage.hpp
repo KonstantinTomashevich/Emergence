@@ -7,6 +7,7 @@
 #include <API/Common/Iterator.hpp>
 
 #include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
 
 #include <Handling/Handle.hpp>
 
@@ -122,12 +123,13 @@ public:
 
     Allocator AllocateAndInsert () noexcept;
 
-    Handling::Handle<HashIndex> CreateHashIndex (const std::vector<StandardLayout::FieldId> &_indexedFields) noexcept;
+    Handling::Handle<HashIndex> CreateHashIndex (
+        const Container::Vector<StandardLayout::FieldId> &_indexedFields) noexcept;
 
     Handling::Handle<OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
 
     Handling::Handle<VolumetricIndex> CreateVolumetricIndex (
-        const std::vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
 
     HashIndexIterator BeginHashIndices () const noexcept;
 

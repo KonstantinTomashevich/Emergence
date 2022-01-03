@@ -11,6 +11,7 @@ sober_library_begin (Pegasus STATIC)
 
     sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
     sober_library_use_service (EXPECTED PUBLIC Memory)
+    sober_library_use_service (EXPECTED PUBLIC MemoryProfiler)
     sober_library_use_service (PER_VARIANT PRIVATE Hashing)
     sober_library_use_service (PER_VARIANT PUBLIC PegasusConstants)
 

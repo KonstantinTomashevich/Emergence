@@ -29,7 +29,7 @@ struct CreateLinearRepresentation
 struct CreatePointRepresentation
 {
     std::string name;
-    std::vector<StandardLayout::FieldId> keyFields;
+    Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct CreateVolumetricRepresentation

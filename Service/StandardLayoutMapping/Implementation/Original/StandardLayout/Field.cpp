@@ -4,7 +4,9 @@
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
 
-namespace Emergence::StandardLayout
+namespace Emergence
+{
+namespace StandardLayout
 {
 FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
 {
@@ -114,4 +116,10 @@ Field &Field::operator= (Field &&_other) noexcept
 Field::Field (void *_handle) noexcept : handle (_handle)
 {
 }
-} // namespace Emergence::StandardLayout
+} // namespace StandardLayout
+
+namespace Memory
+{
+const UniqueString DefaultAllocationGroup<StandardLayout::FieldId>::ID {"FieldReflection"};
+}
+} // namespace Emergence

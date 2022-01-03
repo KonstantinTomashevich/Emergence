@@ -33,11 +33,11 @@ static Handling::Handle<Galleon::LongTermContainer> UseLongTermContainer (Galleo
     return _deck.AcquireLongTermContainer (_typeMapping);
 }
 
-std::vector<RecordCollection::Collection::DimensionDescriptor> ConvertDimensions (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Dimension> &_dimensions)
+Container::Vector<RecordCollection::Collection::DimensionDescriptor> ConvertDimensions (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions)
 {
     // Query preparation is called rarely, therefore vector allocation is ok.
-    std::vector<RecordCollection::Collection::DimensionDescriptor> result;
+    Container::Vector<RecordCollection::Collection::DimensionDescriptor> result;
     result.reserve (_dimensions.size ());
 
     for (const Dimension &dimension : _dimensions)
@@ -50,7 +50,7 @@ std::vector<RecordCollection::Collection::DimensionDescriptor> ConvertDimensions
     return result;
 }
 
-Registry::Registry (std::string _name) noexcept : handle (new Galleon::CargoDeck (std::move (_name)))
+Registry::Registry (Memory::UniqueString _name) noexcept : handle (new Galleon::CargoDeck (std::move (_name)))
 {
 }
 
@@ -108,7 +108,7 @@ InsertLongTermQuery Registry::InsertLongTerm (const StandardLayout::Mapping &_ty
 }
 
 FetchValueQuery Registry::FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                      const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+                                      const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     assert (handle);
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
@@ -117,7 +117,7 @@ FetchValueQuery Registry::FetchValue (const StandardLayout::Mapping &_typeMappin
 }
 
 ModifyValueQuery Registry::ModifyValue (const StandardLayout::Mapping &_typeMapping,
-                                        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+                                        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     assert (handle);
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
@@ -162,7 +162,7 @@ ModifyDescendingRangeQuery Registry::ModifyDescendingRange (const StandardLayout
 }
 
 FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                              const std::vector<Dimension> &_dimensions) noexcept
+                                                              const Container::Vector<Dimension> &_dimensions) noexcept
 {
     assert (handle);
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
@@ -170,8 +170,8 @@ FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayo
     return FetchShapeIntersectionQuery (reinterpret_cast<decltype (FetchShapeIntersectionQuery::data) *> (&query));
 }
 
-ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                                const std::vector<Dimension> &_dimensions) noexcept
+ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept
 {
     assert (handle);
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
@@ -180,7 +180,7 @@ ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (const StandardLa
 }
 
 FetchRayIntersectionQuery Registry::FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                          const std::vector<Dimension> &_dimensions) noexcept
+                                                          const Container::Vector<Dimension> &_dimensions) noexcept
 {
     assert (handle);
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
@@ -189,7 +189,7 @@ FetchRayIntersectionQuery Registry::FetchRayIntersection (const StandardLayout::
 }
 
 ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                            const std::vector<Dimension> &_dimensions) noexcept
+                                                            const Container::Vector<Dimension> &_dimensions) noexcept
 {
     assert (handle);
     auto container = UseLongTermContainer (*static_cast<Galleon::CargoDeck *> (handle), _typeMapping);
@@ -197,10 +197,10 @@ ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout
     return ModifyRayIntersectionQuery (reinterpret_cast<decltype (ModifyRayIntersectionQuery::data) *> (&query));
 }
 
-const char *Registry::GetName () const noexcept
+Memory::UniqueString Registry::GetName () const noexcept
 {
     assert (handle);
-    return static_cast<Galleon::CargoDeck *> (handle)->GetName ().c_str ();
+    return static_cast<Galleon::CargoDeck *> (handle)->GetName ();
 }
 
 void Registry::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept

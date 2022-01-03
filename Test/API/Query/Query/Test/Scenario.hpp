@@ -5,7 +5,8 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
-#include <vector>
+
+#include <Container/Vector.hpp>
 
 #include <StandardLayout/Field.hpp>
 #include <StandardLayout/Mapping.hpp>
@@ -27,7 +28,7 @@ struct UnorderedSequence final
 struct Value final
 {
     std::string name;
-    std::vector<StandardLayout::FieldId> queriedFields;
+    Container::Vector<StandardLayout::FieldId> queriedFields;
 };
 
 struct Range final

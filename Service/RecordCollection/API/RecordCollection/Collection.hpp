@@ -7,13 +7,17 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/Vector.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 #include <RecordCollection/LinearRepresentation.hpp>
 #include <RecordCollection/PointRepresentation.hpp>
 #include <RecordCollection/VolumetricRepresentation.hpp>
 
-namespace Emergence::RecordCollection
+namespace Emergence
+{
+namespace RecordCollection
 {
 /// \brief Stores records of the same type and provides fast lookup using representations.
 class Collection final
@@ -146,13 +150,13 @@ public:
     /// \brief Adds PointRepresentation to Collection, that uses given _keyFields as point position.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     [[nodiscard]] PointRepresentation CreatePointRepresentation (
-        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     /// \invariant All border fields for all dimensions should have same archetype and same size.
     [[nodiscard]] VolumetricRepresentation CreateVolumetricRepresentation (
-        const std::vector<DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<DimensionDescriptor> &_dimensions) noexcept;
 
     /// \return Object type mapping for objects, that are stored in this collection.
     [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;
@@ -183,4 +187,15 @@ public:
 private:
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
-} // namespace Emergence::RecordCollection
+} // namespace RecordCollection
+
+namespace Memory
+{
+/// \brief Default allocation group for dimension descriptors.
+template <>
+struct DefaultAllocationGroup<RecordCollection::Collection::DimensionDescriptor>
+{
+    static const UniqueString ID;
+};
+} // namespace Memory
+} // namespace Emergence

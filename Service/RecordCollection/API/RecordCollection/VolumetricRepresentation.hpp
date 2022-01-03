@@ -34,7 +34,7 @@ public:
 
         /// Cursor implementation could copy Shape inside to be more cache coherent and Shape could contain doubles,
         /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 21u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 22u);
 
         explicit ShapeIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -51,7 +51,7 @@ public:
         friend class VolumetricRepresentation;
 
         /// About uint64_t: see comment in ShapeIntersectionReadCursor.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 21u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 22u);
 
         explicit ShapeIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -69,7 +69,7 @@ public:
         friend class VolumetricRepresentation;
 
         /// About uint64_t: same as in comment in ShapeIntersectionReadCursor, but for Ray caching.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 19u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
 
         explicit RayIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
@@ -86,7 +86,7 @@ public:
         friend class VolumetricRepresentation;
 
         /// About uint64_t: see comment in RayIntersectionReadCursor.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 19u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
 
         explicit RayIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };

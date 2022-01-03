@@ -2,8 +2,14 @@
 
 #include <Galleon/CargoDeck.hpp>
 
+#include <Memory/Profiler/Registry.hpp>
+
 namespace Emergence::Galleon
 {
+static const Memory::UniqueString CONTAINER_ARRAYS {"ContainerArrays"};
+
+namespace MP = Memory::Profiler;
+
 struct TypeMappingPredicate final
 {
     bool operator() (const ContainerBase *_container) const noexcept
@@ -14,7 +20,11 @@ struct TypeMappingPredicate final
     StandardLayout::Mapping requiredMapping;
 };
 
-CargoDeck::CargoDeck (std::string _name) noexcept : name (std::move (_name))
+CargoDeck::CargoDeck (Memory::UniqueString _name) noexcept
+    : name (_name),
+      containers {.singleton = MP::ConstructWithinGroup<decltype (containers.singleton)> (_name, CONTAINER_ARRAYS),
+                  .shortTerm = MP::ConstructWithinGroup<decltype (containers.shortTerm)> (_name, CONTAINER_ARRAYS),
+                  .longTerm = MP::ConstructWithinGroup<decltype (containers.longTerm)> (_name, CONTAINER_ARRAYS)}
 {
 }
 
@@ -83,7 +93,7 @@ bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_ty
                          TypeMappingPredicate {_typeMapping}) != containers.longTerm.end ();
 }
 
-const std::string &CargoDeck::GetName () const noexcept
+Memory::UniqueString CargoDeck::GetName () const noexcept
 {
     return name;
 }

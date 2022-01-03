@@ -5,6 +5,8 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/World.hpp>
 
+#include <Container/Vector.hpp>
+
 #include <Flow/TaskRegister.hpp>
 
 #include <Task/Executor.hpp>
@@ -39,10 +41,10 @@ public:
     [[nodiscard]] Warehouse::InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     [[nodiscard]] Warehouse::FetchValueQuery FetchValue (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     [[nodiscard]] Warehouse::ModifyValueQuery ModifyValue (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     [[nodiscard]] Warehouse::FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                            StandardLayout::FieldId _keyField) noexcept;
@@ -57,16 +59,16 @@ public:
         const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
 
     [[nodiscard]] Warehouse::FetchShapeIntersectionQuery FetchShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::ModifyShapeIntersectionQuery ModifyShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::FetchRayIntersectionQuery FetchRayIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     void SetExecutor (std::function<void ()> _executor) noexcept;
 
