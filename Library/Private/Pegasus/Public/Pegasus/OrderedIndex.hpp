@@ -99,8 +99,6 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     OrderedIndex (OrderedIndex &&_other) = delete;
 
-    ~OrderedIndex () = default;
-
     AscendingReadCursor LookupToReadAscending (const Bound &_min, const Bound &_max) noexcept;
 
     DescendingReadCursor LookupToReadDescending (const Bound &_min, const Bound &_max) noexcept;
@@ -159,10 +157,12 @@ private:
 
     explicit OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField);
 
+    ~OrderedIndex () = default;
+
     InternalLookupResult InternalLookup (const Bound &_min, const Bound &_max) noexcept;
 
     Container::Vector<const void *>::const_iterator LocateRecord (const void *_record,
-                                                            const void *_recordBackup) const noexcept;
+                                                                  const void *_recordBackup) const noexcept;
 
     void InsertRecord (const void *_record) noexcept;
 

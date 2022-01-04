@@ -100,6 +100,12 @@ SingletonContainer::ModifyQuery SingletonContainer::Modify () noexcept
     return ModifyQuery (this);
 }
 
+void SingletonContainer::LastReferenceUnregistered () noexcept
+{
+    assert (deck);
+    deck->DetachContainer (this);
+}
+
 SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping))
 {
@@ -108,19 +114,6 @@ SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mappin
     memset (&storage, 0u, typeMapping.GetObjectSize ());
 }
 
-SingletonContainer::~SingletonContainer () noexcept
-{
-    assert (deck);
-    deck->DetachContainer (this);
-}
-
-void *SingletonContainer::operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept
-{
-    return malloc (sizeof (SingletonContainer) + _typeMapping.GetObjectSize ());
-}
-
-void SingletonContainer::operator delete (void *_pointer) noexcept
-{
-    free (_pointer);
-}
+// TODO: After destructors addition to reflection, do not forget to call singleton destructor.
+SingletonContainer::~SingletonContainer () noexcept = default;
 } // namespace Emergence::Galleon

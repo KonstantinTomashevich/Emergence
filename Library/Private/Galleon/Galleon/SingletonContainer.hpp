@@ -121,27 +121,18 @@ public:
 
     ModifyQuery Modify () noexcept;
 
+    void LastReferenceUnregistered () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (SingletonContainer);
 
 private:
-    /// CargoDeck constructs containers.
+    /// CargoDeck constructs and destructs containers.
     friend class CargoDeck;
-
-    /// Only handles have right to destruct containers.
-    template <typename>
-    friend class Handling::Handle;
 
     /// \warning Must be used in pair with custom ::new.
     explicit SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    /// \warning Must be used in pair with custom ::delete.
     ~SingletonContainer () noexcept;
-
-    /// \brief We store singleton instance inside container, therefore we need custom allocator to do this.
-    void *operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept;
-
-    /// \brief Needed because of custom ::new.
-    void operator delete (void *_pointer) noexcept;
 
     AccessCounter accessCounter;
 

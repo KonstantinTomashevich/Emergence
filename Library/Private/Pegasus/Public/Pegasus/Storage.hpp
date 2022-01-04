@@ -31,7 +31,7 @@ private:
     template <typename Index>
     struct IndexHolder
     {
-        std::unique_ptr<Index> index;
+        Index *index;
         Constants::Storage::IndexedFieldMask indexedFieldMask = 0u;
     };
 
@@ -212,26 +212,21 @@ private:
     // TODO: Automatically shrink pool from time to time?
     Memory::OrderedPool records;
 
-    struct
-    {
-        IndexVector<HashIndex> hash;
-        IndexVector<OrderedIndex> ordered;
-        IndexVector<VolumetricIndex> volumetric;
-    } indices;
+    Memory::Heap hashIndexHeap;
+    Memory::Heap orderedIndexHeap;
+    Memory::Heap volumetricIndexHeap;
 
-    struct
-    {
-        StandardLayout::Mapping recordMapping;
-        Container::InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
-    } reflection;
+    IndexVector<HashIndex> hashIndices;
+    IndexVector<OrderedIndex> orderedIndices;
+    IndexVector<VolumetricIndex> volumetricIndices;
 
-    struct
-    {
-        std::atomic_size_t readers = 0u;
-        std::size_t writers = 0u;
+    StandardLayout::Mapping recordMapping;
+    Container::InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
 
-        static_assert (decltype (readers)::is_always_lock_free);
-    } accessCounter;
+    std::atomic_size_t readers = 0u;
+    std::size_t writers = 0u;
+
+    static_assert (decltype (readers)::is_always_lock_free);
 
     void *editedRecordBackup = nullptr;
 };

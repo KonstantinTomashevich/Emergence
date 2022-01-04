@@ -60,7 +60,7 @@ public:
 
     ~AllocationGroup () noexcept;
 
-    [[nodiscard]] PlacedOnStack PlaceOnTop () noexcept;
+    [[nodiscard]] PlacedOnStack PlaceOnTop () const noexcept;
 
     void Allocate (size_t _bytesCount) noexcept;
 

@@ -8,6 +8,8 @@
 
 #include <Handling/Handle.hpp>
 
+#include <Memory/Heap.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Galleon
@@ -66,11 +68,12 @@ private:
 
     Memory::UniqueString name;
 
-    struct
-    {
-        Container::Vector<SingletonContainer *> singleton;
-        Container::Vector<ShortTermContainer *> shortTerm;
-        Container::Vector<LongTermContainer *> longTerm;
-    } containers;
+    Memory::Heap singletonHeap;
+    Memory::Heap shortTermHeap;
+    Memory::Heap longTermHeap;
+
+    Container::Vector<SingletonContainer *> singletonContainers;
+    Container::Vector<ShortTermContainer *> shortTermContainers;
+    Container::Vector<LongTermContainer *> longTermContainers;
 };
 } // namespace Emergence::Galleon

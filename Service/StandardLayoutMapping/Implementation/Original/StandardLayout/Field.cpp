@@ -120,6 +120,11 @@ Field::Field (void *_handle) noexcept : handle (_handle)
 
 namespace Memory
 {
-const UniqueString DefaultAllocationGroup<StandardLayout::FieldId>::ID {"FieldReflection"};
+using namespace Literals;
+
+Profiler::AllocationGroup DefaultAllocationGroup<StandardLayout::FieldId>::Get () noexcept
+{
+    return Profiler::AllocationGroup {"FieldReflection"_us};
 }
+} // namespace Memory
 } // namespace Emergence

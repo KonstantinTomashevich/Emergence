@@ -461,19 +461,14 @@ OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner
 #endif
 }
 
-namespace MP = Memory::Profiler;
-
-static const Memory::UniqueString ORDERED_INDEX {"OrderedIndex"};
-static const Memory::UniqueString RECORDS {"Records"};
-static const Memory::UniqueString CHANGED_RECORDS {"ChangedRecords"};
-static const Memory::UniqueString DELETED_INDICES {"DeletedIndices"};
+using namespace Memory::Literals;
 
 OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField)
     : IndexBase (_owner),
       indexedField (_owner->GetRecordMapping ().GetField (_indexedField)),
-      records (MP::ConstructWithinGroup<decltype (records)> (ORDERED_INDEX, RECORDS)),
-      changedRecords (MP::ConstructWithinGroup<decltype (changedRecords)> (ORDERED_INDEX, CHANGED_RECORDS)),
-      deletedRecordIndices (MP::ConstructWithinGroup<decltype (deletedRecordIndices)> (ORDERED_INDEX, DELETED_INDICES))
+      records (Memory::Profiler::AllocationGroup {"Ordering"_us}),
+      changedRecords (Memory::Profiler::AllocationGroup {"ChangedRecords"_us}),
+      deletedRecordIndices (Memory::Profiler::AllocationGroup {"DeletedIndices"_us})
 {
     assert (indexedField.IsHandleValid ());
 }

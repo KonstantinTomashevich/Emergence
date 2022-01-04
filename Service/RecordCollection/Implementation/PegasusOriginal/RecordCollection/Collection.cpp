@@ -202,7 +202,11 @@ Collection &Collection::operator= (Collection &&_other) noexcept
 
 namespace Memory
 {
-const UniqueString DefaultAllocationGroup<RecordCollection::Collection::DimensionDescriptor>::ID {
-    "DimensionConfiguration"};
+using namespace Literals;
+
+Profiler::AllocationGroup DefaultAllocationGroup<RecordCollection::Collection::DimensionDescriptor>::Get () noexcept
+{
+    return Profiler::AllocationGroup {"DimensionConfiguration"_us};
+}
 } // namespace Memory
 } // namespace Emergence

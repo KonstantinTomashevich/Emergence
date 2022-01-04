@@ -16,6 +16,8 @@ public:
 
     const StandardLayout::Mapping &GetRecordMapping () const noexcept;
 
+    void LastReferenceUnregistered () noexcept;
+
 protected:
     friend class Storage;
 

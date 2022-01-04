@@ -43,8 +43,6 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     HashIndex (HashIndex &&_other) = delete;
 
-    ~HashIndex () = default;
-
     const IndexedFieldVector &GetIndexedFields () const noexcept;
 
     void Drop () noexcept;
@@ -99,6 +97,8 @@ private:
     explicit HashIndex (Storage *_owner,
                         std::size_t _initialBuckets,
                         const Container::Vector<StandardLayout::FieldId> &_indexedFields);
+
+    ~HashIndex () = default;
 
     void InsertRecord (const void *_record) noexcept;
 

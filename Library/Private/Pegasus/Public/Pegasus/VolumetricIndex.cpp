@@ -830,29 +830,21 @@ void VolumetricIndex::LeafData::DeleteRecord (
     records.pop_back ();
 }
 
-namespace MP = Memory::Profiler;
-
-static const Memory::UniqueString VOLUMETRIC_INDEX {"VolumetricIndex"};
-static const Memory::UniqueString LEAVES {"Leaves"};
-static const Memory::UniqueString FREE_RECORD_IDS {"FreeRecordIds"};
+using namespace Memory::Literals;
 
 VolumetricIndex::VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
     : IndexBase (_storage),
-      leaves (MP::ConstructWithinGroup<decltype (leaves)> (VOLUMETRIC_INDEX, LEAVES)),
-      freeRecordIds (MP::ConstructWithinGroup<decltype (freeRecordIds)> (VOLUMETRIC_INDEX, FREE_RECORD_IDS)),
+      leaves (Memory::Profiler::AllocationGroup {"Leaves"_us}),
+      freeRecordIds (Memory::Profiler::AllocationGroup {"FreeRecordsIds"_us}),
       nextRecordId (0u)
 {
     assert (!_dimensions.empty ());
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
 
     const std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
-
-    {
-        MP::GroupPrefix prefix {VOLUMETRIC_INDEX};
-        leaves.resize (
-            std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)),
-            LeafData {.records {leaves.get_allocator ()}});
-    }
+    leaves.resize (
+        std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)),
+        LeafData {.records {leaves.get_allocator ()}});
 
 #ifndef NDEBUG
     // Current implementation expects that all fields have same archetype and size.

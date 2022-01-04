@@ -62,12 +62,17 @@ public:
 
     using is_always_equal = std::true_type;
 
-    HeapSTD () noexcept : heap (Profiler::AllocationGroup {DefaultAllocationGroup<Type>::ID})
+    HeapSTD () noexcept : heap (DefaultAllocationGroup<Type>::Get ())
     {
     }
 
     /// \details Intentionally implicit to make container initialization easier.
     HeapSTD (const Profiler::AllocationGroup &_group) noexcept : heap (_group)
+    {
+    }
+
+    /// \details Intentionally implicit to make container initialization easier.
+    HeapSTD (const Heap &_heap) noexcept : heap (_heap.GetAllocationGroup ())
     {
     }
 

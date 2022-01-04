@@ -5,13 +5,15 @@
 
 namespace Emergence::Celerity
 {
-namespace MP = Memory::Profiler;
-
-static const Memory::UniqueString PIPELINES_VECTOR {"PipelineVector"};
+static Warehouse::Registry ConstructInsideGroup (Memory::UniqueString _worldName)
+{
+    auto placeholder = Memory::Profiler::AllocationGroup {_worldName}.PlaceOnTop ();
+    return Warehouse::Registry {_worldName};
+}
 
 World::World (Memory::UniqueString _name) noexcept
-    : registry (_name),
-      pipelines (MP::ConstructWithinGroup<decltype (pipelines)> (_name, PIPELINES_VECTOR))
+    : registry (ConstructInsideGroup (_name)),
+      pipelines (Memory::Profiler::AllocationGroup {_name})
 {
 }
 

@@ -315,9 +315,21 @@ LongTermContainer::ModifyRayIntersectionQuery LongTermContainer::ModifyRayInters
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
+void LongTermContainer::LastReferenceUnregistered () noexcept
+{
+    assert (deck);
+    deck->DetachContainer (this);
+}
+
+static RecordCollection::Collection ConstructInsideGroup (StandardLayout::Mapping _typeMapping)
+{
+    auto placeholder = Memory::Profiler::AllocationGroup {Memory::UniqueString {_typeMapping.GetName ()}};
+    return RecordCollection::Collection {std::move (_typeMapping)};
+}
+
 LongTermContainer::LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
-      collection (typeMapping)
+      collection (ConstructInsideGroup (typeMapping))
 {
 }
 
@@ -427,11 +439,5 @@ RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricR
     }
 
     return collection.CreateVolumetricRepresentation (_dimensions);
-}
-
-LongTermContainer::~LongTermContainer () noexcept
-{
-    assert (deck);
-    deck->DetachContainer (this);
 }
 } // namespace Emergence::Galleon

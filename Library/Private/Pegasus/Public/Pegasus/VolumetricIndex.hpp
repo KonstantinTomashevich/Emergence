@@ -14,6 +14,8 @@
 
 namespace Emergence::Pegasus
 {
+using namespace Memory::Literals;
+
 class VolumetricIndex final : public IndexBase
 {
 private:
@@ -173,7 +175,12 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        Container::Vector<bool> visitedRecords {Memory::UniqueString {"ShapeIntersectionVisitationMask"}};
+
+        // TODO: Think about reworking ::visitedRecords mechanism.
+        //       Allocating huge vector on every query call is disgusting.
+
+        Container::Vector<bool> visitedRecords {
+            Memory::Profiler::AllocationGroup {"ShapeIntersectionVisitationMask"_us}};
     };
 
     class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
@@ -257,7 +264,7 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        Container::Vector<bool> visitedRecords {Memory::UniqueString {"RayIntersectionVisitationMask"}};
+        Container::Vector<bool> visitedRecords {Memory::Profiler::AllocationGroup {"RayIntersectionVisitationMask"_us}};
     };
 
     class RayIntersectionReadCursor final : private RayIntersectionCursorBase
@@ -289,8 +296,6 @@ public:
 
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     VolumetricIndex (VolumetricIndex &&_other) = delete;
-
-    ~VolumetricIndex () = default;
 
     const DimensionVector &GetDimensions () const noexcept;
 
@@ -335,6 +340,8 @@ private:
     };
 
     VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept;
+
+    ~VolumetricIndex () = default;
 
     template <typename Operations>
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;

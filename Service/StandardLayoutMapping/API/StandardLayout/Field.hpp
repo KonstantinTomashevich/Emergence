@@ -136,7 +136,7 @@ namespace Memory
 template <>
 struct DefaultAllocationGroup<StandardLayout::FieldId>
 {
-    static const UniqueString ID;
+    static Profiler::AllocationGroup Get () noexcept;
 };
 } // namespace Memory
 } // namespace Emergence

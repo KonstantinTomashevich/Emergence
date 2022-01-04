@@ -102,7 +102,7 @@ AllocationGroup::AllocationGroup () noexcept
 {
 }
 
-AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () noexcept
+AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
 {
     return AllocationGroup::PlacedOnStack (nullptr);
 }

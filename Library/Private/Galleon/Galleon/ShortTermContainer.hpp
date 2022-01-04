@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
+
+#include <Container/Vector.hpp>
 
 #include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
@@ -164,22 +164,20 @@ public:
 
     ModifyQuery Modify () noexcept;
 
+    void LastReferenceUnregistered () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (ShortTermContainer);
 
 private:
-    /// CargoDeck constructs containers.
+    /// CargoDeck constructs and destructs containers.
     friend class CargoDeck;
-
-    /// Only handles have right to destruct containers.
-    template <typename>
-    friend class Handling::Handle;
 
     explicit ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    ~ShortTermContainer () noexcept;
+    ~ShortTermContainer () noexcept = default;
 
     /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
-    std::vector<void *> objects;
+    Container::Vector<void *> objects;
 
     Memory::UnorderedPool pool;
 

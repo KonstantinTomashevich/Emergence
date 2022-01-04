@@ -180,16 +180,17 @@ ShortTermContainer::ModifyQuery ShortTermContainer::Modify () noexcept
     return ModifyQuery (this);
 }
 
-ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
-    : ContainerBase (_deck, std::move (_typeMapping)),
-      // TODO: Think about better group id selection.
-      pool (Memory::UniqueString {typeMapping.GetName ()}, typeMapping.GetObjectSize ())
-{
-}
-
-ShortTermContainer::~ShortTermContainer () noexcept
+void ShortTermContainer::LastReferenceUnregistered () noexcept
 {
     assert (deck);
     deck->DetachContainer (this);
+}
+
+ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
+    : ContainerBase (_deck, std::move (_typeMapping)),
+      objects (Memory::Profiler::AllocationGroup {Memory::UniqueString {typeMapping.GetName ()}}),
+      pool (Memory::Profiler::AllocationGroup {Memory::UniqueString {typeMapping.GetName ()}},
+            typeMapping.GetObjectSize ())
+{
 }
 } // namespace Emergence::Galleon

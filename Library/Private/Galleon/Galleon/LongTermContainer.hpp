@@ -332,22 +332,20 @@ public:
     ModifyRayIntersectionQuery ModifyRayIntersection (
         const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
+    void LastReferenceUnregistered () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (LongTermContainer);
 
 private:
     /// CargoDeck constructs containers.
     friend class CargoDeck;
 
-    /// Only handles have right to destruct containers.
-    template <typename>
-    friend class Handling::Handle;
-
     /// VisualizationDriver for Warehouse service should be able to directly access ::collection.
     friend class VisualizationDriver;
 
     explicit LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    ~LongTermContainer () noexcept;
+    ~LongTermContainer () noexcept = default;
 
     RecordCollection::LinearRepresentation AcquireLinearRepresentation (StandardLayout::FieldId _keyField) noexcept;
 

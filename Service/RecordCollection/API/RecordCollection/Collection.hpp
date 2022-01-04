@@ -195,7 +195,7 @@ namespace Memory
 template <>
 struct DefaultAllocationGroup<RecordCollection::Collection::DimensionDescriptor>
 {
-    static const UniqueString ID;
+    static Profiler::AllocationGroup Get () noexcept;
 };
 } // namespace Memory
 } // namespace Emergence

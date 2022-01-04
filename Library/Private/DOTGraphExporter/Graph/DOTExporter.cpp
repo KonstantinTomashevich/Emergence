@@ -4,8 +4,6 @@
 
 namespace Emergence::Graph::DOTExporter
 {
-const Memory::UniqueString Context::ALLOCATION_GROUP {"DOTExporterContext"};
-
 bool Context::Execute (const VisualGraph::Graph &_graph, std::ostream &_output) noexcept
 {
     return Context {_output}.Process (_graph).has_value ();

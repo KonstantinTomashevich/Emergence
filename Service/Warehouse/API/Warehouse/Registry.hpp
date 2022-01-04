@@ -93,7 +93,7 @@ namespace Emergence::Warehouse
 class Registry final
 {
 public:
-    Registry (Memory::UniqueString _name) noexcept;
+    explicit Registry (Memory::UniqueString _name) noexcept;
 
     /// Registry holds lots of objects, therefore it's not optimal to copy it.
     Registry (const Registry &_other) = delete;

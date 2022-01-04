@@ -13,7 +13,7 @@ END_MUTING_WARNINGS
 #include <Input/InputListenerObject.hpp>
 #include <Input/NormalInputMappingSingleton.hpp>
 
-#include <Memory/Profiler/Registry.hpp>
+#include <Memory/Profiler/AllocationGroup.hpp>
 
 #include <Shared/Checkpoint.hpp>
 
@@ -52,10 +52,7 @@ private:
     Emergence::Container::Vector<InputAction> frameActionsBuffer;
 };
 
-namespace MP = Emergence::Memory::Profiler;
-
-static const Emergence::Memory::UniqueString INPUT_COLLECTOR {"InputCollector"};
-static const Emergence::Memory::UniqueString FRAME_ACTIONS_BUFFER {"FrameActionsBuffer"};
+using namespace Emergence::Memory::Literals;
 
 InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
                                 const Emergence::StandardLayout::Mapping &_singleton,
@@ -69,8 +66,8 @@ InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
       application (_application),
       singleton (_singleton),
       mappingField (_singleton.GetField (_mappingField)),
-      frameActionsBuffer (
-          MP::ConstructWithinGroup<decltype (frameActionsBuffer)> (INPUT_COLLECTOR, FRAME_ACTIONS_BUFFER))
+      // TODO: Do not forget to add allocation grouping to pipelines too.
+      frameActionsBuffer (Emergence::Memory::Profiler::AllocationGroup {"FrameActionsBuffer"_us})
 {
     assert (_application);
     assert (mappingField.GetNestedObjectMapping () == InputMapping::Reflect ().mapping);

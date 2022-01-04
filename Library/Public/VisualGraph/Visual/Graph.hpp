@@ -145,21 +145,21 @@ namespace Memory
 template <>
 struct DefaultAllocationGroup<VisualGraph::Node>
 {
-    static const UniqueString ID;
+    static Profiler::AllocationGroup Get () noexcept;
 };
 
 /// \brief Default allocation group for visual graph edges.
 template <>
 struct DefaultAllocationGroup<VisualGraph::Edge>
 {
-    static const UniqueString ID;
+    static Profiler::AllocationGroup Get () noexcept;
 };
 
 /// \brief Default allocation group for visual graphs.
 template <>
 struct DefaultAllocationGroup<VisualGraph::Graph>
 {
-    static const UniqueString ID;
+    static Profiler::AllocationGroup Get () noexcept;
 };
 } // namespace Memory
 } // namespace Emergence

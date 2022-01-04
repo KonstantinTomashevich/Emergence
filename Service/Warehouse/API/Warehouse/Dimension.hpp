@@ -62,7 +62,7 @@ namespace Memory
 template <>
 struct DefaultAllocationGroup<Warehouse::Dimension>
 {
-    static const UniqueString ID;
+    static Profiler::AllocationGroup Get () noexcept;
 };
 } // namespace Memory
 } // namespace Emergence

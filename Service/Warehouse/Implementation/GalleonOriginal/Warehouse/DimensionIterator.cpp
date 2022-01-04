@@ -23,6 +23,11 @@ Dimension DimensionIterator::operator* () const noexcept
 
 namespace Memory
 {
-const UniqueString DefaultAllocationGroup<Warehouse::Dimension>::ID {"DimensionConfiguration"};
+using namespace Literals;
+
+Profiler::AllocationGroup DefaultAllocationGroup<Warehouse::Dimension>::Get () noexcept
+{
+    return Profiler::AllocationGroup {"DimensionConfiguration"_us};
+}
 } // namespace Memory
 } // namespace Emergence
