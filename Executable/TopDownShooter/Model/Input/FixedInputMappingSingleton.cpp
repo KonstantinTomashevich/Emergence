@@ -1,6 +1,6 @@
 #include <Input/FixedInputMappingSingleton.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 const FixedInputMappingSingleton::Reflection &FixedInputMappingSingleton::Reflect () noexcept
 {

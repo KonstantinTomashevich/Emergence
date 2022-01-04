@@ -1,7 +1,7 @@
 #include <StandardLayout/Test/Visualization.hpp>
 #include <StandardLayout/Visualization.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 #include <Testing/Testing.hpp>
 

@@ -1,6 +1,6 @@
 #include <Input/InputMapping.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 const KeyRequirement::Reflection &KeyRequirement::Reflect () noexcept
 {

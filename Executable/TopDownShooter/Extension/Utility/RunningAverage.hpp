@@ -2,9 +2,7 @@
 
 #include <Container/InplaceVector.hpp>
 
-#include <StandardLayout/Mapping.hpp>
-
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence
 {

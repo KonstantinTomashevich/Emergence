@@ -1,6 +1,6 @@
 #include <Input/InputAction.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 InputAction::InputAction (const Emergence::Memory::UniqueString &_id,
                           const Emergence::Memory::UniqueString &_group) noexcept

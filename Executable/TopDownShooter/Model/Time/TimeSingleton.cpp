@@ -1,4 +1,4 @@
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 #include <Time/TimeSingleton.hpp>
 

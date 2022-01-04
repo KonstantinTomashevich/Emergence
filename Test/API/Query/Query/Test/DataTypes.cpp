@@ -1,8 +1,6 @@
 #include <Query/Test/DataTypes.hpp>
 
-#include <StandardLayout/MappingBuilder.hpp>
-
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Query::Test
 {

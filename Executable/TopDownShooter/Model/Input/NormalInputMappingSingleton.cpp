@@ -1,6 +1,6 @@
 #include <Input/NormalInputMappingSingleton.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 const NormalInputMappingSingleton::Reflection &NormalInputMappingSingleton::Reflect () noexcept
 {

@@ -8,9 +8,6 @@
 
 #include <StandardLayout/MappingBuilder.hpp>
 
-// TODO: Find a better module for this file. Then revisit all Container library links.
-//       Maybe put it inside StandardLayoutMapping service? But it would add Container dependency to this service.
-
 /// \brief Helper for mapping static registration. Contains beginning of registration functor.
 /// \invariant Class reflection structure name must be Class::Reflection.
 /// \see EMERGENCE_MAPPING_REGISTRATION_END
@@ -40,8 +37,9 @@
 /// \invariant Class must contain `_field` field.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR(_field)                                                                     \
-    ._field = (builder.*Emergence::MappingRegistration::RegularFieldRegistrar<decltype (Type::_field)>::Register) (    \
-        #_field, offsetof (Type, _field)),
+    ._field =                                                                                                          \
+        (builder.*Emergence::StandardLayout::Registration::RegularFieldRegistrar<decltype (Type::_field)>::Register) ( \
+            #_field, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers enum field as field with FieldArchetype::INT,
 ///        FieldArchetype::UINT or FieldArchetype::FLOAT.
@@ -49,7 +47,7 @@
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_ENUM_AS_REGULAR(_field)                                                             \
     ._field =                                                                                                          \
-        (builder.*Emergence::MappingRegistration::RegularFieldRegistrar<                                               \
+        (builder.*Emergence::StandardLayout::Registration::RegularFieldRegistrar<                                      \
                       std::underlying_type_t<decltype (Type::_field)>>::Register) (#_field, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
@@ -78,12 +76,12 @@
 /// \invariant Class reflection structure name must contain `_field` field,
 ///            in which registered field id for each array element will be stored.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY(_field)                                                               \
-    ._field = Emergence::MappingRegistration::RegisterArray<decltype (Type::_field)> (                                 \
+    ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
         #_field,                                                                                                       \
         [&builder] (std::size_t _index, const char *_itemName)                                                         \
         {                                                                                                              \
             using ItemType = decltype (Type::_field)::value_type;                                                      \
-            using Registrar = Emergence::MappingRegistration::RegularFieldRegistrar<ItemType>;                         \
+            using Registrar = Emergence::StandardLayout::Registration::RegularFieldRegistrar<ItemType>;                \
             return (builder.*Registrar::Register) (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType));   \
         }),
 
@@ -93,7 +91,7 @@
 /// \invariant Class reflection structure name must contain `_field` field,
 ///            in which registered field id for each array element will be stored.
 #define EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY(_field)                                                         \
-    ._field = Emergence::MappingRegistration::RegisterArray<decltype (Type::_field)> (                                 \
+    ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
         #_field,                                                                                                       \
         [&builder] (std::size_t _index, const char *_itemName)                                                         \
         {                                                                                                              \
@@ -102,7 +100,7 @@
                                                  ItemType::Reflect ().mapping);                                        \
         }),
 
-namespace Emergence::MappingRegistration
+namespace Emergence::StandardLayout::Registration
 {
 /// \brief Utility structure, used to detect registration method for regular fields.
 /// \see EMERGENCE_MAPPING_REGISTER_REGULAR
@@ -152,7 +150,7 @@ struct ExtractArraySize<Container::InplaceVector<Type, Capacity>>
 template <typename ArrayType, typename ElementRegistrar>
 auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegistrar)
 {
-    std::array<StandardLayout::FieldId, MappingRegistration::ExtractArraySize<ArrayType>::VALUE> result;
+    std::array<StandardLayout::FieldId, ExtractArraySize<ArrayType>::VALUE> result;
     std::string namePrefix = std::string (_fieldName) + '[';
 
     for (std::size_t index = 0u; index < result.size (); ++index)
@@ -163,4 +161,4 @@ auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegi
 
     return result;
 }
-} // namespace Emergence::MappingRegistration
+} // namespace Emergence::StandardLayout::Registration
