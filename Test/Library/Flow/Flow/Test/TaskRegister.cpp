@@ -61,7 +61,7 @@ static void Check (const Emergence::Task::Collection &_result, const CollectionE
         const auto &result = _result.tasks[taskIndex];
         const auto &expectation = _expectation.tasks[taskIndex];
 
-        CHECK_EQUAL (result.name, expectation.name);
+        CHECK_EQUAL (*result.name, expectation.name);
         // Unfortunately, we can not check task executors equality, because it's not supported by std::function.
 
         CHECK_EQUAL (result.dependantTasksIndices.size (), expectation.dependantTasks.size ());

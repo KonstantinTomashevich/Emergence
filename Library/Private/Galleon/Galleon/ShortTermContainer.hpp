@@ -85,9 +85,9 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            std::vector<void *>::const_iterator iterator;
+            Container::Vector<void *>::const_iterator iterator;
 
-            const std::vector<void *>::const_iterator end;
+            const Container::Vector<void *>::const_iterator end;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept = default;
@@ -128,9 +128,9 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            std::vector<void *>::iterator iterator;
+            Container::Vector<void *>::iterator iterator;
 
-            std::vector<void *>::iterator end;
+            Container::Vector<void *>::iterator end;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept = default;

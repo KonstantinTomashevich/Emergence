@@ -77,11 +77,11 @@ public:
     }
 
     template <typename Other>
-    HeapSTD ([[maybe_unused]] const HeapSTD<Other> &_other) noexcept : HeapSTD (_other.heap.GetAllocationGroup ())
+    HeapSTD ([[maybe_unused]] const HeapSTD<Other> &_other) noexcept : HeapSTD (_other.GetAllocationGroup ())
     {
     }
 
-    HeapSTD (const HeapSTD &_other) noexcept : HeapSTD (_other.heap.GetAllocationGroup ())
+    HeapSTD (const HeapSTD &_other) noexcept : HeapSTD (_other.GetAllocationGroup ())
     {
     }
 
@@ -101,15 +101,16 @@ public:
         heap.Release (_record, sizeof (Type) * _count);
     }
 
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept
+    {
+        return heap.GetAllocationGroup();
+    }
+
     HeapSTD &operator= (const HeapSTD &_other) = delete;
 
     HeapSTD &operator= (HeapSTD &&_other) = delete;
 
 private:
-    /// Wrappers of all types must be friends because of rebind constructor.
-    template <typename Other>
-    friend class HeapSTD;
-
     Heap heap;
 };
 } // namespace Emergence::Memory

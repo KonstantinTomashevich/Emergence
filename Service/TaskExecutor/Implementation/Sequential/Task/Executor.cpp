@@ -21,14 +21,17 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (ExecutorImplementation);
 
 private:
-    std::vector<std::function<void ()>> orderedTasks;
+    Container::Vector<std::function<void ()>> orderedTasks;
 };
 
+using namespace Memory::Literals;
+
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection) noexcept
+    : orderedTasks (Memory::Profiler::AllocationGroup ("Executor"_us))
 {
     orderedTasks.reserve (_collection.tasks.size ());
     // We can not use {count, value} constructor here, because some compilers parse it as initializer list.
-    std::vector<std::size_t> dependenciesLeft;
+    Container::Vector<std::size_t> dependenciesLeft {orderedTasks.get_allocator ()};
     dependenciesLeft.resize (_collection.tasks.size (), 0u);
 
     for (const Collection::Item &item : _collection.tasks)
@@ -40,12 +43,12 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         }
     }
 
-    std::stack<std::size_t> resolvedTasks;
+    Container::Vector<std::size_t> resolvedTasks {orderedTasks.get_allocator ()};
     for (std::size_t index = 0u; index < dependenciesLeft.size (); ++index)
     {
         if (dependenciesLeft[index] == 0u)
         {
-            resolvedTasks.push (index);
+            resolvedTasks.emplace_back (index);
         }
     }
 
@@ -53,8 +56,8 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
     while (!resolvedTasks.empty ())
     {
         ++resolvedTasksCount;
-        std::size_t taskIndex = resolvedTasks.top ();
-        resolvedTasks.pop ();
+        std::size_t taskIndex = resolvedTasks.back ();
+        resolvedTasks.pop_back ();
 
         assert (taskIndex < _collection.tasks.size ());
         orderedTasks.emplace_back (_collection.tasks[taskIndex].task);
@@ -63,7 +66,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         {
             if (--dependenciesLeft[dependantIndex] == 0u)
             {
-                resolvedTasks.push (dependantIndex);
+                resolvedTasks.emplace_back (dependantIndex);
             }
         }
     }

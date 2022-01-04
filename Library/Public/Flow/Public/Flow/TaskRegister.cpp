@@ -165,11 +165,11 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
         for (const Task &task : source->tasks)
         {
             Emergence::Task::Collection::Item &item = collection.tasks.emplace_back ();
-            item.name = task.name;
+            item.name = Memory::UniqueString (task.name.c_str ());
             item.task = task.executor;
         }
 
-        auto emplaceWithoutDuplication = [] (std::vector<std::size_t> &_indices, std::size_t _index)
+        auto emplaceWithoutDuplication = [] (Container::Vector<std::size_t> &_indices, std::size_t _index)
         {
             if (std::find (_indices.begin (), _indices.end (), _index) == _indices.end ())
             {
