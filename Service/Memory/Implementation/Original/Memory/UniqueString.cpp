@@ -39,4 +39,9 @@ bool UniqueString::operator!= (const UniqueString &_other) const noexcept
 {
     return !(*this == _other);
 }
+
+std::ostream &operator<< (std::ostream &_output, const UniqueString &_string) noexcept
+{
+    return _output << (*_string ? *_string : "<empty string>");
+}
 } // namespace Emergence::Memory

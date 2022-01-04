@@ -67,7 +67,7 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
         }}.ExecuteAndVisualize ();
 
     const std::string mappingPath = GetPathToMappings () +
-                                    Query::Test::PlayerWithBoundingBox::Reflect ().mapping.GetName () +
+                                    *Query::Test::PlayerWithBoundingBox::Reflect ().mapping.GetName () +
                                     VisualGraph::NODE_PATH_SEPARATOR;
 
     const VisualGraph::Graph expected = {
@@ -107,7 +107,7 @@ TEST_CASE (MultipleInstancesOfLinearRepresentation)
         }}.ExecuteAndVisualize ();
 
     const std::string mappingPath =
-        GetPathToMappings () + Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
+        GetPathToMappings () + *Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
 
     const VisualGraph::Graph expected = {"RecordCollection {Player}",
                                          {},
@@ -138,7 +138,7 @@ TEST_CASE (MultipleInstancesOfPointRepresentation)
         }}.ExecuteAndVisualize ();
 
     const std::string mappingPath =
-        GetPathToMappings () + Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
+        GetPathToMappings () + *Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
 
     const VisualGraph::Graph expected = {"RecordCollection {Player}",
                                          {},
@@ -190,7 +190,7 @@ TEST_CASE (MultipleInstancesOfVolumetricRepresentation)
             CreateVolumetricRepresentation {"3d", dimensions3d},
         }}.ExecuteAndVisualize ();
 
-    const std::string mappingPath = GetPathToMappings () + Query::Test::BoundingBox::Reflect ().mapping.GetName () +
+    const std::string mappingPath = GetPathToMappings () + *Query::Test::BoundingBox::Reflect ().mapping.GetName () +
                                     VisualGraph::NODE_PATH_SEPARATOR;
 
     const VisualGraph::Graph expected = {"RecordCollection {BoundingBox}",

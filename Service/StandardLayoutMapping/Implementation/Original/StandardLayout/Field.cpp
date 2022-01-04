@@ -59,7 +59,7 @@ Mapping Field::GetNestedObjectMapping () const noexcept
     return Mapping (reinterpret_cast<decltype (Mapping::data) *> (&nestedMapping));
 }
 
-const char *Field::GetName () const noexcept
+Memory::UniqueString Field::GetName () const noexcept
 {
     return static_cast<const FieldData *> (handle)->GetName ();
 }

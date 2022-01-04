@@ -20,7 +20,7 @@ VisualGraph::Graph GraphFromCollection (const Collection &_collection)
 
     VisualGraph::Edge &mappingEdge = graph.edges.emplace_back ();
     mappingEdge.from = root.id;
-    mappingEdge.to = GetPathToMappings () + _collection.GetTypeMapping ().GetName () +
+    mappingEdge.to = GetPathToMappings () + *_collection.GetTypeMapping ().GetName () +
                      VisualGraph::NODE_PATH_SEPARATOR + MAPPING_ROOT_NODE;
     mappingEdge.color = MAPPING_USAGE_COLOR;
 
@@ -45,7 +45,7 @@ VisualGraph::Graph GraphFromCollection (const Collection &_collection)
     return graph;
 }
 
-static VisualGraph::Edge ConnectRepresentationToField (const std::string &_typeName, const std::string &_fieldName)
+static VisualGraph::Edge ConnectRepresentationToField (const char *_typeName, const char *_fieldName)
 {
     VisualGraph::Edge edge;
     edge.from = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
@@ -60,8 +60,8 @@ VisualGraph::Graph GraphFromLinearRepresentation (const LinearRepresentation &_r
     graph.id = GraphId (_representation);
     graph.nodes.emplace_back ().id = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 
-    graph.edges.emplace_back (ConnectRepresentationToField (_representation.GetTypeMapping ().GetName (),
-                                                            _representation.GetKeyField ().GetName ()));
+    graph.edges.emplace_back (ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (),
+                                                            *_representation.GetKeyField ().GetName ()));
 
     return graph;
 }
@@ -75,7 +75,7 @@ VisualGraph::Graph GraphFromPointRepresentation (const PointRepresentation &_rep
     for (auto iterator = _representation.KeyFieldBegin (); iterator != _representation.KeyFieldEnd (); ++iterator)
     {
         graph.edges.emplace_back (
-            ConnectRepresentationToField (_representation.GetTypeMapping ().GetName (), (*iterator).GetName ()));
+            ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (), *(*iterator).GetName ()));
     }
 
     return graph;
@@ -91,10 +91,10 @@ VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresenta
     {
         VolumetricRepresentation::DimensionIterator::Dimension dimension = *iterator;
         graph.edges.emplace_back (
-            ConnectRepresentationToField (_representation.GetTypeMapping ().GetName (), dimension.minField.GetName ()));
+            ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (), *dimension.minField.GetName ()));
 
         graph.edges.emplace_back (
-            ConnectRepresentationToField (_representation.GetTypeMapping ().GetName (), dimension.maxField.GetName ()));
+            ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (), *dimension.maxField.GetName ()));
     }
 
     return graph;
@@ -102,12 +102,12 @@ VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresenta
 
 std::string GraphId (const Collection &_collection)
 {
-    return std::string ("RecordCollection {") + _collection.GetTypeMapping ().GetName () + "}";
+    return std::string ("RecordCollection {") + *_collection.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const LinearRepresentation &_representation)
 {
-    return std::string ("LinearRepresentation {") + _representation.GetKeyField ().GetName () + "}";
+    return std::string ("LinearRepresentation {") + *_representation.GetKeyField ().GetName () + "}";
 }
 
 std::string GraphId (const PointRepresentation &_representation)
@@ -126,7 +126,7 @@ std::string GraphId (const PointRepresentation &_representation)
             firstKeyField = false;
         }
 
-        id += (*iterator).GetName ();
+        id += *(*iterator).GetName ();
     }
 
     return id + "}";
@@ -149,7 +149,7 @@ std::string GraphId (const VolumetricRepresentation &_representation)
         }
 
         VolumetricRepresentation::DimensionIterator::Dimension dimension = *iterator;
-        id += std::string ("{") + dimension.minField.GetName () + ", " + dimension.maxField.GetName () + "}";
+        id += std::string ("{") + *dimension.minField.GetName () + ", " + *dimension.maxField.GetName () + "}";
     }
 
     return id + "}";

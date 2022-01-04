@@ -35,7 +35,7 @@ std::size_t Mapping::GetObjectSize () const noexcept
     return handle->GetObjectSize ();
 }
 
-const char *Mapping::GetName () const noexcept
+Memory::UniqueString Mapping::GetName () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
     assert (handle);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <ostream>
 #include <string_view>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -59,6 +60,8 @@ inline UniqueString operator"" _us (const char *_string, [[maybe_unused]] size_t
     return UniqueString {_string};
 }
 } // namespace Literals
+
+std::ostream &operator<< (std::ostream &_output, const UniqueString &_string) noexcept;
 } // namespace Emergence::Memory
 
 namespace std

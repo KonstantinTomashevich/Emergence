@@ -2,7 +2,7 @@
 
 namespace Emergence::Warehouse::Visualization
 {
-// TODO: Recheck allocation grouping correctmess in all visualizators.
+// TODO: Recheck allocation grouping correctness in all visualizators.
 
 using namespace VisualGraph::Common::Constants;
 
@@ -35,7 +35,7 @@ VisualGraph::Graph BaseGraphForQuery (const Query &_query)
 
     VisualGraph::Edge &edgeToMapping = graph.edges.emplace_back ();
     edgeToMapping.from = root.id;
-    edgeToMapping.to = GetPathToMappings () + _query.GetTypeMapping ().GetName () + VisualGraph::NODE_PATH_SEPARATOR +
+    edgeToMapping.to = GetPathToMappings () + *_query.GetTypeMapping ().GetName () + VisualGraph::NODE_PATH_SEPARATOR +
                        MAPPING_ROOT_NODE;
     edgeToMapping.color = MAPPING_USAGE_COLOR;
 
@@ -50,7 +50,7 @@ static void ConnectToField (VisualGraph::Graph &_graph,
 {
     VisualGraph::Edge &edge = _graph.edges.emplace_back ();
     edge.from = WAREHOUSE_QUERY_ROOT_NODE;
-    edge.to = GetPathToMappings () + _mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR + _field.GetName ();
+    edge.to = GetPathToMappings () + *_mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR + *_field.GetName ();
     edge.color = MAPPING_USAGE_COLOR;
 }
 
@@ -190,7 +190,7 @@ static void AppendKeyFieldSequence (std::string &_output, const KeyFieldIterator
             _output += ", ";
         }
 
-        _output += (*current).GetName ();
+        _output += *(*current).GetName ();
         ++current;
     }
 }
@@ -208,104 +208,104 @@ static void AppendDimensionSequence (std::string &_output,
         }
 
         const Dimension &dimension = *current;
-        _output +=
-            std::string ("{") + dimension.minBorderField.GetName () + ", " + dimension.maxBorderField.GetName () + "}";
+        _output += std::string ("{") + *dimension.minBorderField.GetName () + ", " +
+                   *dimension.maxBorderField.GetName () + "}";
         ++current;
     }
 }
 
 std::string GraphId (const FetchAscendingRangeQuery &_query)
 {
-    return std::string ("FetchAscendingRangeQuery {") + _query.GetTypeMapping ().GetName () + ": " +
-           _query.GetKeyField ().GetName () + "}";
+    return std::string ("FetchAscendingRangeQuery {") + *_query.GetTypeMapping ().GetName () + ": " +
+           *_query.GetKeyField ().GetName () + "}";
 }
 
 std::string GraphId (const FetchDescendingRangeQuery &_query)
 {
-    return std::string ("FetchDescendingRangeQuery {") + _query.GetTypeMapping ().GetName () + ": " +
-           _query.GetKeyField ().GetName () + "}";
+    return std::string ("FetchDescendingRangeQuery {") + *_query.GetTypeMapping ().GetName () + ": " +
+           *_query.GetKeyField ().GetName () + "}";
 }
 
 std::string GraphId (const FetchRayIntersectionQuery &_query)
 {
-    std::string result = std::string ("FetchRayIntersectionQuery {") + _query.GetTypeMapping ().GetName () + ": ";
+    std::string result = std::string ("FetchRayIntersectionQuery {") + *_query.GetTypeMapping ().GetName () + ": ";
     AppendDimensionSequence (result, _query.DimensionBegin (), _query.DimensionEnd ());
     return result + "}";
 }
 
 std::string GraphId (const FetchSequenceQuery &_query)
 {
-    return std::string ("FetchSequenceQuery {") + _query.GetTypeMapping ().GetName () + "}";
+    return std::string ("FetchSequenceQuery {") + *_query.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const FetchShapeIntersectionQuery &_query)
 {
-    std::string result = std::string ("FetchShapeIntersectionQuery {") + _query.GetTypeMapping ().GetName () + ": ";
+    std::string result = std::string ("FetchShapeIntersectionQuery {") + *_query.GetTypeMapping ().GetName () + ": ";
     AppendDimensionSequence (result, _query.DimensionBegin (), _query.DimensionEnd ());
     return result + "}";
 }
 
 std::string GraphId (const FetchSingletonQuery &_query)
 {
-    return std::string ("FetchSingletonQuery {") + _query.GetTypeMapping ().GetName () + "}";
+    return std::string ("FetchSingletonQuery {") + *_query.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const FetchValueQuery &_query)
 {
-    std::string result = std::string ("FetchValueQuery {") + _query.GetTypeMapping ().GetName () + ": ";
+    std::string result = std::string ("FetchValueQuery {") + *_query.GetTypeMapping ().GetName () + ": ";
     AppendKeyFieldSequence (result, _query.KeyFieldBegin (), _query.KeyFieldEnd ());
     return result + "}";
 }
 
 std::string GraphId (const InsertLongTermQuery &_query)
 {
-    return std::string ("InsertLongTermQuery {") + _query.GetTypeMapping ().GetName () + "}";
+    return std::string ("InsertLongTermQuery {") + *_query.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const InsertShortTermQuery &_query)
 {
-    return std::string ("InsertShortTermQuery {") + _query.GetTypeMapping ().GetName () + "}";
+    return std::string ("InsertShortTermQuery {") + *_query.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const ModifyAscendingRangeQuery &_query)
 {
-    return std::string ("ModifyAscendingRangeQuery {") + _query.GetTypeMapping ().GetName () + ": " +
-           _query.GetKeyField ().GetName () + "}";
+    return std::string ("ModifyAscendingRangeQuery {") + *_query.GetTypeMapping ().GetName () + ": " +
+           *_query.GetKeyField ().GetName () + "}";
 }
 
 std::string GraphId (const ModifyDescendingRangeQuery &_query)
 {
-    return std::string ("ModifyDescendingRangeQuery {") + _query.GetTypeMapping ().GetName () + ": " +
-           _query.GetKeyField ().GetName () + "}";
+    return std::string ("ModifyDescendingRangeQuery {") + *_query.GetTypeMapping ().GetName () + ": " +
+           *_query.GetKeyField ().GetName () + "}";
 }
 
 std::string GraphId (const ModifyRayIntersectionQuery &_query)
 {
-    std::string result = std::string ("ModifyRayIntersectionQuery {") + _query.GetTypeMapping ().GetName () + ": ";
+    std::string result = std::string ("ModifyRayIntersectionQuery {") + *_query.GetTypeMapping ().GetName () + ": ";
     AppendDimensionSequence (result, _query.DimensionBegin (), _query.DimensionEnd ());
     return result + "}";
 }
 
 std::string GraphId (const ModifySequenceQuery &_query)
 {
-    return std::string ("ModifySequenceQuery {") + _query.GetTypeMapping ().GetName () + "}";
+    return std::string ("ModifySequenceQuery {") + *_query.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const ModifyShapeIntersectionQuery &_query)
 {
-    std::string result = std::string ("ModifyShapeIntersectionQuery {") + _query.GetTypeMapping ().GetName () + ": ";
+    std::string result = std::string ("ModifyShapeIntersectionQuery {") + *_query.GetTypeMapping ().GetName () + ": ";
     AppendDimensionSequence (result, _query.DimensionBegin (), _query.DimensionEnd ());
     return result + "}";
 }
 
 std::string GraphId (const ModifySingletonQuery &_query)
 {
-    return std::string ("ModifySingletonQuery {") + _query.GetTypeMapping ().GetName () + "}";
+    return std::string ("ModifySingletonQuery {") + *_query.GetTypeMapping ().GetName () + "}";
 }
 
 std::string GraphId (const ModifyValueQuery &_query)
 {
-    std::string result = std::string ("ModifyValueQuery {") + _query.GetTypeMapping ().GetName () + ": ";
+    std::string result = std::string ("ModifyValueQuery {") + *_query.GetTypeMapping ().GetName () + ": ";
     AppendKeyFieldSequence (result, _query.KeyFieldBegin (), _query.KeyFieldEnd ());
     return result + "}";
 }

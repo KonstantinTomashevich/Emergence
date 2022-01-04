@@ -10,6 +10,9 @@
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
+#include <Memory/Heap.hpp>
+#include <Memory/UniqueString.hpp>
+
 #include <StandardLayout/Field.hpp>
 
 namespace Emergence::StandardLayout
@@ -29,7 +32,7 @@ public:
     ///          would violate realloc-movable requirement and create ambiguity.
     struct StandardSeed final
     {
-        const char *name = nullptr;
+        Memory::UniqueString name;
 
         FieldArchetype archetype = FieldArchetype::UINT;
 
@@ -41,7 +44,7 @@ public:
     /// \brief Used to register fields with FieldArchetype::BIT.
     struct BitSeed
     {
-        const char *name = nullptr;
+        Memory::UniqueString name;
 
         std::size_t offset = 0u;
 
@@ -51,7 +54,7 @@ public:
     /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
     struct NestedObjectSeed
     {
-        const char *name = nullptr;
+        Memory::UniqueString name;
 
         std::size_t offset = 0u;
 
@@ -73,7 +76,7 @@ public:
 
     [[nodiscard]] Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
 
-    [[nodiscard]] const char *GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (FieldData);
 
@@ -95,11 +98,10 @@ private:
 
     ~FieldData ();
 
-    void CopyName (const char *_name) noexcept;
-
     FieldArchetype archetype {FieldArchetype::INT};
     std::size_t offset {0u};
     std::size_t size {0u};
+    Memory::UniqueString name;
 
     union
     {
@@ -107,11 +109,6 @@ private:
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
     };
-
-    /// \details Field name should not be inlined into FieldData object, because it would decrease field array cache
-    ///          coherency: names are rarely accessed, but take a lot of space in comparison to frequently accessed
-    ///          archetype, size and offset information.
-    char *name {nullptr};
 };
 
 class PlainMapping final : public Handling::HandleableBase
@@ -127,7 +124,7 @@ public:
 
     [[nodiscard]] std::size_t GetFieldCount () const noexcept;
 
-    [[nodiscard]] const char *GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     [[nodiscard]] const FieldData *GetField (FieldId _field) const noexcept;
 
@@ -147,10 +144,12 @@ private:
     template <typename>
     friend class Handling::Handle;
 
+    static Memory::Heap heap;
+
     /// \return Size of mapping object, that can hold up to _fieldCapacity fields.
     static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept;
 
-    explicit PlainMapping (const char *_name, std::size_t _objectSize) noexcept;
+    explicit PlainMapping (Memory::UniqueString _name, std::size_t _objectSize) noexcept;
 
     ~PlainMapping () noexcept;
 
@@ -172,10 +171,8 @@ private:
 
     std::size_t objectSize = 0u;
     std::size_t fieldCount = 0u;
-
-    /// \details Mapping name should not be inlined into PlainMapping object, because it will
-    ///          decrease cache coherency by adding huge chunk of rarely accessed data.
-    char *name;
+    std::size_t fieldCapacity = 0u;
+    Memory::UniqueString name;
 
     FieldData fields[0u];
 };
@@ -196,7 +193,7 @@ public:
 
     ~PlainMappingBuilder ();
 
-    void Begin (const char *_name, std::size_t _objectSize) noexcept;
+    void Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept;
 
     Handling::Handle<PlainMapping> End () noexcept;
 
@@ -213,9 +210,6 @@ private:
 
     std::pair<FieldId, FieldData *> AllocateField () noexcept;
 
-    void ReallocateMapping (std::size_t _fieldCapacity) noexcept;
-
     PlainMapping *underConstruction = nullptr;
-    std::size_t fieldCapacity = 0u;
 };
 } // namespace Emergence::StandardLayout

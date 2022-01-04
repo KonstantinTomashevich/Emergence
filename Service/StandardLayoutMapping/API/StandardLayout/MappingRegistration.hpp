@@ -13,7 +13,7 @@
 /// \see EMERGENCE_MAPPING_REGISTRATION_END
 #define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
     Emergence::StandardLayout::MappingBuilder builder;                                                                 \
-    builder.Begin (#Class, sizeof (Class));                                                                            \
+    builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class));                                          \
     using Type = Class;                                                                                                \
                                                                                                                        \
     return Class::Reflection                                                                                           \
@@ -30,7 +30,7 @@
 /// \details Registers bit with `_name` that resides in `_baseField` byte with `_bitOffset`.
 /// \invariant Class reflection structure name must contain `_name` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_BIT(_name, _baseField, _bitOffset)                                                  \
-    ._name = builder.RegisterBit (#_name, offsetof (Type, _baseField), _bitOffset),
+    ._name = builder.RegisterBit (Emergence::Memory::UniqueString {#_name}, offsetof (Type, _baseField), _bitOffset),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::INT,
 ///        FieldArchetype::UINT or FieldArchetype::FLOAT.
@@ -39,36 +39,38 @@
 #define EMERGENCE_MAPPING_REGISTER_REGULAR(_field)                                                                     \
     ._field =                                                                                                          \
         (builder.*Emergence::StandardLayout::Registration::RegularFieldRegistrar<decltype (Type::_field)>::Register) ( \
-            #_field, offsetof (Type, _field)),
+            Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers enum field as field with FieldArchetype::INT,
 ///        FieldArchetype::UINT or FieldArchetype::FLOAT.
 /// \invariant Class must contain `_field` field.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_ENUM_AS_REGULAR(_field)                                                             \
-    ._field =                                                                                                          \
-        (builder.*Emergence::StandardLayout::Registration::RegularFieldRegistrar<                                      \
-                      std::underlying_type_t<decltype (Type::_field)>>::Register) (#_field, offsetof (Type, _field)),
+    ._field = (builder.*Emergence::StandardLayout::Registration::RegularFieldRegistrar<                                \
+                            std::underlying_type_t<decltype (Type::_field)>>::Register) (                              \
+        Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
 /// \invariant Class must contain `_field` field of any type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_STRING(_field)                                                                      \
-    ._field = builder.RegisterString (#_field, offsetof (Type, _field), sizeof (Type::_field)),
+    ._field = builder.RegisterString (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),              \
+                                      sizeof (Type::_field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::BLOCK.
 /// \invariant Class must contain `_field` field of any type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_BLOCK(_field)                                                                       \
-    ._field = builder.RegisterBlock (#_field, offsetof (Type, _field), sizeof (Type::_field)),
+    ._field = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),               \
+                                     sizeof (Type::_field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::NESTED_OBJECT.
 /// \invariant Class must contain `_field` field of any type, that has static Reflect method that
 ///            returns reflection structure for this class.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT(_field)                                                               \
-    ._field =                                                                                                          \
-        builder.RegisterNestedObject (#_field, offsetof (Type, _field), decltype (Type::_field)::Reflect ().mapping),
+    ._field = builder.RegisterNestedObject (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),        \
+                                            decltype (Type::_field)::Reflect ().mapping),
 
 /// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::INT,
 ///        FieldArchetype::UINT or FieldArchetype::FLOAT elements.
@@ -78,7 +80,7 @@
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY(_field)                                                               \
     ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
         #_field,                                                                                                       \
-        [&builder] (std::size_t _index, const char *_itemName)                                                         \
+        [&builder] (std::size_t _index, Emergence::Memory::UniqueString _itemName)                                     \
         {                                                                                                              \
             using ItemType = decltype (Type::_field)::value_type;                                                      \
             using Registrar = Emergence::StandardLayout::Registration::RegularFieldRegistrar<ItemType>;                \
@@ -93,7 +95,7 @@
 #define EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY(_field)                                                         \
     ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
         #_field,                                                                                                       \
-        [&builder] (std::size_t _index, const char *_itemName)                                                         \
+        [&builder] (std::size_t _index, Emergence::Memory::UniqueString _itemName)                                     \
         {                                                                                                              \
             using ItemType = decltype (Type::_field)::value_type;                                                      \
             return builder.RegisterNestedObject (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType),      \
@@ -156,7 +158,7 @@ auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegi
     for (std::size_t index = 0u; index < result.size (); ++index)
     {
         std::string fieldName = namePrefix + std::to_string (index) + ']';
-        result[index] = _elementRegistrar (index, fieldName.c_str ());
+        result[index] = _elementRegistrar (index, Emergence::Memory::UniqueString {fieldName.c_str ()});
     }
 
     return result;

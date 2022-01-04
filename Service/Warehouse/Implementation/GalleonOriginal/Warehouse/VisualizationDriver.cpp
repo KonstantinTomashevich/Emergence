@@ -12,17 +12,17 @@ constexpr const char *CONTAINER_ROOT_NODE = ".";
 
 static std::string GraphId (const SingletonContainer &_container)
 {
-    return std::string ("SingletonContainer {") + _container.GetTypeMapping ().GetName () + "}";
+    return std::string ("SingletonContainer {") + *_container.GetTypeMapping ().GetName () + "}";
 }
 
 static std::string GraphId (const ShortTermContainer &_container)
 {
-    return std::string ("ShortTermContainer {") + _container.GetTypeMapping ().GetName () + "}";
+    return std::string ("ShortTermContainer {") + *_container.GetTypeMapping ().GetName () + "}";
 }
 
 static std::string GraphId (const LongTermContainer &_container)
 {
-    return std::string ("LongTermContainer {") + _container.GetTypeMapping ().GetName () + "}";
+    return std::string ("LongTermContainer {") + *_container.GetTypeMapping ().GetName () + "}";
 }
 
 void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const CargoDeck &_cargoDeck) noexcept
@@ -36,7 +36,7 @@ void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const CargoDe
         VisualGraph::Edge &mappingEdge = _graph.edges.emplace_back ();
         mappingEdge.from = root.id;
         mappingEdge.to = std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-                         VisualGraph::NODE_PATH_SEPARATOR + _container.GetTypeMapping ().GetName () +
+                         VisualGraph::NODE_PATH_SEPARATOR + *_container.GetTypeMapping ().GetName () +
                          VisualGraph::NODE_PATH_SEPARATOR + MAPPING_ROOT_NODE;
         mappingEdge.color = MAPPING_USAGE_COLOR;
     };

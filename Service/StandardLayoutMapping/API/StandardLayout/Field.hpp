@@ -5,7 +5,6 @@
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Memory/Heap.hpp>
-#include <Memory/UniqueString.hpp>
 
 namespace Emergence
 {
@@ -95,7 +94,7 @@ public:
 
     /// \return Human readable field name.
     /// \invariant Handle must be valid.
-    [[nodiscard]] const char *GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
     /// \return Pointer to this field in given structure.
