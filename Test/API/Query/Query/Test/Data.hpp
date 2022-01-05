@@ -6,18 +6,21 @@
 
 namespace Emergence::Query::Test
 {
-inline const Player HUGO_0_ALIVE_STUNNED {0u, {"hugo"}, Player::Status::FLAG_ALIVE | Player::Status::FLAG_STUNNED};
+using namespace Memory::Literals;
 
-inline const Player DUPLICATE_0_IMMOBILIZED {0u, {"hugo"}, Player::Status::FLAG_IMMOBILIZED};
+inline const Player HUGO_0_KNIGHT_ALIVE_STUNNED {
+    0u, {"hugo"}, "Knight"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_STUNNED};
 
-inline const Player KARL_1_ALIVE_IMMOBILIZED {
-    1u, {"karl"}, Player::Status::FLAG_ALIVE | Player::Status::FLAG_IMMOBILIZED};
+inline const Player HUGO_0_KNIGHT_IMMOBILIZED {0u, {"hugo"}, "Knight"_us, Player::Status::FLAG_IMMOBILIZED};
 
-inline const Player KARL_0_ALIVE_IMMOBILIZED {
-    0u, {"karl"}, Player::Status::FLAG_ALIVE | Player::Status::FLAG_IMMOBILIZED};
+inline const Player KARL_1_MAGE_ALIVE_IMMOBILIZED {
+    1u, {"karl"}, "Mage"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_IMMOBILIZED};
 
-inline const Player XAVIER_2_ALIVE_POISONED {
-    2u, {"xavier"}, Player::Status::FLAG_ALIVE | Player::Status::FLAG_POISONED};
+inline const Player KARL_0_MAGE_ALIVE_IMMOBILIZED {
+    0u, {"karl"}, "Mage"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_IMMOBILIZED};
+
+inline const Player XAVIER_2_ARCHER_ALIVE_POISONED {
+    2u, {"xavier"}, "Archer"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_POISONED};
 
 inline const AllFieldTypesStructure ALL_FIELD_TYPES_0 {
     -3,
@@ -35,6 +38,7 @@ inline const AllFieldTypesStructure ALL_FIELD_TYPES_0 {
 
     {13u, 12u, 15u, 21u},
     {"hugo"},
+    "Hello, world!"_us,
 };
 
 inline const AllFieldTypesStructure ALL_FIELD_TYPES_1 {
@@ -53,6 +57,7 @@ inline const AllFieldTypesStructure ALL_FIELD_TYPES_1 {
 
     {67u, 12u, 15u, 21u},
     {"karl"},
+    "A STRING"_us,
 };
 
 inline const AllFieldTypesStructure ALL_FIELD_TYPES_2 {
@@ -71,6 +76,7 @@ inline const AllFieldTypesStructure ALL_FIELD_TYPES_2 {
 
     {13u, 15u, 15u, 21u},
     {"xavier"},
+    "B STRING"_us,
 };
 
 inline const BoundingBox BOX_MIN_10_8_4_MAX_11_9_5 {10.0f, 8.0f, 4.0f, 11.0f, 9.0f, 5.0f};
@@ -85,11 +91,13 @@ inline const ScreenRect RECT_MIN_0_0_MAX_500_200 {0, 0, 500, 200};
 
 inline const ScreenRect RECT_MIN_700_400_MAX_1000_600 {700, 400, 1000, 600};
 
-inline const PlayerWithBoundingBox HUGO_0_MIN_10_8_4_MAX_11_9_5 {HUGO_0_ALIVE_STUNNED, BOX_MIN_10_8_4_MAX_11_9_5};
+inline const PlayerWithBoundingBox HUGO_0_MIN_10_8_4_MAX_11_9_5 {HUGO_0_KNIGHT_ALIVE_STUNNED,
+                                                                 BOX_MIN_10_8_4_MAX_11_9_5};
 
-inline const PlayerWithBoundingBox KARL_1_MIN_M2_1_0_MAX_0_4_2 {KARL_1_ALIVE_IMMOBILIZED, BOX_MIN_M2_1_0_MAX_0_4_2};
+inline const PlayerWithBoundingBox KARL_1_MIN_M2_1_0_MAX_0_4_2 {KARL_1_MAGE_ALIVE_IMMOBILIZED,
+                                                                BOX_MIN_M2_1_0_MAX_0_4_2};
 
-inline const PlayerWithBoundingBox XAVIER_2_MIN_15_8_50_MAX_19_11_60 {XAVIER_2_ALIVE_POISONED,
+inline const PlayerWithBoundingBox XAVIER_2_MIN_15_8_50_MAX_19_11_60 {XAVIER_2_ARCHER_ALIVE_POISONED,
                                                                       BOX_MIN_15_8_50_MAX_19_11_60};
 
 namespace Queries
@@ -111,6 +119,12 @@ inline const PlayerName KARL {{"karl"}};
 inline const PlayerName XAVIER {{"xavier"}};
 
 inline const PlayerName ZANEK {{"zanek"}};
+
+inline const PlayerClassId KNIGHT {{"Knight"_us}};
+
+inline const PlayerClassId MAGE {{"Mage"_us}};
+
+inline const PlayerClassId ARCHER {{"Archer"_us}};
 
 inline const PlayerNameAndId HUGO_1 {{"hugo"}, 1u};
 

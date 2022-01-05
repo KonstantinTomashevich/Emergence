@@ -77,6 +77,10 @@ struct BlockFieldSeed final : public FieldSeedBase
     std::size_t size;
 };
 
+struct UniqueStringFieldSeed final : public FieldSeedBase
+{
+};
+
 struct NestedObjectFieldSeed final : public FieldSeedBase
 {
     Mapping typeMapping;
@@ -95,6 +99,7 @@ using FieldSeed = std::variant<BitFieldSeed,
                                DoubleFieldSeed,
                                StringFieldSeed,
                                BlockFieldSeed,
+                               UniqueStringFieldSeed,
                                NestedObjectFieldSeed>;
 
 struct MappingSeed final
@@ -165,6 +170,10 @@ Mapping Grow (MappingSeed &_seed, MappingBuilder &_builder)
                 else if constexpr (std::is_same_v<Seed, BlockFieldSeed>)
                 {
                     _seed.recordedId = _builder.RegisterBlock (_seed.name, _seed.offset, _seed.size);
+                }
+                else if constexpr (std::is_same_v<Seed, UniqueStringFieldSeed>)
+                {
+                    _seed.recordedId = _builder.RegisterUniqueString (_seed.name, _seed.offset);
                 }
                 else if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                 {
@@ -271,6 +280,11 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                         CHECK_EQUAL (field.GetSize (), _seed.size);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BLOCK);
                     }
+                    else if constexpr (std::is_same_v<Seed, UniqueStringFieldSeed>)
+                    {
+                        CHECK_EQUAL (field.GetSize (), sizeof (Memory::UniqueString));
+                        CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UNIQUE_STRING);
+                    }
                     else if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), _seed.typeMapping.GetObjectSize ());
@@ -305,6 +319,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             case FieldArchetype::FLOAT:
                             case FieldArchetype::STRING:
                             case FieldArchetype::BLOCK:
+                            case FieldArchetype::UNIQUE_STRING:
                                 break;
 
                             case FieldArchetype::NESTED_OBJECT:
@@ -397,6 +412,7 @@ struct AllBasicTypesTest final
 
     char block[48u];
     char string[24u];
+    Memory::UniqueString uniqueString;
 };
 
 static const MappingSeed ALL_BASIC_TYPES {
@@ -423,6 +439,7 @@ static const MappingSeed ALL_BASIC_TYPES {
 
         StringFieldSeed {{"string"_us, offsetof (AllBasicTypesTest, string)}, sizeof (AllBasicTypesTest::string)},
         BlockFieldSeed {{"block"_us, offsetof (AllBasicTypesTest, block)}, sizeof (AllBasicTypesTest::block)},
+        UniqueStringFieldSeed {{"uniqueString"_us, offsetof (AllBasicTypesTest, uniqueString)}},
     }};
 
 struct UnionWithBasicTypesTest
@@ -529,7 +546,8 @@ static const MappingSeed NESTED_TWO_SUBLEVELS {
         FloatFieldSeed {{"floating"_us, offsetof (NestedTwoSublevelsTest, floating)}},
         NestedObjectFieldSeed {{"firstNested"_us, offsetof (NestedTwoSublevelsTest, firstNested)},
                                Grow (NESTED_ONE_SUBLEVEL)},
-        BlockFieldSeed {{"string"_us, offsetof (NestedTwoSublevelsTest, string)}, sizeof (NestedTwoSublevelsTest::string)},
+        BlockFieldSeed {{"string"_us, offsetof (NestedTwoSublevelsTest, string)},
+                        sizeof (NestedTwoSublevelsTest::string)},
         NestedObjectFieldSeed {{"secondNested"_us, offsetof (NestedTwoSublevelsTest, secondNested)},
                                Grow (NESTED_IN_UNION_ONE_SUBLEVEL)},
     }};

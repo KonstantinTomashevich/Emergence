@@ -22,6 +22,63 @@ void HashIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
+static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Field &_indexedField, const uint8_t *_value)
+{
+    // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
+    assert (_indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
+
+    switch (_indexedField.GetArchetype ())
+    {
+    case StandardLayout::FieldArchetype::INT:
+    case StandardLayout::FieldArchetype::UINT:
+    case StandardLayout::FieldArchetype::FLOAT:
+    case StandardLayout::FieldArchetype::BLOCK:
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    {
+        _hasher.Append (_value, _indexedField.GetSize ());
+        break;
+    }
+
+    case StandardLayout::FieldArchetype::BIT:
+    {
+        // Currently, we hash bits as bytes that could have 1 only on given bit offset.
+        uint8_t mask = 1u << _indexedField.GetBitOffset ();
+
+        if (*_value & mask)
+        {
+            _hasher.Append (mask);
+        }
+        else
+        {
+            _hasher.Append (0u);
+        }
+
+        break;
+    }
+
+    case StandardLayout::FieldArchetype::STRING:
+    {
+        const auto *current = _value;
+        const uint8_t *stringEnd = current + _indexedField.GetSize ();
+
+        while (*current && current != stringEnd)
+        {
+            _hasher.Append (*current);
+            ++current;
+        }
+
+        break;
+    }
+
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
+    {
+        const uintptr_t hash = reinterpret_cast<const Memory::UniqueString *> (_value)->Hash ();
+        _hasher.Append (reinterpret_cast<const uint8_t *> (&hash), sizeof (hash));
+        break;
+    }
+    }
+}
+
 std::size_t HashIndex::Hasher::operator() (const void *_record) const noexcept
 {
     assert (owner);
@@ -30,50 +87,7 @@ std::size_t HashIndex::Hasher::operator() (const void *_record) const noexcept
     Hashing::ByteHasher hasher;
     for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
     {
-        // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        assert (indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
-        switch (indexedField.GetArchetype ())
-        {
-        case StandardLayout::FieldArchetype::INT:
-        case StandardLayout::FieldArchetype::UINT:
-        case StandardLayout::FieldArchetype::FLOAT:
-        case StandardLayout::FieldArchetype::BLOCK:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
-        {
-            hasher.Append (static_cast<const uint8_t *> (indexedField.GetValue (_record)), indexedField.GetSize ());
-            break;
-        }
-
-        case StandardLayout::FieldArchetype::BIT:
-        {
-            // Currently we hash bits as bytes that could have 1 only on given bit offset.
-            uint8_t mask = 1u << indexedField.GetBitOffset ();
-
-            if (*static_cast<const uint8_t *> (indexedField.GetValue (_record)) & mask)
-            {
-                hasher.Append (mask);
-            }
-            else
-            {
-                hasher.Append (0u);
-            }
-
-            break;
-        }
-
-        case StandardLayout::FieldArchetype::STRING:
-            const auto *current = static_cast<const uint8_t *> (indexedField.GetValue (_record));
-            const uint8_t *stringEnd = current + indexedField.GetSize ();
-
-            while (*current && current != stringEnd)
-            {
-                hasher.Append (*current);
-                ++current;
-            }
-
-            break;
-        }
+        UpdateHash (hasher, indexedField, static_cast<const uint8_t *> (indexedField.GetValue (_record)));
     }
 
     return hasher.GetCurrentValue () % std::numeric_limits<std::size_t>::max ();
@@ -94,51 +108,7 @@ std::size_t HashIndex::Hasher::operator() (const HashIndex::LookupRequest &_requ
 
     for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
     {
-        // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        assert (indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
-        switch (indexedField.GetArchetype ())
-        {
-        case StandardLayout::FieldArchetype::INT:
-        case StandardLayout::FieldArchetype::UINT:
-        case StandardLayout::FieldArchetype::FLOAT:
-        case StandardLayout::FieldArchetype::BLOCK:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
-        {
-            hasher.Append (currentFieldBegin, indexedField.GetSize ());
-            break;
-        }
-
-        case StandardLayout::FieldArchetype::BIT:
-        {
-            // Currently, we hash bits as bytes that could have 1 only on given bit offset.
-            uint8_t mask = 1u << indexedField.GetBitOffset ();
-
-            if (*currentFieldBegin & mask)
-            {
-                hasher.Append (mask);
-            }
-            else
-            {
-                hasher.Append (0u);
-            }
-
-            break;
-        }
-
-        case StandardLayout::FieldArchetype::STRING:
-            const auto *current = currentFieldBegin;
-            const uint8_t *stringEnd = current + indexedField.GetSize ();
-
-            while (*current && current != stringEnd)
-            {
-                hasher.Append (*current);
-                ++current;
-            }
-
-            break;
-        }
-
+        UpdateHash (hasher, indexedField, currentFieldBegin);
         currentFieldBegin += indexedField.GetSize ();
     }
 

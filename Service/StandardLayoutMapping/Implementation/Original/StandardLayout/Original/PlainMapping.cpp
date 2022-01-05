@@ -54,6 +54,7 @@ FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
       name (_seed.name)
 {
     assert (archetype != FieldArchetype::BIT);
+    assert (archetype != FieldArchetype::UNIQUE_STRING);
     assert (archetype != FieldArchetype::NESTED_OBJECT);
 }
 
@@ -63,6 +64,14 @@ FieldData::FieldData (FieldData::BitSeed _seed) noexcept
       size (1u),
       name (_seed.name),
       bitOffset (_seed.bitOffset)
+{
+}
+
+FieldData::FieldData (FieldData::UniqueStringSeed _seed) noexcept
+    : archetype (FieldArchetype::UNIQUE_STRING),
+      offset (_seed.offset),
+      size (sizeof (Memory::UniqueString)),
+      name (_seed.name)
 {
 }
 
@@ -164,7 +173,7 @@ PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexc
     assert (_newFieldCapacity >= fieldCount);
     auto *newInstance = static_cast<PlainMapping *> (
         heap.Resize (this, CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
-    
+
     newInstance->fieldCapacity = _newFieldCapacity;
     return newInstance;
 }
@@ -197,30 +206,6 @@ Handling::Handle<PlainMapping> PlainMappingBuilder::End () noexcept
     PlainMapping *finished = underConstruction->ChangeCapacity (underConstruction->fieldCount);
     underConstruction = nullptr;
     return finished;
-}
-
-FieldId PlainMappingBuilder::AddField (FieldData::StandardSeed _seed) noexcept
-{
-    auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (_seed);
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
-    return fieldId;
-}
-
-FieldId PlainMappingBuilder::AddField (FieldData::BitSeed _seed) noexcept
-{
-    auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (_seed);
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
-    return fieldId;
-}
-
-FieldId PlainMappingBuilder::AddField (FieldData::NestedObjectSeed _seed) noexcept
-{
-    auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (std::move (_seed));
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
-    return fieldId;
 }
 
 std::pair<FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept

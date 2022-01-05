@@ -52,6 +52,11 @@ struct StringValueComparator final
     const std::size_t maxSize;
 };
 
+struct UniqueStringValueComparator final
+{
+    int Compare (const void *_firstValue, const void *_secondValue) const noexcept;
+};
+
 template <typename Callback>
 auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callback &_callback) noexcept
 {
@@ -129,6 +134,11 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     case StandardLayout::FieldArchetype::STRING:
     {
         return _callback (StringValueComparator {_field.GetSize ()});
+    }
+
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
+    {
+        return _callback (UniqueStringValueComparator {});
     }
     }
 

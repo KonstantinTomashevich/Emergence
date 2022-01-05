@@ -51,6 +51,14 @@ public:
         uint_fast8_t bitOffset = 0u;
     };
 
+    /// \brief Used to register fields with FieldArchetype::UNIQUE_STRING.
+    struct UniqueStringSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+    };
+
     /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
     struct NestedObjectSeed
     {
@@ -93,6 +101,8 @@ private:
     explicit FieldData (StandardSeed _seed) noexcept;
 
     explicit FieldData (BitSeed _seed) noexcept;
+
+    explicit FieldData (UniqueStringSeed _seed) noexcept;
 
     explicit FieldData (NestedObjectSeed _seed) noexcept;
 
@@ -197,11 +207,8 @@ public:
 
     Handling::Handle<PlainMapping> End () noexcept;
 
-    FieldId AddField (FieldData::StandardSeed _seed) noexcept;
-
-    FieldId AddField (FieldData::BitSeed _seed) noexcept;
-
-    FieldId AddField (FieldData::NestedObjectSeed _seed) noexcept;
+    template <typename Seed>
+    FieldId AddField (Seed _seed) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PlainMappingBuilder);
 
@@ -212,4 +219,13 @@ private:
 
     PlainMapping *underConstruction = nullptr;
 };
+
+template <typename Seed>
+FieldId PlainMappingBuilder::AddField (Seed _seed) noexcept
+{
+    auto [fieldId, allocatedField] = AllocateField ();
+    new (allocatedField) FieldData (_seed);
+    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
+    return fieldId;
+}
 } // namespace Emergence::StandardLayout

@@ -116,6 +116,7 @@ auto DoWithCorrectTypeOperations (const StandardLayout::Field &_field, const Cal
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
     case StandardLayout::FieldArchetype::STRING:
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
     {
         break;
     }

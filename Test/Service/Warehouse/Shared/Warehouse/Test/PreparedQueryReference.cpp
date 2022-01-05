@@ -18,81 +18,81 @@ using Player = Emergence::Query::Test::Player;
 static void ExecuteFetchSingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareFetchSingletonQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario,
                                                PrepareModifySingletonQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteInsertShortTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario,
                                                PrepareInsertShortTermQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchSequenceQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareFetchSequenceQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteModifySequenceQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareModifySequenceQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteInsertLongTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareInsertLongTermQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareFetchValueQuery {{Player::Reflect ().mapping, {}}, {Player::Reflect ().id}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyValueQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareModifyValueQuery {{Player::Reflect ().mapping, {}}, {Player::Reflect ().id}},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchAscendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareFetchAscendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyAscendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareModifyAscendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteFetchDescendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareFetchDescendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteModifyDescendingRangeQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareModifyDescendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
-        &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 using BoundingBox = Emergence::Query::Test::BoundingBox;

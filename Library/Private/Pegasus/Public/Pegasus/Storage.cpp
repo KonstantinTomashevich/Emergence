@@ -414,6 +414,7 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
         case StandardLayout::FieldArchetype::UINT:
         case StandardLayout::FieldArchetype::FLOAT:
         case StandardLayout::FieldArchetype::BLOCK:
+        case StandardLayout::FieldArchetype::UNIQUE_STRING:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
         {
             memcpy (indexedField.field.GetValue (editedRecordBackup), indexedField.field.GetValue (_record),

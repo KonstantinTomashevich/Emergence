@@ -7,7 +7,7 @@ using namespace Tasks;
 
 Storage RequestStorage ()
 {
-    return {Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Singleton {"singleton"}}};
+    return {Player::Reflect ().mapping, {&HUGO_0_KNIGHT_ALIVE_STUNNED}, {Sources::Singleton {"singleton"}}};
 }
 
 Scenario EditAndRead ()
@@ -17,12 +17,12 @@ Scenario EditAndRead ()
             },
             {
                 QuerySingletonToEdit {{"singleton", "singleton"}},
-                CursorCheck {"singleton", &HUGO_0_ALIVE_STUNNED},
-                CursorEdit {"singleton", &KARL_1_ALIVE_IMMOBILIZED},
+                CursorCheck {"singleton", &HUGO_0_KNIGHT_ALIVE_STUNNED},
+                CursorEdit {"singleton", &KARL_1_MAGE_ALIVE_IMMOBILIZED},
                 CursorClose {"singleton"},
 
                 QuerySingletonToRead {{"singleton", "singleton"}},
-                CursorCheck {"singleton", &KARL_1_ALIVE_IMMOBILIZED},
+                CursorCheck {"singleton", &KARL_1_MAGE_ALIVE_IMMOBILIZED},
                 CursorClose {"singleton"},
             }};
 }

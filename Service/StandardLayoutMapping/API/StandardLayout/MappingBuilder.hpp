@@ -83,6 +83,10 @@ public:
     /// \invariant There is active mapping construction routine, that uses this builder.
     [[nodiscard]] FieldId RegisterBlock (Memory::UniqueString _name, std::size_t _offset, std::size_t _size) noexcept;
 
+    /// \brief Registers Memory::UniqueString field.
+    /// \invariant There is active mapping construction routine, that uses this builder.
+    [[nodiscard]] FieldId RegisterUniqueString (Memory::UniqueString _name, std::size_t _offset) noexcept;
+
     /// \brief Registers nested object using its Mapping.
     /// \invariant There is active mapping construction routine, that uses this builder.
     [[nodiscard]] FieldId RegisterNestedObject (Memory::UniqueString _name,

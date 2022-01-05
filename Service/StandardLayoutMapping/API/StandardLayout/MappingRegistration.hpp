@@ -51,18 +51,24 @@
         Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
-/// \invariant Class must contain `_field` field of any type.
+/// \invariant Class must contain `_field` field of any std::array-based type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_STRING(_field)                                                                      \
     ._field = builder.RegisterString (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),              \
                                       sizeof (Type::_field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::BLOCK.
-/// \invariant Class must contain `_field` field of any type.
+/// \invariant Class must contain `_field` field of any std::array-based type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_BLOCK(_field)                                                                       \
     ._field = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),               \
                                      sizeof (Type::_field)),
+
+/// \brief Helper for mapping static registration. Registers field with FieldArchetype::UNIQUE_STRING.
+/// \invariant Class must contain `_field` field of Emergence::Memory::UniqueString type.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
+#define EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING(_field)                                                               \
+    ._field = builder.RegisterUniqueString (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field)),
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::NESTED_OBJECT.
 /// \invariant Class must contain `_field` field of any type, that has static Reflect method that

@@ -43,6 +43,10 @@ enum class FieldArchetype
     /// \brief Fixed size memory block.
     BLOCK,
 
+    /// \brief Memory::UniqueString instance.
+    /// \details Special archetype for unique string is created because they can be hashed or compared in constant time.
+    UNIQUE_STRING,
+
     /// \brief Complex field, that has internal fields.
     ///
     /// \details All nested fields are projected into root mapping, but sometimes
