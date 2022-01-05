@@ -22,9 +22,9 @@ public:
 
     ~TaskConstructor () noexcept;
 
-    void DependOn (const char *_taskOrCheckpoint) noexcept;
+    void DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
-    void MakeDependencyOf (const char *_taskOrCheckpoint) noexcept;
+    void MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
     [[nodiscard]] Warehouse::FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
 
@@ -84,7 +84,7 @@ public:
 private:
     friend class PipelineBuilder;
 
-    TaskConstructor (PipelineBuilder *_parent, const char *_name) noexcept;
+    TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
     PipelineBuilder *parent;
     Flow::Task task;
@@ -103,9 +103,9 @@ public:
 
     void Begin () noexcept;
 
-    [[nodiscard]] TaskConstructor AddTask (const char *_name) noexcept;
+    [[nodiscard]] TaskConstructor AddTask (Memory::UniqueString _name) noexcept;
 
-    void AddCheckpoint (const char *_name) noexcept;
+    void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
     [[nodiscard]] Pipeline *End (std::size_t _maximumChildThreads) noexcept;
 
@@ -118,6 +118,6 @@ private:
 
     World *world;
     Flow::TaskRegister taskRegister;
-    std::unordered_set<std::string> registeredResources;
+    std::unordered_set<Memory::UniqueString> registeredResources;
 };
 } // namespace Emergence::Celerity

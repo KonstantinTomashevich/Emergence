@@ -165,16 +165,18 @@ void NormalDurationTask::Execute ()
 }
 } // namespace
 
+using namespace Emergence::Memory::Literals;
+
 void AddFixedUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncFixed");
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncFixed"_us);
     constructor.SetExecutor (
         [state {FixedSyncTask {_timer, constructor}}] () mutable
         {
             state.Execute ();
         });
 
-    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsFixed");
+    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsFixed"_us);
     constructor.SetExecutor (
         [state {FixedDurationTask {_timer, constructor}}] () mutable
         {
@@ -184,14 +186,14 @@ void AddFixedUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuil
 
 void AddNormalUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncNormal");
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncNormal"_us);
     constructor.SetExecutor (
         [state {NormalSyncTask {_timer, constructor}}] () mutable
         {
             state.Execute ();
         });
 
-    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsNormal");
+    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsNormal"_us);
     constructor.SetExecutor (
         [state {NormalDurationTask {_timer, constructor}}] () mutable
         {

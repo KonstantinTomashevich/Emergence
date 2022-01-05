@@ -176,7 +176,7 @@ void Configurator::Execute ()
 
 void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder, std::vector<FrameConfiguration> _steps)
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator");
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
     constructor.SetExecutor (
         [state {Configurator {std::move (_steps), constructor}}] () mutable
         {
@@ -234,7 +234,7 @@ void Validator::Execute () noexcept
 
 void AddValidatorTask (PipelineBuilder &_pipelineBuilder, std::vector<FrameExpectation> _expectations)
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator");
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator"_us);
     constructor.SetExecutor (
         [state {Validator {std::move (_expectations), constructor}}] () mutable
         {

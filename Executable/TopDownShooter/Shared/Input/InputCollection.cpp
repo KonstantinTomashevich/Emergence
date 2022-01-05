@@ -186,7 +186,7 @@ bool InputCollector::keyReleased (const OgreBites::KeyboardEvent &_event)
 void AddFixedUpdateTask (OgreBites::ApplicationContextBase *_application,
                          Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector");
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector"_us);
     constructor.SetExecutor (
         [state {std::make_shared<InputCollector> (_application, FixedInputMappingSingleton::Reflect ().mapping,
                                                   FixedInputMappingSingleton::Reflect ().inputMapping, constructor)}] ()
@@ -198,7 +198,7 @@ void AddFixedUpdateTask (OgreBites::ApplicationContextBase *_application,
 void AddNormalUpdateTask (OgreBites::ApplicationContextBase *_application,
                           Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector");
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector"_us);
     constructor.SetExecutor (
         [state {std::make_shared<InputCollector> (_application, NormalInputMappingSingleton::Reflect ().mapping,
                                                   NormalInputMappingSingleton::Reflect ().inputMapping,
