@@ -4,6 +4,7 @@
 #include <Testing/Testing.hpp>
 
 #include <Warehouse/Test/CursorReference.hpp>
+#include <Warehouse/Test/Data.hpp>
 #include <Warehouse/Test/Scenario.hpp>
 
 using namespace Emergence::Warehouse::Test;
@@ -37,27 +38,28 @@ static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTe
 static std::vector<Emergence::Query::Test::Storage> GetEnvironment ()
 {
     using namespace Emergence::Query::Test;
-    return {{Player::Reflect ().mapping, {&HUGO_0_KNIGHT_ALIVE_STUNNED}, {Sources::Singleton {"Singleton"}}},
-            {BoundingBox::Reflect ().mapping, {&BOX_MIN_10_8_4_MAX_11_9_5}, {Sources::UnorderedSequence {"Sequence"}}},
-            {PlayerWithBoundingBox::Reflect ().mapping,
-             {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
-             {
-                 Sources::Value {"Value", {GetPlayedIdField ()}},
-                 Sources::Range {"Range", GetPlayedIdField ()},
-                 Sources::Volumetric {"Volumetric", GetTestDimensions ()},
-             }}};
+    return {
+        {TestSingleton::Reflect ().mapping, {&TestSingleton::NON_DEFAULT_INSTANCE}, {Sources::Singleton {"Singleton"}}},
+        {BoundingBox::Reflect ().mapping, {&BOX_MIN_10_8_4_MAX_11_9_5}, {Sources::UnorderedSequence {"Sequence"}}},
+        {PlayerWithBoundingBox::Reflect ().mapping,
+         {&HUGO_0_MIN_10_8_4_MAX_11_9_5, &KARL_1_MIN_M2_1_0_MAX_0_4_2},
+         {
+             Sources::Value {"Value", {GetPlayedIdField ()}},
+             Sources::Range {"Range", GetPlayedIdField ()},
+             Sources::Volumetric {"Volumetric", GetTestDimensions ()},
+         }}};
 }
 
 static void ExecuteFetchSingletonQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QuerySingletonToRead {{"Singleton", {}}},
-                                        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
+                                        &TestSingleton::NON_DEFAULT_INSTANCE);
 }
 
 static void ExecuteModifySingletonQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QuerySingletonToEdit {{"Singleton", {}}},
-                                        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
+                                        &TestSingleton::NON_DEFAULT_INSTANCE);
 }
 
 static void ExecuteFetchSequenceQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

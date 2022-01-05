@@ -30,11 +30,8 @@ public:
 
             Cursor (Cursor &&_other) noexcept = default;
 
-            /// \invariant Previously allocated object must be initialized before cursor destruction.
             ~Cursor () noexcept;
 
-            /// \return Pointer to memory, allocated for the new object.
-            /// \invariant Previously allocated object must be initialized before next call.
             void *operator++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.
@@ -174,7 +171,7 @@ private:
 
     explicit ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    ~ShortTermContainer () noexcept = default;
+    ~ShortTermContainer () noexcept;
 
     /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
     Container::Vector<void *> objects;

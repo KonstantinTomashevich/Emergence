@@ -109,11 +109,11 @@ void SingletonContainer::LastReferenceUnregistered () noexcept
 SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping))
 {
-    // Fill singleton storage with zeros even in release builds
-    // to make uninitialized-access checking and debugging easier.
-    memset (&storage, 0u, typeMapping.GetObjectSize ());
+    typeMapping.Construct (&storage);
 }
 
-// TODO: After destructors addition to reflection, do not forget to call singleton destructor.
-SingletonContainer::~SingletonContainer () noexcept = default;
+SingletonContainer::~SingletonContainer () noexcept
+{
+    typeMapping.Destruct (&storage);
+}
 } // namespace Emergence::Galleon

@@ -108,6 +108,22 @@ Memory::UniqueString PlainMapping::GetName () const noexcept
     return name;
 }
 
+void PlainMapping::Construct (void *_address) const noexcept
+{
+    if (constructor)
+    {
+        constructor (_address);
+    }
+}
+
+void PlainMapping::Destruct (void *_address) const noexcept
+{
+    if (destructor)
+    {
+        destructor (_address);
+    }
+}
+
 const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
 {
     if (_field < fieldCount)
@@ -206,6 +222,18 @@ Handling::Handle<PlainMapping> PlainMappingBuilder::End () noexcept
     PlainMapping *finished = underConstruction->ChangeCapacity (underConstruction->fieldCount);
     underConstruction = nullptr;
     return finished;
+}
+
+void PlainMappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
+{
+    assert (underConstruction);
+    underConstruction->constructor = _constructor;
+}
+
+void PlainMappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
+{
+    assert (underConstruction);
+    underConstruction->destructor = _destructor;
 }
 
 std::pair<FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept

@@ -80,15 +80,11 @@ namespace Emergence::Warehouse
 /// \par Garbage collection
 /// \parblock
 /// If there is no prepared queries for object type, object storage will be automatically deallocated.
-/// Destructors will not be called, because object type is unknown during compile time. If objects require
-/// non-trivial destruction, user should take care of that.
 /// \endparblock
 ///
 /// \par Singletons
 /// \parblock
-/// Singleton type is unknown during compile time, therefore singleton constructor will not be called. Instead of
-/// construction, singleton memory block will be filled with zeros. If singleton requires additional initialization,
-/// ModifySingletonQuery must be used.
+/// If singleton has no default constructor, it won't be initialized. In this case ModifySingletonQuery must be used.
 /// \endparblock
 class Registry final
 {

@@ -16,6 +16,16 @@
     builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class));                                          \
     using Type = Class;                                                                                                \
                                                                                                                        \
+    if constexpr (std::is_default_constructible_v<Class> && !std::is_trivially_default_constructible_v<Class>)         \
+    {                                                                                                                  \
+        builder.SetConstructor (&Emergence::StandardLayout::Registration::DefaultConstructor<Class>);                  \
+    }                                                                                                                  \
+                                                                                                                       \
+    if constexpr (!std::is_trivially_destructible_v<Class>)                                                            \
+    {                                                                                                                  \
+        builder.SetDestructor (&Emergence::StandardLayout::Registration::DefaultDestructor<Class>);                    \
+    }                                                                                                                  \
+                                                                                                                       \
     return Class::Reflection                                                                                           \
     {
 /// \brief Helper for mapping static registration. Contains ending of registration functor.
@@ -110,6 +120,20 @@
 
 namespace Emergence::StandardLayout::Registration
 {
+/// \brief Templated default constructor for objects that need it. See MappingBuilder::SetConstructor.
+template <typename T>
+void DefaultConstructor (void *_address)
+{
+    new (_address) T {};
+}
+
+/// \brief Templated default destructor for objects that need it. See MappingBuilder::SetDestructor.
+template <typename T>
+void DefaultDestructor (void *_address)
+{
+    static_cast<T *> (_address)->~T ();
+}
+
 /// \brief Utility structure, used to detect registration method for regular fields.
 /// \see EMERGENCE_MAPPING_REGISTER_REGULAR
 template <typename Type>

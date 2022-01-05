@@ -26,5 +26,3 @@ struct InputListenerObject final
 
     static const Reflection &Reflect () noexcept;
 };
-
-static_assert (std::is_trivially_destructible_v<InputListenerObject>);

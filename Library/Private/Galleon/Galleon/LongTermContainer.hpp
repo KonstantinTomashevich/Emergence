@@ -30,11 +30,8 @@ public:
 
             Cursor (Cursor &&_other) noexcept = default;
 
-            /// \invariant Previously allocated object must be initialized before cursor destruction.
             ~Cursor () noexcept = default;
 
-            /// \return Pointer to memory, allocated for the new object.
-            /// \invariant Previously allocated object must be initialized before next call.
             void *operator++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.

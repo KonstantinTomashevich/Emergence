@@ -136,6 +136,10 @@ public:
 
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
+    void Construct (void *_address) const noexcept;
+
+    void Destruct (void *_address) const noexcept;
+
     [[nodiscard]] const FieldData *GetField (FieldId _field) const noexcept;
 
     [[nodiscard]] const FieldData *Begin () const noexcept;
@@ -184,6 +188,9 @@ private:
     std::size_t fieldCapacity = 0u;
     Memory::UniqueString name;
 
+    void (*constructor) (void *) = nullptr;
+    void (*destructor) (void *) = nullptr;
+
     FieldData fields[0u];
 };
 
@@ -206,6 +213,10 @@ public:
     void Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept;
 
     Handling::Handle<PlainMapping> End () noexcept;
+
+    void SetConstructor (void (*_constructor) (void *)) noexcept;
+
+    void SetDestructor (void (*_destructor) (void *)) noexcept;
 
     template <typename Seed>
     FieldId AddField (Seed _seed) noexcept;

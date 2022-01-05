@@ -3,6 +3,7 @@
 #include <Reference/Test/Tests.hpp>
 #include <Testing/Testing.hpp>
 
+#include <Warehouse/Test/Data.hpp>
 #include <Warehouse/Test/PreparedQueryReference.hpp>
 #include <Warehouse/Test/Scenario.hpp>
 
@@ -17,15 +18,16 @@ using Player = Emergence::Query::Test::Player;
 
 static void ExecuteFetchSingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
-    TestReferenceApiDrivers::ForPreparedQuery (_scenario, PrepareFetchSingletonQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
+    TestReferenceApiDrivers::ForPreparedQuery (_scenario,
+                                               PrepareFetchSingletonQuery {{TestSingleton::Reflect ().mapping, {}}},
+                                               &TestSingleton::NON_DEFAULT_INSTANCE);
 }
 
 static void ExecuteModifySingletonQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     TestReferenceApiDrivers::ForPreparedQuery (_scenario,
-                                               PrepareModifySingletonQuery {{Player::Reflect ().mapping, {}}},
-                                               &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
+                                               PrepareModifySingletonQuery {{TestSingleton::Reflect ().mapping, {}}},
+                                               &TestSingleton::NON_DEFAULT_INSTANCE);
 }
 
 static void ExecuteInsertShortTermQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

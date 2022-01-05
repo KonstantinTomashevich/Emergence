@@ -16,7 +16,9 @@ ShortTermContainer::InsertQuery::Cursor::~Cursor () noexcept
 void *ShortTermContainer::InsertQuery::Cursor::operator++ () noexcept
 {
     assert (container);
-    return container->objects.emplace_back (container->pool.Acquire ());
+    void *record = container->pool.Acquire ();
+    container->typeMapping.Construct (record);
+    return container->objects.emplace_back (record);
 }
 
 ShortTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle<ShortTermContainer> _container) noexcept
@@ -131,6 +133,7 @@ ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor
     assert (container);
     assert (iterator != end);
 
+    container->typeMapping.Destruct (*iterator);
     container->pool.Release (*iterator);
     *iterator = *(end - 1u);
 
@@ -192,5 +195,13 @@ ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mappin
       pool (Memory::Profiler::AllocationGroup {Memory::UniqueString {typeMapping.GetName ()}},
             typeMapping.GetObjectSize ())
 {
+}
+
+ShortTermContainer::~ShortTermContainer () noexcept
+{
+    for (void *record : objects)
+    {
+        typeMapping.Destruct (record);
+    }
 }
 } // namespace Emergence::Galleon

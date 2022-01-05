@@ -864,6 +864,7 @@ static std::vector<Task> CheckQueryEnvironment (const Task &_queryPreparation, c
             std::vector<Task> tasks;
             if constexpr (SingletonQueryPreparation<std::decay_t<decltype (_query)>>)
             {
+                // To simplify testing logic, we expect that singleton has zero-filling default constructor.
                 static std::array<uint8_t, 1024u> zeroMemory {0u};
                 REQUIRE (_query.typeMapping.GetObjectSize () <= zeroMemory.max_size ());
 

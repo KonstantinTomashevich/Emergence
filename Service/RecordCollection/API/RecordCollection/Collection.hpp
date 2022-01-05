@@ -35,8 +35,7 @@ public:
         ~Allocator () noexcept;
 
         /// \brief Allocates new record for insertion.
-        /// \warning Record type is unknown during compile time, therefore
-        ///          appropriate constructor should be called after allocation.
+        /// \warning If record type has no default constructor, allocated record will not be initialized.
         /// \invariant Previous allocated recorded must be initialized and ready for insertion.
         void *Allocate () noexcept;
 

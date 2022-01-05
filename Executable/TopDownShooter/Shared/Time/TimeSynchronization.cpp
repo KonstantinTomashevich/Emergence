@@ -7,63 +7,57 @@ namespace TimeSynchronization
 {
 namespace
 {
-class TaskBase
-{
-public:
-    TaskBase (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
-
-protected:
-    Emergence::Warehouse::ModifySingletonQuery modifyTime;
-    Ogre::Timer *timer;
-};
-
-class FixedSyncTask final : public TaskBase
+class FixedSyncTask final
 {
 public:
     FixedSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-class FixedDurationTask final : public TaskBase
+class FixedDurationTask final
 {
 public:
     FixedDurationTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-class NormalSyncTask final : public TaskBase
+class NormalSyncTask final
 {
 public:
     NormalSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-class NormalDurationTask final : public TaskBase
+class NormalDurationTask final
 {
 public:
     NormalDurationTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-TaskBase::TaskBase (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
+FixedSyncTask::FixedSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       timer (_timer)
-{
-    auto cursor = modifyTime.Execute ();
-    auto *time = static_cast<TimeSingleton *> (*cursor);
-
-    if (!time->constructed)
-    {
-        new (time) TimeSingleton ();
-    }
-}
-
-FixedSyncTask::FixedSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
 {
     _constructor.MakeDependencyOf (Checkpoint::TIME_UPDATED);
     _constructor.MakeDependencyOf (Checkpoint::FRAME_STATS_COLLECTION);
@@ -98,7 +92,8 @@ void FixedSyncTask::Execute ()
 }
 
 FixedDurationTask::FixedDurationTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
+    : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      timer (_timer)
 {
     _constructor.DependOn (Checkpoint::FRAME_STATS_COLLECTION);
 }
@@ -122,7 +117,8 @@ void FixedDurationTask::Execute ()
 }
 
 NormalSyncTask::NormalSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
+    : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      timer (_timer)
 {
     _constructor.MakeDependencyOf (Checkpoint::TIME_UPDATED);
     _constructor.MakeDependencyOf (Checkpoint::FRAME_STATS_COLLECTION);
@@ -143,7 +139,8 @@ void NormalSyncTask::Execute ()
 
 NormalDurationTask::NormalDurationTask (Ogre::Timer *_timer,
                                         Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
+    : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      timer (_timer)
 {
     _constructor.DependOn (Checkpoint::FRAME_STATS_COLLECTION);
 }

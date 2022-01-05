@@ -27,6 +27,14 @@ public:
     /// \invariant There is active mapping construction routine, that uses this builder.
     [[nodiscard]] Mapping End () noexcept;
 
+    /// \brief Sets default constructor for objects of constructed mapping.
+    /// \invariant There is active mapping construction routine, that uses this builder.
+    void SetConstructor (void (*_constructor) (void *)) noexcept;
+
+    /// \brief Sets default destructor for objects of constructed mapping.
+    /// \invariant There is active mapping construction routine, that uses this builder.
+    void SetDestructor (void (*_destructor) (void *)) noexcept;
+
     /// \brief Registers bit flag.
     /// \invariant There is active mapping construction routine, that uses this builder.
     [[nodiscard]] FieldId RegisterBit (Memory::UniqueString _name,

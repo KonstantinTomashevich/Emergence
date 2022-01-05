@@ -29,8 +29,6 @@ struct TimeSingleton final
     uint64_t normalTimeOffsetUs = 0u;
     Emergence::RunningAverage<30u> averageNormalRealDurationS;
 
-    const bool constructed = true;
-
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId fixedTimeUs;
@@ -47,5 +45,3 @@ struct TimeSingleton final
 
     static const Reflection &Reflect () noexcept;
 };
-
-static_assert (std::is_trivially_destructible_v<TimeSingleton>);

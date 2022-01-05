@@ -92,6 +92,33 @@ Storage::~Storage () noexcept
     assert (writers == 0u);
     assert (readers == 0u);
 
+    // Destruct all existing records.
+
+    if (!orderedIndices.Empty ())
+    {
+        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
+        OrderedIndex::AscendingEditCursor cursor =
+            orderedIndices.Begin ()->index->LookupToEditAscending ({nullptr}, {nullptr});
+
+        while (void *record = *cursor)
+        {
+            recordMapping.Destruct (record);
+            ++cursor;
+        }
+    }
+    else
+    {
+        for (void *record : records)
+        {
+            if (record != editedRecordBackup)
+            {
+                recordMapping.Destruct (record);
+            }
+        }
+    }
+
+    // Destruct all indices.
+
     for (auto &[index, mask] : hashIndices)
     {
         assert (index->CanBeDropped ());
@@ -323,7 +350,10 @@ void *Storage::AllocateRecord () noexcept
 {
     assert (readers == 0u);
     assert (writers == 1u);
-    return records.Acquire ();
+
+    void *record = records.Acquire ();
+    recordMapping.Construct (record);
+    return record;
 }
 
 void Storage::InsertRecord (const void *_record) noexcept
@@ -378,6 +408,7 @@ void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexce
         }
     }
 
+    recordMapping.Destruct (_record);
     records.Release (_record);
 }
 

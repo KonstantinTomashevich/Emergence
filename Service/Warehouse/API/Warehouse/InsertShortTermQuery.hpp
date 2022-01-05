@@ -23,6 +23,7 @@ public:
         ~Cursor () noexcept;
 
         /// \return Pointer to memory, allocated for the new object.
+        /// \details Object default constructor will be called, if it has one.
         /// \invariant Previously allocated object must be initialized before next call.
         void *operator++ () noexcept;
 

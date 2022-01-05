@@ -10,9 +10,6 @@
 namespace Emergence::Galleon
 {
 /// \brief Stores single instance of given type.
-/// \warning After container creation singleton instance is allocated, but not initialized. Use ModifyQuery to init it.
-/// \warning Before container destruction instance destructor must be called manually from ModifyQuery,
-///          because singleton types are unknown on compile time.
 class SingletonContainer final : public ContainerBase
 {
 public:
@@ -29,7 +26,6 @@ public:
 
             ~Cursor () noexcept;
 
-            /// \return Singleton instance.
             const void *operator* () const noexcept;
 
             /// Assigning cursors looks counter intuitive.

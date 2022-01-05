@@ -42,6 +42,20 @@ Memory::UniqueString Mapping::GetName () const noexcept
     return handle->GetName ();
 }
 
+void Mapping::Construct (void *_address) const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    assert (handle);
+    handle->Construct (_address);
+}
+
+void Mapping::Destruct (void *_address) const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    assert (handle);
+    handle->Destruct (_address);
+}
+
 Field Mapping::GetField (FieldId _field) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);

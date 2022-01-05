@@ -39,6 +39,18 @@ Mapping MappingBuilder::End () noexcept
     return Mapping (reinterpret_cast<decltype (Mapping::data) *> (&mapping));
 }
 
+void MappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
+{
+    assert (handle);
+    static_cast<PlainMappingBuilder *> (handle)->SetConstructor (_constructor);
+}
+
+void MappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
+{
+    assert (handle);
+    static_cast<PlainMappingBuilder *> (handle)->SetDestructor (_destructor);
+}
+
 FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept
 {
     assert (handle);
