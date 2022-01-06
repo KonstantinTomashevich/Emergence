@@ -18,7 +18,7 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Pipeline);
 
 private:
-    friend class PipelineBuilder;
+    friend class World;
 
     explicit Pipeline (const Task::Collection &_collection, std::size_t _maximumChildThreads);
 

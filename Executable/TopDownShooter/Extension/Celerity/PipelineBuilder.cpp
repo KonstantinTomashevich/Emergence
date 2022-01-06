@@ -6,7 +6,8 @@ namespace Emergence::Celerity
 {
 TaskConstructor::TaskConstructor (TaskConstructor &&_other) noexcept
     : parent (_other.parent),
-      task (std::move (_other.task))
+      task (std::move (_other.task)),
+      heap (_other.heap.GetAllocationGroup ())
 {
     _other.parent = nullptr;
 }
@@ -65,8 +66,8 @@ Warehouse::InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLa
     return parent->world->registry.InsertLongTerm (_typeMapping);
 }
 
-Warehouse::FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                                        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
+Warehouse::FetchValueQuery TaskConstructor::FetchValue (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchValue (_typeMapping, _keyFields);
@@ -156,7 +157,9 @@ TaskConstructor &TaskConstructor::operator= (TaskConstructor &&_other) noexcept
     return *this;
 }
 
-TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept : parent (_parent)
+TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept
+    : parent (_parent),
+      heap {Memory::Profiler::AllocationGroup {_name}}
 {
     assert (parent);
     task.name = _name;
@@ -174,6 +177,7 @@ void PipelineBuilder::Begin () noexcept
 
 TaskConstructor PipelineBuilder::AddTask (Memory::UniqueString _name) noexcept
 {
+    auto placeholder = world->pipelineHeap.GetAllocationGroup ().PlaceOnTop ();
     return {this, _name};
 }
 
@@ -184,12 +188,10 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
 
 Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
 {
-    auto &newPipeline =
-        world->pipelines.emplace_back (new Pipeline (taskRegister.ExportCollection (), _maximumChildThreads));
-
+    Pipeline *newPipeline = world->AddPipeline (taskRegister.ExportCollection (), _maximumChildThreads);
     taskRegister.Clear ();
     registeredResources.clear ();
-    return newPipeline.get ();
+    return newPipeline;
 }
 
 void PipelineBuilder::FinishTaskRegistration (Flow::Task _task) noexcept

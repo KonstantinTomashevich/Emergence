@@ -9,6 +9,9 @@
 
 #include <Flow/TaskRegister.hpp>
 
+#include <Handling/Handle.hpp>
+#include <Handling/HandleableBase.hpp>
+
 #include <Task/Executor.hpp>
 
 namespace Emergence::Celerity
@@ -41,10 +44,12 @@ public:
     [[nodiscard]] Warehouse::InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     [[nodiscard]] Warehouse::FetchValueQuery FetchValue (
-        const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     [[nodiscard]] Warehouse::ModifyValueQuery ModifyValue (
-        const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     [[nodiscard]] Warehouse::FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                            StandardLayout::FieldId _keyField) noexcept;
@@ -59,18 +64,25 @@ public:
         const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
 
     [[nodiscard]] Warehouse::FetchShapeIntersectionQuery FetchShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::ModifyShapeIntersectionQuery ModifyShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::FetchRayIntersectionQuery FetchRayIntersection (
-        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
-        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     void SetExecutor (std::function<void ()> _executor) noexcept;
+
+    template <typename Executor, typename... Args>
+    void SetExecutor (Args... _args) noexcept;
 
     [[nodiscard]] World *GetWorld () const noexcept;
 
@@ -88,6 +100,7 @@ private:
 
     PipelineBuilder *parent;
     Flow::Task task;
+    Memory::Heap heap;
 };
 
 class PipelineBuilder final
@@ -120,4 +133,46 @@ private:
     Flow::TaskRegister taskRegister;
     std::unordered_set<Memory::UniqueString> registeredResources;
 };
+
+template <typename Successor>
+class TaskExecutorBase : public Handling::HandleableBase
+{
+public:
+    TaskExecutorBase () = default;
+
+    TaskExecutorBase (const TaskExecutorBase &_other) = delete;
+
+    TaskExecutorBase (TaskExecutorBase &&_other) = delete;
+
+    ~TaskExecutorBase () noexcept
+    {
+        static_assert (std::is_base_of_v<TaskExecutorBase<Successor>, Successor>);
+        heap.Release (static_cast<Successor *> (this), sizeof (Successor));
+    }
+
+    void LastReferenceUnregistered () noexcept
+    {
+        static_cast<Successor *> (this)->~Successor ();
+    }
+
+    EMERGENCE_DELETE_ASSIGNMENT (TaskExecutorBase);
+
+protected:
+    Memory::Heap heap {Memory::Profiler::AllocationGroup::Top ()};
+};
+
+template <typename Executor, typename... Args>
+void TaskConstructor::SetExecutor (Args... _args) noexcept
+{
+    static_assert (std::is_base_of_v<TaskExecutorBase<Executor>, Executor>);
+    auto placeholder = heap.GetAllocationGroup ().PlaceOnTop ();
+    Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor)))
+                                           Executor {*this, std::forward<Args> (_args)...}};
+
+    SetExecutor (
+        [handle] ()
+        {
+            handle->Execute ();
+        });
+}
 } // namespace Emergence::Celerity

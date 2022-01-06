@@ -13,8 +13,19 @@ static Warehouse::Registry ConstructInsideGroup (Memory::UniqueString _worldName
 
 World::World (Memory::UniqueString _name) noexcept
     : registry (ConstructInsideGroup (_name)),
-      pipelines (Memory::Profiler::AllocationGroup {_name})
+      pipelineHeap (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name},
+                                                       Memory::UniqueString {"Pipelines"}}),
+      pipelines (pipelineHeap)
 {
+}
+
+World::~World ()
+{
+    for (Pipeline *pipeline : pipelines)
+    {
+        pipeline->~Pipeline ();
+        pipelineHeap.Release (pipeline, sizeof (Pipeline));
+    }
 }
 
 std::uintptr_t World::GetNextObjectId () noexcept
@@ -30,5 +41,11 @@ Warehouse::FetchSingletonQuery World::FetchSingletonExternally (const StandardLa
 Warehouse::ModifySingletonQuery World::ModifySingletonExternally (const StandardLayout::Mapping &_mapping) noexcept
 {
     return registry.ModifySingleton (_mapping);
+}
+
+Pipeline *World::AddPipeline (const Task::Collection &_collection, std::size_t _maximumChildThreads)
+{
+    return pipelines.emplace_back (new (pipelineHeap.Acquire (sizeof (Pipeline)))
+                                       Pipeline {_collection, _maximumChildThreads});
 }
 } // namespace Emergence::Celerity

@@ -76,10 +76,10 @@ using ConfiguratorStep = std::variant<Steps::CreateListener,
 
 using FrameConfiguration = Emergence::Container::Vector<ConfiguratorStep>;
 
-class Configurator final
+class Configurator final : public TaskExecutorBase<Configurator>
 {
 public:
-    Configurator (Emergence::Container::Vector<FrameConfiguration> _steps, TaskConstructor &_constructor);
+    Configurator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameConfiguration> _steps);
 
     void Execute ();
 
@@ -92,7 +92,7 @@ private:
     Emergence::Warehouse::ModifySingletonQuery modifyInputMapping;
 };
 
-Configurator::Configurator (Emergence::Container::Vector<FrameConfiguration> _steps, TaskConstructor &_constructor)
+Configurator::Configurator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameConfiguration> _steps)
     : steps (std::move (_steps)),
       createListener (_constructor.InsertLongTerm (InputListenerObject::Reflect ().mapping)),
       modifyListenerById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
@@ -181,20 +181,16 @@ void Configurator::Execute ()
 void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::Vector<FrameConfiguration> _steps)
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
-    constructor.SetExecutor (
-        [state {Configurator {std::move (_steps), constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    constructor.SetExecutor<Configurator> (std::move (_steps));
 }
 
 using FrameExpectation =
     Emergence::Container::Vector<std::pair<std::int64_t, Emergence::Container::Vector<InputAction>>>;
 
-class Validator final
+class Validator final : public TaskExecutorBase<Validator>
 {
 public:
-    Validator (Emergence::Container::Vector<FrameExpectation> _expectations, TaskConstructor &_constructor) noexcept;
+    Validator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameExpectation> _expectations) noexcept;
 
     void Execute () noexcept;
 
@@ -205,8 +201,8 @@ private:
     Emergence::Warehouse::FetchValueQuery fetchListenerById;
 };
 
-Validator::Validator (Emergence::Container::Vector<FrameExpectation> _expectations,
-                      TaskConstructor &_constructor) noexcept
+Validator::Validator (TaskConstructor &_constructor,
+                      Emergence::Container::Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
       fetchListenerById (
           _constructor.FetchValue (InputListenerObject::Reflect ().mapping, {InputListenerObject::Reflect ().objectId}))
@@ -241,11 +237,7 @@ void Validator::Execute () noexcept
 void AddValidatorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::Vector<FrameExpectation> _expectations)
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator"_us);
-    constructor.SetExecutor (
-        [state {Validator {std::move (_expectations), constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    constructor.SetExecutor<Validator> (std::move (_expectations));
 }
 
 void RunTest (const Emergence::Container::Vector<KeyboardActionTrigger> &_keyboardTriggers,
