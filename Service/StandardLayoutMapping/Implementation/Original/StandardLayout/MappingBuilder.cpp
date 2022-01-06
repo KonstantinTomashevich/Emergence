@@ -10,153 +10,131 @@ namespace Emergence::StandardLayout
 {
 MappingBuilder::MappingBuilder () noexcept
 {
-    handle = new PlainMappingBuilder ();
+    new (&data) PlainMappingBuilder ();
 }
 
-MappingBuilder::MappingBuilder (MappingBuilder &&_other) noexcept : handle (_other.handle)
+MappingBuilder::MappingBuilder (MappingBuilder &&_other) noexcept
 {
-    _other.handle = nullptr;
+    new (&data) PlainMappingBuilder (std::move (block_cast<PlainMappingBuilder> (_other.data)));
 }
 
 MappingBuilder::~MappingBuilder () noexcept
 {
-    if (handle)
-    {
-        delete static_cast<PlainMappingBuilder *> (handle);
-    }
+    block_cast<PlainMappingBuilder> (data).~PlainMappingBuilder ();
 }
 
 void MappingBuilder::Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept
 {
-    assert (handle);
-    static_cast<PlainMappingBuilder *> (handle)->Begin (_name, _objectSize);
+    block_cast<PlainMappingBuilder> (data).Begin (_name, _objectSize);
 }
 
 Mapping MappingBuilder::End () noexcept
 {
-    assert (handle);
-    Handling::Handle<PlainMapping> mapping = static_cast<PlainMappingBuilder *> (handle)->End ();
+    Handling::Handle<PlainMapping> mapping = block_cast<PlainMappingBuilder> (data).End ();
     return Mapping (reinterpret_cast<decltype (Mapping::data) *> (&mapping));
 }
 
 void MappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
 {
-    assert (handle);
-    static_cast<PlainMappingBuilder *> (handle)->SetConstructor (_constructor);
+    block_cast<PlainMappingBuilder> (data).SetConstructor (_constructor);
 }
 
 void MappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
 {
-    assert (handle);
-    static_cast<PlainMappingBuilder *> (handle)->SetDestructor (_destructor);
+    block_cast<PlainMappingBuilder> (data).SetDestructor (_destructor);
 }
 
 FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (FieldData::BitSeed {_name, _offset, _bitOffset});
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::BitSeed {_name, _offset, _bitOffset});
 }
 
 FieldId MappingBuilder::RegisterInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int8_t)});
 }
 
 FieldId MappingBuilder::RegisterInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int16_t)});
 }
 
 FieldId MappingBuilder::RegisterInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int32_t)});
 }
 
 FieldId MappingBuilder::RegisterInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int64_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint8_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint16_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint32_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint64_t)});
 }
 
 FieldId MappingBuilder::RegisterFloat (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::FLOAT, _offset, sizeof (float)});
 }
 
 FieldId MappingBuilder::RegisterDouble (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::FLOAT, _offset, sizeof (double)});
 }
 
 FieldId MappingBuilder::RegisterString (Memory::UniqueString _name, std::size_t _offset, std::size_t _maxSize) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::STRING, _offset, _maxSize});
 }
 
 FieldId MappingBuilder::RegisterBlock (Memory::UniqueString _name, std::size_t _offset, std::size_t _size) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (
+    return block_cast<PlainMappingBuilder> (data).AddField (
         FieldData::StandardSeed {_name, FieldArchetype::BLOCK, _offset, _size});
 }
 
 FieldId MappingBuilder::RegisterUniqueString (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    assert (handle);
-    return static_cast<PlainMappingBuilder *> (handle)->AddField (FieldData::UniqueStringSeed {_name, _offset});
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::UniqueStringSeed {_name, _offset});
 }
 
 FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
                                               std::size_t _offset,
                                               const Mapping &_objectMapping) noexcept
 {
-    assert (handle);
-    auto *state = static_cast<PlainMappingBuilder *> (handle);
+    auto &state = block_cast<PlainMappingBuilder> (data);
 
     const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (_objectMapping.data);
     assert (nestedPlainMapping);
-    FieldId objectFieldId = state->AddField (FieldData::NestedObjectSeed {_name, _offset, nestedPlainMapping.Get ()});
+    FieldId objectFieldId = state.AddField (FieldData::NestedObjectSeed {_name, _offset, nestedPlainMapping.Get ()});
     const std::string prefix = std::string (*_name) + PROJECTION_NAME_SEPARATOR;
 
     for (const FieldData &field : *nestedPlainMapping.Get ())
@@ -167,8 +145,8 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
         switch (field.GetArchetype ())
         {
         case FieldArchetype::BIT:
-            nestedFieldId = state->AddField (FieldData::BitSeed {Memory::UniqueString {fullName.c_str ()},
-                                                                 _offset + field.GetOffset (), field.GetBitOffset ()});
+            nestedFieldId = state.AddField (FieldData::BitSeed {Memory::UniqueString {fullName.c_str ()},
+                                                                _offset + field.GetOffset (), field.GetBitOffset ()});
             break;
 
         case FieldArchetype::INT:
@@ -176,22 +154,22 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
         case FieldArchetype::FLOAT:
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
-            nestedFieldId = state->AddField (FieldData::StandardSeed {Memory::UniqueString {fullName.c_str ()},
-                                                                      field.GetArchetype (),
-                                                                      _offset + field.GetOffset (), field.GetSize ()});
+            nestedFieldId = state.AddField (FieldData::StandardSeed {Memory::UniqueString {fullName.c_str ()},
+                                                                     field.GetArchetype (),
+                                                                     _offset + field.GetOffset (), field.GetSize ()});
             break;
 
         case FieldArchetype::UNIQUE_STRING:
-            nestedFieldId = state->AddField (
+            nestedFieldId = state.AddField (
                 FieldData::UniqueStringSeed {Memory::UniqueString {fullName.c_str ()}, _offset + field.GetOffset ()});
             break;
 
         case FieldArchetype::NESTED_OBJECT:
             // We don't need to recursively add fields, because given nested mapping is finished,
             // therefore all fields of internal objects are already projected into this mapping.
-            nestedFieldId = state->AddField (FieldData::NestedObjectSeed {Memory::UniqueString {fullName.c_str ()},
-                                                                          _offset + field.GetOffset (),
-                                                                          field.GetNestedObjectMapping ().Get ()});
+            nestedFieldId = state.AddField (FieldData::NestedObjectSeed {Memory::UniqueString {fullName.c_str ()},
+                                                                         _offset + field.GetOffset (),
+                                                                         field.GetNestedObjectMapping ().Get ()});
             break;
         }
 

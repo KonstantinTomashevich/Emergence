@@ -68,48 +68,70 @@ VolumetricRepresentation Collection::VolumetricRepresentationIterator::operator*
     return VolumetricRepresentation ((*block_cast<Pegasus::Storage::VolumetricIndexIterator> (data)).Get ());
 }
 
-Collection::Collection (StandardLayout::Mapping _typeMapping) : handle (new Pegasus::Storage (std::move (_typeMapping)))
+struct InternalData final
 {
+    Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::UniqueString {"Collection"}}};
+    Pegasus::Storage *storage = nullptr;
+};
+
+Collection::Collection (StandardLayout::Mapping _typeMapping)
+{
+    auto &internal = *new (&data) InternalData ();
+    auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
+    internal.storage =
+        new (internal.heap.Acquire (sizeof (Pegasus::Storage))) Pegasus::Storage (std::move (_typeMapping));
 }
 
-Collection::Collection (Collection &&_other) noexcept : handle (_other.handle)
+Collection::Collection (Collection &&_other) noexcept
 {
-    assert (handle);
-    _other.handle = nullptr;
+    auto &internal = *new (&data) InternalData ();
+    internal.storage = block_cast<InternalData> (_other.data).storage;
+    assert (internal.storage);
+    block_cast<InternalData> (_other.data).storage = nullptr;
 }
 
 Collection::~Collection () noexcept
 {
-    delete static_cast<Pegasus::Storage *> (handle);
+    auto &internal = block_cast<InternalData> (data);
+    if (internal.storage)
+    {
+        internal.storage->~Storage ();
+        internal.heap.Release (internal.storage, sizeof (Pegasus::Storage));
+    }
+
+    internal.~InternalData ();
 }
 
 Collection::Allocator Collection::AllocateAndInsert () noexcept
 {
-    assert (handle);
-    Pegasus::Storage::Allocator allocator = static_cast<Pegasus::Storage *> (handle)->AllocateAndInsert ();
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::Allocator allocator = internal.storage->AllocateAndInsert ();
     return Allocator (reinterpret_cast<decltype (Allocator::data) *> (&allocator));
 }
 
 LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::FieldId _keyField) noexcept
 {
-    assert (handle);
-    Handling::Handle<Pegasus::OrderedIndex> index =
-        static_cast<Pegasus::Storage *> (handle)->CreateOrderedIndex (_keyField);
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Handling::Handle<Pegasus::OrderedIndex> index = internal.storage->CreateOrderedIndex (_keyField);
     return LinearRepresentation (index.Get ());
 }
 
 PointRepresentation Collection::CreatePointRepresentation (
     const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
-    assert (handle);
-    Handling::Handle<Pegasus::HashIndex> index = static_cast<Pegasus::Storage *> (handle)->CreateHashIndex (_keyFields);
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Handling::Handle<Pegasus::HashIndex> index = internal.storage->CreateHashIndex (_keyFields);
     return PointRepresentation (index.Get ());
 }
 
 VolumetricRepresentation Collection::CreateVolumetricRepresentation (
     const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
 {
-    assert (handle);
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
     // Volumetric representation creation is rare operation, therefore it's ok to dynamically allocate vector here.
     Container::Vector<Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions {_dimensions.get_allocator ()};
     convertedDimensions.reserve (_dimensions.size ());
@@ -125,54 +147,56 @@ VolumetricRepresentation Collection::CreateVolumetricRepresentation (
         });
     }
 
-    Handling::Handle<Pegasus::VolumetricIndex> index =
-        static_cast<Pegasus::Storage *> (handle)->CreateVolumetricIndex (convertedDimensions);
+    Handling::Handle<Pegasus::VolumetricIndex> index = internal.storage->CreateVolumetricIndex (convertedDimensions);
     return VolumetricRepresentation (index.Get ());
 }
 
 const StandardLayout::Mapping &Collection::GetTypeMapping () const noexcept
 {
-    assert (handle);
-    return static_cast<const Pegasus::Storage *> (handle)->GetRecordMapping ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    return internal.storage->GetRecordMapping ();
 }
 
 Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin () const noexcept
 {
-    assert (handle);
-    Pegasus::Storage::OrderedIndexIterator iterator =
-        static_cast<const Pegasus::Storage *> (handle)->BeginOrderedIndices ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::OrderedIndexIterator iterator = internal.storage->BeginOrderedIndices ();
 
     return LinearRepresentationIterator (reinterpret_cast<decltype (LinearRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () const noexcept
 {
-    assert (handle);
-    Pegasus::Storage::OrderedIndexIterator iterator =
-        static_cast<const Pegasus::Storage *> (handle)->EndOrderedIndices ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::OrderedIndexIterator iterator = internal.storage->EndOrderedIndices ();
 
     return LinearRepresentationIterator (reinterpret_cast<decltype (LinearRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::PointRepresentationIterator Collection::PointRepresentationBegin () const noexcept
 {
-    assert (handle);
-    Pegasus::Storage::HashIndexIterator iterator = static_cast<const Pegasus::Storage *> (handle)->BeginHashIndices ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::HashIndexIterator iterator = internal.storage->BeginHashIndices ();
     return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::PointRepresentationIterator Collection::PointRepresentationEnd () const noexcept
 {
-    assert (handle);
-    Pegasus::Storage::HashIndexIterator iterator = static_cast<const Pegasus::Storage *> (handle)->EndHashIndices ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::HashIndexIterator iterator = internal.storage->EndHashIndices ();
     return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () const noexcept
 {
-    assert (handle);
-    Pegasus::Storage::VolumetricIndexIterator iterator =
-        static_cast<const Pegasus::Storage *> (handle)->BeginVolumetricIndices ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::VolumetricIndexIterator iterator = internal.storage->BeginVolumetricIndices ();
 
     return VolumetricRepresentationIterator (
         reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
@@ -180,9 +204,9 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationEnd () const noexcept
 {
-    assert (handle);
-    Pegasus::Storage::VolumetricIndexIterator iterator =
-        static_cast<const Pegasus::Storage *> (handle)->EndVolumetricIndices ();
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::VolumetricIndexIterator iterator = internal.storage->EndVolumetricIndices ();
 
     return VolumetricRepresentationIterator (
         reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
@@ -190,7 +214,7 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
 
 Collection &Collection::operator= (Collection &&_other) noexcept
 {
-    if (handle != _other.handle)
+    if (this != &_other)
     {
         this->~Collection ();
         new (this) Collection (std::move (_other));

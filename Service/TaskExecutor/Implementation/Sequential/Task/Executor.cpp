@@ -1,5 +1,6 @@
 #include <cassert>
-#include <stack>
+
+#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Task/Executor.hpp>
 
@@ -27,7 +28,7 @@ private:
 using namespace Memory::Literals;
 
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection) noexcept
-    : orderedTasks (Memory::Profiler::AllocationGroup ("Executor"_us))
+    : orderedTasks (Memory::Profiler::AllocationGroup::Top ())
 {
     orderedTasks.reserve (_collection.tasks.size ());
     // We can not use {count, value} constructor here, because some compilers parse it as initializer list.
@@ -83,24 +84,43 @@ void ExecutorImplementation::Execute () const noexcept
     }
 }
 
-Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexcept
-    : handle (new ExecutorImplementation (_collection))
+struct InternalData final
 {
+    Memory::Heap heap {Memory::Profiler::AllocationGroup ("SequentialExecutor"_us)};
+    ExecutorImplementation *executor = nullptr;
+};
+
+Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexcept
+{
+    auto &internal = *new (&data) InternalData ();
+    auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
+    internal.executor =
+        new (internal.heap.Acquire (sizeof (ExecutorImplementation))) ExecutorImplementation (_collection);
 }
 
-Executor::Executor (Executor &&_other) noexcept : handle (_other.handle)
+Executor::Executor (Executor &&_other) noexcept
 {
-    _other.handle = nullptr;
+    auto &internal = *new (&data) InternalData ();
+    internal.executor = block_cast<InternalData> (_other.data).executor;
+    block_cast<InternalData> (_other.data).executor = nullptr;
 }
 
 Executor::~Executor () noexcept
 {
-    delete static_cast<ExecutorImplementation *> (handle);
+    auto &internal = block_cast<InternalData> (data);
+    if (internal.executor)
+    {
+        internal.executor->~ExecutorImplementation ();
+        internal.heap.Release (internal.executor, sizeof (ExecutorImplementation));
+    }
+
+    internal.~InternalData ();
 }
 
 void Executor::Execute () noexcept
 {
-    assert (handle);
-    static_cast<ExecutorImplementation *> (handle)->Execute ();
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.executor);
+    internal.executor->Execute ();
 }
 } // namespace Emergence::Task

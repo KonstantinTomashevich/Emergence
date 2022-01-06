@@ -80,6 +80,9 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const Container
 
                 // We use single threaded sinks here, because we can more efficiently
                 // protect them from multithread access using ::locked.
+                //
+                // Unfortunately, there is no easy way to profile these allocations due to spdlog architecture.
+                // But this allocations are small and therefore we can just ignore them.
                 if constexpr (std::is_same_v<Sinks::StandardOut, std::decay_t<decltype (_config)>>)
                 {
                     addSink (std::make_shared<spdlog::sinks::stdout_color_sink_st> ());

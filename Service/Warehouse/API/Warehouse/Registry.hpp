@@ -155,13 +155,13 @@ public:
 
     /// \brief Prepare FetchRayIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                                  const Container::Vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare ModifyRayIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                                    const Container::Vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
     /// \return Name of this registry, that can be used for debug or visualization purposes.
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
@@ -175,6 +175,6 @@ public:
     Registry &operator= (Registry &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 };
 } // namespace Emergence::Warehouse

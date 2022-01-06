@@ -204,6 +204,12 @@ const FieldData *end (const PlainMapping &_mapping) noexcept
     return _mapping.End ();
 }
 
+PlainMappingBuilder::PlainMappingBuilder (PlainMappingBuilder &&_other) noexcept
+    : underConstruction (_other.underConstruction)
+{
+    _other.underConstruction = nullptr;
+}
+
 PlainMappingBuilder::~PlainMappingBuilder ()
 {
     delete underConstruction;

@@ -184,7 +184,7 @@ public:
     Collection &operator= (Collection &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 };
 } // namespace RecordCollection
 

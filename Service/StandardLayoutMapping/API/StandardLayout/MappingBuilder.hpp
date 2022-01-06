@@ -106,6 +106,6 @@ public:
     MappingBuilder &operator= (MappingBuilder &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 };
 } // namespace Emergence::StandardLayout

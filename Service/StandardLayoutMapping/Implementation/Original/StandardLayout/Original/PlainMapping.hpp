@@ -206,7 +206,7 @@ public:
     /// PlainMappingBuilder is not designed to be copied or moved.
     PlainMappingBuilder (const PlainMappingBuilder &_other) = delete;
 
-    PlainMappingBuilder (PlainMappingBuilder &&_other) = delete;
+    PlainMappingBuilder (PlainMappingBuilder &&_other) noexcept;
 
     ~PlainMappingBuilder ();
 
