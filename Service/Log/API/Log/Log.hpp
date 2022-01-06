@@ -3,12 +3,17 @@
 #include <cstdint>
 #include <string>
 #include <variant>
-#include <vector>
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
-namespace Emergence::Log
+#include <Container/Vector.hpp>
+
+#include <Memory/Heap.hpp>
+
+namespace Emergence
+{
+namespace Log
 {
 /// \brief Supported logging levels.
 enum class Level
@@ -61,7 +66,7 @@ public:
     /// \brief Constructs logger, that prints messages to given sinks.
     /// \param _forceFlushOn After message with this level or above appears, all messages will be flushed right away.
     /// \param _sinks List of sinks for this logger.
-    Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
+    Logger (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept;
 
     /// It looks counter intuitive to copy loggers.
     Logger (const Logger &_other) = delete;
@@ -86,10 +91,22 @@ namespace GlobalLogger
 {
 /// \brief Initializes shared global logger instance.
 /// \invariant Should not be called more than once.
-void Init (Level _forceFlushOn = Level::ERROR, const std::vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
+void Init (Level _forceFlushOn = Level::ERROR,
+           const Container::Vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
 
 /// \brief Executes Logger::Log using global logger instance.
 /// \details If ::Init was not called previously, it would be called with default arguments.
 void Log (Level _level, const std::string &_message) noexcept;
 }; // namespace GlobalLogger
-} // namespace Emergence::Log
+} // namespace Log
+
+namespace Memory
+{
+/// \brief Default allocation group for log sinks.
+template <>
+struct DefaultAllocationGroup<Log::Sink>
+{
+    static Profiler::AllocationGroup Get () noexcept;
+};
+} // namespace Memory
+} // namespace Emergence

@@ -13,12 +13,14 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
-namespace Emergence::Log
+namespace Emergence
+{
+namespace Log
 {
 class LoggerImplementation final
 {
 public:
-    LoggerImplementation (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
+    LoggerImplementation (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept;
 
     LoggerImplementation (const LoggerImplementation &_other) = delete;
 
@@ -57,7 +59,7 @@ static spdlog::level::level_enum ToSPDLogLevel (Level _level)
     return spdlog::level::critical;
 }
 
-LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
+LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
     // Loggers do not share sinks (except stdout and stderr), therefore there is no need for unique names.
     : logger (spdlog::logger ("Logger"))
 {
@@ -115,7 +117,7 @@ void LoggerImplementation::Log (Level _level, const std::string &_message) noexc
     locked.clear (std::memory_order_release);
 }
 
-Logger::Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
+Logger::Logger (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 {
     new (&data) LoggerImplementation (_forceFlushOn, _sinks);
 }
@@ -137,12 +139,12 @@ void Logger::Log (Level _level, const std::string &_message) noexcept
 
 namespace GlobalLogger
 {
-static std::unique_ptr<Logger> globalLogger {};
+static std::optional<Logger> globalLogger = std::nullopt;
 
-void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
+void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 {
     assert (!globalLogger);
-    globalLogger = std::make_unique<Logger> (_forceFlushOn, _sinks);
+    globalLogger.emplace (_forceFlushOn, _sinks);
 }
 
 void Log (Level _level, const std::string &_message) noexcept
@@ -155,4 +157,13 @@ void Log (Level _level, const std::string &_message) noexcept
     globalLogger->Log (_level, _message);
 }
 } // namespace GlobalLogger
-} // namespace Emergence::Log
+} // namespace Log
+
+namespace Memory
+{
+Profiler::AllocationGroup DefaultAllocationGroup<Log::Sink>::Get () noexcept
+{
+    return Profiler::AllocationGroup {UniqueString {"LogSink"}};
+}
+} // namespace Memory
+} // namespace Emergence
