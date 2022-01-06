@@ -12,6 +12,9 @@ sober_library_begin (TestQueryAPI STATIC)
     sober_naming_variant_target (ContextExtension Original CONTEXT_EXTENSION_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${CONTEXT_EXTENSION_LIBRARY_TARGET})
 
+    sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_LIBRARY_TARGET)
+    sober_library_link_library (PUBLIC ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
+
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
 

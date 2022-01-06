@@ -9,7 +9,7 @@ namespace Emergence::Warehouse::Test
 struct VisualizationExpectedResult
 {
     VisualGraph::Graph registry;
-    std::vector<VisualGraph::Graph> queries;
+    Container::Vector<VisualGraph::Graph> queries;
 };
 
 namespace Graphs

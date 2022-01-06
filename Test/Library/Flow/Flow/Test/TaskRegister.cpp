@@ -3,37 +3,13 @@
 
 #include <Flow/TaskRegister.hpp>
 
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
 #include <Testing/Testing.hpp>
 
 using namespace Emergence::Memory::Literals;
 
-namespace Emergence
-{
-// We do not need to profile memory here, therefore we are adding this local stubs for initialization convenience.
-namespace Memory
-{
-template <>
-struct DefaultAllocationGroup<Flow::Task>
-{
-    static Profiler::AllocationGroup Get () noexcept
-    {
-        static Profiler::AllocationGroup group {"TestStub"_us};
-        return group;
-    }
-};
-
-template <>
-struct DefaultAllocationGroup<Memory::UniqueString>
-{
-    static Profiler::AllocationGroup Get () noexcept
-    {
-        static Profiler::AllocationGroup group {"TestStub"_us};
-        return group;
-    }
-};
-} // namespace Memory
-
-namespace Flow::Test
+namespace Emergence::Flow::Test
 {
 struct Seed final
 {
@@ -72,10 +48,10 @@ struct CollectionExpectation final
     struct Task
     {
         std::string name;
-        std::vector<std::string> dependantTasks;
+        Container::Vector<std::string> dependantTasks;
     };
 
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
 };
 
 static void Check (const Emergence::Task::Collection &_result, const CollectionExpectation &_expectation)
@@ -187,8 +163,7 @@ CollectionExpectation GetComplexDependenciesExpectation ()
              {"B1", {"B2"}},
              {"B2", {}}}};
 }
-} // namespace Flow::Test
-} // namespace Emergence
+} // namespace Emergence::Flow::Test
 
 BEGIN_SUITE (ExportCollection)
 

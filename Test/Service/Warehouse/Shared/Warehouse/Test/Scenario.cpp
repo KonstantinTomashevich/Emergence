@@ -83,7 +83,7 @@ ExecutionContext::~ExecutionContext ()
 
 Container::Vector<Warehouse::Dimension> ConvertDimensions (
     const StandardLayout::Mapping &_typeMapping,
-    const std::vector<Query::Test::Sources::Volumetric::Dimension> &_dimensions)
+    const Container::Vector<Query::Test::Sources::Volumetric::Dimension> &_dimensions)
 {
     Container::Vector<Warehouse::Dimension> convertedDimensions;
     convertedDimensions.reserve (_dimensions.size ());
@@ -102,9 +102,9 @@ Container::Vector<Warehouse::Dimension> ConvertDimensions (
 }
 
 template <typename QueryType>
-std::vector<std::size_t> CollectVolumetricQueryKeyFieldSizes (const QueryType &_query)
+Container::Vector<std::size_t> CollectVolumetricQueryKeyFieldSizes (const QueryType &_query)
 {
-    std::vector<std::size_t> result;
+    Container::Vector<std::size_t> result;
     for (auto iterator = _query.DimensionBegin (); iterator != _query.DimensionEnd (); ++iterator)
     {
         auto dimension = *iterator;
@@ -368,7 +368,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
 {
     auto &query = std::get<FetchShapeIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence =
+    Container::Vector<uint8_t> sequence =
         Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (&sequence[0u]));
@@ -378,7 +378,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
 {
     auto &query = std::get<ModifyShapeIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence =
+    Container::Vector<uint8_t> sequence =
         Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (&sequence[0u]));
@@ -388,7 +388,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
 {
     auto &query = std::get<FetchRayIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence =
+    Container::Vector<uint8_t> sequence =
         Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (),
@@ -399,7 +399,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
 {
     auto &query = std::get<ModifyRayIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence =
+    Container::Vector<uint8_t> sequence =
         Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (),
@@ -497,7 +497,7 @@ std::ostream &operator<< (std::ostream &_output, const PrepareModifyDescendingRa
 
 std::ostream &operator<< (
     std::ostream &_output,
-    const std::pair<StandardLayout::Mapping, std::vector<Query::Test::Sources::Volumetric::Dimension>> &_data)
+    const std::pair<StandardLayout::Mapping, Container::Vector<Query::Test::Sources::Volumetric::Dimension>> &_data)
 {
     for (const auto &dimension : _data.second)
     {
@@ -670,9 +670,9 @@ static Task InsertQueryPreparationTaskFromSource (const Query::Test::Source &_so
     return PrepareInsertLongTermQuery {{_typeMapping, _queryName}};
 }
 
-static std::vector<Task> ImportStorage (const Query::Test::Storage &_storage)
+static Container::Vector<Task> ImportStorage (const Query::Test::Storage &_storage)
 {
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
     if (_storage.sources.empty ())
     {
         return tasks;
@@ -752,7 +752,7 @@ static std::vector<Task> ImportStorage (const Query::Test::Storage &_storage)
 void TestQueryApiDriver (const Query::Test::Scenario &_scenario)
 {
     using namespace TestQueryApiImporters;
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
 
     for (const Query::Test::Storage &storage : _scenario.storages)
     {
@@ -807,12 +807,12 @@ concept IndexedQueryPreparation = OneOf<Type,
                                         PrepareFetchRayIntersectionQuery,
                                         PrepareModifyRayIntersectionQuery>::VALUE;
 
-static std::vector<Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void *_object)
+static Container::Vector<Task> SetupEnvironmentForQuery (const Task &_queryPreparation, const void *_object)
 {
     return std::visit (
         [&_object] (const auto &_query)
         {
-            std::vector<Task> tasks;
+            Container::Vector<Task> tasks;
             if constexpr (SingletonQueryPreparation<std::decay_t<decltype (_query)>>)
             {
                 tasks.emplace_back (PrepareModifySingletonQuery {{_query.typeMapping, "TemporaryInserter"}});
@@ -856,12 +856,12 @@ static Task RenamePreparedQuery (Task _queryPreparation, std::string _newQueryNa
     return _queryPreparation;
 }
 
-static std::vector<Task> CheckQueryEnvironment (const Task &_queryPreparation, const void *_expectedObject)
+static Container::Vector<Task> CheckQueryEnvironment (const Task &_queryPreparation, const void *_expectedObject)
 {
     return std::visit (
         [&_expectedObject] (const auto &_query)
         {
-            std::vector<Task> tasks;
+            Container::Vector<Task> tasks;
             if constexpr (SingletonQueryPreparation<std::decay_t<decltype (_query)>>)
             {
                 // To simplify testing logic, we expect that singleton has zero-filling default constructor.
@@ -902,7 +902,7 @@ static std::vector<Task> CheckQueryEnvironment (const Task &_queryPreparation, c
 
 void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_queryPreparation, const void *_object)
 {
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
     bool environmentReady = false;
     bool anyReferenceModificationExecuted = false;
 
@@ -955,11 +955,11 @@ void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_
 }
 
 void ForCursor (const Reference::Test::Scenario &_scenario,
-                const std::vector<Query::Test::Storage> &_environment,
+                const Container::Vector<Query::Test::Storage> &_environment,
                 const Query::Test::Task &_query,
                 const void *_cursorExpectedObject)
 {
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
     for (const Query::Test::Storage &storage : _environment)
     {
         tasks += TestQueryApiImporters::ImportStorage (storage);
@@ -1080,7 +1080,7 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second)
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_first, const Container::Vector<Task> &_second)
 {
     for (const Task &task : _second)
     {
@@ -1090,7 +1090,7 @@ std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task
     return _first;
 }
 
-std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task)
+Container::Vector<Task> operator+ (Container::Vector<Task> _first, const Task &_task)
 {
     _first.emplace_back (_task);
     return _first;

@@ -1,10 +1,13 @@
 #include <ostream>
 #include <unordered_set>
 #include <variant>
-#include <vector>
+
+#include <Container/Vector.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 #include <StandardLayout/Test/MappingBuilder.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -106,7 +109,7 @@ struct MappingSeed final
 {
     Memory::UniqueString name;
     std::size_t objectSize;
-    std::vector<FieldSeed> fields;
+    Container::Vector<FieldSeed> fields;
 };
 
 Mapping Grow (MappingSeed &_seed, MappingBuilder &_builder)

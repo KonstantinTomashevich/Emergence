@@ -14,6 +14,9 @@ sober_library_begin (TestLogShared STATIC)
     sober_variant_end ()
 sober_library_end ()
 
+sober_naming_implementation_target (Memory Original MEMORY_IMPLEMENTATION_TARGET)
+sober_naming_implementation_target (MemoryProfiler Original MEMORY_PROFILER_IMPLEMENTATION_TARGET)
+sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 sober_naming_variant_target (TestLogShared Original LOG_TEST_SHARED_LIBRARY)
 
 sober_library_begin (TestLogApp STATIC)
@@ -23,7 +26,9 @@ sober_library_begin (TestLogApp STATIC)
 
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/App")
+
     sober_library_link_library (PRIVATE ${LOG_TEST_SHARED_LIBRARY})
+    sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
@@ -37,7 +42,9 @@ sober_library_begin (TestLogApp STATIC)
 sober_library_end ()
 
 add_executable (TestLogDriver "${CMAKE_CURRENT_SOURCE_DIR}/Driver/Log/Test/Main.cpp")
-target_link_libraries (TestLogDriver PRIVATE ${LOG_TEST_SHARED_LIBRARY})
+target_link_libraries (TestLogDriver PRIVATE
+        ${LOG_TEST_SHARED_LIBRARY} ${MEMORY_IMPLEMENTATION_TARGET}
+        ${MEMORY_PROFILER_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_STUB_TARGET})
 add_dependencies (ServiceTests TestLogDriver)
 
 foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})

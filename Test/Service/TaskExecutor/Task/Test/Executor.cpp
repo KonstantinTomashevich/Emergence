@@ -1,8 +1,9 @@
 #include <chrono>
-#include <string>
 #include <thread>
-#include <vector>
 
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 #include <Memory/UniqueString.hpp>
 
 #include <Task/Executor.hpp>
@@ -20,10 +21,10 @@ bool ExecutorTestIncludeMarker () noexcept
 struct TaskSeed
 {
     Memory::UniqueString name;
-    std::vector<Memory::UniqueString> dependantTasks;
+    Container::Vector<Memory::UniqueString> dependantTasks;
 };
 
-using Seed = std::vector<TaskSeed>;
+using Seed = Container::Vector<TaskSeed>;
 
 struct TimeInterval
 {
@@ -33,7 +34,7 @@ struct TimeInterval
 
 void GrowAndTest (const Seed &_seed)
 {
-    std::vector<TimeInterval> intervals;
+    Container::Vector<TimeInterval> intervals;
     intervals.reserve (_seed.size ());
     Collection collection;
 

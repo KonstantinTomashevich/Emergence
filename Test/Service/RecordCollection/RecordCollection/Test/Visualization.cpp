@@ -161,7 +161,7 @@ TEST_CASE (MultipleInstancesOfPointRepresentation)
 
 TEST_CASE (MultipleInstancesOfVolumetricRepresentation)
 {
-    const std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions2d = {
+    const Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions2d = {
         {
             -100.0f,
             Query::Test::BoundingBox::Reflect ().minX,
@@ -175,7 +175,7 @@ TEST_CASE (MultipleInstancesOfVolumetricRepresentation)
             Query::Test::BoundingBox::Reflect ().maxY,
         }};
 
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions3d = dimensions2d;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions3d = dimensions2d;
     dimensions3d.emplace_back (Query::Test::Sources::Volumetric::Dimension {
         -100.0f,
         Query::Test::BoundingBox::Reflect ().minZ,

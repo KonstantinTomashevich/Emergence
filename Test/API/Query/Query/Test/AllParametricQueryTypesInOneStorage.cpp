@@ -33,7 +33,7 @@ Storage RequestStorage ()
                                                                         BoundingBox::Reflect ().maxY)}}}}};
 }
 
-std::vector<Task> PreConditions ()
+Container::Vector<Task> PreConditions ()
 {
     return {
         QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},
@@ -64,7 +64,7 @@ std::vector<Task> PreConditions ()
     };
 }
 
-std::vector<Task> PostConditions ()
+Container::Vector<Task> PostConditions ()
 {
     return {
         QueryValueToRead {{{"playerId", "0"}, &Queries::ID_0}},

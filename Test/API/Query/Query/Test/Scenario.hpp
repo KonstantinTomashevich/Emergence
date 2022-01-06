@@ -8,6 +8,8 @@
 
 #include <Container/Vector.hpp>
 
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
 #include <StandardLayout/Field.hpp>
 #include <StandardLayout/Mapping.hpp>
 
@@ -87,7 +89,7 @@ struct Volumetric final
     };
 
     std::string name;
-    std::vector<Dimension> dimensions;
+    Container::Vector<Dimension> dimensions;
 };
 
 std::ostream &operator<< (std::ostream &_output, const Volumetric::SupportedValue &_value);
@@ -100,12 +102,12 @@ struct Storage final
 {
     /// \brief Custom constructor, used to check requirements, that are not well expressed through data structure.
     Storage (StandardLayout::Mapping _dataType,
-             std::vector<const void *> _objectsToInsert,
-             std::vector<Source> _sources);
+             Container::Vector<const void *> _objectsToInsert,
+             Container::Vector<Source> _sources);
 
     StandardLayout::Mapping dataType;
-    std::vector<const void *> objectsToInsert;
-    std::vector<Source> sources;
+    Container::Vector<const void *> objectsToInsert;
+    Container::Vector<Source> sources;
 };
 
 namespace Tasks
@@ -169,8 +171,8 @@ struct QueryDescendingRangeToEdit final : public RangeQueryBase
 
 struct ShapeIntersectionQueryBase : public QueryBase
 {
-    std::vector<Sources::Volumetric::SupportedValue> min;
-    std::vector<Sources::Volumetric::SupportedValue> max;
+    Container::Vector<Sources::Volumetric::SupportedValue> min;
+    Container::Vector<Sources::Volumetric::SupportedValue> max;
 };
 
 struct QueryShapeIntersectionToRead final : public ShapeIntersectionQueryBase
@@ -183,8 +185,8 @@ struct QueryShapeIntersectionToEdit final : public ShapeIntersectionQueryBase
 
 struct RayIntersectionQueryBase : public QueryBase
 {
-    std::vector<Sources::Volumetric::SupportedValue> origin;
-    std::vector<Sources::Volumetric::SupportedValue> direction;
+    Container::Vector<Sources::Volumetric::SupportedValue> origin;
+    Container::Vector<Sources::Volumetric::SupportedValue> direction;
     float maxDistance = std::numeric_limits<float>::max ();
 };
 
@@ -205,13 +207,13 @@ struct CursorCheck final
 struct CursorCheckAllOrdered final
 {
     std::string name;
-    std::vector<const void *> expectedObjects;
+    Container::Vector<const void *> expectedObjects;
 };
 
 struct CursorCheckAllUnordered final
 {
     std::string name;
-    std::vector<const void *> expectedObjects;
+    Container::Vector<const void *> expectedObjects;
 };
 
 struct CursorEdit final
@@ -302,8 +304,8 @@ using Task = std::variant<Tasks::QuerySingletonToRead,
 
 struct Scenario final
 {
-    std::vector<Storage> storages;
-    std::vector<Task> tasks;
+    Container::Vector<Storage> storages;
+    Container::Vector<Task> tasks;
 };
 
 /// \brief Query-type agnostic renaming is widely used in tests, therefore it was extracted to utility function.
@@ -317,14 +319,14 @@ Scenario RemapSources (Scenario _scenario, const std::unordered_map<std::string,
 /// \brief Lays out min-max arrays as sequence of min-max pairs.
 /// \details Because test drivers usually do not keep info about storages,
 ///          it's more convenient to pass only sizes of fields for used dimensions.
-std::vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
-                                                             const std::vector<std::size_t> &_valueSizes);
+Container::Vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
+                                                                   const Container::Vector<std::size_t> &_valueSizes);
 
 /// \brief Same as LayoutShapeIntersectionQueryParameters, but for ray intersection queries.
-std::vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
-                                                           const std::vector<std::size_t> &_valueSizes);
+Container::Vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
+                                                                 const Container::Vector<std::size_t> &_valueSizes);
 
-std::vector<Task> &operator+= (std::vector<Task> &_left, const std::vector<Task> &_right);
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_left, const Container::Vector<Task> &_right);
 
 std::ostream &operator<< (std::ostream &_output, const Task &_task);
 } // namespace Emergence::Query::Test

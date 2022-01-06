@@ -1,7 +1,11 @@
 #include <fstream>
 #include <iostream>
 
+#include <Container/Vector.hpp>
+
 #include <Log/Test/Shared.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 constexpr int RESULT_OK = 0u;
 constexpr int RESULT_ERROR = 1u;
@@ -13,9 +17,9 @@ constexpr const char *STANDARD_ERROR_FILE = "StandardError.log";
 
 using namespace Emergence::Log;
 
-static std::vector<Level> ExpectedSequenceForOneThread (Level _minimumLevel)
+static Emergence::Container::Vector<Level> ExpectedSequenceForOneThread (Level _minimumLevel)
 {
-    std::vector<Level> sequence;
+    Emergence::Container::Vector<Level> sequence;
     for (std::size_t iteration = 1u; iteration <= Test::ITERATIONS; ++iteration)
     {
         if (Level::VERBOSE >= _minimumLevel && iteration % Test::VERBOSE_FREQUENCY == 0u)
@@ -75,7 +79,7 @@ static const char *LevelToMessage (Level _level)
 
 std::size_t CheckLog (std::istream &_input, Level _minimumLevel)
 {
-    std::vector<Level> expectedSequence = ExpectedSequenceForOneThread (_minimumLevel);
+    Emergence::Container::Vector<Level> expectedSequence = ExpectedSequenceForOneThread (_minimumLevel);
     std::array<std::size_t, Test::THREAD_COUNT> messagesIndexPerThread {0u};
     // If there is an error in thread log, it's better to skip all next messages for this thread.
     std::array<bool, Test::THREAD_COUNT> skipThread {false};

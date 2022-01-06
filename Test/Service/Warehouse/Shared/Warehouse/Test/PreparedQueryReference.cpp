@@ -99,7 +99,7 @@ static void ExecuteModifyDescendingRangeQueryReferenceApiTest (const Emergence::
 
 using BoundingBox = Emergence::Query::Test::BoundingBox;
 
-static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
+static Emergence::Container::Vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
     return {{-100.0f, BoundingBox::Reflect ().minX, 100.0f, BoundingBox::Reflect ().maxX},
             {-100.0f, BoundingBox::Reflect ().minY, 100.0f, BoundingBox::Reflect ().maxY}};

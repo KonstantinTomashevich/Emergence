@@ -1,8 +1,12 @@
 #include <thread>
 #include <vector>
 
+#include <Container/Vector.hpp>
+
 #include <Log/Log.hpp>
 #include <Log/Test/Shared.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 using namespace Emergence::Log;
 
@@ -62,7 +66,7 @@ int main (int /*unused*/, char ** /*unused*/)
                              Sinks::File {{Test::CUSTOM_FILE_MINIMUM_LEVEL}, Test::CUSTOM_LOG_FILE_NAME},
                          }};
 
-    std::vector<std::thread> threads;
+    Emergence::Container::Vector<std::thread> threads;
     threads.reserve (Test::THREAD_COUNT);
 
     for (std::size_t index = 0u; index < Test::THREAD_COUNT; ++index)

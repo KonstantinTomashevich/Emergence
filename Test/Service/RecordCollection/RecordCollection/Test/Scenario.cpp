@@ -68,9 +68,10 @@ ExecutionContext::~ExecutionContext ()
     Context::Extension::ObjectStorage<RepresentationReference>::objects.clear ();
 }
 
-std::vector<std::size_t> CollectVolumetricRepresentationKeyFieldSizes (const VolumetricRepresentation &_representation)
+Container::Vector<std::size_t> CollectVolumetricRepresentationKeyFieldSizes (
+    const VolumetricRepresentation &_representation)
 {
-    std::vector<std::size_t> result;
+    Container::Vector<std::size_t> result;
     for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
     {
         auto dimension = *iterator;
@@ -83,7 +84,7 @@ std::vector<std::size_t> CollectVolumetricRepresentationKeyFieldSizes (const Vol
 
 void IterateOverRepresentations (const ExecutionContext &_context)
 {
-    std::vector<RepresentationReference> known;
+    Container::Vector<RepresentationReference> known;
     for (const auto &[name, representation] :
          _context.Context::Extension::ObjectStorage<RepresentationReference>::objects)
     {
@@ -95,7 +96,7 @@ void IterateOverRepresentations (const ExecutionContext &_context)
         }
     }
 
-    std::vector<RepresentationReference> found;
+    Container::Vector<RepresentationReference> found;
     // During iterations below we will execute some unnecessary operations
     // with iterator to cover more iteration-related operations.
 
@@ -357,7 +358,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+    Container::Vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -369,7 +370,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+    Container::Vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -381,7 +382,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+    Container::Vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -393,7 +394,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    std::vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+    Container::Vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -479,9 +480,9 @@ Task ImportTask (const Query::Test::Task &_task)
         _task);
 }
 
-std::vector<Task> InsertRecords (const Query::Test::Storage &_storage)
+Container::Vector<Task> InsertRecords (const Query::Test::Storage &_storage)
 {
-    std::vector<Task> tasks {OpenAllocator {}};
+    Container::Vector<Task> tasks {OpenAllocator {}};
     for (const void *record : _storage.objectsToInsert)
     {
         tasks.emplace_back (AllocateAndInit {record});
@@ -491,9 +492,9 @@ std::vector<Task> InsertRecords (const Query::Test::Storage &_storage)
     return tasks;
 }
 
-std::vector<Task> CreateRepresentations (const Query::Test::Storage &_storage)
+Container::Vector<Task> CreateRepresentations (const Query::Test::Storage &_storage)
 {
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
     for (const Query::Test::Source &source : _storage.sources)
     {
         std::visit (
@@ -525,7 +526,7 @@ std::vector<Task> CreateRepresentations (const Query::Test::Storage &_storage)
 
 static void ExecuteScenario (const Query::Test::Scenario &_scenario, bool _allocateFirst)
 {
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
     REQUIRE_WITH_MESSAGE (
         _scenario.storages.size () == 1u,
         "Only one-storage tests are supported right now, because record collections are independent.");
@@ -576,7 +577,7 @@ void ForRepresentationReference (const Reference::Test::Scenario &_scenario, con
 {
     REQUIRE (_storage.sources.size () == 1u);
     const std::string representationName = ExtractSourceName (_storage.sources[0u]);
-    std::vector<Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
+    Container::Vector<Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
     tasks += TestQueryApiDrivers::InsertRecords (_storage);
 
     for (const Reference::Test::Task &packedTask : _scenario)
@@ -633,7 +634,7 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
 {
     REQUIRE (_storage.sources.size () == 1u);
     const std::string representationName = ExtractSourceName (_storage.sources[0u]);
-    std::vector<Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
+    Container::Vector<Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
     tasks += TestQueryApiDrivers::InsertRecords (_storage);
 
     for (const Reference::Test::Task &packedTask : _scenario)
@@ -732,7 +733,7 @@ std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario)
     return _output;
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second)
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_first, const Container::Vector<Task> &_second)
 {
     _first.insert (_first.end (), _second.begin (), _second.end ());
     return _first;

@@ -236,7 +236,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
         {
             if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
-                std::vector<const void *> objects;
+                Container::Vector<const void *> objects;
                 while (const void *object = *_cursor)
                 {
                     objects.emplace_back (object);
@@ -245,7 +245,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                 // Brute force counting is the most efficient solution there,
                 // because tests check small vectors of objects, usually not more than 5.
-                auto count = [mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
+                auto count = [mapping] (const Container::Vector<const void *> &_objects, const void *_objectToSearch)
                 {
                     std::size_t count = 0u;
                     for (const void *otherObject : _objects)

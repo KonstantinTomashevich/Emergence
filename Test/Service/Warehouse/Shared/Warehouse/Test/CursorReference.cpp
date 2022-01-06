@@ -22,7 +22,7 @@ static Emergence::StandardLayout::FieldId GetPlayedIdField ()
     return ProjectNestedField (PlayerWithBoundingBox::Reflect ().player, Player::Reflect ().id);
 }
 
-static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
+static Emergence::Container::Vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTestDimensions ()
 {
     using namespace Emergence::Query::Test;
     using namespace Emergence::StandardLayout;
@@ -35,7 +35,7 @@ static std::vector<Emergence::Query::Test::Sources::Volumetric::Dimension> GetTe
              ProjectNestedField (boundingBoxField, BoundingBox::Reflect ().maxY)}};
 }
 
-static std::vector<Emergence::Query::Test::Storage> GetEnvironment ()
+static Emergence::Container::Vector<Emergence::Query::Test::Storage> GetEnvironment ()
 {
     using namespace Emergence::Query::Test;
     return {

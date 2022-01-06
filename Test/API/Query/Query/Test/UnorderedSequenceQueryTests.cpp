@@ -5,7 +5,7 @@ namespace Emergence::Query::Test::UnorderedSequenceQuery
 {
 using namespace Tasks;
 
-Storage RequestStorage (const std::vector<const void *> &_objects)
+Storage RequestStorage (const Container::Vector<const void *> &_objects)
 {
     return {Player::Reflect ().mapping, _objects, {Sources::UnorderedSequence {"sequence"}}};
 }

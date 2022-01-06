@@ -9,6 +9,9 @@ sober_test_begin (StandardLayoutMapping)
     sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE "${CONTAINER_LIBRARY_TARGET}")
 
+    sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_LIBRARY_TARGET)
+    sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
+
     sober_naming_variant_target (StandardLayoutMappingVisualization Original VISUALIZATION_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
 

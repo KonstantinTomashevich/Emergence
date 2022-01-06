@@ -108,15 +108,17 @@ TEST_CASE (IterationFirstItem)
     CHECK_EQUAL (first, *pool.BeginAcquired ());
 }
 
-void CheckPoolIteration (Emergence::Memory::OrderedPool &_pool, const std::vector<void *> &_expectedItems)
+void CheckPoolIteration (Emergence::Memory::OrderedPool &_pool,
+                         const Emergence::Container::Vector<void *> &_expectedItems)
 {
-    std::vector<void *> itemsFromIteration;
+    Emergence::Container::Vector<void *> itemsFromIteration;
     for (void *item : _pool)
     {
         itemsFromIteration.emplace_back (item);
     }
 
-    auto checkPoolItemVectorsEquality = [] (const std::vector<void *> &_first, const std::vector<void *> &_second)
+    auto checkPoolItemVectorsEquality =
+        [] (const Emergence::Container::Vector<void *> &_first, const Emergence::Container::Vector<void *> &_second)
     {
         CHECK_EQUAL (_first.size (), _second.size ());
 

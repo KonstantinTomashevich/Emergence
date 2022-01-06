@@ -35,7 +35,7 @@ struct CreatePointRepresentation
 struct CreateVolumetricRepresentation
 {
     std::string name;
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct CheckIsRepresentationCanBeDropped
@@ -120,10 +120,10 @@ struct Scenario final
     [[nodiscard]] VisualGraph::Graph ExecuteAndVisualize () const;
 
     StandardLayout::Mapping mapping;
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
 };
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second);
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_first, const Container::Vector<Task> &_second);
 } // namespace Emergence::RecordCollection::Test

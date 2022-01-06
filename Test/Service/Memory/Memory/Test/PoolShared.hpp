@@ -1,6 +1,7 @@
-#include <vector>
+#include <Container/Vector.hpp>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 #include <Memory/UniqueString.hpp>
 
 #include <Testing/Testing.hpp>
@@ -33,7 +34,7 @@ struct FullPoolContext
     }
 
     Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem), PAGE_CAPACITY};
-    std::vector<void *> items;
+    Container::Vector<void *> items;
 };
 
 template <typename Pool>

@@ -2,7 +2,10 @@
 
 #include <string>
 #include <variant>
-#include <vector>
+
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 namespace Emergence::Reference::Test
 {
@@ -56,5 +59,5 @@ using Task = std::variant<Tasks::Create,
                           Tasks::Delete,
                           Tasks::CheckStatus>;
 
-using Scenario = std::vector<Task>;
+using Scenario = Container::Vector<Task>;
 } // namespace Emergence::Reference::Test

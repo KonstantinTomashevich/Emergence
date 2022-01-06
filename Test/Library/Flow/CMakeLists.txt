@@ -10,11 +10,12 @@ sober_naming_variant_target (Flow Original FLOW_LIBRARY_TARGET)
 sober_naming_implementation_target (Log SPDLog LOG_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (Memory Original MEMORY_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (MemoryProfiler Original MEMORY_PROFILER_IMPLEMENTATION_TARGET)
+sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 sober_naming_implementation_target (Testing Doctest TESTING_LIBRARY_TARGET)
 
 target_link_libraries (TestFlowOriginal PRIVATE
         ${FLOW_LIBRARY_TARGET} ${LOG_IMPLEMENTATION_TARGET} ${MEMORY_IMPLEMENTATION_TARGET}
-        ${MEMORY_PROFILER_IMPLEMENTATION_TARGET} ${TESTING_LIBRARY_TARGET})
+        ${MEMORY_PROFILER_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_STUB_TARGET} ${TESTING_LIBRARY_TARGET})
 
 # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
 if (MSVC)

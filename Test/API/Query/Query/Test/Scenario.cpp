@@ -56,8 +56,8 @@ std::ostream &operator<< (std::ostream &_output, const Sources::Volumetric::Supp
 } // namespace Sources
 
 Storage::Storage (StandardLayout::Mapping _dataType,
-                  std::vector<const void *> _objectsToInsert,
-                  std::vector<Source> _sources)
+                  Container::Vector<const void *> _objectsToInsert,
+                  Container::Vector<Source> _sources)
 
     : dataType (std::move (_dataType)),
       objectsToInsert (std::move (_objectsToInsert)),
@@ -165,7 +165,7 @@ std::ostream &operator<< (std::ostream &_output, const QueryDescendingRangeToEdi
                    << "\".";
 }
 
-std::ostream &operator<< (std::ostream &_output, const std::vector<Sources::Volumetric::SupportedValue> &_vector)
+std::ostream &operator<< (std::ostream &_output, const Container::Vector<Sources::Volumetric::SupportedValue> &_vector)
 {
     for (auto iterator = _vector.begin (); iterator != _vector.end (); ++iterator)
     {
@@ -323,10 +323,10 @@ Scenario RemapSources (Scenario _scenario, const std::unordered_map<std::string,
     return _scenario;
 }
 
-static std::vector<uint8_t> LayoutVolumetricQueryParameters (
-    const std::vector<Sources::Volumetric::SupportedValue> &_firstSequence,
-    const std::vector<Sources::Volumetric::SupportedValue> &_secondSequence,
-    const std::vector<std::size_t> &_valueSizes)
+static Container::Vector<uint8_t> LayoutVolumetricQueryParameters (
+    const Container::Vector<Sources::Volumetric::SupportedValue> &_firstSequence,
+    const Container::Vector<Sources::Volumetric::SupportedValue> &_secondSequence,
+    const Container::Vector<std::size_t> &_valueSizes)
 {
     REQUIRE (_firstSequence.size () == _valueSizes.size ());
     REQUIRE (_firstSequence.size () == _secondSequence.size ());
@@ -337,7 +337,7 @@ static std::vector<uint8_t> LayoutVolumetricQueryParameters (
         sequenceSize += size * 2u;
     }
 
-    std::vector<uint8_t> sequence (sequenceSize);
+    Container::Vector<uint8_t> sequence (sequenceSize);
     uint8_t *output = &sequence[0u];
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < _valueSizes.size (); ++dimensionIndex)
@@ -358,19 +358,19 @@ static std::vector<uint8_t> LayoutVolumetricQueryParameters (
     return sequence;
 }
 
-std::vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
-                                                             const std::vector<std::size_t> &_valueSizes)
+Container::Vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
+                                                                   const Container::Vector<std::size_t> &_valueSizes)
 {
     return LayoutVolumetricQueryParameters (_query.min, _query.max, _valueSizes);
 }
 
-std::vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
-                                                           const std::vector<std::size_t> &_valueSizes)
+Container::Vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
+                                                                 const Container::Vector<std::size_t> &_valueSizes)
 {
     return LayoutVolumetricQueryParameters (_query.origin, _query.direction, _valueSizes);
 }
 
-std::vector<Task> &operator+= (std::vector<Task> &_left, const std::vector<Task> &_right)
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_left, const Container::Vector<Task> &_right)
 {
     _left.insert (_left.end (), _right.begin (), _right.end ());
     return _left;
