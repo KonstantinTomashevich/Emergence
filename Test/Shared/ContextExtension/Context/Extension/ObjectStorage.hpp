@@ -2,7 +2,10 @@
 
 #include <iostream>
 #include <string>
-#include <unordered_map>
+
+#include <Container/HashMap.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -56,7 +59,7 @@ struct Delete
 template <typename Object>
 struct ObjectStorage
 {
-    std::unordered_map<std::string, Object> objects;
+    Container::HashMap<std::string, Object> objects;
 };
 
 template <typename Object, typename... Types>

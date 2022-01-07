@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <Visual/Graph.hpp>
 
 namespace Emergence::Warehouse::Test

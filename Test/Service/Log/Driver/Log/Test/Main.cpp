@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 #include <Log/Test/Shared.hpp>
@@ -91,7 +92,7 @@ std::size_t CheckLog (std::istream &_input, Level _minimumLevel)
     while (std::getline (_input, line))
     {
         ++lineNumber;
-        std::optional<std::size_t> threadIndex = Test::ExtractThreadIndexFromMessage (line);
+        Emergence::Container::Optional<std::size_t> threadIndex = Test::ExtractThreadIndexFromMessage (line);
 
         if (!threadIndex)
         {

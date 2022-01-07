@@ -9,7 +9,7 @@ std::string AddThreadIndexToMessage (std::size_t _index, const char *_message)
     return THREAD_PREFIX + std::to_string (_index) + "]: " + _message;
 }
 
-std::optional<std::size_t> ExtractThreadIndexFromMessage (const std::string &_message)
+Container::Optional<std::size_t> ExtractThreadIndexFromMessage (const std::string &_message)
 {
     std::size_t index = _message.find (THREAD_PREFIX);
     if (index == std::string::npos)

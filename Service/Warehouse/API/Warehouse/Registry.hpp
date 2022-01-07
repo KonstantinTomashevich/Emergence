@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Container/Vector.hpp>

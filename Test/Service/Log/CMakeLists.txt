@@ -8,6 +8,9 @@ sober_library_begin (TestLogShared STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Shared")
 
+    sober_naming_variant_target (Container Original CONTAINER_LIBRARY)
+    sober_library_link_library (PUBLIC ${CONTAINER_LIBRARY})
+
     sober_library_use_service (EXPECTED PUBLIC Log)
 
     sober_variant_begin (Original)

@@ -1,10 +1,9 @@
 #pragma once
 
-#include <unordered_set>
-
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/World.hpp>
 
+#include <Container/HashSet.hpp>
 #include <Container/Vector.hpp>
 
 #include <Flow/TaskRegister.hpp>
@@ -131,7 +130,7 @@ private:
 
     World *world;
     Flow::TaskRegister taskRegister;
-    std::unordered_set<Memory::UniqueString> registeredResources;
+    Container::HashSet<Memory::UniqueString> registeredResources;
 };
 
 template <typename Successor>

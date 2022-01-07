@@ -1,7 +1,7 @@
 #include <cstring>
-#include <optional>
 #include <sstream>
-#include <unordered_map>
+
+#include <Container/Optional.hpp>
 
 #include <Query/Test/CursorStorage.hpp>
 #include <Query/Test/DataTypes.hpp>
@@ -54,7 +54,7 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Represe
     ExecutionContext &operator= (ExecutionContext &&_other) = delete;
 
     Collection collection;
-    std::optional<Collection::Allocator> collectionAllocator;
+    Container::Optional<Collection::Allocator> collectionAllocator;
 };
 
 ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping) : collection (_typeMapping)

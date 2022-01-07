@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <Query/Test/DataTypes.hpp>
 
 namespace Emergence::Query::Test

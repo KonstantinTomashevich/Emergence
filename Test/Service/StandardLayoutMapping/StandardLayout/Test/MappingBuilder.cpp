@@ -1,7 +1,7 @@
 #include <ostream>
-#include <unordered_set>
 #include <variant>
 
+#include <Container/HashSet.hpp>
 #include <Container/Vector.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
@@ -199,7 +199,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
 {
     Mapping mapping = Grow (_seed, _builder);
     CHECK_EQUAL (_seed.name, mapping.GetName ());
-    std::unordered_set<FieldId> idsFound;
+    Container::HashSet<FieldId> idsFound;
 
     for (FieldSeed &packedSeed : _seed.fields)
     {

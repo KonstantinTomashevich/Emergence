@@ -1,7 +1,8 @@
 #include <bitset>
 #include <cassert>
-#include <optional>
-#include <unordered_map>
+
+#include <Container/HashMap.hpp>
+#include <Container/Optional.hpp>
 
 #include <Flow/Constants.hpp>
 #include <Flow/TaskRegister.hpp>
@@ -22,7 +23,7 @@ Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept
 class TaskGraph final
 {
 public:
-    static std::optional<TaskGraph> Build (const TaskRegister &_register) noexcept;
+    static Container::Optional<TaskGraph> Build (const TaskRegister &_register) noexcept;
 
     [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
@@ -30,7 +31,7 @@ private:
     struct Node final
     {
         Memory::UniqueString name;
-        std::optional<std::size_t> sourceTaskIndex;
+        Container::Optional<std::size_t> sourceTaskIndex;
         std::bitset<MAX_RESOURCES> readAccess;
         std::bitset<MAX_RESOURCES> writeAccess;
     };
@@ -44,12 +45,12 @@ private:
     Container::Vector<Container::Vector<std::size_t>> edges {GetDefaultAllocationGroup ()};
 };
 
-std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexcept
+Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexcept
 {
     bool noErrors = true;
     TaskGraph graph;
     graph.source = &_register;
-    std::unordered_map<Memory::UniqueString, std::size_t> nameToNodeIndex;
+    Container::HashMap<Memory::UniqueString, std::size_t> nameToNodeIndex {GetDefaultAllocationGroup ()};
 
     for (Memory::UniqueString checkpoint : _register.checkpoints)
     {
@@ -64,7 +65,7 @@ std::optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) noexce
         }
     }
 
-    std::unordered_map<Memory::UniqueString, std::size_t> resourceNameToIndex;
+    Container::HashMap<Memory::UniqueString, std::size_t> resourceNameToIndex {GetDefaultAllocationGroup ()};
     for (std::size_t index = 0u; index < _register.resources.size (); ++index)
     {
         resourceNameToIndex.emplace (_register.resources[index], index);
@@ -472,7 +473,7 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
 Emergence::Task::Collection TaskRegister::ExportCollection () const noexcept
 {
-    if (std::optional<TaskGraph> graph = TaskGraph::Build (*this))
+    if (Container::Optional<TaskGraph> graph = TaskGraph::Build (*this))
     {
         return graph.value ().ExportCollection ();
     }

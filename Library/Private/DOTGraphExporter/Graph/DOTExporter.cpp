@@ -25,7 +25,7 @@ bool Context::IsIdValid (const std::string &_id) noexcept
 
 bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 {
-    std::unordered_set<std::string> usedIds;
+    Container::HashSet<std::string> usedIds {VisualGraph::GetDefaultAllocationGroup ()};
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
         if (!IsIdValid (subgraph.id))
@@ -61,9 +61,9 @@ Context::Context (std::ostream &_output) : output (_output)
 {
 }
 
-std::optional<std::unordered_set<std::string>> Context::Process (const VisualGraph::Graph &_graph,
-                                                                 std::string _pathPrefix,
-                                                                 const std::string &_outerIndentation)
+Container::Optional<Container::HashSet<std::string>> Context::Process (const VisualGraph::Graph &_graph,
+                                                                       std::string _pathPrefix,
+                                                                       const std::string &_outerIndentation)
 {
     if (!CheckIds (_graph))
     {
@@ -85,12 +85,12 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
     }
 
     output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
-    std::unordered_set<std::string> relativePaths;
+    Container::HashSet<std::string> relativePaths {VisualGraph::GetDefaultAllocationGroup ()};
     _pathPrefix += _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
 
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        std::optional<std::unordered_set<std::string>> subgraphRelativePaths =
+        Container::Optional<Container::HashSet<std::string>> subgraphRelativePaths =
             Process (subgraph, _pathPrefix, indentation);
 
         if (!subgraphRelativePaths)

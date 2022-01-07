@@ -2,11 +2,10 @@
 
 #include <atomic>
 #include <functional>
-#include <unordered_set>
-#include <vector>
 
 #include <API/Common/Cursor.hpp>
 
+#include <Container/HashMultiSet.hpp>
 #include <Container/InplaceVector.hpp>
 #include <Container/Vector.hpp>
 
@@ -92,7 +91,7 @@ private:
         HashIndex *owner;
     };
 
-    using RecordHashSet = std::unordered_multiset<const void *, Hasher, Comparator, Memory::HeapSTD<const void *>>;
+    using RecordHashSet = Container::HashMultiSet<const void *, Hasher, Comparator>;
 
     explicit HashIndex (Storage *_owner,
                         std::size_t _initialBuckets,

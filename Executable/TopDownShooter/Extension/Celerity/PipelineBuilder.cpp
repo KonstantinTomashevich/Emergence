@@ -165,7 +165,9 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
     task.name = _name;
 }
 
-PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept : world (_targetWorld)
+PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
+    : world (_targetWorld),
+      registeredResources (world->pipelineHeap)
 {
     assert (world);
 }

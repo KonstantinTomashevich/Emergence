@@ -1,5 +1,4 @@
 #include <thread>
-#include <vector>
 
 #include <Container/Vector.hpp>
 

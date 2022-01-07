@@ -1,8 +1,8 @@
 #pragma once
 
-#include <optional>
 #include <string>
 
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 namespace Emergence
@@ -22,7 +22,7 @@ struct Node
     std::string id;
 
     /// \brief Custom label for node. If empty, ::id will be used instead.
-    std::optional<std::string> label;
+    Container::Optional<std::string> label;
 
     bool operator== (const Node &_other) const = default;
 };
@@ -39,7 +39,7 @@ struct Edge
     std::string to;
 
     /// \brief Specifies custom fill color for this edge.
-    std::optional<std::string> color;
+    Container::Optional<std::string> color;
 
     bool operator== (const Edge &_other) const = default;
 };
@@ -87,7 +87,7 @@ struct Graph
     std::string id;
 
     /// \brief Custom label for graph. If empty, ::id will be used instead.
-    std::optional<std::string> label;
+    Container::Optional<std::string> label;
 
     /// \brief Child graphs, that should be drawn as internal clusters.
     Container::Vector<Graph> subgraphs;
@@ -101,6 +101,8 @@ struct Graph
 
     bool operator== (const Graph &_other) const = default;
 };
+
+Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
 
 /// \brief Contains common constants for graphs, that are created from Emergence libraries and services.
 namespace Common::Constants

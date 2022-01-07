@@ -1,7 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <cassert>
-#include <unordered_set>
+
+#include <Container/HashSet.hpp>
 
 #include <Memory/Original/UniqueString.hpp>
 #include <Memory/Stack.hpp>
@@ -43,7 +44,7 @@ static const char *RegisterValue (const std::string_view &_value)
         static auto *lastStack = new (stacksPool.Acquire ()) Stack (allocationGroup, STRING_STACK_SIZE);
 
         // Right now we use unordered set for simplicity.
-        static std::unordered_set<std::string_view> stringRegister;
+        static Container::HashSet<std::string_view> stringRegister {allocationGroup};
 
         auto iterator = stringRegister.find (_value);
         if (iterator == stringRegister.end ())

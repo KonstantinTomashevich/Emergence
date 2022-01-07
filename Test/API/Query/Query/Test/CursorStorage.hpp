@@ -2,7 +2,6 @@
 
 #include <cstring>
 #include <string>
-#include <unordered_map>
 
 #include <Context/Extension/ObjectStorage.hpp>
 

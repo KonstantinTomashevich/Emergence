@@ -5,6 +5,8 @@
 #include <cassert>
 #include <memory>
 
+#include <Container/Optional.hpp>
+
 #include <Log/Log.hpp>
 
 #include <spdlog/sinks/basic_file_sink.h>
@@ -142,7 +144,7 @@ void Logger::Log (Level _level, const std::string &_message) noexcept
 
 namespace GlobalLogger
 {
-static std::optional<Logger> globalLogger = std::nullopt;
+static Container::Optional<Logger> globalLogger;
 
 void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 {

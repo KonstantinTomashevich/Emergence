@@ -1,5 +1,4 @@
 #include <sstream>
-#include <unordered_map>
 #include <variant>
 
 #include <Context/Extension/ObjectStorage.hpp>

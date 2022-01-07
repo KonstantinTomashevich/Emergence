@@ -1,6 +1,5 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
-#include <unordered_map>
 #include <variant>
 
 BEGIN_MUTING_WARNINGS

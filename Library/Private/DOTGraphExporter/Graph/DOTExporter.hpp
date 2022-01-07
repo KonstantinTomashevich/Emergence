@@ -1,10 +1,10 @@
 #pragma once
 
-#include <optional>
 #include <ostream>
 #include <string>
-#include <unordered_set>
 
+#include <Container/HashSet.hpp>
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 #include <Visual/Graph.hpp>
@@ -28,9 +28,9 @@ private:
 
     /// \brief Exports given graph and its subgraphs to ::output.
     /// \return If export was done successfully, returns set of all existing node relative paths for this graph.
-    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_graph,
-                                                            std::string _pathPrefix = "",
-                                                            const std::string &_outerIndentation = "");
+    Container::Optional<Container::HashSet<std::string>> Process (const VisualGraph::Graph &_graph,
+                                                                  std::string _pathPrefix = "",
+                                                                  const std::string &_outerIndentation = "");
 
     std::ostream &output;
 

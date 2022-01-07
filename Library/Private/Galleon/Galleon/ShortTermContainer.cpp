@@ -17,6 +17,7 @@ void *ShortTermContainer::InsertQuery::Cursor::operator++ () noexcept
 {
     assert (container);
     void *record = container->pool.Acquire ();
+    auto placeholder = container->pool.GetAllocationGroup ().PlaceOnTop ();
     container->typeMapping.Construct (record);
     return container->objects.emplace_back (record);
 }

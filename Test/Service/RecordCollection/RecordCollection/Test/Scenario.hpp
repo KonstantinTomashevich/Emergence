@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <string>
 #include <variant>
-#include <vector>
 
 #include <Context/Extension/ObjectStorage.hpp>
 

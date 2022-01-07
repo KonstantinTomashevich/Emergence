@@ -1,23 +1,33 @@
 #include <Visual/Graph.hpp>
 
-namespace Emergence::Memory
+namespace Emergence
 {
-using namespace Literals;
+namespace VisualGraph
+{
+static const Memory::Profiler::AllocationGroup ALLOCATION_GROUP (Memory::Profiler::AllocationGroup::Root (),
+                                                                 Memory::UniqueString {"VisualGraph"});
 
-static const Profiler::AllocationGroup ALLOCATION_GROUP (Profiler::AllocationGroup::Root (), "VisualGraph"_us);
-
-Profiler::AllocationGroup DefaultAllocationGroup<VisualGraph::Node>::Get () noexcept
+Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept
 {
     return ALLOCATION_GROUP;
+}
+} // namespace VisualGraph
+
+namespace Memory
+{
+Profiler::AllocationGroup DefaultAllocationGroup<VisualGraph::Node>::Get () noexcept
+{
+    return VisualGraph::ALLOCATION_GROUP;
 }
 
 Profiler::AllocationGroup DefaultAllocationGroup<VisualGraph::Edge>::Get () noexcept
 {
-    return ALLOCATION_GROUP;
+    return VisualGraph::ALLOCATION_GROUP;
 }
 
 Profiler::AllocationGroup DefaultAllocationGroup<VisualGraph::Graph>::Get () noexcept
 {
-    return ALLOCATION_GROUP;
+    return VisualGraph::ALLOCATION_GROUP;
 }
-} // namespace Emergence::Memory
+} // namespace Memory
+} // namespace Emergence

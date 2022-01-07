@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <API/Common/Cursor.hpp>
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>

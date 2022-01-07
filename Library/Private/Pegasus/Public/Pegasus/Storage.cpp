@@ -352,6 +352,7 @@ void *Storage::AllocateRecord () noexcept
     assert (writers == 1u);
 
     void *record = records.Acquire ();
+    auto placeholder = records.GetAllocationGroup ().PlaceOnTop ();
     recordMapping.Construct (record);
     return record;
 }

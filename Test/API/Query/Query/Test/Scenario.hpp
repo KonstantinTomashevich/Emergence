@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 #include <string>
-#include <unordered_map>
 #include <variant>
 
+#include <Container/HashMap.hpp>
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -310,11 +310,11 @@ struct Scenario final
 
 /// \brief Query-type agnostic renaming is widely used in tests, therefore it was extracted to utility function.
 Task ChangeQuerySourceAndCursor (Task _query,
-                                 std::optional<std::string> _newSourceName,
-                                 std::optional<std::string> _newCursorName);
+                                 Container::Optional<std::string> _newSourceName,
+                                 Container::Optional<std::string> _newCursorName);
 
 /// \brief Renames sources and all their usages according to given transformation map.
-Scenario RemapSources (Scenario _scenario, const std::unordered_map<std::string, std::string> &_transformation);
+Scenario RemapSources (Scenario _scenario, const Container::HashMap<std::string, std::string> &_transformation);
 
 /// \brief Lays out min-max arrays as sequence of min-max pairs.
 /// \details Because test drivers usually do not keep info about storages,

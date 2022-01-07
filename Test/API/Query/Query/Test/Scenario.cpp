@@ -256,8 +256,8 @@ std::ostream &operator<< (std::ostream &_output, const CursorClose &_task)
 } // namespace Tasks
 
 Task ChangeQuerySourceAndCursor (Task _query,
-                                 std::optional<std::string> _newSourceName,
-                                 std::optional<std::string> _newCursorName)
+                                 Container::Optional<std::string> _newSourceName,
+                                 Container::Optional<std::string> _newCursorName)
 {
     std::visit (
         [&_newSourceName, &_newCursorName] (auto &_task)
@@ -284,7 +284,7 @@ Task ChangeQuerySourceAndCursor (Task _query,
     return _query;
 }
 
-Scenario RemapSources (Scenario _scenario, const std::unordered_map<std::string, std::string> &_transformation)
+Scenario RemapSources (Scenario _scenario, const Container::HashMap<std::string, std::string> &_transformation)
 {
     for (Storage &storage : _scenario.storages)
     {
