@@ -7,6 +7,7 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/UniqueString.hpp>
 
 namespace Emergence::Memory::Profiler
@@ -21,18 +22,13 @@ enum class EventType
 
 struct Event final
 {
-    // TODO: We can not just use group IDs, because they are hierarchical.
-    uint64_t groupUID = 0u;
+    AllocationGroup allocationGroup;
 
     EventType type = EventType::ALLOCATE;
 
     size_t bytes = 0u;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> time;
-
-    Event *next = nullptr;
-
-    size_t startOfCapture = 0u;
 };
 
 class CapturedGroup final
@@ -75,6 +71,20 @@ private:
 class Capture
 {
 public:
+    class Iterator final
+    {
+    public:
+        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, const Event *);
+
+    private:
+        /// CapturedGroup constructs iterators.
+        friend class CapturedGroup;
+
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    };
+
     Capture () noexcept;
 
     /// Copying captures seems counter-intuitive.
@@ -84,21 +94,13 @@ public:
 
     ~Capture () = default;
 
-    const Event &EventBegin () const noexcept;
-
-    const Event &EventCurrent () const noexcept;
-
-    const Event *GoToNextEvent () noexcept;
-
-    const Event *GoToPreviousEvent () noexcept;
-
     CapturedGroup InitialRoot () const noexcept;
 
-    CapturedGroup GetInitialGroupByUID (uint64_t _uid) const noexcept;
+    const Iterator &BeginEvents () const noexcept;
 
-    CapturedGroup CurrentRoot () const noexcept;
+    const Iterator &EndEvents () const noexcept;
 
-    CapturedGroup GetCurrentGroupByUID (uint64_t _uid) const noexcept;
+    const Event *PollNextEvent () noexcept;
 
     /// Assigning captures seems counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Capture);

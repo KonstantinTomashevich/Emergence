@@ -33,7 +33,7 @@ public:
         EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, AllocationGroup);
 
     private:
-        /// AllocationGroupconstructs iterators.
+        /// AllocationGroup constructs iterators.
         friend class AllocationGroup;
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
@@ -70,11 +70,9 @@ public:
 
     void Free (size_t _bytesCount) noexcept;
 
-    // TODO: Const iteration?
+    [[nodiscard]] Iterator BeginChildren () const noexcept;
 
-    [[nodiscard]] Iterator BeginChildren () noexcept;
-
-    [[nodiscard]] Iterator EndChildren () noexcept;
+    [[nodiscard]] Iterator EndChildren () const noexcept;
 
     [[nodiscard]] UniqueString GetId () const noexcept;
 
@@ -84,9 +82,15 @@ public:
 
     [[nodiscard]] size_t GetTotal () const noexcept;
 
+    [[nodiscard]] uintptr_t Hash () const noexcept;
+
     AllocationGroup &operator= (const AllocationGroup &_other) noexcept;
 
     AllocationGroup &operator= (AllocationGroup &&_other) noexcept;
+
+    bool operator== (const AllocationGroup &_other) const noexcept;
+
+    bool operator!= (const AllocationGroup &_other) const noexcept;
 
 private:
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
@@ -94,3 +98,15 @@ private:
     explicit AllocationGroup (void *_handle) noexcept;
 };
 } // namespace Emergence::Memory::Profiler
+
+namespace std
+{
+template <>
+struct hash<Emergence::Memory::Profiler::AllocationGroup>
+{
+    std::size_t operator() (const Emergence::Memory::Profiler::AllocationGroup &_group) const noexcept
+    {
+        return static_cast<std::size_t> (_group.Hash ());
+    }
+};
+} // namespace std

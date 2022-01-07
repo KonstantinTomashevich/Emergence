@@ -123,12 +123,12 @@ void AllocationGroup::Free ([[maybe_unused]] size_t _bytesCount) noexcept
 {
 }
 
-AllocationGroup::Iterator AllocationGroup::BeginChildren () noexcept
+AllocationGroup::Iterator AllocationGroup::BeginChildren () const noexcept
 {
     return AllocationGroup::Iterator (nullptr);
 }
 
-AllocationGroup::Iterator AllocationGroup::EndChildren () noexcept
+AllocationGroup::Iterator AllocationGroup::EndChildren () const noexcept
 {
     return AllocationGroup::Iterator (nullptr);
 }
