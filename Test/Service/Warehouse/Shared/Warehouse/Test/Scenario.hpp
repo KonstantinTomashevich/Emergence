@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
+
+#include <Container/String.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -22,7 +23,7 @@ using namespace Context::Extension::Tasks;
 struct QueryPreparationBase
 {
     StandardLayout::Mapping typeMapping;
-    std::string queryName;
+    Container::String queryName;
 };
 
 struct PrepareFetchSingletonQuery : public QueryPreparationBase
@@ -101,7 +102,7 @@ struct PrepareModifyRayIntersectionQuery : public QueryPreparationBase
 
 struct InsertObjects
 {
-    std::string name;
+    Container::String name;
     Container::Vector<const void *> copyFrom;
 };
 

@@ -2,11 +2,12 @@
 
 namespace Emergence::RecordCollection::Visualization
 {
+using namespace Container::Literals;
 using namespace VisualGraph::Common::Constants;
 
-static std::string GetPathToMappings ()
+static Container::String GetPathToMappings ()
 {
-    return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
+    return Container::String (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
            VisualGraph::NODE_PATH_SEPARATOR;
 }
 
@@ -90,29 +91,29 @@ VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresenta
     for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
     {
         VolumetricRepresentation::DimensionIterator::Dimension dimension = *iterator;
-        graph.edges.emplace_back (
-            ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (), *dimension.minField.GetName ()));
+        graph.edges.emplace_back (ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (),
+                                                                *dimension.minField.GetName ()));
 
-        graph.edges.emplace_back (
-            ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (), *dimension.maxField.GetName ()));
+        graph.edges.emplace_back (ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (),
+                                                                *dimension.maxField.GetName ()));
     }
 
     return graph;
 }
 
-std::string GraphId (const Collection &_collection)
+Container::String GraphId (const Collection &_collection)
 {
-    return std::string ("RecordCollection {") + *_collection.GetTypeMapping ().GetName () + "}";
+    return "RecordCollection {"_s + *_collection.GetTypeMapping ().GetName () + "}";
 }
 
-std::string GraphId (const LinearRepresentation &_representation)
+Container::String GraphId (const LinearRepresentation &_representation)
 {
-    return std::string ("LinearRepresentation {") + *_representation.GetKeyField ().GetName () + "}";
+    return "LinearRepresentation {"_s + *_representation.GetKeyField ().GetName () + "}";
 }
 
-std::string GraphId (const PointRepresentation &_representation)
+Container::String GraphId (const PointRepresentation &_representation)
 {
-    std::string id = "PointRepresentation {";
+    Container::String id = "PointRepresentation {";
     bool firstKeyField = true;
 
     for (auto iterator = _representation.KeyFieldBegin (); iterator != _representation.KeyFieldEnd (); ++iterator)
@@ -132,9 +133,9 @@ std::string GraphId (const PointRepresentation &_representation)
     return id + "}";
 }
 
-std::string GraphId (const VolumetricRepresentation &_representation)
+Container::String GraphId (const VolumetricRepresentation &_representation)
 {
-    std::string id = "VolumetricRepresentation {";
+    Container::String id = "VolumetricRepresentation {";
     bool firstDimension = true;
 
     for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
@@ -149,7 +150,7 @@ std::string GraphId (const VolumetricRepresentation &_representation)
         }
 
         VolumetricRepresentation::DimensionIterator::Dimension dimension = *iterator;
-        id += std::string ("{") + *dimension.minField.GetName () + ", " + *dimension.maxField.GetName () + "}";
+        id += "{"_s + *dimension.minField.GetName () + ", " + *dimension.maxField.GetName () + "}";
     }
 
     return id + "}";

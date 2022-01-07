@@ -2,17 +2,17 @@
 
 namespace Emergence::Log::Test
 {
-static const std::string THREAD_PREFIX = "[Thread ";
+static const Container::String THREAD_PREFIX = "[Thread ";
 
-std::string AddThreadIndexToMessage (std::size_t _index, const char *_message)
+Container::String AddThreadIndexToMessage (std::size_t _index, const char *_message)
 {
-    return THREAD_PREFIX + std::to_string (_index) + "]: " + _message;
+    return THREAD_PREFIX + Container::ToString (_index) + "]: " + _message;
 }
 
-Container::Optional<std::size_t> ExtractThreadIndexFromMessage (const std::string &_message)
+Container::Optional<std::size_t> ExtractThreadIndexFromMessage (const Container::String &_message)
 {
     std::size_t index = _message.find (THREAD_PREFIX);
-    if (index == std::string::npos)
+    if (index == Container::String::npos)
     {
         return std::nullopt;
     }

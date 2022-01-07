@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <variant>
+
+#include <Container/String.hpp>
 
 #include <Container/Vector.hpp>
 
@@ -13,36 +14,36 @@ namespace Tasks
 {
 struct Create
 {
-    std::string name;
+    Container::String name;
 };
 
 struct Move
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 struct Copy
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 struct MoveAssign
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 struct CopyAssign
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 struct Delete
 {
-    std::string name;
+    Container::String name;
 };
 
 struct CheckStatus

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
+
+#include <Container/String.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -21,31 +22,31 @@ using namespace Context::Extension::Tasks;
 
 struct CreateLinearRepresentation
 {
-    std::string name;
+    Container::String name;
     StandardLayout::FieldId keyField;
 };
 
 struct CreatePointRepresentation
 {
-    std::string name;
+    Container::String name;
     Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct CreateVolumetricRepresentation
 {
-    std::string name;
+    Container::String name;
     Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct CheckIsRepresentationCanBeDropped
 {
-    std::string name;
+    Container::String name;
     bool expected = false;
 };
 
 struct DropRepresentation
 {
-    std::string name;
+    Container::String name;
 };
 
 struct OpenAllocator

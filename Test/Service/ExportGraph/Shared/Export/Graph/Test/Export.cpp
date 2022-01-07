@@ -1,5 +1,7 @@
 #include <sstream>
 
+#include <Container/String.hpp>
+
 #include <Export/Graph.hpp>
 #include <Export/Graph/Test/Expectation.hpp>
 #include <Export/Graph/Test/Export.hpp>
@@ -38,7 +40,7 @@ static VisualGraph::Graph TwoConnectedNodesAndLabels ()
             }};
 }
 
-static VisualGraph::Graph ChangeId (VisualGraph::Graph _graph, std::string _newId)
+static VisualGraph::Graph ChangeId (VisualGraph::Graph _graph, Container::String _newId)
 {
     _graph.id = std::move (_newId);
     return _graph;
@@ -176,7 +178,7 @@ BEGIN_SUITE (Export)
         std::stringstream stream;                                                                                      \
         const bool exported = Export (Case::Name (), stream);                                                          \
         CHECK (exported);                                                                                              \
-        CHECK_EQUAL (stream.str (), Expectation::Name ());                                                             \
+        CHECK_EQUAL (stream.str (), Expectation::Name ().c_str ());                                                    \
     }
 
 POSITIVE_CASE (TwoConnectedNodes)

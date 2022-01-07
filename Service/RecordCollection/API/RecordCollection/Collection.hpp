@@ -13,9 +13,7 @@
 #include <RecordCollection/PointRepresentation.hpp>
 #include <RecordCollection/VolumetricRepresentation.hpp>
 
-namespace Emergence
-{
-namespace RecordCollection
+namespace Emergence::RecordCollection
 {
 /// \brief Stores records of the same type and provides fast lookup using representations.
 class Collection final
@@ -184,15 +182,6 @@ public:
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 };
-} // namespace RecordCollection
+} // namespace Emergence::RecordCollection
 
-namespace Memory
-{
-/// \brief Default allocation group for dimension descriptors.
-template <>
-struct DefaultAllocationGroup<RecordCollection::Collection::DimensionDescriptor>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-} // namespace Memory
-} // namespace Emergence
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::RecordCollection::Collection::DimensionDescriptor)

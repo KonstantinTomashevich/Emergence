@@ -56,50 +56,50 @@ VisualGraph::Graph GraphFromQuery (const ModifySingletonQuery &_query);
 VisualGraph::Graph GraphFromQuery (const ModifyValueQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchAscendingRangeQuery &_query);
+Container::String GraphId (const FetchAscendingRangeQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchDescendingRangeQuery &_query);
+Container::String GraphId (const FetchDescendingRangeQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchRayIntersectionQuery &_query);
+Container::String GraphId (const FetchRayIntersectionQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchSequenceQuery &_query);
+Container::String GraphId (const FetchSequenceQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchShapeIntersectionQuery &_query);
+Container::String GraphId (const FetchShapeIntersectionQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchSingletonQuery &_query);
+Container::String GraphId (const FetchSingletonQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const FetchValueQuery &_query);
+Container::String GraphId (const FetchValueQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const InsertLongTermQuery &_query);
+Container::String GraphId (const InsertLongTermQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const InsertShortTermQuery &_query);
+Container::String GraphId (const InsertShortTermQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifyAscendingRangeQuery &_query);
+Container::String GraphId (const ModifyAscendingRangeQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifyDescendingRangeQuery &_query);
+Container::String GraphId (const ModifyDescendingRangeQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifyRayIntersectionQuery &_query);
+Container::String GraphId (const ModifyRayIntersectionQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifySequenceQuery &_query);
+Container::String GraphId (const ModifySequenceQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifyShapeIntersectionQuery &_query);
+Container::String GraphId (const ModifyShapeIntersectionQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifySingletonQuery &_query);
+Container::String GraphId (const ModifySingletonQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
-std::string GraphId (const ModifyValueQuery &_query);
+Container::String GraphId (const ModifyValueQuery &_query);
 } // namespace Emergence::Warehouse::Visualization

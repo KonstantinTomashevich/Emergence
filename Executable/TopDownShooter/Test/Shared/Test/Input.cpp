@@ -6,6 +6,7 @@ BEGIN_MUTING_WARNINGS
 #include <OgreInput.h>
 END_MUTING_WARNINGS
 
+#include <Container/String.hpp>
 #include <Container/Vector.hpp>
 
 #include <Log/Log.hpp>
@@ -26,6 +27,8 @@ END_MUTING_WARNINGS
 
 using namespace Emergence::Celerity;
 
+using namespace Emergence::Container;
+using namespace Emergence::Container::Literals;
 using namespace Emergence::Memory::Literals;
 
 bool InputTestIncludeMarker () noexcept
@@ -107,7 +110,7 @@ void Configurator::Execute ()
     REQUIRE (framesConfigured < steps.size ());
     // TODO: In tests it's ok to create myriads of strings just for logging.
     //       But for runtime logging we need special stack allocator which is cleared every frame.
-    GlobalLogger::Log (Level::INFO, "[Configurator] Sequence " + std::to_string (framesConfigured));
+    GlobalLogger::Log (Level::INFO, "[Configurator] Sequence " + ToString (framesConfigured));
 
     for (const ConfiguratorStep &step : steps[framesConfigured])
     {
@@ -117,16 +120,14 @@ void Configurator::Execute ()
                 using Type = std::decay_t<decltype (_step)>;
                 if constexpr (std::is_same_v<Type, Steps::CreateListener>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       "[Configurator] Create listener " + std::to_string (_step.id) + ".");
+                    GlobalLogger::Log (Level::INFO, "[Configurator] Create listener " + ToString (_step.id) + ".");
 
                     auto cursor = createListener.Execute ();
                     (new (++cursor) InputListenerObject ())->objectId = _step.id;
                 }
                 else if constexpr (std::is_same_v<Type, Steps::DeleteListener>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       "[Configurator] Delete listener " + std::to_string (_step.id) + ".");
+                    GlobalLogger::Log (Level::INFO, "[Configurator] Delete listener " + ToString (_step.id) + ".");
 
                     auto cursor = modifyListenerById.Execute (&_step.id);
                     REQUIRE (*cursor != nullptr);
@@ -136,8 +137,8 @@ void Configurator::Execute ()
                 else if constexpr (std::is_same_v<Type, Steps::AddSubscription>)
                 {
                     GlobalLogger::Log (Level::INFO, "[Configurator] Subscribe listener " +
-                                                        std::to_string (_step.subscription.listenerId) +
-                                                        " to group \"" + *_step.subscription.group + "\".");
+                                                        ToString (_step.subscription.listenerId) + " to group \"" +
+                                                        *_step.subscription.group + "\".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
@@ -145,8 +146,7 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeListener>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       "[Configurator] Unsubscribe listener " + std::to_string (_step.id) + ".");
+                    GlobalLogger::Log (Level::INFO, "[Configurator] Unsubscribe listener " + ToString (_step.id) + ".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
@@ -154,9 +154,8 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeGroup>)
                 {
-                    GlobalLogger::Log (
-                        Level::INFO,
-                        std::string ("[Configurator] Unsubscribe all listeners from group \"") + *_step.id + "\".");
+                    GlobalLogger::Log (Level::INFO,
+                                       "[Configurator] Unsubscribe all listeners from group \""_s + *_step.id + "\".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
@@ -165,7 +164,7 @@ void Configurator::Execute ()
                 else if constexpr (std::is_same_v<Type, Steps::FireEvent>)
                 {
                     GlobalLogger::Log (Level::INFO, "[Configurator] Fire event with type " +
-                                                        std::to_string (_step.event.key.type) + " for character " +
+                                                        ToString (_step.event.key.type) + " for character " +
                                                         static_cast<char> (_step.event.key.keysym.sym) + ".");
 
                     SharedApplicationContext::Get ()->_fireInputEvent (_step.event, 0u);

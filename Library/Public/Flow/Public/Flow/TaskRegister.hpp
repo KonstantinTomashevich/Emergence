@@ -6,8 +6,8 @@
 
 #include <Container/Vector.hpp>
 
-#include <Memory/UniqueString.hpp>
 #include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/UniqueString.hpp>
 
 #include <Task/Collection.hpp>
 
@@ -28,17 +28,17 @@ struct Task
     std::function<void ()> executor;
 
     /// \brief Names of resources, that are read by this task.
-    Container::Vector<Memory::UniqueString> readAccess {GetDefaultAllocationGroup()};
+    Container::Vector<Memory::UniqueString> readAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of resources, that are modified by this task.
     /// \invariant If task both reads and modifies one resources, this resource should only be added to ::writeAccess.
-    Container::Vector<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup()};
+    Container::Vector<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, on which this task depends.
-    Container::Vector<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup()};
+    Container::Vector<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, to which this task injects itself as dependency.
-    Container::Vector<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup()};
+    Container::Vector<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
 };
 
 /// \brief Allows user to register tasks and export result as task collection or visual graph.
@@ -47,15 +47,15 @@ class TaskRegister final
 {
 public:
     // We use classic strings here, because there is no need to waste unique string stack for visualization-only data.
-    inline static const std::string VISUAL_ROOT_GRAPH_ID = "TaskGraph";
-    inline static const std::string VISUAL_RESOURCE_GRAPH_ID = "Resources";
-    inline static const std::string VISUAL_PIPELINE_GRAPH_ID = "Pipeline";
+    inline static const Container::String VISUAL_ROOT_GRAPH_ID = "TaskGraph";
+    inline static const Container::String VISUAL_RESOURCE_GRAPH_ID = "Resources";
+    inline static const Container::String VISUAL_PIPELINE_GRAPH_ID = "Pipeline";
 
-    inline static const std::string VISUAL_TASK_LABEL_SUFFIX = " (Task)";
-    inline static const std::string VISUAL_CHECKPOINT_LABEL_SUFFIX = " (Checkpoint)";
+    inline static const Container::String VISUAL_TASK_LABEL_SUFFIX = " (Task)";
+    inline static const Container::String VISUAL_CHECKPOINT_LABEL_SUFFIX = " (Checkpoint)";
 
-    inline static const std::string VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
-    inline static const std::string VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
+    inline static const Container::String VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
+    inline static const Container::String VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
 
     TaskRegister () = default;
 
@@ -100,8 +100,8 @@ private:
 
     void AssertNodeNameUniqueness (Memory::UniqueString _name) const noexcept;
 
-    Container::Vector<Task> tasks {GetDefaultAllocationGroup()};
-    Container::Vector<Memory::UniqueString> checkpoints {GetDefaultAllocationGroup()};
-    Container::Vector<Memory::UniqueString> resources {GetDefaultAllocationGroup()};
+    Container::Vector<Task> tasks {GetDefaultAllocationGroup ()};
+    Container::Vector<Memory::UniqueString> checkpoints {GetDefaultAllocationGroup ()};
+    Container::Vector<Memory::UniqueString> resources {GetDefaultAllocationGroup ()};
 };
 } // namespace Emergence::Flow

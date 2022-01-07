@@ -30,7 +30,7 @@ public:
 
     ~LoggerImplementation () noexcept = default;
 
-    void Log (Level _level, const std::string &_message) noexcept;
+    void Log (Level _level, const Container::String &_message) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (LoggerImplementation);
 
@@ -95,7 +95,8 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const Container
                 }
                 else if constexpr (std::is_same_v<Sinks::File, std::decay_t<decltype (_config)>>)
                 {
-                    addSink (std::make_shared<spdlog::sinks::basic_file_sink_st> (_config.fileName, _config.overwrite));
+                    addSink (std::make_shared<spdlog::sinks::basic_file_sink_st> (_config.fileName.c_str (),
+                                                                                  _config.overwrite));
                 }
             },
             sink);
@@ -108,7 +109,7 @@ LoggerImplementation::LoggerImplementation (LoggerImplementation &&_other) noexc
     assert (!_other.locked.test ());
 }
 
-void LoggerImplementation::Log (Level _level, const std::string &_message) noexcept
+void LoggerImplementation::Log (Level _level, const Container::String &_message) noexcept
 {
     spdlog::level::level_enum level = ToSPDLogLevel (_level);
 
@@ -137,7 +138,7 @@ Logger::~Logger () noexcept
     block_cast<LoggerImplementation> (data).~LoggerImplementation ();
 }
 
-void Logger::Log (Level _level, const std::string &_message) noexcept
+void Logger::Log (Level _level, const Container::String &_message) noexcept
 {
     block_cast<LoggerImplementation> (data).Log (_level, _message);
 }
@@ -152,7 +153,7 @@ void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
     globalLogger.emplace (_forceFlushOn, _sinks);
 }
 
-void Log (Level _level, const std::string &_message) noexcept
+void Log (Level _level, const Container::String &_message) noexcept
 {
     if (!globalLogger)
     {

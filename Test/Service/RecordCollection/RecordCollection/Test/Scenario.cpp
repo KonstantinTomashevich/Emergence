@@ -563,7 +563,7 @@ void AllocateRecordsThanCreateRepresentations (const Query::Test::Scenario &_sce
 
 namespace ReferenceApiTestImporters
 {
-std::string ExtractSourceName (const Query::Test::Source &_source)
+Container::String ExtractSourceName (const Query::Test::Source &_source)
 {
     return std::visit (
         [] (const auto &_unwrappedSource)
@@ -576,7 +576,7 @@ std::string ExtractSourceName (const Query::Test::Source &_source)
 void ForRepresentationReference (const Reference::Test::Scenario &_scenario, const Query::Test::Storage &_storage)
 {
     REQUIRE (_storage.sources.size () == 1u);
-    const std::string representationName = ExtractSourceName (_storage.sources[0u]);
+    const Container::String representationName = ExtractSourceName (_storage.sources[0u]);
     Container::Vector<Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
     tasks += TestQueryApiDrivers::InsertRecords (_storage);
 
@@ -633,7 +633,7 @@ void ForCursor (const Reference::Test::Scenario &_scenario,
                 const void *_expectedPointedObject)
 {
     REQUIRE (_storage.sources.size () == 1u);
-    const std::string representationName = ExtractSourceName (_storage.sources[0u]);
+    const Container::String representationName = ExtractSourceName (_storage.sources[0u]);
     Container::Vector<Task> tasks = TestQueryApiDrivers::CreateRepresentations (_storage);
     tasks += TestQueryApiDrivers::InsertRecords (_storage);
 

@@ -13,7 +13,7 @@ void ThreadFunction (Logger &_logger, std::size_t _index)
 {
     auto log = [&_logger, _index] (Level _level, const char *_message)
     {
-        std::string message = Test::AddThreadIndexToMessage (_index, _message);
+        Emergence::Container::String message = Test::AddThreadIndexToMessage (_index, _message);
         _logger.Log (_level, message);
         GlobalLogger::Log (_level, message);
     };

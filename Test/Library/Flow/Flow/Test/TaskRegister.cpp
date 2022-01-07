@@ -1,4 +1,4 @@
-#include <string>
+#include <Container/String.hpp>
 
 #include <Flow/TaskRegister.hpp>
 
@@ -46,8 +46,8 @@ struct CollectionExpectation final
 {
     struct Task
     {
-        std::string name;
-        Container::Vector<std::string> dependantTasks;
+        Container::String name;
+        Container::Vector<Container::String> dependantTasks;
     };
 
     Container::Vector<Task> tasks;
@@ -80,22 +80,22 @@ static void Check (const Emergence::Task::Collection &_result, const CollectionE
     }
 }
 
-static std::string CheckpointNodeLabel (std::string _name)
+static Container::String CheckpointNodeLabel (Container::String _name)
 {
     return _name += TaskRegister::VISUAL_CHECKPOINT_LABEL_SUFFIX;
 }
 
-static std::string TaskNodeLabel (std::string _name)
+static Container::String TaskNodeLabel (Container::String _name)
 {
     return _name += TaskRegister::VISUAL_TASK_LABEL_SUFFIX;
 }
 
-static std::string ResourceNodePath (const char *_name)
+static Container::String ResourceNodePath (const char *_name)
 {
     return TaskRegister::VISUAL_RESOURCE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _name;
 }
 
-static std::string TaskNodePath (const char *_name)
+static Container::String TaskNodePath (const char *_name)
 {
     return TaskRegister::VISUAL_PIPELINE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + _name;
 }

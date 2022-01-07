@@ -4,9 +4,7 @@
 
 #include <StandardLayout/Field.hpp>
 
-namespace Emergence
-{
-namespace Warehouse
+namespace Emergence::Warehouse
 {
 /// \brief Describes one dimensions for volumetric prepared queries.
 struct Dimension
@@ -54,15 +52,6 @@ private:
 
     explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
-} // namespace Warehouse
+} // namespace Emergence::Warehouse
 
-namespace Memory
-{
-/// \brief Default allocation group for dimension descriptors.
-template <>
-struct DefaultAllocationGroup<Warehouse::Dimension>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-} // namespace Memory
-} // namespace Emergence
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::Warehouse::Dimension)

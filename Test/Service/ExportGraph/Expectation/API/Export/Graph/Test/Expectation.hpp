@@ -1,22 +1,22 @@
 #pragma once
 
-#include <string>
+#include <Container/String.hpp>
 
 namespace Emergence::Export::Graph::Test::Expectation
 {
-std::string TwoConnectedNodes ();
+Container::String TwoConnectedNodes ();
 
-std::string TwoConnectedNodesAndLabels ();
+Container::String TwoConnectedNodesAndLabels ();
 
-std::string TwoSeparateSubgraphs ();
+Container::String TwoSeparateSubgraphs ();
 
-std::string TwoInterconnectedSubgraphs ();
+Container::String TwoInterconnectedSubgraphs ();
 
-std::string RelativePathsFromRoot ();
+Container::String RelativePathsFromRoot ();
 
-std::string DoubleSubgraphNesting ();
+Container::String DoubleSubgraphNesting ();
 
-std::string EdgeWithAbsolutePath ();
+Container::String EdgeWithAbsolutePath ();
 
-std::string EdgeWithColor ();
+Container::String EdgeWithColor ();
 } // namespace Emergence::Export::Graph::Test::Expectation

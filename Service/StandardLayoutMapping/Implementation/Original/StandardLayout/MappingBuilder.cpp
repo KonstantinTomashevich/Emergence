@@ -1,5 +1,6 @@
 #include <cassert>
-#include <string>
+
+#include <Container/String.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
@@ -135,11 +136,11 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (_objectMapping.data);
     assert (nestedPlainMapping);
     FieldId objectFieldId = state.AddField (FieldData::NestedObjectSeed {_name, _offset, nestedPlainMapping.Get ()});
-    const std::string prefix = std::string (*_name) + PROJECTION_NAME_SEPARATOR;
+    const Container::String prefix = Container::String (*_name) + PROJECTION_NAME_SEPARATOR;
 
     for (const FieldData &field : *nestedPlainMapping.Get ())
     {
-        const std::string fullName = prefix + *field.GetName ();
+        const Container::String fullName = prefix + *field.GetName ();
         [[maybe_unused]] FieldId nestedFieldId = 0u;
 
         switch (field.GetArchetype ())

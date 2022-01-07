@@ -16,6 +16,7 @@ constexpr int ARGUMENT_LOGGER = 1u;
 constexpr const char *STANDARD_OUT_FILE = "StandardOut.log";
 constexpr const char *STANDARD_ERROR_FILE = "StandardError.log";
 
+using namespace Emergence::Container::Literals;
 using namespace Emergence::Log;
 
 static Emergence::Container::Vector<Level> ExpectedSequenceForOneThread (Level _minimumLevel)
@@ -87,7 +88,7 @@ std::size_t CheckLog (std::istream &_input, Level _minimumLevel)
 
     std::size_t lineNumber = 0u;
     std::size_t errorsDetected = 0u;
-    std::string line;
+    Emergence::Container::String line;
 
     while (std::getline (_input, line))
     {
@@ -150,8 +151,8 @@ int main (int _argumentCount, const char **_arguments)
     }
 
     std::cout << "Executing logger \"" << _arguments[ARGUMENT_LOGGER] << "\"..." << std::endl;
-    const std::string command =
-        _arguments[ARGUMENT_LOGGER] + std::string (" > ") + STANDARD_OUT_FILE + " 2> " + STANDARD_ERROR_FILE;
+    const Emergence::Container::String command =
+        _arguments[ARGUMENT_LOGGER] + " > "_s + STANDARD_OUT_FILE + " 2> " + STANDARD_ERROR_FILE;
 
     system (command.c_str ());
     std::cout << "Execution finished." << std::endl;

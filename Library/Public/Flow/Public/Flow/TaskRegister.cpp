@@ -12,7 +12,7 @@
 namespace Emergence::Flow
 {
 using namespace Memory::Literals;
-using namespace std::string_literals;
+using namespace Container::Literals;
 
 Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept
 {
@@ -59,8 +59,8 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
 
         if (!nameToNodeIndex.emplace (checkpoint, graph.nodes.size () - 1u).second)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR,
-                                    "TaskGraph: Task|Checkpoint name \""s + *checkpoint + "\" is used more than once!");
+            Log::GlobalLogger::Log (
+                Log::Level::ERROR, "TaskGraph: Task|Checkpoint name \""_s + *checkpoint + "\" is used more than once!");
             noErrors = false;
         }
     }
@@ -83,7 +83,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = resourceNameToIndex.find (resource);
             if (iterator == resourceNameToIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find read access resource \""s +
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find read access resource \""_s +
                                                                *resource + "\" of task \"" + *task.name + "\"!");
                 noErrors = false;
             }
@@ -98,13 +98,13 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = resourceNameToIndex.find (resource);
             if (iterator == resourceNameToIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find write access resource \""s +
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find write access resource \""_s +
                                                                *resource + "\" of task \"" + *task.name + "\"!");
                 noErrors = false;
             }
             else if (node.readAccess.test (iterator->second))
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Resource \""s + *resource + "\" of task \"" +
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Resource \""_s + *resource + "\" of task \"" +
                                                                *task.name +
                                                                "\" used both in read access in write access lists!");
                 noErrors = false;
@@ -118,7 +118,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
         if (!nameToNodeIndex.emplace (task.name, graph.nodes.size () - 1u).second)
         {
             Log::GlobalLogger::Log (Log::Level::ERROR,
-                                    "TaskGraph: Task|Checkpoint name \""s + *task.name + "\" is used more than once!");
+                                    "TaskGraph: Task|Checkpoint name \""_s + *task.name + "\" is used more than once!");
             noErrors = false;
         }
     }
@@ -132,7 +132,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = nameToNodeIndex.find (target);
             if (iterator == nameToNodeIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find target \""s + *target +
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find target \""_s + *target +
                                                                "\" of task \"" + *task.name + "\"!");
                 noErrors = false;
             }
@@ -147,7 +147,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = nameToNodeIndex.find (dependency);
             if (iterator == nameToNodeIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find dependency \""s + *dependency +
+                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find dependency \""_s + *dependency +
                                                                "\" of task \"" + *task.name + "\"!");
                 noErrors = false;
             }
@@ -325,8 +325,8 @@ bool TaskGraph::Verify () const noexcept
 
                 if (readWriteCollision.any () || writeReadCollision.any () || writeWriteCollision.any ())
                 {
-                    std::string error = "TaskGraph: Race condition is possible between tasks \""s + *firstNode.name +
-                                        "\" and \"" + *secondNode.name + "\"! ";
+                    Container::String error = "TaskGraph: Race condition is possible between tasks \""_s +
+                                              *firstNode.name + "\" and \"" + *secondNode.name + "\"! ";
 
                     auto appendCollision = [&error, this] (const std::bitset<MAX_RESOURCES> &_collision)
                     {
@@ -430,7 +430,7 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
         if (_exportResources)
         {
-            auto addResourceEdge = [&root] (const std::string &_task,
+            auto addResourceEdge = [&root] (const Container::String &_task,
                                             Memory::UniqueString _resource) -> VisualGraph::Edge &
             {
                 VisualGraph::Edge &edge = root.edges.emplace_back ();
@@ -450,7 +450,7 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
             }
         }
 
-        auto addDependencyEdge = [&pipelineGraph] (const std::string &_from, const std::string &_to)
+        auto addDependencyEdge = [&pipelineGraph] (const Container::String &_from, const Container::String &_to)
         {
             VisualGraph::Edge &edge = pipelineGraph.edges.emplace_back ();
             edge.from = _from;
@@ -459,12 +459,12 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
         for (Memory::UniqueString dependency : task.dependsOn)
         {
-            addDependencyEdge (std::string {*dependency}, node.id);
+            addDependencyEdge (Container::String {*dependency}, node.id);
         }
 
         for (Memory::UniqueString target : task.dependencyOf)
         {
-            addDependencyEdge (node.id, std::string {*target});
+            addDependencyEdge (node.id, Container::String {*target});
         }
     }
 

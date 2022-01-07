@@ -6,9 +6,7 @@
 
 #include <Memory/Heap.hpp>
 
-namespace Emergence
-{
-namespace StandardLayout
+namespace Emergence::StandardLayout
 {
 /// \brief Mapped field unique identifier.
 using FieldId = uint_fast64_t;
@@ -131,15 +129,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
-} // namespace StandardLayout
+} // namespace Emergence::StandardLayout
 
-namespace Memory
-{
-/// \brief Default allocation group for field identifiers.
-template <>
-struct DefaultAllocationGroup<StandardLayout::FieldId>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-} // namespace Memory
-} // namespace Emergence
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::StandardLayout::FieldId)

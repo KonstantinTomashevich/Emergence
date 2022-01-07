@@ -1,19 +1,17 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/String.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Heap.hpp>
 
-namespace Emergence
-{
-namespace Log
+namespace Emergence::Log
 {
 /// \brief Supported logging levels.
 enum class Level
@@ -49,7 +47,7 @@ struct StandardError final : public Base
 struct File final : public Base
 {
     /// \brief Name of target file.
-    std::string fileName;
+    Container::String fileName;
 
     /// \brief If true, file content will be cleared before writing any messages.
     bool overwrite = true;
@@ -75,10 +73,13 @@ public:
 
     ~Logger () noexcept;
 
+    // TODO: Use raw pointers instead of strings?
+    // TODO: Some API for string appending?
+
     /// \brief Logs message with given level. Thread safe.
     /// \details Not guaranteed to flush right away if _level is lower than force flush level.
     ///          If there is no messages with force flush level, logger is guaranteed to flush messages periodically.
-    void Log (Level _level, const std::string &_message) noexcept;
+    void Log (Level _level, const Container::String &_message) noexcept;
 
     /// It looks counter intuitive to assign loggers.
     EMERGENCE_DELETE_ASSIGNMENT (Logger);
@@ -96,17 +97,8 @@ void Init (Level _forceFlushOn = Level::ERROR,
 
 /// \brief Executes Logger::Log using global logger instance.
 /// \details If ::Init was not called previously, it would be called with default arguments.
-void Log (Level _level, const std::string &_message) noexcept;
+void Log (Level _level, const Container::String &_message) noexcept;
 }; // namespace GlobalLogger
-} // namespace Log
+} // namespace Emergence::Log
 
-namespace Memory
-{
-/// \brief Default allocation group for log sinks.
-template <>
-struct DefaultAllocationGroup<Log::Sink>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-} // namespace Memory
-} // namespace Emergence
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::Log::Sink)

@@ -1,13 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include <Container/Optional.hpp>
+#include <Container/String.hpp>
 #include <Container/Vector.hpp>
 
-namespace Emergence
-{
-namespace VisualGraph
+namespace Emergence::VisualGraph
 {
 /// \brief Id separator for relative and absolute node paths.
 /// \details See more about node paths in Graph documentation.
@@ -19,10 +16,10 @@ struct Node
     /// \brief Node local id in its graph.
     /// \invariant Unique among nodes of parent graph.
     /// \invariant Does not contain `"` or NODE_PATH_SEPARATOR characters.
-    std::string id;
+    Container::String id;
 
     /// \brief Custom label for node. If empty, ::id will be used instead.
-    Container::Optional<std::string> label;
+    Container::Optional<Container::String> label;
 
     bool operator== (const Node &_other) const = default;
 };
@@ -32,14 +29,14 @@ struct Edge
 {
     /// \brief Specifies node, from which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
-    std::string from;
+    Container::String from;
 
     /// \brief Specifies node, to which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
-    std::string to;
+    Container::String to;
 
     /// \brief Specifies custom fill color for this edge.
-    Container::Optional<std::string> color;
+    Container::Optional<Container::String> color;
 
     bool operator== (const Edge &_other) const = default;
 };
@@ -84,10 +81,10 @@ struct Graph
     /// \brief Graph local id.
     /// \invariant Unique among other subgraphs, that belong to the same parent.
     /// \invariant Does not contain `"` or NODE_PATH_SEPARATOR characters.
-    std::string id;
+    Container::String id;
 
     /// \brief Custom label for graph. If empty, ::id will be used instead.
-    Container::Optional<std::string> label;
+    Container::Optional<Container::String> label;
 
     /// \brief Child graphs, that should be drawn as internal clusters.
     Container::Vector<Graph> subgraphs;
@@ -139,29 +136,8 @@ constexpr const char *WAREHOUSE_REGISTRY_ROOT_NODE = ".";
 /// \brief Warehouse query graph is guaranteed to have node with this name, that will be used as root for its graph.
 constexpr const char *WAREHOUSE_QUERY_ROOT_NODE = ".";
 } // namespace Common::Constants
-} // namespace VisualGraph
+} // namespace Emergence::VisualGraph
 
-namespace Memory
-{
-/// \brief Default allocation group for visual graph nodes.
-template <>
-struct DefaultAllocationGroup<VisualGraph::Node>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-
-/// \brief Default allocation group for visual graph edges.
-template <>
-struct DefaultAllocationGroup<VisualGraph::Edge>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-
-/// \brief Default allocation group for visual graphs.
-template <>
-struct DefaultAllocationGroup<VisualGraph::Graph>
-{
-    static Profiler::AllocationGroup Get () noexcept;
-};
-} // namespace Memory
-} // namespace Emergence
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Node)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Edge)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Graph)

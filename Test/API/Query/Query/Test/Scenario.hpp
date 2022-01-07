@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
+
+#include <Container/String.hpp>
 
 #include <Container/HashMap.hpp>
 #include <Container/Optional.hpp>
@@ -19,23 +20,23 @@ namespace Sources
 {
 struct Singleton final
 {
-    std::string name;
+    Container::String name;
 };
 
 struct UnorderedSequence final
 {
-    std::string name;
+    Container::String name;
 };
 
 struct Value final
 {
-    std::string name;
+    Container::String name;
     Container::Vector<StandardLayout::FieldId> queriedFields;
 };
 
 struct Range final
 {
-    std::string name;
+    Container::String name;
     StandardLayout::FieldId queriedField;
 };
 
@@ -88,7 +89,7 @@ struct Volumetric final
         StandardLayout::FieldId maxField;
     };
 
-    std::string name;
+    Container::String name;
     Container::Vector<Dimension> dimensions;
 };
 
@@ -114,8 +115,8 @@ namespace Tasks
 {
 struct QueryBase
 {
-    std::string sourceName;
-    std::string cursorName;
+    Container::String sourceName;
+    Container::String cursorName;
 };
 
 struct QuerySingletonToRead : public QueryBase
@@ -200,41 +201,41 @@ struct QueryRayIntersectionToEdit final : public RayIntersectionQueryBase
 
 struct CursorCheck final
 {
-    std::string name;
+    Container::String name;
     const void *expectedObject;
 };
 
 struct CursorCheckAllOrdered final
 {
-    std::string name;
+    Container::String name;
     Container::Vector<const void *> expectedObjects;
 };
 
 struct CursorCheckAllUnordered final
 {
-    std::string name;
+    Container::String name;
     Container::Vector<const void *> expectedObjects;
 };
 
 struct CursorEdit final
 {
-    std::string name;
+    Container::String name;
     const void *copyFromObject;
 };
 
 struct CursorIncrement final
 {
-    std::string name;
+    Container::String name;
 };
 
 struct CursorDeleteObject final
 {
-    std::string name;
+    Container::String name;
 };
 
 struct CursorClose final
 {
-    std::string name;
+    Container::String name;
 };
 
 std::ostream &operator<< (std::ostream &_output, const QuerySingletonToRead &_task);
@@ -310,11 +311,12 @@ struct Scenario final
 
 /// \brief Query-type agnostic renaming is widely used in tests, therefore it was extracted to utility function.
 Task ChangeQuerySourceAndCursor (Task _query,
-                                 Container::Optional<std::string> _newSourceName,
-                                 Container::Optional<std::string> _newCursorName);
+                                 Container::Optional<Container::String> _newSourceName,
+                                 Container::Optional<Container::String> _newCursorName);
 
 /// \brief Renames sources and all their usages according to given transformation map.
-Scenario RemapSources (Scenario _scenario, const Container::HashMap<std::string, std::string> &_transformation);
+Scenario RemapSources (Scenario _scenario,
+                       const Container::HashMap<Container::String, Container::String> &_transformation);
 
 /// \brief Lays out min-max arrays as sequence of min-max pairs.
 /// \details Because test drivers usually do not keep info about storages,

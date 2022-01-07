@@ -103,7 +103,7 @@ public:
 
     [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept
     {
-        return heap.GetAllocationGroup();
+        return heap.GetAllocationGroup ();
     }
 
     HeapSTD &operator= (const HeapSTD &_other) = delete;
@@ -114,3 +114,14 @@ private:
     Heap heap;
 };
 } // namespace Emergence::Memory
+
+/// \brief Shortcut for DefaultAllocationGroup specialization for given type.
+#define EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP(Type)                                                                \
+    namespace Emergence::Memory                                                                                        \
+    {                                                                                                                  \
+    template <>                                                                                                        \
+    struct DefaultAllocationGroup<Type>                                                                                \
+    {                                                                                                                  \
+        static Profiler::AllocationGroup Get () noexcept;                                                              \
+    };                                                                                                                 \
+    }

@@ -648,7 +648,7 @@ Task ImportTask (const QueryRayIntersectionToEdit &_task)
 
 static Task InsertQueryPreparationTaskFromSource (const Query::Test::Source &_source,
                                                   const StandardLayout::Mapping &_typeMapping,
-                                                  const std::string &_queryName)
+                                                  const Container::String &_queryName)
 {
     if (std::holds_alternative<Query::Test::Sources::Singleton> (_source))
     {
@@ -835,7 +835,7 @@ static Container::Vector<Task> SetupEnvironmentForQuery (const Task &_queryPrepa
         _queryPreparation);
 }
 
-static Task RenamePreparedQuery (Task _queryPreparation, std::string _newQueryName)
+static Task RenamePreparedQuery (Task _queryPreparation, Container::String _newQueryName)
 {
     std::visit (
         [&_newQueryName] (auto &_task)

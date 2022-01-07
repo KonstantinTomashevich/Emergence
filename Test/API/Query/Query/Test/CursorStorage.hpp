@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstring>
-#include <string>
+
+#include <Container/String.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -85,15 +86,15 @@ struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Curso
 {
 };
 
-inline std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
+inline Container::String ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
 {
     const auto *current = static_cast<const uint8_t *> (_object);
     const auto *end = current + _mapping.GetObjectSize ();
-    std::string result;
+    Container::String result;
 
     while (current != end)
     {
-        result += std::to_string (static_cast<std::size_t> (*current)) + " ";
+        result += Container::ToString (static_cast<std::size_t> (*current)) + " ";
         ++current;
     }
 
@@ -124,7 +125,7 @@ concept Movable = requires (T _cursor)
 
 template <typename Cursor>
 void AddObject (CursorStorage<Cursor> &_storage,
-                std::string _name,
+                Container::String _name,
                 const StandardLayout::Mapping &_objectMapping,
                 Cursor &&_cursor)
 {
@@ -132,7 +133,7 @@ void AddObject (CursorStorage<Cursor> &_storage,
 }
 
 template <typename Cursor>
-void GetCursor (CursorStorage<Cursor> &_storage, std::string _name)
+void GetCursor (CursorStorage<Cursor> &_storage, Container::String _name)
 {
     return GetObject (_storage, _name).cursor;
 }
