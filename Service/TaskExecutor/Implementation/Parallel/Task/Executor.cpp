@@ -5,6 +5,7 @@
 
 #include <Container/Vector.hpp>
 
+#include <SyntaxSugar/AtomicFlagGuard.hpp>
 #include <SyntaxSugar/BlockCast.hpp>
 
 #include <Task/Executor.hpp>
@@ -177,11 +178,7 @@ void ExecutorImplementation::WorkerMain () noexcept
         while (!currentTask)
         {
             taskQueueNotEmptyOrAllTasksFinished.wait (false, std::memory_order_acquire);
-
-            while (modifyingTaskQueue.test_and_set (std::memory_order_acquire))
-            {
-                std::this_thread::yield ();
-            }
+            AtomicFlagGuard guard {modifyingTaskQueue};
 
             bool exit = false;
             if (!tasksQueue.empty ())
@@ -209,9 +206,7 @@ void ExecutorImplementation::WorkerMain () noexcept
             {
                 taskQueueNotEmptyOrAllTasksFinished.clear (std::memory_order_release);
             }
-
-            modifyingTaskQueue.clear (std::memory_order_release);
-
+            
             if (exit)
             {
                 return;
@@ -223,10 +218,7 @@ void ExecutorImplementation::WorkerMain () noexcept
         currentTask->dependenciesLeftThisRun = currentTask->dependencyCount;
 
         // Registering successful task execution and unlocking dependant tasks.
-        while (modifyingTaskQueue.test_and_set (std::memory_order_acquire))
-        {
-            std::this_thread::yield ();
-        }
+        AtomicFlagGuard guard {modifyingTaskQueue};
 
         ++tasksFinished;
         --tasksInExecution;
@@ -247,8 +239,6 @@ void ExecutorImplementation::WorkerMain () noexcept
             taskQueueNotEmptyOrAllTasksFinished.test_and_set (std::memory_order_seq_cst);
             taskQueueNotEmptyOrAllTasksFinished.notify_all ();
         }
-
-        modifyingTaskQueue.clear (std::memory_order_release);
     }
 }
 

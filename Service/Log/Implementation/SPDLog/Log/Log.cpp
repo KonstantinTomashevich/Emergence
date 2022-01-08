@@ -13,6 +13,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <SyntaxSugar/AtomicFlagGuard.hpp>
 #include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence
@@ -114,13 +115,8 @@ void LoggerImplementation::Log (Level _level, const Container::String &_message)
     spdlog::level::level_enum level = ToSPDLogLevel (_level);
 
     // Usually there is no sense to print ton of logs in production, therefore it's better to use flag based spin lock.
-    while (locked.test_and_set (std::memory_order_acquire))
-    {
-        std::this_thread::yield ();
-    }
-
+    AtomicFlagGuard guard {locked};
     logger.log (level, _message);
-    locked.clear (std::memory_order_release);
 }
 
 Logger::Logger (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept

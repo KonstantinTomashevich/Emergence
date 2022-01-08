@@ -27,8 +27,9 @@ Stack::Stack (Stack &&_other) noexcept
 
 Stack::~Stack () noexcept
 {
-    free (start);
+    group.Release (static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (start)));
     group.Free (static_cast<size_t> (reinterpret_cast<uintptr_t> (end) - reinterpret_cast<uintptr_t> (start)));
+    free (start);
 }
 
 void *Stack::Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept

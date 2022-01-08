@@ -158,7 +158,8 @@ private:
     template <typename>
     friend class Handling::Handle;
 
-    static Memory::Heap heap;
+    /// \return Heap, used for PlainMapping allocation.
+    static Memory::Heap &GetHeap () noexcept;
 
     /// \return Size of mapping object, that can hold up to _fieldCapacity fields.
     static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept;

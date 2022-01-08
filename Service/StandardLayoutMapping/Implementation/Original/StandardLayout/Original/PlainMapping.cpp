@@ -151,8 +151,12 @@ FieldId PlainMapping::GetFieldId (const FieldData &_field) const
     return &_field - Begin ();
 }
 
-Memory::Heap PlainMapping::heap {Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup::Root (),
-                                                                    Memory::UniqueString {"PlainMapping"}}};
+Memory::Heap &PlainMapping::GetHeap () noexcept
+{
+    static Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup::Root (),
+                                                                 Memory::UniqueString {"PlainMapping"}}};
+    return heap;
+}
 
 std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noexcept
 {
@@ -176,19 +180,19 @@ PlainMapping::~PlainMapping () noexcept
 
 void *PlainMapping::operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept
 {
-    return heap.Acquire (CalculateMappingSize (_fieldCapacity));
+    return GetHeap ().Acquire (CalculateMappingSize (_fieldCapacity));
 }
 
 void PlainMapping::operator delete (void *_pointer) noexcept
 {
-    heap.Release (_pointer, CalculateMappingSize (static_cast<PlainMapping *> (_pointer)->fieldCapacity));
+    GetHeap ().Release (_pointer, CalculateMappingSize (static_cast<PlainMapping *> (_pointer)->fieldCapacity));
 }
 
 PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexcept
 {
     assert (_newFieldCapacity >= fieldCount);
     auto *newInstance = static_cast<PlainMapping *> (
-        heap.Resize (this, CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
+        GetHeap ().Resize (this, CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
 
     newInstance->fieldCapacity = _newFieldCapacity;
     return newInstance;

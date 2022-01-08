@@ -1,0 +1,190 @@
+#include <cassert>
+
+#include <API/Common/Implementation/Iterator.hpp>
+
+#include <SyntaxSugar/BlockCast.hpp>
+
+#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/Profiler/Original/AllocationGroup.hpp>
+
+namespace Emergence::Memory::Profiler
+{
+AllocationGroup::PlacedOnStack::~PlacedOnStack ()
+{
+    Original::AllocationGroupStack::Get ().Pop ();
+}
+
+AllocationGroup::PlacedOnStack::PlacedOnStack (void *_groupHandle) noexcept
+{
+    Original::AllocationGroupStack::Get ().Push (static_cast<Original::AllocationGroup *> (_groupHandle));
+}
+
+using Iterator = AllocationGroup::Iterator;
+
+using IteratorImplementation = Original::AllocationGroup::Iterator;
+
+AllocationGroup AllocationGroup::Iterator::operator* () const noexcept
+{
+    return AllocationGroup ((*block_cast<IteratorImplementation> (data)));
+}
+
+EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (Iterator, IteratorImplementation)
+
+AllocationGroup AllocationGroup::Root () noexcept
+{
+    return AllocationGroup (Original::AllocationGroup::Root ());
+}
+
+AllocationGroup AllocationGroup::Top () noexcept
+{
+    return AllocationGroup (Original::AllocationGroupStack::Get ().Top ());
+}
+
+AllocationGroup::AllocationGroup () noexcept : handle (nullptr)
+{
+}
+
+AllocationGroup::AllocationGroup (UniqueString _id) noexcept : handle (Original::AllocationGroup::Request (_id))
+{
+}
+
+AllocationGroup::AllocationGroup (const AllocationGroup &_parent, UniqueString _id) noexcept
+    : handle (Original::AllocationGroup::Request (static_cast<Original::AllocationGroup *> (_parent.handle), _id))
+{
+}
+
+AllocationGroup::AllocationGroup (const AllocationGroup &_other) noexcept : handle (_other.handle)
+{
+}
+
+AllocationGroup::AllocationGroup (AllocationGroup &&_other) noexcept : handle (_other.handle)
+{
+    _other.handle = nullptr;
+}
+
+AllocationGroup::~AllocationGroup () noexcept = default;
+
+AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
+{
+    return AllocationGroup::PlacedOnStack (handle);
+}
+
+void AllocationGroup::Allocate (size_t _bytesCount) noexcept
+{
+    if (handle)
+    {
+        static_cast<Original::AllocationGroup *> (handle)->Allocate (_bytesCount);
+    }
+}
+
+void AllocationGroup::Acquire (size_t _bytesCount) noexcept
+{
+    if (handle)
+    {
+        static_cast<Original::AllocationGroup *> (handle)->Acquire (_bytesCount);
+    }
+}
+
+void AllocationGroup::Release (size_t _bytesCount) noexcept
+{
+    if (handle)
+    {
+        static_cast<Original::AllocationGroup *> (handle)->Release (_bytesCount);
+    }
+}
+
+void AllocationGroup::Free (size_t _bytesCount) noexcept
+{
+    if (handle)
+    {
+        static_cast<Original::AllocationGroup *> (handle)->Free (_bytesCount);
+    }
+}
+
+AllocationGroup AllocationGroup::Parent () const noexcept
+{
+    return handle ? AllocationGroup {static_cast<Original::AllocationGroup *> (handle)->Parent ()} : AllocationGroup {};
+}
+
+Iterator AllocationGroup::BeginChildren () const noexcept
+{
+    Original::AllocationGroup::Iterator iterator =
+        handle ? static_cast<Original::AllocationGroup *> (handle)->BeginChildren () :
+                 Original::AllocationGroup::EndChildren ();
+    return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
+}
+
+Iterator AllocationGroup::EndChildren () const noexcept
+{
+    Original::AllocationGroup::Iterator iterator = Original::AllocationGroup::EndChildren ();
+    return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
+}
+
+UniqueString AllocationGroup::GetId () const noexcept
+{
+    if (handle)
+    {
+        return static_cast<Original::AllocationGroup *> (handle)->GetId ();
+    }
+
+    return {};
+}
+
+size_t AllocationGroup::GetAcquired () const noexcept
+{
+    if (handle)
+    {
+        return static_cast<Original::AllocationGroup *> (handle)->GetAcquired ();
+    }
+
+    return 0u;
+}
+
+size_t AllocationGroup::GetReserved () const noexcept
+{
+    if (handle)
+    {
+        return static_cast<Original::AllocationGroup *> (handle)->GetReserved ();
+    }
+
+    return 0u;
+}
+
+size_t AllocationGroup::GetTotal () const noexcept
+{
+    if (handle)
+    {
+        return static_cast<Original::AllocationGroup *> (handle)->GetTotal ();
+    }
+
+    return 0u;
+}
+
+uintptr_t AllocationGroup::Hash () const noexcept
+{
+    if (handle)
+    {
+        return static_cast<Original::AllocationGroup *> (handle)->Hash ();
+    }
+
+    return 0u;
+}
+
+AllocationGroup &AllocationGroup::operator= (const AllocationGroup &_other) noexcept = default;
+
+AllocationGroup &AllocationGroup::operator= (AllocationGroup &&_other) noexcept = default;
+
+bool AllocationGroup::operator== (const AllocationGroup &_other) const noexcept
+{
+    return handle == _other.handle;
+}
+
+bool AllocationGroup::operator!= (const AllocationGroup &_other) const noexcept
+{
+    return !(*this == _other);
+}
+
+AllocationGroup::AllocationGroup (void *_handle) noexcept : handle (_handle)
+{
+}
+} // namespace Emergence::Memory::Profiler

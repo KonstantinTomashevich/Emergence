@@ -4,27 +4,36 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 #include <Memory/UniqueString.hpp>
 
 namespace Emergence::Memory::Profiler
 {
-
 class AllocationGroup final
 {
 public:
+    // NOTE: Stack is tread local to avoid concurrent push/pop operations.
+    // NOTE: AllocationGroup construction and destruction must be thread safe.
+    // NOTE: AllocationGroup construction breaks children iterators.
+    // NOTE: GroupA -> GroupB -> GroupA -- valid stack.
+
     class PlacedOnStack final
     {
     public:
+        PlacedOnStack (const PlacedOnStack &_other) = delete;
+
+        PlacedOnStack (PlacedOnStack &&_other) = delete;
+
         ~PlacedOnStack ();
+
+        EMERGENCE_DELETE_ASSIGNMENT (PlacedOnStack);
 
     private:
         /// AllocationGroup constructs stack placeholders.
         friend class AllocationGroup;
 
-        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
-
-        explicit PlacedOnStack (void *_handle) noexcept;
+        explicit PlacedOnStack (void *_groupHandle) noexcept;
     };
 
     class Iterator final
@@ -69,6 +78,8 @@ public:
     void Release (size_t _bytesCount) noexcept;
 
     void Free (size_t _bytesCount) noexcept;
+
+    [[nodiscard]] AllocationGroup Parent () const noexcept;
 
     [[nodiscard]] Iterator BeginChildren () const noexcept;
 

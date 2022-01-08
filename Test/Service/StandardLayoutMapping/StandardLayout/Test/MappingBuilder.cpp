@@ -576,7 +576,7 @@ TEST_CASE (AllBasicTypes)
     GrowAndTest (ALL_BASIC_TYPES);
 }
 
-TEST_CASE (UnionsWithBasicTypes)
+TEST_CASE (UnionWithBasicTypes)
 {
     GrowAndTest (UNION_WITH_BASIC_TYPES);
 }

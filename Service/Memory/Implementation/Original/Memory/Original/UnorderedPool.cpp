@@ -10,6 +10,7 @@ UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, size_t _chunkSiz
       chunkSize (_chunkSize),
       topPage (nullptr),
       topFreeChunk (nullptr),
+      acquiredChunkCount (0u),
       group (std::move (_group))
 {
     assert (_pageCapacity > 0u);
@@ -21,10 +22,12 @@ UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
       chunkSize (_other.chunkSize),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk),
+      acquiredChunkCount (_other.acquiredChunkCount),
       group (std::move (_other.group))
 {
     _other.topPage = nullptr;
     _other.topFreeChunk = nullptr;
+    _other.acquiredChunkCount = 0u;
 }
 
 UnorderedPool::~UnorderedPool () noexcept
@@ -58,6 +61,7 @@ void *UnorderedPool::Acquire () noexcept
     group.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
+    ++acquiredChunkCount;
     return acquired;
 }
 
@@ -67,11 +71,17 @@ void UnorderedPool::Release (void *_chunk) noexcept
     auto *chunk = static_cast<Chunk *> (_chunk);
     chunk->nextFree = topFreeChunk;
     topFreeChunk = chunk;
+
+    assert (acquiredChunkCount > 0u);
+    --acquiredChunkCount;
 }
 
 void UnorderedPool::Clear () noexcept
 {
+    group.Release (chunkSize * acquiredChunkCount);
+    acquiredChunkCount = 0u;
     Page *page = topPage;
+
     while (page)
     {
         group.Release (sizeof (Page));

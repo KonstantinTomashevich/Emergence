@@ -100,6 +100,10 @@ private:
     const size_t chunkSize;
     Page *topPage;
     Chunk *topFreeChunk;
+
+    /// \brief Acquired chunk counter required to correctly log memory usage for profiling.
+    std::size_t acquiredChunkCount;
+
     Profiler::AllocationGroup group;
 };
 } // namespace Emergence::Memory::Original

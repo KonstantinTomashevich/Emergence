@@ -153,7 +153,8 @@ OrderedPool::OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, s
       chunkSize (_chunkSize),
       topPage (nullptr),
       topFreeChunk (nullptr),
-      group (std::move(_group))
+      acquiredChunkCount (0u),
+      group (std::move (_group))
 {
     assert (_pageCapacity > 0u);
     assert (_chunkSize >= sizeof (Chunk));
@@ -164,10 +165,12 @@ OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
       chunkSize (_other.chunkSize),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk),
+      acquiredChunkCount (_other.acquiredChunkCount),
       group (std::move (_other.group))
 {
     _other.topPage = nullptr;
     _other.topFreeChunk = nullptr;
+    _other.acquiredChunkCount = 0u;
 }
 
 OrderedPool::~OrderedPool () noexcept
@@ -217,6 +220,7 @@ void *OrderedPool::Acquire () noexcept
     group.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
+    ++acquiredChunkCount;
     return acquired;
 }
 
@@ -242,6 +246,9 @@ void OrderedPool::Release (void *_chunk) noexcept
     {
         topFreeChunk = chunk;
     }
+
+    assert (acquiredChunkCount > 0u);
+    --acquiredChunkCount;
 }
 
 void OrderedPool::Shrink () noexcept
@@ -296,7 +303,10 @@ void OrderedPool::Shrink () noexcept
 
 void OrderedPool::Clear () noexcept
 {
+    group.Release (chunkSize * acquiredChunkCount);
+    acquiredChunkCount = 0u;
     Page *page = topPage;
+
     while (page)
     {
         group.Release (sizeof (Page));

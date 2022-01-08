@@ -2,6 +2,7 @@
 
 #include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+#include <Memory/Test/Helpers.hpp>
 #include <Memory/UniqueString.hpp>
 
 #include <Testing/Testing.hpp>
@@ -9,6 +10,9 @@
 namespace Emergence::Memory::Test::Pool
 {
 using namespace Emergence::Memory::Literals;
+
+/// \brief Memory profiler reports internal page data as part of total data usage.
+constexpr size_t RESERVED_FOR_PAGE_INTERNALS = sizeof (uintptr_t);
 
 struct TestItem
 {
@@ -30,24 +34,25 @@ struct FullPoolContext
             items.emplace_back (pool.Acquire ());
         }
 
-        CHECK_EQUAL (pool.GetAllocationGroup ().GetTotal (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
+        CHECK_EQUAL (pool.GetAllocationGroup ().GetTotal (),
+                     PAGES_TO_FILL * (PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
     }
 
-    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem), PAGE_CAPACITY};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), PAGE_CAPACITY};
     Container::Vector<void *> items;
 };
 
 template <typename Pool>
 void AcquireNotNull ()
 {
-    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
     CHECK (pool.Acquire ());
 }
 
 template <typename Pool>
 void MultipleAcquiresDoNotOverlap ()
 {
-    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
     auto *first = static_cast<TestItem *> (pool.Acquire ());
     auto *second = static_cast<TestItem *> (pool.Acquire ());
 
@@ -69,7 +74,7 @@ void MultipleAcquiresDoNotOverlap ()
 template <typename Pool>
 void MemoryReused ()
 {
-    Pool pool {Emergence::Memory::Profiler::AllocationGroup {"Test"_us}, sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
@@ -96,7 +101,8 @@ void Move ()
 
     CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
     CHECK_EQUAL (newPool.GetAllocationGroup ().GetTotal (),
-                 FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
+                 FullPoolContext<Pool>::PAGES_TO_FILL *
+                     (FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
 
     // Acquire one item from each pool to ensure that they are in working state.
     CHECK (context.pool.Acquire ());
@@ -112,7 +118,8 @@ void MoveAssign ()
 
     CHECK_EQUAL (firstContext.pool.GetAllocationGroup ().GetTotal (), 0u);
     CHECK_EQUAL (secondContext.pool.GetAllocationGroup ().GetTotal (),
-                 FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
+                 FullPoolContext<Pool>::PAGES_TO_FILL *
+                     (FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
 
     // Acquire one item from each pool to ensure that they are in working state.
     CHECK (firstContext.pool.Acquire ());
