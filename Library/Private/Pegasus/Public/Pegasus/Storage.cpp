@@ -77,11 +77,10 @@ Handling::Handle<VolumetricIndex> Storage::VolumetricIndexIterator::operator* ()
 using namespace Memory::Literals;
 
 Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
-    : records (Memory::Profiler::AllocationGroup {Memory::UniqueString {_recordMapping.GetName ()}},
-               _recordMapping.GetObjectSize ()),
-      hashIndexHeap (Memory::Profiler::AllocationGroup {records.GetAllocationGroup (), "HashIndex"_us}),
-      orderedIndexHeap (Memory::Profiler::AllocationGroup {records.GetAllocationGroup (), "OrderedIndex"_us}),
-      volumetricIndexHeap (Memory::Profiler::AllocationGroup {records.GetAllocationGroup (), "VolumetricIndex"_us}),
+    : records (Memory::Profiler::AllocationGroup {"Records"_us}, _recordMapping.GetObjectSize ()),
+      hashIndexHeap (Memory::Profiler::AllocationGroup {"HashIndex"_us}),
+      orderedIndexHeap (Memory::Profiler::AllocationGroup {"OrderedIndex"_us}),
+      volumetricIndexHeap (Memory::Profiler::AllocationGroup {"VolumetricIndex"_us}),
       recordMapping (std::move (_recordMapping))
 {
     editedRecordBackup = records.Acquire ();

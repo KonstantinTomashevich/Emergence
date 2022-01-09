@@ -113,7 +113,7 @@ public:
 
     ~PipelineBuilder () = default;
 
-    void Begin () noexcept;
+    void Begin (Memory::UniqueString _id) noexcept;
 
     [[nodiscard]] TaskConstructor AddTask (Memory::UniqueString _name) noexcept;
 
@@ -129,7 +129,9 @@ private:
     void FinishTaskRegistration (Flow::Task _task) noexcept;
 
     World *world;
+    Memory::UniqueString currentPipelineId;
     Flow::TaskRegister taskRegister;
+    Memory::Profiler::AllocationGroup currentPipelineAllocationGroup;
     Container::HashSet<Memory::UniqueString> registeredResources;
 };
 

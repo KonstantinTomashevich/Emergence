@@ -263,7 +263,7 @@ void RunTest (const Emergence::Container::Vector<KeyboardActionTrigger> &_keyboa
         expectations.emplace_back (pair.second);
     }
 
-    pipelineBuilder.Begin ();
+    pipelineBuilder.Begin ("Test"_us);
     AddConfiguratorTask (pipelineBuilder, std::move (steps));
     AddValidatorTask (pipelineBuilder, std::move (expectations));
 

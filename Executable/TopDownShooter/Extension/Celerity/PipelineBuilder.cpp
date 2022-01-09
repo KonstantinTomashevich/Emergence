@@ -172,14 +172,17 @@ PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
     assert (world);
 }
 
-void PipelineBuilder::Begin () noexcept
+void PipelineBuilder::Begin (Memory::UniqueString _id) noexcept
 {
+    currentPipelineId = _id;
+    currentPipelineAllocationGroup =
+        Memory::Profiler::AllocationGroup {world->pipelineHeap.GetAllocationGroup (), currentPipelineId};
     // taskRegister should be cleared in ::End.
 }
 
 TaskConstructor PipelineBuilder::AddTask (Memory::UniqueString _name) noexcept
 {
-    auto placeholder = world->pipelineHeap.GetAllocationGroup ().PlaceOnTop ();
+    auto placeholder = currentPipelineAllocationGroup.PlaceOnTop ();
     return {this, _name};
 }
 
@@ -190,7 +193,7 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
 
 Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
 {
-    Pipeline *newPipeline = world->AddPipeline (taskRegister.ExportCollection (), _maximumChildThreads);
+    Pipeline *newPipeline = world->AddPipeline (currentPipelineId,taskRegister.ExportCollection (), _maximumChildThreads);
     taskRegister.Clear ();
     registeredResources.clear ();
     return newPipeline;

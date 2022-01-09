@@ -6,6 +6,8 @@
 
 #include <Log/Log.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
 #include <OgreEntity.h>
@@ -33,13 +35,13 @@ public:
     {
         Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
 
-        pipelineBuilder.Begin ();
+        pipelineBuilder.Begin ("Fixed"_us);
         TimeSynchronization::AddFixedUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
-        pipelineBuilder.Begin ();
+        pipelineBuilder.Begin ("Normal"_us);
         TimeSynchronization::AddNormalUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
@@ -116,6 +118,35 @@ private:
     Emergence::Celerity::Pipeline *normalUpdate = nullptr;
 };
 
+static void LogMemoryUsage (
+    const Emergence::Memory::Profiler::AllocationGroup &_group = Emergence::Memory::Profiler::AllocationGroup::Root (),
+    const Emergence::Container::String &_indentation = "")
+{
+    using namespace Emergence::Container;
+    using namespace Emergence::Log;
+
+    if (_group == Emergence::Memory::Profiler::AllocationGroup::Root ())
+    {
+        GlobalLogger::Log (
+            Level::INFO,
+            "Printing memory usage. Format: \"GroupName\": <AcquiredBytes> / <ReservedBytes> -- <UsagePercent>%");
+    }
+
+    const char *groupId = *_group.GetId () ? *_group.GetId () : "Root";
+    const size_t percent = _group.GetTotal () ?
+                               static_cast<size_t> (round (static_cast<float> (_group.GetAcquired ()) /
+                                                           static_cast<float> (_group.GetTotal ()) * 100.0f)) :
+                               0u;
+
+    GlobalLogger::Log (Level::INFO, _indentation + "\"" + groupId + "\": " + ToString (_group.GetAcquired ()) + " / " +
+                                        ToString (_group.GetTotal ()) + " -- " + ToString (percent) + "%");
+
+    for (auto iterator = _group.BeginChildren (); iterator != _group.EndChildren (); ++iterator)
+    {
+        LogMemoryUsage (*iterator, _indentation + "    ");
+    }
+}
+
 int main (int /*unused*/, char ** /*unused*/)
 {
     OgreBites::ApplicationContext application {"TopDownShooter"};
@@ -164,8 +195,10 @@ int main (int /*unused*/, char ** /*unused*/)
 
     application.getRenderWindow ()->addViewport (camera);
 
+    bool usageLogged = false;
+
     {
-        Emergence::Celerity::World world {"World"_us};
+        Emergence::Celerity::World world {"TestWorld"_us};
         WorldUpdater worldUpdater {&application, &world};
 
         while (!application.getRoot ()->endRenderingQueued ())
@@ -181,6 +214,12 @@ int main (int /*unused*/, char ** /*unused*/)
             lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
             playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
             application.getRoot ()->renderOneFrame ();
+
+            if (!usageLogged)
+            {
+                LogMemoryUsage ();
+                usageLogged = true;
+            }
         }
     }
 

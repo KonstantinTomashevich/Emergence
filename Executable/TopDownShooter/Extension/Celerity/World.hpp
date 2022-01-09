@@ -35,7 +35,7 @@ private:
     friend class PipelineBuilder;
     friend class TaskConstructor;
 
-    Pipeline *AddPipeline (const Task::Collection &_collection, std::size_t _maximumChildThreads);
+    Pipeline *AddPipeline (Memory::UniqueString _id, const Task::Collection &_collection, std::size_t _maximumChildThreads);
 
     Warehouse::Registry registry;
     Memory::Heap pipelineHeap;

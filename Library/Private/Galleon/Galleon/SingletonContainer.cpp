@@ -107,13 +107,28 @@ void SingletonContainer::LastReferenceUnregistered () noexcept
 }
 
 SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
-    : ContainerBase (_deck, std::move (_typeMapping))
+    : ContainerBase (_deck, std::move (_typeMapping)),
+      usedAllocationGroup (typeMapping.GetName ())
 {
+    auto placeholder = usedAllocationGroup.PlaceOnTop ();
     typeMapping.Construct (&storage);
+
+    // Move singleton memory usage from parent group into our internal group.
+    usedAllocationGroup.Parent ().Release (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Parent ().Free (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Allocate (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Acquire (typeMapping.GetObjectSize ());
 }
 
 SingletonContainer::~SingletonContainer () noexcept
 {
     typeMapping.Destruct (&storage);
+
+    // Move singleton memory usage from internal group into parent group, because it was actually acquired
+    // from parent allocator. Otherwise, profiler will detect deallocation of unregistered memory and crash.
+    usedAllocationGroup.Release (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Free (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Parent ().Allocate (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Parent ().Acquire (typeMapping.GetObjectSize ());
 }
 } // namespace Emergence::Galleon

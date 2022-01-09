@@ -43,9 +43,12 @@ Warehouse::ModifySingletonQuery World::ModifySingletonExternally (const Standard
     return registry.ModifySingleton (_mapping);
 }
 
-Pipeline *World::AddPipeline (const Task::Collection &_collection, std::size_t _maximumChildThreads)
+Pipeline *World::AddPipeline (Memory::UniqueString _id,
+                              const Task::Collection &_collection,
+                              std::size_t _maximumChildThreads)
 {
+    auto placeholder = Memory::Profiler::AllocationGroup {pipelineHeap.GetAllocationGroup (), _id}.PlaceOnTop ();
     return pipelines.emplace_back (new (pipelineHeap.Acquire (sizeof (Pipeline)))
-                                       Pipeline {_collection, _maximumChildThreads});
+                                       Pipeline {_id, _collection, _maximumChildThreads});
 }
 } // namespace Emergence::Celerity

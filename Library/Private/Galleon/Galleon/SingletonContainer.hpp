@@ -132,6 +132,9 @@ private:
 
     AccessCounter accessCounter;
 
+    /// \details We log memory usage of inplace-allocated singleton into separate group for readability.
+    Memory::Profiler::AllocationGroup usedAllocationGroup;
+
     uint8_t storage[0u];
 };
 } // namespace Emergence::Galleon

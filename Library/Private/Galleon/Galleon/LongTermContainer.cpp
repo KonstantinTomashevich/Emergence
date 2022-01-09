@@ -323,7 +323,7 @@ void LongTermContainer::LastReferenceUnregistered () noexcept
 
 static RecordCollection::Collection ConstructInsideGroup (StandardLayout::Mapping _typeMapping)
 {
-    auto placeholder = Memory::Profiler::AllocationGroup {Memory::UniqueString {_typeMapping.GetName ()}};
+    auto placeholder = Memory::Profiler::AllocationGroup {Memory::UniqueString {_typeMapping.GetName ()}}.PlaceOnTop ();
     return RecordCollection::Collection {std::move (_typeMapping)};
 }
 
