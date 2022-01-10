@@ -104,6 +104,9 @@ public:
     bool operator!= (const AllocationGroup &_other) const noexcept;
 
 private:
+    /// \brief Allows construction from handle for implementation internal purposes.
+    friend class ImplementationUtils;
+
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 
     explicit AllocationGroup (void *_handle) noexcept;

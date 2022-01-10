@@ -4,10 +4,13 @@
 
 #include <Container/InplaceVector.hpp>
 
+#include <Memory/Profiler/Original/ProfilingLock.hpp>
 #include <Memory/UniqueString.hpp>
 
 namespace Emergence::Memory::Profiler::Original
 {
+class CapturedAllocationGroup;
+
 class AllocationGroup final
 {
 public:
@@ -27,17 +30,19 @@ public:
 
     static AllocationGroup *Root () noexcept;
 
-    static AllocationGroup *Request (UniqueString _id) noexcept;
+    static AllocationGroup *Request (UniqueString _id, const ProfilingLock &_lock) noexcept;
 
-    static AllocationGroup *Request (AllocationGroup *_parent, UniqueString _id) noexcept;
+    static AllocationGroup *Request (AllocationGroup *_parent,
+                                     UniqueString _id,
+                                     const ProfilingLock & /*unused*/) noexcept;
 
-    void Allocate (size_t _bytesCount) noexcept;
+    void Allocate (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
-    void Acquire (size_t _bytesCount) noexcept;
+    void Acquire (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
-    void Release (size_t _bytesCount) noexcept;
+    void Release (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
-    void Free (size_t _bytesCount) noexcept;
+    void Free (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
     [[nodiscard]] AllocationGroup *Parent () const noexcept;
 
@@ -57,6 +62,8 @@ public:
 
 private:
     friend class AllocationGroupStack;
+
+    friend class CapturedAllocationGroup;
 
     AllocationGroup (AllocationGroup *_parent, UniqueString _id) noexcept;
 

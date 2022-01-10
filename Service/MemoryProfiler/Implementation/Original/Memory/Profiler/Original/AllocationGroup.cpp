@@ -1,13 +1,24 @@
 #include <atomic>
 #include <cassert>
-#include <thread>
 
 #include <Memory/Profiler/Original/AllocationGroup.hpp>
+#include <Memory/Profiler/Original/EventManager.hpp>
 #include <Memory/UnorderedPool.hpp>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
+namespace Emergence::Memory::Profiler
+{
+class ImplementationUtils final
+{
+public:
+    ImplementationUtils () = default;
 
-namespace Emergence::Memory::Profiler::Original
+    static Profiler::AllocationGroup ToServiceFormat (Original::AllocationGroup *_group) noexcept
+    {
+        return Profiler::AllocationGroup {_group};
+    }
+};
+
+namespace Original
 {
 AllocationGroup *AllocationGroup::Iterator::operator* () const noexcept
 {
@@ -67,16 +78,15 @@ AllocationGroup *AllocationGroup::Root () noexcept
     return root;
 }
 
-AllocationGroup *AllocationGroup::Request (UniqueString _id) noexcept
+AllocationGroup *AllocationGroup::Request (UniqueString _id, const ProfilingLock &_lock) noexcept
 {
-    return Request (AllocationGroupStack::Get ().Top (), _id);
+    return Request (AllocationGroupStack::Get ().Top (), _id, _lock);
 }
 
-AllocationGroup *AllocationGroup::Request (AllocationGroup *_parent, UniqueString _id) noexcept
+AllocationGroup *AllocationGroup::Request (AllocationGroup *_parent,
+                                           UniqueString _id,
+                                           const ProfilingLock & /*unused*/) noexcept
 {
-    static std::atomic_flag groupAcquisition;
-    AtomicFlagGuard guard {groupAcquisition};
-
     assert (_parent);
     AllocationGroup *child = _parent->firstChild;
 
@@ -96,42 +106,28 @@ AllocationGroup *AllocationGroup::Request (AllocationGroup *_parent, UniqueStrin
     return newGroup;
 }
 
-static std::atomic_flag &RecordingMemoryEvent ()
+void AllocationGroup::Allocate (size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
-    static std::atomic_flag flag;
-    return flag;
-}
-
-void AllocationGroup::Allocate (size_t _bytesCount) noexcept
-{
-    AtomicFlagGuard guard {RecordingMemoryEvent ()};
     AllocateInternal (_bytesCount);
-
-    // TODO: Send event.
+    EventManager::Get ().Allocate (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
-void AllocationGroup::Acquire (size_t _bytesCount) noexcept
+void AllocationGroup::Acquire (size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
-    AtomicFlagGuard guard {RecordingMemoryEvent ()};
     AcquireInternal (_bytesCount);
-
-    // TODO: Send event.
+    EventManager::Get ().Acquire (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
-void AllocationGroup::Release (size_t _bytesCount) noexcept
+void AllocationGroup::Release (size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
-    AtomicFlagGuard guard {RecordingMemoryEvent ()};
     ReleaseInternal (_bytesCount);
-
-    // TODO: Send event.
+    EventManager::Get ().Release (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
-void AllocationGroup::Free (size_t _bytesCount) noexcept
+void AllocationGroup::Free (size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
-    AtomicFlagGuard guard {RecordingMemoryEvent ()};
     FreeInternal (_bytesCount);
-
-    // TODO: Send event.
+    EventManager::Get ().Free (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
 AllocationGroup *AllocationGroup::Parent () const noexcept
@@ -249,4 +245,5 @@ AllocationGroupStack::AllocationGroupStack ()
 {
     stack.EmplaceBack (AllocationGroup::Root ());
 }
-} // namespace Emergence::Memory::Profiler::Original
+} // namespace Original
+} // namespace Emergence::Memory::Profiler

@@ -6,6 +6,7 @@
 
 #include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/Profiler/Original/AllocationGroup.hpp>
+#include <Memory/Profiler/Original/ProfilingLock.hpp>
 
 namespace Emergence::Memory::Profiler
 {
@@ -25,7 +26,7 @@ using IteratorImplementation = Original::AllocationGroup::Iterator;
 
 AllocationGroup AllocationGroup::Iterator::operator* () const noexcept
 {
-    return AllocationGroup ((*block_cast<IteratorImplementation> (data)));
+    return AllocationGroup (*block_cast<IteratorImplementation> (data));
 }
 
 EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (Iterator, IteratorImplementation)
@@ -44,13 +45,16 @@ AllocationGroup::AllocationGroup () noexcept : handle (nullptr)
 {
 }
 
-AllocationGroup::AllocationGroup (UniqueString _id) noexcept : handle (Original::AllocationGroup::Request (_id))
+AllocationGroup::AllocationGroup (UniqueString _id) noexcept
 {
+    Original::ProfilingLock lock;
+    handle = Original::AllocationGroup::Request (_id, lock);
 }
 
 AllocationGroup::AllocationGroup (const AllocationGroup &_parent, UniqueString _id) noexcept
-    : handle (Original::AllocationGroup::Request (static_cast<Original::AllocationGroup *> (_parent.handle), _id))
 {
+    Original::ProfilingLock lock;
+    handle = Original::AllocationGroup::Request (static_cast<Original::AllocationGroup *> (_parent.handle), _id, lock);
 }
 
 AllocationGroup::AllocationGroup (const AllocationGroup &_other) noexcept : handle (_other.handle)
@@ -73,7 +77,8 @@ void AllocationGroup::Allocate (size_t _bytesCount) noexcept
 {
     if (handle)
     {
-        static_cast<Original::AllocationGroup *> (handle)->Allocate (_bytesCount);
+        Original::ProfilingLock lock;
+        static_cast<Original::AllocationGroup *> (handle)->Allocate (_bytesCount, lock);
     }
 }
 
@@ -81,7 +86,8 @@ void AllocationGroup::Acquire (size_t _bytesCount) noexcept
 {
     if (handle)
     {
-        static_cast<Original::AllocationGroup *> (handle)->Acquire (_bytesCount);
+        Original::ProfilingLock lock;
+        static_cast<Original::AllocationGroup *> (handle)->Acquire (_bytesCount, lock);
     }
 }
 
@@ -89,7 +95,8 @@ void AllocationGroup::Release (size_t _bytesCount) noexcept
 {
     if (handle)
     {
-        static_cast<Original::AllocationGroup *> (handle)->Release (_bytesCount);
+        Original::ProfilingLock lock;
+        static_cast<Original::AllocationGroup *> (handle)->Release (_bytesCount, lock);
     }
 }
 
@@ -97,7 +104,8 @@ void AllocationGroup::Free (size_t _bytesCount) noexcept
 {
     if (handle)
     {
-        static_cast<Original::AllocationGroup *> (handle)->Free (_bytesCount);
+        Original::ProfilingLock lock;
+        static_cast<Original::AllocationGroup *> (handle)->Free (_bytesCount, lock);
     }
 }
 
