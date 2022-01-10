@@ -138,4 +138,40 @@ TEST_CASE (MoveAssign)
     [[maybe_unused]] void *secondRecord = anotherStack.Acquire (128u);
 }
 
+TEST_CASE (Profiling)
+{
+    constexpr size_t STACK_CAPACITY = 1024u;
+    constexpr size_t FIRST_ALLOCATION = 32u;
+    constexpr size_t SECOND_ALLOCATION = 128u;
+
+    Emergence::Memory::Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
+    Emergence::Memory::Stack stack {group, STACK_CAPACITY};
+
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    [[maybe_unused]] void *first = stack.Acquire (FIRST_ALLOCATION);
+    const void *headAfterFirst = stack.Head ();
+
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    [[maybe_unused]] void *second = stack.Acquire (SECOND_ALLOCATION);
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION - SECOND_ALLOCATION);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION + SECOND_ALLOCATION);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    stack.Release (headAfterFirst);
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    stack.Clear ();
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+}
+
 END_SUITE

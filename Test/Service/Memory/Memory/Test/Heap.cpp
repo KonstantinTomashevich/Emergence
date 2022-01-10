@@ -85,4 +85,36 @@ TEST_CASE (HeapSTD)
     }
 }
 
+TEST_CASE (Profiling)
+{
+    Emergence::Memory::Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
+    Emergence::Memory::Heap heap {group};
+    CHECK_EQUAL (group.GetTotal (), 0u);
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+
+    constexpr std::size_t FIRST_OBJECT_SIZE = 32u;
+    constexpr std::size_t SECOND_OBJECT_SIZE = 128u;
+
+    void *first = heap.Acquire (FIRST_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetTotal (), FIRST_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_OBJECT_SIZE);
+
+    void *second = heap.Acquire (SECOND_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetTotal (), FIRST_OBJECT_SIZE + SECOND_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_OBJECT_SIZE + SECOND_OBJECT_SIZE);
+
+    heap.Release (first, FIRST_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetTotal (), SECOND_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), SECOND_OBJECT_SIZE);
+
+    heap.Release (second, SECOND_OBJECT_SIZE);
+    CHECK_EQUAL (group.GetTotal (), 0u);
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+}
+
 END_SUITE

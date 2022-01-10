@@ -125,6 +125,41 @@ void MoveAssign ()
     CHECK (firstContext.pool.Acquire ());
     CHECK (secondContext.pool.Acquire ());
 }
+
+template <typename Pool>
+void Profiling ()
+{
+    Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
+    Pool pool {group, sizeof (TestItem), 2u};
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), 0u);
+
+    [[maybe_unused]] void *first = pool.Acquire ();
+    CHECK_EQUAL (group.GetReserved (), sizeof (TestItem));
+    CHECK_EQUAL (group.GetAcquired (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem));
+    CHECK_EQUAL (group.GetTotal (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u);
+
+    [[maybe_unused]] void *second = pool.Acquire ();
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u);
+    CHECK_EQUAL (group.GetTotal (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u);
+
+    void *third = pool.Acquire ();
+    CHECK_EQUAL (group.GetReserved (), sizeof (TestItem));
+    CHECK_EQUAL (group.GetAcquired (), 2u * RESERVED_FOR_PAGE_INTERNALS + 3u * sizeof (TestItem));
+    CHECK_EQUAL (group.GetTotal (), 2u * (RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u));
+
+    pool.Release (third);
+    CHECK_EQUAL (group.GetReserved (), 2u * sizeof (TestItem));
+    CHECK_EQUAL (group.GetAcquired (), 2u * RESERVED_FOR_PAGE_INTERNALS + 2u * sizeof (TestItem));
+    CHECK_EQUAL (group.GetTotal (), 2u * (RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u));
+
+    pool.Clear ();
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), 0u);
+}
 } // namespace Emergence::Memory::Test::Pool
 
 #define SHARED_POOL_TEST(ImplementationClass, TestName)                                                                \
@@ -139,4 +174,5 @@ void MoveAssign ()
     SHARED_POOL_TEST (ImplementationClass, MemoryReused)                                                               \
     SHARED_POOL_TEST (ImplementationClass, Clear)                                                                      \
     SHARED_POOL_TEST (ImplementationClass, Move)                                                                       \
-    SHARED_POOL_TEST (ImplementationClass, MoveAssign)
+    SHARED_POOL_TEST (ImplementationClass, MoveAssign)                                                                 \
+    SHARED_POOL_TEST (ImplementationClass, Profiling)
