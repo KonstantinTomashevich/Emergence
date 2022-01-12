@@ -94,6 +94,7 @@ public:
     /// \brief Places this group on top of thread local stack.
     /// \return RAII object for stack push/pop operations.
     /// \see ::Top
+    /// \invariant Cannot be called by placeholder group.
     [[nodiscard]] PlacedOnStack PlaceOnTop () const noexcept;
 
     /// \brief Record allocation of given amount of bytes.

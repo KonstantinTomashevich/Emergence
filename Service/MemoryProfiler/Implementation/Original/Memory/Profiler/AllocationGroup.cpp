@@ -57,9 +57,7 @@ AllocationGroup::AllocationGroup (const AllocationGroup &_parent, UniqueString _
     handle = Original::AllocationGroup::Request (static_cast<Original::AllocationGroup *> (_parent.handle), _id, lock);
 }
 
-AllocationGroup::AllocationGroup (const AllocationGroup &_other) noexcept : handle (_other.handle)
-{
-}
+AllocationGroup::AllocationGroup (const AllocationGroup &_other) noexcept = default;
 
 AllocationGroup::AllocationGroup (AllocationGroup &&_other) noexcept : handle (_other.handle)
 {
@@ -70,6 +68,7 @@ AllocationGroup::~AllocationGroup () noexcept = default;
 
 AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
 {
+    assert (handle);
     return AllocationGroup::PlacedOnStack (handle);
 }
 

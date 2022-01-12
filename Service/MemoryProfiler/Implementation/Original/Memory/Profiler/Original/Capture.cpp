@@ -106,8 +106,8 @@ size_t CapturedAllocationGroup::GetTotal () const noexcept
 }
 
 EventObserver::EventObserver (const ProfilingLock &_lock) noexcept
+    : current (EventManager::Get ().StartObservation (_lock))
 {
-    EventManager::Get ().OnObserverCreated (_lock);
 }
 
 EventObserver::EventObserver (EventObserver &&_other) noexcept : current (_other.current)
@@ -121,14 +121,19 @@ EventObserver::~EventObserver () noexcept
     if (!movedOut)
     {
         ProfilingLock lock;
-        EventManager::Get ().OnObserverDestroyed (current, lock);
+        EventManager::Get ().FinishObservation (current, lock);
     }
 }
 
 const Event *EventObserver::NextEvent (const ProfilingLock &_lock) noexcept
 {
     assert (!movedOut);
-    current = EventManager::Get ().RequestNext (current, _lock);
-    return &current->event;
+    if (const EventNode *next = EventManager::Get ().RequestNext (current, _lock))
+    {
+        current = next;
+        return &next->event;
+    }
+
+    return nullptr;
 }
 } // namespace Emergence::Memory::Profiler::Original

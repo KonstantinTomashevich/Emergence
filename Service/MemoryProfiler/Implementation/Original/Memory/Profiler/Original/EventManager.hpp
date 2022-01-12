@@ -43,11 +43,13 @@ public:
                  UniqueString _markerId,
                  const ProfilingLock & /*unused*/) noexcept;
 
-    void OnObserverCreated (const ProfilingLock & /*unused*/) noexcept;
+    /// \return Node, that should be used as parameter for ::RequestNext during first next event request by user.
+    const EventNode *StartObservation (const ProfilingLock & /*unused*/) noexcept;
 
-    EventNode *RequestNext (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept;
+    /// \return If movement to the next node was done, returns pointer to that node. Otherwise returns `nullptr`.
+    const EventNode *RequestNext (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept;
 
-    void OnObserverDestroyed (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept;
+    void FinishObservation (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (EventManager);
 

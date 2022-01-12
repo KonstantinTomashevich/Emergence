@@ -98,6 +98,11 @@ EventObserver::EventObserver (EventObserver &&_other) noexcept
     new (&data) Original::EventObserver (std::move (block_cast<Original::EventObserver> (_other.data)));
 }
 
+EventObserver::~EventObserver () noexcept
+{
+    block_cast<Original::EventObserver> (data).~EventObserver ();
+}
+
 const Event *EventObserver::NextEvent () noexcept
 {
     Original::ProfilingLock lock;

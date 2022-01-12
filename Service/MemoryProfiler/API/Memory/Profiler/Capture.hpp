@@ -118,7 +118,7 @@ public:
 
     EventObserver (EventObserver &&_other) noexcept;
 
-    ~EventObserver () = default;
+    ~EventObserver () noexcept;
 
     /// \return Next event or `nullptr` if there is no new events.
     /// \details Thread safe.

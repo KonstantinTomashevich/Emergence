@@ -89,38 +89,50 @@ void EventManager::Marker (const Profiler::AllocationGroup &_group,
     }
 }
 
-void EventManager::OnObserverCreated (const ProfilingLock & /*unused*/) noexcept
+const EventNode *EventManager::StartObservation (const ProfilingLock & /*unused*/) noexcept
 {
-    ++freshObservers;
     ++observers;
+
+    // If there are existing events, return last one to the observer, otherwise it will start reading old events.
+    if (last)
+    {
+        ++last->observers;
+        return last;
+    }
+
+    ++freshObservers;
+    return nullptr;
 }
 
-EventNode *EventManager::RequestNext (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept
+const EventNode *EventManager::RequestNext (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept
 {
     if (_current)
     {
         assert (_current->observers != 0u);
-        --const_cast<EventNode *> (_current)->observers; // It was const only for event observer,
-
         EventNode *next = _current->next;
+
         if (next)
         {
+            --const_cast<EventNode *> (_current)->observers; // It was const only for event observer,
             ++next->observers;
+
+            DropOutdatedEvents ();
+            return next;
         }
 
-        DropOutdatedEvents ();
-        return next;
+        return nullptr;
     }
 
     if (first)
     {
         ++first->observers;
+        --freshObservers;
     }
 
     return first;
 }
 
-void EventManager::OnObserverDestroyed (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept
+void EventManager::FinishObservation (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept
 {
     assert (observers > 0u);
     --observers;
