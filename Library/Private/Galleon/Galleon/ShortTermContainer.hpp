@@ -18,6 +18,15 @@ namespace Emergence::Galleon
 /// \brief Container for objects that are created and destroyed frequently.
 class ShortTermContainer final : public ContainerBase
 {
+private:
+    /// \brief Container node, that contains single object and points to node with next object.
+    struct Node final
+    {
+        Node *next = nullptr;
+
+        uint8_t content[0u];
+    };
+
 public:
     /// \brief Prepared query, used to start insertion transactions.
     class InsertQuery final
@@ -82,9 +91,7 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            Container::Vector<void *>::const_iterator iterator;
-
-            const Container::Vector<void *>::const_iterator end;
+            Node *current = nullptr;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept = default;
@@ -125,9 +132,8 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            Container::Vector<void *>::iterator iterator;
-
-            Container::Vector<void *>::iterator end;
+            Node *current = nullptr;
+            Node *previous = nullptr;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept = default;
@@ -173,10 +179,9 @@ private:
 
     ~ShortTermContainer () noexcept;
 
-    /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
-    Container::Vector<void *> objects;
-
     Memory::UnorderedPool pool;
+
+    Node *firstNode = nullptr;
 
     AccessCounter accessCounter;
 };

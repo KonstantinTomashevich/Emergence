@@ -34,7 +34,7 @@ public:
         /// Prepared query constructs its cursors.
         friend class InsertShortTermQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
         explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
