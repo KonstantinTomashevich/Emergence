@@ -10,7 +10,7 @@
 
 namespace Emergence::Memory::Profiler
 {
-void AddMarker (UniqueString _markerId, AllocationGroup _group) noexcept
+void AddMarker (UniqueString _markerId, const AllocationGroup &_group) noexcept
 {
     Original::ProfilingLock lock;
     Original::EventManager::Get ().Marker (_group, _markerId, lock);
