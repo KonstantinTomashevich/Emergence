@@ -1,5 +1,6 @@
 add_subdirectory (Container)
 add_subdirectory (Flow)
 add_subdirectory (Handling)
+add_subdirectory (MemoryRecording)
 add_subdirectory (SyntaxSugar)
 add_subdirectory (VisualGraph)
