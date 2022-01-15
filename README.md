@@ -14,6 +14,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - [Hashing](./Service/Hashing/README.md): provides byte sequence hashing.
 - [Log](./Service/Log/README.md): provides simple logging interface.
 - [Memory](./Service/Memory/README.md): set of mechanisms for rational memory usage.
+- [MemoryProfiler](./Service/MemoryProfiler/README.md): provides mechanism for memory usage registration and
+  observation, integrated with `Memory` service.
 - [RecordCollection](./Service/RecordCollection/README.md): storage for records of the same type, that provides fast
   lookups for point, linear and volumetric representations of records.
 - [StandardLayoutMapping](./Service/StandardLayoutMapping/README.md): fast field-only reflection for standard layout
