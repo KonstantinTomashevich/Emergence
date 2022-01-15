@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -39,8 +38,8 @@ struct Event final
     /// \brief Allocation group, associated with this event.
     AllocationGroup group;
 
-    /// \brief Time point, at which event occurred.
-    std::chrono::time_point<std::chrono::high_resolution_clock> time;
+    /// \brief Time point in nanoseconds after startup, at which event occurred.
+    std::uint64_t timeNs;
 
     union
     {
@@ -98,6 +97,9 @@ public:
 
     /// \return Total amount of bytes, that are owned by allocation group.
     [[nodiscard]] size_t GetTotal () const noexcept;
+
+    /// \return Allocation group, from which this capture was created.
+    [[nodiscard]] AllocationGroup GetSource () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (CapturedAllocationGroup);
 

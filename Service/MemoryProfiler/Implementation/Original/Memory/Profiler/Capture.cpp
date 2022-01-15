@@ -5,6 +5,7 @@
 #include <SyntaxSugar/BlockCast.hpp>
 
 #include <Memory/Profiler/Capture.hpp>
+#include <Memory/Profiler/ImplementationUtils.hpp>
 #include <Memory/Profiler/Original/Capture.hpp>
 #include <Memory/Profiler/Original/ProfilingLock.hpp>
 
@@ -84,6 +85,13 @@ size_t CapturedAllocationGroup::GetTotal () const noexcept
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
     assert (group);
     return group->GetTotal ();
+}
+
+AllocationGroup CapturedAllocationGroup::GetSource () const noexcept
+{
+    const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
+    assert (group);
+    return ImplementationUtils::ToServiceFormat (const_cast<Original::AllocationGroup *> (group->GetSource ()));
 }
 
 CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept

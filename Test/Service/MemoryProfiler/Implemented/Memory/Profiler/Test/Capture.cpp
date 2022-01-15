@@ -15,17 +15,18 @@ bool CaptureTestIncludeMarker () noexcept
     return true;
 }
 
-void CheckCaptureConsistency (const CapturedAllocationGroup &_captured, const AllocationGroup &_source)
+void CheckCaptureConsistency (const CapturedAllocationGroup &_captured, const AllocationGroup &_expectedSource)
 {
-    CHECK_EQUAL (_captured.GetId (), _source.GetId ());
-    CHECK_EQUAL (_captured.GetReserved (), _source.GetReserved ());
-    CHECK_EQUAL (_captured.GetAcquired (), _source.GetAcquired ());
-    CHECK_EQUAL (_captured.GetTotal (), _source.GetTotal ());
+    CHECK_EQUAL (_captured.GetSource (), _expectedSource);
+    CHECK_EQUAL (_captured.GetId (), _expectedSource.GetId ());
+    CHECK_EQUAL (_captured.GetReserved (), _expectedSource.GetReserved ());
+    CHECK_EQUAL (_captured.GetAcquired (), _expectedSource.GetAcquired ());
+    CHECK_EQUAL (_captured.GetTotal (), _expectedSource.GetTotal ());
 
     auto capturedIterator = _captured.BeginChildren ();
-    auto sourceIterator = _source.BeginChildren ();
+    auto sourceIterator = _expectedSource.BeginChildren ();
 
-    while (capturedIterator != _captured.EndChildren () && sourceIterator != _source.EndChildren ())
+    while (capturedIterator != _captured.EndChildren () && sourceIterator != _expectedSource.EndChildren ())
     {
         CheckCaptureConsistency (*capturedIterator, *sourceIterator);
         ++capturedIterator;
@@ -33,7 +34,7 @@ void CheckCaptureConsistency (const CapturedAllocationGroup &_captured, const Al
     }
 
     CHECK_EQUAL (capturedIterator, _captured.EndChildren ());
-    CHECK_EQUAL (sourceIterator, _source.EndChildren ());
+    CHECK_EQUAL (sourceIterator, _expectedSource.EndChildren ());
 }
 } // namespace Emergence::Memory::Profiler::Test
 
@@ -84,7 +85,7 @@ TEST_CASE (EventCapture)
     EventObserver observer = Capture::Start ().second;
     auto checkEvents = [&observer, &group] (const Vector<Event> &_expectation)
     {
-        Optional<decltype (Event::time)> previousEventTime;
+        uint64_t previousEventTime = 0u;
         auto iterator = _expectation.begin ();
 
         while (const Event *received = observer.NextEvent ())
@@ -105,10 +106,10 @@ TEST_CASE (EventCapture)
 
                 if (previousEventTime)
                 {
-                    CHECK (previousEventTime.value () <= received->time);
+                    CHECK (previousEventTime <= received->timeNs);
                 }
 
-                previousEventTime = received->time;
+                previousEventTime = received->timeNs;
                 switch (expected.type)
                 {
                 case EventType::ALLOCATE:

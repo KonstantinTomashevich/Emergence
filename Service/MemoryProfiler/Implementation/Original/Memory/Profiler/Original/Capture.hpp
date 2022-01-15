@@ -52,6 +52,8 @@ public:
 
     [[nodiscard]] size_t GetTotal () const noexcept;
 
+    [[nodiscard]] const AllocationGroup *GetSource () const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (CapturedAllocationGroup);
 
 private:
@@ -61,6 +63,7 @@ private:
 
     Handling::Handle<CapturedAllocationGroup> firstChild;
     Handling::Handle<CapturedAllocationGroup> nextOnLevel;
+    const AllocationGroup *source = nullptr;
 };
 
 class EventObserver final

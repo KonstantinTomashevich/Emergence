@@ -71,7 +71,8 @@ CapturedAllocationGroup::CapturedAllocationGroup (const AllocationGroup &_source
       reserved (_source.GetReserved ()),
       acquired (_source.GetAcquired ()),
       firstChild (_source.firstChild ? new CapturedAllocationGroup {*_source.firstChild, _lock} : nullptr),
-      nextOnLevel (_source.nextOnLevel ? new CapturedAllocationGroup {*_source.nextOnLevel, _lock} : nullptr)
+      nextOnLevel (_source.nextOnLevel ? new CapturedAllocationGroup {*_source.nextOnLevel, _lock} : nullptr),
+      source (&_source)
 {
 }
 
@@ -103,6 +104,11 @@ size_t CapturedAllocationGroup::GetReserved () const noexcept
 size_t CapturedAllocationGroup::GetTotal () const noexcept
 {
     return acquired + reserved;
+}
+
+const AllocationGroup *CapturedAllocationGroup::GetSource () const noexcept
+{
+    return source;
 }
 
 EventObserver::EventObserver (const ProfilingLock &_lock) noexcept

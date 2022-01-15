@@ -1,24 +1,12 @@
 #include <atomic>
 #include <cassert>
 
+#include <Memory/Profiler/ImplementationUtils.hpp>
 #include <Memory/Profiler/Original/AllocationGroup.hpp>
 #include <Memory/Profiler/Original/EventManager.hpp>
 #include <Memory/UnorderedPool.hpp>
 
-namespace Emergence::Memory::Profiler
-{
-class ImplementationUtils final
-{
-public:
-    ImplementationUtils () = default;
-
-    static Profiler::AllocationGroup ToServiceFormat (Original::AllocationGroup *_group) noexcept
-    {
-        return Profiler::AllocationGroup {_group};
-    }
-};
-
-namespace Original
+namespace Emergence::Memory::Profiler::Original
 {
 AllocationGroup *AllocationGroup::Iterator::operator* () const noexcept
 {
@@ -245,5 +233,4 @@ AllocationGroupStack::AllocationGroupStack ()
 {
     stack.EmplaceBack (AllocationGroup::Root ());
 }
-} // namespace Original
-} // namespace Emergence::Memory::Profiler
+} // namespace Emergence::Memory::Profiler::Original

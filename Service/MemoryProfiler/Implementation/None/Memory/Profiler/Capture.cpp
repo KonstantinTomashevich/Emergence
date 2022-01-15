@@ -85,6 +85,11 @@ size_t CapturedAllocationGroup::GetTotal () const noexcept
     return 0u;
 }
 
+AllocationGroup CapturedAllocationGroup::GetSource () const noexcept
+{
+    return AllocationGroup {};
+}
+
 CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept : handle (_handle)
 {
     // Suppress unused class field warning.

@@ -23,7 +23,7 @@ void EventManager::Allocate (const Profiler::AllocationGroup &_group,
         RegisterNode (new (events.Acquire ()) EventNode {Event {
             .type = EventType::ALLOCATE,
             .group = _group,
-            .time = std::chrono::high_resolution_clock::now (),
+            .timeNs = static_cast <uint64_t> ((std::chrono::high_resolution_clock::now () - startupTime).count ()),
             .bytes = _bytes,
         }});
     }
@@ -38,7 +38,7 @@ void EventManager::Acquire (const Profiler::AllocationGroup &_group,
         RegisterNode (new (events.Acquire ()) EventNode {Event {
             .type = EventType::ACQUIRE,
             .group = _group,
-            .time = std::chrono::high_resolution_clock::now (),
+            .timeNs = static_cast <uint64_t> ((std::chrono::high_resolution_clock::now () - startupTime).count ()),
             .bytes = _bytes,
         }});
     }
@@ -53,7 +53,7 @@ void EventManager::Release (const Profiler::AllocationGroup &_group,
         RegisterNode (new (events.Acquire ()) EventNode {Event {
             .type = EventType::RELEASE,
             .group = _group,
-            .time = std::chrono::high_resolution_clock::now (),
+            .timeNs = static_cast <uint64_t> ((std::chrono::high_resolution_clock::now () - startupTime).count ()),
             .bytes = _bytes,
         }});
     }
@@ -68,7 +68,7 @@ void EventManager::Free (const Profiler::AllocationGroup &_group,
         RegisterNode (new (events.Acquire ()) EventNode {Event {
             .type = EventType::FREE,
             .group = _group,
-            .time = std::chrono::high_resolution_clock::now (),
+            .timeNs = static_cast <uint64_t> ((std::chrono::high_resolution_clock::now () - startupTime).count ()),
             .bytes = _bytes,
         }});
     }
@@ -83,7 +83,7 @@ void EventManager::Marker (const Profiler::AllocationGroup &_group,
         RegisterNode (new (events.Acquire ()) EventNode {Event {
             .type = EventType::MARKER,
             .group = _group,
-            .time = std::chrono::high_resolution_clock::now (),
+            .timeNs = static_cast <uint64_t> ((std::chrono::high_resolution_clock::now () - startupTime).count ()),
             .markerId = _markerId,
         }});
     }

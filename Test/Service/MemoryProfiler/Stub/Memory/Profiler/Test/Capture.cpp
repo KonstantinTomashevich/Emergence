@@ -19,6 +19,9 @@ TEST_CASE (CapturedAllocationGroup)
     CHECK_EQUAL (captured.GetAcquired (), 0u);
     CHECK_EQUAL (captured.GetTotal (), 0u);
 
+    CHECK_EQUAL (captured.GetSource (), group);
+    CHECK_EQUAL (captured.GetSource (), AllocationGroup {});
+
     auto begin = captured.BeginChildren ();
     auto end = captured.EndChildren ();
     CHECK_EQUAL (begin, end);
