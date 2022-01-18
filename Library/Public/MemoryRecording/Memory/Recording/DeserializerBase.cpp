@@ -21,9 +21,4 @@ void DeserializerBase::End () noexcept
 {
     recording = nullptr;
 }
-
-Recording *DeserializerBase::GetRecording () const noexcept
-{
-    return recording;
-}
 } // namespace Emergence::Memory::Recording

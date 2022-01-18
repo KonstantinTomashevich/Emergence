@@ -17,8 +17,6 @@ protected:
 
     void End () noexcept;
 
-    [[nodiscard]] Recording *GetRecording () const noexcept;
-
 private:
     Recording *recording = nullptr;
 };

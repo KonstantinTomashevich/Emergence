@@ -19,7 +19,11 @@ static const char *RegisterValue (const std::string_view &_value)
         return nullptr;
     }
 
-    if (_value.data () == MEMORY_PROFILING_GROUP_ID)
+    // We can not just compare pointers because of several reasons:
+    // - Optimizer is not guaranteed to merge constants.
+    // - Constant with the same value might be loaded from other source,
+    //   for example memory profiler recording file or from dynamic linking library.
+    if (_value == MEMORY_PROFILING_GROUP_ID)
     {
         return MEMORY_PROFILING_GROUP_ID;
     }

@@ -2,8 +2,6 @@
 
 #include <ostream>
 
-#include <Container/HashMap.hpp>
-
 #include <Memory/Profiler/Capture.hpp>
 
 #include <Memory/Recording/Event.hpp>
@@ -34,9 +32,6 @@ public:
 
 private:
     void WriteEvent (const Event &_event) noexcept;
-
-    // TODO: Does almost the same thing as RuntimeConverter, but has different API.
-    //       Think about merging APIs, maybe remove implicit capture from RuntimeConverter?
 
     std::ostream *output = nullptr;
     GroupUIDAssigner uidAssigner;

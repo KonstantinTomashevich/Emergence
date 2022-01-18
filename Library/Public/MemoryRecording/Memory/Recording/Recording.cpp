@@ -341,12 +341,23 @@ bool Recording::MoveToNextEvent () noexcept
     return true;
 }
 
+const RecordedAllocationGroup *Recording::GetGroupByUID (GroupUID _uid) const noexcept
+{
+    if (_uid < idToGroup.size ())
+    {
+        return idToGroup[_uid];
+    }
+
+    return nullptr;
+}
+
 void Recording::ReportEvent (const Event &_event) noexcept
 {
     auto *node = new (events.Acquire ()) EventNode {.event = _event};
     if (last)
     {
         last->next = node;
+        node->previous = last;
         last = node;
     }
     else
@@ -359,7 +370,7 @@ void Recording::ReportEvent (const Event &_event) noexcept
 
 RecordedAllocationGroup *Recording::RequireGroup (GroupUID _uid) const noexcept
 {
-    RecordedAllocationGroup *group = _uid < idToGroup.size () ? idToGroup[current->event.parent] : nullptr;
+    RecordedAllocationGroup *group = _uid < idToGroup.size () ? idToGroup[_uid] : nullptr;
     if (!group)
     {
         Log::GlobalLogger::Log (Log::Level::ERROR,

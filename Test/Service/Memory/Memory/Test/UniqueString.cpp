@@ -46,7 +46,7 @@ TEST_CASE (EqualStrings)
 TEST_CASE (Empty)
 {
     Emergence::Memory::UniqueString empty;
-    CHECK (*empty == nullptr);
+    CHECK (!*empty);
     CHECK (empty == empty);
 }
 

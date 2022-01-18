@@ -81,6 +81,9 @@ StreamSerializer &StreamSerializer::operator= (StreamSerializer &&_other) noexce
 void StreamSerializer::WriteEvent (const Event &_event) noexcept
 {
     assert (output);
+
+    // TODO: Implement generic serialization library, based on StandardLayoutMapping?
+
     output->write (reinterpret_cast<const char *> (&_event.type), sizeof (_event.type));
     output->write (reinterpret_cast<const char *> (&_event.timeNs), sizeof (_event.timeNs));
 

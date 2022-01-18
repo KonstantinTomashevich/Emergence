@@ -122,6 +122,8 @@ public:
 
     bool MoveToNextEvent () noexcept;
 
+    const RecordedAllocationGroup *GetGroupByUID (GroupUID _uid) const noexcept;
+
 private:
     friend class DeserializerBase;
 

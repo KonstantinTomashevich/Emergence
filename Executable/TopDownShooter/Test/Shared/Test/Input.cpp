@@ -130,9 +130,9 @@ void Configurator::Execute ()
                     GlobalLogger::Log (Level::INFO, "[Configurator] Delete listener " + ToString (_step.id) + ".");
 
                     auto cursor = modifyListenerById.Execute (&_step.id);
-                    REQUIRE (*cursor != nullptr);
+                    REQUIRE (*cursor);
                     ~cursor;
-                    REQUIRE (*cursor == nullptr);
+                    REQUIRE (!*cursor);
                 }
                 else if constexpr (std::is_same_v<Type, Steps::AddSubscription>)
                 {
