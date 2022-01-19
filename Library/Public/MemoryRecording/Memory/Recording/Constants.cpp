@@ -8,9 +8,9 @@ const Profiler::AllocationGroup &Constants::AllocationGroup () noexcept
     return group;
 }
 
-UniqueString Constants::RecordingInitializationFinishedMarker () noexcept
+UniqueString Constants::CaptureInitializationFinishedMarker () noexcept
 {
-    static UniqueString markerId {"RecordingInitializationFinished"};
+    static UniqueString markerId {"CaptureInitializationFinished"};
     return markerId;
 }
 } // namespace Emergence::Memory::Recording

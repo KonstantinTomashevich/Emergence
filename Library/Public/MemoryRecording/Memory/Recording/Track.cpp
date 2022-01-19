@@ -3,7 +3,7 @@
 #include <Log/Log.hpp>
 
 #include <Memory/Recording/Constants.hpp>
-#include <Memory/Recording/Recording.hpp>
+#include <Memory/Recording/Track.hpp>
 
 namespace Emergence::Memory::Recording
 {
@@ -119,11 +119,11 @@ RecordedAllocationGroup::RecordedAllocationGroup (RecordedAllocationGroup *_pare
     }
 }
 
-Recording::EventIterator::EventIterator (const Recording::EventIterator &_other) noexcept = default;
+Track::EventIterator::EventIterator (const Track::EventIterator &_other) noexcept = default;
 
-Recording::EventIterator::EventIterator (Recording::EventIterator &&_other) noexcept = default;
+Track::EventIterator::EventIterator (Track::EventIterator &&_other) noexcept = default;
 
-const Event *Recording::EventIterator::operator* () const noexcept
+const Event *Track::EventIterator::operator* () const noexcept
 {
     if (current)
     {
@@ -133,18 +133,15 @@ const Event *Recording::EventIterator::operator* () const noexcept
     return nullptr;
 }
 
-Recording::EventIterator &Recording::EventIterator::operator= (const Recording::EventIterator &_other) noexcept =
-    default;
+Track::EventIterator &Track::EventIterator::operator= (const Track::EventIterator &_other) noexcept = default;
 
-Recording::EventIterator &Recording::EventIterator::operator= (Recording::EventIterator &&_other) noexcept = default;
+Track::EventIterator &Track::EventIterator::operator= (Track::EventIterator &&_other) noexcept = default;
 
-Recording::EventIterator::~EventIterator () noexcept = default;
+Track::EventIterator::~EventIterator () noexcept = default;
 
-Recording::EventIterator &Recording::EventIterator::operator++ () noexcept
+Track::EventIterator &Track::EventIterator::operator++ () noexcept
 {
-    assert (recording);
-    assert (current);
-
+    assert (track);
     if (current)
     {
         current = current->next;
@@ -152,22 +149,22 @@ Recording::EventIterator &Recording::EventIterator::operator++ () noexcept
     else
     {
         // Circle from the end to first element.
-        current = recording->first;
+        current = track->first;
     }
 
     return *this;
 }
 
-Recording::EventIterator Recording::EventIterator::operator++ (int) noexcept
+Track::EventIterator Track::EventIterator::operator++ (int) noexcept
 {
     EventIterator previous = *this;
     ++*this;
     return previous;
 }
 
-Recording::EventIterator &Recording::EventIterator::operator-- () noexcept
+Track::EventIterator &Track::EventIterator::operator-- () noexcept
 {
-    assert (recording);
+    assert (track);
     assert (current);
 
     if (current)
@@ -177,64 +174,64 @@ Recording::EventIterator &Recording::EventIterator::operator-- () noexcept
     else
     {
         // Go from the end to last element.
-        current = recording->last;
+        current = track->last;
     }
 
     return *this;
 }
 
-Recording::EventIterator Recording::EventIterator::operator-- (int) noexcept
+Track::EventIterator Track::EventIterator::operator-- (int) noexcept
 {
     EventIterator previous = *this;
     --*this;
     return previous;
 }
 
-bool Recording::EventIterator::operator== (const Recording::EventIterator &_other) const noexcept
+bool Track::EventIterator::operator== (const Track::EventIterator &_other) const noexcept
 {
     // Comparing iterators from different recordings seems error-prone.
-    assert (recording == _other.recording);
+    assert (track == _other.track);
     return current == _other.current;
 }
 
-bool Recording::EventIterator::operator!= (const Recording::EventIterator &_other) const noexcept
+bool Track::EventIterator::operator!= (const Track::EventIterator &_other) const noexcept
 {
     return !(*this == _other);
 }
 
-Recording::EventIterator::EventIterator (const Recording *_recording, const Recording::EventNode *_current) noexcept
-    : recording (_recording),
+Track::EventIterator::EventIterator (const Track *_track, const Track::EventNode *_current) noexcept
+    : track (_track),
       current (_current)
 {
 }
 
-Recording::Recording () noexcept
+Track::Track () noexcept
     : idToGroup (Constants::AllocationGroup ()),
       events (Constants::AllocationGroup (), sizeof (EventNode))
 {
 }
 
-const RecordedAllocationGroup *Recording::Root () const noexcept
+const RecordedAllocationGroup *Track::Root () const noexcept
 {
     return root.get ();
 }
 
-Recording::EventIterator Recording::EventBegin () const noexcept
+Track::EventIterator Track::EventBegin () const noexcept
 {
     return EventIterator {this, first};
 }
 
-Recording::EventIterator Recording::EventCurrent () const noexcept
+Track::EventIterator Track::EventCurrent () const noexcept
 {
     return EventIterator {this, current};
 }
 
-Recording::EventIterator Recording::EventEnd () const noexcept
+Track::EventIterator Track::EventEnd () const noexcept
 {
     return EventIterator {this, nullptr};
 }
 
-bool Recording::MoveToPreviousEvent () noexcept
+bool Track::MoveToPreviousEvent () noexcept
 {
     if (!current)
     {
@@ -286,7 +283,7 @@ bool Recording::MoveToPreviousEvent () noexcept
     return true;
 }
 
-bool Recording::MoveToNextEvent () noexcept
+bool Track::MoveToNextEvent () noexcept
 {
     if (current == last || !first)
     {
@@ -341,7 +338,7 @@ bool Recording::MoveToNextEvent () noexcept
     return true;
 }
 
-const RecordedAllocationGroup *Recording::GetGroupByUID (GroupUID _uid) const noexcept
+const RecordedAllocationGroup *Track::GetGroupByUID (GroupUID _uid) const noexcept
 {
     if (_uid < idToGroup.size ())
     {
@@ -351,11 +348,20 @@ const RecordedAllocationGroup *Recording::GetGroupByUID (GroupUID _uid) const no
     return nullptr;
 }
 
-void Recording::ReportEvent (const Event &_event) noexcept
+void Track::ReportEvent (const Event &_event) noexcept
 {
     auto *node = new (events.Acquire ()) EventNode {.event = _event};
     if (last)
     {
+        if (_event.timeNs < last->event.timeNs)
+        {
+            Log::GlobalLogger::Log (Log::Level::ERROR,
+                                    "Recording::Track: Unable to report event because it breaks time order!");
+
+            events.Release (node);
+            return;
+        }
+
         last->next = node;
         node->previous = last;
         last = node;
@@ -368,55 +374,58 @@ void Recording::ReportEvent (const Event &_event) noexcept
     }
 }
 
-RecordedAllocationGroup *Recording::RequireGroup (GroupUID _uid) const noexcept
+RecordedAllocationGroup *Track::RequireGroup (GroupUID _uid) const noexcept
 {
     RecordedAllocationGroup *group = _uid < idToGroup.size () ? idToGroup[_uid] : nullptr;
     if (!group)
     {
         Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable to find group with uid " + Container::ToString (_uid) + "!");
+                                "Recording::Track: Unable to find group with uid " + Container::ToString (_uid) + "!");
     }
 
     return group;
 }
 
-bool Recording::ApplyDeclareGroupEvent (const Event &_event) noexcept
+bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::DECLARE_GROUP);
+    if (_event.uid < idToGroup.size ())
+    {
+        auto *group = idToGroup[_event.uid];
+        if (group->GetId () != _event.id)
+        {
+            Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Two groups contend for one UID!");
+            return false;
+        }
+
+        group->reserved = _event.reservedBytes;
+        group->acquired = _event.acquiredBytes;
+        return true;
+    }
+
+    if (_event.uid != idToGroup.size ())
+    {
+        Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Group uids are expected to be incremental.");
+        return false;
+    }
+
     if (_event.parent == MISSING_GROUP_ID)
     {
         // Root group declaration.
         assert (!*_event.id);
-        if (!root)
-        {
-            root.reset (new RecordedAllocationGroup {nullptr, {}, _event.reservedBytes, _event.acquiredBytes});
-            assert (idToGroup.empty ()); // If we created any groups before root, then our logic is broken.
-            idToGroup.emplace_back (root.get ());
-        }
-        else
-        {
-            root->reserved = _event.reservedBytes;
-            root->acquired = _event.acquiredBytes;
-        }
+        assert (!root); // If root exists, it should have been found by id previously.
+
+        root.reset (new RecordedAllocationGroup {nullptr, {}, _event.reservedBytes, _event.acquiredBytes});
+        assert (idToGroup.empty ()); // If we created any groups before root, then our logic is broken.
+        assert (idToGroup.size () == _event.uid);
+        idToGroup.emplace_back (root.get ());
 
         return true;
     }
 
     if (RecordedAllocationGroup *parent = RequireGroup (_event.parent))
     {
-        for (auto iterator = parent->BeginChildren (); iterator != parent->EndChildren (); ++iterator)
-        {
-            // Interface is const because it is available to user. Recording is allowed to change groups.
-            auto *child = const_cast<RecordedAllocationGroup *> (*iterator);
-
-            if (child->GetId () == _event.id)
-            {
-                child->reserved = _event.reservedBytes;
-                child->acquired = _event.acquiredBytes;
-                return true;
-            }
-        }
-
+        // We do not need to check for overlapping ids in children here, because we have already checked uids.
         idToGroup.emplace_back (
             new RecordedAllocationGroup {parent, _event.id, _event.reservedBytes, _event.acquiredBytes});
         return true;
@@ -425,7 +434,7 @@ bool Recording::ApplyDeclareGroupEvent (const Event &_event) noexcept
     return false;
 }
 
-bool Recording::ApplyAllocateEvent (const Event &_event) noexcept
+bool Track::ApplyAllocateEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::ALLOCATE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -437,7 +446,7 @@ bool Recording::ApplyAllocateEvent (const Event &_event) noexcept
     return false;
 }
 
-bool Recording::ApplyAcquireEvent (const Event &_event) noexcept
+bool Track::ApplyAcquireEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::ACQUIRE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -449,14 +458,15 @@ bool Recording::ApplyAcquireEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable to apply acquire because of either broken state or broken replay!");
+        Log::GlobalLogger::Log (
+            Log::Level::ERROR,
+            "Recording::Track: Unable to apply acquire because of either broken state or broken replay!");
     }
 
     return false;
 }
 
-bool Recording::ApplyReleaseEvent (const Event &_event) noexcept
+bool Track::ApplyReleaseEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::RELEASE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -468,14 +478,15 @@ bool Recording::ApplyReleaseEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable to apply release because of either broken state or broken replay!");
+        Log::GlobalLogger::Log (
+            Log::Level::ERROR,
+            "Recording::Track: Unable to apply release because of either broken state or broken replay!");
     }
 
     return false;
 }
 
-bool Recording::ApplyFreeEvent (const Event &_event) noexcept
+bool Track::ApplyFreeEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::FREE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -487,53 +498,34 @@ bool Recording::ApplyFreeEvent (const Event &_event) noexcept
         }
 
         Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable apply free because of either broken state or broken replay!");
+                                "Recording::Track: Unable apply free because of either broken state or broken replay!");
     }
 
     return false;
 }
 
-bool Recording::UndoDeclareGroupEvent (const Event &_event) noexcept
+bool Track::UndoDeclareGroupEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::DECLARE_GROUP);
-    if (_event.parent == MISSING_GROUP_ID)
+    if (_event.uid < idToGroup.size ())
     {
-        // Root group declaration.
-        assert (!*_event.id);
-        if (root)
+        auto *group = idToGroup[_event.uid];
+        if (group->GetId () != _event.id)
         {
-            root->reserved = 0u;
-            root->acquired = 0u;
-            return true;
+            Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Two groups contend for one UID!");
+            return false;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR, "Recording: Unable to undo root creation.");
-        return false;
+        group->reserved = 0u;
+        group->acquired = 0u;
+        return true;
     }
 
-    if (RecordedAllocationGroup *parent = RequireGroup (_event.parent))
-    {
-        for (auto iterator = parent->BeginChildren (); iterator != parent->EndChildren (); ++iterator)
-        {
-            // Interface is const because it is available to user. Recording is allowed to change groups.
-            auto *child = const_cast<RecordedAllocationGroup *> (*iterator);
-
-            if (child->GetId () == _event.id)
-            {
-                child->reserved = 0u;
-                child->acquired = 0u;
-                return true;
-            }
-        }
-
-        Log::GlobalLogger::Log (Log::Level::ERROR, "Recording: Unable to locate group to undo its declaration!");
-        return false;
-    }
-
+    Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Unable to locate group to undo its declaration!");
     return false;
 }
 
-bool Recording::UndoAllocateEvent (const Event &_event) noexcept
+bool Track::UndoAllocateEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::ALLOCATE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -544,14 +536,15 @@ bool Recording::UndoAllocateEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable to undo allocate because of either broken state or broken replay!");
+        Log::GlobalLogger::Log (
+            Log::Level::ERROR,
+            "Recording::Track: Unable to undo allocate because of either broken state or broken replay!");
     }
 
     return false;
 }
 
-bool Recording::UndoAcquireEvent (const Event &_event) noexcept
+bool Track::UndoAcquireEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::ACQUIRE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -563,14 +556,15 @@ bool Recording::UndoAcquireEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable to undo acquire because of either broken state or broken replay!");
+        Log::GlobalLogger::Log (
+            Log::Level::ERROR,
+            "Recording::Track: Unable to undo acquire because of either broken state or broken replay!");
     }
 
     return false;
 }
 
-bool Recording::UndoReleaseEvent (const Event &_event) noexcept
+bool Track::UndoReleaseEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::RELEASE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
@@ -582,14 +576,15 @@ bool Recording::UndoReleaseEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording: Unable to undo release because of either broken state or broken replay!");
+        Log::GlobalLogger::Log (
+            Log::Level::ERROR,
+            "Recording::Track: Unable to undo release because of either broken state or broken replay!");
     }
 
     return false;
 }
 
-bool Recording::UndoFreeEvent (const Event &_event) noexcept
+bool Track::UndoFreeEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::FREE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))

@@ -4,20 +4,21 @@
 
 namespace Emergence::Memory::Recording
 {
-class Recording;
+class Track;
 
-class DeserializerBase
+/// \brief Provides inheritors with ability to report events into Track.
+class ReporterBase
 {
 protected:
-    DeserializerBase () noexcept = default;
+    ReporterBase () noexcept = default;
 
-    void Begin (Recording *_recording) noexcept;
+    void Begin (Track *_track) noexcept;
 
     void ReportEvent (const Event &_event) noexcept;
 
     void End () noexcept;
 
 private:
-    Recording *recording = nullptr;
+    Track *track = nullptr;
 };
 } // namespace Emergence::Memory::Recording

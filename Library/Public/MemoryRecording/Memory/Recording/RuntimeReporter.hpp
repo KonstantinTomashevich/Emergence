@@ -4,13 +4,14 @@
 
 #include <Memory/Profiler/Capture.hpp>
 
-#include <Memory/Recording/DeserializerBase.hpp>
+#include <Memory/Recording/ReporterBase.hpp>
 #include <Memory/Recording/Event.hpp>
-#include <Memory/Recording/SerializationHelpers.hpp>
+#include <Memory/Recording/ReportingHelpers.hpp>
 
 namespace Emergence::Memory::Recording
 {
-class RuntimeReporter final : public DeserializerBase
+/// \brief Reports MemoryProfiler events directly into Track.
+class RuntimeReporter final : public ReporterBase
 {
 public:
     RuntimeReporter () noexcept = default;
@@ -21,10 +22,16 @@ public:
 
     ~RuntimeReporter () noexcept;
 
-    void Begin (Recording *_target, const Profiler::CapturedAllocationGroup &_capturedRoot) noexcept;
+    /// \brief Begin reporting events into given track with given captured state.
+    /// \invariant Not reporting into another track already.
+    void Begin (Track *_target, const Profiler::CapturedAllocationGroup &_capturedRoot) noexcept;
 
+    /// \brief Reports given event to associated track.
+    /// \invariant Currently reporting events to some track.
     void ReportEvent (const Profiler::Event &_event) noexcept;
 
+    /// \brief End current event reporting session.
+    /// \invariant Currently reporting events to some track.
     void End () noexcept;
 
     RuntimeReporter &operator= (const RuntimeReporter &_other) = delete;

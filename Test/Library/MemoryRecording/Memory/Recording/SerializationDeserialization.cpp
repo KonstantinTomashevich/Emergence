@@ -1,9 +1,9 @@
 #include <sstream>
 
-#include <Memory/Recording/Recording.hpp>
 #include <Memory/Recording/RuntimeReporter.hpp>
 #include <Memory/Recording/StreamDeserializer.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
+#include <Memory/Recording/Track.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -17,12 +17,12 @@ static void CheckSerializationDeserializationRoutine (Recording::StreamSerialize
     // It might be not the best solution, but it should be OK for testing.
     std::stringstream buffer;
 
-    Recording::Recording runtimeRecording;
-    Recording::Recording deserializedRecording;
+    Recording::Track runtimeTrack;
+    Recording::Track deserializedTrack;
     auto [capturedRoot, observer] = Profiler::Capture::Start ();
 
     Recording::RuntimeReporter reporter;
-    reporter.Begin (&runtimeRecording, capturedRoot);
+    reporter.Begin (&runtimeTrack, capturedRoot);
     _serializer.Begin (&buffer, capturedRoot);
 
     Profiler::AllocationGroup additionalGroup {"CheckSerializationDeserializationRoutine"_us};
@@ -37,7 +37,7 @@ static void CheckSerializationDeserializationRoutine (Recording::StreamSerialize
         reporter.ReportEvent (*sourceEvent);
 
         // We do not serialize recording memory events to simplify testing, because these events
-        // will not appear in runtime recording (otherwise they would infinitely spawn new events).
+        // will not appear in runtime track (otherwise they would infinitely spawn new events).
         if (sourceEvent->group != Recording::Constants::AllocationGroup ())
         {
             _serializer.SerializeEvent (*sourceEvent);
@@ -45,18 +45,18 @@ static void CheckSerializationDeserializationRoutine (Recording::StreamSerialize
     }
 
     _serializer.End ();
-    _deserializer.Begin (&deserializedRecording, &buffer);
+    _deserializer.Begin (&deserializedTrack, &buffer);
 
     // Deserialize all events.
     while (_deserializer.TryReadNext ())
     {
     };
 
-    // Compare events in runtime recording and in deserialized recording.
-    auto runtimeIterator = runtimeRecording.EventBegin ();
-    auto deserializedIterator = deserializedRecording.EventBegin ();
+    // Compare events in runtime track and in deserialized track.
+    auto runtimeIterator = runtimeTrack.EventBegin ();
+    auto deserializedIterator = deserializedTrack.EventBegin ();
 
-    while (runtimeIterator != runtimeRecording.EventEnd () && deserializedIterator != deserializedRecording.EventEnd ())
+    while (runtimeIterator != runtimeTrack.EventEnd () && deserializedIterator != deserializedTrack.EventEnd ())
     {
         const Recording::Event *runtime = *runtimeIterator;
         const Recording::Event *deserialized = *deserializedIterator;
@@ -95,8 +95,8 @@ static void CheckSerializationDeserializationRoutine (Recording::StreamSerialize
         ++deserializedIterator;
     }
 
-    CHECK_EQUAL (runtimeIterator, runtimeRecording.EventEnd ());
-    CHECK_EQUAL (deserializedIterator, deserializedRecording.EventEnd ());
+    CHECK_EQUAL (runtimeIterator, runtimeTrack.EventEnd ());
+    CHECK_EQUAL (deserializedIterator, deserializedTrack.EventEnd ());
     _deserializer.End ();
 }
 
@@ -118,12 +118,12 @@ TEST_CASE (EventComparison)
 
 TEST_CASE (CorruptedInput)
 {
-    Recording::Recording recording;
-    auto passCorruptedInput = [&recording] (const std::string &_input)
+    Recording::Track track;
+    auto passCorruptedInput = [&track] (const std::string &_input)
     {
         std::stringstream buffer {_input};
         Recording::StreamDeserializer deserializer;
-        deserializer.Begin (&recording, &buffer);
+        deserializer.Begin (&track, &buffer);
         CHECK (!deserializer.TryReadNext ());
     };
 

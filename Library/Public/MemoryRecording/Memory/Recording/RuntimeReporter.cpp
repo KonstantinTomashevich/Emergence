@@ -14,22 +14,20 @@ RuntimeReporter::~RuntimeReporter () noexcept
     End ();
 }
 
-void RuntimeReporter::Begin (Recording *_target, const Profiler::CapturedAllocationGroup &_capturedRoot) noexcept
+void RuntimeReporter::Begin (Track *_target, const Profiler::CapturedAllocationGroup &_capturedRoot) noexcept
 {
-    DeserializerBase::Begin (_target);
+    ReporterBase::Begin (_target);
     uidAssigner.ImportCapture (_capturedRoot,
-                               [this] (const Profiler::AllocationGroup & /*unused*/, Event _event)
+                               [this] (Event _event)
                                {
-                                   // For simplicity, initial capture data is stored as startup-time events.
-                                   _event.timeNs = 0u;
-                                   DeserializerBase::ReportEvent (_event);
+                                   ReporterBase::ReportEvent (_event);
                                });
 
-    DeserializerBase::ReportEvent (Event {
+    ReporterBase::ReportEvent (Event {
         .type = EventType::MARKER,
-        .timeNs = 0u,
+        .timeNs = _capturedRoot.GetCaptureTimeNs (),
         .scope = uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
-        .markerId = Constants::RecordingInitializationFinishedMarker (),
+        .markerId = Constants::CaptureInitializationFinishedMarker (),
     });
 }
 
@@ -41,30 +39,21 @@ void RuntimeReporter::ReportEvent (const Profiler::Event &_event) noexcept
         return;
     }
 
-    GroupUID uid = uidAssigner.GetOrAssignUID (
-        _event.group,
-        [this, &_event] (const Profiler::AllocationGroup & /*unused*/, Event _declarationEvent)
-        {
-            _declarationEvent.timeNs = _event.timeNs;
-
-            // It is the first event, connected to this group, and this group
-            // wasn't captured, therefore it must be empty. Unfortunately, we can
-            // not assert this, because we can not get group data at the time of
-            // event creation.
-            _declarationEvent.reservedBytes = 0u;
-            _declarationEvent.acquiredBytes = 0u;
-
-            DeserializerBase::ReportEvent (_declarationEvent);
-        });
+    GroupUID uid = uidAssigner.GetOrAssignUID (_event.group,
+                                               [this, &_event] (Event _declarationEvent)
+                                               {
+                                                   _declarationEvent.timeNs = _event.timeNs;
+                                                   ReporterBase::ReportEvent (_declarationEvent);
+                                               });
 
     assert (uid != MISSING_GROUP_ID);
-    DeserializerBase::ReportEvent (ConvertEvent (uid, _event));
+    ReporterBase::ReportEvent (ConvertEvent (uid, _event));
 }
 
 void RuntimeReporter::End () noexcept
 {
     uidAssigner.Clear ();
-    DeserializerBase::End ();
+    ReporterBase::End ();
 }
 
 RuntimeReporter &RuntimeReporter::operator= (RuntimeReporter &&_other) noexcept

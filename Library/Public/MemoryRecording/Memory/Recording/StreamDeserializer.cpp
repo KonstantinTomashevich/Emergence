@@ -7,7 +7,7 @@
 namespace Emergence::Memory::Recording
 {
 StreamDeserializer::StreamDeserializer (StreamDeserializer &&_other) noexcept
-    : DeserializerBase (std::move (_other)),
+    : ReporterBase (std::move (_other)),
       input (_other.input)
 {
     _other.input = nullptr;
@@ -18,10 +18,10 @@ StreamDeserializer::~StreamDeserializer () noexcept
     End ();
 }
 
-void StreamDeserializer::Begin (Recording *_target, std::istream *_input) noexcept
+void StreamDeserializer::Begin (Track *_target, std::istream *_input) noexcept
 {
     assert (_input);
-    DeserializerBase::Begin (_target);
+    ReporterBase::Begin (_target);
     input = _input;
 }
 
@@ -68,7 +68,7 @@ bool StreamDeserializer::TryReadNext () noexcept
 
 void StreamDeserializer::End () noexcept
 {
-    DeserializerBase::End ();
+    ReporterBase::End ();
 }
 
 StreamDeserializer &StreamDeserializer::operator= (StreamDeserializer &&_other) noexcept
@@ -84,18 +84,6 @@ StreamDeserializer &StreamDeserializer::operator= (StreamDeserializer &&_other) 
 
 bool StreamDeserializer::ReadDeclareGroupEvent (std::uint64_t _timeNs) noexcept
 {
-    std::uint64_t reservedBytes;
-    if (!input->read (reinterpret_cast<char *> (&reservedBytes), sizeof (reservedBytes)))
-    {
-        return false;
-    }
-
-    std::uint64_t acquiredBytes;
-    if (!input->read (reinterpret_cast<char *> (&acquiredBytes), sizeof (acquiredBytes)))
-    {
-        return false;
-    }
-
     GroupUID parent;
     if (!input->read (reinterpret_cast<char *> (&parent), sizeof (parent)))
     {
@@ -108,13 +96,32 @@ bool StreamDeserializer::ReadDeclareGroupEvent (std::uint64_t _timeNs) noexcept
         return false;
     }
 
+    GroupUID uid;
+    if (!input->read (reinterpret_cast<char *> (&uid), sizeof (uid)))
+    {
+        return false;
+    }
+
+    std::uint64_t reservedBytes;
+    if (!input->read (reinterpret_cast<char *> (&reservedBytes), sizeof (reservedBytes)))
+    {
+        return false;
+    }
+
+    std::uint64_t acquiredBytes;
+    if (!input->read (reinterpret_cast<char *> (&acquiredBytes), sizeof (acquiredBytes)))
+    {
+        return false;
+    }
+
     ReportEvent ({
         .type = EventType::DECLARE_GROUP,
         .timeNs = _timeNs,
-        .reservedBytes = reservedBytes,
-        .acquiredBytes = acquiredBytes,
         .parent = parent,
         .id = id,
+        .uid = uid,
+        .reservedBytes = reservedBytes,
+        .acquiredBytes = acquiredBytes,
     });
 
     return true;

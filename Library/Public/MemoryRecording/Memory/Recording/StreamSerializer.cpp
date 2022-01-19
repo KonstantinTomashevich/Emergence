@@ -25,37 +25,27 @@ void StreamSerializer::Begin (std::ostream *_output, const Profiler::CapturedAll
     output = _output;
 
     uidAssigner.ImportCapture (_capturedRoot,
-                               [this] (const Profiler::AllocationGroup & /*unused*/, Event _event)
+                               [this] (Event _event)
                                {
-                                   // For simplicity, initial capture data is stored as startup-time events.
-                                   _event.timeNs = 0u;
                                    WriteEvent (_event);
                                });
 
     WriteEvent (Event {
         .type = EventType::MARKER,
-        .timeNs = 0u,
+        .timeNs = _capturedRoot.GetCaptureTimeNs (),
         .scope = uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
-        .markerId = Constants::RecordingInitializationFinishedMarker (),
+        .markerId = Constants::CaptureInitializationFinishedMarker (),
     });
 }
 
 void StreamSerializer::SerializeEvent (const Profiler::Event &_event) noexcept
 {
-    GroupUID uid = uidAssigner.GetOrAssignUID (
-        _event.group,
-        [this, &_event] (const Profiler::AllocationGroup & /*unused*/, Event _declarationEvent)
-        {
-            _declarationEvent.timeNs = _event.timeNs;
-
-            // It is the first event, connected to this group, and this group wasn't
-            // captured, therefore it must be empty. Unfortunately, we can not assert
-            // this, because we can not get group data at the time of event creation.
-            _declarationEvent.reservedBytes = 0u;
-            _declarationEvent.acquiredBytes = 0u;
-
-            WriteEvent (_declarationEvent);
-        });
+    GroupUID uid = uidAssigner.GetOrAssignUID (_event.group,
+                                               [this, &_event] (Event _declarationEvent)
+                                               {
+                                                   _declarationEvent.timeNs = _event.timeNs;
+                                                   WriteEvent (_declarationEvent);
+                                               });
 
     assert (uid != MISSING_GROUP_ID);
     WriteEvent (ConvertEvent (uid, _event));
@@ -105,10 +95,11 @@ void StreamSerializer::WriteEvent (const Event &_event) noexcept
     switch (_event.type)
     {
     case EventType::DECLARE_GROUP:
-        output->write (reinterpret_cast<const char *> (&_event.reservedBytes), sizeof (_event.reservedBytes));
-        output->write (reinterpret_cast<const char *> (&_event.acquiredBytes), sizeof (_event.acquiredBytes));
         output->write (reinterpret_cast<const char *> (&_event.parent), sizeof (_event.parent));
         writeUniqueString (_event.id);
+        output->write (reinterpret_cast<const char *> (&_event.uid), sizeof (_event.uid));
+        output->write (reinterpret_cast<const char *> (&_event.reservedBytes), sizeof (_event.reservedBytes));
+        output->write (reinterpret_cast<const char *> (&_event.acquiredBytes), sizeof (_event.acquiredBytes));
         break;
 
     case EventType::ALLOCATE:

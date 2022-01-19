@@ -14,9 +14,11 @@
 
 namespace Emergence::Memory::Recording
 {
+/// \brief Stores state of AllocationGroup at current moment of owner Track.
 class RecordedAllocationGroup final
 {
 public:
+    /// \brief Provides iteration over RecordedAllocationGroup children.
     class Iterator final
     {
     public:
@@ -31,30 +33,38 @@ public:
         const RecordedAllocationGroup *current;
     };
 
+    /// Groups are managed by Track, therefore copying and assigning is forbidden.
     RecordedAllocationGroup (const RecordedAllocationGroup &_other) = delete;
 
+    /// Groups are managed by Track, therefore copying and assigning is forbidden.
     RecordedAllocationGroup (RecordedAllocationGroup &&_other) = delete;
 
     ~RecordedAllocationGroup () = default;
 
-    const RecordedAllocationGroup *Parent () const noexcept;
+    /// \return Allocation group that contains this group as subgroup, or `nullptr` if this group is root.
+    [[nodiscard]] const RecordedAllocationGroup *Parent () const noexcept;
 
     [[nodiscard]] Iterator BeginChildren () const noexcept;
 
     static Iterator EndChildren () noexcept;
 
+    /// \return Id of this group, unique among children of its ::Parent.
     [[nodiscard]] UniqueString GetId () const noexcept;
 
+    /// \return Amount of bytes, that are used by any object.
     [[nodiscard]] size_t GetAcquired () const noexcept;
 
+    /// \return Amount of bytes, that are not used by any object, but reserved for usage in future.
     [[nodiscard]] size_t GetReserved () const noexcept;
 
+    /// \return Total amount of bytes, that are owned by allocation group.
     [[nodiscard]] size_t GetTotal () const noexcept;
 
+    /// Groups are managed by Track, therefore copying and assigning is forbidden.
     EMERGENCE_DELETE_ASSIGNMENT (RecordedAllocationGroup);
 
 private:
-    friend class Recording;
+    friend class Track;
 
     friend class std::default_delete<RecordedAllocationGroup>;
 
@@ -78,9 +88,14 @@ private:
     std::unique_ptr<RecordedAllocationGroup> nextOnLevel;
 };
 
-class Recording final
+/// \brief Stores memory usage history as sequence of events and provides allocation
+///        group state at any moment of time, selected through current event pointer.
+/// \details Events could be reported through any ReporterBase derived class, like RuntimeReporter
+///          or StreamDeserializer. Event addition never invalidates iterators.
+class Track final
 {
 private:
+    /// \brief Internal class for storing position in sequence along with event data.
     struct EventNode final
     {
         Event event;
@@ -91,41 +106,65 @@ private:
     static_assert (std::is_trivially_destructible_v<EventNode>);
 
 public:
+    /// \brief Provides iteration over events, stored in Track.
+    /// \details For convenience, implements circling behaviour:
+    ///          - Incrementing `end` will return `begin`.
+    ///          - Decrementing `begin` will return `end`.
     class EventIterator final
     {
     public:
-        // NOTE: Circles from end to first and from begin to end.
-
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (EventIterator, const Event *);
 
     private:
-        /// Recording constructs iterators.
-        friend class Recording;
+        /// Track constructs iterators.
+        friend class Track;
 
-        explicit EventIterator (const Recording *_recording, const EventNode *_current) noexcept;
+        explicit EventIterator (const Track *_track, const EventNode *_current) noexcept;
 
-        const Recording *recording;
+        const Track *track;
         const EventNode *current;
     };
 
-    Recording () noexcept;
+    /// \brief Constructs empty track.
+    Track () noexcept;
 
+    Track (const Track &_other) = delete;
+
+    /// \warning Invalidates all iterators and reporters, associated with given track instance.
+    Track (Track &&_other) = default;
+
+    ~Track () = default;
+
+    /// \return State of the root allocation group at current moment.
     [[nodiscard]] const RecordedAllocationGroup *Root () const noexcept;
 
+    /// \return Iterator, that points to first reported event.
+    /// \details If there are no reported events, equal to ::EventEnd.
     [[nodiscard]] EventIterator EventBegin () const noexcept;
 
+    /// \return Iterator, that points to current (last applied) event.
+    /// \details Equal to ::EventEnd if track is in the initial state (no events applied).
     [[nodiscard]] EventIterator EventCurrent () const noexcept;
 
+    /// \return Iterator, that points to the end of events sequence.
     [[nodiscard]] EventIterator EventEnd () const noexcept;
 
+    /// \brief Undo current event and move to previous.
+    /// \return True if current event was successfully undone. Also returns `false` if track is at initial state.
     bool MoveToPreviousEvent () noexcept;
 
+    /// \brief Apply next event and make it current.
+    /// \return True if next event was successfully applied. Also returns `false` if all reported events are applied.
     bool MoveToNextEvent () noexcept;
 
-    const RecordedAllocationGroup *GetGroupByUID (GroupUID _uid) const noexcept;
+    /// \return Current state of a group, associated with given uid, or `nullptr` if there is no group with given uid.
+    [[nodiscard]] const RecordedAllocationGroup *GetGroupByUID (GroupUID _uid) const noexcept;
+
+    /// Assigning tracks seems counter-intuitive.
+    EMERGENCE_DELETE_ASSIGNMENT (Track);
 
 private:
-    friend class DeserializerBase;
+    friend class ReporterBase;
 
     void ReportEvent (const Event &_event) noexcept;
 
