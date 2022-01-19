@@ -1,4 +1,5 @@
 add_subdirectory (doctest)
+add_subdirectory (SDL)
 
 # We don't need exceptions neither from spdlog nor fmt.
 add_compile_definitions (FMT_EXCEPTIONS=0)
