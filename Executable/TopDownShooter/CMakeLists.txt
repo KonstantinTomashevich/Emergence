@@ -5,10 +5,7 @@ set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
 set (GAME_RENDER_SYSTEM Direct3D11)
 
 function (copy_shared_libraries TARGET)
-    add_custom_command (
-            TARGET "${TARGET}" POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>
-            COMMAND_EXPAND_LISTS)
+    copy_required_shared_libraries ("${TARGET}")
 
     # SDL2 is used by Ogre DLLs and therefore is not visible to TARGET_RUNTIME_DLLS.
     # TODO: Find better way to ensure that this library is copied.

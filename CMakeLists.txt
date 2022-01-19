@@ -3,6 +3,7 @@ project (Emergence)
 
 set (CMAKE_CXX_STANDARD 20)
 include ("${CMAKE_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
+include ("${CMAKE_SOURCE_DIR}/CMake/Emergence/Utility.cmake")
 include ("${CMAKE_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 
 # Must be called from root CMakeLists.txt, otherwise CTest configuration won't be placed into binary root.
