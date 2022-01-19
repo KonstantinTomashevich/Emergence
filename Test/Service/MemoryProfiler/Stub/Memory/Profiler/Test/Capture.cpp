@@ -21,6 +21,7 @@ TEST_CASE (CapturedAllocationGroup)
 
     CHECK_EQUAL (captured.GetSource (), group);
     CHECK_EQUAL (captured.GetSource (), AllocationGroup {});
+    CHECK_EQUAL (captured.GetCaptureTimeNs (), 0u);
 
     auto begin = captured.BeginChildren ();
     auto end = captured.EndChildren ();

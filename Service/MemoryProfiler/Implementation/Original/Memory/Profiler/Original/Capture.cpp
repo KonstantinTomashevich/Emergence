@@ -66,13 +66,18 @@ void CapturedAllocationGroup::operator delete (void *_pointer) noexcept
     GetCapturedAllocationGroupPool ().Release (_pointer);
 }
 
-CapturedAllocationGroup::CapturedAllocationGroup (const AllocationGroup &_source, const ProfilingLock &_lock) noexcept
+CapturedAllocationGroup::CapturedAllocationGroup (const AllocationGroup &_source,
+                                                  const ProfilingLock &_lock,
+                                                  uint64_t _sharedCaptureTime) noexcept
     : id (_source.GetId ()),
       reserved (_source.GetReserved ()),
       acquired (_source.GetAcquired ()),
-      firstChild (_source.firstChild ? new CapturedAllocationGroup {*_source.firstChild, _lock} : nullptr),
-      nextOnLevel (_source.nextOnLevel ? new CapturedAllocationGroup {*_source.nextOnLevel, _lock} : nullptr),
-      source (&_source)
+      firstChild (_source.firstChild ? new CapturedAllocationGroup {*_source.firstChild, _lock, _sharedCaptureTime} :
+                                       nullptr),
+      nextOnLevel (_source.nextOnLevel ? new CapturedAllocationGroup {*_source.nextOnLevel, _lock, _sharedCaptureTime} :
+                                         nullptr),
+      source (&_source),
+      captureTimeNs (_sharedCaptureTime)
 {
 }
 
@@ -109,6 +114,11 @@ size_t CapturedAllocationGroup::GetTotal () const noexcept
 const AllocationGroup *CapturedAllocationGroup::GetSource () const noexcept
 {
     return source;
+}
+
+uint64_t CapturedAllocationGroup::GetCaptureTimeNs () const noexcept
+{
+    return captureTimeNs;
 }
 
 EventObserver::EventObserver (const ProfilingLock &_lock) noexcept

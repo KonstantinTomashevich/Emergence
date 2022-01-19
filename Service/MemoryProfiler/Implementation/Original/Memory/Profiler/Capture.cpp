@@ -2,12 +2,13 @@
 
 #include <API/Common/Implementation/Iterator.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
-
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Profiler/ImplementationUtils.hpp>
 #include <Memory/Profiler/Original/Capture.hpp>
 #include <Memory/Profiler/Original/ProfilingLock.hpp>
+
+#include <SyntaxSugar/BlockCast.hpp>
+#include <SyntaxSugar/Time.hpp>
 
 namespace Emergence::Memory::Profiler
 {
@@ -94,6 +95,13 @@ AllocationGroup CapturedAllocationGroup::GetSource () const noexcept
     return ImplementationUtils::ToServiceFormat (const_cast<Original::AllocationGroup *> (group->GetSource ()));
 }
 
+uint64_t CapturedAllocationGroup::GetCaptureTimeNs () const noexcept
+{
+    const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
+    assert (group);
+    return group->GetCaptureTimeNs ();
+}
+
 CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept
 {
     assert (_handle);
@@ -125,7 +133,11 @@ EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcep
 std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
 {
     Original::ProfilingLock lock;
-    auto *capturedRoot = new Original::CapturedAllocationGroup {*Original::AllocationGroup::Root (), lock};
+    // Capture is done in one transaction, therefore reported capture time is equal for all groups.
+    const uint64_t sharedCaptureTime = Time::NanosecondsSinceStartup ();
+
+    auto *capturedRoot =
+        new Original::CapturedAllocationGroup {*Original::AllocationGroup::Root (), lock, sharedCaptureTime};
     Original::EventObserver observer {lock};
 
     return {CapturedAllocationGroup {capturedRoot},

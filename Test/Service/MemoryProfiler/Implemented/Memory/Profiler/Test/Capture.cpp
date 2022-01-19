@@ -29,6 +29,9 @@ void CheckCaptureConsistency (const CapturedAllocationGroup &_captured, const Al
     while (capturedIterator != _captured.EndChildren () && sourceIterator != _expectedSource.EndChildren ())
     {
         CheckCaptureConsistency (*capturedIterator, *sourceIterator);
+        // Capture must be done in one transaction, therefore capture time must be equal in hierarchy.
+        CHECK_EQUAL (_captured.GetCaptureTimeNs (), (*capturedIterator).GetCaptureTimeNs ());
+
         ++capturedIterator;
         ++sourceIterator;
     }

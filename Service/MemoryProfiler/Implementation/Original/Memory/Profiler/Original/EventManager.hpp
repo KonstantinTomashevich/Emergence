@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include <chrono>
 
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Profiler/Original/ProfilingLock.hpp>
@@ -75,9 +74,5 @@ private:
 
     /// \brief Number of freshly constructed observers, that have requested their first event yet.
     size_t freshObservers = 0u;
-
-    /// \details In truth, it is the time of the first allocation, not startup time. But it is close to startup time,
-    ///          because there is a lot of static UniqueString's that lead to allocation right after program startup.
-    std::chrono::high_resolution_clock::time_point startupTime = std::chrono::high_resolution_clock::now ();
 };
 } // namespace Emergence::Memory::Profiler::Original

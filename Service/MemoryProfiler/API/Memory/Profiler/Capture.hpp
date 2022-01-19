@@ -101,6 +101,9 @@ public:
     /// \return Allocation group, from which this capture was created.
     [[nodiscard]] AllocationGroup GetSource () const noexcept;
 
+    /// \return Time from startup to capture of this group hierarchy in nanoseconds.
+    [[nodiscard]] std::uint64_t GetCaptureTimeNs () const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (CapturedAllocationGroup);
 
 private:

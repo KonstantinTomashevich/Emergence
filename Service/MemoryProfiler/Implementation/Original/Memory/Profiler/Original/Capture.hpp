@@ -32,7 +32,7 @@ public:
 
     void operator delete (void *_pointer) noexcept;
 
-    CapturedAllocationGroup (const AllocationGroup &_source, const ProfilingLock &_lock) noexcept;
+    CapturedAllocationGroup (const AllocationGroup &_source, const ProfilingLock &_lock, uint64_t _sharedCaptureTime) noexcept;
 
     CapturedAllocationGroup (const CapturedAllocationGroup &_other) = delete;
 
@@ -54,6 +54,8 @@ public:
 
     [[nodiscard]] const AllocationGroup *GetSource () const noexcept;
 
+    [[nodiscard]] uint64_t GetCaptureTimeNs () const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (CapturedAllocationGroup);
 
 private:
@@ -63,7 +65,9 @@ private:
 
     Handling::Handle<CapturedAllocationGroup> firstChild;
     Handling::Handle<CapturedAllocationGroup> nextOnLevel;
+
     const AllocationGroup *source = nullptr;
+    uint64_t captureTimeNs = 0u;
 };
 
 class EventObserver final
