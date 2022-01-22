@@ -119,6 +119,51 @@ RecordedAllocationGroup::RecordedAllocationGroup (RecordedAllocationGroup *_pare
     }
 }
 
+void RecordedAllocationGroup::Allocate (std::uint64_t _bytes) noexcept
+{
+    if (parent)
+    {
+        parent->Allocate (_bytes);
+    }
+
+    reserved += _bytes;
+}
+
+bool RecordedAllocationGroup::Acquire (std::uint64_t _bytes) noexcept
+{
+    if (_bytes <= reserved && (!parent || parent->Acquire (_bytes)))
+    {
+        reserved -= _bytes;
+        acquired += _bytes;
+        return true;
+    }
+
+    return false;
+}
+
+bool RecordedAllocationGroup::Release (std::uint64_t _bytes) noexcept
+{
+    if (_bytes <= acquired && (!parent || parent->Release (_bytes)))
+    {
+        acquired -= _bytes;
+        reserved += _bytes;
+        return true;
+    }
+
+    return false;
+}
+
+bool RecordedAllocationGroup::Free (std::uint64_t _bytes) noexcept
+{
+    if (_bytes <= reserved && (!parent || parent->Free (_bytes)))
+    {
+        reserved -= _bytes;
+        return true;
+    }
+
+    return false;
+}
+
 Track::EventIterator::EventIterator (const Track::EventIterator &_other) noexcept = default;
 
 Track::EventIterator::EventIterator (Track::EventIterator &&_other) noexcept = default;
@@ -348,6 +393,17 @@ const RecordedAllocationGroup *Track::GetGroupByUID (GroupUID _uid) const noexce
     return nullptr;
 }
 
+void Track::Clear () noexcept
+{
+    root.reset ();
+    idToGroup.clear ();
+
+    events.Clear ();
+    first = nullptr;
+    last = nullptr;
+    current = nullptr;
+}
+
 void Track::ReportEvent (const Event &_event) noexcept
 {
     auto *node = new (events.Acquire ()) EventNode {.event = _event};
@@ -439,7 +495,7 @@ bool Track::ApplyAllocateEvent (const Event &_event) noexcept
     assert (_event.type == EventType::ALLOCATE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        group->reserved += _event.bytes;
+        group->Allocate (_event.bytes);
         return true;
     }
 
@@ -451,10 +507,8 @@ bool Track::ApplyAcquireEvent (const Event &_event) noexcept
     assert (_event.type == EventType::ACQUIRE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        if (group->reserved >= _event.bytes)
+        if (group->Acquire (_event.bytes))
         {
-            group->acquired += _event.bytes;
-            group->reserved -= _event.bytes;
             return true;
         }
 
@@ -471,10 +525,8 @@ bool Track::ApplyReleaseEvent (const Event &_event) noexcept
     assert (_event.type == EventType::RELEASE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        if (group->acquired >= _event.bytes)
+        if (group->Release (_event.bytes))
         {
-            group->reserved += _event.bytes;
-            group->acquired -= _event.bytes;
             return true;
         }
 
@@ -491,9 +543,8 @@ bool Track::ApplyFreeEvent (const Event &_event) noexcept
     assert (_event.type == EventType::FREE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        if (group->reserved >= _event.bytes)
+        if (group->Free (_event.bytes))
         {
-            group->reserved -= _event.bytes;
             return true;
         }
 
@@ -530,9 +581,8 @@ bool Track::UndoAllocateEvent (const Event &_event) noexcept
     assert (_event.type == EventType::ALLOCATE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        if (group->reserved >= _event.bytes)
+        if (group->Free (_event.bytes))
         {
-            group->reserved -= _event.bytes;
             return true;
         }
 
@@ -549,10 +599,8 @@ bool Track::UndoAcquireEvent (const Event &_event) noexcept
     assert (_event.type == EventType::ACQUIRE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        if (group->acquired >= _event.bytes)
+        if (group->Release (_event.bytes))
         {
-            group->reserved += _event.bytes;
-            group->acquired -= _event.bytes;
             return true;
         }
 
@@ -569,10 +617,8 @@ bool Track::UndoReleaseEvent (const Event &_event) noexcept
     assert (_event.type == EventType::RELEASE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        if (group->reserved >= _event.bytes)
+        if (group->Acquire (_event.bytes))
         {
-            group->acquired += _event.bytes;
-            group->reserved -= _event.bytes;
             return true;
         }
 
@@ -589,7 +635,7 @@ bool Track::UndoFreeEvent (const Event &_event) noexcept
     assert (_event.type == EventType::FREE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
-        group->reserved += _event.bytes;
+        group->Allocate (_event.bytes);
         return true;
     }
 

@@ -185,6 +185,7 @@ void EventManager::DropOutdatedEvents () noexcept
     if (!first)
     {
         last = nullptr;
+        events.Clear ();
     }
 }
 } // namespace Emergence::Memory::Profiler::Original

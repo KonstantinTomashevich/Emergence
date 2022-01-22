@@ -98,6 +98,22 @@ static bool IsAtInitializationEndMarker (const Recording::Track &_track)
     return false;
 }
 
+static void TrivialCaptureCheck (Recording::Track &_track, Recording::RuntimeReporter &_reporter)
+{
+    Profiler::CapturedAllocationGroup capturedRoot = Profiler::Capture::Start ().first;
+    _reporter.Begin (&_track, capturedRoot);
+
+    // Go to the last event, where all groups are initialized.
+    while (!IsAtInitializationEndMarker (_track))
+    {
+        REQUIRE_WITH_MESSAGE (_track.MoveToNextEvent (), "Moving to initialization end marker.");
+    }
+
+    REQUIRE (_track.Root ());
+    CompareWithCapture (*_track.Root (), capturedRoot);
+    _reporter.End ();
+}
+
 // Check if given profiler group is source of recorded group by comparing ids from root-to-group path.
 static bool IsSource (const Profiler::AllocationGroup &_source, const Recording::RecordedAllocationGroup &_recorded)
 {
@@ -284,7 +300,7 @@ TEST_CASE (ObservationReporting)
     CompareWithCapture (*track.Root (), capturedRoot);
 }
 
-TEST_CASE (UncapturedGroup)
+TEST_CASE (UncapturedGroupHierarchy)
 {
     Recording::Track track;
     auto [capturedRoot, observer] = Profiler::Capture::Start ();
@@ -299,11 +315,14 @@ TEST_CASE (UncapturedGroup)
 
     const auto initializationMarkerIterator = track.EventCurrent ();
 
-    Profiler::AllocationGroup testGroup {"UncapturedGroup"_us};
+    Profiler::AllocationGroup testGroupParent {"UncapturedGroupHierarchy::Parent"_us};
+    Profiler::AllocationGroup testGroupChild {testGroupParent, "UncapturedGroupHierarchy::Child"_us};
+
     // Test group should have some initial state.
-    constexpr std::size_t ALLOCATION_BYTES = 150u;
-    testGroup.Allocate (ALLOCATION_BYTES);
-    testGroup.Acquire (80u);
+    testGroupChild.Allocate (200u);
+    testGroupChild.Acquire (120u);
+    testGroupChild.Release (80u);
+    testGroupChild.Free (100u);
 
     while (const Profiler::Event *sourceEvent = observer.NextEvent ())
     {
@@ -311,20 +330,25 @@ TEST_CASE (UncapturedGroup)
     }
 
     // Check that uncaptured group is declared after initialization and extract its uid.
-    Recording::GroupUID testGroupUID = Recording::MISSING_GROUP_ID;
+    Recording::GroupUID testGroupChildUID = Recording::MISSING_GROUP_ID;
 
     for (auto iterator = initializationMarkerIterator; iterator != track.EventEnd (); ++iterator)
     {
         const Recording::Event *event = *iterator;
         if (event->type == Recording::EventType::DECLARE_GROUP)
         {
-            CHECK_EQUAL (event->id, testGroup.GetId ());
-            testGroupUID = event->uid;
-            break;
+            if (event->id == testGroupChild.GetId ())
+            {
+                testGroupChildUID = event->uid;
+            }
+            else
+            {
+                CHECK_EQUAL (event->id, testGroupParent.GetId ());
+            }
         }
     }
 
-    CHECK_NOT_EQUAL (testGroupUID, Recording::MISSING_GROUP_ID);
+    CHECK_NOT_EQUAL (testGroupChildUID, Recording::MISSING_GROUP_ID);
 
     // Move to the end.
     while (track.MoveToNextEvent ())
@@ -332,39 +356,56 @@ TEST_CASE (UncapturedGroup)
     }
 
     // Check that result state matches.
-    const Recording::RecordedAllocationGroup *recordedGroup = track.GetGroupByUID (testGroupUID);
-    REQUIRE (recordedGroup);
-    CHECK_EQUAL (recordedGroup->GetReserved (), testGroup.GetReserved ());
-    CHECK_EQUAL (recordedGroup->GetAcquired (), testGroup.GetAcquired ());
-    CHECK_EQUAL (recordedGroup->GetTotal (), testGroup.GetTotal ());
+    const Recording::RecordedAllocationGroup *recordedGroupChild = track.GetGroupByUID (testGroupChildUID);
+    REQUIRE (recordedGroupChild);
+    CHECK_EQUAL (recordedGroupChild->GetReserved (), testGroupChild.GetReserved ());
+    CHECK_EQUAL (recordedGroupChild->GetAcquired (), testGroupChild.GetAcquired ());
+    CHECK_EQUAL (recordedGroupChild->GetTotal (), testGroupChild.GetTotal ());
+
+    const Recording::RecordedAllocationGroup *recordedGroupParent = recordedGroupChild->Parent ();
+    REQUIRE (recordedGroupParent);
+    CHECK_EQUAL (recordedGroupParent->GetReserved (), testGroupParent.GetReserved ());
+    CHECK_EQUAL (recordedGroupParent->GetAcquired (), testGroupParent.GetAcquired ());
+    CHECK_EQUAL (recordedGroupParent->GetTotal (), testGroupParent.GetTotal ());
 }
 
 TEST_CASE (ReuseRuntimeReporter)
 {
     Recording::RuntimeReporter reporter;
 
-    auto doReport = [&reporter] ()
     {
         Recording::Track track;
-        Profiler::CapturedAllocationGroup capturedRoot = Profiler::Capture::Start ().first;
-        reporter.Begin (&track, capturedRoot);
+        TrivialCaptureCheck (track, reporter);
+    }
 
-        // Go to the last event, where all groups are initialized.
-        while (!IsAtInitializationEndMarker (track))
-        {
-            REQUIRE_WITH_MESSAGE (track.MoveToNextEvent (), "Moving to initialization end marker.");
-        }
-
-        REQUIRE (track.Root ());
-        CompareWithCapture (*track.Root (), capturedRoot);
-        reporter.End ();
-    };
-
-    doReport ();
     Profiler::AllocationGroup testGroup {"ReuseRuntimeReporter"_us};
     testGroup.Allocate (120u);
+
     testGroup.Acquire (80u);
-    doReport ();
+    {
+        Recording::Track track;
+        TrivialCaptureCheck (track, reporter);
+    }
+}
+
+TEST_CASE (ReuseTrack)
+{
+    Recording::Track track;
+
+    {
+        Recording::RuntimeReporter reporter;
+        TrivialCaptureCheck (track, reporter);
+        track.Clear ();
+    }
+
+    Profiler::AllocationGroup testGroup {"ReuseRuntimeReporter"_us};
+    testGroup.Allocate (120u);
+
+    testGroup.Acquire (80u);
+    {
+        Recording::RuntimeReporter reporter;
+        TrivialCaptureCheck (track, reporter);
+    }
 }
 
 TEST_CASE (CorruptedEvents)

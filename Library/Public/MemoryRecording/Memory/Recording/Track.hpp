@@ -79,6 +79,14 @@ private:
                              std::size_t _reserved,
                              std::size_t _acquired) noexcept;
 
+    void Allocate (std::uint64_t _bytes) noexcept;
+
+    bool Acquire (std::uint64_t _bytes) noexcept;
+
+    bool Release (std::uint64_t _bytes) noexcept;
+
+    bool Free (std::uint64_t _bytes) noexcept;
+
     Memory::UniqueString id;
     std::size_t reserved = 0u;
     std::size_t acquired = 0u;
@@ -159,6 +167,9 @@ public:
 
     /// \return Current state of a group, associated with given uid, or `nullptr` if there is no group with given uid.
     [[nodiscard]] const RecordedAllocationGroup *GetGroupByUID (GroupUID _uid) const noexcept;
+
+    /// \brief Reset track into initial state by removing all events and groups.
+    void Clear () noexcept;
 
     /// Assigning tracks seems counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Track);
