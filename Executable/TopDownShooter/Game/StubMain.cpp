@@ -6,7 +6,9 @@
 
 #include <Log/Log.hpp>
 
-#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/Profiler/Capture.hpp>
+
+#include <Memory/Recording/StreamSerializer.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
@@ -87,6 +89,13 @@ public:
 
     void Execute ()
     {
+        // TODO: Automatically add markers from pipelines?
+        static const Emergence::Memory::UniqueString FIXED_UPDATE_BEGIN {"FixedUpdateBegin"};
+        static const Emergence::Memory::UniqueString FIXED_UPDATE_END {"FixedUpdateEnd"};
+
+        static const Emergence::Memory::UniqueString NORMAL_UPDATE_BEGIN {"NormalUpdateBegin"};
+        static const Emergence::Memory::UniqueString NORMAL_UPDATE_END {"NormalUpdateEnd"};
+
         // Intentionally lift write access to time singleton, because we are expecting changes from pipelines.
         auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
         application->pollEvents ();
@@ -99,7 +108,9 @@ public:
         {
             while (time->fixedTimeUs < time->normalTimeUs)
             {
+                Emergence::Memory::Profiler::AddMarker (FIXED_UPDATE_BEGIN);
                 fixedUpdate->Execute ();
+                Emergence::Memory::Profiler::AddMarker (FIXED_UPDATE_END);
             }
         }
         else
@@ -108,7 +119,9 @@ public:
             time->fixedTimeUs = time->normalTimeUs;
         }
 
+        Emergence::Memory::Profiler::AddMarker (NORMAL_UPDATE_BEGIN);
         normalUpdate->Execute ();
+        Emergence::Memory::Profiler::AddMarker (NORMAL_UPDATE_END);
     }
 
 private:
@@ -118,37 +131,23 @@ private:
     Emergence::Celerity::Pipeline *normalUpdate = nullptr;
 };
 
-static void LogMemoryUsage (
-    const Emergence::Memory::Profiler::AllocationGroup &_group = Emergence::Memory::Profiler::AllocationGroup::Root (),
-    const Emergence::Container::String &_indentation = "")
+static Emergence::Memory::Profiler::EventObserver StartRecording (
+    Emergence::Memory::Recording::StreamSerializer &_serializer, std::ostream &_output)
 {
-    using namespace Emergence::Container;
-    using namespace Emergence::Log;
-
-    if (_group == Emergence::Memory::Profiler::AllocationGroup::Root ())
-    {
-        GlobalLogger::Log (
-            Level::INFO,
-            "Printing memory usage. Format: \"GroupName\": <AcquiredBytes> / <ReservedBytes> -- <UsagePercent>%");
-    }
-
-    const char *groupId = *_group.GetId () ? *_group.GetId () : "Root";
-    const size_t percent = _group.GetTotal () ?
-                               static_cast<size_t> (round (static_cast<float> (_group.GetAcquired ()) /
-                                                           static_cast<float> (_group.GetTotal ()) * 100.0f)) :
-                               0u;
-
-    GlobalLogger::Log (Level::INFO, _indentation + "\"" + groupId + "\": " + ToString (_group.GetAcquired ()) + " / " +
-                                        ToString (_group.GetTotal ()) + " -- " + ToString (percent) + "%");
-
-    for (auto iterator = _group.BeginChildren (); iterator != _group.EndChildren (); ++iterator)
-    {
-        LogMemoryUsage (*iterator, _indentation + "    ");
-    }
+    auto [capturedRoot, observer] = Emergence::Memory::Profiler::Capture::Start ();
+    _serializer.Begin (&_output, capturedRoot);
+    return std::move (observer);
 }
 
 int main (int /*unused*/, char ** /*unused*/)
 {
+    // For testing purposes we start memory usage recording right away.
+    std::ofstream memoryEventOutput {"MemoryRecording.track", std::ios::binary};
+    Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
+
+    Emergence::Memory::Profiler::EventObserver memoryEventObserver =
+        StartRecording (memoryEventSerializer, memoryEventOutput);
+
     OgreBites::ApplicationContext application {"TopDownShooter"};
     application.initApp ();
 
@@ -195,8 +194,6 @@ int main (int /*unused*/, char ** /*unused*/)
 
     application.getRenderWindow ()->addViewport (camera);
 
-    bool usageLogged = false;
-
     {
         Emergence::Celerity::World world {"TestWorld"_us};
         WorldUpdater worldUpdater {&application, &world};
@@ -215,10 +212,9 @@ int main (int /*unused*/, char ** /*unused*/)
             playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
             application.getRoot ()->renderOneFrame ();
 
-            if (!usageLogged)
+            while (const Emergence::Memory::Profiler::Event *event = memoryEventObserver.NextEvent ())
             {
-                LogMemoryUsage ();
-                usageLogged = true;
+                memoryEventSerializer.SerializeEvent (*event);
             }
         }
     }
