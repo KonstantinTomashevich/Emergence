@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <Container/Optional.hpp>
+#include <Container/StringBuilder.hpp>
 #include <Container/Vector.hpp>
 
 #include <Log/Test/Shared.hpp>
@@ -16,7 +17,6 @@ constexpr int ARGUMENT_LOGGER = 1u;
 constexpr const char *STANDARD_OUT_FILE = "StandardOut.log";
 constexpr const char *STANDARD_ERROR_FILE = "StandardError.log";
 
-using namespace Emergence::Container::Literals;
 using namespace Emergence::Log;
 
 static Emergence::Container::Vector<Level> ExpectedSequenceForOneThread (Level _minimumLevel)
@@ -151,10 +151,9 @@ int main (int _argumentCount, const char **_arguments)
     }
 
     std::cout << "Executing logger \"" << _arguments[ARGUMENT_LOGGER] << "\"..." << std::endl;
-    const Emergence::Container::String command =
-        _arguments[ARGUMENT_LOGGER] + " > "_s + STANDARD_OUT_FILE + " 2> " + STANDARD_ERROR_FILE;
-
-    system (command.c_str ());
+    system (
+        EMERGENCE_BUILD_STRING (_arguments[ARGUMENT_LOGGER], " > ", STANDARD_OUT_FILE, " 2> ", STANDARD_ERROR_FILE));
+    
     std::cout << "Execution finished." << std::endl;
     std::size_t errorsDetected = 0u;
 

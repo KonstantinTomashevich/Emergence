@@ -411,9 +411,7 @@ void Track::ReportEvent (const Event &_event) noexcept
     {
         if (_event.timeNs < last->event.timeNs)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR,
-                                    "Recording::Track: Unable to report event because it breaks time order!");
-
+            EMERGENCE_LOG (ERROR, "Recording::Track: Unable to report event because it breaks time order!");
             events.Release (node);
             return;
         }
@@ -435,8 +433,7 @@ RecordedAllocationGroup *Track::RequireGroup (GroupUID _uid) const noexcept
     RecordedAllocationGroup *group = _uid < idToGroup.size () ? idToGroup[_uid] : nullptr;
     if (!group)
     {
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording::Track: Unable to find group with uid " + Container::ToString (_uid) + "!");
+        EMERGENCE_LOG (ERROR, "Recording::Track: Unable to find group with uid ", _uid, "!");
     }
 
     return group;
@@ -450,7 +447,7 @@ bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
         auto *group = idToGroup[_event.uid];
         if (group->GetId () != _event.id)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Two groups contend for one UID!");
+            EMERGENCE_LOG (ERROR, "Recording::Track: Two groups contend for one UID!");
             return false;
         }
 
@@ -461,7 +458,7 @@ bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
 
     if (_event.uid != idToGroup.size ())
     {
-        Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Group uids are expected to be incremental.");
+        EMERGENCE_LOG (ERROR, "Recording::Track: Group uids are expected to be incremental.");
         return false;
     }
 
@@ -512,9 +509,8 @@ bool Track::ApplyAcquireEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (
-            Log::Level::ERROR,
-            "Recording::Track: Unable to apply acquire because of either broken state or broken replay!");
+        EMERGENCE_LOG (ERROR,
+                       "Recording::Track: Unable to apply acquire because of either broken state or broken replay!");
     }
 
     return false;
@@ -530,9 +526,8 @@ bool Track::ApplyReleaseEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (
-            Log::Level::ERROR,
-            "Recording::Track: Unable to apply release because of either broken state or broken replay!");
+        EMERGENCE_LOG (ERROR,
+                       "Recording::Track: Unable to apply release because of either broken state or broken replay!");
     }
 
     return false;
@@ -548,8 +543,7 @@ bool Track::ApplyFreeEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (Log::Level::ERROR,
-                                "Recording::Track: Unable apply free because of either broken state or broken replay!");
+        EMERGENCE_LOG (ERROR, "Recording::Track: Unable apply free because of either broken state or broken replay!");
     }
 
     return false;
@@ -563,7 +557,7 @@ bool Track::UndoDeclareGroupEvent (const Event &_event) noexcept
         auto *group = idToGroup[_event.uid];
         if (group->GetId () != _event.id)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Two groups contend for one UID!");
+            EMERGENCE_LOG (ERROR, "Recording::Track: Two groups contend for one UID!");
             return false;
         }
 
@@ -572,7 +566,7 @@ bool Track::UndoDeclareGroupEvent (const Event &_event) noexcept
         return true;
     }
 
-    Log::GlobalLogger::Log (Log::Level::ERROR, "Recording::Track: Unable to locate group to undo its declaration!");
+    EMERGENCE_LOG (ERROR, "Recording::Track: Unable to locate group to undo its declaration!");
     return false;
 }
 
@@ -586,9 +580,8 @@ bool Track::UndoAllocateEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (
-            Log::Level::ERROR,
-            "Recording::Track: Unable to undo allocate because of either broken state or broken replay!");
+        EMERGENCE_LOG (ERROR,
+                       "Recording::Track: Unable to undo allocate because of either broken state or broken replay!");
     }
 
     return false;
@@ -604,9 +597,8 @@ bool Track::UndoAcquireEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (
-            Log::Level::ERROR,
-            "Recording::Track: Unable to undo acquire because of either broken state or broken replay!");
+        EMERGENCE_LOG (ERROR,
+                       "Recording::Track: Unable to undo acquire because of either broken state or broken replay!");
     }
 
     return false;
@@ -622,9 +614,8 @@ bool Track::UndoReleaseEvent (const Event &_event) noexcept
             return true;
         }
 
-        Log::GlobalLogger::Log (
-            Log::Level::ERROR,
-            "Recording::Track: Unable to undo release because of either broken state or broken replay!");
+        EMERGENCE_LOG (ERROR,
+                       "Recording::Track: Unable to undo release because of either broken state or broken replay!");
     }
 
     return false;

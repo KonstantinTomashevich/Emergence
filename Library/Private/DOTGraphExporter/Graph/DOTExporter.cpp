@@ -15,7 +15,7 @@ bool Context::IsIdValid (const Container::String &_id) noexcept
     {
         if (symbol == '\"' || symbol == VisualGraph::NODE_PATH_SEPARATOR)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Id \"" + _id + "\" contains forbidden symbols!");
+            EMERGENCE_LOG (ERROR, "Id \"", _id, "\" contains forbidden symbols!");
             return false;
         }
     }
@@ -35,7 +35,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 
         if (!usedIds.emplace (subgraph.id).second)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Subgraph id \"" + subgraph.id + "\" used more than once!");
+            EMERGENCE_LOG (ERROR, "Subgraph id \"", subgraph.id, "\" used more than once!");
             return false;
         }
     }
@@ -49,7 +49,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 
         if (!usedIds.emplace (node.id).second)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Node id \"" + node.id + "\" used more than once!");
+            EMERGENCE_LOG (ERROR, "Node id \"", node.id, "\" used more than once!");
             return false;
         }
     }
@@ -100,13 +100,14 @@ Container::Optional<Container::HashSet<Container::String>> Context::Process (con
 
         for (const Container::String &subgraphRelativePath : subgraphRelativePaths.value ())
         {
-            relativePaths.emplace (subgraph.id + VisualGraph::NODE_PATH_SEPARATOR + subgraphRelativePath);
+            relativePaths.emplace (
+                EMERGENCE_BUILD_STRING (subgraph.id, VisualGraph::NODE_PATH_SEPARATOR, subgraphRelativePath));
         }
     }
 
     for (const VisualGraph::Node &node : _graph.nodes)
     {
-        output << indentation << "\"" << _pathPrefix + node.id << "\" [";
+        output << indentation << "\"" << _pathPrefix << node.id << "\" [";
         output << "label=\"" << node.label.value_or (node.id) << "\" ";
 
         output << "];" << std::endl;
@@ -142,15 +143,15 @@ Container::Optional<Container::HashSet<Container::String>> Context::Process (con
         {
             if (!isNodeExists (edge.from))
             {
-                Log::GlobalLogger::Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" +
-                                                                 edge.to + "\": source node not found!");
+                EMERGENCE_LOG (WARNING, "Unable to add edge \"", edge.from, "\" -> \"", edge.to,
+                               "\": source node not found!");
                 continue;
             }
 
             if (!isNodeExists (edge.to))
             {
-                Log::GlobalLogger::Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" +
-                                                                 edge.to + "\": target node not found!");
+                EMERGENCE_LOG (WARNING, "Unable to add edge \"", edge.from, "\" -> \"", edge.to,
+                               "\": target node not found!");
                 continue;
             }
 

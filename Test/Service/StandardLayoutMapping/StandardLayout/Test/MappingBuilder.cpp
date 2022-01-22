@@ -2,7 +2,7 @@
 #include <variant>
 
 #include <Container/HashSet.hpp>
-#include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 #include <Container/Vector.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
@@ -310,7 +310,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (), projectedField.GetOffset ());
 
                             const Container::String expectedProjectedName =
-                                Container::String (*_seed.name) + PROJECTION_NAME_SEPARATOR + *nestedField.GetName ();
+                                EMERGENCE_BUILD_STRING (_seed.name, PROJECTION_NAME_SEPARATOR, nestedField.GetName ());
                             CHECK_EQUAL (expectedProjectedName, *projectedField.GetName ());
 
                             switch (nestedField.GetArchetype ())

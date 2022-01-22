@@ -1,3 +1,5 @@
+#include <Container/StringBuilder.hpp>
+
 #include <Query/Test/DataTypes.hpp>
 
 #include <RecordCollection/Test/Scenario.hpp>
@@ -19,11 +21,11 @@ constexpr const char *MAPPING_EDGE_COLOR = VisualGraph::Common::Constants::MAPPI
 constexpr const char *MAPPING_ROOT = VisualGraph::Common::Constants::MAPPING_ROOT_NODE;
 constexpr const char *REPRESENTATION_ROOT = VisualGraph::Common::Constants::RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
 
-static Container::String GetPathToMappings ()
+static Container::StringBuilder GetPathToMappings ()
 {
     using namespace VisualGraph::Common::Constants;
-    return Container::String (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BEGIN_BUILDING_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, MAPPING_SUBGRAPH,
+                                            VisualGraph::NODE_PATH_SEPARATOR);
 }
 
 BEGIN_SUITE (Visualization)
@@ -66,9 +68,11 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
                  }}},
         }}.ExecuteAndVisualize ();
 
-    const Container::String mappingPath = GetPathToMappings () +
-                                          *Query::Test::PlayerWithBoundingBox::Reflect ().mapping.GetName () +
-                                          VisualGraph::NODE_PATH_SEPARATOR;
+    const Container::String mappingPath =
+        GetPathToMappings ()
+            .Append (Query::Test::PlayerWithBoundingBox::Reflect ().mapping.GetName (),
+                     VisualGraph::NODE_PATH_SEPARATOR)
+            .Get ();
 
     const VisualGraph::Graph expected = {
         "RecordCollection {PlayerWithBoundingBox}",
@@ -107,7 +111,9 @@ TEST_CASE (MultipleInstancesOfLinearRepresentation)
         }}.ExecuteAndVisualize ();
 
     const Container::String mappingPath =
-        GetPathToMappings () + *Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
+        GetPathToMappings ()
+            .Append (Query::Test::Player::Reflect ().mapping.GetName (), VisualGraph::NODE_PATH_SEPARATOR)
+            .Get ();
 
     const VisualGraph::Graph expected = {"RecordCollection {Player}",
                                          {},
@@ -138,7 +144,9 @@ TEST_CASE (MultipleInstancesOfPointRepresentation)
         }}.ExecuteAndVisualize ();
 
     const Container::String mappingPath =
-        GetPathToMappings () + *Query::Test::Player::Reflect ().mapping.GetName () + VisualGraph::NODE_PATH_SEPARATOR;
+        GetPathToMappings ()
+            .Append (Query::Test::Player::Reflect ().mapping.GetName (), VisualGraph::NODE_PATH_SEPARATOR)
+            .Get ();
 
     const VisualGraph::Graph expected = {"RecordCollection {Player}",
                                          {},
@@ -190,9 +198,10 @@ TEST_CASE (MultipleInstancesOfVolumetricRepresentation)
             CreateVolumetricRepresentation {"3d", dimensions3d},
         }}.ExecuteAndVisualize ();
 
-    const Container::String mappingPath = GetPathToMappings () +
-                                          *Query::Test::BoundingBox::Reflect ().mapping.GetName () +
-                                          VisualGraph::NODE_PATH_SEPARATOR;
+    const Container::String mappingPath =
+        GetPathToMappings ()
+            .Append (Query::Test::BoundingBox::Reflect ().mapping.GetName (), VisualGraph::NODE_PATH_SEPARATOR)
+            .Get ();
 
     const VisualGraph::Graph expected = {"RecordCollection {BoundingBox}",
                                          {},

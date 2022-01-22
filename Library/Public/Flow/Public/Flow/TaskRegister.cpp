@@ -12,7 +12,6 @@
 namespace Emergence::Flow
 {
 using namespace Memory::Literals;
-using namespace Container::Literals;
 
 Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept
 {
@@ -59,8 +58,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
 
         if (!nameToNodeIndex.emplace (checkpoint, graph.nodes.size () - 1u).second)
         {
-            Log::GlobalLogger::Log (
-                Log::Level::ERROR, "TaskGraph: Task|Checkpoint name \""_s + *checkpoint + "\" is used more than once!");
+            EMERGENCE_LOG (ERROR, "TaskGraph: Task|Checkpoint name \"", checkpoint, "\" is used more than once!");
             noErrors = false;
         }
     }
@@ -83,8 +81,8 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = resourceNameToIndex.find (resource);
             if (iterator == resourceNameToIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find read access resource \""_s +
-                                                               *resource + "\" of task \"" + *task.name + "\"!");
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find read access resource \"", resource, "\" of task \"",
+                               task.name, "\"!");
                 noErrors = false;
             }
             else
@@ -98,15 +96,14 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = resourceNameToIndex.find (resource);
             if (iterator == resourceNameToIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find write access resource \""_s +
-                                                               *resource + "\" of task \"" + *task.name + "\"!");
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find write access resource \"", *resource, "\" of task \"",
+                               task.name, "\"!");
                 noErrors = false;
             }
             else if (node.readAccess.test (iterator->second))
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Resource \""_s + *resource + "\" of task \"" +
-                                                               *task.name +
-                                                               "\" used both in read access in write access lists!");
+                EMERGENCE_LOG (ERROR, "TaskGraph: Resource \"", resource, "\" of task \"", task.name,
+                               "\" used both in read access in write access lists!");
                 noErrors = false;
             }
             else
@@ -117,8 +114,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
 
         if (!nameToNodeIndex.emplace (task.name, graph.nodes.size () - 1u).second)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR,
-                                    "TaskGraph: Task|Checkpoint name \""_s + *task.name + "\" is used more than once!");
+            EMERGENCE_LOG (ERROR, "TaskGraph: Task|Checkpoint name \"", task.name, "\" is used more than once!");
             noErrors = false;
         }
     }
@@ -132,8 +128,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = nameToNodeIndex.find (target);
             if (iterator == nameToNodeIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find target \""_s + *target +
-                                                               "\" of task \"" + *task.name + "\"!");
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find target \"", target, "\" of task \"", task.name, "\"!");
                 noErrors = false;
             }
             else
@@ -147,8 +142,8 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = nameToNodeIndex.find (dependency);
             if (iterator == nameToNodeIndex.end ())
             {
-                Log::GlobalLogger::Log (Log::Level::ERROR, "TaskGraph: Unable to find dependency \""_s + *dependency +
-                                                               "\" of task \"" + *task.name + "\"!");
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find dependency \"", *dependency, "\" of task \"",
+                               task.name, "\"!");
                 noErrors = false;
             }
             else
@@ -254,11 +249,10 @@ bool TaskGraph::Verify () const noexcept
             switch (nodeStates[_index])
             {
             case VisitationState::WAITING_FOR_RESULTS:
-                Log::GlobalLogger::Log (
-                    Log::Level::ERROR,
-                    "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
+                EMERGENCE_LOG (
+                    ERROR, "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
 
-                Log::GlobalLogger::Log (Log::Level::ERROR, *_graph.nodes[_index].name);
+                EMERGENCE_LOG (ERROR, *_graph.nodes[_index].name);
                 return false;
 
             case VisitationState::UNVISITED:
@@ -275,7 +269,7 @@ bool TaskGraph::Verify () const noexcept
                     }
                     else
                     {
-                        Log::GlobalLogger::Log (Log::Level::ERROR, *_graph.nodes[_index].name);
+                        EMERGENCE_LOG (ERROR, _graph.nodes[_index].name);
                         return false;
                     }
                 }
@@ -325,10 +319,11 @@ bool TaskGraph::Verify () const noexcept
 
                 if (readWriteCollision.any () || writeReadCollision.any () || writeWriteCollision.any ())
                 {
-                    Container::String error = "TaskGraph: Race condition is possible between tasks \""_s +
-                                              *firstNode.name + "\" and \"" + *secondNode.name + "\"! ";
+                    Container::StringBuilder builder =
+                        EMERGENCE_BEGIN_BUILDING_STRING ("TaskGraph: Race condition is possible between tasks \"",
+                                                         firstNode.name, "\" and \"", secondNode.name, "\"! ");
 
-                    auto appendCollision = [&error, this] (const std::bitset<MAX_RESOURCES> &_collision)
+                    auto appendCollision = [&builder, this] (const std::bitset<MAX_RESOURCES> &_collision)
                     {
                         bool firstItem = true;
                         for (std::size_t index = 0u; index < _collision.size (); ++index)
@@ -337,10 +332,10 @@ bool TaskGraph::Verify () const noexcept
                             {
                                 if (!firstItem)
                                 {
-                                    error.append (", ");
+                                    builder.Append (", ");
                                 }
 
-                                error.append (*source->resources[index]);
+                                builder.Append (source->resources[index]);
                                 firstItem = false;
                             }
                         }
@@ -348,26 +343,26 @@ bool TaskGraph::Verify () const noexcept
 
                     if (readWriteCollision.any ())
                     {
-                        error.append ("First task reads and second task writes ");
+                        builder.Append ("First task reads and second task writes ");
                         appendCollision (readWriteCollision);
-                        error.append (".");
+                        builder.Append (".");
                     }
 
                     if (writeReadCollision.any ())
                     {
-                        error.append ("First task writes and second task reads ");
+                        builder.Append ("First task writes and second task reads ");
                         appendCollision (writeReadCollision);
-                        error.append (".");
+                        builder.Append (".");
                     }
 
                     if (writeWriteCollision.any ())
                     {
-                        error.append ("Both tasks write ");
+                        builder.Append ("Both tasks write ");
                         appendCollision (writeWriteCollision);
-                        error.append (".");
+                        builder.Append (".");
                     }
 
-                    Log::GlobalLogger::Log (Log::Level::ERROR, error);
+                    EMERGENCE_LOG (ERROR, builder.Get ());
                     anyDataRaces = true;
                 }
             }

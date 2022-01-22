@@ -1,3 +1,5 @@
+#include <Container/StringBuilder.hpp>
+
 #include <Warehouse/Test/VisualizationGraphs.hpp>
 #include <Warehouse/Visualization.hpp>
 
@@ -7,14 +9,14 @@ using namespace VisualGraph::Common::Constants;
 
 static Container::String MappingPath ()
 {
-    return Container::String (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BUILD_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, MAPPING_SUBGRAPH,
+                                   VisualGraph::NODE_PATH_SEPARATOR);
 }
 
 static Container::String RegistryPath ()
 {
-    return Container::String (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + WAREHOUSE_REGISTRY_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BUILD_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, WAREHOUSE_REGISTRY_SUBGRAPH,
+                                   VisualGraph::NODE_PATH_SEPARATOR);
 }
 
 VisualizationExpectedResult Graphs::OneQueryForEachCombination ()

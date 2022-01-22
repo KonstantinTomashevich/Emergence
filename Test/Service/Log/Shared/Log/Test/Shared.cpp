@@ -1,12 +1,14 @@
+#include <Container/StringBuilder.hpp>
+
 #include <Log/Test/Shared.hpp>
 
 namespace Emergence::Log::Test
 {
 static const Container::String THREAD_PREFIX = "[Thread ";
 
-Container::String AddThreadIndexToMessage (std::size_t _index, const char *_message)
+Container::StringBuilder ConstructMessage (std::size_t _index, const char *_message)
 {
-    return THREAD_PREFIX + Container::ToString (_index) + "]: " + _message;
+    return EMERGENCE_BEGIN_BUILDING_STRING (THREAD_PREFIX, _index, "]: ", _message);
 }
 
 Container::Optional<std::size_t> ExtractThreadIndexFromMessage (const Container::String &_message)

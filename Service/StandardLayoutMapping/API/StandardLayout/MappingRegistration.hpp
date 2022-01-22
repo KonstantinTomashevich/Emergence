@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include <Container/InplaceVector.hpp>
-#include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 
@@ -183,12 +183,10 @@ template <typename ArrayType, typename ElementRegistrar>
 auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegistrar)
 {
     std::array<StandardLayout::FieldId, ExtractArraySize<ArrayType>::VALUE> result;
-    Container::String namePrefix = Container::String (_fieldName) + '[';
-
     for (std::size_t index = 0u; index < result.size (); ++index)
     {
-        Container::String fieldName = namePrefix + Container::ToString (index) + ']';
-        result[index] = _elementRegistrar (index, Emergence::Memory::UniqueString {fieldName.c_str ()});
+        result[index] = _elementRegistrar (
+            index, Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (_fieldName, "[", index, "]")});
     }
 
     return result;

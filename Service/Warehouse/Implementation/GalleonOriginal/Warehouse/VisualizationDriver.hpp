@@ -1,4 +1,4 @@
-#include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 
 #include <Galleon/CargoDeck.hpp>
 
@@ -40,7 +40,7 @@ public:
 private:
     // Forward declare helpers, so they will gain friend access to required classes.
     template <typename ContainerType>
-    static Container::String GetPathToContainer (const Handling::Handle<ContainerType> &_container);
+    static Container::StringBuilder GetPathToContainer (const Handling::Handle<ContainerType> &_container);
 
     template <typename Query>
     static void LinkToContainer (VisualGraph::Graph &_graph, const Query &_query);

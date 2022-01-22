@@ -31,7 +31,7 @@ public:
 
     ~LoggerImplementation () noexcept = default;
 
-    void Log (Level _level, const Container::String &_message) noexcept;
+    void Log (Level _level, const char *_message) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (LoggerImplementation);
 
@@ -110,7 +110,7 @@ LoggerImplementation::LoggerImplementation (LoggerImplementation &&_other) noexc
     assert (!_other.locked.test ());
 }
 
-void LoggerImplementation::Log (Level _level, const Container::String &_message) noexcept
+void LoggerImplementation::Log (Level _level, const char *_message) noexcept
 {
     spdlog::level::level_enum level = ToSPDLogLevel (_level);
 
@@ -134,7 +134,7 @@ Logger::~Logger () noexcept
     block_cast<LoggerImplementation> (data).~LoggerImplementation ();
 }
 
-void Logger::Log (Level _level, const Container::String &_message) noexcept
+void Logger::Log (Level _level, const char *_message) noexcept
 {
     block_cast<LoggerImplementation> (data).Log (_level, _message);
 }
@@ -149,7 +149,7 @@ void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
     globalLogger.emplace (_forceFlushOn, _sinks);
 }
 
-void Log (Level _level, const Container::String &_message) noexcept
+void Log (Level _level, const char *_message) noexcept
 {
     if (!globalLogger)
     {

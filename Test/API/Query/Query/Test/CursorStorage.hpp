@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -90,15 +90,15 @@ inline Container::String ObjectToString (const StandardLayout::Mapping &_mapping
 {
     const auto *current = static_cast<const uint8_t *> (_object);
     const auto *end = current + _mapping.GetObjectSize ();
-    Container::String result;
+    Container::StringBuilder builder;
 
     while (current != end)
     {
-        result += Container::ToString (static_cast<std::size_t> (*current)) + " ";
+        builder.Append (static_cast<std::size_t> (*current), " ");
         ++current;
     }
 
-    return result;
+    return builder.Get ();
 }
 
 template <typename T>

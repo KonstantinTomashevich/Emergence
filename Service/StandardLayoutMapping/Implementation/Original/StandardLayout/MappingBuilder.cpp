@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
@@ -136,17 +136,16 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (_objectMapping.data);
     assert (nestedPlainMapping);
     FieldId objectFieldId = state.AddField (FieldData::NestedObjectSeed {_name, _offset, nestedPlainMapping.Get ()});
-    const Container::String prefix = Container::String (*_name) + PROJECTION_NAME_SEPARATOR;
 
     for (const FieldData &field : *nestedPlainMapping.Get ())
     {
-        const Container::String fullName = prefix + *field.GetName ();
+        const char *fullName = EMERGENCE_BUILD_STRING (_name, PROJECTION_NAME_SEPARATOR, field.GetName ());
         [[maybe_unused]] FieldId nestedFieldId = 0u;
 
         switch (field.GetArchetype ())
         {
         case FieldArchetype::BIT:
-            nestedFieldId = state.AddField (FieldData::BitSeed {Memory::UniqueString {fullName.c_str ()},
+            nestedFieldId = state.AddField (FieldData::BitSeed {Memory::UniqueString {fullName},
                                                                 _offset + field.GetOffset (), field.GetBitOffset ()});
             break;
 
@@ -155,22 +154,21 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
         case FieldArchetype::FLOAT:
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
-            nestedFieldId = state.AddField (FieldData::StandardSeed {Memory::UniqueString {fullName.c_str ()},
-                                                                     field.GetArchetype (),
-                                                                     _offset + field.GetOffset (), field.GetSize ()});
+            nestedFieldId =
+                state.AddField (FieldData::StandardSeed {Memory::UniqueString {fullName}, field.GetArchetype (),
+                                                         _offset + field.GetOffset (), field.GetSize ()});
             break;
 
         case FieldArchetype::UNIQUE_STRING:
             nestedFieldId = state.AddField (
-                FieldData::UniqueStringSeed {Memory::UniqueString {fullName.c_str ()}, _offset + field.GetOffset ()});
+                FieldData::UniqueStringSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset ()});
             break;
 
         case FieldArchetype::NESTED_OBJECT:
             // We don't need to recursively add fields, because given nested mapping is finished,
             // therefore all fields of internal objects are already projected into this mapping.
-            nestedFieldId = state.AddField (FieldData::NestedObjectSeed {Memory::UniqueString {fullName.c_str ()},
-                                                                         _offset + field.GetOffset (),
-                                                                         field.GetNestedObjectMapping ().Get ()});
+            nestedFieldId = state.AddField (FieldData::NestedObjectSeed {
+                Memory::UniqueString {fullName}, _offset + field.GetOffset (), field.GetNestedObjectMapping ().Get ()});
             break;
         }
 

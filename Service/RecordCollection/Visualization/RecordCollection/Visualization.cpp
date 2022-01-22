@@ -1,14 +1,15 @@
+#include <Container/StringBuilder.hpp>
+
 #include <RecordCollection/Visualization.hpp>
 
 namespace Emergence::RecordCollection::Visualization
 {
-using namespace Container::Literals;
 using namespace VisualGraph::Common::Constants;
 
-static Container::String GetPathToMappings ()
+static Container::StringBuilder GetPathToMappings ()
 {
-    return Container::String (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BEGIN_BUILDING_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, MAPPING_SUBGRAPH,
+                                            VisualGraph::NODE_PATH_SEPARATOR);
 }
 
 VisualGraph::Graph GraphFromCollection (const Collection &_collection)
@@ -21,10 +22,12 @@ VisualGraph::Graph GraphFromCollection (const Collection &_collection)
 
     VisualGraph::Edge &mappingEdge = graph.edges.emplace_back ();
     mappingEdge.from = root.id;
-    mappingEdge.to = GetPathToMappings () + *_collection.GetTypeMapping ().GetName () +
-                     VisualGraph::NODE_PATH_SEPARATOR + MAPPING_ROOT_NODE;
-    mappingEdge.color = MAPPING_USAGE_COLOR;
+    mappingEdge.to =
+        GetPathToMappings ()
+            .Append (_collection.GetTypeMapping ().GetName (), VisualGraph::NODE_PATH_SEPARATOR, MAPPING_ROOT_NODE)
+            .Get ();
 
+    mappingEdge.color = MAPPING_USAGE_COLOR;
     for (auto iterator = _collection.LinearRepresentationBegin (); iterator != _collection.LinearRepresentationEnd ();
          ++iterator)
     {
@@ -50,7 +53,7 @@ static VisualGraph::Edge ConnectRepresentationToField (const char *_typeName, co
 {
     VisualGraph::Edge edge;
     edge.from = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
-    edge.to = GetPathToMappings () + _typeName + VisualGraph::NODE_PATH_SEPARATOR + _fieldName;
+    edge.to = GetPathToMappings ().Append (_typeName, VisualGraph::NODE_PATH_SEPARATOR, _fieldName).Get ();
     edge.color = VisualGraph::Common::Constants::MAPPING_USAGE_COLOR;
     return edge;
 }
@@ -103,46 +106,46 @@ VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresenta
 
 Container::String GraphId (const Collection &_collection)
 {
-    return "RecordCollection {"_s + *_collection.GetTypeMapping ().GetName () + "}";
+    return EMERGENCE_BUILD_STRING ("RecordCollection {", *_collection.GetTypeMapping ().GetName (), "}");
 }
 
 Container::String GraphId (const LinearRepresentation &_representation)
 {
-    return "LinearRepresentation {"_s + *_representation.GetKeyField ().GetName () + "}";
+    return EMERGENCE_BUILD_STRING ("LinearRepresentation {", *_representation.GetKeyField ().GetName (), "}");
 }
 
 Container::String GraphId (const PointRepresentation &_representation)
 {
-    Container::String id = "PointRepresentation {";
+    Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING ("PointRepresentation {");
     bool firstKeyField = true;
 
     for (auto iterator = _representation.KeyFieldBegin (); iterator != _representation.KeyFieldEnd (); ++iterator)
     {
         if (!firstKeyField)
         {
-            id += ", ";
+            builder.Append (", ");
         }
         else
         {
             firstKeyField = false;
         }
 
-        id += *(*iterator).GetName ();
+        builder.Append ((*iterator).GetName ());
     }
 
-    return id + "}";
+    return builder.Append ("}").Get ();
 }
 
 Container::String GraphId (const VolumetricRepresentation &_representation)
 {
-    Container::String id = "VolumetricRepresentation {";
+    Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING ("VolumetricRepresentation {");
     bool firstDimension = true;
 
     for (auto iterator = _representation.DimensionBegin (); iterator != _representation.DimensionEnd (); ++iterator)
     {
         if (!firstDimension)
         {
-            id += ", ";
+            builder.Append (", ");
         }
         else
         {
@@ -150,9 +153,9 @@ Container::String GraphId (const VolumetricRepresentation &_representation)
         }
 
         VolumetricRepresentation::DimensionIterator::Dimension dimension = *iterator;
-        id += "{"_s + *dimension.minField.GetName () + ", " + *dimension.maxField.GetName () + "}";
+        builder.Append ("{", dimension.minField.GetName (), ", ", dimension.maxField.GetName (), "}");
     }
 
-    return id + "}";
+    return builder.Append ("}").Get ();
 }
 } // namespace Emergence::RecordCollection::Visualization
