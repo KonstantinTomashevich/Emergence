@@ -6,9 +6,18 @@ sober_library_begin (MemoryRecordingClient STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
+    sober_naming_variant_target (MemoryRecording Original MEMORY_RECORDING_LIBRARY_TARGET)
+
+    sober_library_link_library (PRIVATE ${CONTAINER_LIBRARY_TARGET})
+    sober_library_link_library (PRIVATE ${MEMORY_RECORDING_LIBRARY_TARGET})
     sober_library_link_library (PRIVATE SDL2)
     sober_library_link_library (PRIVATE SDL2ImGUI)
     sober_library_link_library (PRIVATE SDL2main)
+
+    sober_library_use_service (SHARED PRIVATE Log)
+    sober_library_use_service (SHARED PRIVATE Memory)
+    sober_library_use_service (SHARED PRIVATE MemoryProfiler)
 
     sober_variant_begin (Original)
     sober_variant_end ()

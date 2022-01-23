@@ -210,8 +210,6 @@ Track::EventIterator Track::EventIterator::operator++ (int) noexcept
 Track::EventIterator &Track::EventIterator::operator-- () noexcept
 {
     assert (track);
-    assert (current);
-
     if (current)
     {
         current = current->previous;
