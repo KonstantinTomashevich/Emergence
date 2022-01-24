@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include <Container/HashMap.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Recording/Constants.hpp>
@@ -13,6 +14,8 @@ namespace Emergence::Memory::Recording::Application
 class TrackHolder final
 {
 public:
+    using MarkerVector = Container::Vector<Track::EventIterator>;
+
     void Open (const char *_fileName) noexcept;
 
     void Close () noexcept;
@@ -23,7 +26,12 @@ public:
 
     [[nodiscard]] const Track &GetTrack () const noexcept;
 
-    [[nodiscard]] const Container::Vector<Track::EventIterator> &GetMarkers () const noexcept;
+    [[nodiscard]] const MarkerVector &GetMarkers () const noexcept;
+
+    [[nodiscard]] std::pair<MarkerVector::const_iterator, MarkerVector::const_iterator> GetMarkersInBounds (
+        float _minS, float _maxS) const noexcept;
+
+    [[nodiscard]] double GetMarkerFrequency (UniqueString _markerId) const noexcept;
 
     /// \see Track::MoveToPreviousEvent
     bool MoveToPreviousEvent () noexcept;
@@ -32,10 +40,21 @@ public:
     bool MoveToNextEvent () noexcept;
 
 private:
+    struct MarkerFrequencyData
+    {
+        double accumulator = 0.0;
+        double previousMarkerTimeS = 0.0;
+        std::size_t count = 0u;
+    };
+
     std::ifstream input;
     Track track;
     StreamDeserializer deserializer;
-    Container::Vector<Track::EventIterator> markers {Constants::AllocationGroup ()};
+
+    // TODO: This vector will be very huge if recording is big. Think about other data structures.
+    MarkerVector markers {Constants::AllocationGroup ()};
+
+    Container::HashMap<UniqueString, MarkerFrequencyData> markerFrequency {Constants::AllocationGroup ()};
 
     bool fileOpen = false;
     bool loading = false;

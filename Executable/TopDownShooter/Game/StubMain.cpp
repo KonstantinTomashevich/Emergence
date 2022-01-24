@@ -90,11 +90,11 @@ public:
     void Execute ()
     {
         // TODO: Automatically add markers from pipelines?
-        static const Emergence::Memory::UniqueString FIXED_UPDATE_BEGIN {"FixedUpdateBegin"};
-        static const Emergence::Memory::UniqueString FIXED_UPDATE_END {"FixedUpdateEnd"};
+        static const Emergence::Memory::UniqueString fixedUpdateBegin {"FixedUpdateBegin"};
+        static const Emergence::Memory::UniqueString fixedUpdateEnd {"FixedUpdateEnd"};
 
-        static const Emergence::Memory::UniqueString NORMAL_UPDATE_BEGIN {"NormalUpdateBegin"};
-        static const Emergence::Memory::UniqueString NORMAL_UPDATE_END {"NormalUpdateEnd"};
+        static const Emergence::Memory::UniqueString normalUpdateBegin {"NormalUpdateBegin"};
+        static const Emergence::Memory::UniqueString normalUpdateEnd {"NormalUpdateEnd"};
 
         // Intentionally lift write access to time singleton, because we are expecting changes from pipelines.
         auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
@@ -108,9 +108,9 @@ public:
         {
             while (time->fixedTimeUs < time->normalTimeUs)
             {
-                Emergence::Memory::Profiler::AddMarker (FIXED_UPDATE_BEGIN);
+                Emergence::Memory::Profiler::AddMarker (fixedUpdateBegin);
                 fixedUpdate->Execute ();
-                Emergence::Memory::Profiler::AddMarker (FIXED_UPDATE_END);
+                Emergence::Memory::Profiler::AddMarker (fixedUpdateEnd);
             }
         }
         else
@@ -119,9 +119,9 @@ public:
             time->fixedTimeUs = time->normalTimeUs;
         }
 
-        Emergence::Memory::Profiler::AddMarker (NORMAL_UPDATE_BEGIN);
+        Emergence::Memory::Profiler::AddMarker (normalUpdateBegin);
         normalUpdate->Execute ();
-        Emergence::Memory::Profiler::AddMarker (NORMAL_UPDATE_END);
+        Emergence::Memory::Profiler::AddMarker (normalUpdateEnd);
     }
 
 private:

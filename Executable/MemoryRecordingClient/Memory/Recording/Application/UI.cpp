@@ -1,3 +1,5 @@
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+
 #include <imgui.h>
 
 #include <Container/StringBuilder.hpp>
@@ -50,12 +52,8 @@ uintptr_t UI::ExtractGroupColor (const RecordedAllocationGroup *_group,
 
 std::pair<ImVec2, ImVec2> UI::GetWindowRect () noexcept
 {
-    const ImVec2 min = {ImGui::GetCursorStartPos ().x + ImGui::GetWindowPos ().x,
-                        ImGui::GetCursorStartPos ().y + ImGui::GetWindowPos ().y};
-
-    const ImVec2 max = {min.x + ImGui::GetScrollMaxX () + ImGui::GetWindowSize ().x,
-                        min.y + ImGui::GetScrollMaxY () + ImGui::GetWindowSize ().y};
-
+    const ImVec2 min = {ImGui::GetWindowPos ().x, ImGui::GetWindowPos ().y};
+    const ImVec2 max = {min.x + ImGui::GetWindowSize ().x, min.y + ImGui::GetWindowSize ().y};
     return {min, max};
 }
 
@@ -127,7 +125,7 @@ void UI::DrawFlameGraph (Client &_client) noexcept
     if (const RecordedAllocationGroup *root = _client.GetTrackHolder ().GetTrack ().Root ())
     {
         const ImVec2 drawZoneStart = ImGui::GetCursorScreenPos ();
-        const float drawZoneWidth = ImGui::GetContentRegionAvailWidth ();
+        const float drawZoneWidth = ImGui::GetContentRegionAvail ().x;
 
         float yEnd = DrawFlameGraphNode (root, ImGui::GetWindowDrawList (), drawZoneStart.x, drawZoneStart.y,
                                          drawZoneStart.x + drawZoneWidth * flameGraphHorizontalScale);
@@ -210,29 +208,139 @@ void UI::DrawTimeline ([[maybe_unused]] Client &_client) noexcept
 {
     ImVec2 contentMax = ImGui::GetWindowContentRegionMax ();
     ImGui::TextUnformatted ("Timeline");
-    ImGui::BeginChild ("Timeline", {contentMax.x, contentMax.y * 0.1f}, true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild ("Timeline", {contentMax.x, contentMax.y * 0.15f}, true,
+                       ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-    //    const Track &track = _client.GetTrackHolder ().GetTrack ();
-    //    if (track.EventBegin () != track.EventEnd ())
-    //    {
-    //        const float timeBeginS = static_cast<float> ((*track.EventBegin ())->timeNs) * 1e-9f;
-    //        const float timeEndS = static_cast<float> ((*--track.EventEnd ())->timeNs) * 1e-9f;
-    //
-    //
-    //
-    //        //const float durationS = timeEndS - timeBeginS;
-    //
-    //        ImVec2 drawZoneStart = ImGui::GetCursorScreenPos ();
-    //        float drawZoneWidth = ImGui::GetWindowContentRegionWidth () * timelineScale;
-    //        //
-    //        //        float yEnd = DrawFlameGraphNode (root, ImGui::GetWindowDrawList (), drawZoneStart.x,
-    //        drawZoneStart.y,
-    //        //                                         drawZoneStart.x + drawZoneWidth * flameGraphHorizontalScale);
-    //    }
+    const Track &track = _client.GetTrackHolder ().GetTrack ();
+    if (track.EventBegin () != track.EventEnd ())
+    {
+        // TODO: Watch out for precision bugs.
+        const float timeBeginS = static_cast<float> ((*track.EventBegin ())->timeNs) * 1e-9f;
+        const float timeEndS = static_cast<float> ((*--track.EventEnd ())->timeNs) * 1e-9f;
+        const float timeDurationS = timeEndS - timeBeginS;
 
+        const ImVec2 drawZoneStart = ImGui::GetCursorScreenPos ();
+        const ImVec2 drawZoneFrameStart = {drawZoneStart.x + ImGui::GetScrollX (), drawZoneStart.y};
+        const ImVec2 drawZoneVisibleSize = ImGui::GetContentRegionAvail ();
+        const float drawZoneFullWidth = drawZoneVisibleSize.x * timelineScale;
+
+        const float timeFrameBeginS = std::lerp (timeBeginS, timeEndS, ImGui::GetScrollX () / drawZoneFullWidth);
+        const float timeFrameEndS =
+            std::lerp (timeBeginS, timeEndS, (ImGui::GetScrollX () + drawZoneVisibleSize.x) / drawZoneFullWidth);
+        const float pixelsPerSecond = drawZoneFullWidth / timeDurationS;
+
+        constexpr uint32_t LINES_COLOR = IM_COL32 (150, 150, 150, 255);
+        constexpr uint32_t TEXT_COLOR = IM_COL32 (220, 220, 220, 255);
+        constexpr uint32_t MARKER_COLOR = IM_COL32 (255, 180, 0, 255);
+        constexpr uint32_t SELECTION_COLOR = IM_COL32 (200, 0, 0, 255);
+
+        ImDrawList *drawList = ImGui::GetWindowDrawList ();
+        drawList->AddLine (
+            {drawZoneFrameStart.x, drawZoneFrameStart.y + drawZoneVisibleSize.y * 0.5f},
+            {drawZoneFrameStart.x + drawZoneVisibleSize.x, drawZoneFrameStart.y + drawZoneVisibleSize.y * 0.5f},
+            LINES_COLOR);
+
+        auto secondToX = [&drawZoneStart, timeBeginS, pixelsPerSecond] (float _second)
+        {
+            return drawZoneStart.x + (_second - timeBeginS) * pixelsPerSecond;
+        };
+
+        Container::StringBuilder builder;
+        const auto firstSecond = static_cast<uint64_t> (floor (timeFrameBeginS));
+        const auto lastSecond = static_cast<uint64_t> (ceil (timeFrameEndS));
+
+        // TODO: Think about refactoring this cycle.
+        for (size_t second = firstSecond; second <= lastSecond; ++second)
+        {
+            const bool isMinute = second % 60u == 0u;
+
+            // If there is huge amount of seconds on screen, draw only minutes.
+            if (pixelsPerSecond < 10.0f && !isMinute)
+            {
+                continue;
+            }
+
+            const float x = secondToX (static_cast<float> (second));
+            const float lineSize = isMinute ? 0.8f : 0.6f;
+
+            drawList->AddLine ({x, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f - lineSize * 0.5f)},
+                               {x, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f + lineSize * 0.5f)}, LINES_COLOR);
+
+            if (pixelsPerSecond >= 30.0f || isMinute)
+            {
+                drawList->AddText ({x, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f + lineSize * 0.5f)}, TEXT_COLOR,
+                                   builder.Reset ().Append (second / 60u, "m", second % 60u, 's').Get ());
+            }
+
+            // Draw 100ms guidelines.
+            if (pixelsPerSecond >= 100.0f)
+            {
+                for (size_t lineIndex = 1u; lineIndex < 10u; ++lineIndex)
+                {
+                    const float x = secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.1f);
+                    drawList->AddLine ({x, drawZoneStart.y + drawZoneVisibleSize.y * 0.35f},
+                                       {x, drawZoneStart.y + drawZoneVisibleSize.y * 0.65f}, LINES_COLOR);
+                }
+            }
+
+            // Draw 10ms guidelines.
+            if (pixelsPerSecond >= 1000.0f)
+            {
+                for (size_t lineIndex = 1u; lineIndex < 100u; ++lineIndex)
+                {
+                    const float x = secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.01f);
+                    drawList->AddLine ({x, drawZoneStart.y + drawZoneVisibleSize.y * 0.45f},
+                                       {x, drawZoneStart.y + drawZoneVisibleSize.y * 0.55f}, LINES_COLOR);
+                }
+            }
+        }
+
+        // Draw visible markers.
+        auto [firstMarker, lastMarker] = _client.GetTrackHolder ().GetMarkersInBounds (timeFrameBeginS, timeFrameEndS);
+
+        for (auto iterator = firstMarker; iterator != lastMarker; ++iterator)
+        {
+            const double frequencyS = _client.GetTrackHolder ().GetMarkerFrequency ((**iterator)->markerId);
+
+            // Cull out markers with too high frequency for current scale.
+            if (pixelsPerSecond > 1000.0f || (pixelsPerSecond > 100.0f && frequencyS > 0.1) || frequencyS > 1.0)
+            {
+                const float markerSecond = static_cast<float> ((**iterator)->timeNs) * 1e-9f;
+                const float x = secondToX (markerSecond);
+
+                constexpr float MARKER_RADIUS = 5.0f;
+                drawList->AddCircleFilled ({x, drawZoneStart.y + drawZoneVisibleSize.y * 0.5f}, MARKER_RADIUS,
+                                           MARKER_COLOR);
+
+                const ImVec2 tooltipMin {x - MARKER_RADIUS,
+                                         drawZoneStart.y + drawZoneVisibleSize.y * 0.5f - MARKER_RADIUS};
+
+                const ImVec2 tooltipMax {x + MARKER_RADIUS,
+                                         drawZoneStart.y + drawZoneVisibleSize.y * 0.5f + MARKER_RADIUS};
+
+                if (IsMouseInside (tooltipMin, tooltipMax))
+                {
+                    ImGui::SetTooltip ("%s", *(**iterator)->markerId);
+                }
+            }
+        }
+
+        // Mark current selected time.
+        float selectedX = secondToX (_client.GetSelectedTimeS ());
+        drawList->AddLine ({selectedX, drawZoneStart.y}, {selectedX, drawZoneStart.y + drawZoneVisibleSize.y},
+                           SELECTION_COLOR);
+
+        if (IsMouseInsideCurrentWindow () && ImGui::IsMouseDoubleClicked (ImGuiMouseButton_Left))
+        {
+            float localX = ImGui::GetMousePos ().x - drawZoneStart.x;
+            _client.SelectTime (timeBeginS + localX * timeDurationS / drawZoneFullWidth);
+        }
+
+        ImGui::Dummy ({drawZoneFullWidth, drawZoneVisibleSize.y});
+    }
+
+    EnableHorizontalScalingThroughWheel (timelineScale, 1.0f, 2000.0f);
+    EnableScrollingThroughDragging ();
     ImGui::EndChild ();
-
-    ImGui::SliderFloat ("Timeline Scale", &timelineScale, 1.0f, 200.0f);
-    ImGui::Separator ();
 }
 } // namespace Emergence::Memory::Recording::Application

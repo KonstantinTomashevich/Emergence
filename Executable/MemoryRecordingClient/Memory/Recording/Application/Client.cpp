@@ -60,6 +60,16 @@ void Client::OpenTrack (const char *_fileName) noexcept
     trackHolder.Open (_fileName);
 }
 
+float Client::GetSelectedTimeS () const noexcept
+{
+    return GetEventTime (trackHolder.GetTrack ().EventCurrent ());
+}
+
+void Client::SelectTime (float _seconds) noexcept
+{
+    requestedTimeS = _seconds;
+}
+
 int Client::Run () noexcept
 {
     if (!initializedSuccessfully)
@@ -87,11 +97,7 @@ int Client::Run () noexcept
         }
 
         trackHolder.Update ();
-
-        // TODO: Temporary: always go to the last event.
-        while (trackHolder.MoveToNextEvent ())
-        {
-        };
+        UpdateSelectedTime ();
 
         ImGui_ImplSDLRenderer_NewFrame ();
         ImGui_ImplSDL2_NewFrame (window);
@@ -107,6 +113,58 @@ int Client::Run () noexcept
     }
 
     return 0;
+}
+
+void Client::UpdateSelectedTime () noexcept
+{
+    if (requestedTimeS)
+    {
+        using namespace std::chrono_literals;
+        using Clock = std::chrono::high_resolution_clock;
+        static const Clock ::duration timeout = 20ms;
+
+        const Clock::time_point updateStart = Clock::now ();
+        const Track &track = trackHolder.GetTrack ();
+        Track::EventIterator currentEvent = track.EventCurrent ();
+        const float currentTimeS = GetEventTime (currentEvent);
+
+        const bool goingForward = requestedTimeS.value () > currentTimeS;
+
+        while (true)
+        {
+            if (goingForward)
+            {
+                ++currentEvent;
+                if (GetEventTime (currentEvent) > requestedTimeS.value () || !trackHolder.MoveToNextEvent ())
+                {
+                    requestedTimeS.reset ();
+                    break;
+                }
+            }
+            else
+            {
+                --currentEvent;
+                const bool lastUndo = GetEventTime (currentEvent) < requestedTimeS.value ();
+
+                if (!trackHolder.MoveToPreviousEvent () || lastUndo)
+                {
+                    requestedTimeS.reset ();
+                    break;
+                }
+            }
+
+            if (Clock::now () - updateStart > timeout)
+            {
+                break;
+            }
+        }
+    }
+}
+
+float Client::GetEventTime (const Track::EventIterator &_iterator) const noexcept
+{
+    const Track &track = trackHolder.GetTrack ();
+    return _iterator == track.EventEnd () ? 0.0f : static_cast<float> ((*_iterator)->timeNs) * 1e-9f;
 }
 
 int Main (int /*unused*/, char ** /*unused*/)
