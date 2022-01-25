@@ -18,9 +18,10 @@ void UI::Render (Client &_client) noexcept
                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
                       ImGuiWindowFlags_NoTitleBar);
 
-    DrawOpenTrackMenu (_client);
-    DrawFlameGraph (_client);
-    DrawTimeline (_client);
+    RenderOpenTrackMenu (_client);
+    RenderFlameGraph (_client);
+    RenderTimeline (_client);
+    RenderSelection (_client);
 
     ImGui::End ();
 }
@@ -96,13 +97,210 @@ void UI::EnableHorizontalScalingThroughWheel (float &_scale, float _min, float _
     }
 }
 
-void UI::DrawOpenTrackMenu (Client &_client) noexcept
+void UI::RenderSelection (Client &_client) noexcept
+{
+    ImGui::BeginChild ("Selection", ImGui::GetContentRegionAvail (), true);
+    ImGui::Columns (2);
+    RenderEventsNearby (_client);
+
+    ImGui::NextColumn ();
+    RenderSelectedGroup (_client);
+    ImGui::EndChild ();
+}
+
+void UI::RenderEventsNearby (Client &_client)
+{
+    TrackHolder &trackHolder = _client.GetTrackHolder ();
+    ImGui::TextUnformatted ("Events Nearby");
+    ImGui::BeginChild ("EventList");
+
+    constexpr int PREVIOUS_EVENTS_TO_SHOW = 10;
+    constexpr int NEXT_EVENTS_TO_SHOW = 10;
+
+    const Track::EventIterator current = trackHolder.GetTrack ().EventCurrent ();
+    int listBeginOffset = 0;
+    Track::EventIterator listBegin = current;
+
+    while (listBegin != trackHolder.GetTrack ().EventEnd () && -listBeginOffset <= PREVIOUS_EVENTS_TO_SHOW)
+    {
+        --listBegin;
+        --listBeginOffset;
+    }
+
+    // Because of the end-check, we have done one more step than we need, Therefore we increment to undo this step.
+    ++listBegin;
+    ++listBeginOffset;
+
+    int listEndOffset = 0;
+    Track::EventIterator listEnd = current;
+
+    do
+    {
+        ++listEnd;
+        ++listEndOffset;
+    } while (listEnd != trackHolder.GetTrack ().EventEnd () && listEndOffset <= NEXT_EVENTS_TO_SHOW);
+
+    int offset = listBeginOffset;
+    Track::EventIterator iterator = listBegin;
+
+    while (iterator != listEnd)
+    {
+        ImGui::PushID (offset);
+        const Event *event = *iterator;
+
+        if (iterator == trackHolder.GetTrack ().EventCurrent ())
+        {
+            ImGui::BeginDisabled ();
+            ImGui::Button ("Current");
+            ImGui::EndDisabled ();
+        }
+        else
+        {
+            if (ImGui::Button ("Go Here"))
+            {
+                trackHolder.MoveBy (offset);
+            }
+        }
+
+        ImGui::SameLine ();
+        const GroupUID uid = [event] ()
+        {
+            switch (event->type)
+            {
+            case EventType::DECLARE_GROUP:
+                return event->uid;
+
+            case EventType::ALLOCATE:
+            case EventType::ACQUIRE:
+            case EventType::RELEASE:
+            case EventType::FREE:
+                return event->group;
+
+            case EventType::MARKER:
+                return event->scope;
+            }
+        }();
+
+        const RecordedAllocationGroup *group = trackHolder.GetTrack ().GetGroupByUID (uid);
+        const char *groupId = group ? (*group->GetId () ? *group->GetId () : "Root") : "<Unknown>";
+        ImGui::SameLine ();
+
+        if (ImGui::Button ("Select Group"))
+        {
+            if (group)
+            {
+                trackHolder.SelectGroup (group);
+            }
+        }
+
+        ImGui::SameLine ();
+        switch (event->type)
+        {
+        case EventType::DECLARE_GROUP:
+            ImGui::Text ("Declare group %s.", groupId);
+            break;
+
+        case EventType::ALLOCATE:
+            ImGui::Text ("Allocate %llu bytes in group %s.", event->bytes, groupId);
+            break;
+
+        case EventType::ACQUIRE:
+            ImGui::Text ("Acquire %llu bytes in group %s.", event->bytes, groupId);
+            break;
+
+        case EventType::RELEASE:
+            ImGui::Text ("Release %llu bytes in group %s.", event->bytes, groupId);
+            break;
+
+        case EventType::FREE:
+            ImGui::Text ("Free %llu bytes in group %s.", event->bytes, groupId);
+            break;
+
+        case EventType::MARKER:
+            ImGui::Text ("Marker: %s. Scope: %s.", *event->markerId ? *event->markerId : "<Unknown>", groupId);
+            break;
+        }
+
+        ImGui::SameLine ();
+        uint64_t milliseconds = event->timeNs / 1000000u;
+        uint64_t seconds = milliseconds / 1000u;
+        milliseconds %= 1000u;
+
+        uint64_t minutes = seconds / 60u;
+        seconds %= 60u;
+        ImGui::Text ("Time: %llum %llus %llums.", minutes, seconds, milliseconds);
+
+        ImGui::PopID ();
+        ++offset;
+        ++iterator;
+    }
+
+    ImGui::EndChild ();
+}
+
+void UI::RenderSelectedGroup (Client &_client)
+{
+    TrackHolder &trackHolder = _client.GetTrackHolder ();
+    ImGui::TextUnformatted ("Selected Group");
+    ImGui::Separator ();
+
+    if (const RecordedAllocationGroup *group = trackHolder.GetSelectedGroup ())
+    {
+        ImGui::Text ("Name: %s.", *group->GetId () ? *group->GetId () : "Root");
+        ImGui::Text ("Reserved (bytes): %llu (%f%%).", static_cast<uint64_t> (group->GetReserved ()),
+                     group->GetTotal () == 0u ?
+                         0.0f :
+                         static_cast<float> (group->GetReserved ()) * 100.0f / static_cast<float> (group->GetTotal ()));
+
+        ImGui::Text ("Acquired (bytes): %llu (%f%%).", static_cast<uint64_t> (group->GetAcquired ()),
+                     group->GetTotal () == 0u ?
+                         0.0f :
+                         static_cast<float> (group->GetAcquired ()) * 100.0f / static_cast<float> (group->GetTotal ()));
+
+        ImGui::Text ("Total (bytes): %llu.", static_cast<uint64_t> (group->GetTotal ()));
+
+        if (const RecordedAllocationGroup *parent = group->Parent ())
+        {
+            if (ImGui::Button (
+                    EMERGENCE_BUILD_STRING ("Parent: ", *parent->GetId () ? *parent->GetId () : "Root", ".")))
+            {
+                _client.GetTrackHolder ().SelectGroup (parent);
+            }
+        }
+
+        ImGui::TextUnformatted ("Children:");
+        ImGui::Indent ();
+
+        for (auto iterator = group->BeginChildren (); iterator != group->EndChildren (); ++iterator)
+        {
+            const RecordedAllocationGroup *child = *iterator;
+            std::size_t percentOfParent = 0u;
+
+            if (group->GetTotal () != 0u)
+            {
+                percentOfParent = static_cast<std::size_t> (static_cast<float> (child->GetTotal ()) * 100.0f /
+                                                            static_cast<float> (group->GetTotal ()));
+            }
+
+            if (ImGui::Button (EMERGENCE_BUILD_STRING (child->GetId (), " (", percentOfParent, "% of parent)")))
+            {
+                _client.GetTrackHolder ().SelectGroup (child);
+            }
+        }
+    }
+    else
+    {
+        ImGui::TextUnformatted ("Selection is empty.");
+    }
+}
+
+void UI::RenderOpenTrackMenu (Client &_client) noexcept
 {
     ImGui::TextUnformatted ("Open Track Menu");
     if (ImGui::InputText ("Input track file name", filePathBuffer.data (), filePathBuffer.size (),
                           ImGuiInputTextFlags_EnterReturnsTrue))
     {
-        _client.OpenTrack (filePathBuffer.data ());
+        _client.GetTrackHolder ().Open (filePathBuffer.data ());
     }
 
     if (_client.GetTrackHolder ().IsLoading ())
@@ -114,7 +312,7 @@ void UI::DrawOpenTrackMenu (Client &_client) noexcept
     ImGui::Separator ();
 }
 
-void UI::DrawFlameGraph (Client &_client) noexcept
+void UI::RenderFlameGraph (Client &_client) noexcept
 {
     ImVec2 contentMax = ImGui::GetWindowContentRegionMax ();
     ImGui::TextUnformatted ("Flame Graph");
@@ -127,8 +325,8 @@ void UI::DrawFlameGraph (Client &_client) noexcept
         const ImVec2 drawZoneStart = ImGui::GetCursorScreenPos ();
         const float drawZoneWidth = ImGui::GetContentRegionAvail ().x;
 
-        float yEnd = DrawFlameGraphNode (root, ImGui::GetWindowDrawList (), drawZoneStart.x, drawZoneStart.y,
-                                         drawZoneStart.x + drawZoneWidth * flameGraphHorizontalScale);
+        float yEnd = RenderFlameGraphNode (_client, root, ImGui::GetWindowDrawList (), drawZoneStart.x, drawZoneStart.y,
+                                           drawZoneStart.x + drawZoneWidth * flameGraphHorizontalScale);
 
         ImGui::Dummy ({drawZoneWidth * flameGraphHorizontalScale, yEnd - drawZoneStart.y});
     }
@@ -138,11 +336,12 @@ void UI::DrawFlameGraph (Client &_client) noexcept
     ImGui::EndChild ();
 }
 
-float UI::DrawFlameGraphNode (const RecordedAllocationGroup *_group,
-                              ImDrawList *_drawList,
-                              float _levelXStart,
-                              float _levelYStart,
-                              float _levelXEnd) const noexcept
+float UI::RenderFlameGraphNode (Client &_client,
+                                const RecordedAllocationGroup *_group,
+                                ImDrawList *_drawList,
+                                float _levelXStart,
+                                float _levelYStart,
+                                float _levelXEnd) const noexcept
 {
     constexpr float LEVEL_HEIGHT = 50.0f;
 
@@ -161,7 +360,13 @@ float UI::DrawFlameGraphNode (const RecordedAllocationGroup *_group,
     {
         _drawList->AddRectFilled (acquiredRectMin, acquiredRectMax, ExtractGroupColor (_group, 0.5f, 0.8f));
         _drawList->AddRectFilled (reservedRectMin, reservedRectMax, ExtractGroupColor (_group, 0.2f, 0.5f));
-        _drawList->AddRect (acquiredRectMin, reservedRectMax, IM_COL32 (0, 0, 0, 255));
+
+        const bool selected = _group == _client.GetTrackHolder ().GetSelectedGroup ();
+        constexpr uint32_t SELECTED_COLOR = IM_COL32 (220, 0, 0, 255);
+        constexpr uint32_t USUAL_COLOR = IM_COL32 (0, 0, 0, 255);
+
+        _drawList->AddRect (acquiredRectMin, reservedRectMax, selected ? SELECTED_COLOR : USUAL_COLOR,
+                            selected ? 3.0f : 1.0f);
 
         const char *idString = *_group->GetId () ? *_group->GetId () : "Root";
         const auto usagePercent = static_cast<uint32_t> (static_cast<float> (_group->GetAcquired ()) * 100.0f /
@@ -178,9 +383,11 @@ float UI::DrawFlameGraphNode (const RecordedAllocationGroup *_group,
         if (IsMouseInside (acquiredRectMin, reservedRectMax))
         {
             ImGui::SetTooltip ("%s", info);
+            if (ImGui::IsMouseDoubleClicked (ImGuiMouseButton_Left))
+            {
+                _client.GetTrackHolder ().SelectGroup (_group);
+            }
         }
-
-        // TODO: Highlight selected.
     }
 
     float graphYEnd = _levelYStart + LEVEL_HEIGHT;
@@ -195,8 +402,8 @@ float UI::DrawFlameGraphNode (const RecordedAllocationGroup *_group,
                 static_cast<float> (next->GetTotal ()) * currentLevelWidth / static_cast<float> (_group->GetTotal ());
             const float nextLevelXEnd = nextLevelXStart + nextLevelWidth;
 
-            graphYEnd = std::max (graphYEnd, DrawFlameGraphNode (next, _drawList, nextLevelXStart,
-                                                                 _levelYStart + LEVEL_HEIGHT, nextLevelXEnd));
+            graphYEnd = std::max (graphYEnd, RenderFlameGraphNode (_client, next, _drawList, nextLevelXStart,
+                                                                   _levelYStart + LEVEL_HEIGHT, nextLevelXEnd));
             nextLevelXStart = nextLevelXEnd;
         }
     }
@@ -204,11 +411,11 @@ float UI::DrawFlameGraphNode (const RecordedAllocationGroup *_group,
     return graphYEnd;
 }
 
-void UI::DrawTimeline ([[maybe_unused]] Client &_client) noexcept
+void UI::RenderTimeline ([[maybe_unused]] Client &_client) noexcept
 {
     ImVec2 contentMax = ImGui::GetWindowContentRegionMax ();
     ImGui::TextUnformatted ("Timeline");
-    ImGui::BeginChild ("Timeline", {contentMax.x, contentMax.y * 0.15f}, true,
+    ImGui::BeginChild ("Timeline", {contentMax.x, contentMax.y * 0.1f}, true,
                        ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     const Track &track = _client.GetTrackHolder ().GetTrack ();
@@ -326,14 +533,14 @@ void UI::DrawTimeline ([[maybe_unused]] Client &_client) noexcept
         }
 
         // Mark current selected time.
-        float selectedX = secondToX (_client.GetSelectedTimeS ());
+        float selectedX = secondToX (_client.GetTrackHolder ().GetSelectedTimeS ());
         drawList->AddLine ({selectedX, drawZoneStart.y}, {selectedX, drawZoneStart.y + drawZoneVisibleSize.y},
-                           SELECTION_COLOR);
+                           SELECTION_COLOR, 2.0f);
 
         if (IsMouseInsideCurrentWindow () && ImGui::IsMouseDoubleClicked (ImGuiMouseButton_Left))
         {
             float localX = ImGui::GetMousePos ().x - drawZoneStart.x;
-            _client.SelectTime (timeBeginS + localX * timeDurationS / drawZoneFullWidth);
+            _client.GetTrackHolder ().SelectTime (timeBeginS + localX * timeDurationS / drawZoneFullWidth);
         }
 
         ImGui::Dummy ({drawZoneFullWidth, drawZoneVisibleSize.y});

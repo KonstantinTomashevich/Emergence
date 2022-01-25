@@ -24,17 +24,24 @@ private:
 
     static void EnableHorizontalScalingThroughWheel (float &_scale, float _min, float _max) noexcept;
 
-    void DrawOpenTrackMenu (Client &_client) noexcept;
+    static void RenderSelection (Client &_client) noexcept;
 
-    void DrawFlameGraph (Client &_client) noexcept;
+    static void RenderEventsNearby (Client &_client);
 
-    float DrawFlameGraphNode (const class RecordedAllocationGroup *_group,
-                              struct ImDrawList *_drawList,
-                              float _levelXStart,
-                              float _levelYStart,
-                              float _levelXEnd) const noexcept;
+    static void RenderSelectedGroup (Client &_client);
 
-    void DrawTimeline (Client &_client) noexcept;
+    void RenderOpenTrackMenu (Client &_client) noexcept;
+
+    void RenderFlameGraph (Client &_client) noexcept;
+
+    float RenderFlameGraphNode (Client &_client,
+                                const class RecordedAllocationGroup *_group,
+                                struct ImDrawList *_drawList,
+                                float _levelXStart,
+                                float _levelYStart,
+                                float _levelXEnd) const noexcept;
+
+    void RenderTimeline (Client &_client) noexcept;
 
     std::array<char, 1024u> filePathBuffer {0u};
 

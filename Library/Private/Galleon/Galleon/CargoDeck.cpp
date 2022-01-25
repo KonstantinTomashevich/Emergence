@@ -22,9 +22,9 @@ using namespace Memory::Literals;
 
 CargoDeck::CargoDeck (Memory::UniqueString _name) noexcept
     : name (_name),
-      singletonHeap (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "Singleton"_us}),
-      shortTermHeap (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "ShortTerm"_us}),
-      longTermHeap (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "LongTerm"_us}),
+      singletonHeap (Memory::Profiler::AllocationGroup {"Singleton"_us}),
+      shortTermHeap (Memory::Profiler::AllocationGroup {"ShortTerm"_us}),
+      longTermHeap (Memory::Profiler::AllocationGroup {"LongTerm"_us}),
       singletonContainers (singletonHeap),
       shortTermContainers (shortTermHeap),
       longTermContainers (longTermHeap)

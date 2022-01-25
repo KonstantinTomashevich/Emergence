@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include <Container/Optional.hpp>
 #include <Container/HashMap.hpp>
 #include <Container/Vector.hpp>
 
@@ -33,11 +34,16 @@ public:
 
     [[nodiscard]] double GetMarkerFrequency (UniqueString _markerId) const noexcept;
 
-    /// \see Track::MoveToPreviousEvent
-    bool MoveToPreviousEvent () noexcept;
+    [[nodiscard]] float GetSelectedTimeS () const noexcept;
 
-    /// \see Track::MoveToNextEvent
-    bool MoveToNextEvent () noexcept;
+    void SelectTime (float _seconds) noexcept;
+
+    [[nodiscard]] const RecordedAllocationGroup *GetSelectedGroup () const noexcept;
+
+    void SelectGroup (const RecordedAllocationGroup *_group) noexcept;
+
+    /// \brief Immediately move by **small** offset.
+    void MoveBy (int _offset) noexcept;
 
 private:
     struct MarkerFrequencyData
@@ -46,6 +52,12 @@ private:
         double previousMarkerTimeS = 0.0;
         std::size_t count = 0u;
     };
+
+    void UpdateLoading () noexcept;
+
+    void UpdateTimeSelection ()  noexcept;
+
+    [[nodiscard]] float GetEventTime (const Track::EventIterator &_iterator) const noexcept;
 
     std::ifstream input;
     Track track;
@@ -56,7 +68,11 @@ private:
 
     Container::HashMap<UniqueString, MarkerFrequencyData> markerFrequency {Constants::AllocationGroup ()};
 
+    Container::Optional<float> timeSelectionRequestS;
+    const RecordedAllocationGroup *selectedGroup = nullptr;
+
     bool fileOpen = false;
     bool loading = false;
+
 };
 } // namespace Emergence::Memory::Recording::Application
