@@ -18,6 +18,9 @@ jobs:
         os: [ windows-latest ]
         toolchain: [ CLangCL, CLang, MSVC ]
 
+      # TODO: Temporary, to check when SDL2.dll copying fails.
+      fail-fast: false
+
     defaults:
       run:
         shell: pwsh
@@ -97,6 +100,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Test and coverage results (${{matrix.build_type}}, ${{matrix.os}}, ${{matrix.toolchain}})
+          # TODO: Temporary upload everything, to check when SDL2.dll copying fails.
           path: |
-            ${{env.BUILD_DIRECTORY}}/Coverage/Temporary
-            ${{env.BUILD_DIRECTORY}}/Testing/Temporary
+            ${{env.BUILD_DIRECTORY}}
