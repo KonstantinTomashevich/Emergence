@@ -15,6 +15,9 @@ target_include_directories (SDL2ImGUI PUBLIC
 target_link_libraries (SDL2ImGUI PUBLIC SDL2)
 
 add_subdirectory (SDL)
+# TODO: Now TARGET_RUNTIME_DLLS of Ogre-related tests try to grab this local SDL2 instead of the one from Ogre
+#       and fail because it is not built. Therefore we temporary add it to test dependencies as workaround.
+add_dependencies (EmergenceTests SDL2)
 
 # We don't need exceptions neither from spdlog nor fmt.
 add_compile_definitions (FMT_EXCEPTIONS=0)
