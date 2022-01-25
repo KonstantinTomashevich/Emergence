@@ -115,13 +115,12 @@ bool StreamDeserializer::ReadDeclareGroupEvent (std::uint64_t _timeNs) noexcept
     }
 
     ReportEvent ({
-        .type = EventType::DECLARE_GROUP,
-        .timeNs = _timeNs,
-        .parent = parent,
-        .id = id,
-        .uid = uid,
-        .reservedBytes = reservedBytes,
-        .acquiredBytes = acquiredBytes,
+        _timeNs,
+        parent,
+        id,
+        uid,
+        reservedBytes,
+        acquiredBytes,
     });
 
     return true;
@@ -142,10 +141,10 @@ bool StreamDeserializer::ReadMemoryManagementEvent (EventType _eventType, std::u
     }
 
     ReportEvent ({
-        .type = _eventType,
-        .timeNs = _timeNs,
-        .group = group,
-        .bytes = bytes,
+        _eventType,
+        _timeNs,
+        group,
+        bytes,
     });
 
     return true;
@@ -166,10 +165,9 @@ bool StreamDeserializer::ReadMarkerEvent (std::uint64_t _timeNs) noexcept
     }
 
     ReportEvent ({
-        .type = EventType::MARKER,
-        .timeNs = _timeNs,
-        .scope = scope,
-        .markerId = markerId,
+        _timeNs,
+        scope,
+        markerId,
     });
 
     return true;

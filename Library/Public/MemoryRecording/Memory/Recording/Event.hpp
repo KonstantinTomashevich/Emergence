@@ -37,6 +37,23 @@ enum class EventType : uint8_t
 /// \brief Contains data of a single event in memory usage track.
 struct Event
 {
+    /// \brief Constructor for EventType::DECLARE_GROUP events.
+    /// \details Constructors are required, because MSVC reports internal error on field initialization of this struct.
+    Event (std::uint64_t _timeNs,
+           GroupUID _parent,
+           UniqueString _id,
+           GroupUID _uid,
+           std::uint64_t _reservedBytes,
+           std::uint64_t _acquiredBytes) noexcept;
+
+    /// \brief Constructor for EventType::ALLOCATE, EventType::ACQUIRE, EventType::RELEASE and EventType::FREE events.
+    /// \details Constructors are required, because MSVC reports internal error on field initialization of this struct.
+    Event (EventType _type, std::uint64_t _timeNs, GroupUID _group, std::uint64_t _bytes) noexcept;
+
+    /// \brief Constructor for EventType::MARKER events.
+    /// \details Constructors are required, because MSVC reports internal error on field initialization of this struct.
+    Event (std::uint64_t _timeNs, GroupUID _scope, UniqueString _markedId) noexcept;
+
     EventType type;
 
     /// \brief Time point in nanoseconds after startup, at which event occurred.

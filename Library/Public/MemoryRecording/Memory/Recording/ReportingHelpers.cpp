@@ -33,19 +33,18 @@ GroupUID GroupUIDAssigner::GetOrAssignUID (const Profiler::AllocationGroup &_gro
     const GroupUID uid = counter++;
     ids[_group] = uid;
 
-    _declarationConsumer (Event {
-        .type = EventType::DECLARE_GROUP,
-        .timeNs = 0u /* Time should be known to user. */,
+    _declarationConsumer ({
+        0u /* Time should be known to user. */,
 
-        .parent = parent,
-        .id = _group.GetId (),
-        .uid = uid,
+        parent,
+        _group.GetId (),
+        uid,
 
         // It is the first event, associated with this group, and this group wasn't captured, therefore it must be
         // empty. Unfortunately, we can not assert this statement, because we can not get group state at the time of
         // event creation.
-        .reservedBytes = 0u,
-        .acquiredBytes = 0u,
+        0u,
+        0u,
     });
 
     return uid;
@@ -86,43 +85,50 @@ Event ConvertEvent (GroupUID _groupUID, const Profiler::Event &_source) noexcept
     {
     case Profiler::EventType::ALLOCATE:
         return {
-            .type = EventType::ALLOCATE,
-            .timeNs = _source.timeNs,
-            .group = _groupUID,
-            .bytes = _source.bytes,
+            EventType::ALLOCATE,
+            _source.timeNs,
+            _groupUID,
+            _source.bytes,
         };
 
     case Profiler::EventType::ACQUIRE:
         return {
-            .type = EventType::ACQUIRE,
-            .timeNs = _source.timeNs,
-            .group = _groupUID,
-            .bytes = _source.bytes,
+            EventType::ACQUIRE,
+            _source.timeNs,
+            _groupUID,
+            _source.bytes,
         };
 
     case Profiler::EventType::RELEASE:
         return {
-            .type = EventType::RELEASE,
-            .timeNs = _source.timeNs,
-            .group = _groupUID,
-            .bytes = _source.bytes,
+            EventType::RELEASE,
+            _source.timeNs,
+            _groupUID,
+            _source.bytes,
         };
 
     case Profiler::EventType::FREE:
         return {
-            .type = EventType::FREE,
-            .timeNs = _source.timeNs,
-            .group = _groupUID,
-            .bytes = _source.bytes,
+            EventType::FREE,
+            _source.timeNs,
+            _groupUID,
+            _source.bytes,
         };
 
     case Profiler::EventType::MARKER:
         return {
-            .type = EventType::MARKER,
-            .timeNs = _source.timeNs,
-            .scope = _groupUID,
-            .markerId = _source.markerId,
+            _source.timeNs,
+            _groupUID,
+            _source.markerId,
         };
     }
+
+    assert (false);
+    return {
+        _source.timeNs,
+        MISSING_GROUP_ID,
+        // Should never happen, therefore we do not create unique string statically.
+        UniqueString {"Unable to convert event of unknown type!"},
+    };
 }
 } // namespace Emergence::Memory::Recording

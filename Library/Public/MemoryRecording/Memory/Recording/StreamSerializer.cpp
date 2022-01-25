@@ -30,11 +30,10 @@ void StreamSerializer::Begin (std::ostream *_output, const Profiler::CapturedAll
                                    WriteEvent (_event);
                                });
 
-    WriteEvent (Event {
-        .type = EventType::MARKER,
-        .timeNs = _capturedRoot.GetCaptureTimeNs (),
-        .scope = uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
-        .markerId = Constants::CaptureInitializationFinishedMarker (),
+    WriteEvent ({
+        _capturedRoot.GetCaptureTimeNs (),
+        uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
+        Constants::CaptureInitializationFinishedMarker (),
     });
 }
 

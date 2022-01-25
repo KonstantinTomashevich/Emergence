@@ -66,7 +66,7 @@ public:
 private:
     friend class Track;
 
-    friend class std::default_delete<RecordedAllocationGroup>;
+    friend struct std::default_delete<RecordedAllocationGroup>;
 
     static UnorderedPool &GetGroupPool () noexcept;
 

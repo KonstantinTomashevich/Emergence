@@ -10,7 +10,7 @@ public:
     void Render (class Client &_client) noexcept;
 
 private:
-    static uintptr_t ExtractGroupColor (const class RecordedAllocationGroup *_group,
+    static uint32_t ExtractGroupColor (const class RecordedAllocationGroup *_group,
                                         float _minBrightness,
                                         float _maxBrightness) noexcept;
 

@@ -26,9 +26,9 @@ void UI::Render (Client &_client) noexcept
     ImGui::End ();
 }
 
-uintptr_t UI::ExtractGroupColor (const RecordedAllocationGroup *_group,
-                                 float _minBrightness,
-                                 float _maxBrightness) noexcept
+uint32_t UI::ExtractGroupColor (const RecordedAllocationGroup *_group,
+                                float _minBrightness,
+                                float _maxBrightness) noexcept
 {
     // Unique string hash values are not very distinct, therefore we sacrifice performance here for better colors.
     const size_t hash = *_group->GetId () ? std::hash<std::string_view> {}(*_group->GetId ()) : 0u;
@@ -44,8 +44,8 @@ uintptr_t UI::ExtractGroupColor (const RecordedAllocationGroup *_group,
 
     auto applyBrightness = [_minBrightness, _maxBrightness] (size_t _value)
     {
-        return static_cast<size_t> (_minBrightness * 255.0f +
-                                    static_cast<float> (_value) * (_maxBrightness - _minBrightness));
+        return static_cast<uint32_t> (_minBrightness * 255.0f +
+                                      static_cast<float> (_value) * (_maxBrightness - _minBrightness));
     };
 
     return IM_COL32 (applyBrightness (r), applyBrightness (g), applyBrightness (b), 255);
@@ -179,6 +179,9 @@ void UI::RenderEventsNearby (Client &_client)
             case EventType::MARKER:
                 return event->scope;
             }
+
+            assert (false);
+            return MISSING_GROUP_ID;
         }();
 
         const RecordedAllocationGroup *group = trackHolder.GetTrack ().GetGroupByUID (uid);
@@ -467,16 +470,17 @@ void UI::RenderTimeline ([[maybe_unused]] Client &_client) noexcept
                 continue;
             }
 
-            const float x = secondToX (static_cast<float> (second));
+            const float secondMarkX = secondToX (static_cast<float> (second));
             const float lineSize = isMinute ? 0.8f : 0.6f;
 
-            drawList->AddLine ({x, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f - lineSize * 0.5f)},
-                               {x, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f + lineSize * 0.5f)}, LINES_COLOR);
+            drawList->AddLine ({secondMarkX, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f - lineSize * 0.5f)},
+                               {secondMarkX, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f + lineSize * 0.5f)},
+                               LINES_COLOR);
 
             if (pixelsPerSecond >= 30.0f || isMinute)
             {
-                drawList->AddText ({x, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f + lineSize * 0.5f)}, TEXT_COLOR,
-                                   builder.Reset ().Append (second / 60u, "m", second % 60u, 's').Get ());
+                drawList->AddText ({secondMarkX, drawZoneStart.y + drawZoneVisibleSize.y * (0.5f + lineSize * 0.5f)},
+                                   TEXT_COLOR, builder.Reset ().Append (second / 60u, "m", second % 60u, 's').Get ());
             }
 
             // Draw 100ms guidelines.
@@ -484,9 +488,9 @@ void UI::RenderTimeline ([[maybe_unused]] Client &_client) noexcept
             {
                 for (size_t lineIndex = 1u; lineIndex < 10u; ++lineIndex)
                 {
-                    const float x = secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.1f);
-                    drawList->AddLine ({x, drawZoneStart.y + drawZoneVisibleSize.y * 0.35f},
-                                       {x, drawZoneStart.y + drawZoneVisibleSize.y * 0.65f}, LINES_COLOR);
+                    const float markX = secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.1f);
+                    drawList->AddLine ({markX, drawZoneStart.y + drawZoneVisibleSize.y * 0.35f},
+                                       {markX, drawZoneStart.y + drawZoneVisibleSize.y * 0.65f}, LINES_COLOR);
                 }
             }
 
@@ -495,9 +499,11 @@ void UI::RenderTimeline ([[maybe_unused]] Client &_client) noexcept
             {
                 for (size_t lineIndex = 1u; lineIndex < 100u; ++lineIndex)
                 {
-                    const float x = secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.01f);
-                    drawList->AddLine ({x, drawZoneStart.y + drawZoneVisibleSize.y * 0.45f},
-                                       {x, drawZoneStart.y + drawZoneVisibleSize.y * 0.55f}, LINES_COLOR);
+                    const float markX =
+                        secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.01f);
+
+                    drawList->AddLine ({markX, drawZoneStart.y + drawZoneVisibleSize.y * 0.45f},
+                                       {markX, drawZoneStart.y + drawZoneVisibleSize.y * 0.55f}, LINES_COLOR);
                 }
             }
         }

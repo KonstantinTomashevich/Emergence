@@ -29,8 +29,10 @@ bool AreFieldValuesEqual (const void *_firstRecordValue,
                 return *static_cast<const Memory::UniqueString *> (_firstRecordValue) ==
                        *static_cast<const Memory::UniqueString *> (_secondRecordValue);
             }
-
-            return _comparator.Compare (_firstRecordValue, _secondRecordValue) == 0;
+            else
+            {
+                return _comparator.Compare (_firstRecordValue, _secondRecordValue) == 0;
+            }
         });
 }
 

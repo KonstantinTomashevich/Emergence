@@ -23,11 +23,10 @@ void RuntimeReporter::Begin (Track *_target, const Profiler::CapturedAllocationG
                                    ReporterBase::ReportEvent (_event);
                                });
 
-    ReporterBase::ReportEvent (Event {
-        .type = EventType::MARKER,
-        .timeNs = _capturedRoot.GetCaptureTimeNs (),
-        .scope = uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
-        .markerId = Constants::CaptureInitializationFinishedMarker (),
+    ReporterBase::ReportEvent ({
+        _capturedRoot.GetCaptureTimeNs (),
+        uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
+        Constants::CaptureInitializationFinishedMarker (),
     });
 }
 
