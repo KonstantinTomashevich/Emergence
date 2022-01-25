@@ -4,8 +4,8 @@
 
 #include <Memory/Profiler/Capture.hpp>
 
-#include <Memory/Recording/ReporterBase.hpp>
 #include <Memory/Recording/Event.hpp>
+#include <Memory/Recording/ReporterBase.hpp>
 #include <Memory/Recording/ReportingHelpers.hpp>
 
 namespace Emergence::Memory::Recording

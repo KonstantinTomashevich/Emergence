@@ -206,7 +206,7 @@ void ExecutorImplementation::WorkerMain () noexcept
             {
                 taskQueueNotEmptyOrAllTasksFinished.clear (std::memory_order_release);
             }
-            
+
             if (exit)
             {
                 return;

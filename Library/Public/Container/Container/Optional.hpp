@@ -5,5 +5,5 @@
 namespace Emergence::Container
 {
 template <typename Value>
-using Optional = std::optional <Value>;
+using Optional = std::optional<Value>;
 } // namespace Emergence::Container

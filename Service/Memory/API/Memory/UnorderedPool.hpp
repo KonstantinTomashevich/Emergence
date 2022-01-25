@@ -19,7 +19,9 @@ public:
     /// \param _preferredPageCapacity Allocator will create pages with given capacity, if possible.
     /// \see ::UnorderedPool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
-    UnorderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+    UnorderedPool (Profiler::AllocationGroup _group,
+                   std::size_t _chunkSize,
+                   std::size_t _preferredPageCapacity) noexcept;
 
     /// \brief Copying memory pool contradicts with its usage practices.
     UnorderedPool (const UnorderedPool &_other) = delete;

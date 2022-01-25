@@ -32,7 +32,9 @@ public:
 
     void operator delete (void *_pointer) noexcept;
 
-    CapturedAllocationGroup (const AllocationGroup &_source, const ProfilingLock &_lock, uint64_t _sharedCaptureTime) noexcept;
+    CapturedAllocationGroup (const AllocationGroup &_source,
+                             const ProfilingLock &_lock,
+                             uint64_t _sharedCaptureTime) noexcept;
 
     CapturedAllocationGroup (const CapturedAllocationGroup &_other) = delete;
 

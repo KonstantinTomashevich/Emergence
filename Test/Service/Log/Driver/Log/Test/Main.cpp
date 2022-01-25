@@ -153,7 +153,7 @@ int main (int _argumentCount, const char **_arguments)
     std::cout << "Executing logger \"" << _arguments[ARGUMENT_LOGGER] << "\"..." << std::endl;
     system (
         EMERGENCE_BUILD_STRING (_arguments[ARGUMENT_LOGGER], " > ", STANDARD_OUT_FILE, " 2> ", STANDARD_ERROR_FILE));
-    
+
     std::cout << "Execution finished." << std::endl;
     std::size_t errorsDetected = 0u;
 

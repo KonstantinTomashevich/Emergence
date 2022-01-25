@@ -193,7 +193,8 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
 
 Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
 {
-    Pipeline *newPipeline = world->AddPipeline (currentPipelineId,taskRegister.ExportCollection (), _maximumChildThreads);
+    Pipeline *newPipeline =
+        world->AddPipeline (currentPipelineId, taskRegister.ExportCollection (), _maximumChildThreads);
     taskRegister.Clear ();
     registeredResources.clear ();
     return newPipeline;

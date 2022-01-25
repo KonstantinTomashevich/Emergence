@@ -11,8 +11,8 @@ public:
 
 private:
     static uint32_t ExtractGroupColor (const class RecordedAllocationGroup *_group,
-                                        float _minBrightness,
-                                        float _maxBrightness) noexcept;
+                                       float _minBrightness,
+                                       float _maxBrightness) noexcept;
 
     static std::pair<ImVec2, ImVec2> GetWindowRect () noexcept;
 

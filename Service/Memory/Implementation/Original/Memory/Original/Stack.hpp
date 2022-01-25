@@ -4,8 +4,8 @@
 
 #include <API/Common/Shortcuts.hpp>
 
-#include <Memory/UniqueString.hpp>
 #include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/UniqueString.hpp>
 
 namespace Emergence::Memory::Original
 {

@@ -7,4 +7,4 @@ std::atomic_flag &ProfilingLock::GetSharedLock () noexcept
     static std::atomic_flag lock;
     return lock;
 }
-}
+} // namespace Emergence::Memory::Profiler::Original

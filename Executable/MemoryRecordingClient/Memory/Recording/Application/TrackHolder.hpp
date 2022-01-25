@@ -2,8 +2,8 @@
 
 #include <fstream>
 
-#include <Container/Optional.hpp>
 #include <Container/HashMap.hpp>
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Recording/Constants.hpp>
@@ -55,7 +55,7 @@ private:
 
     void UpdateLoading () noexcept;
 
-    void UpdateTimeSelection ()  noexcept;
+    void UpdateTimeSelection () noexcept;
 
     [[nodiscard]] float GetEventTime (const Track::EventIterator &_iterator) const noexcept;
 
@@ -73,6 +73,5 @@ private:
 
     bool fileOpen = false;
     bool loading = false;
-
 };
 } // namespace Emergence::Memory::Recording::Application
