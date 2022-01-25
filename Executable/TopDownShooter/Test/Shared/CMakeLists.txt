@@ -11,6 +11,7 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
 
     sober_library_link_library (PUBLIC ${SHARED_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
+    sober_library_link_library (PRIVATE SDL2)
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (PER_VARIANT PRIVATE Memory)
@@ -36,7 +37,7 @@ set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
 set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
 
-copy_shared_libraries ("${GAME_NAME}SharedTestLauncher")
+copy_required_shared_libraries ("${GAME_NAME}SharedTestLauncher")
 use_ogre_plugins ("${RUNNER_OUTPUT_DIRECTORY}" RenderSystem_Direct3D11)
 link_resources_for_development ("${RUNNER_OUTPUT_DIRECTORY}")
 

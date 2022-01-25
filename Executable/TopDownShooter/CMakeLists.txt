@@ -4,18 +4,6 @@ set (GAME_NAME "TopDownShooter")
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
 set (GAME_RENDER_SYSTEM Direct3D11)
 
-function (copy_shared_libraries TARGET)
-    copy_required_shared_libraries ("${TARGET}")
-
-    # SDL2 is used by Ogre DLLs and therefore is not visible to TARGET_RUNTIME_DLLS.
-    # TODO: Find better way to ensure that this library is copied.
-    add_custom_command (
-            TARGET "${TARGET}" POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${OGRE_PLUGIN_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}SDL2${CMAKE_SHARED_LIBRARY_SUFFIX}"
-            $<TARGET_FILE_DIR:${TARGET}> VERBATIM)
-endfunction ()
-
 function (use_ogre_plugins OUTPUT_DIRECTORY)
     set (CONFIG_LINES ${ARGN})
     list (TRANSFORM CONFIG_LINES PREPEND "Plugin=")
