@@ -11,7 +11,6 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
 
     sober_library_link_library (PRIVATE ${MEMORY_RECORDING_TARGET})
     sober_library_link_library (PRIVATE ${SHARED_TARGET})
-    sober_library_link_library (PRIVATE SDL2)
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (PER_VARIANT PRIVATE Memory)
@@ -30,6 +29,6 @@ target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Game")
 
-copy_required_shared_libraries ("${GAME_NAME}GameLauncher")
+copy_shared_libraries ("${GAME_NAME}GameLauncher")
 use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Game" RenderSystem_Direct3D11)
 link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Game")

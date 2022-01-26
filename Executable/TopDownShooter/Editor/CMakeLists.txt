@@ -8,7 +8,6 @@ sober_library_begin ("${GAME_NAME}Editor" STATIC)
 
     sober_naming_variant_target ("${GAME_NAME}Shared" Original SHARED_TARGET)
     sober_library_link_library (PUBLIC ${SHARED_TARGET})
-    sober_library_link_library (PRIVATE SDL2)
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (PER_VARIANT PRIVATE StandardLayoutMapping)
@@ -24,6 +23,6 @@ target_link_libraries ("${GAME_NAME}EditorLauncher" PUBLIC "${EDITOR_TARGET}")
 set_target_properties ("${GAME_NAME}EditorLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Editor")
 
-copy_required_shared_libraries ("${GAME_NAME}EditorLauncher")
+copy_shared_libraries ("${GAME_NAME}EditorLauncher")
 use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Editor" RenderSystem_Direct3D11)
 link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Editor")
