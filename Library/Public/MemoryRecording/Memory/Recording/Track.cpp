@@ -62,7 +62,8 @@ RecordedAllocationGroup::Iterator RecordedAllocationGroup::BeginChildren () cons
     return Iterator {firstChild.get ()};
 }
 
-RecordedAllocationGroup::Iterator RecordedAllocationGroup::EndChildren () noexcept
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Interface looks visually better without static.
+RecordedAllocationGroup::Iterator RecordedAllocationGroup::EndChildren () const noexcept
 {
     return Iterator {nullptr};
 }

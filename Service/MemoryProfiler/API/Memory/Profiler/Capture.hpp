@@ -80,6 +80,7 @@ public:
 
     CapturedAllocationGroup (CapturedAllocationGroup &&_other) noexcept;
 
+    // NOLINTNEXTLINE(performance-trivially-destructible): Trivially destructible only for None implementation.
     ~CapturedAllocationGroup () noexcept;
 
     [[nodiscard]] Iterator BeginChildren () const noexcept;
@@ -123,6 +124,7 @@ public:
 
     EventObserver (EventObserver &&_other) noexcept;
 
+    // NOLINTNEXTLINE(performance-trivially-destructible): Trivially destructible only for None implementation.
     ~EventObserver () noexcept;
 
     /// \return Next event or `nullptr` if there is no new events.

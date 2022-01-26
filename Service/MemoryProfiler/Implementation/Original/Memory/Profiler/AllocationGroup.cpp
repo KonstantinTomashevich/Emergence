@@ -121,6 +121,7 @@ Iterator AllocationGroup::BeginChildren () const noexcept
     return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is part of the API.
 Iterator AllocationGroup::EndChildren () const noexcept
 {
     Original::AllocationGroup::Iterator iterator = Original::AllocationGroup::EndChildren ();

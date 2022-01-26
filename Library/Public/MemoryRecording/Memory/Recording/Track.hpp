@@ -46,7 +46,7 @@ public:
 
     [[nodiscard]] Iterator BeginChildren () const noexcept;
 
-    static Iterator EndChildren () noexcept;
+    [[nodiscard]] Iterator EndChildren () const noexcept;
 
     /// \return Id of this group, unique among children of its ::Parent.
     [[nodiscard]] UniqueString GetId () const noexcept;

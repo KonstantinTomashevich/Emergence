@@ -92,12 +92,14 @@ public:
     // NOLINTNEXTLINE(readability-identifier-naming): STD naming.
     Type *allocate (size_t _count) noexcept
     {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression): Type might be pointer.
         return static_cast<Type *> (heap.Acquire (sizeof (Type) * _count));
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming): STD naming.
     void deallocate (Type *_record, size_t _count) noexcept
     {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression): Type might be pointer.
         heap.Release (_record, sizeof (Type) * _count);
     }
 

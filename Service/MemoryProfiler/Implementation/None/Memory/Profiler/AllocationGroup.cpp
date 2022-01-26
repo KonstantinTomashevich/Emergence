@@ -79,6 +79,7 @@ AllocationGroup::AllocationGroup (AllocationGroup &&_other) noexcept = default;
 
 AllocationGroup::~AllocationGroup () noexcept = default;
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
 {
     return PlacedOnStack {nullptr};
@@ -100,41 +101,49 @@ void AllocationGroup::Free (size_t /*unused*/) noexcept
 {
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup AllocationGroup::Parent () const noexcept
 {
     return {};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup::Iterator AllocationGroup::BeginChildren () const noexcept
 {
     return Iterator {nullptr};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup::Iterator AllocationGroup::EndChildren () const noexcept
 {
     return Iterator {nullptr};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 UniqueString AllocationGroup::GetId () const noexcept
 {
     return UniqueString {};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 size_t AllocationGroup::GetAcquired () const noexcept
 {
     return 0u;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 size_t AllocationGroup::GetReserved () const noexcept
 {
     return 0u;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 size_t AllocationGroup::GetTotal () const noexcept
 {
     return 0u;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 uintptr_t AllocationGroup::Hash () const noexcept
 {
     return 0u;

@@ -65,7 +65,7 @@ int StringValueComparator::Compare (const void *_firstValue, const void *_second
                     maxSize / sizeof (char));
 }
 
-int UniqueStringValueComparator::Compare (const void *_firstValue, const void *_secondValue) const noexcept
+int UniqueStringValueComparator::Compare (const void *_firstValue, const void *_secondValue) noexcept
 {
     const Memory::UniqueString &first = *static_cast<const Memory::UniqueString *> (_firstValue);
     const Memory::UniqueString &second = *static_cast<const Memory::UniqueString *> (_secondValue);

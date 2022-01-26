@@ -54,6 +54,7 @@ Iterator CapturedAllocationGroup::BeginChildren () const noexcept
     return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is part of the API.
 Iterator CapturedAllocationGroup::EndChildren () const noexcept
 {
     auto iterator = Original::CapturedAllocationGroup::EndChildren ();

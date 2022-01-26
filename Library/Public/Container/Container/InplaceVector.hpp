@@ -70,11 +70,11 @@ public:
 
     /// \return Last item in vector.
     /// \invariant Not ::Empty.
-    Item &Back () noexcept;
+    [[nodiscard]] Item &Back () noexcept;
 
     /// \return Last item in vector.
     /// \invariant Not ::Empty.
-    const Item &Back () const noexcept;
+    [[nodiscard]] const Item &Back () const noexcept;
 
     /// \return Removes last item from vector.
     /// \invariant Not ::Empty.

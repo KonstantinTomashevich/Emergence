@@ -55,41 +55,49 @@ CapturedAllocationGroup::CapturedAllocationGroup (CapturedAllocationGroup &&_oth
 
 CapturedAllocationGroup::~CapturedAllocationGroup () noexcept = default;
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 CapturedAllocationGroup::Iterator CapturedAllocationGroup::BeginChildren () const noexcept
 {
     return Iterator {nullptr};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 CapturedAllocationGroup::Iterator CapturedAllocationGroup::EndChildren () const noexcept
 {
     return Iterator {nullptr};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 UniqueString CapturedAllocationGroup::GetId () const noexcept
 {
     return UniqueString {};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 size_t CapturedAllocationGroup::GetAcquired () const noexcept
 {
     return 0u;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 size_t CapturedAllocationGroup::GetReserved () const noexcept
 {
     return 0u;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 size_t CapturedAllocationGroup::GetTotal () const noexcept
 {
     return 0u;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup CapturedAllocationGroup::GetSource () const noexcept
 {
     return AllocationGroup {};
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 std::uint64_t CapturedAllocationGroup::GetCaptureTimeNs () const noexcept
 {
     return 0u;
@@ -105,6 +113,7 @@ EventObserver::EventObserver (EventObserver &&_other) noexcept = default;
 
 EventObserver::~EventObserver () noexcept = default;
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 const Event *EventObserver::NextEvent () noexcept
 {
     return nullptr;

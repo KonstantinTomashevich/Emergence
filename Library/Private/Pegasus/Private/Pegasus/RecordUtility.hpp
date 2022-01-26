@@ -54,7 +54,7 @@ struct StringValueComparator final
 
 struct UniqueStringValueComparator final
 {
-    int Compare (const void *_firstValue, const void *_secondValue) const noexcept;
+    static int Compare (const void *_firstValue, const void *_secondValue) noexcept;
 };
 
 template <typename Callback>

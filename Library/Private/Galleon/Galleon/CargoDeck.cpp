@@ -6,8 +6,6 @@ namespace Emergence::Galleon
 {
 static const Memory::UniqueString CONTAINER_ARRAYS {"ContainerArrays"};
 
-namespace MP = Memory::Profiler;
-
 struct TypeMappingPredicate final
 {
     bool operator() (const ContainerBase *_container) const noexcept

@@ -27,6 +27,7 @@ public:
 
         PlacedOnStack (PlacedOnStack &&_other) = delete;
 
+        // NOLINTNEXTLINE(performance-trivially-destructible): Trivially destructible only for None implementation.
         ~PlacedOnStack ();
 
         EMERGENCE_DELETE_ASSIGNMENT (PlacedOnStack);
@@ -89,7 +90,7 @@ public:
     AllocationGroup (AllocationGroup &&_other) noexcept;
 
     /// \details Thread safe.
-    ~AllocationGroup () noexcept;
+    ~AllocationGroup () noexcept; // NOLINT(performance-trivially-destructible): Implementation-specific.
 
     /// \brief Places this group on top of thread local stack.
     /// \return RAII object for stack push/pop operations.
