@@ -7,8 +7,10 @@ set (GAME_RENDER_SYSTEM Direct3D11)
 function (copy_shared_libraries TARGET)
     copy_required_shared_libraries ("${TARGET}")
 
-    # SDL2 is used by Ogre DLLs and therefore is not visible to TARGET_RUNTIME_DLLS.
-    # TODO: Find better way to ensure that this library is copied.
+    # TODO: Due to the bug in TARGET_RUNTIME_DLLS CMake tries to copy our own SDL2 instead of the one provided by Ogre.
+    #       Therefore we need to ensure that our SDL2 is built (otherwise CMake fails build step) and then copy SDL2
+    #       from Ogre to overwrite our copy (otherwise game crashes because of SDL2 version incompatibility).
+    add_dependencies ("${TARGET}" SDL2)
     add_custom_command (
             TARGET "${TARGET}" POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
