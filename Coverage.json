@@ -8,11 +8,6 @@
   "MinimumLinesCoveragePerFilePercent": 75.0,
   "Rules": [
     {
-      "Prefix": "./ThirdParty/",
-      "Action": "Exclude",
-      "Reason": "There is no sense to scan third party libraries coverage."
-    },
-    {
       "Prefix": "./Dependency/",
       "Action": "Exclude",
       "Reason": "There is no sense to scan dependency coverage."
@@ -29,6 +24,12 @@
       "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
     },
     {
+      "Prefix": "./Library/Public/Container/Container/StringBuilder.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 50.0,
+      "Reason": "There is no separate tests for containers yet and StringBuilder code is pretty straightforward, therefore we temporary allow low coverage here."
+    },
+    {
       "Prefix": "./Test/Service/Log/Driver/Log/Test/Main.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
@@ -39,6 +40,11 @@
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Error-checking code can not be covered if tests are not failing."
+    },
+    {
+      "Prefix": "./ThirdParty/",
+      "Action": "Exclude",
+      "Reason": "There is no sense to scan third party libraries coverage."
     }
   ]
 }
