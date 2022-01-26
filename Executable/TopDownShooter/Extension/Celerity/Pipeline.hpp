@@ -15,7 +15,7 @@ public:
 
     ~Pipeline () = default;
 
-    Memory::UniqueString GetId () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetId () const noexcept;
 
     void Execute () noexcept;
 

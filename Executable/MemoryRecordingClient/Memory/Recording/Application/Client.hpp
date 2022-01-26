@@ -25,7 +25,7 @@ public:
     Client &operator= (Client &&_other) = delete;
 
 private:
-    friend int Main (int, char **);
+    friend int Main (int /*unused*/, char ** /*unused*/);
 
     int Run () noexcept;
 
