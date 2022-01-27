@@ -142,8 +142,8 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = nameToNodeIndex.find (dependency);
             if (iterator == nameToNodeIndex.end ())
             {
-                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find dependency \"", dependency, "\" of task \"",
-                               task.name, "\"!");
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find dependency \"", dependency, "\" of task \"", task.name,
+                               "\"!");
                 noErrors = false;
             }
             else
