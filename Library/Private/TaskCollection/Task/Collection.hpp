@@ -1,8 +1,11 @@
 #pragma once
 
 #include <functional>
-#include <string>
-#include <vector>
+
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/UniqueString.hpp>
 
 namespace Emergence::Task
 {
@@ -11,11 +14,14 @@ namespace Emergence::Task
 ///          It's not designed to be modified after initial construction and setup.
 struct Collection
 {
+    /// \return Shared default allocation group for all task collections.
+    static Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
+
     /// \brief Contains info about one tasks.
     struct Item
     {
         /// \brief Task name, can be used for debugging and logging.
-        std::string name;
+        Memory::UniqueString name;
 
         /// \brief Function, that starts task execution and returns only when task execution is finished.
         std::function<void ()> task;
@@ -23,10 +29,10 @@ struct Collection
         /// \brief Indices of ::tasks, that depend on this task.
         /// \details We store dependant tasks instead of dependencies of this task
         ///          because this format is more convenient for collection parsing.
-        std::vector<std::size_t> dependantTasksIndices;
+        Container::Vector<std::size_t> dependantTasksIndices {GetDefaultAllocationGroup ()};
     };
 
     /// \brief Contains information about all tasks in this collection.
-    std::vector<Item> tasks;
+    Container::Vector<Item> tasks {GetDefaultAllocationGroup ()};
 };
 } // namespace Emergence::Task

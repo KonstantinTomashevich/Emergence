@@ -2,7 +2,11 @@
 #include <barrier>
 #include <cassert>
 #include <thread>
-#include <vector>
+
+#include <Container/Vector.hpp>
+
+#include <SyntaxSugar/AtomicFlagGuard.hpp>
+#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Task/Executor.hpp>
 
@@ -28,7 +32,7 @@ private:
     {
         std::function<void ()> executor;
 
-        std::vector<std::size_t> dependantTasksIndices;
+        Container::Vector<std::size_t> dependantTasksIndices {Memory::Profiler::AllocationGroup::Top ()};
 
         std::size_t dependencyCount = 0u;
 
@@ -40,12 +44,12 @@ private:
 
     void WorkerMain () noexcept;
 
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
 
     /// \details We cache entry tasks to make ::taskQueue initialization in ::Execute faster.
-    std::vector<std::size_t> entryTaskIndices;
+    Container::Vector<std::size_t> entryTaskIndices;
 
-    std::vector<std::jthread> workers;
+    Container::Vector<std::jthread> workers;
 
     /// \details Task queue modification is rare and chance that different threads are fighting for modification access
     ///          is low. Most performant mutual exclusion technique is such cases is atomic_flag-based spinlock.
@@ -56,7 +60,7 @@ private:
 
     std::size_t tasksFinished = 0u;
     std::size_t tasksInExecution = 0u;
-    std::vector<std::size_t> tasksQueue;
+    Container::Vector<std::size_t> tasksQueue;
 
     /// \details Workers are paused at this barrier in two cases:
     ///          - They are waiting for new execution routine.
@@ -68,10 +72,18 @@ private:
     std::atomic_flag terminating;
 };
 
+using namespace Memory::Literals;
+
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection, std::size_t _workers) noexcept
-    : workerExecutionBarrier (static_cast<ptrdiff_t> (_workers + 1u))
+    : tasks (Memory::Profiler::AllocationGroup::Top ()),
+      entryTaskIndices (Memory::Profiler::AllocationGroup::Top ()),
+      workers (Memory::Profiler::AllocationGroup::Top ()),
+      tasksQueue (Memory::Profiler::AllocationGroup::Top ()),
+      workerExecutionBarrier (static_cast<ptrdiff_t> (_workers + 1u))
 {
+    auto placeholder = tasks.get_allocator ().GetAllocationGroup ().PlaceOnTop ();
     tasks.resize (_collection.tasks.size ());
+
     for (std::size_t taskIndex = 0u; taskIndex < tasks.size (); ++taskIndex)
     {
         Task &task = tasks[taskIndex];
@@ -166,11 +178,7 @@ void ExecutorImplementation::WorkerMain () noexcept
         while (!currentTask)
         {
             taskQueueNotEmptyOrAllTasksFinished.wait (false, std::memory_order_acquire);
-
-            while (modifyingTaskQueue.test_and_set (std::memory_order_acquire))
-            {
-                std::this_thread::yield ();
-            }
+            AtomicFlagGuard guard {modifyingTaskQueue};
 
             bool exit = false;
             if (!tasksQueue.empty ())
@@ -199,8 +207,6 @@ void ExecutorImplementation::WorkerMain () noexcept
                 taskQueueNotEmptyOrAllTasksFinished.clear (std::memory_order_release);
             }
 
-            modifyingTaskQueue.clear (std::memory_order_release);
-
             if (exit)
             {
                 return;
@@ -212,10 +218,7 @@ void ExecutorImplementation::WorkerMain () noexcept
         currentTask->dependenciesLeftThisRun = currentTask->dependencyCount;
 
         // Registering successful task execution and unlocking dependant tasks.
-        while (modifyingTaskQueue.test_and_set (std::memory_order_acquire))
-        {
-            std::this_thread::yield ();
-        }
+        AtomicFlagGuard guard {modifyingTaskQueue};
 
         ++tasksFinished;
         --tasksInExecution;
@@ -236,29 +239,46 @@ void ExecutorImplementation::WorkerMain () noexcept
             taskQueueNotEmptyOrAllTasksFinished.test_and_set (std::memory_order_seq_cst);
             taskQueueNotEmptyOrAllTasksFinished.notify_all ();
         }
-
-        modifyingTaskQueue.clear (std::memory_order_release);
     }
 }
 
-Executor::Executor (const Collection &_collection, std::size_t _maximumChildThreads) noexcept
-    : handle (new ExecutorImplementation (_collection, _maximumChildThreads))
+struct InternalData final
 {
+    Memory::Heap heap {Memory::Profiler::AllocationGroup ("ParallelExecutor"_us)};
+    ExecutorImplementation *executor = nullptr;
+};
+
+Executor::Executor (const Collection &_collection, std::size_t _maximumChildThreads) noexcept
+{
+    auto &internal = *new (&data) InternalData ();
+    auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
+    internal.executor = new (internal.heap.Acquire (sizeof (ExecutorImplementation)))
+        ExecutorImplementation (_collection, _maximumChildThreads);
 }
 
-Executor::Executor (Executor &&_other) noexcept : handle (_other.handle)
+Executor::Executor (Executor &&_other) noexcept
 {
-    _other.handle = nullptr;
+    auto &internal = *new (&data) InternalData ();
+    internal.executor = block_cast<InternalData> (_other.data).executor;
+    block_cast<InternalData> (_other.data).executor = nullptr;
 }
 
 Executor::~Executor () noexcept
 {
-    delete static_cast<ExecutorImplementation *> (handle);
+    auto &internal = block_cast<InternalData> (data);
+    if (internal.executor)
+    {
+        internal.executor->~ExecutorImplementation ();
+        internal.heap.Release (internal.executor, sizeof (ExecutorImplementation));
+    }
+
+    internal.~InternalData ();
 }
 
 void Executor::Execute () noexcept
 {
-    assert (handle);
-    static_cast<ExecutorImplementation *> (handle)->Execute ();
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.executor);
+    internal.executor->Execute ();
 }
 } // namespace Emergence::Task

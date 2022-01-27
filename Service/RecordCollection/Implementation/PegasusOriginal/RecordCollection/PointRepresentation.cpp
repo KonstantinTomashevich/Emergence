@@ -27,8 +27,7 @@ EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (EditCursor, EditCursorImpl
 
 using KeyFieldIterator = PointRepresentation::KeyFieldIterator;
 
-using KeyFieldIteratorImplementation =
-    InplaceVector<StandardLayout::Field, Pegasus::Constants::HashIndex::MAX_INDEXED_FIELDS>::ConstIterator;
+using KeyFieldIteratorImplementation = Pegasus::HashIndex::IndexedFieldVector::ConstIterator;
 
 // NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (KeyFieldIterator, KeyFieldIteratorImplementation)

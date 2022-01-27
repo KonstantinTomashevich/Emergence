@@ -6,7 +6,9 @@
 
 #include <Warehouse/Dimension.hpp>
 
-namespace Emergence::Warehouse
+namespace Emergence
+{
+namespace Warehouse
 {
 using DimensionIteratorImplementation = RecordCollection::VolumetricRepresentation::DimensionIterator;
 
@@ -17,4 +19,15 @@ Dimension DimensionIterator::operator* () const noexcept
     auto dimension = *block_cast<DimensionIteratorImplementation> (data);
     return {dimension.globalMin, dimension.minField, dimension.globalMax, dimension.maxField};
 }
-} // namespace Emergence::Warehouse
+} // namespace Warehouse
+
+namespace Memory
+{
+using namespace Literals;
+
+Profiler::AllocationGroup DefaultAllocationGroup<Warehouse::Dimension>::Get () noexcept
+{
+    return Profiler::AllocationGroup {"DimensionConfiguration"_us};
+}
+} // namespace Memory
+} // namespace Emergence

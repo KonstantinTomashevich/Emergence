@@ -1,9 +1,8 @@
 #pragma once
 
-#include <StandardLayout/Mapping.hpp>
+#include <Container/InplaceVector.hpp>
 
-#include <SyntaxSugar/InplaceVector.hpp>
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence
 {
@@ -17,7 +16,7 @@ public:
 
 private:
     float average = 0.0f;
-    InplaceVector<float, SampleSize> samples;
+    Container::InplaceVector<float, SampleSize> samples;
     std::size_t nextSampleIndex = 0u;
 
 public:

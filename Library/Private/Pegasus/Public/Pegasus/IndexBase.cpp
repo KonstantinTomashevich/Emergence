@@ -5,8 +5,7 @@ namespace Emergence::Pegasus
 {
 bool IndexBase::CanBeDropped () const noexcept
 {
-    // Self reference is always here.
-    return GetReferenceCount () <= 1u && activeCursors == 0u;
+    return GetReferenceCount () == 0u && activeCursors == 0u;
 }
 
 const StandardLayout::Mapping &IndexBase::GetRecordMapping () const noexcept
@@ -17,8 +16,10 @@ const StandardLayout::Mapping &IndexBase::GetRecordMapping () const noexcept
 IndexBase::IndexBase (class Storage *_storage) noexcept : storage (_storage), activeCursors (0u)
 {
     assert (storage);
-    // Add self reference to prevent Handling from deleting this object.
-    // Storage owns indices and Handling is used only to check if dropping index is safe.
-    RegisterReference ();
+}
+
+void IndexBase::LastReferenceUnregistered () noexcept
+{
+    // Do nothing, we're just counting references to determinate if index could be dropped.
 }
 } // namespace Emergence::Pegasus

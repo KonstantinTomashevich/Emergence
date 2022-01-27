@@ -1,7 +1,13 @@
 #include <fstream>
 #include <iostream>
 
+#include <Container/Optional.hpp>
+#include <Container/StringBuilder.hpp>
+#include <Container/Vector.hpp>
+
 #include <Log/Test/Shared.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 constexpr int RESULT_OK = 0u;
 constexpr int RESULT_ERROR = 1u;
@@ -13,9 +19,9 @@ constexpr const char *STANDARD_ERROR_FILE = "StandardError.log";
 
 using namespace Emergence::Log;
 
-static std::vector<Level> ExpectedSequenceForOneThread (Level _minimumLevel)
+static Emergence::Container::Vector<Level> ExpectedSequenceForOneThread (Level _minimumLevel)
 {
-    std::vector<Level> sequence;
+    Emergence::Container::Vector<Level> sequence;
     for (std::size_t iteration = 1u; iteration <= Test::ITERATIONS; ++iteration)
     {
         if (Level::VERBOSE >= _minimumLevel && iteration % Test::VERBOSE_FREQUENCY == 0u)
@@ -75,19 +81,19 @@ static const char *LevelToMessage (Level _level)
 
 std::size_t CheckLog (std::istream &_input, Level _minimumLevel)
 {
-    std::vector<Level> expectedSequence = ExpectedSequenceForOneThread (_minimumLevel);
+    Emergence::Container::Vector<Level> expectedSequence = ExpectedSequenceForOneThread (_minimumLevel);
     std::array<std::size_t, Test::THREAD_COUNT> messagesIndexPerThread {0u};
     // If there is an error in thread log, it's better to skip all next messages for this thread.
     std::array<bool, Test::THREAD_COUNT> skipThread {false};
 
     std::size_t lineNumber = 0u;
     std::size_t errorsDetected = 0u;
-    std::string line;
+    Emergence::Container::String line;
 
     while (std::getline (_input, line))
     {
         ++lineNumber;
-        std::optional<std::size_t> threadIndex = Test::ExtractThreadIndexFromMessage (line);
+        Emergence::Container::Optional<std::size_t> threadIndex = Test::ExtractThreadIndexFromMessage (line);
 
         if (!threadIndex)
         {
@@ -145,10 +151,9 @@ int main (int _argumentCount, const char **_arguments)
     }
 
     std::cout << "Executing logger \"" << _arguments[ARGUMENT_LOGGER] << "\"..." << std::endl;
-    const std::string command =
-        _arguments[ARGUMENT_LOGGER] + std::string (" > ") + STANDARD_OUT_FILE + " 2> " + STANDARD_ERROR_FILE;
+    system (
+        EMERGENCE_BUILD_STRING (_arguments[ARGUMENT_LOGGER], " > ", STANDARD_OUT_FILE, " 2> ", STANDARD_ERROR_FILE));
 
-    system (command.c_str ());
     std::cout << "Execution finished." << std::endl;
     std::size_t errorsDetected = 0u;
 

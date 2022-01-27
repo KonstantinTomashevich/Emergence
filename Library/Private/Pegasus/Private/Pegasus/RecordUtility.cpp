@@ -18,11 +18,22 @@ bool AreFieldValuesEqual (const void *_firstRecordValue,
                           const StandardLayout::Field &_field) noexcept
 {
     assert (_field.IsHandleValid ());
-    return DoWithCorrectComparator (_field,
-                                    [_firstRecordValue, _secondRecordValue] (const auto &_comparator)
-                                    {
-                                        return _comparator.Compare (_firstRecordValue, _secondRecordValue) == 0;
-                                    });
+    return DoWithCorrectComparator (
+        _field,
+        [_firstRecordValue, _secondRecordValue] (const auto &_comparator)
+        {
+            // Here we are just checking equality instead of comparing.
+            // Unique string equality check is much faster than generic comparison.
+            if constexpr (std::is_same_v<std::decay_t<decltype (_comparator)>, UniqueStringValueComparator>)
+            {
+                return *static_cast<const Memory::UniqueString *> (_firstRecordValue) ==
+                       *static_cast<const Memory::UniqueString *> (_secondRecordValue);
+            }
+            else
+            {
+                return _comparator.Compare (_firstRecordValue, _secondRecordValue) == 0;
+            }
+        });
 }
 
 int BitValueComparator::Compare (const void *_firstValue, const void *_secondValue) const noexcept
@@ -52,5 +63,12 @@ int StringValueComparator::Compare (const void *_firstValue, const void *_second
 {
     return strncmp (static_cast<const char *> (_firstValue), static_cast<const char *> (_secondValue),
                     maxSize / sizeof (char));
+}
+
+int UniqueStringValueComparator::Compare (const void *_firstValue, const void *_secondValue) noexcept
+{
+    const Memory::UniqueString &first = *static_cast<const Memory::UniqueString *> (_firstValue);
+    const Memory::UniqueString &second = *static_cast<const Memory::UniqueString *> (_secondValue);
+    return strcmp (*first, *second);
 }
 } // namespace Emergence::Pegasus

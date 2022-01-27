@@ -32,13 +32,16 @@ void *OrderedPool::AcquiredChunkIterator::operator* () const noexcept
 
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-OrderedPool::OrderedPool (std::size_t _chunkSize) noexcept : OrderedPool (_chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+OrderedPool::OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize) noexcept
+    : OrderedPool (std::move (_group), _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
-OrderedPool::OrderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept
+OrderedPool::OrderedPool (Profiler::AllocationGroup _group,
+                          std::size_t _chunkSize,
+                          std::size_t _preferredPageCapacity) noexcept
 {
-    new (&data) Original::OrderedPool (_chunkSize, _preferredPageCapacity);
+    new (&data) Original::OrderedPool (std::move (_group), _chunkSize, _preferredPageCapacity);
 }
 
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
@@ -71,11 +74,6 @@ void OrderedPool::Clear () noexcept
     block_cast<Original::OrderedPool> (data).Clear ();
 }
 
-std::size_t OrderedPool::GetAllocatedSpace () const noexcept
-{
-    return block_cast<Original::OrderedPool> (data).GetAllocatedSpace ();
-}
-
 OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).BeginAcquired ();
@@ -100,6 +98,11 @@ OrderedPool::AcquiredChunkIterator OrderedPool::EndAcquired () noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).EndAcquired ();
     return AcquiredChunkIterator (reinterpret_cast<const decltype (AcquiredChunkIterator::data) *> (&iterator));
+}
+
+const Profiler::AllocationGroup &OrderedPool::GetAllocationGroup () const noexcept
+{
+    return block_cast<Original::OrderedPool> (data).GetAllocationGroup ();
 }
 
 OrderedPool &OrderedPool::operator= (OrderedPool &&_other) noexcept

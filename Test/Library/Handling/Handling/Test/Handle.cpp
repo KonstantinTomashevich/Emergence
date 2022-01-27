@@ -1,5 +1,4 @@
 #include <sstream>
-#include <unordered_map>
 #include <variant>
 
 #include <Context/Extension/ObjectStorage.hpp>
@@ -72,7 +71,7 @@ using Task = std::variant<Reference::Test::Tasks::Create,
                           Delete<HandleableResourceTag>,
                           Reference::Test::Tasks::CheckStatus>;
 
-std::ostream &operator<< (std::ostream &_output, const std::vector<Task> &_tasks)
+std::ostream &operator<< (std::ostream &_output, const Container::Vector<Task> &_tasks)
 {
     _output << "Scenario: " << std::endl;
     for (const Task &wrappedTask : _tasks)
@@ -112,7 +111,7 @@ void ExecuteTask (ExecutionContext &_context, const Reference::Test::Tasks::Chec
     CHECK_EQUAL (_context.aliveFlag, _task.hasAnyReferences);
 }
 
-void ExecuteScenario (const std::vector<Task> &_tasks)
+void ExecuteScenario (const Container::Vector<Task> &_tasks)
 {
     ExecutionContext context {};
     LOG ((std::stringstream () << _tasks).str ());
@@ -177,7 +176,7 @@ Task ConvertTask (const Reference::Test::Tasks::Delete &_task)
 
 void ReferenceTestDriver (const Reference::Test::Scenario &_scenario)
 {
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
     for (const Reference::Test::Task &sourceTask : _scenario)
     {
         std::visit (

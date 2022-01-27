@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
+
+#include <Container/Vector.hpp>
 
 #include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
@@ -18,6 +18,15 @@ namespace Emergence::Galleon
 /// \brief Container for objects that are created and destroyed frequently.
 class ShortTermContainer final : public ContainerBase
 {
+private:
+    /// \brief Container node, that contains single object and points to node with next object.
+    struct Node final
+    {
+        Node *next = nullptr;
+
+        uint8_t content[0u];
+    };
+
 public:
     /// \brief Prepared query, used to start insertion transactions.
     class InsertQuery final
@@ -30,11 +39,8 @@ public:
 
             Cursor (Cursor &&_other) noexcept = default;
 
-            /// \invariant Previously allocated object must be initialized before cursor destruction.
             ~Cursor () noexcept;
 
-            /// \return Pointer to memory, allocated for the new object.
-            /// \invariant Previously allocated object must be initialized before next call.
             void *operator++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.
@@ -85,9 +91,7 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            std::vector<void *>::const_iterator iterator;
-
-            const std::vector<void *>::const_iterator end;
+            Node *current = nullptr;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept = default;
@@ -128,9 +132,8 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            std::vector<void *>::iterator iterator;
-
-            std::vector<void *>::iterator end;
+            Node *current = nullptr;
+            Node *previous = nullptr;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept = default;
@@ -164,24 +167,21 @@ public:
 
     ModifyQuery Modify () noexcept;
 
+    void LastReferenceUnregistered () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (ShortTermContainer);
 
 private:
-    /// CargoDeck constructs containers.
+    /// CargoDeck constructs and destructs containers.
     friend class CargoDeck;
-
-    /// Only handles have right to destruct containers.
-    template <typename>
-    friend class Handling::Handle;
 
     explicit ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
     ~ShortTermContainer () noexcept;
 
-    /// \brief Pool iteration could be slow, therefore we maintain additional vector of records.
-    std::vector<void *> objects;
-
     Memory::UnorderedPool pool;
+
+    Node *firstNode = nullptr;
 
     AccessCounter accessCounter;
 };

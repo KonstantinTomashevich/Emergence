@@ -1,3 +1,5 @@
+#include <Container/StringBuilder.hpp>
+
 #include <Warehouse/Test/VisualizationGraphs.hpp>
 #include <Warehouse/Visualization.hpp>
 
@@ -5,16 +7,16 @@ namespace Emergence::Warehouse::Test
 {
 using namespace VisualGraph::Common::Constants;
 
-static std::string MappingPath ()
+static Container::String MappingPath ()
 {
-    return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BUILD_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, MAPPING_SUBGRAPH,
+                                   VisualGraph::NODE_PATH_SEPARATOR);
 }
 
-static std::string RegistryPath ()
+static Container::String RegistryPath ()
 {
-    return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + WAREHOUSE_REGISTRY_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BUILD_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, WAREHOUSE_REGISTRY_SUBGRAPH,
+                                   VisualGraph::NODE_PATH_SEPARATOR);
 }
 
 VisualizationExpectedResult Graphs::OneQueryForEachCombination ()

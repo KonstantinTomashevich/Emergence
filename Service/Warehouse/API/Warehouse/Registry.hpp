@@ -1,8 +1,10 @@
 #pragma once
 
-#include <vector>
-
 #include <API/Common/ImplementationBinding.hpp>
+
+#include <Container/Vector.hpp>
+
+#include <Memory/UniqueString.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -76,20 +78,16 @@ namespace Emergence::Warehouse
 /// \par Garbage collection
 /// \parblock
 /// If there is no prepared queries for object type, object storage will be automatically deallocated.
-/// Destructors will not be called, because object type is unknown during compile time. If objects require
-/// non-trivial destruction, user should take care of that.
 /// \endparblock
 ///
 /// \par Singletons
 /// \parblock
-/// Singleton type is unknown during compile time, therefore singleton constructor will not be called. Instead of
-/// construction, singleton memory block will be filled with zeros. If singleton requires additional initialization,
-/// ModifySingletonQuery must be used.
+/// If singleton has no default constructor, it won't be initialized. In this case ModifySingletonQuery must be used.
 /// \endparblock
 class Registry final
 {
 public:
-    Registry (std::string _name) noexcept;
+    explicit Registry (Memory::UniqueString _name) noexcept;
 
     /// Registry holds lots of objects, therefore it's not optimal to copy it.
     Registry (const Registry &_other) = delete;
@@ -120,12 +118,12 @@ public:
     /// \brief Prepare FetchValueQuery for given type on given key fields.
     /// \invariant There is at least one key field.
     [[nodiscard]] FetchValueQuery FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                              const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+                                              const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     /// \brief Prepare ModifyValueQuery for given type on given key fields.
     /// \invariant There is at least one key field.
     [[nodiscard]] ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
-                                                const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     /// \brief Prepare FetchAscendingRangeQuery for given type on given key field.
     [[nodiscard]] FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -146,25 +144,25 @@ public:
     /// \brief Prepare FetchShapeIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
     [[nodiscard]] FetchShapeIntersectionQuery FetchShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare ModifyShapeIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
     [[nodiscard]] ModifyShapeIntersectionQuery ModifyShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare FetchRayIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                                  const std::vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
     /// \brief Prepare ModifyRayIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
-    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
-                                                                    const std::vector<Dimension> &_dimensions) noexcept;
+    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (
+        const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
     /// \return Name of this registry, that can be used for debug or visualization purposes.
-    [[nodiscard]] const char *GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     /// \brief Utility for Warehouse::Visualization, that allows implementation to add custom content to graphs.
     void AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept;
@@ -175,6 +173,6 @@ public:
     Registry &operator= (Registry &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 };
 } // namespace Emergence::Warehouse

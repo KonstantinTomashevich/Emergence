@@ -1,9 +1,11 @@
 #pragma once
 
-#include <optional>
 #include <ostream>
-#include <string>
-#include <unordered_set>
+
+#include <Container/HashSet.hpp>
+#include <Container/Optional.hpp>
+#include <Container/String.hpp>
+#include <Container/Vector.hpp>
 
 #include <Visual/Graph.hpp>
 
@@ -17,7 +19,7 @@ public:
 
 private:
     /// \return Is given id correct?
-    static bool IsIdValid (const std::string &_id) noexcept;
+    static bool IsIdValid (const Container::String &_id) noexcept;
 
     /// \return Are local ids for subgraphs and nodes of given graph correct and unique?
     static bool CheckIds (const VisualGraph::Graph &_graph) noexcept;
@@ -26,9 +28,10 @@ private:
 
     /// \brief Exports given graph and its subgraphs to ::output.
     /// \return If export was done successfully, returns set of all existing node relative paths for this graph.
-    std::optional<std::unordered_set<std::string>> Process (const VisualGraph::Graph &_graph,
-                                                            std::string _pathPrefix = "",
-                                                            const std::string &_outerIndentation = "");
+    Container::Optional<Container::HashSet<Container::String>> Process (
+        const VisualGraph::Graph &_graph,
+        Container::String _pathPrefix = "",
+        const Container::String &_outerIndentation = "");
 
     std::ostream &output;
 
@@ -37,6 +40,6 @@ private:
     ///          problem: all edges (doesn't matter in which graph edge was declared) are defined in root graph after
     ///          all subgraphs and nodes. Therefore we store all resolved edges in this array until all subgraphs and
     ///          nodes are defined.
-    std::vector<VisualGraph::Edge> resolvedEdges;
+    Container::Vector<VisualGraph::Edge> resolvedEdges;
 };
 } // namespace Emergence::Graph::DOTExporter

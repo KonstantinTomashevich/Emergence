@@ -10,9 +10,6 @@
 namespace Emergence::Galleon
 {
 /// \brief Stores single instance of given type.
-/// \warning After container creation singleton instance is allocated, but not initialized. Use ModifyQuery to init it.
-/// \warning Before container destruction instance destructor must be called manually from ModifyQuery,
-///          because singleton types are unknown on compile time.
 class SingletonContainer final : public ContainerBase
 {
 public:
@@ -29,7 +26,6 @@ public:
 
             ~Cursor () noexcept;
 
-            /// \return Singleton instance.
             const void *operator* () const noexcept;
 
             /// Assigning cursors looks counter intuitive.
@@ -121,29 +117,23 @@ public:
 
     ModifyQuery Modify () noexcept;
 
+    void LastReferenceUnregistered () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (SingletonContainer);
 
 private:
-    /// CargoDeck constructs containers.
+    /// CargoDeck constructs and destructs containers.
     friend class CargoDeck;
-
-    /// Only handles have right to destruct containers.
-    template <typename>
-    friend class Handling::Handle;
 
     /// \warning Must be used in pair with custom ::new.
     explicit SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    /// \warning Must be used in pair with custom ::delete.
     ~SingletonContainer () noexcept;
 
-    /// \brief We store singleton instance inside container, therefore we need custom allocator to do this.
-    void *operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept;
-
-    /// \brief Needed because of custom ::new.
-    void operator delete (void *_pointer) noexcept;
-
     AccessCounter accessCounter;
+
+    /// \details We log memory usage of inplace-allocated singleton into separate group for readability.
+    Memory::Profiler::AllocationGroup usedAllocationGroup;
 
     uint8_t storage[0u];
 };

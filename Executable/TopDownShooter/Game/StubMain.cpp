@@ -6,6 +6,10 @@
 
 #include <Log/Log.hpp>
 
+#include <Memory/Profiler/Capture.hpp>
+
+#include <Memory/Recording/StreamSerializer.hpp>
+
 BEGIN_MUTING_WARNINGS
 #include <OgreApplicationContext.h>
 #include <OgreEntity.h>
@@ -22,6 +26,8 @@ END_MUTING_WARNINGS
 #include <Time/TimeSingleton.hpp>
 #include <Time/TimeSynchronization.hpp>
 
+using namespace Emergence::Memory::Literals;
+
 class WorldUpdater final
 {
 public:
@@ -31,13 +37,13 @@ public:
     {
         Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
 
-        pipelineBuilder.Begin ();
+        pipelineBuilder.Begin ("FixedUpdate"_us);
         TimeSynchronization::AddFixedUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
-        pipelineBuilder.Begin ();
+        pipelineBuilder.Begin ("NormalUpdate"_us);
         TimeSynchronization::AddNormalUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
@@ -45,8 +51,6 @@ public:
 
         auto modifyFixedInput = _world->ModifySingletonExternally (FixedInputMappingSingleton::Reflect ().mapping);
         auto *fixedInput = static_cast<FixedInputMappingSingleton *> (*modifyFixedInput.Execute ());
-
-        using namespace Emergence::Memory::Literals;
 
         fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
             KeyboardActionTrigger {InputAction {"Forward"_us, "Movement"_us}, {{OgreBites::Keycode {'w'}, false}}});
@@ -116,8 +120,23 @@ private:
     Emergence::Celerity::Pipeline *normalUpdate = nullptr;
 };
 
+static Emergence::Memory::Profiler::EventObserver StartRecording (
+    Emergence::Memory::Recording::StreamSerializer &_serializer, std::ostream &_output)
+{
+    auto [capturedRoot, observer] = Emergence::Memory::Profiler::Capture::Start ();
+    _serializer.Begin (&_output, capturedRoot);
+    return std::move (observer);
+}
+
 int main (int /*unused*/, char ** /*unused*/)
 {
+    // For testing purposes we start memory usage recording right away.
+    std::ofstream memoryEventOutput {"MemoryRecording.track", std::ios::binary};
+    Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
+
+    Emergence::Memory::Profiler::EventObserver memoryEventObserver =
+        StartRecording (memoryEventSerializer, memoryEventOutput);
+
     OgreBites::ApplicationContext application {"TopDownShooter"};
     application.initApp ();
 
@@ -165,7 +184,7 @@ int main (int /*unused*/, char ** /*unused*/)
     application.getRenderWindow ()->addViewport (camera);
 
     {
-        Emergence::Celerity::World world {"World"};
+        Emergence::Celerity::World world {"TestWorld"_us};
         WorldUpdater worldUpdater {&application, &world};
 
         while (!application.getRoot ()->endRenderingQueued ())
@@ -181,6 +200,11 @@ int main (int /*unused*/, char ** /*unused*/)
             lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
             playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
             application.getRoot ()->renderOneFrame ();
+
+            while (const Emergence::Memory::Profiler::Event *event = memoryEventObserver.NextEvent ())
+            {
+                memoryEventSerializer.SerializeEvent (*event);
+            }
         }
     }
 

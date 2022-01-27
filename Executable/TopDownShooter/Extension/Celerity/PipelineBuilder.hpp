@@ -1,11 +1,15 @@
 #pragma once
 
-#include <unordered_set>
-
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/World.hpp>
 
+#include <Container/HashSet.hpp>
+#include <Container/Vector.hpp>
+
 #include <Flow/TaskRegister.hpp>
+
+#include <Handling/Handle.hpp>
+#include <Handling/HandleableBase.hpp>
 
 #include <Task/Executor.hpp>
 
@@ -20,9 +24,9 @@ public:
 
     ~TaskConstructor () noexcept;
 
-    void DependOn (const char *_taskOrCheckpoint) noexcept;
+    void DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
-    void MakeDependencyOf (const char *_taskOrCheckpoint) noexcept;
+    void MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
     [[nodiscard]] Warehouse::FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
 
@@ -39,10 +43,12 @@ public:
     [[nodiscard]] Warehouse::InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
     [[nodiscard]] Warehouse::FetchValueQuery FetchValue (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     [[nodiscard]] Warehouse::ModifyValueQuery ModifyValue (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     [[nodiscard]] Warehouse::FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                            StandardLayout::FieldId _keyField) noexcept;
@@ -57,18 +63,25 @@ public:
         const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
 
     [[nodiscard]] Warehouse::FetchShapeIntersectionQuery FetchShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::ModifyShapeIntersectionQuery ModifyShapeIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::FetchRayIntersectionQuery FetchRayIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
-        const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept;
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     void SetExecutor (std::function<void ()> _executor) noexcept;
+
+    template <typename Executor, typename... Args>
+    void SetExecutor (Args... _args) noexcept;
 
     [[nodiscard]] World *GetWorld () const noexcept;
 
@@ -82,10 +95,11 @@ public:
 private:
     friend class PipelineBuilder;
 
-    TaskConstructor (PipelineBuilder *_parent, const char *_name) noexcept;
+    TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
     PipelineBuilder *parent;
     Flow::Task task;
+    Memory::Heap heap;
 };
 
 class PipelineBuilder final
@@ -99,11 +113,11 @@ public:
 
     ~PipelineBuilder () = default;
 
-    void Begin () noexcept;
+    void Begin (Memory::UniqueString _id) noexcept;
 
-    [[nodiscard]] TaskConstructor AddTask (const char *_name) noexcept;
+    [[nodiscard]] TaskConstructor AddTask (Memory::UniqueString _name) noexcept;
 
-    void AddCheckpoint (const char *_name) noexcept;
+    void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
     [[nodiscard]] Pipeline *End (std::size_t _maximumChildThreads) noexcept;
 
@@ -115,7 +129,51 @@ private:
     void FinishTaskRegistration (Flow::Task _task) noexcept;
 
     World *world;
+    Memory::UniqueString currentPipelineId;
     Flow::TaskRegister taskRegister;
-    std::unordered_set<std::string> registeredResources;
+    Memory::Profiler::AllocationGroup currentPipelineAllocationGroup;
+    Container::HashSet<Memory::UniqueString> registeredResources;
 };
+
+template <typename Successor>
+class TaskExecutorBase : public Handling::HandleableBase
+{
+public:
+    TaskExecutorBase () = default;
+
+    TaskExecutorBase (const TaskExecutorBase &_other) = delete;
+
+    TaskExecutorBase (TaskExecutorBase &&_other) = delete;
+
+    ~TaskExecutorBase () noexcept
+    {
+        static_assert (std::is_base_of_v<TaskExecutorBase<Successor>, Successor>);
+        heap.Release (static_cast<Successor *> (this), sizeof (Successor));
+    }
+
+    void LastReferenceUnregistered () noexcept
+    {
+        static_cast<Successor *> (this)->~Successor ();
+    }
+
+    EMERGENCE_DELETE_ASSIGNMENT (TaskExecutorBase);
+
+protected:
+    Memory::Heap heap {Memory::Profiler::AllocationGroup::Top ()};
+};
+
+template <typename Executor, typename... Args>
+void TaskConstructor::SetExecutor (Args... _args) noexcept
+{
+    static_assert (std::is_base_of_v<TaskExecutorBase<Executor>, Executor>);
+    auto placeholder = heap.GetAllocationGroup ().PlaceOnTop ();
+    Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor)))
+                                           Executor {*this, std::forward<Args> (_args)...}};
+
+    SetExecutor (
+        [handle] ()
+        {
+            handle->Execute ();
+        });
+}
 } // namespace Emergence::Celerity

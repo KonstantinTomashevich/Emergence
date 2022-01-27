@@ -7,63 +7,57 @@ namespace TimeSynchronization
 {
 namespace
 {
-class TaskBase
+class FixedSyncTask final : public Emergence::Celerity::TaskExecutorBase<FixedSyncTask>
 {
 public:
-    TaskBase (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+    FixedSyncTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept;
 
-protected:
+    void Execute ();
+
+private:
     Emergence::Warehouse::ModifySingletonQuery modifyTime;
     Ogre::Timer *timer;
 };
 
-class FixedSyncTask final : public TaskBase
+class FixedDurationTask final : public Emergence::Celerity::TaskExecutorBase<FixedDurationTask>
 {
 public:
-    FixedSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+    FixedDurationTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-class FixedDurationTask final : public TaskBase
+class NormalSyncTask final : public Emergence::Celerity::TaskExecutorBase<NormalSyncTask>
 {
 public:
-    FixedDurationTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+    NormalSyncTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-class NormalSyncTask final : public TaskBase
+class NormalDurationTask final : public Emergence::Celerity::TaskExecutorBase<NormalDurationTask>
 {
 public:
-    NormalSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+    NormalDurationTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept;
 
     void Execute ();
+
+private:
+    Emergence::Warehouse::ModifySingletonQuery modifyTime;
+    Ogre::Timer *timer;
 };
 
-class NormalDurationTask final : public TaskBase
-{
-public:
-    NormalDurationTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept;
-
-    void Execute ();
-};
-
-TaskBase::TaskBase (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
+FixedSyncTask::FixedSyncTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept
     : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       timer (_timer)
-{
-    auto cursor = modifyTime.Execute ();
-    auto *time = static_cast<TimeSingleton *> (*cursor);
-
-    if (!time->constructed)
-    {
-        new (time) TimeSingleton ();
-    }
-}
-
-FixedSyncTask::FixedSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
 {
     _constructor.MakeDependencyOf (Checkpoint::TIME_UPDATED);
     _constructor.MakeDependencyOf (Checkpoint::FRAME_STATS_COLLECTION);
@@ -97,8 +91,9 @@ void FixedSyncTask::Execute ()
     time->fixedTimeUs += static_cast<uint64_t> (time->fixedDurationS * 1e6f);
 }
 
-FixedDurationTask::FixedDurationTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
+FixedDurationTask::FixedDurationTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept
+    : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      timer (_timer)
 {
     _constructor.DependOn (Checkpoint::FRAME_STATS_COLLECTION);
 }
@@ -121,8 +116,9 @@ void FixedDurationTask::Execute ()
     }
 }
 
-NormalSyncTask::NormalSyncTask (Ogre::Timer *_timer, Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
+NormalSyncTask::NormalSyncTask (Emergence::Celerity::TaskConstructor &_constructor, Ogre::Timer *_timer) noexcept
+    : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      timer (_timer)
 {
     _constructor.MakeDependencyOf (Checkpoint::TIME_UPDATED);
     _constructor.MakeDependencyOf (Checkpoint::FRAME_STATS_COLLECTION);
@@ -141,9 +137,10 @@ void NormalSyncTask::Execute ()
     time->normalTimeUs = currentTimeUs;
 }
 
-NormalDurationTask::NormalDurationTask (Ogre::Timer *_timer,
-                                        Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : TaskBase (_timer, _constructor)
+NormalDurationTask::NormalDurationTask (Emergence::Celerity::TaskConstructor &_constructor,
+                                        Ogre::Timer *_timer) noexcept
+    : modifyTime (_constructor.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      timer (_timer)
 {
     _constructor.DependOn (Checkpoint::FRAME_STATS_COLLECTION);
 }
@@ -168,37 +165,23 @@ void NormalDurationTask::Execute ()
 }
 } // namespace
 
+using namespace Emergence::Memory::Literals;
+
 void AddFixedUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncFixed");
-    constructor.SetExecutor (
-        [state {FixedSyncTask {_timer, constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncFixed"_us);
+    constructor.SetExecutor<FixedSyncTask> (_timer);
 
-    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsFixed");
-    constructor.SetExecutor (
-        [state {FixedDurationTask {_timer, constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsFixed"_us);
+    constructor.SetExecutor<FixedDurationTask> (_timer);
 }
 
 void AddNormalUpdateTasks (Ogre::Timer *_timer, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncNormal");
-    constructor.SetExecutor (
-        [state {NormalSyncTask {_timer, constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("TimeSynchronization::SyncNormal"_us);
+    constructor.SetExecutor<NormalSyncTask> (_timer);
 
-    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsNormal");
-    constructor.SetExecutor (
-        [state {NormalDurationTask {_timer, constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    constructor = _pipelineBuilder.AddTask ("TimeSynchronization::StatsNormal"_us);
+    constructor.SetExecutor<FixedDurationTask> (_timer);
 }
 } // namespace TimeSynchronization

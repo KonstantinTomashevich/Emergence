@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Memory/UniqueString.hpp>
+
 #include <Task/Executor.hpp>
 
 namespace Emergence::Celerity
@@ -13,15 +15,20 @@ public:
 
     ~Pipeline () = default;
 
+    [[nodiscard]] Memory::UniqueString GetId () const noexcept;
+
     void Execute () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (Pipeline);
 
 private:
-    friend class PipelineBuilder;
+    friend class World;
 
-    explicit Pipeline (const Task::Collection &_collection, std::size_t _maximumChildThreads);
+    explicit Pipeline (Memory::UniqueString _id, const Task::Collection &_collection, std::size_t _maximumChildThreads);
 
+    Memory::UniqueString id;
+    const Memory::UniqueString beginMarker;
+    const Memory::UniqueString endMarker;
     Task::Executor executor;
 };
 } // namespace Emergence::Celerity

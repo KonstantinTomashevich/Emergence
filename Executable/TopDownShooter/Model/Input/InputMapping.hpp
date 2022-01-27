@@ -1,10 +1,10 @@
 #pragma once
 
+#include <Container/InplaceVector.hpp>
+
 #include <Input/InputAction.hpp>
 
 #include <Shared/Constants.hpp>
-
-#include <SyntaxSugar/InplaceVector.hpp>
 
 enum class KeyState
 {
@@ -35,7 +35,7 @@ struct KeyboardActionTrigger final
     constexpr static const std::size_t MAX_KEY_REQUIREMENTS = 3u;
 
     InputAction action;
-    Emergence::InplaceVector<KeyRequirement, MAX_KEY_REQUIREMENTS> requirements;
+    Emergence::Container::InplaceVector<KeyRequirement, MAX_KEY_REQUIREMENTS> requirements;
 
     struct Reflection final
     {
@@ -67,8 +67,8 @@ struct InputMapping final
     constexpr static const std::size_t MAX_KEYBOARD_TRIGGERS = 32u;
     constexpr static const std::size_t MAX_SUBSCRIPTIONS = 16u;
 
-    Emergence::InplaceVector<KeyboardActionTrigger, MAX_KEYBOARD_TRIGGERS> keyboardTriggers;
-    Emergence::InplaceVector<InputSubscription, MAX_SUBSCRIPTIONS> subscriptions;
+    Emergence::Container::InplaceVector<KeyboardActionTrigger, MAX_KEYBOARD_TRIGGERS> keyboardTriggers;
+    Emergence::Container::InplaceVector<InputSubscription, MAX_SUBSCRIPTIONS> subscriptions;
 
     void UnsubscribeListener (std::uintptr_t _listenerId);
 

@@ -6,7 +6,8 @@ namespace Emergence::Celerity
 {
 TaskConstructor::TaskConstructor (TaskConstructor &&_other) noexcept
     : parent (_other.parent),
-      task (std::move (_other.task))
+      task (std::move (_other.task)),
+      heap (_other.heap.GetAllocationGroup ())
 {
     _other.parent = nullptr;
 }
@@ -19,12 +20,12 @@ TaskConstructor::~TaskConstructor () noexcept
     }
 }
 
-void TaskConstructor::DependOn (const char *_taskOrCheckpoint) noexcept
+void TaskConstructor::DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept
 {
     task.dependsOn.emplace_back (_taskOrCheckpoint);
 }
 
-void TaskConstructor::MakeDependencyOf (const char *_taskOrCheckpoint) noexcept
+void TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept
 {
     task.dependencyOf.emplace_back (_taskOrCheckpoint);
 }
@@ -65,15 +66,15 @@ Warehouse::InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLa
     return parent->world->registry.InsertLongTerm (_typeMapping);
 }
 
-Warehouse::FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typeMapping,
-                                                        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+Warehouse::FetchValueQuery TaskConstructor::FetchValue (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchValue (_typeMapping, _keyFields);
 }
 
 Warehouse::ModifyValueQuery TaskConstructor::ModifyValue (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifyValue (_typeMapping, _keyFields);
@@ -108,28 +109,28 @@ Warehouse::ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (
 }
 
 Warehouse::FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchShapeIntersection (_typeMapping, _dimensions);
 }
 
 Warehouse::ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions);
 }
 
 Warehouse::FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchRayIntersection (_typeMapping, _dimensions);
 }
 
 Warehouse::ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
-    const StandardLayout::Mapping &_typeMapping, const std::vector<Warehouse::Dimension> &_dimensions) noexcept
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions);
@@ -156,57 +157,64 @@ TaskConstructor &TaskConstructor::operator= (TaskConstructor &&_other) noexcept
     return *this;
 }
 
-TaskConstructor::TaskConstructor (PipelineBuilder *_parent, const char *_name) noexcept : parent (_parent)
+TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept
+    : parent (_parent),
+      heap {Memory::Profiler::AllocationGroup {_name}}
 {
     assert (parent);
     task.name = _name;
 }
 
-PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept : world (_targetWorld)
+PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
+    : world (_targetWorld),
+      registeredResources (world->pipelineHeap)
 {
     assert (world);
 }
 
-void PipelineBuilder::Begin () noexcept
+void PipelineBuilder::Begin (Memory::UniqueString _id) noexcept
 {
+    currentPipelineId = _id;
+    currentPipelineAllocationGroup =
+        Memory::Profiler::AllocationGroup {world->pipelineHeap.GetAllocationGroup (), currentPipelineId};
     // taskRegister should be cleared in ::End.
 }
 
-TaskConstructor PipelineBuilder::AddTask (const char *_name) noexcept
+TaskConstructor PipelineBuilder::AddTask (Memory::UniqueString _name) noexcept
 {
+    auto placeholder = currentPipelineAllocationGroup.PlaceOnTop ();
     return {this, _name};
 }
 
-void PipelineBuilder::AddCheckpoint (const char *_name) noexcept
+void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
 {
     taskRegister.RegisterCheckpoint (_name);
 }
 
 Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
 {
-    auto &newPipeline =
-        world->pipelines.emplace_back (new Pipeline (taskRegister.ExportCollection (), _maximumChildThreads));
-
+    Pipeline *newPipeline =
+        world->AddPipeline (currentPipelineId, taskRegister.ExportCollection (), _maximumChildThreads);
     taskRegister.Clear ();
     registeredResources.clear ();
-    return newPipeline.get ();
+    return newPipeline;
 }
 
 void PipelineBuilder::FinishTaskRegistration (Flow::Task _task) noexcept
 {
-    for (const std::string &resource : _task.readAccess)
+    for (Memory::UniqueString resource : _task.readAccess)
     {
         if (registeredResources.emplace (resource).second)
         {
-            taskRegister.RegisterResource (resource.c_str ());
+            taskRegister.RegisterResource (resource);
         }
     }
 
-    for (const std::string &resource : _task.writeAccess)
+    for (Memory::UniqueString resource : _task.writeAccess)
     {
         if (registeredResources.emplace (resource).second)
         {
-            taskRegister.RegisterResource (resource.c_str ());
+            taskRegister.RegisterResource (resource);
         }
     }
 

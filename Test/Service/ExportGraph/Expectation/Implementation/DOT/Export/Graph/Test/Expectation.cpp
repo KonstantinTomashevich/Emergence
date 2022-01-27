@@ -2,7 +2,7 @@
 
 namespace Emergence::Export::Graph::Test::Expectation
 {
-std::string TwoConnectedNodes ()
+Container::String TwoConnectedNodes ()
 {
     return "digraph \"graph\" {\n"
            "    label=\"graph\";\n"
@@ -12,7 +12,7 @@ std::string TwoConnectedNodes ()
            "}\n";
 }
 
-std::string TwoConnectedNodesAndLabels ()
+Container::String TwoConnectedNodesAndLabels ()
 {
     return "digraph \"graph\" {\n"
            "    label=\"Cool Graph\";\n"
@@ -22,7 +22,7 @@ std::string TwoConnectedNodesAndLabels ()
            "}\n";
 }
 
-std::string TwoSeparateSubgraphs ()
+Container::String TwoSeparateSubgraphs ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -41,7 +41,7 @@ std::string TwoSeparateSubgraphs ()
            "}\n";
 }
 
-std::string TwoInterconnectedSubgraphs ()
+Container::String TwoInterconnectedSubgraphs ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -61,7 +61,7 @@ std::string TwoInterconnectedSubgraphs ()
            "}\n";
 }
 
-std::string RelativePathsFromRoot ()
+Container::String RelativePathsFromRoot ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -78,7 +78,7 @@ std::string RelativePathsFromRoot ()
            "}\n";
 }
 
-std::string DoubleSubgraphNesting ()
+Container::String DoubleSubgraphNesting ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -123,7 +123,7 @@ std::string DoubleSubgraphNesting ()
            "}\n";
 }
 
-std::string EdgeWithAbsolutePath ()
+Container::String EdgeWithAbsolutePath ()
 {
     return "digraph \"complex_graph\" {\n"
            "    label=\"complex_graph\";\n"
@@ -143,7 +143,7 @@ std::string EdgeWithAbsolutePath ()
            "}\n";
 }
 
-std::string EdgeWithColor ()
+Container::String EdgeWithColor ()
 {
     return "digraph \"graph\" {\n"
            "    label=\"graph\";\n"

@@ -12,6 +12,7 @@ struct Player final
     {
         StandardLayout::FieldId id;
         StandardLayout::FieldId name;
+        StandardLayout::FieldId classId;
 
         StandardLayout::FieldId alive;
         StandardLayout::FieldId stunned;
@@ -42,6 +43,7 @@ struct Player final
 
     uint32_t id = 0u;
     std::array<char, 32u> name = {0u};
+    Memory::UniqueString classId;
     uint8_t status = 0u;
 };
 
@@ -133,6 +135,7 @@ struct AllFieldTypesStructure
 
         StandardLayout::FieldId string;
         StandardLayout::FieldId block;
+        StandardLayout::FieldId uniqueString;
 
         StandardLayout::Mapping mapping;
     };
@@ -154,6 +157,7 @@ struct AllFieldTypesStructure
 
     std::array<uint8_t, 4> block {};
     std::array<char, 24> string {};
+    Memory::UniqueString uniqueString;
 };
 
 namespace Queries
@@ -166,6 +170,11 @@ struct PlayerId final
 struct PlayerName final
 {
     decltype (Player::name) name {0u};
+};
+
+struct PlayerClassId final
+{
+    decltype (Player::classId) classId;
 };
 
 struct PlayerNameAndId final

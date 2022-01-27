@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstring>
-#include <string>
-#include <unordered_map>
+
+#include <Container/StringBuilder.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -86,19 +86,19 @@ struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Curso
 {
 };
 
-inline std::string ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
+inline Container::String ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
 {
     const auto *current = static_cast<const uint8_t *> (_object);
     const auto *end = current + _mapping.GetObjectSize ();
-    std::string result;
+    Container::StringBuilder builder;
 
     while (current != end)
     {
-        result += std::to_string (static_cast<std::size_t> (*current)) + " ";
+        builder.Append (static_cast<std::size_t> (*current), " ");
         ++current;
     }
 
-    return result;
+    return builder.Get ();
 }
 
 template <typename T>
@@ -125,7 +125,7 @@ concept Movable = requires (T _cursor)
 
 template <typename Cursor>
 void AddObject (CursorStorage<Cursor> &_storage,
-                std::string _name,
+                Container::String _name,
                 const StandardLayout::Mapping &_objectMapping,
                 Cursor &&_cursor)
 {
@@ -133,7 +133,7 @@ void AddObject (CursorStorage<Cursor> &_storage,
 }
 
 template <typename Cursor>
-void GetCursor (CursorStorage<Cursor> &_storage, std::string _name)
+void GetCursor (CursorStorage<Cursor> &_storage, Container::String _name)
 {
     return GetObject (_storage, _name).cursor;
 }
@@ -236,7 +236,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
         {
             if constexpr (Movable<std::decay_t<decltype (_cursor)>>)
             {
-                std::vector<const void *> objects;
+                Container::Vector<const void *> objects;
                 while (const void *object = *_cursor)
                 {
                     objects.emplace_back (object);
@@ -245,7 +245,7 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                 // Brute force counting is the most efficient solution there,
                 // because tests check small vectors of objects, usually not more than 5.
-                auto count = [mapping] (const std::vector<const void *> &_objects, const void *_objectToSearch)
+                auto count = [mapping] (const Container::Vector<const void *> &_objects, const void *_objectToSearch)
                 {
                     std::size_t count = 0u;
                     for (const void *otherObject : _objects)

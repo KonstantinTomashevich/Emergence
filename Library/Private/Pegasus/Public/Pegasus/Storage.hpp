@@ -6,6 +6,9 @@
 
 #include <API/Common/Iterator.hpp>
 
+#include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
+
 #include <Handling/Handle.hpp>
 
 #include <Memory/OrderedPool.hpp>
@@ -16,8 +19,6 @@
 #include <Pegasus/VolumetricIndex.hpp>
 
 #include <StandardLayout/Mapping.hpp>
-
-#include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus
 {
@@ -30,11 +31,15 @@ private:
     template <typename Index>
     struct IndexHolder
     {
-        std::unique_ptr<Index> index;
+        Index *index;
         Constants::Storage::IndexedFieldMask indexedFieldMask = 0u;
     };
 
 public:
+    template <typename Index>
+    using IndexVector =
+        Container::InplaceVector<Storage::IndexHolder<Index>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>;
+
     class Allocator final
     {
     public:
@@ -67,8 +72,7 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator =
-            InplaceVector<Storage::IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = IndexVector<HashIndex>::ConstIterator;
 
         explicit HashIndexIterator (BaseIterator _baseIterator) noexcept;
 
@@ -83,8 +87,7 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector<Storage::IndexHolder<OrderedIndex>,
-                                           Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = IndexVector<OrderedIndex>::ConstIterator;
 
         explicit OrderedIndexIterator (BaseIterator _baseIterator) noexcept;
 
@@ -99,8 +102,7 @@ public:
     private:
         friend class Storage;
 
-        using BaseIterator = InplaceVector<Storage::IndexHolder<VolumetricIndex>,
-                                           Constants::Storage::MAX_INDICES_OF_SAME_TYPE>::ConstIterator;
+        using BaseIterator = IndexVector<VolumetricIndex>::ConstIterator;
 
         explicit VolumetricIndexIterator (BaseIterator _baseIterator) noexcept;
 
@@ -121,12 +123,13 @@ public:
 
     Allocator AllocateAndInsert () noexcept;
 
-    Handling::Handle<HashIndex> CreateHashIndex (const std::vector<StandardLayout::FieldId> &_indexedFields) noexcept;
+    Handling::Handle<HashIndex> CreateHashIndex (
+        const Container::Vector<StandardLayout::FieldId> &_indexedFields) noexcept;
 
     Handling::Handle<OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
 
     Handling::Handle<VolumetricIndex> CreateVolumetricIndex (
-        const std::vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
 
     HashIndexIterator BeginHashIndices () const noexcept;
 
@@ -209,26 +212,21 @@ private:
     // TODO: Automatically shrink pool from time to time?
     Memory::OrderedPool records;
 
-    struct
-    {
-        InplaceVector<IndexHolder<HashIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> hash;
-        InplaceVector<IndexHolder<OrderedIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> ordered;
-        InplaceVector<IndexHolder<VolumetricIndex>, Constants::Storage::MAX_INDICES_OF_SAME_TYPE> volumetric;
-    } indices;
+    Memory::Heap hashIndexHeap;
+    Memory::Heap orderedIndexHeap;
+    Memory::Heap volumetricIndexHeap;
 
-    struct
-    {
-        StandardLayout::Mapping recordMapping;
-        InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
-    } reflection;
+    IndexVector<HashIndex> hashIndices;
+    IndexVector<OrderedIndex> orderedIndices;
+    IndexVector<VolumetricIndex> volumetricIndices;
 
-    struct
-    {
-        std::atomic_size_t readers = 0u;
-        std::size_t writers = 0u;
+    StandardLayout::Mapping recordMapping;
+    Container::InplaceVector<IndexedField, Constants::Storage::MAX_INDEXED_FIELDS> indexedFields;
 
-        static_assert (decltype (readers)::is_always_lock_free);
-    } accessCounter;
+    std::atomic_size_t readers = 0u;
+    std::size_t writers = 0u;
+
+    static_assert (decltype (readers)::is_always_lock_free);
 
     void *editedRecordBackup = nullptr;
 };

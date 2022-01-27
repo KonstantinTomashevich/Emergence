@@ -6,11 +6,15 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    sober_naming_variant_target (MemoryRecording Original MEMORY_RECORDING_TARGET)
     sober_naming_variant_target ("${GAME_NAME}Shared" Original SHARED_TARGET)
-    sober_library_link_library (PUBLIC ${SHARED_TARGET})
+
+    sober_library_link_library (PRIVATE ${MEMORY_RECORDING_TARGET})
+    sober_library_link_library (PRIVATE ${SHARED_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (PER_VARIANT PRIVATE Memory)
+    sober_library_use_service (PER_VARIANT PRIVATE MemoryProfiler)
     sober_library_use_service (PER_VARIANT PRIVATE RecordCollection)
     sober_library_use_service (PER_VARIANT PRIVATE StandardLayoutMapping)
 

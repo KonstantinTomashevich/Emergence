@@ -17,7 +17,9 @@ bool Emergence::RecordCollection::Test::PointRepresentationTestIncludeMarker () 
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return {Player::Reflect ().mapping, {&HUGO_0_ALIVE_STUNNED}, {Sources::Value {"Source", {Player::Reflect ().id}}}};
+    return {Player::Reflect ().mapping,
+            {&HUGO_0_KNIGHT_ALIVE_STUNNED},
+            {Sources::Value {"Source", {Player::Reflect ().id}}}};
 }
 
 static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
@@ -29,14 +31,14 @@ static void ExecuteReadCursorReferenceApiTest (const Emergence::Reference::Test:
 {
     ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
                                           QueryValueToRead {{{}, &Emergence::Query::Test::Queries::ID_0}},
-                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                          &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
                                           QueryValueToEdit {{{}, &Emergence::Query::Test::Queries::ID_0}},
-                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                          &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 BEGIN_SUITE (PointRepresentationReference)

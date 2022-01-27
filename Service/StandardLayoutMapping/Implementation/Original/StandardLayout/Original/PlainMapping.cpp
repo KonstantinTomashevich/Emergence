@@ -37,7 +37,7 @@ Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const noexce
     return nestedObjectMapping;
 }
 
-const char *FieldData::GetName () const noexcept
+Memory::UniqueString FieldData::GetName () const noexcept
 {
     return name;
 }
@@ -50,30 +50,39 @@ FieldData::FieldData () noexcept
 FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
     : archetype (_seed.archetype),
       offset (_seed.offset),
-      size (_seed.size)
+      size (_seed.size),
+      name (_seed.name)
 {
     assert (archetype != FieldArchetype::BIT);
+    assert (archetype != FieldArchetype::UNIQUE_STRING);
     assert (archetype != FieldArchetype::NESTED_OBJECT);
-    CopyName (_seed.name);
 }
 
 FieldData::FieldData (FieldData::BitSeed _seed) noexcept
     : archetype (FieldArchetype::BIT),
       offset (_seed.offset),
       size (1u),
+      name (_seed.name),
       bitOffset (_seed.bitOffset)
 {
-    CopyName (_seed.name);
+}
+
+FieldData::FieldData (FieldData::UniqueStringSeed _seed) noexcept
+    : archetype (FieldArchetype::UNIQUE_STRING),
+      offset (_seed.offset),
+      size (sizeof (Memory::UniqueString)),
+      name (_seed.name)
+{
 }
 
 FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
     : archetype (FieldArchetype::NESTED_OBJECT),
       offset (_seed.offset),
+      name (_seed.name),
       nestedObjectMapping (std::move (_seed.nestedObjectMapping))
 {
     assert (nestedObjectMapping);
     size = nestedObjectMapping->GetObjectSize ();
-    CopyName (_seed.name);
 }
 
 FieldData::~FieldData ()
@@ -82,15 +91,6 @@ FieldData::~FieldData ()
     {
         nestedObjectMapping.~Handle ();
     }
-
-    free (name);
-}
-
-void FieldData::CopyName (const char *_name) noexcept
-{
-    assert (_name);
-    name = static_cast<char *> (malloc ((strlen (_name) + 1u) * sizeof (char)));
-    strcpy (name, _name);
 }
 
 std::size_t PlainMapping::GetObjectSize () const noexcept
@@ -103,9 +103,25 @@ std::size_t PlainMapping::GetFieldCount () const noexcept
     return fieldCount;
 }
 
-const char *PlainMapping::GetName () const noexcept
+Memory::UniqueString PlainMapping::GetName () const noexcept
 {
     return name;
+}
+
+void PlainMapping::Construct (void *_address) const noexcept
+{
+    if (constructor)
+    {
+        constructor (_address);
+    }
+}
+
+void PlainMapping::Destruct (void *_address) const noexcept
+{
+    if (destructor)
+    {
+        destructor (_address);
+    }
 }
 
 const FieldData *PlainMapping::GetField (FieldId _field) const noexcept
@@ -135,23 +151,27 @@ FieldId PlainMapping::GetFieldId (const FieldData &_field) const
     return &_field - Begin ();
 }
 
+Memory::Heap &PlainMapping::GetHeap () noexcept
+{
+    static Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup::Root (),
+                                                                 Memory::UniqueString {"PlainMapping"}}};
+    return heap;
+}
+
 std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noexcept
 {
     return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
 }
 
-PlainMapping::PlainMapping (const char *_name, std::size_t _objectSize) noexcept
+PlainMapping::PlainMapping (Memory::UniqueString _name, std::size_t _objectSize) noexcept
     : objectSize (_objectSize),
-      name (static_cast<char *> (malloc ((strlen (_name) + 1u) * sizeof (char))))
+      name (_name)
 {
     assert (objectSize > 0u);
-    assert (_name);
-    strcpy (name, _name);
 }
 
 PlainMapping::~PlainMapping () noexcept
 {
-    free (name);
     for (const FieldData &fieldData : *this)
     {
         fieldData.~FieldData ();
@@ -160,18 +180,22 @@ PlainMapping::~PlainMapping () noexcept
 
 void *PlainMapping::operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept
 {
-    return malloc (CalculateMappingSize (_fieldCapacity));
+    return GetHeap ().Acquire (CalculateMappingSize (_fieldCapacity));
 }
 
 void PlainMapping::operator delete (void *_pointer) noexcept
 {
-    free (_pointer);
+    GetHeap ().Release (_pointer, CalculateMappingSize (static_cast<PlainMapping *> (_pointer)->fieldCapacity));
 }
 
 PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexcept
 {
     assert (_newFieldCapacity >= fieldCount);
-    return static_cast<PlainMapping *> (realloc (this, CalculateMappingSize (_newFieldCapacity)));
+    auto *newInstance = static_cast<PlainMapping *> (
+        GetHeap ().Resize (this, CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
+
+    newInstance->fieldCapacity = _newFieldCapacity;
+    return newInstance;
 }
 
 const FieldData *begin (const PlainMapping &_mapping) noexcept
@@ -184,71 +208,56 @@ const FieldData *end (const PlainMapping &_mapping) noexcept
     return _mapping.End ();
 }
 
+PlainMappingBuilder::PlainMappingBuilder (PlainMappingBuilder &&_other) noexcept
+    : underConstruction (_other.underConstruction)
+{
+    _other.underConstruction = nullptr;
+}
+
 PlainMappingBuilder::~PlainMappingBuilder ()
 {
     delete underConstruction;
 }
 
-void PlainMappingBuilder::Begin (const char *_name, std::size_t _objectSize) noexcept
+void PlainMappingBuilder::Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept
 {
     assert (!underConstruction);
-    fieldCapacity = INITIAL_FIELD_CAPACITY;
-    underConstruction = new (fieldCapacity) PlainMapping (_name, _objectSize);
+    underConstruction = new (INITIAL_FIELD_CAPACITY) PlainMapping (_name, _objectSize);
+    underConstruction->fieldCapacity = INITIAL_FIELD_CAPACITY;
 }
 
 Handling::Handle<PlainMapping> PlainMappingBuilder::End () noexcept
 {
     assert (underConstruction);
-    ReallocateMapping (underConstruction->fieldCount);
-
-    PlainMapping *finished = underConstruction;
+    PlainMapping *finished = underConstruction->ChangeCapacity (underConstruction->fieldCount);
     underConstruction = nullptr;
     return finished;
 }
 
-FieldId PlainMappingBuilder::AddField (FieldData::StandardSeed _seed) noexcept
+void PlainMappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
 {
-    auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (_seed);
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
-    return fieldId;
+    assert (underConstruction);
+    underConstruction->constructor = _constructor;
 }
 
-FieldId PlainMappingBuilder::AddField (FieldData::BitSeed _seed) noexcept
+void PlainMappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
 {
-    auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (_seed);
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
-    return fieldId;
-}
-
-FieldId PlainMappingBuilder::AddField (FieldData::NestedObjectSeed _seed) noexcept
-{
-    auto [fieldId, allocatedField] = AllocateField ();
-    new (allocatedField) FieldData (std::move (_seed));
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
-    return fieldId;
+    assert (underConstruction);
+    underConstruction->destructor = _destructor;
 }
 
 std::pair<FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept
 {
     assert (underConstruction);
-    assert (underConstruction->fieldCount <= fieldCapacity);
+    assert (underConstruction->fieldCount <= underConstruction->fieldCapacity);
 
-    if (underConstruction->fieldCount == fieldCapacity)
+    if (underConstruction->fieldCount == underConstruction->fieldCapacity)
     {
-        ReallocateMapping (fieldCapacity * 2u);
+        underConstruction = underConstruction->ChangeCapacity (underConstruction->fieldCapacity * 2u);
     }
 
     FieldId fieldId = underConstruction->fieldCount;
     ++underConstruction->fieldCount;
     return {fieldId, &underConstruction->fields[fieldId]};
-}
-
-void PlainMappingBuilder::ReallocateMapping (std::size_t _fieldCapacity) noexcept
-{
-    assert (underConstruction);
-    fieldCapacity = _fieldCapacity;
-    underConstruction = underConstruction->ChangeCapacity (_fieldCapacity);
 }
 } // namespace Emergence::StandardLayout

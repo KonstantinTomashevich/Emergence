@@ -5,20 +5,25 @@
 #include <cassert>
 #include <memory>
 
+#include <Container/Optional.hpp>
+
 #include <Log/Log.hpp>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <SyntaxSugar/AtomicFlagGuard.hpp>
 #include <SyntaxSugar/BlockCast.hpp>
 
-namespace Emergence::Log
+namespace Emergence
+{
+namespace Log
 {
 class LoggerImplementation final
 {
 public:
-    LoggerImplementation (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
+    LoggerImplementation (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept;
 
     LoggerImplementation (const LoggerImplementation &_other) = delete;
 
@@ -26,7 +31,7 @@ public:
 
     ~LoggerImplementation () noexcept = default;
 
-    void Log (Level _level, const std::string &_message) noexcept;
+    void Log (Level _level, const char *_message) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (LoggerImplementation);
 
@@ -57,7 +62,7 @@ static spdlog::level::level_enum ToSPDLogLevel (Level _level)
     return spdlog::level::critical;
 }
 
-LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
+LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
     // Loggers do not share sinks (except stdout and stderr), therefore there is no need for unique names.
     : logger (spdlog::logger ("Logger"))
 {
@@ -78,6 +83,9 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const std::vect
 
                 // We use single threaded sinks here, because we can more efficiently
                 // protect them from multithread access using ::locked.
+                //
+                // Unfortunately, there is no easy way to profile these allocations due to spdlog architecture.
+                // But this allocations are small and therefore we can just ignore them.
                 if constexpr (std::is_same_v<Sinks::StandardOut, std::decay_t<decltype (_config)>>)
                 {
                     addSink (std::make_shared<spdlog::sinks::stdout_color_sink_st> ());
@@ -88,7 +96,8 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const std::vect
                 }
                 else if constexpr (std::is_same_v<Sinks::File, std::decay_t<decltype (_config)>>)
                 {
-                    addSink (std::make_shared<spdlog::sinks::basic_file_sink_st> (_config.fileName, _config.overwrite));
+                    addSink (std::make_shared<spdlog::sinks::basic_file_sink_st> (_config.fileName.c_str (),
+                                                                                  _config.overwrite));
                 }
             },
             sink);
@@ -101,21 +110,16 @@ LoggerImplementation::LoggerImplementation (LoggerImplementation &&_other) noexc
     assert (!_other.locked.test ());
 }
 
-void LoggerImplementation::Log (Level _level, const std::string &_message) noexcept
+void LoggerImplementation::Log (Level _level, const char *_message) noexcept
 {
     spdlog::level::level_enum level = ToSPDLogLevel (_level);
 
     // Usually there is no sense to print ton of logs in production, therefore it's better to use flag based spin lock.
-    while (locked.test_and_set (std::memory_order_acquire))
-    {
-        std::this_thread::yield ();
-    }
-
+    AtomicFlagGuard guard {locked};
     logger.log (level, _message);
-    locked.clear (std::memory_order_release);
 }
 
-Logger::Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
+Logger::Logger (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 {
     new (&data) LoggerImplementation (_forceFlushOn, _sinks);
 }
@@ -130,22 +134,22 @@ Logger::~Logger () noexcept
     block_cast<LoggerImplementation> (data).~LoggerImplementation ();
 }
 
-void Logger::Log (Level _level, const std::string &_message) noexcept
+void Logger::Log (Level _level, const char *_message) noexcept
 {
     block_cast<LoggerImplementation> (data).Log (_level, _message);
 }
 
 namespace GlobalLogger
 {
-static std::unique_ptr<Logger> globalLogger {};
+static Container::Optional<Logger> globalLogger;
 
-void Init (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept
+void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 {
     assert (!globalLogger);
-    globalLogger = std::make_unique<Logger> (_forceFlushOn, _sinks);
+    globalLogger.emplace (_forceFlushOn, _sinks);
 }
 
-void Log (Level _level, const std::string &_message) noexcept
+void Log (Level _level, const char *_message) noexcept
 {
     if (!globalLogger)
     {
@@ -155,4 +159,13 @@ void Log (Level _level, const std::string &_message) noexcept
     globalLogger->Log (_level, _message);
 }
 } // namespace GlobalLogger
-} // namespace Emergence::Log
+} // namespace Log
+
+namespace Memory
+{
+Profiler::AllocationGroup DefaultAllocationGroup<Log::Sink>::Get () noexcept
+{
+    return Profiler::AllocationGroup {UniqueString {"LogSink"}};
+}
+} // namespace Memory
+} // namespace Emergence

@@ -1,10 +1,13 @@
 #pragma once
 
 #include <functional>
-#include <string>
-#include <vector>
 
 #include <API/Common/Shortcuts.hpp>
+
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/UniqueString.hpp>
 
 #include <Task/Collection.hpp>
 
@@ -12,28 +15,30 @@
 
 namespace Emergence::Flow
 {
+Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
+
 /// \brief Contains all useful information about task.
 struct Task
 {
     /// \brief Task name is used for dependency connection, logging and debugging.
     /// \invariant Must be unique among tasks and checkpoints.
-    std::string name;
+    Memory::UniqueString name;
 
     /// \see TaskCollection::Item::task
     std::function<void ()> executor;
 
     /// \brief Names of resources, that are read by this task.
-    std::vector<std::string> readAccess;
+    Container::Vector<Memory::UniqueString> readAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of resources, that are modified by this task.
     /// \invariant If task both reads and modifies one resources, this resource should only be added to ::writeAccess.
-    std::vector<std::string> writeAccess;
+    Container::Vector<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, on which this task depends.
-    std::vector<std::string> dependsOn;
+    Container::Vector<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, to which this task injects itself as dependency.
-    std::vector<std::string> dependencyOf;
+    Container::Vector<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
 };
 
 /// \brief Allows user to register tasks and export result as task collection or visual graph.
@@ -41,15 +46,16 @@ struct Task
 class TaskRegister final
 {
 public:
-    inline static const std::string VISUAL_ROOT_GRAPH_ID = "TaskGraph";
-    inline static const std::string VISUAL_RESOURCE_GRAPH_ID = "Resources";
-    inline static const std::string VISUAL_PIPELINE_GRAPH_ID = "Pipeline";
+    // We use classic strings here, because there is no need to waste unique string stack for visualization-only data.
+    inline static const Container::String VISUAL_ROOT_GRAPH_ID = "TaskGraph";
+    inline static const Container::String VISUAL_RESOURCE_GRAPH_ID = "Resources";
+    inline static const Container::String VISUAL_PIPELINE_GRAPH_ID = "Pipeline";
 
-    inline static const std::string VISUAL_TASK_LABEL_SUFFIX = " (Task)";
-    inline static const std::string VISUAL_CHECKPOINT_LABEL_SUFFIX = " (Checkpoint)";
+    inline static const Container::String VISUAL_TASK_LABEL_SUFFIX = " (Task)";
+    inline static const Container::String VISUAL_CHECKPOINT_LABEL_SUFFIX = " (Checkpoint)";
 
-    inline static const std::string VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
-    inline static const std::string VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
+    inline static const Container::String VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
+    inline static const Container::String VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
 
     TaskRegister () = default;
 
@@ -65,11 +71,11 @@ public:
 
     /// \brief Registers new checkpoint with given name.
     /// \invariant Checkpoint name should be unique among checkpoints and tasks.
-    void RegisterCheckpoint (const char *_name) noexcept;
+    void RegisterCheckpoint (Memory::UniqueString _name) noexcept;
 
     /// \brief Registers new resource with given name.
     /// \invariant Resource name should be unique.
-    void RegisterResource (const char *_name) noexcept;
+    void RegisterResource (Memory::UniqueString _name) noexcept;
 
     /// \brief Exports registered tasks, checkpoints and resources as visual graph.
     /// \param _exportResources Should resources be exported?
@@ -92,10 +98,10 @@ public:
 private:
     friend class TaskGraph;
 
-    void AssertNodeNameUniqueness (const char *_name) const noexcept;
+    void AssertNodeNameUniqueness (Memory::UniqueString _name) const noexcept;
 
-    std::vector<Task> tasks;
-    std::vector<std::string> checkpoints;
-    std::vector<std::string> resources;
+    Container::Vector<Task> tasks {GetDefaultAllocationGroup ()};
+    Container::Vector<Memory::UniqueString> checkpoints {GetDefaultAllocationGroup ()};
+    Container::Vector<Memory::UniqueString> resources {GetDefaultAllocationGroup ()};
 };
 } // namespace Emergence::Flow

@@ -53,3 +53,5 @@ private:
     explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 } // namespace Emergence::Warehouse
+
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::Warehouse::Dimension)

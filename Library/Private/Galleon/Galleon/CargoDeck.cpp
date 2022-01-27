@@ -14,98 +14,123 @@ struct TypeMappingPredicate final
     StandardLayout::Mapping requiredMapping;
 };
 
-CargoDeck::CargoDeck (std::string _name) noexcept : name (std::move (_name))
+using namespace Memory::Literals;
+
+CargoDeck::CargoDeck (Memory::UniqueString _name) noexcept
+    : name (_name),
+      singletonHeap (Memory::Profiler::AllocationGroup {"Singleton"_us}),
+      shortTermHeap (Memory::Profiler::AllocationGroup {"ShortTerm"_us}),
+      longTermHeap (Memory::Profiler::AllocationGroup {"LongTerm"_us}),
+      singletonContainers (singletonHeap),
+      shortTermContainers (shortTermHeap),
+      longTermContainers (longTermHeap)
 {
 }
 
 CargoDeck::~CargoDeck () noexcept
 {
     // Assert that all containers are detached.
-    assert (containers.singleton.empty ());
-    assert (containers.shortTerm.empty ());
-    assert (containers.longTerm.empty ());
+    assert (singletonContainers.empty ());
+    assert (shortTermContainers.empty ());
+    assert (longTermContainers.empty ());
 }
 
 Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)
 {
     auto iterator =
-        std::find_if (containers.singleton.begin (), containers.singleton.end (), TypeMappingPredicate {_typeMapping});
+        std::find_if (singletonContainers.begin (), singletonContainers.end (), TypeMappingPredicate {_typeMapping});
 
-    if (iterator != containers.singleton.end ())
+    if (iterator != singletonContainers.end ())
     {
         return *iterator;
     }
 
-    return containers.singleton.emplace_back (new (_typeMapping) SingletonContainer (this, _typeMapping));
+    auto placeholder = singletonHeap.GetAllocationGroup ().PlaceOnTop ();
+    return singletonContainers.emplace_back (new (singletonHeap.Acquire (
+        sizeof (SingletonContainer) + _typeMapping.GetObjectSize ())) SingletonContainer (this, _typeMapping));
 }
 
 Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const StandardLayout::Mapping &_typeMapping)
 {
     auto iterator =
-        std::find_if (containers.shortTerm.begin (), containers.shortTerm.end (), TypeMappingPredicate {_typeMapping});
+        std::find_if (shortTermContainers.begin (), shortTermContainers.end (), TypeMappingPredicate {_typeMapping});
 
-    if (iterator != containers.shortTerm.end ())
+    if (iterator != shortTermContainers.end ())
     {
         return *iterator;
     }
 
-    return containers.shortTerm.emplace_back (new ShortTermContainer (this, _typeMapping));
+    auto placeholder = shortTermHeap.GetAllocationGroup ().PlaceOnTop ();
+    return shortTermContainers.emplace_back (new (shortTermHeap.Acquire (sizeof (ShortTermContainer)))
+                                                 ShortTermContainer (this, _typeMapping));
 }
 
 Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping)
 {
     auto iterator =
-        std::find_if (containers.longTerm.begin (), containers.longTerm.end (), TypeMappingPredicate {_typeMapping});
+        std::find_if (longTermContainers.begin (), longTermContainers.end (), TypeMappingPredicate {_typeMapping});
 
-    if (iterator != containers.longTerm.end ())
+    if (iterator != longTermContainers.end ())
     {
         return *iterator;
     }
 
-    return containers.longTerm.emplace_back (new LongTermContainer (this, _typeMapping));
+    auto placeholder = longTermHeap.GetAllocationGroup ().PlaceOnTop ();
+    return longTermContainers.emplace_back (new (longTermHeap.Acquire (sizeof (LongTermContainer)))
+                                                LongTermContainer (this, _typeMapping));
 }
 
 bool CargoDeck::IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (containers.singleton.begin (), containers.singleton.end (),
-                         TypeMappingPredicate {_typeMapping}) != containers.singleton.end ();
+    return std::find_if (singletonContainers.begin (), singletonContainers.end (),
+                         TypeMappingPredicate {_typeMapping}) != singletonContainers.end ();
 }
 
 bool CargoDeck::IsShortTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (containers.shortTerm.begin (), containers.shortTerm.end (),
-                         TypeMappingPredicate {_typeMapping}) != containers.shortTerm.end ();
+    return std::find_if (shortTermContainers.begin (), shortTermContainers.end (),
+                         TypeMappingPredicate {_typeMapping}) != shortTermContainers.end ();
 }
 
 bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (containers.longTerm.begin (), containers.longTerm.end (),
-                         TypeMappingPredicate {_typeMapping}) != containers.longTerm.end ();
+    return std::find_if (longTermContainers.begin (), longTermContainers.end (), TypeMappingPredicate {_typeMapping}) !=
+           longTermContainers.end ();
 }
 
-const std::string &CargoDeck::GetName () const noexcept
+Memory::UniqueString CargoDeck::GetName () const noexcept
 {
     return name;
 }
 
 void CargoDeck::DetachContainer (SingletonContainer *_container) noexcept
 {
-    auto iterator = std::find (containers.singleton.begin (), containers.singleton.end (), _container);
-    assert (iterator != containers.singleton.end ());
-    containers.singleton.erase (iterator);
+    auto iterator = std::find (singletonContainers.begin (), singletonContainers.end (), _container);
+    assert (iterator != singletonContainers.end ());
+    singletonContainers.erase (iterator);
+
+    const std::size_t size = sizeof (SingletonContainer) + _container->GetTypeMapping ().GetObjectSize ();
+    _container->~SingletonContainer ();
+    singletonHeap.Release (_container, size);
 }
 
 void CargoDeck::DetachContainer (ShortTermContainer *_container) noexcept
 {
-    auto iterator = std::find (containers.shortTerm.begin (), containers.shortTerm.end (), _container);
-    assert (iterator != containers.shortTerm.end ());
-    containers.shortTerm.erase (iterator);
+    auto iterator = std::find (shortTermContainers.begin (), shortTermContainers.end (), _container);
+    assert (iterator != shortTermContainers.end ());
+    shortTermContainers.erase (iterator);
+
+    _container->~ShortTermContainer ();
+    shortTermHeap.Release (_container, sizeof (ShortTermContainer));
 }
 
 void CargoDeck::DetachContainer (LongTermContainer *_container) noexcept
 {
-    auto iterator = std::find (containers.longTerm.begin (), containers.longTerm.end (), _container);
-    assert (iterator != containers.longTerm.end ());
-    containers.longTerm.erase (iterator);
+    auto iterator = std::find (longTermContainers.begin (), longTermContainers.end (), _container);
+    assert (iterator != longTermContainers.end ());
+    longTermContainers.erase (iterator);
+
+    _container->~LongTermContainer ();
+    longTermHeap.Release (_container, sizeof (LongTermContainer));
 }
 } // namespace Emergence::Galleon

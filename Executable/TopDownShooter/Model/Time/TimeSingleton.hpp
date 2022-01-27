@@ -17,7 +17,7 @@ struct TimeSingleton final
 
     /// Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
-    Emergence::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
+    Emergence::Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
     uint64_t fixedStartUs = 0u;
     Emergence::RunningAverage<30u> averageFixedRealDurationS;
@@ -28,8 +28,6 @@ struct TimeSingleton final
     /// Offset from engine-provided clock zero to normal time zero.
     uint64_t normalTimeOffsetUs = 0u;
     Emergence::RunningAverage<30u> averageNormalRealDurationS;
-
-    const bool constructed = true;
 
     struct Reflection final
     {
@@ -47,5 +45,3 @@ struct TimeSingleton final
 
     static const Reflection &Reflect () noexcept;
 };
-
-static_assert (std::is_trivially_destructible_v<TimeSingleton>);

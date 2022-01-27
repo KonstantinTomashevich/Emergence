@@ -4,6 +4,8 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
+#include <Memory/Heap.hpp>
+
 namespace Emergence::StandardLayout
 {
 /// \brief Mapped field unique identifier.
@@ -38,6 +40,10 @@ enum class FieldArchetype
 
     /// \brief Fixed size memory block.
     BLOCK,
+
+    /// \brief Memory::UniqueString instance.
+    /// \details Special archetype for unique string is created because they can be hashed or compared in constant time.
+    UNIQUE_STRING,
 
     /// \brief Complex field, that has internal fields.
     ///
@@ -90,7 +96,7 @@ public:
 
     /// \return Human readable field name.
     /// \invariant Handle must be valid.
-    [[nodiscard]] const char *GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     /// \param _object pointer to structure, that contains this field.
     /// \return Pointer to this field in given structure.
@@ -124,3 +130,5 @@ private:
     EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
 };
 } // namespace Emergence::StandardLayout
+
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::StandardLayout::FieldId)

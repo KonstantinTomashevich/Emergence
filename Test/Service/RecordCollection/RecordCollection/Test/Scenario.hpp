@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
-#include <vector>
+
+#include <Container/String.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -22,31 +22,31 @@ using namespace Context::Extension::Tasks;
 
 struct CreateLinearRepresentation
 {
-    std::string name;
+    Container::String name;
     StandardLayout::FieldId keyField;
 };
 
 struct CreatePointRepresentation
 {
-    std::string name;
-    std::vector<StandardLayout::FieldId> keyFields;
+    Container::String name;
+    Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct CreateVolumetricRepresentation
 {
-    std::string name;
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
+    Container::String name;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct CheckIsRepresentationCanBeDropped
 {
-    std::string name;
+    Container::String name;
     bool expected = false;
 };
 
 struct DropRepresentation
 {
-    std::string name;
+    Container::String name;
 };
 
 struct OpenAllocator
@@ -120,10 +120,10 @@ struct Scenario final
     [[nodiscard]] VisualGraph::Graph ExecuteAndVisualize () const;
 
     StandardLayout::Mapping mapping;
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
 };
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second);
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_first, const Container::Vector<Task> &_second);
 } // namespace Emergence::RecordCollection::Test

@@ -20,7 +20,7 @@ static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
     return {Player::Reflect ().mapping,
-            {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED},
+            {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED},
             {Sources::Range {"Source", Player::Reflect ().id}}};
 }
 
@@ -33,28 +33,28 @@ static void ExecuteAscendingReadCursorReferenceApiTest (const Emergence::Referen
 {
     ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
                                           QueryAscendingRangeToRead {{{}, nullptr, nullptr}},
-                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                          &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteAscendingEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
                                           QueryAscendingRangeToEdit {{{}, nullptr, nullptr}},
-                                          &Emergence::Query::Test::HUGO_0_ALIVE_STUNNED);
+                                          &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
 static void ExecuteDescendingReadCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
                                           QueryDescendingRangeToRead {{{}, nullptr, nullptr}},
-                                          &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED);
+                                          &Emergence::Query::Test::KARL_1_MAGE_ALIVE_IMMOBILIZED);
 }
 
 static void ExecuteDescendingEditCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
 {
     ReferenceApiTestImporters::ForCursor (_scenario, GetTestStorage (),
                                           QueryDescendingRangeToEdit {{{}, nullptr, nullptr}},
-                                          &Emergence::Query::Test::KARL_1_ALIVE_IMMOBILIZED);
+                                          &Emergence::Query::Test::KARL_1_MAGE_ALIVE_IMMOBILIZED);
 }
 
 BEGIN_SUITE (LinearRepresentationReference)

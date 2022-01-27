@@ -22,14 +22,14 @@ VisualGraph::Graph GraphFromPointRepresentation (const PointRepresentation &_rep
 VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given collection.
-std::string GraphId (const Collection &_collection);
+Container::String GraphId (const Collection &_collection);
 
 /// \return Id of a graph, that could be created from given representation.
-std::string GraphId (const LinearRepresentation &_representation);
+Container::String GraphId (const LinearRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given representation.
-std::string GraphId (const PointRepresentation &_representation);
+Container::String GraphId (const PointRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given representation.
-std::string GraphId (const VolumetricRepresentation &_representation);
+Container::String GraphId (const VolumetricRepresentation &_representation);
 } // namespace Emergence::RecordCollection::Visualization

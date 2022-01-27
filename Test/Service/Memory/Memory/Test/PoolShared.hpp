@@ -1,9 +1,19 @@
-#include <vector>
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+#include <Memory/Test/Helpers.hpp>
+#include <Memory/UniqueString.hpp>
 
 #include <Testing/Testing.hpp>
 
 namespace Emergence::Memory::Test::Pool
 {
+using namespace Emergence::Memory::Literals;
+
+/// \brief Memory profiler reports internal page data as part of total data usage.
+constexpr size_t RESERVED_FOR_PAGE_INTERNALS = sizeof (uintptr_t);
+
 struct TestItem
 {
     uint64_t integer;
@@ -24,24 +34,25 @@ struct FullPoolContext
             items.emplace_back (pool.Acquire ());
         }
 
-        CHECK_EQUAL (pool.GetAllocatedSpace (), PAGES_TO_FILL * PAGE_CAPACITY * sizeof (TestItem));
+        CHECK_EQUAL (pool.GetAllocationGroup ().GetTotal (),
+                     PAGES_TO_FILL * (PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
     }
 
-    Pool pool {sizeof (TestItem), PAGE_CAPACITY};
-    std::vector<void *> items;
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), PAGE_CAPACITY};
+    Container::Vector<void *> items;
 };
 
 template <typename Pool>
 void AcquireNotNull ()
 {
-    Pool pool {sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
     CHECK (pool.Acquire ());
 }
 
 template <typename Pool>
 void MultipleAcquiresDoNotOverlap ()
 {
-    Pool pool {sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
     auto *first = static_cast<TestItem *> (pool.Acquire ());
     auto *second = static_cast<TestItem *> (pool.Acquire ());
 
@@ -63,7 +74,7 @@ void MultipleAcquiresDoNotOverlap ()
 template <typename Pool>
 void MemoryReused ()
 {
-    Pool pool {sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
@@ -76,7 +87,7 @@ void Clear ()
 {
     FullPoolContext<Pool> context;
     context.pool.Clear ();
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
 
     // Acquire one item to ensure that pool is in working state.
     CHECK (context.pool.Acquire ());
@@ -88,9 +99,10 @@ void Move ()
     FullPoolContext<Pool> context;
     Pool newPool (std::move (context.pool));
 
-    CHECK_EQUAL (context.pool.GetAllocatedSpace (), 0u);
-    CHECK_EQUAL (newPool.GetAllocatedSpace (),
-                 FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
+    CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
+    CHECK_EQUAL (newPool.GetAllocationGroup ().GetTotal (),
+                 FullPoolContext<Pool>::PAGES_TO_FILL *
+                     (FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
 
     // Acquire one item from each pool to ensure that they are in working state.
     CHECK (context.pool.Acquire ());
@@ -104,13 +116,49 @@ void MoveAssign ()
     FullPoolContext<Pool> secondContext;
     secondContext.pool = std::move (firstContext.pool);
 
-    CHECK_EQUAL (firstContext.pool.GetAllocatedSpace (), 0u);
-    CHECK_EQUAL (secondContext.pool.GetAllocatedSpace (),
-                 FullPoolContext<Pool>::PAGES_TO_FILL * FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem));
+    CHECK_EQUAL (firstContext.pool.GetAllocationGroup ().GetTotal (), 0u);
+    CHECK_EQUAL (secondContext.pool.GetAllocationGroup ().GetTotal (),
+                 FullPoolContext<Pool>::PAGES_TO_FILL *
+                     (FullPoolContext<Pool>::PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
 
     // Acquire one item from each pool to ensure that they are in working state.
     CHECK (firstContext.pool.Acquire ());
     CHECK (secondContext.pool.Acquire ());
+}
+
+template <typename Pool>
+void Profiling ()
+{
+    Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
+    Pool pool {group, sizeof (TestItem), 2u};
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), 0u);
+
+    [[maybe_unused]] void *first = pool.Acquire ();
+    CHECK_EQUAL (group.GetReserved (), sizeof (TestItem));
+    CHECK_EQUAL (group.GetAcquired (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem));
+    CHECK_EQUAL (group.GetTotal (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u);
+
+    [[maybe_unused]] void *second = pool.Acquire ();
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u);
+    CHECK_EQUAL (group.GetTotal (), RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u);
+
+    void *third = pool.Acquire ();
+    CHECK_EQUAL (group.GetReserved (), sizeof (TestItem));
+    CHECK_EQUAL (group.GetAcquired (), 2u * RESERVED_FOR_PAGE_INTERNALS + 3u * sizeof (TestItem));
+    CHECK_EQUAL (group.GetTotal (), 2u * (RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u));
+
+    pool.Release (third);
+    CHECK_EQUAL (group.GetReserved (), 2u * sizeof (TestItem));
+    CHECK_EQUAL (group.GetAcquired (), 2u * RESERVED_FOR_PAGE_INTERNALS + 2u * sizeof (TestItem));
+    CHECK_EQUAL (group.GetTotal (), 2u * (RESERVED_FOR_PAGE_INTERNALS + sizeof (TestItem) * 2u));
+
+    pool.Clear ();
+    CHECK_EQUAL (group.GetReserved (), 0u);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), 0u);
 }
 } // namespace Emergence::Memory::Test::Pool
 
@@ -126,4 +174,5 @@ void MoveAssign ()
     SHARED_POOL_TEST (ImplementationClass, MemoryReused)                                                               \
     SHARED_POOL_TEST (ImplementationClass, Clear)                                                                      \
     SHARED_POOL_TEST (ImplementationClass, Move)                                                                       \
-    SHARED_POOL_TEST (ImplementationClass, MoveAssign)
+    SHARED_POOL_TEST (ImplementationClass, MoveAssign)                                                                 \
+    SHARED_POOL_TEST (ImplementationClass, Profiling)

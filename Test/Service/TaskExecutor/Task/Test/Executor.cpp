@@ -1,7 +1,10 @@
 #include <chrono>
-#include <string>
 #include <thread>
-#include <vector>
+
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+#include <Memory/UniqueString.hpp>
 
 #include <Task/Executor.hpp>
 #include <Task/Test/Executor.hpp>
@@ -17,11 +20,11 @@ bool ExecutorTestIncludeMarker () noexcept
 
 struct TaskSeed
 {
-    std::string name;
-    std::vector<std::string> dependantTasks;
+    Memory::UniqueString name;
+    Container::Vector<Memory::UniqueString> dependantTasks;
 };
 
-using Seed = std::vector<TaskSeed>;
+using Seed = Container::Vector<TaskSeed>;
 
 struct TimeInterval
 {
@@ -31,7 +34,7 @@ struct TimeInterval
 
 void GrowAndTest (const Seed &_seed)
 {
-    std::vector<TimeInterval> intervals;
+    Container::Vector<TimeInterval> intervals;
     intervals.reserve (_seed.size ());
     Collection collection;
 
@@ -49,7 +52,7 @@ void GrowAndTest (const Seed &_seed)
             privateInterval.end = std::chrono::high_resolution_clock::now ();
         };
 
-        for (const std::string &dependantTaskName : taskSeed.dependantTasks)
+        for (const Memory::UniqueString &dependantTaskName : taskSeed.dependantTasks)
         {
             auto iterator = std::find_if (_seed.begin (), _seed.end (),
                                           [&dependantTaskName] (const TaskSeed &_other)
@@ -91,49 +94,55 @@ void GrowAndTest (const Seed &_seed)
 }
 } // namespace Emergence::Task::Test
 
+using namespace Emergence::Memory::Literals;
 using namespace Emergence::Task::Test;
 
 BEGIN_SUITE (Executor)
 
 TEST_CASE (Sequence)
 {
-    GrowAndTest ({{"A", {"B"}}, {"B", {"C"}}, {"C", {}}});
+    GrowAndTest ({{"A"_us, {"B"_us}}, {"B"_us, {"C"_us}}, {"C"_us, {}}});
 }
 
 TEST_CASE (TwoIndependentSequence)
 {
-    GrowAndTest ({{"A1", {"B1"}}, {"B1", {"C1"}}, {"C1", {}}, {"A2", {"B2"}}, {"B2", {"C2"}}, {"C2", {}}});
+    GrowAndTest ({{"A1"_us, {"B1"_us}},
+                  {"B1"_us, {"C1"_us}},
+                  {"C1"_us, {}},
+                  {"A2"_us, {"B2"_us}},
+                  {"B2"_us, {"C2"_us}},
+                  {"C2"_us, {}}});
 }
 
 TEST_CASE (ForkJoin)
 {
-    GrowAndTest ({{"A", {"B1", "B2", "B3", "B4"}},
-                  {"B1", {"C1"}},
-                  {"B2", {"C2"}},
-                  {"B3", {"C3"}},
-                  {"B4", {"C4"}},
-                  {"C1", {"D"}},
-                  {"C2", {"D"}},
-                  {"C3", {"D"}},
-                  {"C4", {"D"}},
-                  {"D", {}}});
+    GrowAndTest ({{"A"_us, {"B1"_us, "B2"_us, "B3"_us, "B4"_us}},
+                  {"B1"_us, {"C1"_us}},
+                  {"B2"_us, {"C2"_us}},
+                  {"B3"_us, {"C3"_us}},
+                  {"B4"_us, {"C4"_us}},
+                  {"C1"_us, {"D"_us}},
+                  {"C2"_us, {"D"_us}},
+                  {"C3"_us, {"D"_us}},
+                  {"C4"_us, {"D"_us}},
+                  {"D"_us, {}}});
 }
 
 TEST_CASE (MultipleEntries)
 {
-    GrowAndTest ({{"A1", {"B1"}},
-                  {"A2", {"B1", "B2"}},
-                  {"A3", {"B2", "B3"}},
-                  {"B1", {"C"}},
-                  {"B2", {"C"}},
-                  {"B3", {"D"}},
-                  {"C", {}},
-                  {"D", {}}});
+    GrowAndTest ({{"A1"_us, {"B1"_us}},
+                  {"A2"_us, {"B1"_us, "B2"_us}},
+                  {"A3"_us, {"B2"_us, "B3"_us}},
+                  {"B1"_us, {"C"_us}},
+                  {"B2"_us, {"C"_us}},
+                  {"B3"_us, {"D"_us}},
+                  {"C"_us, {}},
+                  {"D"_us, {}}});
 }
 
 TEST_CASE (ReversedRegistrationOrder)
 {
-    GrowAndTest ({{"C", {}}, {"B", {"C"}}, {"A", {"B"}}});
+    GrowAndTest ({{"C"_us, {}}, {"B"_us, {"C"_us}}, {"A"_us, {"B"_us}}});
 }
 
 END_SUITE

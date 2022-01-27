@@ -4,7 +4,9 @@
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
 
-namespace Emergence::StandardLayout
+namespace Emergence
+{
+namespace StandardLayout
 {
 FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
 {
@@ -57,7 +59,7 @@ Mapping Field::GetNestedObjectMapping () const noexcept
     return Mapping (reinterpret_cast<decltype (Mapping::data) *> (&nestedMapping));
 }
 
-const char *Field::GetName () const noexcept
+Memory::UniqueString Field::GetName () const noexcept
 {
     return static_cast<const FieldData *> (handle)->GetName ();
 }
@@ -114,4 +116,15 @@ Field &Field::operator= (Field &&_other) noexcept
 Field::Field (void *_handle) noexcept : handle (_handle)
 {
 }
-} // namespace Emergence::StandardLayout
+} // namespace StandardLayout
+
+namespace Memory
+{
+using namespace Literals;
+
+Profiler::AllocationGroup DefaultAllocationGroup<StandardLayout::FieldId>::Get () noexcept
+{
+    return Profiler::AllocationGroup {"FieldReflection"_us};
+}
+} // namespace Memory
+} // namespace Emergence

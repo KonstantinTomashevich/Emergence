@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include <Memory/Stack.hpp>
+#include <Memory/Test/Helpers.hpp>
 #include <Memory/Test/Stack.hpp>
 
 #include <Testing/Testing.hpp>
@@ -15,6 +16,9 @@ bool StackTestIncludeMarker () noexcept
 }
 } // namespace Emergence::Memory::Test
 
+using namespace Emergence::Memory::Literals;
+using namespace Emergence::Memory::Test;
+
 BEGIN_SUITE (Stack)
 
 TEST_CASE (AcquireNoOverlap)
@@ -22,7 +26,7 @@ TEST_CASE (AcquireNoOverlap)
     const char first[] = "Hello, world!\0";
     const char second[] = "Lets check the overwrite!\0";
 
-    Emergence::Memory::Stack stack {1024u};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
     char *firstTarget = static_cast<char *> (stack.Acquire (sizeof (first), 1u));
     char *secondTarget = static_cast<char *> (stack.Acquire (sizeof (second), 1u));
 
@@ -35,7 +39,7 @@ TEST_CASE (AcquireNoOverlap)
 
 TEST_CASE (AcquireAlignment)
 {
-    Emergence::Memory::Stack stack {1024u};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
 #define CHECK_ALIGNMENT(Size, Alignment)                                                                               \
     CHECK_EQUAL (reinterpret_cast<uintptr_t> (stack.Acquire (Size, Alignment)) % (Alignment), 0u)
 
@@ -55,7 +59,7 @@ TEST_CASE (AcquireAlignment)
 
 TEST_CASE (ClearAndReuse)
 {
-    Emergence::Memory::Stack stack {1024u};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
     void *firstRecord = stack.Acquire (225u);
     stack.Clear ();
 
@@ -65,7 +69,7 @@ TEST_CASE (ClearAndReuse)
 
 TEST_CASE (ReleaseAndReuse)
 {
-    Emergence::Memory::Stack stack {1024u};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
     [[maybe_unused]] void *historicalShift = stack.Acquire (225u);
     const void *cachedHead = stack.Head ();
 
@@ -86,7 +90,7 @@ TEST_CASE (ReleaseAndReuse)
 TEST_CASE (FreeSize)
 {
     constexpr size_t STACK_SIZE = 1024u;
-    Emergence::Memory::Stack stack {STACK_SIZE};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), STACK_SIZE};
     CHECK_EQUAL (stack.GetFreeSize (), STACK_SIZE);
 
     [[maybe_unused]] void *stub1 = stack.Acquire (6u, 1u);
@@ -108,7 +112,7 @@ TEST_CASE (FreeSize)
 
 TEST_CASE (Move)
 {
-    Emergence::Memory::Stack stack {1024u};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
     [[maybe_unused]] void *firstRecord = stack.Acquire (32u);
     const void *cachedHead = stack.Head ();
 
@@ -121,8 +125,8 @@ TEST_CASE (Move)
 
 TEST_CASE (MoveAssign)
 {
-    Emergence::Memory::Stack stack {1024u};
-    Emergence::Memory::Stack anotherStack {1024u};
+    Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
+    Emergence::Memory::Stack anotherStack {GetUniqueAllocationGroup (), 1024u};
 
     [[maybe_unused]] void *firstRecord = stack.Acquire (32u);
     const void *cachedHead = stack.Head ();
@@ -132,6 +136,42 @@ TEST_CASE (MoveAssign)
 
     // Acquire to check usability.
     [[maybe_unused]] void *secondRecord = anotherStack.Acquire (128u);
+}
+
+TEST_CASE (Profiling)
+{
+    constexpr size_t STACK_CAPACITY = 1024u;
+    constexpr size_t FIRST_ALLOCATION = 32u;
+    constexpr size_t SECOND_ALLOCATION = 128u;
+
+    Emergence::Memory::Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
+    Emergence::Memory::Stack stack {group, STACK_CAPACITY};
+
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    [[maybe_unused]] void *first = stack.Acquire (FIRST_ALLOCATION);
+    const void *headAfterFirst = stack.Head ();
+
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    [[maybe_unused]] void *second = stack.Acquire (SECOND_ALLOCATION);
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION - SECOND_ALLOCATION);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION + SECOND_ALLOCATION);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    stack.Release (headAfterFirst);
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
+
+    stack.Clear ();
+    CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY);
+    CHECK_EQUAL (group.GetAcquired (), 0u);
+    CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
 }
 
 END_SUITE

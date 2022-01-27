@@ -1,13 +1,14 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <Container/Vector.hpp>
 
 #include <Galleon/LongTermContainer.hpp>
 #include <Galleon/ShortTermContainer.hpp>
 #include <Galleon/SingletonContainer.hpp>
 
 #include <Handling/Handle.hpp>
+
+#include <Memory/Heap.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -16,7 +17,7 @@ namespace Emergence::Galleon
 class CargoDeck final
 {
 public:
-    CargoDeck (std::string _name) noexcept;
+    CargoDeck (Memory::UniqueString _name) noexcept;
 
     /// CargoDeck manages lots of storages with lots of objects, therefore it's not optimal to copy it.
     CargoDeck (const CargoDeck &_other) = delete;
@@ -40,7 +41,7 @@ public:
 
     [[nodiscard]] bool IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
 
-    [[nodiscard]] const std::string &GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     /// CargoDeck manages lots of storages with lots of objects, therefore it's not optimal to copy assign it.
     CargoDeck &operator= (const CargoDeck &_other) = delete;
@@ -65,13 +66,14 @@ private:
 
     void DetachContainer (LongTermContainer *_container) noexcept;
 
-    std::string name;
+    Memory::UniqueString name;
 
-    struct
-    {
-        std::vector<SingletonContainer *> singleton {};
-        std::vector<ShortTermContainer *> shortTerm {};
-        std::vector<LongTermContainer *> longTerm {};
-    } containers {};
+    Memory::Heap singletonHeap;
+    Memory::Heap shortTermHeap;
+    Memory::Heap longTermHeap;
+
+    Container::Vector<SingletonContainer *> singletonContainers;
+    Container::Vector<ShortTermContainer *> shortTermContainers;
+    Container::Vector<LongTermContainer *> longTermContainers;
 };
 } // namespace Emergence::Galleon

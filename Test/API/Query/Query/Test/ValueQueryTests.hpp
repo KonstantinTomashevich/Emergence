@@ -16,6 +16,8 @@ Scenario LookupAndEdit ();
 
 Scenario OnStringField ();
 
+Scenario OnUniqueStringField ();
+
 Scenario OnTwoFields ();
 
 Scenario OnBitField ();
@@ -39,6 +41,7 @@ Scenario MultipleSourcesDeletion ();
     REGISTER_VALUE_QUERY_TEST (Driver, LookupForMany)                                                                  \
     REGISTER_VALUE_QUERY_TEST (Driver, LookupAndEdit)                                                                  \
     REGISTER_VALUE_QUERY_TEST (Driver, OnStringField)                                                                  \
+    REGISTER_VALUE_QUERY_TEST (Driver, OnUniqueStringField)                                                            \
     REGISTER_VALUE_QUERY_TEST (Driver, OnTwoFields)                                                                    \
     REGISTER_VALUE_QUERY_TEST (Driver, OnBitField)                                                                     \
     REGISTER_VALUE_QUERY_TEST (Driver, OnTwoBitFields)                                                                 \

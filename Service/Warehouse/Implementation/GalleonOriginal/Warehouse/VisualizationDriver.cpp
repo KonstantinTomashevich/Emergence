@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <RecordCollection/Visualization.hpp>
 
 #include <Warehouse/VisualizationDriver.hpp>
@@ -10,19 +8,19 @@ using namespace VisualGraph::Common::Constants;
 
 constexpr const char *CONTAINER_ROOT_NODE = ".";
 
-static std::string GraphId (const SingletonContainer &_container)
+static Container::String GraphId (const SingletonContainer &_container)
 {
-    return std::string ("SingletonContainer {") + _container.GetTypeMapping ().GetName () + "}";
+    return EMERGENCE_BUILD_STRING ("SingletonContainer {", _container.GetTypeMapping ().GetName (), "}");
 }
 
-static std::string GraphId (const ShortTermContainer &_container)
+static Container::String GraphId (const ShortTermContainer &_container)
 {
-    return std::string ("ShortTermContainer {") + _container.GetTypeMapping ().GetName () + "}";
+    return EMERGENCE_BUILD_STRING ("ShortTermContainer {", _container.GetTypeMapping ().GetName (), "}");
 }
 
-static std::string GraphId (const LongTermContainer &_container)
+static Container::String GraphId (const LongTermContainer &_container)
 {
-    return std::string ("LongTermContainer {") + _container.GetTypeMapping ().GetName () + "}";
+    return EMERGENCE_BUILD_STRING ("LongTermContainer {", _container.GetTypeMapping ().GetName (), "}");
 }
 
 void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const CargoDeck &_cargoDeck) noexcept
@@ -35,25 +33,27 @@ void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const CargoDe
 
         VisualGraph::Edge &mappingEdge = _graph.edges.emplace_back ();
         mappingEdge.from = root.id;
-        mappingEdge.to = std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + MAPPING_SUBGRAPH +
-                         VisualGraph::NODE_PATH_SEPARATOR + _container.GetTypeMapping ().GetName () +
-                         VisualGraph::NODE_PATH_SEPARATOR + MAPPING_ROOT_NODE;
+
+        mappingEdge.to = EMERGENCE_BUILD_STRING (
+            DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR, MAPPING_SUBGRAPH, VisualGraph::NODE_PATH_SEPARATOR,
+            _container.GetTypeMapping ().GetName (), VisualGraph::NODE_PATH_SEPARATOR, MAPPING_ROOT_NODE);
+
         mappingEdge.color = MAPPING_USAGE_COLOR;
     };
 
-    for (const SingletonContainer *container : _cargoDeck.containers.singleton)
+    for (const SingletonContainer *container : _cargoDeck.singletonContainers)
     {
         VisualGraph::Graph &subgraph = _graph.subgraphs.emplace_back ();
         setupContainerGraph (subgraph, *container);
     }
 
-    for (const ShortTermContainer *container : _cargoDeck.containers.shortTerm)
+    for (const ShortTermContainer *container : _cargoDeck.shortTermContainers)
     {
         VisualGraph::Graph &subgraph = _graph.subgraphs.emplace_back ();
         setupContainerGraph (subgraph, *container);
     }
 
-    for (const LongTermContainer *container : _cargoDeck.containers.longTerm)
+    for (const LongTermContainer *container : _cargoDeck.longTermContainers)
     {
         VisualGraph::Graph &subgraph = _graph.subgraphs.emplace_back ();
         setupContainerGraph (subgraph, *container);
@@ -61,12 +61,13 @@ void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const CargoDe
     }
 }
 
-template <typename Container>
-std::string VisualizationDriver::GetPathToContainer (const Handling::Handle<Container> &_container)
+template <typename ContainerType>
+Container::StringBuilder VisualizationDriver::GetPathToContainer (const Handling::Handle<ContainerType> &_container)
 {
-    return std::string (DEFAULT_ROOT_GRAPH_ID) + VisualGraph::NODE_PATH_SEPARATOR + WAREHOUSE_REGISTRY_SUBGRAPH +
-           VisualGraph::NODE_PATH_SEPARATOR + _container->deck->GetName () + VisualGraph::NODE_PATH_SEPARATOR +
-           GraphId (*_container.Get ()) + VisualGraph::NODE_PATH_SEPARATOR;
+    return EMERGENCE_BEGIN_BUILDING_STRING (DEFAULT_ROOT_GRAPH_ID, VisualGraph::NODE_PATH_SEPARATOR,
+                                            WAREHOUSE_REGISTRY_SUBGRAPH, VisualGraph::NODE_PATH_SEPARATOR,
+                                            _container->deck->GetName (), VisualGraph::NODE_PATH_SEPARATOR,
+                                            GraphId (*_container.Get ()), VisualGraph::NODE_PATH_SEPARATOR);
 }
 
 template <typename Query>
@@ -74,7 +75,7 @@ void VisualizationDriver::LinkToContainer (VisualGraph::Graph &_graph, const Que
 {
     VisualGraph::Edge &edge = _graph.edges.emplace_back ();
     edge.from = WAREHOUSE_QUERY_ROOT_NODE;
-    edge.to = GetPathToContainer (_query.GetContainer ()) + CONTAINER_ROOT_NODE;
+    edge.to = GetPathToContainer (_query.GetContainer ()).Append (CONTAINER_ROOT_NODE).Get ();
 }
 
 void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const SingletonContainer::FetchQuery &_query)
@@ -114,9 +115,13 @@ void VisualizationDriver::LinkToRepresentation (VisualGraph::Graph &_graph, cons
     edge.from = WAREHOUSE_QUERY_ROOT_NODE;
 
     const RecordCollection::Collection &collection = _query.GetContainer ()->collection;
-    edge.to = GetPathToContainer (_query.GetContainer ()) + RecordCollection::Visualization::GraphId (collection) +
-              VisualGraph::NODE_PATH_SEPARATOR + RecordCollection::Visualization::GraphId (_query.representation) +
-              VisualGraph::NODE_PATH_SEPARATOR + RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
+    Container::String collectionGraphId = RecordCollection::Visualization::GraphId (collection);
+    Container::String representationGraphId = RecordCollection::Visualization::GraphId (_query.representation);
+
+    edge.to = GetPathToContainer (_query.GetContainer ())
+                  .Append (collectionGraphId + VisualGraph::NODE_PATH_SEPARATOR + representationGraphId +
+                           VisualGraph::NODE_PATH_SEPARATOR + RECORD_COLLECTION_REPRESENTATION_ROOT_NODE)
+                  .Get ();
 }
 
 void VisualizationDriver::PostProcess (

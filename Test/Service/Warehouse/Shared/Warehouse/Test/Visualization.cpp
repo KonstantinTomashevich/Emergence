@@ -71,7 +71,7 @@ TEST_CASE (LongTerms)
     const Query::Test::Player::Reflection &playerReflection = Query::Test::Player::Reflect ();
     const Query::Test::BoundingBox::Reflection &boxReflection = Query::Test::BoundingBox::Reflect ();
 
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions {
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions {
         {-100.0f, boxReflection.minX, 100.0f, boxReflection.maxX},
         {-100.0f, boxReflection.minY, 100.0f, boxReflection.maxY},
         {-100.0f, boxReflection.minZ, 100.0f, boxReflection.maxZ},

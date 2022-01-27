@@ -9,13 +9,13 @@ bool Context::Execute (const VisualGraph::Graph &_graph, std::ostream &_output) 
     return Context {_output}.Process (_graph).has_value ();
 }
 
-bool Context::IsIdValid (const std::string &_id) noexcept
+bool Context::IsIdValid (const Container::String &_id) noexcept
 {
     for (const char &symbol : _id)
     {
         if (symbol == '\"' || symbol == VisualGraph::NODE_PATH_SEPARATOR)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Id \"" + _id + "\" contains forbidden symbols!");
+            EMERGENCE_LOG (ERROR, "Id \"", _id, "\" contains forbidden symbols!");
             return false;
         }
     }
@@ -25,7 +25,7 @@ bool Context::IsIdValid (const std::string &_id) noexcept
 
 bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 {
-    std::unordered_set<std::string> usedIds;
+    Container::HashSet<Container::String> usedIds {VisualGraph::GetDefaultAllocationGroup ()};
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
         if (!IsIdValid (subgraph.id))
@@ -35,7 +35,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 
         if (!usedIds.emplace (subgraph.id).second)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Subgraph id \"" + subgraph.id + "\" used more than once!");
+            EMERGENCE_LOG (ERROR, "Subgraph id \"", subgraph.id, "\" used more than once!");
             return false;
         }
     }
@@ -49,7 +49,7 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
 
         if (!usedIds.emplace (node.id).second)
         {
-            Log::GlobalLogger::Log (Log::Level::ERROR, "Node id \"" + node.id + "\" used more than once!");
+            EMERGENCE_LOG (ERROR, "Node id \"", node.id, "\" used more than once!");
             return false;
         }
     }
@@ -61,9 +61,9 @@ Context::Context (std::ostream &_output) : output (_output)
 {
 }
 
-std::optional<std::unordered_set<std::string>> Context::Process (const VisualGraph::Graph &_graph,
-                                                                 std::string _pathPrefix,
-                                                                 const std::string &_outerIndentation)
+Container::Optional<Container::HashSet<Container::String>> Context::Process (const VisualGraph::Graph &_graph,
+                                                                             Container::String _pathPrefix,
+                                                                             const Container::String &_outerIndentation)
 {
     if (!CheckIds (_graph))
     {
@@ -71,7 +71,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
     }
 
     const bool isSubgraph = !_pathPrefix.empty ();
-    std::string indentation = _outerIndentation + "    ";
+    Container::String indentation = _outerIndentation + "    ";
 
     if (isSubgraph)
     {
@@ -85,12 +85,12 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
     }
 
     output << indentation << "label=\"" << _graph.label.value_or (_graph.id) << "\";" << std::endl;
-    std::unordered_set<std::string> relativePaths;
+    Container::HashSet<Container::String> relativePaths {VisualGraph::GetDefaultAllocationGroup ()};
     _pathPrefix += _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
 
     for (const VisualGraph::Graph &subgraph : _graph.subgraphs)
     {
-        std::optional<std::unordered_set<std::string>> subgraphRelativePaths =
+        Container::Optional<Container::HashSet<Container::String>> subgraphRelativePaths =
             Process (subgraph, _pathPrefix, indentation);
 
         if (!subgraphRelativePaths)
@@ -98,15 +98,16 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
             return std::nullopt;
         }
 
-        for (const std::string &subgraphRelativePath : subgraphRelativePaths.value ())
+        for (const Container::String &subgraphRelativePath : subgraphRelativePaths.value ())
         {
-            relativePaths.emplace (subgraph.id + VisualGraph::NODE_PATH_SEPARATOR + subgraphRelativePath);
+            relativePaths.emplace (
+                EMERGENCE_BUILD_STRING (subgraph.id, VisualGraph::NODE_PATH_SEPARATOR, subgraphRelativePath));
         }
     }
 
     for (const VisualGraph::Node &node : _graph.nodes)
     {
-        output << indentation << "\"" << _pathPrefix + node.id << "\" [";
+        output << indentation << "\"" << _pathPrefix << node.id << "\" [";
         output << "label=\"" << node.label.value_or (node.id) << "\" ";
 
         output << "];" << std::endl;
@@ -115,7 +116,7 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
     for (VisualGraph::Edge edge : _graph.edges)
     {
-        auto patchPath = [&relativePaths, &_pathPrefix] (const std::string &_path) -> std::string
+        auto patchPath = [&relativePaths, &_pathPrefix] (const Container::String &_path) -> Container::String
         {
             return relativePaths.contains (_path) ? _pathPrefix + _path : _path;
         };
@@ -127,8 +128,8 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
 
     if (!isSubgraph)
     {
-        const std::string absolutePrefix = _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
-        auto isNodeExists = [&absolutePrefix, &relativePaths] (const std::string &_path)
+        const Container::String absolutePrefix = _graph.id + VisualGraph::NODE_PATH_SEPARATOR;
+        auto isNodeExists = [&absolutePrefix, &relativePaths] (const Container::String &_path)
         {
             if (_path.starts_with (absolutePrefix))
             {
@@ -142,15 +143,15 @@ std::optional<std::unordered_set<std::string>> Context::Process (const VisualGra
         {
             if (!isNodeExists (edge.from))
             {
-                Log::GlobalLogger::Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" +
-                                                                 edge.to + "\": source node not found!");
+                EMERGENCE_LOG (WARNING, "Unable to add edge \"", edge.from, "\" -> \"", edge.to,
+                               "\": source node not found!");
                 continue;
             }
 
             if (!isNodeExists (edge.to))
             {
-                Log::GlobalLogger::Log (Log::Level::WARNING, "Unable to add edge \"" + edge.from + "\" -> \"" +
-                                                                 edge.to + "\": target node not found!");
+                EMERGENCE_LOG (WARNING, "Unable to add edge \"", edge.from, "\" -> \"", edge.to,
+                               "\": target node not found!");
                 continue;
             }
 

@@ -27,6 +27,17 @@ concept Handleable = requires (Type _object)
     noexcept->std::convertible_to<uintptr_t>;
 };
 
+/// \brief When there is no references to object, callback will be called instead of object deletion.
+/// \details In some cases, Handle is used to provide reference counting, not to fully control object lifetime.
+template <typename Type>
+concept HasLastReferenceUnregisteredCallback = requires (Type _object)
+{
+    {
+        _object.LastReferenceUnregistered ()
+    }
+    noexcept;
+};
+
 /// \brief Strong reference to given object.
 /// \details ::Type must be Handleable, but requirement is expressed using static asserts in methods that directly use
 ///          Handleable methods. Static asserts are used instead of usual requirements because it allows to use Handle
@@ -96,7 +107,18 @@ Handle<Type>::~Handle () noexcept
         instance->UnregisterReference ();
         if (instance->GetReferenceCount () == 0u)
         {
-            delete instance;
+            if constexpr (HasLastReferenceUnregisteredCallback<Type>)
+            {
+                if (instance)
+                {
+                    instance->LastReferenceUnregistered ();
+                }
+            }
+            else
+            {
+                delete instance;
+            }
+
             instance = nullptr;
         }
     }

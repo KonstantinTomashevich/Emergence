@@ -4,7 +4,7 @@
 #include <cassert>
 #include <concepts>
 
-namespace Emergence
+namespace Emergence::Container
 {
 // TODO: Add tests for InplaceVector?
 
@@ -67,6 +67,18 @@ public:
     /// \invariant _iterator < ::End.
     Iterator EraseExchangingWithLast (const Iterator &_iterator) noexcept requires
         std::is_nothrow_move_assignable_v<Item> && std::is_nothrow_default_constructible_v<Item>;
+
+    /// \return Last item in vector.
+    /// \invariant Not ::Empty.
+    [[nodiscard]] Item &Back () noexcept;
+
+    /// \return Last item in vector.
+    /// \invariant Not ::Empty.
+    [[nodiscard]] const Item &Back () const noexcept;
+
+    /// \return Removes last item from vector.
+    /// \invariant Not ::Empty.
+    void PopBack () noexcept;
 
     bool operator== (const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>;
 
@@ -200,6 +212,27 @@ typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::
 }
 
 template <typename Item, std::size_t Capacity>
+Item &InplaceVector<Item, Capacity>::Back () noexcept
+{
+    assert (!Empty ());
+    return values[count - 1u];
+}
+
+template <typename Item, std::size_t Capacity>
+const Item &InplaceVector<Item, Capacity>::Back () const noexcept
+{
+    assert (!Empty ());
+    return values[count - 1u];
+}
+
+template <typename Item, std::size_t Capacity>
+void InplaceVector<Item, Capacity>::PopBack () noexcept
+{
+    assert (!Empty ());
+    --count;
+}
+
+template <typename Item, std::size_t Capacity>
 bool InplaceVector<Item, Capacity>::operator== (
     const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>
 {
@@ -293,4 +326,4 @@ typename InplaceVector<Item, Capacity>::ConstIterator end (const InplaceVector<I
 {
     return _vector.End ();
 }
-} // namespace Emergence
+} // namespace Emergence::Container

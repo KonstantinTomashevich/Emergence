@@ -2,24 +2,29 @@
 
 #include <atomic>
 #include <functional>
-#include <unordered_set>
-#include <vector>
 
 #include <API/Common/Cursor.hpp>
+
+#include <Container/HashMultiSet.hpp>
+#include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
 
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
+#include <Memory/Heap.hpp>
+
 #include <Pegasus/Constants/HashIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
-
-#include <SyntaxSugar/InplaceVector.hpp>
 
 namespace Emergence::Pegasus
 {
 class HashIndex final : public IndexBase
 {
 public:
+    using IndexedFieldVector =
+        Container::InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS>;
+
     struct LookupRequest final
     {
         /// \brief Pointer to an array with values for indexed field, used for lookup.
@@ -37,10 +42,7 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     HashIndex (HashIndex &&_other) = delete;
 
-    ~HashIndex () = default;
-
-    const InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> &GetIndexedFields ()
-        const noexcept;
+    const IndexedFieldVector &GetIndexedFields () const noexcept;
 
     void Drop () noexcept;
 
@@ -89,12 +91,13 @@ private:
         HashIndex *owner;
     };
 
-    // TODO: Custom allocator for better performance?
-    using RecordHashSet = std::unordered_multiset<const void *, Hasher, Comparator>;
+    using RecordHashSet = Container::HashMultiSet<const void *, Hasher, Comparator>;
 
     explicit HashIndex (Storage *_owner,
                         std::size_t _initialBuckets,
-                        const std::vector<StandardLayout::FieldId> &_indexedFields);
+                        const Container::Vector<StandardLayout::FieldId> &_indexedFields);
+
+    ~HashIndex () = default;
 
     void InsertRecord (const void *_record) noexcept;
 
@@ -108,9 +111,9 @@ private:
 
     void OnWriterClosed () noexcept;
 
-    InplaceVector<StandardLayout::Field, Constants::HashIndex::MAX_INDEXED_FIELDS> indexedFields;
+    IndexedFieldVector indexedFields;
     RecordHashSet records;
-    std::vector<RecordHashSet::node_type> changedNodes;
+    Container::Vector<RecordHashSet::node_type> changedNodes;
 
 public:
     class ReadCursor final

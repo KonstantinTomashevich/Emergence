@@ -49,9 +49,6 @@
      * \brief Deletes current item from collection and moves to next item.                                             \
      *                                                                                                                 \
      * \invariant Cursor should not point to ending.                                                                   \
-     *                                                                                                                 \
-     * \warning Item type is unknown during compile time, therefore appropriate                                        \
-     *          destructor should be called before item deletion.                                                      \
      */                                                                                                                \
     Class &operator~ () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */                 \
                                                                                                                        \

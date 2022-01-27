@@ -1,10 +1,10 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
-#include <vector>
 
 #include <Celerity/Pipeline.hpp>
+
+#include <Container/Vector.hpp>
 
 #include <Warehouse/Registry.hpp>
 
@@ -13,13 +13,13 @@ namespace Emergence::Celerity
 class World final
 {
 public:
-    explicit World (std::string _name) noexcept;
+    explicit World (Memory::UniqueString _name) noexcept;
 
     World (const World &_other) = delete;
 
     World (World &&_other) = delete;
 
-    ~World () = default;
+    ~World ();
 
     std::uintptr_t GetNextObjectId () noexcept;
 
@@ -35,8 +35,13 @@ private:
     friend class PipelineBuilder;
     friend class TaskConstructor;
 
+    Pipeline *AddPipeline (Memory::UniqueString _id,
+                           const Task::Collection &_collection,
+                           std::size_t _maximumChildThreads);
+
     Warehouse::Registry registry;
-    std::vector<std::unique_ptr<Pipeline>> pipelines;
+    Memory::Heap pipelineHeap;
+    Container::Vector<Pipeline *> pipelines;
     std::atomic_unsigned_lock_free objectIdCounter;
 };
 } // namespace Emergence::Celerity

@@ -1,6 +1,6 @@
 #include <Input/InputAction.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 InputAction::InputAction (const Emergence::Memory::UniqueString &_id,
                           const Emergence::Memory::UniqueString &_group) noexcept
@@ -44,9 +44,8 @@ const InputAction::Reflection &InputAction::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputAction)
-        // TODO: Right now we are registering unique strings as blocks. There must be better solution to this.
-        EMERGENCE_MAPPING_REGISTER_BLOCK (id)
-        EMERGENCE_MAPPING_REGISTER_BLOCK (group)
+        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (id)
+        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (group)
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (discrete)
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (real)
         EMERGENCE_MAPPING_REGISTRATION_END ()

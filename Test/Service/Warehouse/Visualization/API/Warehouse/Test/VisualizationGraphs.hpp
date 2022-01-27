@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <Visual/Graph.hpp>
 
 namespace Emergence::Warehouse::Test
@@ -9,7 +7,7 @@ namespace Emergence::Warehouse::Test
 struct VisualizationExpectedResult
 {
     VisualGraph::Graph registry;
-    std::vector<VisualGraph::Graph> queries;
+    Container::Vector<VisualGraph::Graph> queries;
 };
 
 namespace Graphs

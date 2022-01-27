@@ -1,8 +1,11 @@
 #pragma once
 
 #include <iostream>
-#include <string>
-#include <unordered_map>
+
+#include <Container/HashMap.hpp>
+#include <Container/String.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -19,35 +22,35 @@ namespace Tasks
 template <typename ObjectTag>
 struct Move
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 template <typename ObjectTag>
 struct Copy
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 template <typename ObjectTag>
 struct MoveAssign
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 template <typename ObjectTag>
 struct CopyAssign
 {
-    std::string sourceName;
-    std::string targetName;
+    Container::String sourceName;
+    Container::String targetName;
 };
 
 template <typename ObjectTag>
 struct Delete
 {
-    std::string name;
+    Container::String name;
 };
 } // namespace Tasks
 
@@ -56,11 +59,11 @@ struct Delete
 template <typename Object>
 struct ObjectStorage
 {
-    std::unordered_map<std::string, Object> objects;
+    Container::HashMap<Container::String, Object> objects;
 };
 
 template <typename Object, typename... Types>
-void AddObject (ObjectStorage<Object> &_storage, std::string _name, Types &&..._constructionArguments)
+void AddObject (ObjectStorage<Object> &_storage, Container::String _name, Types &&..._constructionArguments)
 {
     REQUIRE_WITH_MESSAGE (_storage.objects.find (_name) == _storage.objects.end (), "Object \"", _name,
                           "\" should not exist!");
@@ -68,7 +71,7 @@ void AddObject (ObjectStorage<Object> &_storage, std::string _name, Types &&..._
 }
 
 template <typename Object>
-Object &GetObject (ObjectStorage<Object> &_storage, const std::string &_name)
+Object &GetObject (ObjectStorage<Object> &_storage, const Container::String &_name)
 {
     auto iterator = _storage.objects.find (_name);
     REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _name, "\" should exist!");
@@ -76,7 +79,7 @@ Object &GetObject (ObjectStorage<Object> &_storage, const std::string &_name)
 }
 
 template <typename Object>
-void RemoveObject (ObjectStorage<Object> &_storage, const std::string &_name)
+void RemoveObject (ObjectStorage<Object> &_storage, const Container::String &_name)
 {
     auto iterator = _storage.objects.find (_name);
     REQUIRE_WITH_MESSAGE (iterator != _storage.objects.end (), "Object \"", _name, "\" should exist!");

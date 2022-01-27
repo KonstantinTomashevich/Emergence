@@ -7,6 +7,8 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/UniqueString.hpp>
+
 #include <StandardLayout/Field.hpp>
 
 namespace Emergence::StandardLayout
@@ -42,7 +44,13 @@ public:
     [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 
     /// \return Readable name for object type, described by this mapping.
-    [[nodiscard]] const char *GetName () const noexcept;
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
+
+    /// \brief If mapping has default constructor, executes it at given address.
+    void Construct (void *_address) const noexcept;
+
+    /// \brief If mapping has default destructor, executes it at given address.
+    void Destruct (void *_address) const noexcept;
 
     /// \return Pointer to meta of field with given id or `nullptr` if there is no such field.
     [[nodiscard]] Field GetField (FieldId _field) const noexcept;

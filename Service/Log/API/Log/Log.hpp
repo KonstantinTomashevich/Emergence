@@ -1,12 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
-#include <vector>
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
+
+#include <Container/StringBuilder.hpp>
+#include <Container/Vector.hpp>
+
+#include <Memory/Heap.hpp>
 
 namespace Emergence::Log
 {
@@ -44,7 +47,7 @@ struct StandardError final : public Base
 struct File final : public Base
 {
     /// \brief Name of target file.
-    std::string fileName;
+    Container::String fileName;
 
     /// \brief If true, file content will be cleared before writing any messages.
     bool overwrite = true;
@@ -61,7 +64,7 @@ public:
     /// \brief Constructs logger, that prints messages to given sinks.
     /// \param _forceFlushOn After message with this level or above appears, all messages will be flushed right away.
     /// \param _sinks List of sinks for this logger.
-    Logger (Level _forceFlushOn, const std::vector<Sink> &_sinks) noexcept;
+    Logger (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept;
 
     /// It looks counter intuitive to copy loggers.
     Logger (const Logger &_other) = delete;
@@ -73,7 +76,7 @@ public:
     /// \brief Logs message with given level. Thread safe.
     /// \details Not guaranteed to flush right away if _level is lower than force flush level.
     ///          If there is no messages with force flush level, logger is guaranteed to flush messages periodically.
-    void Log (Level _level, const std::string &_message) noexcept;
+    void Log (Level _level, const char *_message) noexcept;
 
     /// It looks counter intuitive to assign loggers.
     EMERGENCE_DELETE_ASSIGNMENT (Logger);
@@ -86,10 +89,17 @@ namespace GlobalLogger
 {
 /// \brief Initializes shared global logger instance.
 /// \invariant Should not be called more than once.
-void Init (Level _forceFlushOn = Level::ERROR, const std::vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
+void Init (Level _forceFlushOn = Level::ERROR,
+           const Container::Vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
 
 /// \brief Executes Logger::Log using global logger instance.
 /// \details If ::Init was not called previously, it would be called with default arguments.
-void Log (Level _level, const std::string &_message) noexcept;
+void Log (Level _level, const char *_message) noexcept;
 }; // namespace GlobalLogger
 } // namespace Emergence::Log
+
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::Log::Sink)
+
+/// \brief Shortcut for convenient logging through GlobalLogger using StringBuilder for concatenation.
+#define EMERGENCE_LOG(LogLevel, ...)                                                                                   \
+    Emergence::Log::GlobalLogger::Log (Emergence::Log::Level::LogLevel, EMERGENCE_BUILD_STRING (__VA_ARGS__))

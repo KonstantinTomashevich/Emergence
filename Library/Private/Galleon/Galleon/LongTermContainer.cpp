@@ -256,13 +256,13 @@ LongTermContainer::InsertQuery LongTermContainer::Insert () noexcept
 }
 
 LongTermContainer::FetchValueQuery LongTermContainer::FetchValue (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     return {this, AcquirePointRepresentation (_keyFields)};
 }
 
 LongTermContainer::ModifyValueQuery LongTermContainer::ModifyValue (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     return {this, AcquirePointRepresentation (_keyFields)};
 }
@@ -292,32 +292,44 @@ LongTermContainer::ModifyDescendingRangeQuery LongTermContainer::ModifyDescendin
 }
 
 LongTermContainer::FetchShapeIntersectionQuery LongTermContainer::FetchShapeIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::ModifyShapeIntersectionQuery LongTermContainer::ModifyShapeIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::FetchRayIntersectionQuery LongTermContainer::FetchRayIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
 LongTermContainer::ModifyRayIntersectionQuery LongTermContainer::ModifyRayIntersection (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     return {this, AcquireVolumetricRepresentation (_dimensions)};
 }
 
+void LongTermContainer::LastReferenceUnregistered () noexcept
+{
+    assert (deck);
+    deck->DetachContainer (this);
+}
+
+static RecordCollection::Collection ConstructInsideGroup (StandardLayout::Mapping _typeMapping)
+{
+    auto placeholder = Memory::Profiler::AllocationGroup {Memory::UniqueString {_typeMapping.GetName ()}}.PlaceOnTop ();
+    return RecordCollection::Collection {std::move (_typeMapping)};
+}
+
 LongTermContainer::LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
-      collection (typeMapping)
+      collection (ConstructInsideGroup (typeMapping))
 {
 }
 
@@ -338,7 +350,7 @@ RecordCollection::LinearRepresentation LongTermContainer::AcquireLinearRepresent
 }
 
 RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentation (
-    const std::vector<StandardLayout::FieldId> &_keyFields) noexcept
+    const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     for (auto iterator = collection.PointRepresentationBegin (); iterator != collection.PointRepresentationEnd ();
          ++iterator)
@@ -374,7 +386,7 @@ RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentat
 }
 
 RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricRepresentation (
-    const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
+    const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
     for (auto iterator = collection.VolumetricRepresentationBegin ();
          iterator != collection.VolumetricRepresentationEnd (); ++iterator)
@@ -427,11 +439,5 @@ RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricR
     }
 
     return collection.CreateVolumetricRepresentation (_dimensions);
-}
-
-LongTermContainer::~LongTermContainer () noexcept
-{
-    assert (deck);
-    deck->DetachContainer (this);
 }
 } // namespace Emergence::Galleon

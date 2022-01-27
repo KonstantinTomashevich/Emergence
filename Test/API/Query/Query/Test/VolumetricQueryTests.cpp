@@ -11,7 +11,7 @@ constexpr uint8_t FLAG_2D_SOURCE = 1u;
 
 constexpr uint8_t FLAG_3D_SOURCE = 1u << 1u;
 
-static Storage RequestBoundingBoxStorage (const std::vector<const void *> &_objects, uint8_t _sources)
+static Storage RequestBoundingBoxStorage (const Container::Vector<const void *> &_objects, uint8_t _sources)
 {
     Storage storage {BoundingBox::Reflect ().mapping, _objects, {}};
 
@@ -38,7 +38,7 @@ static Storage RequestBoundingBoxStorage (const std::vector<const void *> &_obje
     return storage;
 }
 
-static Storage RequestScreenRectStorage (const std::vector<const void *> &_objects)
+static Storage RequestScreenRectStorage (const Container::Vector<const void *> &_objects)
 {
     return {ScreenRect::Reflect ().mapping,
             _objects,

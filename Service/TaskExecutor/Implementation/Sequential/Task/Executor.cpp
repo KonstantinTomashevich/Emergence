@@ -1,5 +1,6 @@
 #include <cassert>
-#include <stack>
+
+#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Task/Executor.hpp>
 
@@ -21,14 +22,17 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (ExecutorImplementation);
 
 private:
-    std::vector<std::function<void ()>> orderedTasks;
+    Container::Vector<std::function<void ()>> orderedTasks;
 };
 
+using namespace Memory::Literals;
+
 ExecutorImplementation::ExecutorImplementation (const Collection &_collection) noexcept
+    : orderedTasks (Memory::Profiler::AllocationGroup::Top ())
 {
     orderedTasks.reserve (_collection.tasks.size ());
     // We can not use {count, value} constructor here, because some compilers parse it as initializer list.
-    std::vector<std::size_t> dependenciesLeft;
+    Container::Vector<std::size_t> dependenciesLeft {orderedTasks.get_allocator ()};
     dependenciesLeft.resize (_collection.tasks.size (), 0u);
 
     for (const Collection::Item &item : _collection.tasks)
@@ -40,12 +44,12 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         }
     }
 
-    std::stack<std::size_t> resolvedTasks;
+    Container::Vector<std::size_t> resolvedTasks {orderedTasks.get_allocator ()};
     for (std::size_t index = 0u; index < dependenciesLeft.size (); ++index)
     {
         if (dependenciesLeft[index] == 0u)
         {
-            resolvedTasks.push (index);
+            resolvedTasks.emplace_back (index);
         }
     }
 
@@ -53,8 +57,8 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
     while (!resolvedTasks.empty ())
     {
         ++resolvedTasksCount;
-        std::size_t taskIndex = resolvedTasks.top ();
-        resolvedTasks.pop ();
+        std::size_t taskIndex = resolvedTasks.back ();
+        resolvedTasks.pop_back ();
 
         assert (taskIndex < _collection.tasks.size ());
         orderedTasks.emplace_back (_collection.tasks[taskIndex].task);
@@ -63,7 +67,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         {
             if (--dependenciesLeft[dependantIndex] == 0u)
             {
-                resolvedTasks.push (dependantIndex);
+                resolvedTasks.emplace_back (dependantIndex);
             }
         }
     }
@@ -80,24 +84,43 @@ void ExecutorImplementation::Execute () const noexcept
     }
 }
 
-Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexcept
-    : handle (new ExecutorImplementation (_collection))
+struct InternalData final
 {
+    Memory::Heap heap {Memory::Profiler::AllocationGroup ("SequentialExecutor"_us)};
+    ExecutorImplementation *executor = nullptr;
+};
+
+Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexcept
+{
+    auto &internal = *new (&data) InternalData ();
+    auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
+    internal.executor =
+        new (internal.heap.Acquire (sizeof (ExecutorImplementation))) ExecutorImplementation (_collection);
 }
 
-Executor::Executor (Executor &&_other) noexcept : handle (_other.handle)
+Executor::Executor (Executor &&_other) noexcept
 {
-    _other.handle = nullptr;
+    auto &internal = *new (&data) InternalData ();
+    internal.executor = block_cast<InternalData> (_other.data).executor;
+    block_cast<InternalData> (_other.data).executor = nullptr;
 }
 
 Executor::~Executor () noexcept
 {
-    delete static_cast<ExecutorImplementation *> (handle);
+    auto &internal = block_cast<InternalData> (data);
+    if (internal.executor)
+    {
+        internal.executor->~ExecutorImplementation ();
+        internal.heap.Release (internal.executor, sizeof (ExecutorImplementation));
+    }
+
+    internal.~InternalData ();
 }
 
 void Executor::Execute () noexcept
 {
-    assert (handle);
-    static_cast<ExecutorImplementation *> (handle)->Execute ();
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.executor);
+    internal.executor->Execute ();
 }
 } // namespace Emergence::Task

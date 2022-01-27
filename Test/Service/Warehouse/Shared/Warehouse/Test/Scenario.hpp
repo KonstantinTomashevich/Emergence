@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <variant>
-#include <vector>
+
+#include <Container/String.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -23,7 +23,7 @@ using namespace Context::Extension::Tasks;
 struct QueryPreparationBase
 {
     StandardLayout::Mapping typeMapping;
-    std::string queryName;
+    Container::String queryName;
 };
 
 struct PrepareFetchSingletonQuery : public QueryPreparationBase
@@ -52,12 +52,12 @@ struct PrepareInsertLongTermQuery : public QueryPreparationBase
 
 struct PrepareFetchValueQuery : public QueryPreparationBase
 {
-    std::vector<StandardLayout::FieldId> keyFields;
+    Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareModifyValueQuery : public QueryPreparationBase
 {
-    std::vector<StandardLayout::FieldId> keyFields;
+    Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
 struct PrepareFetchAscendingRangeQuery : public QueryPreparationBase
@@ -82,28 +82,28 @@ struct PrepareModifyDescendingRangeQuery : public QueryPreparationBase
 
 struct PrepareFetchShapeIntersectionQuery : public QueryPreparationBase
 {
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareModifyShapeIntersectionQuery : public QueryPreparationBase
 {
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareFetchRayIntersectionQuery : public QueryPreparationBase
 {
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct PrepareModifyRayIntersectionQuery : public QueryPreparationBase
 {
-    std::vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
+    Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
 };
 
 struct InsertObjects
 {
-    std::string name;
-    std::vector<const void *> copyFrom;
+    Container::String name;
+    Container::Vector<const void *> copyFrom;
 };
 
 using Task = std::variant<PrepareFetchSingletonQuery,
@@ -158,7 +158,7 @@ namespace TestReferenceApiDrivers
 void ForPreparedQuery (const Reference::Test::Scenario &_scenario, const Task &_queryPreparation, const void *_object);
 
 void ForCursor (const Reference::Test::Scenario &_scenario,
-                const std::vector<Query::Test::Storage> &_environment,
+                const Container::Vector<Query::Test::Storage> &_environment,
                 const Query::Test::Task &_query,
                 const void *_cursorExpectedObject);
 } // namespace TestReferenceApiDrivers
@@ -168,19 +168,19 @@ struct Scenario final
     struct Visualization final
     {
         VisualGraph::Graph registry;
-        std::vector<VisualGraph::Graph> queries;
+        Container::Vector<VisualGraph::Graph> queries;
     };
 
     void Execute () const;
 
     [[nodiscard]] Visualization ExecuteAndVisualize () const;
 
-    std::vector<Task> tasks;
+    Container::Vector<Task> tasks;
 };
 
 std::ostream &operator<< (std::ostream &_output, const Scenario &_scenario);
 
-std::vector<Task> &operator+= (std::vector<Task> &_first, const std::vector<Task> &_second);
+Container::Vector<Task> &operator+= (Container::Vector<Task> &_first, const Container::Vector<Task> &_second);
 
-std::vector<Task> operator+ (std::vector<Task> _first, const Task &_task);
+Container::Vector<Task> operator+ (Container::Vector<Task> _first, const Task &_task);
 } // namespace Emergence::Warehouse::Test

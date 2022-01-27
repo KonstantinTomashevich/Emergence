@@ -1,8 +1,11 @@
 #include <thread>
-#include <vector>
+
+#include <Container/Vector.hpp>
 
 #include <Log/Log.hpp>
 #include <Log/Test/Shared.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 using namespace Emergence::Log;
 
@@ -10,7 +13,7 @@ void ThreadFunction (Logger &_logger, std::size_t _index)
 {
     auto log = [&_logger, _index] (Level _level, const char *_message)
     {
-        std::string message = Test::AddThreadIndexToMessage (_index, _message);
+        const char *message = Test::ConstructMessage (_index, _message).Get ();
         _logger.Log (_level, message);
         GlobalLogger::Log (_level, message);
     };
@@ -62,7 +65,7 @@ int main (int /*unused*/, char ** /*unused*/)
                              Sinks::File {{Test::CUSTOM_FILE_MINIMUM_LEVEL}, Test::CUSTOM_LOG_FILE_NAME},
                          }};
 
-    std::vector<std::thread> threads;
+    Emergence::Container::Vector<std::thread> threads;
     threads.reserve (Test::THREAD_COUNT);
 
     for (std::size_t index = 0u; index < Test::THREAD_COUNT; ++index)

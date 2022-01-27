@@ -6,6 +6,8 @@
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 namespace Emergence::Memory
 {
 /// \brief Allocator, that manages memory chunks with fixed size.
@@ -47,19 +49,19 @@ public:
         explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
     };
 
-    /// \param _chunkSize fixed chunk size.
+    /// \param _chunkSize Fixed chunk size.
     /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
-    explicit OrderedPool (std::size_t _chunkSize) noexcept;
+    explicit OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
     /// \see ::Pool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
-    OrderedPool (std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
 
-    /// \brief Copying memory pool contradicts with its usage practices.
+    /// Copying memory pool contradicts with its usage practices.
     OrderedPool (const OrderedPool &_other) = delete;
 
-    // \brief Captures pages of given pool and leaves that pool empty.
+    /// \brief Captures pages of given pool and leaves that pool empty.
     OrderedPool (OrderedPool &&_other) noexcept;
 
     ~OrderedPool () noexcept;
@@ -82,9 +84,6 @@ public:
     /// \warning Invalidates iterators.
     void Clear () noexcept;
 
-    /// \return How much memory pool currently holds?
-    [[nodiscard]] std::size_t GetAllocatedSpace () const noexcept;
-
     /// \return Iterator, that points to beginning of acquired chunks sequence.
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
@@ -97,6 +96,11 @@ public:
     /// \return Iterator, that points to ending of acquired chunks sequence.
     AcquiredChunkIterator EndAcquired () noexcept;
 
+    /// \return Allocation group to which this allocator belongs.
+    /// \warning Group will report zero memory usage if it is a placeholder or
+    ///          if executable is linked to no-profile implementation.
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
+
     /// \brief Copy assigning memory pool contradicts with its usage practices.
     OrderedPool &operator= (const OrderedPool &_other) = delete;
 
@@ -104,7 +108,7 @@ public:
     OrderedPool &operator= (OrderedPool &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
 };
 
 /// \brief Wraps Pool::BeginAcquired for foreach sentences.

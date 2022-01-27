@@ -43,6 +43,8 @@ Scenario OrderingDouble ();
 Scenario OrderingBlock ();
 
 Scenario OrderingString ();
+
+Scenario OrderingUniqueString ();
 } // namespace Emergence::Query::Test::RangeQuery
 
 #define REGISTER_RANGE_QUERY_TEST(Driver, TestName)                                                                    \
@@ -70,4 +72,5 @@ Scenario OrderingString ();
     REGISTER_RANGE_QUERY_TEST (Driver, OrderingFloat)                                                                  \
     REGISTER_RANGE_QUERY_TEST (Driver, OrderingDouble)                                                                 \
     REGISTER_RANGE_QUERY_TEST (Driver, OrderingBlock)                                                                  \
-    REGISTER_RANGE_QUERY_TEST (Driver, OrderingString)
+    REGISTER_RANGE_QUERY_TEST (Driver, OrderingString)                                                                 \
+    REGISTER_RANGE_QUERY_TEST (Driver, OrderingUniqueString)

@@ -1,6 +1,6 @@
 #include <Input/InputMapping.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 const KeyRequirement::Reflection &KeyRequirement::Reflect () noexcept
 {
@@ -34,7 +34,7 @@ const InputSubscription::Reflection &InputSubscription::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputSubscription)
-        EMERGENCE_MAPPING_REGISTER_BLOCK (group)
+        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (group)
         EMERGENCE_MAPPING_REGISTER_REGULAR (listenerId)
         EMERGENCE_MAPPING_REGISTRATION_END ()
     }();

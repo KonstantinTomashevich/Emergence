@@ -1,6 +1,6 @@
 #include <Input/InputListenerObject.hpp>
 
-#include <SyntaxSugar/MappingRegistration.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 const InputListenerObject::Reflection &InputListenerObject::Reflect () noexcept
 {

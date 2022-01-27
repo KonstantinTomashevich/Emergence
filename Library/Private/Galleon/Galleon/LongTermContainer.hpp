@@ -30,11 +30,8 @@ public:
 
             Cursor (Cursor &&_other) noexcept = default;
 
-            /// \invariant Previously allocated object must be initialized before cursor destruction.
             ~Cursor () noexcept = default;
 
-            /// \return Pointer to memory, allocated for the new object.
-            /// \invariant Previously allocated object must be initialized before next call.
             void *operator++ () noexcept;
 
             /// Assigning cursors looks counter intuitive.
@@ -308,9 +305,9 @@ public:
 
     InsertQuery Insert () noexcept;
 
-    FetchValueQuery FetchValue (const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    FetchValueQuery FetchValue (const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
-    ModifyValueQuery ModifyValue (const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    ModifyValueQuery ModifyValue (const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     FetchAscendingRangeQuery FetchAscendingRange (StandardLayout::FieldId _keyField) noexcept;
 
@@ -321,16 +318,18 @@ public:
     ModifyDescendingRangeQuery ModifyDescendingRange (StandardLayout::FieldId _keyField) noexcept;
 
     FetchShapeIntersectionQuery FetchShapeIntersection (
-        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     ModifyShapeIntersectionQuery ModifyShapeIntersection (
-        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     FetchRayIntersectionQuery FetchRayIntersection (
-        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     ModifyRayIntersectionQuery ModifyRayIntersection (
-        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+
+    void LastReferenceUnregistered () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (LongTermContainer);
 
@@ -338,16 +337,12 @@ private:
     /// CargoDeck constructs containers.
     friend class CargoDeck;
 
-    /// Only handles have right to destruct containers.
-    template <typename>
-    friend class Handling::Handle;
-
     /// VisualizationDriver for Warehouse service should be able to directly access ::collection.
     friend class VisualizationDriver;
 
     explicit LongTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
-    ~LongTermContainer () noexcept;
+    ~LongTermContainer () noexcept = default;
 
     RecordCollection::LinearRepresentation AcquireLinearRepresentation (StandardLayout::FieldId _keyField) noexcept;
 
@@ -356,10 +351,10 @@ private:
     //       There is same problem with volumetric query dimension reordering.
 
     RecordCollection::PointRepresentation AcquirePointRepresentation (
-        const std::vector<StandardLayout::FieldId> &_keyFields) noexcept;
+        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     RecordCollection::VolumetricRepresentation AcquireVolumetricRepresentation (
-        const std::vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
+        const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
     RecordCollection::Collection collection;
 };

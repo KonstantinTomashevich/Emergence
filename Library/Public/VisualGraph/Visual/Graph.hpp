@@ -1,8 +1,8 @@
 #pragma once
 
-#include <optional>
-#include <string>
-#include <vector>
+#include <Container/Optional.hpp>
+#include <Container/String.hpp>
+#include <Container/Vector.hpp>
 
 namespace Emergence::VisualGraph
 {
@@ -16,10 +16,10 @@ struct Node
     /// \brief Node local id in its graph.
     /// \invariant Unique among nodes of parent graph.
     /// \invariant Does not contain `"` or NODE_PATH_SEPARATOR characters.
-    std::string id;
+    Container::String id;
 
     /// \brief Custom label for node. If empty, ::id will be used instead.
-    std::optional<std::string> label;
+    Container::Optional<Container::String> label;
 
     bool operator== (const Node &_other) const = default;
 };
@@ -29,14 +29,14 @@ struct Edge
 {
     /// \brief Specifies node, from which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
-    std::string from;
+    Container::String from;
 
     /// \brief Specifies node, to which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
-    std::string to;
+    Container::String to;
 
     /// \brief Specifies custom fill color for this edge.
-    std::optional<std::string> color;
+    Container::Optional<Container::String> color;
 
     bool operator== (const Edge &_other) const = default;
 };
@@ -81,23 +81,25 @@ struct Graph
     /// \brief Graph local id.
     /// \invariant Unique among other subgraphs, that belong to the same parent.
     /// \invariant Does not contain `"` or NODE_PATH_SEPARATOR characters.
-    std::string id;
+    Container::String id;
 
     /// \brief Custom label for graph. If empty, ::id will be used instead.
-    std::optional<std::string> label;
+    Container::Optional<Container::String> label;
 
     /// \brief Child graphs, that should be drawn as internal clusters.
-    std::vector<Graph> subgraphs;
+    Container::Vector<Graph> subgraphs;
 
     /// \brief Nodes of this graph.
-    std::vector<Node> nodes;
+    Container::Vector<Node> nodes;
 
     /// \brief Edges, declared by this graph.
     /// \warning Other graphs can add edges with nodes from this graph using relative or absolute node paths.
-    std::vector<Edge> edges;
+    Container::Vector<Edge> edges;
 
     bool operator== (const Graph &_other) const = default;
 };
+
+Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
 
 /// \brief Contains common constants for graphs, that are created from Emergence libraries and services.
 namespace Common::Constants
@@ -135,3 +137,7 @@ constexpr const char *WAREHOUSE_REGISTRY_ROOT_NODE = ".";
 constexpr const char *WAREHOUSE_QUERY_ROOT_NODE = ".";
 } // namespace Common::Constants
 } // namespace Emergence::VisualGraph
+
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Node)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Edge)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Graph)

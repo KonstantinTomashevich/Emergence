@@ -5,7 +5,7 @@ namespace Emergence::Query::Test::UnorderedSequenceQuery
 {
 using namespace Tasks;
 
-Storage RequestStorage (const std::vector<const void *> &_objects)
+Storage RequestStorage (const Container::Vector<const void *> &_objects)
 {
     return {Player::Reflect ().mapping, _objects, {Sources::UnorderedSequence {"sequence"}}};
 }
@@ -13,25 +13,28 @@ Storage RequestStorage (const std::vector<const void *> &_objects)
 Scenario Read ()
 {
     return {{
-                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
+                RequestStorage (
+                    {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED, &XAVIER_2_ARCHER_ALIVE_POISONED}),
             },
             {QueryUnorderedSequenceToRead {{"sequence", "cursor"}},
-             CursorCheckAllUnordered {"cursor",
-                                      {&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}}}};
+             CursorCheckAllUnordered {
+                 "cursor",
+                 {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED, &XAVIER_2_ARCHER_ALIVE_POISONED}}}};
 }
 
 Scenario Edit ()
 {
     return {{
-                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
+                RequestStorage (
+                    {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED, &XAVIER_2_ARCHER_ALIVE_POISONED}),
             },
             {QueryUnorderedSequenceToEdit {{"sequence", "cursor"}},
              // clang-format off
-             CursorEdit {"cursor", &KARL_0_ALIVE_IMMOBILIZED},
+             CursorEdit {"cursor", &KARL_0_MAGE_ALIVE_IMMOBILIZED},
              CursorIncrement {"cursor"},
-             CursorEdit {"cursor", &KARL_0_ALIVE_IMMOBILIZED},
+             CursorEdit {"cursor", &KARL_0_MAGE_ALIVE_IMMOBILIZED},
              CursorIncrement {"cursor"},
-             CursorEdit {"cursor", &XAVIER_2_ALIVE_POISONED},
+             CursorEdit {"cursor", &XAVIER_2_ARCHER_ALIVE_POISONED},
              CursorIncrement {"cursor"},
              CursorCheck {"cursor", nullptr},
              CursorClose {"cursor"},
@@ -39,13 +42,15 @@ Scenario Edit ()
 
              QueryUnorderedSequenceToRead {{"sequence", "cursor"}},
              CursorCheckAllUnordered {
-                 "cursor", {&KARL_0_ALIVE_IMMOBILIZED, &KARL_0_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}}}};
+                 "cursor",
+                 {&KARL_0_MAGE_ALIVE_IMMOBILIZED, &KARL_0_MAGE_ALIVE_IMMOBILIZED, &XAVIER_2_ARCHER_ALIVE_POISONED}}}};
 }
 
 Scenario Delete ()
 {
     return {{
-                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
+                RequestStorage (
+                    {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED, &XAVIER_2_ARCHER_ALIVE_POISONED}),
             },
             {QueryUnorderedSequenceToEdit {{"sequence", "cursor"}},
              // clang-format off
@@ -63,20 +68,21 @@ Scenario Delete ()
 Scenario EditAndDelete ()
 {
     return {{
-                RequestStorage ({&HUGO_0_ALIVE_STUNNED, &KARL_1_ALIVE_IMMOBILIZED, &XAVIER_2_ALIVE_POISONED}),
+                RequestStorage (
+                    {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED, &XAVIER_2_ARCHER_ALIVE_POISONED}),
             },
             {QueryUnorderedSequenceToEdit {{"sequence", "cursor"}},
              // clang-format off
-             CursorEdit {"cursor", &KARL_0_ALIVE_IMMOBILIZED},
+             CursorEdit {"cursor", &KARL_0_MAGE_ALIVE_IMMOBILIZED},
              CursorIncrement {"cursor"},
-             CursorEdit {"cursor", &XAVIER_2_ALIVE_POISONED},
+             CursorEdit {"cursor", &XAVIER_2_ARCHER_ALIVE_POISONED},
              CursorDeleteObject {"cursor"},
-             CursorEdit {"cursor", &HUGO_0_ALIVE_STUNNED},
+             CursorEdit {"cursor", &HUGO_0_KNIGHT_ALIVE_STUNNED},
              CursorIncrement {"cursor"}, CursorCheck {"cursor", nullptr},
              CursorClose {"cursor"},
              // clang-format on
 
              QueryUnorderedSequenceToRead {{"sequence", "cursor"}},
-             CursorCheckAllUnordered {"cursor", {&HUGO_0_ALIVE_STUNNED, &KARL_0_ALIVE_IMMOBILIZED}}}};
+             CursorCheckAllUnordered {"cursor", {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_0_MAGE_ALIVE_IMMOBILIZED}}}};
 }
 } // namespace Emergence::Query::Test::UnorderedSequenceQuery

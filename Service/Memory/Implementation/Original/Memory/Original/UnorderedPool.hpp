@@ -4,6 +4,9 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/UniqueString.hpp>
+
 namespace Emergence::Memory::Original
 {
 class UnorderedPool final
@@ -14,7 +17,7 @@ private:
     struct Chunk;
 
 public:
-    UnorderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept;
+    UnorderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept;
 
     UnorderedPool (const UnorderedPool &_other) = delete;
 
@@ -28,7 +31,7 @@ public:
 
     void Clear () noexcept;
 
-    [[nodiscard]] size_t GetAllocatedSpace () const noexcept;
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (UnorderedPool);
 
@@ -54,8 +57,12 @@ private:
 
     const size_t pageCapacity;
     const size_t chunkSize;
-    size_t pageCount;
     Page *topPage;
     Chunk *topFreeChunk;
+
+    /// \brief Acquired chunk counter required to correctly log memory usage for profiling.
+    std::size_t acquiredChunkCount;
+
+    Profiler::AllocationGroup group;
 };
 } // namespace Emergence::Memory::Original

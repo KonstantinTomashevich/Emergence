@@ -1,18 +1,19 @@
 #pragma once
 
-#include <vector>
-
 #include <API/Common/Cursor.hpp>
+
+#include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
 
 #include <Handling/HandleableBase.hpp>
 
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
-#include <SyntaxSugar/InplaceVector.hpp>
-
 namespace Emergence::Pegasus
 {
+using namespace Memory::Literals;
+
 class VolumetricIndex final : public IndexBase
 {
 private:
@@ -73,6 +74,8 @@ public:
 
         SupportedAxisValue globalMaxBorder = 0u;
     };
+
+    using DimensionVector = Container::InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS>;
 
     /// Used only for index construction. ::Dimension is according dimension representation of constructed index.
     struct DimensionDescriptor final
@@ -170,7 +173,12 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        std::vector<bool> visitedRecords;
+
+        // TODO: Think about reworking ::visitedRecords mechanism.
+        //       Allocating huge vector on every query call is disgusting.
+
+        Container::Vector<bool> visitedRecords {
+            Memory::Profiler::AllocationGroup {"ShapeIntersectionVisitationMask"_us}};
     };
 
     class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
@@ -254,7 +262,7 @@ public:
 
         LeafCoordinate currentCoordinate;
         std::size_t currentRecordIndex;
-        std::vector<bool> visitedRecords;
+        Container::Vector<bool> visitedRecords {Memory::Profiler::AllocationGroup {"RayIntersectionVisitationMask"_us}};
     };
 
     class RayIntersectionReadCursor final : private RayIntersectionCursorBase
@@ -287,9 +295,7 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     VolumetricIndex (VolumetricIndex &&_other) = delete;
 
-    ~VolumetricIndex () = default;
-
-    const InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> &GetDimensions () const noexcept;
+    const DimensionVector &GetDimensions () const noexcept;
 
     ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShapeContainer &_shape) noexcept;
 
@@ -323,15 +329,17 @@ private:
 
     struct LeafData final
     {
-        std::vector<RecordData> records;
+        Container::Vector<RecordData> records;
 
-        std::vector<RecordData>::iterator FindRecord (const void *_record) noexcept;
+        Container::Vector<RecordData>::iterator FindRecord (const void *_record) noexcept;
 
         /// \brief Deletes record from leaf using "exchange with last" strategy.
-        void DeleteRecord (const std::vector<RecordData>::iterator &_recordIterator) noexcept;
+        void DeleteRecord (const Container::Vector<RecordData>::iterator &_recordIterator) noexcept;
     };
 
-    VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept;
+    VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept;
+
+    ~VolumetricIndex () = default;
 
     template <typename Operations>
     LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
@@ -378,12 +386,12 @@ private:
 
     void OnWriterClosed () noexcept;
 
-    InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS> dimensions;
+    DimensionVector dimensions;
 
     // TODO: For now we use simplified approach and work only with leaves, therefore reducing octree into grid.
     //       This approach is problematic because it significantly limits count of subdivisions.
-    std::vector<LeafData> leaves;
-    std::vector<std::size_t> freeRecordIds;
+    Container::Vector<LeafData> leaves;
+    Container::Vector<std::size_t> freeRecordIds;
     std::size_t nextRecordId;
 };
 

@@ -4,6 +4,8 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 namespace Emergence::Memory
 {
 /// \brief Allocator, that manages preallocated memory block through stack-like interface.
@@ -14,7 +16,7 @@ class Stack final
 {
 public:
     /// \param _capacity Stack capacity in bytes.
-    explicit Stack (size_t _capacity) noexcept;
+    explicit Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -38,7 +40,13 @@ public:
     void Clear () noexcept;
 
     /// \return How many free bytes left?
+    /// \details Not based on memory profiler implementation, therefore guaranteed to be always correct.
     [[nodiscard]] size_t GetFreeSize () const noexcept;
+
+    /// \return Allocation group to which this allocator belongs.
+    /// \warning Group will report zero memory usage if it is a placeholder or
+    ///          if executable is linked to no-profile implementation.
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     /// \brief Copy assigning stack contradicts with its usage practices.
     Stack &operator= (const Stack &_other) = delete;
@@ -47,6 +55,6 @@ public:
     Stack &operator= (Stack &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
 };
 } // namespace Emergence::Memory

@@ -4,12 +4,15 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+#include <Memory/UniqueString.hpp>
+
 namespace Emergence::Memory::Original
 {
 class Stack final
 {
 public:
-    explicit Stack (size_t _capacity) noexcept;
+    explicit Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -27,11 +30,14 @@ public:
 
     [[nodiscard]] size_t GetFreeSize () const noexcept;
 
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (Stack);
 
 private:
     void *start = nullptr;
     void *end = nullptr;
     void *head = nullptr;
+    Profiler::AllocationGroup group;
 };
 } // namespace Emergence::Memory::Original

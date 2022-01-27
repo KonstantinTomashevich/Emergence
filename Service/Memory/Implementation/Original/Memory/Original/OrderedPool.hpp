@@ -5,6 +5,8 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 namespace Emergence::Memory::Original
 {
 class OrderedPool final
@@ -46,7 +48,7 @@ public:
         AcquiredChunkConstIterator base;
     };
 
-    OrderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept;
 
     OrderedPool (const OrderedPool &_other) = delete;
 
@@ -62,8 +64,6 @@ public:
 
     void Clear () noexcept;
 
-    [[nodiscard]] size_t GetAllocatedSpace () const noexcept;
-
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
     [[nodiscard]] AcquiredChunkConstIterator EndAcquired () const noexcept;
@@ -71,6 +71,8 @@ public:
     [[nodiscard]] AcquiredChunkIterator BeginAcquired () noexcept;
 
     [[nodiscard]] AcquiredChunkIterator EndAcquired () noexcept;
+
+    [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (OrderedPool);
 
@@ -96,8 +98,12 @@ private:
 
     const size_t pageCapacity;
     const size_t chunkSize;
-    size_t pageCount;
     Page *topPage;
     Chunk *topFreeChunk;
+
+    /// \brief Acquired chunk counter required to correctly log memory usage for profiling.
+    std::size_t acquiredChunkCount;
+
+    Profiler::AllocationGroup group;
 };
 } // namespace Emergence::Memory::Original

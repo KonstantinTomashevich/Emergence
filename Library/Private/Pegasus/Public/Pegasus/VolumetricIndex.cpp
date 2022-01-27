@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cassert>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
@@ -114,6 +116,7 @@ auto DoWithCorrectTypeOperations (const StandardLayout::Field &_field, const Cal
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
     case StandardLayout::FieldArchetype::STRING:
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
     {
         break;
     }
@@ -209,9 +212,10 @@ VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
       sector (_sector),
       shape (_shape),
       currentCoordinate (sector.min),
-      currentRecordIndex (0u),
-      visitedRecords (index->nextRecordId, false)
+      currentRecordIndex (0u)
 {
+    visitedRecords.resize (index->nextRecordId, false);
+
     assert (index);
 #ifndef NDEBUG
     std::size_t maxCoordinate = GetMaxLeafCoordinateOnAxis (index->dimensions.GetCount ());
@@ -448,9 +452,9 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (Volumetri
       distanceTraveled (0.0f),
       ray (_ray),
       maxDistance (_maxDistance),
-      currentRecordIndex (0u),
-      visitedRecords (index->nextRecordId, false)
+      currentRecordIndex (0u)
 {
+    visitedRecords.resize (index->nextRecordId, false);
     assert (index);
     assert (maxDistance >= 0.0f);
     ++index->activeCursors;
@@ -759,8 +763,7 @@ void VolumetricIndex::RayIntersectionEditCursor::BeginRecordEdition () const noe
     }
 }
 
-const InplaceVector<VolumetricIndex::Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS>
-    &VolumetricIndex::GetDimensions () const noexcept
+const VolumetricIndex::DimensionVector &VolumetricIndex::GetDimensions () const noexcept
 {
     return dimensions;
 }
@@ -806,7 +809,8 @@ void VolumetricIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
-std::vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (const void *_record) noexcept
+Container::Vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::FindRecord (
+    const void *_record) noexcept
 {
     return std::find_if (records.begin (), records.end (),
                          [_record] (const RecordData &_data)
@@ -816,7 +820,7 @@ std::vector<VolumetricIndex::RecordData>::iterator VolumetricIndex::LeafData::Fi
 }
 
 void VolumetricIndex::LeafData::DeleteRecord (
-    const std::vector<VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
+    const Container::Vector<VolumetricIndex::RecordData>::iterator &_recordIterator) noexcept
 {
     assert (_recordIterator != records.end ());
     if (_recordIterator + 1u != records.end ())
@@ -827,17 +831,21 @@ void VolumetricIndex::LeafData::DeleteRecord (
     records.pop_back ();
 }
 
-VolumetricIndex::VolumetricIndex (Storage *_storage, const std::vector<DimensionDescriptor> &_dimensions) noexcept
-    : IndexBase (_storage),
+using namespace Memory::Literals;
 
+VolumetricIndex::VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
+    : IndexBase (_storage),
+      leaves (Memory::Profiler::AllocationGroup {"Leaves"_us}),
+      freeRecordIds (Memory::Profiler::AllocationGroup {"FreeRecordsIds"_us}),
       nextRecordId (0u)
 {
     assert (!_dimensions.empty ());
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
 
-    std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
+    const std::size_t dimensionCount = std::min (_dimensions.size (), Constants::VolumetricIndex::MAX_DIMENSIONS);
     leaves.resize (
-        std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)));
+        std::size_t (1u) << (dimensionCount * (Constants::VolumetricIndex::LEVELS[dimensionCount - 1u] - 1u)),
+        LeafData {.records {leaves.get_allocator ()}});
 
 #ifndef NDEBUG
     // Current implementation expects that all fields have same archetype and size.

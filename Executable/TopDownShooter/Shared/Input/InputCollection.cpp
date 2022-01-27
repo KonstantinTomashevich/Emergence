@@ -6,22 +6,27 @@ BEGIN_MUTING_WARNINGS
 #include <OgreInput.h>
 END_MUTING_WARNINGS
 
+#include <Container/Vector.hpp>
+
 #include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/InputCollection.hpp>
 #include <Input/InputListenerObject.hpp>
 #include <Input/NormalInputMappingSingleton.hpp>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 #include <Shared/Checkpoint.hpp>
 
 namespace InputCollection
 {
-class InputCollector final : public OgreBites::InputListener
+class InputCollector final : public Emergence::Celerity::TaskExecutorBase<InputCollector>,
+                             public OgreBites::InputListener
 {
 public:
-    InputCollector (OgreBites::ApplicationContextBase *_application,
+    InputCollector (Emergence::Celerity::TaskConstructor &_constructor,
+                    OgreBites::ApplicationContextBase *_application,
                     const Emergence::StandardLayout::Mapping &_singleton,
-                    Emergence::StandardLayout::FieldId _mappingField,
-                    Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+                    Emergence::StandardLayout::FieldId _mappingField) noexcept;
 
     InputCollector (const InputCollector &_other) = delete;
 
@@ -45,13 +50,15 @@ private:
     OgreBites::ApplicationContextBase *application;
     Emergence::StandardLayout::Mapping singleton;
     Emergence::StandardLayout::Field mappingField;
-    std::vector<InputAction> frameActionsBuffer;
+    Emergence::Container::Vector<InputAction> frameActionsBuffer;
 };
 
-InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
+using namespace Emergence::Memory::Literals;
+
+InputCollector::InputCollector (Emergence::Celerity::TaskConstructor &_constructor,
+                                OgreBites::ApplicationContextBase *_application,
                                 const Emergence::StandardLayout::Mapping &_singleton,
-                                Emergence::StandardLayout::FieldId _mappingField,
-                                Emergence::Celerity::TaskConstructor &_constructor) noexcept
+                                Emergence::StandardLayout::FieldId _mappingField) noexcept
     : modifySingleton (_constructor.ModifySingleton (_singleton)),
       modifyListenersById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
                                                      {InputListenerObject::Reflect ().objectId})),
@@ -59,7 +66,8 @@ InputCollector::InputCollector (OgreBites::ApplicationContextBase *_application,
                                                           InputListenerObject::Reflect ().objectId)),
       application (_application),
       singleton (_singleton),
-      mappingField (_singleton.GetField (_mappingField))
+      mappingField (_singleton.GetField (_mappingField)),
+      frameActionsBuffer (Emergence::Memory::Profiler::AllocationGroup {"FrameActionsBuffer"_us})
 {
     assert (_application);
     assert (mappingField.GetNestedObjectMapping () == InputMapping::Reflect ().mapping);
@@ -178,25 +186,16 @@ bool InputCollector::keyReleased (const OgreBites::KeyboardEvent &_event)
 void AddFixedUpdateTask (OgreBites::ApplicationContextBase *_application,
                          Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector");
-    constructor.SetExecutor (
-        [state {std::make_shared<InputCollector> (_application, FixedInputMappingSingleton::Reflect ().mapping,
-                                                  FixedInputMappingSingleton::Reflect ().inputMapping, constructor)}] ()
-        {
-            state->Execute ();
-        });
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector"_us);
+    constructor.SetExecutor<InputCollector> (_application, FixedInputMappingSingleton::Reflect ().mapping,
+                                             FixedInputMappingSingleton::Reflect ().inputMapping);
 }
 
 void AddNormalUpdateTask (OgreBites::ApplicationContextBase *_application,
                           Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector");
-    constructor.SetExecutor (
-        [state {std::make_shared<InputCollector> (_application, NormalInputMappingSingleton::Reflect ().mapping,
-                                                  NormalInputMappingSingleton::Reflect ().inputMapping,
-                                                  constructor)}] ()
-        {
-            state->Execute ();
-        });
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("InputCollector"_us);
+    constructor.SetExecutor<InputCollector> (_application, NormalInputMappingSingleton::Reflect ().mapping,
+                                             NormalInputMappingSingleton::Reflect ().inputMapping);
 }
 } // namespace InputCollection

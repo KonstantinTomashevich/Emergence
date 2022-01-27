@@ -100,27 +100,35 @@ SingletonContainer::ModifyQuery SingletonContainer::Modify () noexcept
     return ModifyQuery (this);
 }
 
-SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
-    : ContainerBase (_deck, std::move (_typeMapping))
-{
-    // Fill singleton storage with zeros even in release builds
-    // to make uninitialized-access checking and debugging easier.
-    memset (&storage, 0u, typeMapping.GetObjectSize ());
-}
-
-SingletonContainer::~SingletonContainer () noexcept
+void SingletonContainer::LastReferenceUnregistered () noexcept
 {
     assert (deck);
     deck->DetachContainer (this);
 }
 
-void *SingletonContainer::operator new (std::size_t /*unused*/, const StandardLayout::Mapping &_typeMapping) noexcept
+SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
+    : ContainerBase (_deck, std::move (_typeMapping)),
+      usedAllocationGroup (typeMapping.GetName ())
 {
-    return malloc (sizeof (SingletonContainer) + _typeMapping.GetObjectSize ());
+    auto placeholder = usedAllocationGroup.PlaceOnTop ();
+    typeMapping.Construct (&storage);
+
+    // Move singleton memory usage from parent group into our internal group.
+    usedAllocationGroup.Parent ().Release (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Parent ().Free (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Allocate (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Acquire (typeMapping.GetObjectSize ());
 }
 
-void SingletonContainer::operator delete (void *_pointer) noexcept
+SingletonContainer::~SingletonContainer () noexcept
 {
-    free (_pointer);
+    typeMapping.Destruct (&storage);
+
+    // Move singleton memory usage from internal group into parent group, because it was actually acquired
+    // from parent allocator. Otherwise, profiler will detect deallocation of unregistered memory and crash.
+    usedAllocationGroup.Release (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Free (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Parent ().Allocate (typeMapping.GetObjectSize ());
+    usedAllocationGroup.Parent ().Acquire (typeMapping.GetObjectSize ());
 }
 } // namespace Emergence::Galleon

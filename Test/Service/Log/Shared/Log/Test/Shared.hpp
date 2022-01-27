@@ -1,7 +1,8 @@
 #pragma once
 
-#include <optional>
-#include <string>
+#include <Container/Optional.hpp>
+#include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 
 #include <Log/Log.hpp>
 
@@ -32,7 +33,7 @@ constexpr const char *WARNING_MESSAGE = "Warning message";
 constexpr const char *ERROR_MESSAGE = "Error message";
 constexpr const char *CRITICAL_ERROR_MESSAGE = "Critical error message";
 
-std::string AddThreadIndexToMessage (std::size_t _index, const char *_message);
+Container::StringBuilder ConstructMessage (std::size_t _index, const char *_message);
 
-std::optional<std::size_t> ExtractThreadIndexFromMessage (const std::string &_message);
+Container::Optional<std::size_t> ExtractThreadIndexFromMessage (const Container::String &_message);
 } // namespace Emergence::Log::Test

@@ -148,12 +148,13 @@ OrderedPool::AcquiredChunkIterator::AcquiredChunkIterator (AcquiredChunkConstIte
 {
 }
 
-OrderedPool::OrderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept
+OrderedPool::OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept
     : pageCapacity (_pageCapacity),
       chunkSize (_chunkSize),
-      pageCount (0u),
       topPage (nullptr),
-      topFreeChunk (nullptr)
+      topFreeChunk (nullptr),
+      acquiredChunkCount (0u),
+      group (std::move (_group))
 {
     assert (_pageCapacity > 0u);
     assert (_chunkSize >= sizeof (Chunk));
@@ -162,13 +163,14 @@ OrderedPool::OrderedPool (size_t _chunkSize, size_t _pageCapacity) noexcept
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
     : pageCapacity (_other.pageCapacity),
       chunkSize (_other.chunkSize),
-      pageCount (_other.pageCount),
       topPage (_other.topPage),
-      topFreeChunk (_other.topFreeChunk)
+      topFreeChunk (_other.topFreeChunk),
+      acquiredChunkCount (_other.acquiredChunkCount),
+      group (std::move (_other.group))
 {
-    _other.pageCount = 0u;
     _other.topPage = nullptr;
     _other.topFreeChunk = nullptr;
+    _other.acquiredChunkCount = 0u;
 }
 
 OrderedPool::~OrderedPool () noexcept
@@ -180,6 +182,9 @@ void *OrderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
+        group.Allocate (sizeof (Page) + pageCapacity * chunkSize);
+        group.Acquire (sizeof (Page));
+
         Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
         Page *insertPageBefore = topPage;
         Page *insertPageAfter = nullptr;
@@ -210,17 +215,18 @@ void *OrderedPool::Acquire () noexcept
 
         currentChunk->nextFree = nullptr;
         topFreeChunk = &newPage->chunks[0u];
-        assert (pageCount + 1u > pageCount);
-        ++pageCount;
     }
 
+    group.Acquire (chunkSize);
     Chunk *acquired = topFreeChunk;
     topFreeChunk = acquired->nextFree;
+    ++acquiredChunkCount;
     return acquired;
 }
 
 void OrderedPool::Release (void *_chunk) noexcept
 {
+    group.Release (chunkSize);
     auto *chunk = static_cast<Chunk *> (_chunk);
     Chunk *insertChunkAfter = nullptr;
     Chunk *insertChunkBefore = topFreeChunk;
@@ -240,6 +246,9 @@ void OrderedPool::Release (void *_chunk) noexcept
     {
         topFreeChunk = chunk;
     }
+
+    assert (acquiredChunkCount > 0u);
+    --acquiredChunkCount;
 }
 
 void OrderedPool::Shrink () noexcept
@@ -270,9 +279,11 @@ void OrderedPool::Shrink () noexcept
             // All chunks in current page are free, therefore we can safely release it.
             Page *nextPage = currentPage->next;
             free (currentPage);
-            currentPage = nextPage;
-            --pageCount;
 
+            group.Release (sizeof (Page));
+            group.Free (sizeof (Page) + pageCapacity * chunkSize);
+
+            currentPage = nextPage;
             if (previousPage)
             {
                 previousPage->next = currentPage;
@@ -292,15 +303,20 @@ void OrderedPool::Shrink () noexcept
 
 void OrderedPool::Clear () noexcept
 {
+    group.Release (chunkSize * acquiredChunkCount);
+    acquiredChunkCount = 0u;
     Page *page = topPage;
+
     while (page)
     {
+        group.Release (sizeof (Page));
+        group.Free (sizeof (Page) + pageCapacity * chunkSize);
+
         Page *next = page->next;
         free (page);
         page = next;
     }
 
-    pageCount = 0u;
     topPage = nullptr;
     topFreeChunk = nullptr;
 }
@@ -326,8 +342,8 @@ OrderedPool::AcquiredChunkIterator OrderedPool::EndAcquired () noexcept
     return AcquiredChunkIterator {const_cast<const OrderedPool *> (this)->EndAcquired ()};
 }
 
-size_t OrderedPool::GetAllocatedSpace () const noexcept
+const Profiler::AllocationGroup &OrderedPool::GetAllocationGroup () const noexcept
 {
-    return pageCount * pageCapacity * chunkSize;
+    return group;
 }
 } // namespace Emergence::Memory::Original

@@ -1,17 +1,20 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
-#include <unordered_map>
 #include <variant>
 
 BEGIN_MUTING_WARNINGS
 #include <OgreInput.h>
 END_MUTING_WARNINGS
 
+#include <Container/Vector.hpp>
+
 #include <Log/Log.hpp>
 
 #include <Input/InputCollection.hpp>
 #include <Input/InputListenerObject.hpp>
 #include <Input/NormalInputMappingSingleton.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
@@ -23,6 +26,7 @@ END_MUTING_WARNINGS
 
 using namespace Emergence::Celerity;
 
+using namespace Emergence::Container;
 using namespace Emergence::Memory::Literals;
 
 bool InputTestIncludeMarker () noexcept
@@ -70,17 +74,17 @@ using ConfiguratorStep = std::variant<Steps::CreateListener,
                                       Steps::UnsubscribeGroup,
                                       Steps::FireEvent>;
 
-using FrameConfiguration = std::vector<ConfiguratorStep>;
+using FrameConfiguration = Emergence::Container::Vector<ConfiguratorStep>;
 
-class Configurator final
+class Configurator final : public TaskExecutorBase<Configurator>
 {
 public:
-    Configurator (std::vector<FrameConfiguration> _steps, TaskConstructor &_constructor);
+    Configurator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameConfiguration> _steps);
 
     void Execute ();
 
 private:
-    std::vector<FrameConfiguration> steps;
+    Emergence::Container::Vector<FrameConfiguration> steps;
     std::size_t framesConfigured = 0u;
 
     Emergence::Warehouse::InsertLongTermQuery createListener;
@@ -88,7 +92,7 @@ private:
     Emergence::Warehouse::ModifySingletonQuery modifyInputMapping;
 };
 
-Configurator::Configurator (std::vector<FrameConfiguration> _steps, TaskConstructor &_constructor)
+Configurator::Configurator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameConfiguration> _steps)
     : steps (std::move (_steps)),
       createListener (_constructor.InsertLongTerm (InputListenerObject::Reflect ().mapping)),
       modifyListenerById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
@@ -100,11 +104,8 @@ Configurator::Configurator (std::vector<FrameConfiguration> _steps, TaskConstruc
 
 void Configurator::Execute ()
 {
-    using namespace Emergence::Log;
     REQUIRE (framesConfigured < steps.size ());
-    // TODO: In tests it's ok to create myriads of strings just for logging.
-    //       But for runtime logging we need special stack allocator which is cleared every frame.
-    GlobalLogger::Log (Level::INFO, "[Configurator] Sequence " + std::to_string (framesConfigured));
+    EMERGENCE_LOG (INFO, "[Configurator] Sequence ", framesConfigured);
 
     for (const ConfiguratorStep &step : steps[framesConfigured])
     {
@@ -114,27 +115,22 @@ void Configurator::Execute ()
                 using Type = std::decay_t<decltype (_step)>;
                 if constexpr (std::is_same_v<Type, Steps::CreateListener>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       "[Configurator] Create listener " + std::to_string (_step.id) + ".");
-
+                    EMERGENCE_LOG (INFO, "[Configurator] Create listener ", _step.id, ".");
                     auto cursor = createListener.Execute ();
                     (new (++cursor) InputListenerObject ())->objectId = _step.id;
                 }
                 else if constexpr (std::is_same_v<Type, Steps::DeleteListener>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       "[Configurator] Delete listener " + std::to_string (_step.id) + ".");
-
+                    EMERGENCE_LOG (INFO, "[Configurator] Delete listener ", _step.id, ".");
                     auto cursor = modifyListenerById.Execute (&_step.id);
-                    REQUIRE (*cursor != nullptr);
+                    REQUIRE (*cursor);
                     ~cursor;
-                    REQUIRE (*cursor == nullptr);
+                    REQUIRE (!*cursor);
                 }
                 else if constexpr (std::is_same_v<Type, Steps::AddSubscription>)
                 {
-                    GlobalLogger::Log (Level::INFO, "[Configurator] Subscribe listener " +
-                                                        std::to_string (_step.subscription.listenerId) +
-                                                        " to group \"" + *_step.subscription.group + "\".");
+                    EMERGENCE_LOG (INFO, "[Configurator] Subscribe listener ", _step.subscription.listenerId,
+                                   " to group \"", _step.subscription.group, "\".");
 
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
@@ -142,28 +138,22 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeListener>)
                 {
-                    GlobalLogger::Log (Level::INFO,
-                                       "[Configurator] Unsubscribe listener " + std::to_string (_step.id) + ".");
-
+                    EMERGENCE_LOG (INFO, "[Configurator] Unsubscribe listener ", _step.id, ".");
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
                     singleton->inputMapping.UnsubscribeListener (_step.id);
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeGroup>)
                 {
-                    GlobalLogger::Log (
-                        Level::INFO,
-                        std::string ("[Configurator] Unsubscribe all listeners from group \"") + *_step.id + "\".");
-
+                    EMERGENCE_LOG (INFO, "[Configurator] Unsubscribe all listeners from group \"", _step.id, "\".");
                     auto cursor = modifyInputMapping.Execute ();
                     auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
                     singleton->inputMapping.UnsubscribeGroup (_step.id);
                 }
                 else if constexpr (std::is_same_v<Type, Steps::FireEvent>)
                 {
-                    GlobalLogger::Log (Level::INFO, "[Configurator] Fire event with type " +
-                                                        std::to_string (_step.event.key.type) + " for character " +
-                                                        static_cast<char> (_step.event.key.keysym.sym) + ".");
+                    EMERGENCE_LOG (INFO, "[Configurator] Fire event with type ", _step.event.key.type,
+                                   " for character ", static_cast<char> (_step.event.key.keysym.sym), ".");
 
                     SharedApplicationContext::Get ()->_fireInputEvent (_step.event, 0u);
                 }
@@ -174,33 +164,31 @@ void Configurator::Execute ()
     ++framesConfigured;
 }
 
-void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder, std::vector<FrameConfiguration> _steps)
+void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::Vector<FrameConfiguration> _steps)
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator");
-    constructor.SetExecutor (
-        [state {Configurator {std::move (_steps), constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
+    constructor.SetExecutor<Configurator> (std::move (_steps));
 }
 
-using FrameExpectation = std::vector<std::pair<std::int64_t, std::vector<InputAction>>>;
+using FrameExpectation =
+    Emergence::Container::Vector<std::pair<std::int64_t, Emergence::Container::Vector<InputAction>>>;
 
-class Validator final
+class Validator final : public TaskExecutorBase<Validator>
 {
 public:
-    Validator (std::vector<FrameExpectation> _expectations, TaskConstructor &_constructor) noexcept;
+    Validator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameExpectation> _expectations) noexcept;
 
     void Execute () noexcept;
 
 private:
     std::size_t framesValidated = 0u;
-    std::vector<FrameExpectation> expectations;
+    Emergence::Container::Vector<FrameExpectation> expectations;
 
     Emergence::Warehouse::FetchValueQuery fetchListenerById;
 };
 
-Validator::Validator (std::vector<FrameExpectation> _expectations, TaskConstructor &_constructor) noexcept
+Validator::Validator (TaskConstructor &_constructor,
+                      Emergence::Container::Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
       fetchListenerById (
           _constructor.FetchValue (InputListenerObject::Reflect ().mapping, {InputListenerObject::Reflect ().objectId}))
@@ -232,26 +220,22 @@ void Validator::Execute () noexcept
     ++framesValidated;
 }
 
-void AddValidatorTask (PipelineBuilder &_pipelineBuilder, std::vector<FrameExpectation> _expectations)
+void AddValidatorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::Vector<FrameExpectation> _expectations)
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator");
-    constructor.SetExecutor (
-        [state {Validator {std::move (_expectations), constructor}}] () mutable
-        {
-            state.Execute ();
-        });
+    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator"_us);
+    constructor.SetExecutor<Validator> (std::move (_expectations));
 }
 
-void RunTest (const std::vector<KeyboardActionTrigger> &_keyboardTriggers,
-              const std::vector<std::pair<FrameConfiguration, FrameExpectation>> &_frames)
+void RunTest (const Emergence::Container::Vector<KeyboardActionTrigger> &_keyboardTriggers,
+              const Emergence::Container::Vector<std::pair<FrameConfiguration, FrameExpectation>> &_frames)
 {
-    World world {"TestWorld"};
+    World world {"TestWorld"_us};
     PipelineBuilder pipelineBuilder {&world};
 
     // In test definitions it's much more convenient to read config->expectation pairs than two separate vectors,
     // therefore we accept composite vector as parameter and split it inside this helper.
 
-    std::vector<FrameConfiguration> steps;
+    Emergence::Container::Vector<FrameConfiguration> steps;
     steps.reserve (_frames.size ());
 
     for (const auto &pair : _frames)
@@ -259,7 +243,7 @@ void RunTest (const std::vector<KeyboardActionTrigger> &_keyboardTriggers,
         steps.emplace_back (pair.first);
     }
 
-    std::vector<FrameExpectation> expectations;
+    Emergence::Container::Vector<FrameExpectation> expectations;
     expectations.reserve (_frames.size ());
 
     for (const auto &pair : _frames)
@@ -267,7 +251,7 @@ void RunTest (const std::vector<KeyboardActionTrigger> &_keyboardTriggers,
         expectations.emplace_back (pair.second);
     }
 
-    pipelineBuilder.Begin ();
+    pipelineBuilder.Begin ("Test"_us);
     AddConfiguratorTask (pipelineBuilder, std::move (steps));
     AddValidatorTask (pipelineBuilder, std::move (expectations));
 

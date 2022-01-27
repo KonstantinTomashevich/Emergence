@@ -1,9 +1,12 @@
 #include <ctime>
 #include <variant>
-#include <vector>
+
+#include <Container/Vector.hpp>
 
 #include <Hashing/ByteHasher.hpp>
 #include <Hashing/Test/ByteHasher.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -29,7 +32,7 @@ struct Clear
 {
 };
 
-using Scenario = std::vector<std::variant<AppendOne, AppendMany, Clear>>;
+using Scenario = Container::Vector<std::variant<AppendOne, AppendMany, Clear>>;
 
 uint64_t ExecuteScenario (ByteHasher &_hasher, const Scenario &_scenario)
 {

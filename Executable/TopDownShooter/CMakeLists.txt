@@ -1,17 +1,21 @@
-find_package (OGRE REQUIRED COMPONENTS Bites RTShaderSystem CONFIG)
+find_package (OGRE COMPONENTS Bites RTShaderSystem CONFIG)
+if (NOT OGRE_FOUND)
+    message (WARNING "Ogre not found, therefore TopDownShooter is excluded from project.")
+    return ()
+endif ()
+
 
 set (GAME_NAME "TopDownShooter")
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
 set (GAME_RENDER_SYSTEM Direct3D11)
 
 function (copy_shared_libraries TARGET)
-    add_custom_command (
-            TARGET "${TARGET}" POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>
-            COMMAND_EXPAND_LISTS)
+    copy_required_shared_libraries ("${TARGET}")
 
-    # SDL2 is used by Ogre DLLs and therefore is not visible to TARGET_RUNTIME_DLLS.
-    # TODO: Find better way to ensure that this library is copied.
+    # TODO: Due to the bug in TARGET_RUNTIME_DLLS CMake tries to copy our own SDL2 instead of the one provided by Ogre.
+    #       Therefore we need to ensure that our SDL2 is built (otherwise CMake fails build step) and then copy SDL2
+    #       from Ogre to overwrite our copy (otherwise game crashes because of SDL2 version incompatibility).
+    add_dependencies ("${TARGET}" SDL2)
     add_custom_command (
             TARGET "${TARGET}" POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
