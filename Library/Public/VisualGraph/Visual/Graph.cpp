@@ -6,9 +6,9 @@ namespace VisualGraph
 {
 Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept
 {
-    static const Memory::Profiler::AllocationGroup ALLOCATION_GROUP (Memory::Profiler::AllocationGroup::Root (),
-                                                                     Memory::UniqueString {"VisualGraph"});
-    return ALLOCATION_GROUP;
+    static const Memory::Profiler::AllocationGroup allocationGroup (Memory::Profiler::AllocationGroup::Root (),
+                                                                    Memory::UniqueString {"VisualGraph"});
+    return allocationGroup;
 }
 } // namespace VisualGraph
 
