@@ -27,6 +27,8 @@ private:
     explicit Pipeline (Memory::UniqueString _id, const Task::Collection &_collection, std::size_t _maximumChildThreads);
 
     Memory::UniqueString id;
+    const Memory::UniqueString beginMarker;
+    const Memory::UniqueString endMarker;
     Task::Executor executor;
 };
 } // namespace Emergence::Celerity

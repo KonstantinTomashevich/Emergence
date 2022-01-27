@@ -200,7 +200,7 @@ void UI::RenderEventsNearby (Client &_client)
         switch (event->type)
         {
         case EventType::DECLARE_GROUP:
-            ImGui::Text ("Declare group %s.", groupId);
+            ImGui::Text ("Declare group %s.", *event->id ? *event->id : "Root");
             break;
 
         case EventType::ALLOCATE:
@@ -375,8 +375,10 @@ float UI::RenderFlameGraphNode (Client &_client,
         const auto usagePercent = static_cast<uint32_t> (static_cast<float> (_group->GetAcquired ()) * 100.0f /
                                                          static_cast<float> (_group->GetTotal ()));
 
-        const char *info = EMERGENCE_BUILD_STRING (idString, " ", _group->GetAcquired (), "/", _group->GetTotal (),
-                                                   " (", usagePercent, "%)");
+        // We can not just use EMERGENCE_BUILD_STRING, because we are modifying stack before copying generated string.
+        Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
+            idString, " ", _group->GetAcquired (), "/", _group->GetTotal (), " (", usagePercent, "%)");
+        const char *info = builder.Get ();
 
         constexpr float TEXT_OFFSET_X = 10.0f;
         ImVec4 textClippingRect {acquiredRectMin.x, acquiredRectMin.y, reservedRectMax.x, reservedRectMax.y};
@@ -414,7 +416,7 @@ float UI::RenderFlameGraphNode (Client &_client,
     return graphYEnd;
 }
 
-void UI::RenderTimeline ([[maybe_unused]] Client &_client) noexcept
+void UI::RenderTimeline (Client &_client) noexcept
 {
     ImVec2 contentMax = ImGui::GetWindowContentRegionMax ();
     ImGui::TextUnformatted ("Timeline");
@@ -424,7 +426,6 @@ void UI::RenderTimeline ([[maybe_unused]] Client &_client) noexcept
     const Track &track = _client.GetTrackHolder ().GetTrack ();
     if (track.EventBegin () != track.EventEnd ())
     {
-        // TODO: Watch out for precision bugs.
         const float timeBeginS = static_cast<float> ((*track.EventBegin ())->timeNs) * 1e-9f;
         const float timeEndS = static_cast<float> ((*--track.EventEnd ())->timeNs) * 1e-9f;
         const float timeDurationS = timeEndS - timeBeginS;

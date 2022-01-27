@@ -18,7 +18,7 @@ namespace Emergence::Container
 class StringBuilder final
 {
 public:
-    /// \details We use fixed-size buffer implementation, because it can be constructed on stack.
+    /// \details We use fixed-size buffer implementation, because it can be allocated directly on stack.
     static constexpr std::size_t BUFFER_SIZE = 256u;
 
     StringBuilder () noexcept;

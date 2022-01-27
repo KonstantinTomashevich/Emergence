@@ -74,12 +74,12 @@ TEST_CASE (HeapSTD)
         Emergence::Memory::HeapSTD<uintptr_t> {GetUniqueAllocationGroup ()}};
 
     vector.reserve (8u);
-    for (size_t index = 0u; index < 1024; ++index)
+    for (size_t index = 0u; index < 1024u; ++index)
     {
         vector.emplace_back (index);
     }
 
-    for (size_t index = 0u; index < 1024; ++index)
+    for (size_t index = 0u; index < 1024u; ++index)
     {
         CHECK_EQUAL (vector[index], index);
     }

@@ -429,7 +429,9 @@ void Track::ReportEvent (const Event &_event) noexcept
 
 RecordedAllocationGroup *Track::RequireGroup (GroupUID _uid) const noexcept
 {
+    assert (_uid != MISSING_GROUP_ID);
     RecordedAllocationGroup *group = _uid < idToGroup.size () ? idToGroup[_uid] : nullptr;
+
     if (!group)
     {
         EMERGENCE_LOG (ERROR, "Recording::Track: Unable to find group with uid ", _uid, "!");
@@ -441,6 +443,8 @@ RecordedAllocationGroup *Track::RequireGroup (GroupUID _uid) const noexcept
 bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
 {
     assert (_event.type == EventType::DECLARE_GROUP);
+    assert (_event.uid != MISSING_GROUP_ID);
+
     if (_event.uid < idToGroup.size ())
     {
         auto *group = idToGroup[_event.uid];

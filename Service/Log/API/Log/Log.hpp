@@ -73,9 +73,6 @@ public:
 
     ~Logger () noexcept;
 
-    // TODO: Use raw pointers instead of strings?
-    // TODO: Some API for string appending?
-
     /// \brief Logs message with given level. Thread safe.
     /// \details Not guaranteed to flush right away if _level is lower than force flush level.
     ///          If there is no messages with force flush level, logger is guaranteed to flush messages periodically.

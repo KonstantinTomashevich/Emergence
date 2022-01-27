@@ -11,7 +11,7 @@
 namespace Emergence::Memory::Profiler
 {
 /// \brief Logical group for tracking one or more logically connected allocators. Might be a subgroup of another group.
-/// \details Grouping makes it easy to distinguish most aggressive memory consumers in program.
+/// \details Grouping makes it easy to distinguish most aggressive memory consumers in a program.
 ///          Group hierarchy provides easy way to go from "big picture" view to details and vice versa.
 ///          For example, it allows to descend from statement "Records eat much more memory than they should"
 ///          to "There is too much indices for record types X and Y" without any additional debugging or code edition.
@@ -119,7 +119,7 @@ public:
     void Free (size_t _bytesCount) noexcept;
 
     /// \return Allocation group, that contains this group as subgroup.
-    /// \details Parent of ::Root is empty placeholder group, which in turn is parent of itself.
+    /// \details Parent of ::Root is empty placeholder group, which in turn is the parent of itself.
     [[nodiscard]] AllocationGroup Parent () const noexcept;
 
     [[nodiscard]] Iterator BeginChildren () const noexcept;
@@ -138,7 +138,7 @@ public:
     /// \return Total amount of bytes, that are owned by allocation group.
     [[nodiscard]] size_t GetTotal () const noexcept;
 
-    /// \details Guaranteed to be unique, but may change in every execution.
+    /// \details Guaranteed to be unique, but does not persist through program executions.
     [[nodiscard]] uintptr_t Hash () const noexcept;
 
     AllocationGroup &operator= (const AllocationGroup &_other) noexcept;

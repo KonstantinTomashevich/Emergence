@@ -23,13 +23,13 @@ public:
     /// \return Group UID, if group is declared, `MISSING_GROUP_ID` otherwise.
     [[nodiscard]] GroupUID GetUID (const Profiler::AllocationGroup &_group) const noexcept;
 
-    /// \details If group is not declared, declares it and passes declaration event to consumer.
-    ///          If parent group has no UID, assigns it before assigning UID to child group.
-    ///          Parent UID check is recursive.
+    /// \details Ensures that given group and its parents (recursively) are declared. If any of them is not,
+    ///          assigns UIDs and generated EventType::DECLARE_GROUP events for undeclared groups.
+    /// \return UID of given group.
     GroupUID GetOrAssignUID (const Profiler::AllocationGroup &_group,
                              const DeclarationConsumer &_declarationConsumer) noexcept;
 
-    /// \brief Creates group declaration events for all groups in captured hierarchy.
+    /// \brief Assigns UIDs and creates declaration events for all groups in captured hierarchy.
     void ImportCapture (const Profiler::CapturedAllocationGroup &_captured,
                         const DeclarationConsumer &_declarationConsumer) noexcept;
 
@@ -38,7 +38,7 @@ public:
 
 private:
     GroupUID counter = 0u;
-    Container::HashMap<Profiler::AllocationGroup, GroupUID> ids {Constants::AllocationGroup ()};
+    Container::HashMap<Profiler::AllocationGroup, GroupUID> uids {Constants::AllocationGroup ()};
 };
 
 /// \brief Converts MemoryProfiler event into MemoryRecording event.

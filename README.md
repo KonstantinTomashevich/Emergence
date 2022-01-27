@@ -40,6 +40,11 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   graph. Helps to visualize complex structures that are created during execution. For example, task dependency graphs or
   data processing pipelines.
 
+### Executables
+
+- [MemoryRecordingClient](./Executable/MemoryRecordingClient/README.md):
+  tool for viewing [MemoryRecording](./Library/Public/MemoryRecording/README.md) serialized tracks.
+
 ## Planed modules
 
 ### Services
@@ -48,3 +53,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 - **Celerity**: combines [Warehouse](./Service/Warehouse/README.md), [Flow](./Library/Public/Flow/README.md)
   and [TaskExecutor](./Service/TaskExecutor/README.md) into framework for gameplay world logic implementation.
+
+### Executables
+
+- **TopDownShooter**: small sample games, that illustrates **Emergence** features.

@@ -2,6 +2,7 @@
 
 #include <Container/Optional.hpp>
 #include <Container/String.hpp>
+#include <Container/StringBuilder.hpp>
 
 #include <Log/Log.hpp>
 

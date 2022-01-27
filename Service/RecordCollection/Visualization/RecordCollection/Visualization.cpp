@@ -106,12 +106,12 @@ VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresenta
 
 Container::String GraphId (const Collection &_collection)
 {
-    return EMERGENCE_BUILD_STRING ("RecordCollection {", *_collection.GetTypeMapping ().GetName (), "}");
+    return EMERGENCE_BUILD_STRING ("RecordCollection {", _collection.GetTypeMapping ().GetName (), "}");
 }
 
 Container::String GraphId (const LinearRepresentation &_representation)
 {
-    return EMERGENCE_BUILD_STRING ("LinearRepresentation {", *_representation.GetKeyField ().GetName (), "}");
+    return EMERGENCE_BUILD_STRING ("LinearRepresentation {", _representation.GetKeyField ().GetName (), "}");
 }
 
 Container::String GraphId (const PointRepresentation &_representation)

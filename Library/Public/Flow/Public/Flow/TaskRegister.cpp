@@ -96,7 +96,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = resourceNameToIndex.find (resource);
             if (iterator == resourceNameToIndex.end ())
             {
-                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find write access resource \"", *resource, "\" of task \"",
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find write access resource \"", resource, "\" of task \"",
                                task.name, "\"!");
                 noErrors = false;
             }
@@ -142,7 +142,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
             auto iterator = nameToNodeIndex.find (dependency);
             if (iterator == nameToNodeIndex.end ())
             {
-                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find dependency \"", *dependency, "\" of task \"",
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find dependency \"", dependency, "\" of task \"",
                                task.name, "\"!");
                 noErrors = false;
             }
@@ -252,7 +252,7 @@ bool TaskGraph::Verify () const noexcept
                 EMERGENCE_LOG (
                     ERROR, "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
 
-                EMERGENCE_LOG (ERROR, *_graph.nodes[_index].name);
+                EMERGENCE_LOG (ERROR, _graph.nodes[_index].name);
                 return false;
 
             case VisitationState::UNVISITED:

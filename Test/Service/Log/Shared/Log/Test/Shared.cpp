@@ -1,5 +1,3 @@
-#include <Container/StringBuilder.hpp>
-
 #include <Log/Test/Shared.hpp>
 
 namespace Emergence::Log::Test

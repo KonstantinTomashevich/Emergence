@@ -4,7 +4,6 @@ include_guard (GLOBAL)
 
 option (EMERGENCE_COMPILE_TIME_TRACE "Requests compiler to print time trace. Supported only on CLang." OFF)
 option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable code coverage reporting." OFF)
-option (EMERGENCE_SAMPLES "Include Emergence samples into CMake project (might require additional dependencies)." ON)
 option (EMERGENCE_TREAT_WARNINGS_AS_ERRORS "Enables \"treat warnings as errors\" compiler policy for all targets." ON)
 
 # We can not add common compile options here, because they would affect third party libraries compilation.

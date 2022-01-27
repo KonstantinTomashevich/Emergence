@@ -46,7 +46,6 @@ void StreamSerializer::SerializeEvent (const Profiler::Event &_event) noexcept
                                                    WriteEvent (_declarationEvent);
                                                });
 
-    assert (uid != MISSING_GROUP_ID);
     WriteEvent (ConvertEvent (uid, _event));
 }
 

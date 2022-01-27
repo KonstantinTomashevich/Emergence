@@ -33,7 +33,7 @@ void TrackHolder::Close () noexcept
     selectedGroup = nullptr;
 
     loading = false;
-    fileOpen = true;
+    fileOpen = false;
 }
 
 void TrackHolder::Update () noexcept
@@ -163,7 +163,7 @@ void TrackHolder::UpdateLoading () noexcept
             MarkerFrequencyData &frequency = markerFrequency[(*parsed)->markerId];
             double markerTimeS = static_cast<double> ((*parsed)->timeNs) * 1e-9;
 
-            if (frequency.count > 1u)
+            if (frequency.count > 0u)
             {
                 frequency.accumulator = (frequency.accumulator * static_cast<double> (frequency.count - 1u) +
                                          markerTimeS - frequency.previousMarkerTimeS) /

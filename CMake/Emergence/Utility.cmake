@@ -1,4 +1,4 @@
-# Adds custom command that copies shared libraries, explicitly requested by given target.
+# Adds custom command that copies shared libraries, requested by given target.
 function (copy_required_shared_libraries TARGET)
     add_custom_command (
             TARGET "${TARGET}" POST_BUILD

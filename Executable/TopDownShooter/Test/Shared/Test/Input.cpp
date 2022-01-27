@@ -105,8 +105,6 @@ Configurator::Configurator (TaskConstructor &_constructor, Emergence::Container:
 void Configurator::Execute ()
 {
     REQUIRE (framesConfigured < steps.size ());
-    // TODO: In tests it's ok to create myriads of strings just for logging.
-    //       But for runtime logging we need special stack allocator which is cleared every frame.
     EMERGENCE_LOG (INFO, "[Configurator] Sequence ", framesConfigured);
 
     for (const ConfiguratorStep &step : steps[framesConfigured])

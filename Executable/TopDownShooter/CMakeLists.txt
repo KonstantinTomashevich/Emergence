@@ -1,4 +1,9 @@
-find_package (OGRE REQUIRED COMPONENTS Bites RTShaderSystem CONFIG)
+find_package (OGRE COMPONENTS Bites RTShaderSystem CONFIG)
+if (NOT OGRE_FOUND)
+    message (WARNING "Ogre not found, therefore TopDownShooter is excluded from project.")
+    return ()
+endif ()
+
 
 set (GAME_NAME "TopDownShooter")
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")

@@ -47,7 +47,7 @@ static const char *RegisterValue (const std::string_view &_value)
         // only last allocated stack instead of trying to insert into all allocated stacks.
         static auto *lastStack = new (stacksPool.Acquire ()) Stack (allocationGroup, STRING_STACK_SIZE);
 
-        // Right now we use unordered set for simplicity.
+        // Right now we use hash set for simplicity.
         static Container::HashSet<std::string_view> stringRegister {allocationGroup};
 
         auto iterator = stringRegister.find (_value);

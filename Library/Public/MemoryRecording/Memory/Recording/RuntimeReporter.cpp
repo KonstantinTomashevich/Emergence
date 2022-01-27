@@ -45,7 +45,6 @@ void RuntimeReporter::ReportEvent (const Profiler::Event &_event) noexcept
                                                    ReporterBase::ReportEvent (_declarationEvent);
                                                });
 
-    assert (uid != MISSING_GROUP_ID);
     ReporterBase::ReportEvent (ConvertEvent (uid, _event));
 }
 

@@ -6,8 +6,8 @@ namespace Emergence::Memory::Recording
 {
 GroupUID GroupUIDAssigner::GetUID (const Profiler::AllocationGroup &_group) const noexcept
 {
-    auto iterator = ids.find (_group);
-    if (iterator != ids.end ())
+    auto iterator = uids.find (_group);
+    if (iterator != uids.end ())
     {
         return iterator->second;
     }
@@ -31,18 +31,19 @@ GroupUID GroupUIDAssigner::GetOrAssignUID (const Profiler::AllocationGroup &_gro
 
     const GroupUID parent = GetOrAssignUID (_group.Parent (), _declarationConsumer);
     const GroupUID uid = counter++;
-    ids[_group] = uid;
+    assert (uid != MISSING_GROUP_ID);
+    uids[_group] = uid;
 
     _declarationConsumer ({
-        0u /* Time should be known to user. */,
+        0u /* Time should be known to user, therefore user is expected to set inside consumer. */,
 
         parent,
         _group.GetId (),
         uid,
 
-        // It is the first event, associated with this group, and this group wasn't captured, therefore it must be
-        // empty. Unfortunately, we can not assert this statement, because we can not get group state at the time of
-        // event creation.
+        // Usually we create declare groups after encountering first event, associated with the group. If this group has
+        // no uid, it means it wasn't captured (see ImportCapture), therefore it must be empty. Unfortunately, we can
+        // not assert this expectation, because we can not get group state at the time of event creation.
         0u,
         0u,
     });
@@ -75,7 +76,7 @@ void GroupUIDAssigner::ImportCapture (const Profiler::CapturedAllocationGroup &_
 void GroupUIDAssigner::Clear () noexcept
 {
     counter = 0u;
-    ids.clear ();
+    uids.clear ();
 }
 
 Event ConvertEvent (GroupUID _groupUID, const Profiler::Event &_source) noexcept

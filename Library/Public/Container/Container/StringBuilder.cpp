@@ -23,11 +23,11 @@ const char *StringBuilder::Get () const noexcept
     return &buffer.front ();
 }
 
-#define SNPRINTF_APPEND(Format, Data)                                                                                  \
+#define SNPRINTF_APPEND(Format)                                                                                        \
     std::size_t spaceLeft = SpaceLeft ();                                                                              \
     if (spaceLeft > 0u)                                                                                                \
     {                                                                                                                  \
-        int count = snprintf (&buffer[end], spaceLeft, (Format), Data);                                                \
+        int count = snprintf (&buffer[end], spaceLeft, (Format), _value);                                              \
         assert (count >= 0);                                                                                           \
         end += std::min (spaceLeft, static_cast<std::size_t> (count));                                                 \
     }                                                                                                                  \
@@ -36,7 +36,7 @@ const char *StringBuilder::Get () const noexcept
 
 StringBuilder &StringBuilder::Append (const char *_value) noexcept
 {
-    SNPRINTF_APPEND ("%s", _value);
+    SNPRINTF_APPEND ("%s");
 }
 
 StringBuilder &StringBuilder::Append (Memory::UniqueString _value) noexcept
@@ -51,57 +51,57 @@ StringBuilder &StringBuilder::Append (const String &_value) noexcept
 
 StringBuilder &StringBuilder::Append (const std::string_view &_value) noexcept
 {
-    SNPRINTF_APPEND ("%s", _value.data ());
+    return Append (_value.data ());
 }
 
 StringBuilder &StringBuilder::Append (char _value) noexcept
 {
-    SNPRINTF_APPEND ("%c", _value);
+    SNPRINTF_APPEND ("%c");
 }
 
 StringBuilder &StringBuilder::Append (int _value) noexcept
 {
-    SNPRINTF_APPEND ("%d", _value);
+    SNPRINTF_APPEND ("%d");
 }
 
 StringBuilder &StringBuilder::Append (long _value) noexcept
 {
-    SNPRINTF_APPEND ("%ld", _value);
+    SNPRINTF_APPEND ("%ld");
 }
 
 StringBuilder &StringBuilder::Append (long long int _value) noexcept
 {
-    SNPRINTF_APPEND ("%lld", _value);
+    SNPRINTF_APPEND ("%lld");
 }
 
 StringBuilder &StringBuilder::Append (unsigned int _value) noexcept
 {
-    SNPRINTF_APPEND ("%u", _value);
+    SNPRINTF_APPEND ("%u");
 }
 
 StringBuilder &StringBuilder::Append (unsigned long _value) noexcept
 {
-    SNPRINTF_APPEND ("%lu", _value);
+    SNPRINTF_APPEND ("%lu");
 }
 
 StringBuilder &StringBuilder::Append (unsigned long long int _value) noexcept
 {
-    SNPRINTF_APPEND ("%llu", _value);
+    SNPRINTF_APPEND ("%llu");
 }
 
 StringBuilder &StringBuilder::Append (float _value) noexcept
 {
-    SNPRINTF_APPEND ("%f", _value);
+    SNPRINTF_APPEND ("%f");
 }
 
 StringBuilder &StringBuilder::Append (double _value) noexcept
 {
-    SNPRINTF_APPEND ("%lf", _value);
+    SNPRINTF_APPEND ("%lf");
 }
 
 StringBuilder &StringBuilder::Append (long double _value) noexcept
 {
-    SNPRINTF_APPEND ("%Lf", _value);
+    SNPRINTF_APPEND ("%Lf");
 }
 
 std::size_t StringBuilder::SpaceLeft () const noexcept

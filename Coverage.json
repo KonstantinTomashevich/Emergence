@@ -27,7 +27,7 @@
       "Prefix": "./Library/Public/Container/Container/StringBuilder.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 50.0,
-      "Reason": "There is no separate tests for containers yet and StringBuilder code is pretty straightforward, therefore we temporary allow low coverage here."
+      "Reason": "There is no separate tests for Container library yet and StringBuilder code is pretty straightforward, therefore we temporary allow low coverage here."
     },
     {
       "Prefix": "./Test/Service/Log/Driver/Log/Test/Main.cpp",

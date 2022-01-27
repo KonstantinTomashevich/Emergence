@@ -380,8 +380,8 @@ TEST_CASE (ReuseRuntimeReporter)
 
     Profiler::AllocationGroup testGroup {"ReuseRuntimeReporter"_us};
     testGroup.Allocate (120u);
-
     testGroup.Acquire (80u);
+
     {
         Recording::Track track;
         TrivialCaptureCheck (track, reporter);
@@ -400,8 +400,8 @@ TEST_CASE (ReuseTrack)
 
     Profiler::AllocationGroup testGroup {"ReuseRuntimeReporter"_us};
     testGroup.Allocate (120u);
-
     testGroup.Acquire (80u);
+
     {
         Recording::RuntimeReporter reporter;
         TrivialCaptureCheck (track, reporter);

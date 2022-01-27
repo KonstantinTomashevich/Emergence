@@ -37,13 +37,13 @@ public:
     {
         Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
 
-        pipelineBuilder.Begin ("Fixed"_us);
+        pipelineBuilder.Begin ("FixedUpdate"_us);
         TimeSynchronization::AddFixedUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
         fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
-        pipelineBuilder.Begin ("Normal"_us);
+        pipelineBuilder.Begin ("NormalUpdate"_us);
         TimeSynchronization::AddNormalUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
         InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
         Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
@@ -89,13 +89,6 @@ public:
 
     void Execute ()
     {
-        // TODO: Automatically add markers from pipelines?
-        static const Emergence::Memory::UniqueString fixedUpdateBegin {"FixedUpdateBegin"};
-        static const Emergence::Memory::UniqueString fixedUpdateEnd {"FixedUpdateEnd"};
-
-        static const Emergence::Memory::UniqueString normalUpdateBegin {"NormalUpdateBegin"};
-        static const Emergence::Memory::UniqueString normalUpdateEnd {"NormalUpdateEnd"};
-
         // Intentionally lift write access to time singleton, because we are expecting changes from pipelines.
         auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
         application->pollEvents ();
@@ -108,9 +101,7 @@ public:
         {
             while (time->fixedTimeUs < time->normalTimeUs)
             {
-                Emergence::Memory::Profiler::AddMarker (fixedUpdateBegin);
                 fixedUpdate->Execute ();
-                Emergence::Memory::Profiler::AddMarker (fixedUpdateEnd);
             }
         }
         else
@@ -119,9 +110,7 @@ public:
             time->fixedTimeUs = time->normalTimeUs;
         }
 
-        Emergence::Memory::Profiler::AddMarker (normalUpdateBegin);
         normalUpdate->Execute ();
-        Emergence::Memory::Profiler::AddMarker (normalUpdateEnd);
     }
 
 private:
