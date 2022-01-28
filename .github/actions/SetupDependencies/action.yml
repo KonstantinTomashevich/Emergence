@@ -12,5 +12,5 @@ runs:
     - name: Setup dependencies
       shell: pwsh
       run: |
-        .\Script\Dependency\OGRE.ps1 ${{runner.os}}
-        echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV
+        .\Script\Dependency\Urho3D.ps1 ${{runner.os}}
+        echo "URHO3D_DIR=${{github.workspace}}\Dependency\Urho3D\${{runner.os}}" >> $Env:GITHUB_ENV

@@ -36,8 +36,7 @@ set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
 set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
 
-copy_shared_libraries ("${GAME_NAME}SharedTestLauncher")
-use_ogre_plugins ("${RUNNER_OUTPUT_DIRECTORY}" RenderSystem_Direct3D11)
+copy_required_shared_libraries ("${GAME_NAME}SharedTestLauncher")
 link_resources_for_development ("${RUNNER_OUTPUT_DIRECTORY}")
 
 add_test (NAME "Test${GAME_NAME}SharedRunner" COMMAND "${GAME_NAME}SharedTestLauncher"
