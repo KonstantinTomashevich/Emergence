@@ -1,10 +1,13 @@
 if (DEFINED ENV{URHO3D_DIR})
-    file (TO_CMAKE_PATH "$ENV{URHO3D_DIR}" CONVERTED_PATH)
-    list (APPEND CMAKE_MODULE_PATH "${CONVERTED_PATH}/share/CMake/Modules")
+    file (TO_CMAKE_PATH "$ENV{URHO3D_DIR}" URHO3D_HOME)
+    list (APPEND CMAKE_MODULE_PATH "${URHO3D_HOME}/share/CMake/Modules")
+else ()
+    message (WARNING
+            "Urho3D directory is not specified through URHO3D_DIR, therefore TopDownShooter is excluded from project.")
+    return ()
 endif ()
 
 find_package (Urho3D REQUIRED)
-
 if (NOT URHO3D_FOUND)
     message (WARNING "Urho3D not found, therefore TopDownShooter is excluded from project.")
     return ()
@@ -18,7 +21,10 @@ set (GAME_ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Converted")
 set (RESOURCE_CONFIG_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/resources.cfg")
 
 function (link_resources_for_development OUTPUT_DIRECTORY)
-    # TODO: Symlinks to Urho3D core data and our assets.
+    file (MAKE_DIRECTORY "${OUTPUT_DIRECTORY}")
+    file (CREATE_LINK "${URHO3D_HOME}/share/Resources/CoreData"
+            "${OUTPUT_DIRECTORY}/Urho3DCoreAssets" SYMBOLIC)
+    file (CREATE_LINK "${GAME_ASSETS}" "${OUTPUT_DIRECTORY}/GameAssets" SYMBOLIC)
 endfunction ()
 
 add_subdirectory (Editor)
