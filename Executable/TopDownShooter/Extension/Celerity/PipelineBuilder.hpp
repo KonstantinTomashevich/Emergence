@@ -90,8 +90,6 @@ public:
     /// Move-assignment is allowed, because it makes construction of several tasks from one function easier.
     TaskConstructor &operator= (TaskConstructor &&_other) noexcept;
 
-    // TODO: Ability to create one showstarter and one finalizer task per pipeline.
-
 private:
     friend class PipelineBuilder;
 
@@ -113,7 +111,7 @@ public:
 
     ~PipelineBuilder () = default;
 
-    void Begin (Memory::UniqueString _id) noexcept;
+    bool Begin (Memory::UniqueString _id, PipelineType _type) noexcept;
 
     [[nodiscard]] TaskConstructor AddTask (Memory::UniqueString _name) noexcept;
 
@@ -130,8 +128,10 @@ private:
 
     World *world;
     Memory::UniqueString currentPipelineId;
-    Flow::TaskRegister taskRegister;
+    PipelineType currentPipelineType;
     Memory::Profiler::AllocationGroup currentPipelineAllocationGroup;
+
+    Flow::TaskRegister taskRegister;
     Container::HashSet<Memory::UniqueString> registeredResources;
 };
 

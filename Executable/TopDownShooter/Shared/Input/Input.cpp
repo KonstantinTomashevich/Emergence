@@ -1,6 +1,6 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
-#include <cassert>
+#include <Celerity/Model/WorldSingleton.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerObject.hpp>
@@ -9,7 +9,6 @@
 #include <Memory/Profiler/AllocationGroup.hpp>
 
 #include <Shared/Checkpoint.hpp>
-#include <Shared/WorldInfoSingleton.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <Urho3D/Core/Context.h>
@@ -138,7 +137,7 @@ private:
 
     void UpdateActionBuffers (InputSingleton *_input) noexcept;
 
-    Emergence::Warehouse::FetchSingletonQuery fetchWorldInfo;
+    Emergence::Warehouse::FetchSingletonQuery fetchWorld;
     Emergence::Container::Vector<KeyboardEvent> postponedEvents {Emergence::Memory::Profiler::AllocationGroup::Top ()};
 };
 
@@ -146,7 +145,7 @@ NormalInputDispatcher::NormalInputDispatcher (Emergence::Celerity::TaskConstruct
                                               Urho3D::Context *_context) noexcept
     : InputDispatcherBase (_constructor),
       Object (_context),
-      fetchWorldInfo (_constructor.FetchSingleton (WorldInfoSingleton::Reflect ().mapping))
+      fetchWorld (_constructor.FetchSingleton (Emergence::Celerity::WorldSingleton::Reflect ().mapping))
 {
     SubscribeToEvent (Urho3D::E_KEYDOWN,
                       [this] (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_data)
@@ -175,10 +174,10 @@ void NormalInputDispatcher::Execute () noexcept
     auto inputCursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*inputCursor);
 
-    auto worldInfoCursor = fetchWorldInfo.Execute ();
-    const auto *worldInfo = static_cast<const WorldInfoSingleton *> (*worldInfoCursor);
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
-    if (worldInfo->fixedUpdateHappened)
+    if (world->fixedUpdateHappened)
     {
         // Clear persistent events, that were passed from previous normal update to fixed update.
         input->fixedPersistentActionsBuffer.DropLeading (input->accumulatedPersistentActionsForFixedUpdate);

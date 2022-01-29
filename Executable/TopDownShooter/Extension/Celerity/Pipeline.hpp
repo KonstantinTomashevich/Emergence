@@ -6,6 +6,13 @@
 
 namespace Emergence::Celerity
 {
+enum class PipelineType
+{
+    NORMAL = 0u,
+    FIXED,
+    CUSTOM
+};
+
 class Pipeline final
 {
 public:
@@ -17,6 +24,8 @@ public:
 
     [[nodiscard]] Memory::UniqueString GetId () const noexcept;
 
+    [[nodiscard]] PipelineType GetType () const noexcept;
+
     void Execute () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (Pipeline);
@@ -24,9 +33,14 @@ public:
 private:
     friend class World;
 
-    explicit Pipeline (Memory::UniqueString _id, const Task::Collection &_collection, std::size_t _maximumChildThreads);
+    explicit Pipeline (Memory::UniqueString _id,
+                       PipelineType _type,
+                       const Task::Collection &_collection,
+                       std::size_t _maximumChildThreads);
 
     Memory::UniqueString id;
+    PipelineType type;
+
     const Memory::UniqueString beginMarker;
     const Memory::UniqueString endMarker;
     Task::Executor executor;

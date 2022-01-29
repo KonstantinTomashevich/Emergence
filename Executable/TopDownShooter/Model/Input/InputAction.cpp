@@ -4,16 +4,16 @@
 
 InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
                           const Emergence::Memory::UniqueString &_id) noexcept
-    : id (_id),
-      group (_group)
+    : group (_group),
+      id (_id)
 {
 }
 
 InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
                           const Emergence::Memory::UniqueString &_id,
                           const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept
-    : id (_id),
-      group (_group)
+    : group (_group),
+      id (_id)
 {
     discrete = _discrete;
 }
@@ -21,8 +21,8 @@ InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
 InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
                           const Emergence::Memory::UniqueString &_id,
                           const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept
-    : id (_id),
-      group (_group)
+    : group (_group),
+      id (_id)
 {
     real = _real;
 }

@@ -1,15 +1,18 @@
 #pragma once
 
-#include <atomic>
-
 #include <Celerity/Pipeline.hpp>
 
 #include <Container/Vector.hpp>
+
+#include <Memory/UnorderedPool.hpp>
 
 #include <Warehouse/Registry.hpp>
 
 namespace Emergence::Celerity
 {
+struct TimeSingleton;
+struct WorldSingleton;
+
 class World final
 {
 public:
@@ -21,11 +24,10 @@ public:
 
     ~World ();
 
-    std::uintptr_t GetNextObjectId () noexcept;
+    /// \brief Executes normal update and fixed update if needed.
+    void Update () noexcept;
 
-    Warehouse::FetchSingletonQuery FetchSingletonExternally (const StandardLayout::Mapping &_mapping) noexcept;
-
-    Warehouse::ModifySingletonQuery ModifySingletonExternally (const StandardLayout::Mapping &_mapping) noexcept;
+    void RemoveCustomPipeline (Pipeline *_pipeline) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (World);
 
@@ -35,13 +37,28 @@ private:
     friend class PipelineBuilder;
     friend class TaskConstructor;
 
+    struct PipelineNode final
+    {
+        Pipeline pipeline;
+        PipelineNode *next;
+    };
+
+    void NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
+
+    void FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
+
     Pipeline *AddPipeline (Memory::UniqueString _id,
+                           PipelineType _type,
                            const Task::Collection &_collection,
-                           std::size_t _maximumChildThreads);
+                           std::size_t _maximumChildThreads) noexcept;
 
     Warehouse::Registry registry;
-    Memory::Heap pipelineHeap;
-    Container::Vector<Pipeline *> pipelines;
-    std::atomic_unsigned_lock_free objectIdCounter;
+    Warehouse::ModifySingletonQuery modifyTime;
+    Warehouse::ModifySingletonQuery modifyWorld;
+
+    Memory::UnorderedPool pipelinePool;
+    PipelineNode *firstPipeline = nullptr;
+    PipelineNode *normalPipeline = nullptr;
+    PipelineNode *fixedPipeline = nullptr;
 };
 } // namespace Emergence::Celerity
