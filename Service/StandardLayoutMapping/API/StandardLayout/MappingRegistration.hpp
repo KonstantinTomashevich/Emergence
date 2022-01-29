@@ -146,6 +146,9 @@ struct RegularFieldRegistrar;
         static constexpr auto Register = &StandardLayout::MappingBuilder::Register##Suffix;                            \
     }
 
+/// \details Boolean fields are stored as one byte, therefore we register them as unsigned bytes.
+ADD_REGULAR_REGISTRAR (bool, UInt8);
+
 ADD_REGULAR_REGISTRAR (int8_t, Int8);
 ADD_REGULAR_REGISTRAR (int16_t, Int16);
 ADD_REGULAR_REGISTRAR (int32_t, Int32);
