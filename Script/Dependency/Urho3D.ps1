@@ -9,7 +9,8 @@ if ($args.Count -ne 1)
 $Platform = $args[0]
 if ($Platform -eq "Windows")
 {
-    $UrhoSDK = "https://sourceforge.net/projects/urho3d/files/Urho3D/1.8-ALPHA/Urho3D-1.8.ALPHA-Windows-64bit-SHARED-3D11.zip"
+    $UrhoSDK =
+    "https://sourceforge.net/projects/urho3d/files/Urho3D/1.8-ALPHA/Urho3D-1.8.ALPHA-Windows-64bit-SHARED-3D11.zip"
 }
 else
 {
@@ -18,14 +19,15 @@ else
 }
 
 $DependencyDir = ".\Dependency\Urho3D\$Platform"
-$Archive = "$DependencyDir\UrhoSDK.zip"
+$Archive = "$PWD\$DependencyDir\UrhoSDK.zip" # We need to specify absolute path, because DownloadFile ignores PWD.
 
 if (-Not(Test-Path $DependencyDir -PathType Container))
 {
     echo "Downloading Urho3D SDK..."
     New-Item -ItemType "directory" -Path $DependencyDir
+
     $webclient = New-Object System.Net.WebClient
-    $webclient.DownloadFile($UrhoSDK, "$Archive")
+    $webclient.DownloadFile($UrhoSDK, $Archive)
 
     Expand-Archive -Path $Archive -DestinationPath $DependencyDir
     Remove-Item -Path $Archive
