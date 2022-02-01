@@ -29,5 +29,6 @@ target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Game")
 
-copy_required_shared_libraries ("${GAME_NAME}GameLauncher")
+copy_shared_libraries ("${GAME_NAME}GameLauncher")
+use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Game" RenderSystem_Direct3D11)
 link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Game")

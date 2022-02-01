@@ -1,20 +1,21 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
+#include <thread>
 #include <variant>
-
-BEGIN_MUTING_WARNINGS
-#include <OgreInput.h>
-END_MUTING_WARNINGS
 
 #include <Container/Vector.hpp>
 
 #include <Log/Log.hpp>
 
-#include <Input/InputCollection.hpp>
+#include <Input/Input.hpp>
 #include <Input/InputListenerObject.hpp>
-#include <Input/NormalInputMappingSingleton.hpp>
+#include <Input/InputSingleton.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
+BEGIN_MUTING_WARNINGS
+#include <OgreInput.h>
+END_MUTING_WARNINGS
 
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
@@ -49,11 +50,13 @@ struct DeleteListener
 struct AddSubscription
 {
     InputSubscription subscription;
+    bool normal = true;
 };
 
 struct UnsubscribeListener
 {
     std::uintptr_t id = INVALID_OBJECT_ID;
+    bool normal = true;
 };
 
 struct UnsubscribeGroup
@@ -61,9 +64,17 @@ struct UnsubscribeGroup
     Emergence::Memory::UniqueString id;
 };
 
-struct FireEvent
+struct FireKeyDown
 {
-    OgreBites::Event event;
+    KeyCode key;
+    QualifiersMask qualifiers;
+    bool repeat = false;
+};
+
+struct FireKeyUp
+{
+    KeyCode key;
+    QualifiersMask qualifiers;
 };
 } // namespace Steps
 
@@ -72,34 +83,45 @@ using ConfiguratorStep = std::variant<Steps::CreateListener,
                                       Steps::AddSubscription,
                                       Steps::UnsubscribeListener,
                                       Steps::UnsubscribeGroup,
-                                      Steps::FireEvent>;
+                                      Steps::FireKeyDown,
+                                      Steps::FireKeyUp>;
 
 using FrameConfiguration = Emergence::Container::Vector<ConfiguratorStep>;
 
 class Configurator final : public TaskExecutorBase<Configurator>
 {
 public:
-    Configurator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameConfiguration> _steps);
+    Configurator (TaskConstructor &_constructor,
+                  Emergence::Container::Vector<FrameConfiguration> _steps,
+                  Emergence::Container::Vector<KeyboardActionTrigger> _instantTriggers,
+                  Emergence::Container::Vector<KeyboardActionTrigger> _persistentTriggers);
 
     void Execute ();
 
 private:
     Emergence::Container::Vector<FrameConfiguration> steps;
+    Emergence::Container::Vector<KeyboardActionTrigger> instantTriggers;
+    Emergence::Container::Vector<KeyboardActionTrigger> persistentTriggers;
     std::size_t framesConfigured = 0u;
 
     Emergence::Warehouse::InsertLongTermQuery createListener;
     Emergence::Warehouse::ModifyValueQuery modifyListenerById;
-    Emergence::Warehouse::ModifySingletonQuery modifyInputMapping;
+    Emergence::Warehouse::ModifySingletonQuery modifyInput;
 };
 
-Configurator::Configurator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameConfiguration> _steps)
+Configurator::Configurator (TaskConstructor &_constructor,
+                            Emergence::Container::Vector<FrameConfiguration> _steps,
+                            Emergence::Container::Vector<KeyboardActionTrigger> _instantTriggers,
+                            Emergence::Container::Vector<KeyboardActionTrigger> _persistentTriggers)
     : steps (std::move (_steps)),
+      instantTriggers (std::move (_instantTriggers)),
+      persistentTriggers (std::move (_persistentTriggers)),
       createListener (_constructor.InsertLongTerm (InputListenerObject::Reflect ().mapping)),
       modifyListenerById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
                                                     {InputListenerObject::Reflect ().objectId})),
-      modifyInputMapping (_constructor.ModifySingleton (NormalInputMappingSingleton::Reflect ().mapping))
+      modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping))
 {
-    _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_BEGIN);
+    _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
 }
 
 void Configurator::Execute ()
@@ -107,10 +129,33 @@ void Configurator::Execute ()
     REQUIRE (framesConfigured < steps.size ());
     EMERGENCE_LOG (INFO, "[Configurator] Sequence ", framesConfigured);
 
+    auto cursor = modifyInput.Execute ();
+    auto *input = static_cast<InputSingleton *> (*cursor);
+
+    // Initialize triggers if there are not initialized already.
+
+    if (input->keyboardInstantTriggers.Empty ())
+    {
+        for (const KeyboardActionTrigger &trigger : instantTriggers)
+        {
+            REQUIRE (input->keyboardInstantTriggers.TryEmplaceBack (trigger));
+        }
+    }
+
+    if (input->keyboardPersistentTriggers.Empty ())
+    {
+        for (const KeyboardActionTrigger &trigger : persistentTriggers)
+        {
+            REQUIRE (input->keyboardPersistentTriggers.TryEmplaceBack (trigger));
+        }
+    }
+
+    // Process steps for current frame.
+
     for (const ConfiguratorStep &step : steps[framesConfigured])
     {
         std::visit (
-            [this] (const auto &_step)
+            [this, input] (const auto &_step)
             {
                 using Type = std::decay_t<decltype (_step)>;
                 if constexpr (std::is_same_v<Type, Steps::CreateListener>)
@@ -130,32 +175,59 @@ void Configurator::Execute ()
                 else if constexpr (std::is_same_v<Type, Steps::AddSubscription>)
                 {
                     EMERGENCE_LOG (INFO, "[Configurator] Subscribe listener ", _step.subscription.listenerId,
-                                   " to group \"", _step.subscription.group, "\".");
+                                   " to group \"", _step.subscription.group, "\" in ",
+                                   _step.normal ? "normal" : "fixed", " update.");
 
-                    auto cursor = modifyInputMapping.Execute ();
-                    auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
-                    singleton->inputMapping.subscriptions.EmplaceBack (_step.subscription);
+                    InputSingleton::SubscriptionVector &subscriptions =
+                        _step.normal ? input->normalSubscriptions : input->fixedSubscriptions;
+
+                    REQUIRE (subscriptions.TryEmplaceBack (_step.subscription));
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeListener>)
                 {
-                    EMERGENCE_LOG (INFO, "[Configurator] Unsubscribe listener ", _step.id, ".");
-                    auto cursor = modifyInputMapping.Execute ();
-                    auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
-                    singleton->inputMapping.UnsubscribeListener (_step.id);
+                    EMERGENCE_LOG (INFO, "[Configurator] Unsubscribe listener ", _step.id, "\" in ",
+                                   _step.normal ? "normal" : "fixed", " update.");
+
+                    if (_step.normal)
+                    {
+                        input->UnsubscribeNormal (_step.id);
+                    }
+                    else
+                    {
+                        input->UnsubscribeFixed (_step.id);
+                    }
                 }
                 else if constexpr (std::is_same_v<Type, Steps::UnsubscribeGroup>)
                 {
                     EMERGENCE_LOG (INFO, "[Configurator] Unsubscribe all listeners from group \"", _step.id, "\".");
-                    auto cursor = modifyInputMapping.Execute ();
-                    auto *singleton = static_cast<NormalInputMappingSingleton *> (*cursor);
-                    singleton->inputMapping.UnsubscribeGroup (_step.id);
+                    input->UnsubscribeGroup (_step.id);
                 }
-                else if constexpr (std::is_same_v<Type, Steps::FireEvent>)
+                else if constexpr (std::is_same_v<Type, Steps::FireKeyDown>)
                 {
-                    EMERGENCE_LOG (INFO, "[Configurator] Fire event with type ", _step.event.key.type,
-                                   " for character ", static_cast<char> (_step.event.key.keysym.sym), ".");
+                    EMERGENCE_LOG (INFO, "[Configurator] Fire key down event for \"", _step.key,
+                                   "\" with qualifiers mask ", _step.qualifiers,
+                                   _step.repeat ? " with repeat flag." : " without repeat flag.");
 
-                    SharedApplicationContext::Get ()->_fireInputEvent (_step.event, 0u);
+                    OgreBites::Event event;
+                    event.key.type = static_cast<int> (OgreBites::KEYDOWN);
+                    event.key.keysym = {static_cast<OgreBites::Keycode> (_step.key),
+                                        static_cast<unsigned short> (_step.qualifiers)};
+
+                    event.key.repeat = _step.repeat ? 1u : 0u;
+                    SharedApplicationContext::Get ()->_fireInputEvent (event, 0u);
+                }
+                else if constexpr (std::is_same_v<Type, Steps::FireKeyUp>)
+                {
+                    EMERGENCE_LOG (INFO, "[Configurator] Fire key up event for \"", _step.key,
+                                   "\" with qualifiers mask ", _step.qualifiers, ".");
+
+                    OgreBites::Event event;
+                    event.key.type = static_cast<int> (OgreBites::KEYUP);
+                    event.key.keysym = {static_cast<OgreBites::Keycode> (_step.key),
+                                        static_cast<unsigned short> (_step.qualifiers)};
+
+                    event.key.repeat = 0u;
+                    SharedApplicationContext::Get ()->_fireInputEvent (event, 0u);
                 }
             },
             step);
@@ -164,10 +236,14 @@ void Configurator::Execute ()
     ++framesConfigured;
 }
 
-void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::Vector<FrameConfiguration> _steps)
+void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder,
+                          Emergence::Container::Vector<FrameConfiguration> _steps,
+                          Emergence::Container::Vector<KeyboardActionTrigger> _instantTriggers,
+                          Emergence::Container::Vector<KeyboardActionTrigger> _persistentTriggers)
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
-    constructor.SetExecutor<Configurator> (std::move (_steps));
+    constructor.SetExecutor<Configurator> (std::move (_steps), std::move (_instantTriggers),
+                                           std::move (_persistentTriggers));
 }
 
 using FrameExpectation =
@@ -193,7 +269,7 @@ Validator::Validator (TaskConstructor &_constructor,
       fetchListenerById (
           _constructor.FetchValue (InputListenerObject::Reflect ().mapping, {InputListenerObject::Reflect ().objectId}))
 {
-    _constructor.DependOn (Checkpoint::INPUT_DISPATCH_END);
+    _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
 }
 
 void Validator::Execute () noexcept
@@ -226,143 +302,111 @@ void AddValidatorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::
     constructor.SetExecutor<Validator> (std::move (_expectations));
 }
 
-void RunTest (const Emergence::Container::Vector<KeyboardActionTrigger> &_keyboardTriggers,
-              const Emergence::Container::Vector<std::pair<FrameConfiguration, FrameExpectation>> &_frames)
+struct NormalUpdateRequest final
+{
+    FrameConfiguration configuration;
+    FrameExpectation expectation;
+};
+
+struct FixedUpdateRequest final
+{
+    FrameExpectation expectation;
+};
+
+void RunTest (Emergence::Container::Vector<KeyboardActionTrigger> _keyboardInstantTriggers,
+              Emergence::Container::Vector<KeyboardActionTrigger> _keyboardPersistentTriggers,
+              Emergence::Container::Vector<std::variant<NormalUpdateRequest, FixedUpdateRequest>> _updates)
 {
     World world {"TestWorld"_us};
     PipelineBuilder pipelineBuilder {&world};
 
-    // In test definitions it's much more convenient to read config->expectation pairs than two separate vectors,
+    // In test definitions it's much more convenient to read full frame update configs than three separate vectors,
     // therefore we accept composite vector as parameter and split it inside this helper.
 
-    Emergence::Container::Vector<FrameConfiguration> steps;
-    steps.reserve (_frames.size ());
+    Emergence::Container::Vector<FrameConfiguration> normalConfiguration;
+    Emergence::Container::Vector<FrameExpectation> normalExpectations;
+    Emergence::Container::Vector<FrameExpectation> fixedExpectations;
 
-    for (const auto &pair : _frames)
+    for (const auto &request : _updates)
     {
-        steps.emplace_back (pair.first);
+        std::visit (
+            [&normalConfiguration, &normalExpectations, &fixedExpectations] (const auto &_request)
+            {
+                using Type = std::decay_t<decltype (_request)>;
+                if constexpr (std::is_same_v<Type, NormalUpdateRequest>)
+                {
+                    normalConfiguration.emplace_back (_request.configuration);
+                    normalExpectations.emplace_back (_request.expectation);
+                }
+                else if constexpr (std::is_same_v<Type, FixedUpdateRequest>)
+                {
+                    fixedExpectations.emplace_back (_request.expectation);
+                }
+            },
+            request);
     }
 
-    Emergence::Container::Vector<FrameExpectation> expectations;
-    expectations.reserve (_frames.size ());
+    pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
+    AddConfiguratorTask (pipelineBuilder, std::move (normalConfiguration), std::move (_keyboardInstantTriggers),
+                         std::move (_keyboardPersistentTriggers));
+    AddValidatorTask (pipelineBuilder, std::move (normalExpectations));
 
-    for (const auto &pair : _frames)
-    {
-        expectations.emplace_back (pair.second);
-    }
-
-    pipelineBuilder.Begin ("Test"_us);
-    AddConfiguratorTask (pipelineBuilder, std::move (steps));
-    AddValidatorTask (pipelineBuilder, std::move (expectations));
-
-    // We test only normal update, because normal and fixed input collectors are
-    // implemented through the same class: only used singletons are different.
-    InputCollection::AddNormalUpdateTask (SharedApplicationContext::Get (), pipelineBuilder);
+    Input::AddToNormalUpdate (SharedApplicationContext::Get (), pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
-    Pipeline *update = pipelineBuilder.End (std::thread::hardware_concurrency ());
+    Pipeline *normalUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
+    pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
+    AddValidatorTask (pipelineBuilder, std::move (fixedExpectations));
+    Input::AddToFixedUpdate (pipelineBuilder);
+    AddAllCheckpoints (pipelineBuilder);
+    Pipeline *fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
+
+    for (const auto &request : _updates)
     {
-        auto modifyInput = world.ModifySingletonExternally (NormalInputMappingSingleton::Reflect ().mapping);
-        auto *input = static_cast<NormalInputMappingSingleton *> (*modifyInput.Execute ());
-
-        for (const KeyboardActionTrigger &trigger : _keyboardTriggers)
-        {
-            input->inputMapping.keyboardTriggers.EmplaceBack (trigger);
-        }
+        std::visit (
+            [normalUpdate, fixedUpdate] (const auto &_request)
+            {
+                using Type = std::decay_t<decltype (_request)>;
+                if constexpr (std::is_same_v<Type, NormalUpdateRequest>)
+                {
+                    normalUpdate->Execute ();
+                }
+                else if constexpr (std::is_same_v<Type, FixedUpdateRequest>)
+                {
+                    fixedUpdate->Execute ();
+                }
+            },
+            request);
     }
-
-    for (std::size_t index = 0u; index < _frames.size (); ++index)
-    {
-        update->Execute ();
-    }
-}
-
-Steps::FireEvent KeyboardEvent (char _key, OgreBites::EventType _type)
-{
-    Steps::FireEvent step;
-    step.event.key.type = static_cast<int> (_type);
-    step.event.key.keysym = {static_cast<OgreBites::Keycode> (_key), 0u};
-    step.event.key.repeat = 0u;
-    return step;
 }
 
 BEGIN_SUITE (Input)
 
 TEST_CASE (SubscriptionManagement)
 {
-    char aButton = 'a';
-    char bButton = 'b';
+    InputAction aDown {"A"_us, "ADown"_us};
+    InputAction bDown {"B"_us, "BDown"_us};
 
-    InputAction aDown {"ADown"_us, "A"_us};
-    InputAction bDown {"BDown"_us, "B"_us};
-
-    RunTest (
-        {
-            KeyboardActionTrigger {aDown, {{aButton, false}}},
-            KeyboardActionTrigger {bDown, {{bButton, false}}},
-        },
-        {
-            {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}}, Steps::CreateListener {1u},
-              Steps::AddSubscription {{"B"_us, 1u}}},
-             {}},
-            {{KeyboardEvent (aButton, OgreBites::KEYDOWN), KeyboardEvent (bButton, OgreBites::KEYDOWN)},
-             {{0u, {aDown}}, {1u, {bDown}}}},
-            {{Steps::AddSubscription {{"B"_us, 0u}}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
-              KeyboardEvent (bButton, OgreBites::KEYDOWN)},
-             {{0u, {aDown, bDown}}, {1u, {bDown}}}},
-            {{Steps::UnsubscribeGroup {"B"_us}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
-              KeyboardEvent (bButton, OgreBites::KEYDOWN)},
-             {{0u, {aDown}}, {1u, {}}}},
-            {{Steps::AddSubscription {{"B"_us, 0u}}, Steps::AddSubscription {{"B"_us, 1u}},
-              KeyboardEvent (aButton, OgreBites::KEYDOWN), KeyboardEvent (bButton, OgreBites::KEYDOWN)},
-             {{0u, {aDown, bDown}}, {1u, {bDown}}}},
-            {{Steps::UnsubscribeListener {0u}, KeyboardEvent (aButton, OgreBites::KEYDOWN),
-              KeyboardEvent (bButton, OgreBites::KEYDOWN)},
-             {{0u, {}}, {1u, {bDown}}}},
-        });
+    RunTest ({},
+             {
+                 KeyboardActionTrigger {aDown, {'a'}, 0u},
+                 KeyboardActionTrigger {bDown, {'b'}, 0u},
+             },
+             {
+                 NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}},
+                                       Steps::CreateListener {1u}, Steps::AddSubscription {{"B"_us, 1u}}},
+                                      {}},
+                 NormalUpdateRequest {
+                     {Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
+                     {{0u, {aDown}}, {1u, {bDown}}}},
+                 NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}}, {{0u, {aDown, bDown}}, {1u, {bDown}}}},
+                 NormalUpdateRequest {{Steps::UnsubscribeGroup {"B"_us}}, {{0u, {aDown}}, {1u, {}}}},
+                 NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}, Steps::AddSubscription {{"B"_us, 1u}}},
+                                      {{0u, {aDown, bDown}}, {1u, {bDown}}}},
+                 NormalUpdateRequest {{Steps::UnsubscribeListener {0u}}, {{0u, {}}, {1u, {bDown}}}},
+             });
 }
 
-TEST_CASE (KeyboardTriggers)
-{
-    char firstButton = 'q';
-    char secondButton = 'w';
-
-    InputAction firstDown {"FirstDown"_us, "Test"_us};
-    InputAction firstJustPressed {"FirstJustPressed"_us, "Test"_us};
-
-    InputAction bothDown {"BothDown"_us, "Test"_us};
-    InputAction bothJustPressed {"BothJustPressed"_us, "Test"_us};
-    InputAction firstJustPressedSecondDown {"FirstJustPressedSecondDown"_us, "Test"_us};
-
-    RunTest (
-        {
-            KeyboardActionTrigger {firstDown, {{firstButton, false}}},
-            KeyboardActionTrigger {firstJustPressed, {{firstButton, true}}},
-            KeyboardActionTrigger {bothDown, {{firstButton, false}, {secondButton, false}}},
-            KeyboardActionTrigger {bothJustPressed, {{firstButton, true}, {secondButton, true}}},
-            KeyboardActionTrigger {firstJustPressedSecondDown, {{firstButton, true}, {secondButton, false}}},
-        },
-        {
-            {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN)}, {{0u, {firstDown, firstJustPressed}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN)}, {{0u, {firstDown}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYUP)}, {{0u, {}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN)}, {{0u, {firstDown, firstJustPressed}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN), KeyboardEvent (secondButton, OgreBites::KEYDOWN)},
-             {{0u, {firstDown, bothDown}}}},
-            {{KeyboardEvent (secondButton, OgreBites::KEYUP)}, {{0u, {firstDown}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYUP)}, {{0u, {}}}},
-            {{KeyboardEvent (secondButton, OgreBites::KEYDOWN)}, {{0u, {}}}},
-            {{KeyboardEvent (secondButton, OgreBites::KEYUP)}, {{0u, {}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN), KeyboardEvent (secondButton, OgreBites::KEYDOWN)},
-             {{0u, {firstDown, firstJustPressed, bothDown, bothJustPressed, firstJustPressedSecondDown}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN), KeyboardEvent (secondButton, OgreBites::KEYDOWN)},
-             {{0u, {firstDown, bothDown}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYUP), KeyboardEvent (secondButton, OgreBites::KEYDOWN)},
-             {{0u, {}}}},
-            {{KeyboardEvent (firstButton, OgreBites::KEYDOWN), KeyboardEvent (secondButton, OgreBites::KEYDOWN)},
-             {{0u, {firstDown, firstJustPressed, bothDown, firstJustPressedSecondDown}}}},
-        });
-}
+// TODO: More tests...
 
 END_SUITE
