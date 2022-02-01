@@ -10,23 +10,41 @@ using KeyCode = std::int32_t;
 
 using QualifiersMask = std::uint32_t;
 
-struct KeyboardActionTrigger final
+/// \brief Produces persistent actions when is key down/up.
+struct KeyStateTrigger final
 {
-    constexpr static const std::size_t MAX_KEY_REQUIREMENTS = 3u;
-
     InputAction action;
-    Emergence::Container::InplaceVector<KeyCode, MAX_KEY_REQUIREMENTS> keys;
-    QualifiersMask qualifiers;
+    KeyCode key;
+    bool down;
 
-    uint32_t keysState = 0u;
-    static_assert (sizeof (keysState) * 8u >= MAX_KEY_REQUIREMENTS);
+    bool isDownNow = false;
 
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId action;
-        std::array<Emergence::StandardLayout::FieldId, MAX_KEY_REQUIREMENTS> keys;
+        Emergence::StandardLayout::FieldId key;
+        Emergence::StandardLayout::FieldId down;
+        Emergence::StandardLayout::FieldId isDownNow;
+        Emergence::StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+/// \brief Produces instant actions when key is pressed/released.
+struct KeyStateChangedTrigger final
+{
+    InputAction action;
+    KeyCode key;
+    bool pressed;
+    QualifiersMask qualifiers;
+
+    struct Reflection final
+    {
+        Emergence::StandardLayout::FieldId action;
+        Emergence::StandardLayout::FieldId key;
+        Emergence::StandardLayout::FieldId pressed;
         Emergence::StandardLayout::FieldId qualifiers;
-        Emergence::StandardLayout::FieldId keysState;
         Emergence::StandardLayout::Mapping mapping;
     };
 
@@ -53,11 +71,12 @@ struct InputSubscription final
 struct InputSingleton final
 {
 public:
-    constexpr static const std::size_t MAX_KEYBOARD_TRIGGERS = 32u;
+    constexpr static const std::size_t MAX_TRIGGERS = 32u;
     constexpr static const std::size_t MAX_SUBSCRIPTIONS = 8u;
     constexpr static const std::size_t MAX_ACTIONS_IN_QUEUE = 32u;
 
-    using KeyboardTriggerVector = Emergence::Container::InplaceVector<KeyboardActionTrigger, MAX_KEYBOARD_TRIGGERS>;
+    using KeyStateChangedTriggerVector = Emergence::Container::InplaceVector<KeyStateChangedTrigger, MAX_TRIGGERS>;
+    using KeyStateTriggerVector = Emergence::Container::InplaceVector<KeyStateTrigger, MAX_TRIGGERS>;
     using SubscriptionVector = Emergence::Container::InplaceVector<InputSubscription, MAX_SUBSCRIPTIONS>;
     using ActionsBuffer = Emergence::Container::InplaceVector<InputAction, MAX_ACTIONS_IN_QUEUE>;
 
@@ -67,8 +86,8 @@ public:
 
     void UnsubscribeGroup (Emergence::Memory::UniqueString _group) noexcept;
 
-    KeyboardTriggerVector keyboardInstantTriggers;
-    KeyboardTriggerVector keyboardPersistentTriggers;
+    KeyStateTriggerVector keyStateTriggers;
+    KeyStateChangedTriggerVector keyStateChangedTriggers;
 
     SubscriptionVector normalSubscriptions;
     SubscriptionVector fixedSubscriptions;
@@ -88,8 +107,8 @@ public:
 
     struct Reflection final
     {
-        std::array<Emergence::StandardLayout::FieldId, MAX_KEYBOARD_TRIGGERS> keyboardInstantTriggers;
-        std::array<Emergence::StandardLayout::FieldId, MAX_KEYBOARD_TRIGGERS> keyboardPersistentTriggers;
+        std::array<Emergence::StandardLayout::FieldId, MAX_TRIGGERS> keyStateTriggers;
+        std::array<Emergence::StandardLayout::FieldId, MAX_TRIGGERS> keyStateChangedTriggers;
 
         std::array<Emergence::StandardLayout::FieldId, MAX_SUBSCRIPTIONS> normalSubscriptions;
         std::array<Emergence::StandardLayout::FieldId, MAX_SUBSCRIPTIONS> fixedSubscriptions;

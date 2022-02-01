@@ -93,15 +93,15 @@ class Configurator final : public TaskExecutorBase<Configurator>
 public:
     Configurator (TaskConstructor &_constructor,
                   Emergence::Container::Vector<FrameConfiguration> _steps,
-                  Emergence::Container::Vector<KeyboardActionTrigger> _instantTriggers,
-                  Emergence::Container::Vector<KeyboardActionTrigger> _persistentTriggers);
+                  Emergence::Container::Vector<KeyStateTrigger> _keyStateTriggers,
+                  Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateChangedTriggers);
 
     void Execute ();
 
 private:
     Emergence::Container::Vector<FrameConfiguration> steps;
-    Emergence::Container::Vector<KeyboardActionTrigger> instantTriggers;
-    Emergence::Container::Vector<KeyboardActionTrigger> persistentTriggers;
+    Emergence::Container::Vector<KeyStateTrigger> keyStateTriggers;
+    Emergence::Container::Vector<KeyStateChangedTrigger> keyStateChangedTriggers;
     std::size_t framesConfigured = 0u;
 
     Emergence::Warehouse::InsertLongTermQuery createListener;
@@ -111,11 +111,11 @@ private:
 
 Configurator::Configurator (TaskConstructor &_constructor,
                             Emergence::Container::Vector<FrameConfiguration> _steps,
-                            Emergence::Container::Vector<KeyboardActionTrigger> _instantTriggers,
-                            Emergence::Container::Vector<KeyboardActionTrigger> _persistentTriggers)
+                            Emergence::Container::Vector<KeyStateTrigger> _keyStateTriggers,
+                            Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateChangedTriggers)
     : steps (std::move (_steps)),
-      instantTriggers (std::move (_instantTriggers)),
-      persistentTriggers (std::move (_persistentTriggers)),
+      keyStateTriggers (std::move (_keyStateTriggers)),
+      keyStateChangedTriggers (std::move (_keyStateChangedTriggers)),
       createListener (_constructor.InsertLongTerm (InputListenerObject::Reflect ().mapping)),
       modifyListenerById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
                                                     {InputListenerObject::Reflect ().objectId})),
@@ -134,19 +134,19 @@ void Configurator::Execute ()
 
     // Initialize triggers if there are not initialized already.
 
-    if (input->keyboardInstantTriggers.Empty ())
+    if (input->keyStateTriggers.Empty ())
     {
-        for (const KeyboardActionTrigger &trigger : instantTriggers)
+        for (const KeyStateTrigger &trigger : keyStateTriggers)
         {
-            REQUIRE (input->keyboardInstantTriggers.TryEmplaceBack (trigger));
+            REQUIRE (input->keyStateTriggers.TryEmplaceBack (trigger));
         }
     }
 
-    if (input->keyboardPersistentTriggers.Empty ())
+    if (input->keyStateChangedTriggers.Empty ())
     {
-        for (const KeyboardActionTrigger &trigger : persistentTriggers)
+        for (const KeyStateChangedTrigger &trigger : keyStateChangedTriggers)
         {
-            REQUIRE (input->keyboardPersistentTriggers.TryEmplaceBack (trigger));
+            REQUIRE (input->keyStateChangedTriggers.TryEmplaceBack (trigger));
         }
     }
 
@@ -238,12 +238,12 @@ void Configurator::Execute ()
 
 void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder,
                           Emergence::Container::Vector<FrameConfiguration> _steps,
-                          Emergence::Container::Vector<KeyboardActionTrigger> _instantTriggers,
-                          Emergence::Container::Vector<KeyboardActionTrigger> _persistentTriggers)
+                          Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateTriggers,
+                          Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTriggers)
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
-    constructor.SetExecutor<Configurator> (std::move (_steps), std::move (_instantTriggers),
-                                           std::move (_persistentTriggers));
+    constructor.SetExecutor<Configurator> (std::move (_steps), std::move (_keyStateChangedTriggers),
+                                           std::move (_keyStateTriggers));
 }
 
 using FrameExpectation =
@@ -313,9 +313,9 @@ struct FixedUpdateRequest final
     FrameExpectation expectation;
 };
 
-void RunTest (Emergence::Container::Vector<KeyboardActionTrigger> _keyboardInstantTriggers,
-              Emergence::Container::Vector<KeyboardActionTrigger> _keyboardPersistentTriggers,
-              Emergence::Container::Vector<std::variant<NormalUpdateRequest, FixedUpdateRequest>> _updates)
+void RunTest (Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTriggers,
+              Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateTriggers,
+              const Emergence::Container::Vector<std::variant<NormalUpdateRequest, FixedUpdateRequest>> &_updates)
 {
     World world {"TestWorld"_us};
     PipelineBuilder pipelineBuilder {&world};
@@ -347,8 +347,8 @@ void RunTest (Emergence::Container::Vector<KeyboardActionTrigger> _keyboardInsta
     }
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
-    AddConfiguratorTask (pipelineBuilder, std::move (normalConfiguration), std::move (_keyboardInstantTriggers),
-                         std::move (_keyboardPersistentTriggers));
+    AddConfiguratorTask (pipelineBuilder, std::move (normalConfiguration), std::move (_keyStateTriggers),
+                         std::move (_keyStateChangedTriggers));
     AddValidatorTask (pipelineBuilder, std::move (normalExpectations));
 
     Input::AddToNormalUpdate (SharedApplicationContext::Get (), pipelineBuilder);
@@ -387,18 +387,17 @@ TEST_CASE (SubscriptionManagement)
     InputAction aDown {"A"_us, "ADown"_us};
     InputAction bDown {"B"_us, "BDown"_us};
 
-    RunTest ({},
-             {
-                 KeyboardActionTrigger {aDown, {'a'}, 0u},
-                 KeyboardActionTrigger {bDown, {'b'}, 0u},
+    RunTest ({
+                 KeyStateTrigger {aDown, 'a', true},
+                 KeyStateTrigger {bDown, 'b', true},
              },
+             {},
              {
                  NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}},
                                        Steps::CreateListener {1u}, Steps::AddSubscription {{"B"_us, 1u}}},
                                       {}},
-                 NormalUpdateRequest {
-                     {Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
-                     {{0u, {aDown}}, {1u, {bDown}}}},
+                 NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
+                                      {{0u, {aDown}}, {1u, {bDown}}}},
                  NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}}, {{0u, {aDown, bDown}}, {1u, {bDown}}}},
                  NormalUpdateRequest {{Steps::UnsubscribeGroup {"B"_us}}, {{0u, {aDown}}, {1u, {}}}},
                  NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}, Steps::AddSubscription {{"B"_us, 1u}}},

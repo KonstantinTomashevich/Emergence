@@ -150,17 +150,12 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (NormalInputDispatcher);
 
 private:
-    void UpdateTriggers (InputSingleton *_input,
-                         InputSingleton::KeyboardTriggerVector &_triggers,
-                         bool _instant) noexcept;
+    static void SendAction (InputSingleton *_input, const InputAction &_action, bool _instant) noexcept;
 
     void UpdateActionBuffers (InputSingleton *_input) noexcept;
 
     Emergence::Warehouse::FetchSingletonQuery fetchWorld;
     Emergence::Container::Vector<KeyboardEvent> postponedEvents {Emergence::Memory::Profiler::AllocationGroup::Top ()};
-
-    // Last received state of qualifiers. Used to check if persistent triggers can be activated without new events.
-    QualifiersMask lastQualifiersState;
     OgreBites::ApplicationContextBase *application;
 };
 
@@ -202,7 +197,6 @@ bool NormalInputDispatcher::keyPressed (const OgreBites::KeyboardEvent &_event)
 {
     if (!_event.repeat)
     {
-        lastQualifiersState = static_cast<QualifiersMask> (_event.keysym.mod);
         postponedEvents.emplace_back (KeyboardEvent {static_cast<KeyCode> (_event.keysym.sym),
                                                      static_cast<QualifiersMask> (_event.keysym.mod), true});
     }
@@ -214,7 +208,6 @@ bool NormalInputDispatcher::keyReleased (const OgreBites::KeyboardEvent &_event)
 {
     if (!_event.repeat)
     {
-        lastQualifiersState = static_cast<QualifiersMask> (_event.keysym.mod);
         postponedEvents.emplace_back (KeyboardEvent {static_cast<KeyCode> (_event.keysym.sym),
                                                      static_cast<QualifiersMask> (_event.keysym.mod), false});
     }
@@ -222,81 +215,62 @@ bool NormalInputDispatcher::keyReleased (const OgreBites::KeyboardEvent &_event)
     return InputListener::keyPressed (_event);
 }
 
-void NormalInputDispatcher::UpdateTriggers (InputSingleton *_input,
-                                            InputSingleton::KeyboardTriggerVector &_triggers,
-                                            bool _instant) noexcept
+void NormalInputDispatcher::SendAction (InputSingleton *_input, const InputAction &_action, bool _instant) noexcept
 {
-    for (KeyboardActionTrigger &trigger : _triggers)
+    // Only instant actions can be duplicated.
+    if (_instant || _input->normalActionsBuffer.Find (_action) == _input->normalActionsBuffer.End ())
     {
-        bool canBeTriggered = true;
-        const uint32_t satisfactionMask = (1u << trigger.keys.GetCount ()) - 1u;
+        _input->normalActionsBuffer.TryEmplaceBack (_action);
+    }
 
-        auto checkTrigger =
-            [_input, _instant, satisfactionMask, &canBeTriggered, &trigger] (QualifiersMask _currentQualifiers)
-        {
-            if (canBeTriggered && trigger.keysState == satisfactionMask && _currentQualifiers == trigger.qualifiers)
-            {
-                // Only instant actions can be duplicated.
-                if (_instant || _input->normalActionsBuffer.Find (trigger.action) == _input->normalActionsBuffer.End ())
-                {
-                    _input->normalActionsBuffer.TryEmplaceBack (trigger.action);
-                }
-
-                if (_instant)
-                {
-                    _input->fixedInstantActionsBuffer.TryEmplaceBack (trigger.action);
-                }
-                // Persistent actions should not be duplicated.
-                else if (_input->fixedPersistentActionsBuffer.Find (trigger.action) ==
-                         _input->fixedPersistentActionsBuffer.End ())
-                {
-                    _input->fixedPersistentActionsBuffer.TryEmplaceBack (trigger.action);
-                }
-
-                canBeTriggered = _instant;
-            }
-        };
-
-        for (const KeyboardEvent &event : postponedEvents)
-        {
-            for (std::size_t index = 0u; index < trigger.keys.GetCount (); ++index)
-            {
-                if (trigger.keys[index] == event.key)
-                {
-                    if (event.down)
-                    {
-                        trigger.keysState |= 1u << index;
-                    }
-                    else
-                    {
-                        trigger.keysState &= ~(1u << index);
-                    }
-
-                    checkTrigger (event.qualifiers);
-                    break;
-                }
-            }
-        }
-
-        // Persistent event might not receive any changes from events, but still be fired.
-        // For example: player holds attack button.
-        if (!_instant)
-        {
-            checkTrigger (lastQualifiersState);
-        }
-
-        if (_instant)
-        {
-            // Instant event requires buttons to be pressed during single frame.
-            trigger.keysState = 0u;
-        }
+    if (_instant)
+    {
+        _input->fixedInstantActionsBuffer.TryEmplaceBack (_action);
+    }
+    // Persistent actions should not be duplicated.
+    else if (_input->fixedPersistentActionsBuffer.Find (_action) == _input->fixedPersistentActionsBuffer.End ())
+    {
+        _input->fixedPersistentActionsBuffer.TryEmplaceBack (_action);
     }
 }
 
 void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcept
 {
-    UpdateTriggers (_input, _input->keyboardInstantTriggers, true);
-    UpdateTriggers (_input, _input->keyboardPersistentTriggers, false);
+    for (KeyStateTrigger &trigger : _input->keyStateTriggers)
+    {
+        // Can not be triggered more than once per frame.
+        bool canBeTriggered = true;
+
+        for (const KeyboardEvent &event : postponedEvents)
+        {
+            if (trigger.key == event.key)
+            {
+                trigger.isDownNow = event.down;
+                if (canBeTriggered && trigger.isDownNow == trigger.down)
+                {
+                    canBeTriggered = false;
+                    SendAction (_input, trigger.action, false);
+                }
+            }
+        }
+
+        if (canBeTriggered && trigger.isDownNow == trigger.down)
+        {
+            SendAction (_input, trigger.action, false);
+        }
+    }
+
+    for (KeyStateChangedTrigger &trigger : _input->keyStateChangedTriggers)
+    {
+        for (const KeyboardEvent &event : postponedEvents)
+        {
+            if (trigger.key == event.key && event.down == trigger.pressed && event.qualifiers == trigger.qualifiers)
+            {
+                SendAction (_input, trigger.action, true);
+            }
+        }
+    }
+
     _input->accumulatedPersistentActionsForFixedUpdate = _input->fixedPersistentActionsBuffer.GetCount ();
     postponedEvents.clear ();
 }

@@ -2,15 +2,30 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-const KeyboardActionTrigger::Reflection &KeyboardActionTrigger::Reflect () noexcept
+const KeyStateTrigger::Reflection &KeyStateTrigger::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (KeyboardActionTrigger)
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (KeyStateTrigger)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (action)
-        EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (keys)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (key)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (down)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (isDownNow)
+        EMERGENCE_MAPPING_REGISTRATION_END ()
+    }();
+
+    return reflection;
+}
+
+const KeyStateChangedTrigger::Reflection &KeyStateChangedTrigger::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (KeyStateChangedTrigger)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (action)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (key)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (pressed)
         EMERGENCE_MAPPING_REGISTER_REGULAR (qualifiers)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (keysState)
         EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
@@ -84,8 +99,8 @@ const InputSingleton::Reflection &InputSingleton::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputSingleton)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyboardInstantTriggers)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyboardPersistentTriggers)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyStateTriggers)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyStateChangedTriggers)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (normalSubscriptions)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (fixedSubscriptions)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (normalActionsBuffer)
