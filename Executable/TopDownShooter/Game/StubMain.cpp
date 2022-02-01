@@ -15,120 +15,14 @@ BEGIN_MUTING_WARNINGS
 #include <OgreEntity.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
+#include <OgreTimer.h>
 END_MUTING_WARNINGS
 
-#include <Input/FixedInputMappingSingleton.hpp>
 #include <Input/Input.hpp>
-#include <Input/NormalInputMappingSingleton.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 
-#include <Time/TimeSingleton.hpp>
-#include <Time/TimeSynchronization.hpp>
-
 using namespace Emergence::Memory::Literals;
-
-class WorldUpdater final
-{
-public:
-    explicit WorldUpdater (OgreBites::ApplicationContext *_application, Emergence::Celerity::World *_world)
-        : application (_application),
-          modifyTime (_world->ModifySingletonExternally (TimeSingleton::Reflect ().mapping))
-    {
-        Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
-
-        pipelineBuilder.Begin ("FixedUpdate"_us);
-        TimeSynchronization::AddFixedUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
-        InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
-        Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-        fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
-
-        pipelineBuilder.Begin ("NormalUpdate"_us);
-        TimeSynchronization::AddNormalUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
-        InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
-        Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-        normalUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
-
-        auto modifyFixedInput = _world->ModifySingletonExternally (FixedInputMappingSingleton::Reflect ().mapping);
-        auto *fixedInput = static_cast<FixedInputMappingSingleton *> (*modifyFixedInput.Execute ());
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Forward"_us, "Movement"_us}, {{OgreBites::Keycode {'w'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Left"_us, "Movement"_us}, {{OgreBites::Keycode {'a'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Backward"_us, "Movement"_us}, {{OgreBites::Keycode {'s'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Right"_us, "Movement"_us}, {{OgreBites::Keycode {'d'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Explode"_us, "Ability"_us}, {{OgreBites::Keycode {'q'}, true}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Dash"_us, "Ability"_us},
-                                   {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}});
-
-        auto modifyNormalInput = _world->ModifySingletonExternally (NormalInputMappingSingleton::Reflect ().mapping);
-        auto *normalInput = static_cast<NormalInputMappingSingleton *> (*modifyNormalInput.Execute ());
-
-        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Up"_us, "Menu"_us}, {{OgreBites::Keycode {'1'}, true}}});
-
-        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Down"_us, "Menu"_us}, {{OgreBites::Keycode {'2'}, true}}});
-
-        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            <#initializer #>,
-            KeyboardActionTrigger {InputAction {"Confirm"_us, "Menu"_us}, {{OgreBites::Keycode {'e'}, true}}});
-
-        auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
-        time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 60.0f);
-        time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 30.0f);
-    }
-
-    void Execute ()
-    {
-        // Intentionally lift write access to time singleton, because we are expecting changes from pipelines.
-        auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
-        application->pollEvents ();
-
-        const uint64_t timeDifference = time->normalTimeUs > time->fixedTimeUs ?
-                                            time->normalTimeUs - time->fixedTimeUs :
-                                            time->fixedTimeUs - time->normalTimeUs;
-
-        if (timeDifference < 1000000u)
-        {
-            while (time->fixedTimeUs < time->normalTimeUs)
-            {
-                fixedUpdate->Execute ();
-            }
-        }
-        else
-        {
-            // Looks like we were sitting on breakpoint. In this case we will just assume that no time elapsed.
-            time->fixedTimeUs = time->normalTimeUs;
-        }
-
-        normalUpdate->Execute ();
-    }
-
-private:
-    OgreBites::ApplicationContext *application;
-    Emergence::Warehouse::ModifySingletonQuery modifyTime;
-    Emergence::Celerity::Pipeline *fixedUpdate = nullptr;
-    Emergence::Celerity::Pipeline *normalUpdate = nullptr;
-};
 
 static Emergence::Memory::Profiler::EventObserver StartRecording (
     Emergence::Memory::Recording::StreamSerializer &_serializer, std::ostream &_output)
@@ -195,12 +89,21 @@ int main (int /*unused*/, char ** /*unused*/)
 
     {
         Emergence::Celerity::World world {"TestWorld"_us};
-        WorldUpdater worldUpdater {&application, &world};
+        Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+
+        pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
+        Input::AddToNormalUpdate (&application, pipelineBuilder);
+        Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+        pipelineBuilder.End (std::thread::hardware_concurrency ());
+
+        pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
+        Input::AddToFixedUpdate (pipelineBuilder);
+        Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+        pipelineBuilder.End (std::thread::hardware_concurrency ());
 
         while (!application.getRoot ()->endRenderingQueued ())
         {
-            worldUpdater.Execute ();
-
+            world.Update ();
             constexpr const uint64_t MS_PERIOD = 3000u;
             const uint64_t msGlobal = application.getRoot ()->getTimer ()->getMilliseconds ();
             const uint64_t msLocal = msGlobal % MS_PERIOD;
