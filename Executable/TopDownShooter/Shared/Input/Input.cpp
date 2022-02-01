@@ -111,8 +111,8 @@ void FixedInputDispatcher::Execute () noexcept
     auto *input = static_cast<InputSingleton *> (*cursor);
 
     ClearListeners ();
-    DispatchActions (input->fixedSubscriptions, input->fixedInstantActionsBuffer);
     DispatchActions (input->fixedSubscriptions, input->fixedPersistentActionsBuffer);
+    DispatchActions (input->fixedSubscriptions, input->fixedInstantActionsBuffer);
     input->fixedInstantActionsBuffer.Clear ();
 }
 

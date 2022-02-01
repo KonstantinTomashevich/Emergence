@@ -27,7 +27,7 @@ public:
     /// \brief Executes normal update and fixed update if needed.
     void Update () noexcept;
 
-    void RemoveCustomPipeline (Pipeline *_pipeline) noexcept;
+    void RemovePipeline (Pipeline *_pipeline) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (World);
 
@@ -36,6 +36,7 @@ public:
 private:
     friend class PipelineBuilder;
     friend class TaskConstructor;
+    friend class WorldTestingUtility;
 
     struct PipelineNode final
     {
@@ -60,5 +61,18 @@ private:
     PipelineNode *firstPipeline = nullptr;
     PipelineNode *normalPipeline = nullptr;
     PipelineNode *fixedPipeline = nullptr;
+};
+
+class WorldTestingUtility final
+{
+public:
+    WorldTestingUtility () = delete;
+
+    static void RunNormalUpdateOnce (World &_world, uint64_t _timeDeltaNs) noexcept;
+
+    static void RunFixedUpdateOnce (World &_world) noexcept;
+
+private:
+    static std::pair<TimeSingleton *, WorldSingleton *> ExtractSingletons (World &_world) noexcept;
 };
 } // namespace Emergence::Celerity

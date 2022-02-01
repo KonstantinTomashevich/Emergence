@@ -117,7 +117,7 @@ public:
 
     void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
-    [[nodiscard]] Pipeline *End (std::size_t _maximumChildThreads) noexcept;
+    Pipeline *End (std::size_t _maximumChildThreads) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PipelineBuilder);
 

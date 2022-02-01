@@ -127,7 +127,7 @@ Configurator::Configurator (TaskConstructor &_constructor,
 void Configurator::Execute ()
 {
     REQUIRE (framesConfigured < steps.size ());
-    EMERGENCE_LOG (INFO, "[Configurator] Sequence ", framesConfigured);
+    EMERGENCE_LOG (INFO, "[Configurator] Configuration sequence ", framesConfigured);
 
     auto cursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*cursor);
@@ -353,27 +353,27 @@ void RunTest (Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTrig
 
     Input::AddToNormalUpdate (SharedApplicationContext::Get (), pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
-    Pipeline *normalUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
+    pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     AddValidatorTask (pipelineBuilder, std::move (fixedExpectations));
     Input::AddToFixedUpdate (pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
-    Pipeline *fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
+    pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     for (const auto &request : _updates)
     {
         std::visit (
-            [normalUpdate, fixedUpdate] (const auto &_request)
+            [&world] (const auto &_request)
             {
                 using Type = std::decay_t<decltype (_request)>;
                 if constexpr (std::is_same_v<Type, NormalUpdateRequest>)
                 {
-                    normalUpdate->Execute ();
+                    Emergence::Celerity::WorldTestingUtility::RunNormalUpdateOnce (world, 16666667u);
                 }
                 else if constexpr (std::is_same_v<Type, FixedUpdateRequest>)
                 {
-                    fixedUpdate->Execute ();
+                    Emergence::Celerity::WorldTestingUtility::RunFixedUpdateOnce (world);
                 }
             },
             request);
@@ -387,25 +387,142 @@ TEST_CASE (SubscriptionManagement)
     InputAction aDown {"A"_us, "ADown"_us};
     InputAction bDown {"B"_us, "BDown"_us};
 
-    RunTest ({
-                 KeyStateTrigger {aDown, 'a', true},
-                 KeyStateTrigger {bDown, 'b', true},
-             },
-             {},
+    RunTest (
+        {
+            KeyStateTrigger {aDown, 'a', true},
+            KeyStateTrigger {bDown, 'b', true},
+        },
+        {},
+        {
+            NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}},
+                                  Steps::CreateListener {1u}, Steps::AddSubscription {{"B"_us, 1u}}},
+                                 {}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
+                                 {{0u, {aDown}}, {1u, {bDown}}}},
+            NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}}, {{0u, {aDown, bDown}}, {1u, {bDown}}}},
+            NormalUpdateRequest {{Steps::UnsubscribeGroup {"B"_us}}, {{0u, {aDown}}, {1u, {}}}},
+            NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}, Steps::AddSubscription {{"B"_us, 1u}}},
+                                 {{0u, {aDown, bDown}}, {1u, {bDown}}}},
+            NormalUpdateRequest {{Steps::UnsubscribeListener {0u}}, {{0u, {}}, {1u, {bDown}}}},
+        });
+}
+
+TEST_CASE (KeyStateTrigger)
+{
+    InputAction actionDown {"Test"_us, "Down"_us};
+    InputAction actionUp {"Test"_us, "Up"_us};
+
+    RunTest (
+        {
+            KeyStateTrigger {actionDown, 'a', true},
+            KeyStateTrigger {actionUp, 'a', false},
+        },
+        {},
+        {
+            NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
+
+            // Key is up.
+            NormalUpdateRequest {{}, {{0u, {actionUp}}}},
+
+            // Key was both up and down: fire both actions.
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u}},
+                                 {{0u, {actionDown, actionUp}}}},
+
+            // Key was both up and down several times: fire both actions, but do not duplicate.
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u},
+                                  Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u}},
+                                 {{0u, {actionDown, actionUp}}}},
+
+            // Press and hold.
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}}, {{0u, {actionDown}}}},
+            NormalUpdateRequest {{}, {{0u, {actionDown}}}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, true}}, {{0u, {actionDown}}}},
+            NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {{0u, {actionUp}}}},
+        });
+}
+
+TEST_CASE (OnePersistentActionFromSeveralTriggers)
+{
+    InputAction action {"Test"_us, "Down"_us};
+    RunTest (
+        {
+            KeyStateTrigger {action, 'a', true},
+            KeyStateTrigger {action, 'b', true},
+        },
+        {},
+        {
+            NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
+                                 {{0u, {action}}}},
+        });
+}
+
+TEST_CASE (KeyStateChangedTrigger)
+{
+    InputAction actionPressed {"Test"_us, "Pressed"_us};
+    InputAction actionReleased {"Test"_us, "Released"_us};
+    InputAction actionPressedWithQualifiers {"Test"_us, "Pressed"_us};
+
+    RunTest (
+        {},
+        {
+            KeyStateChangedTrigger {actionPressed, 'a', true, 0u},
+            KeyStateChangedTrigger {actionReleased, 'a', false, 0u},
+            KeyStateChangedTrigger {actionPressedWithQualifiers, 'a', true,
+                                    static_cast<QualifiersMask> (OgreBites::KMOD_CTRL)},
+        },
+        {
+            NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
+
+            // Just press and release immediately.
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u}},
+                                 {{0u, {actionPressed, actionReleased}}}},
+
+            // Press and hold.
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}}, {{0u, {actionPressed}}}},
+            NormalUpdateRequest {{}, {}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, true}}, {}},
+            NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {{0u, {actionReleased}}}},
+
+            // Check trigger with qualifier.
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', static_cast<QualifiersMask> (OgreBites::KMOD_CTRL), false}},
+                                 {{0u, {actionPressedWithQualifiers}}}},
+        });
+}
+
+TEST_CASE (InstantActionDuplication)
+{
+    InputAction action {"Test"_us, "Pressed"_us};
+    RunTest ({},
              {
-                 NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}},
-                                       Steps::CreateListener {1u}, Steps::AddSubscription {{"B"_us, 1u}}},
-                                      {}},
+                 KeyStateChangedTrigger {action, 'a', true, 0u},
+                 KeyStateChangedTrigger {action, 'b', true, 0u},
+             },
+             {
+                 NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
                  NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
-                                      {{0u, {aDown}}, {1u, {bDown}}}},
-                 NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}}, {{0u, {aDown, bDown}}, {1u, {bDown}}}},
-                 NormalUpdateRequest {{Steps::UnsubscribeGroup {"B"_us}}, {{0u, {aDown}}, {1u, {}}}},
-                 NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}, Steps::AddSubscription {{"B"_us, 1u}}},
-                                      {{0u, {aDown, bDown}}, {1u, {bDown}}}},
-                 NormalUpdateRequest {{Steps::UnsubscribeListener {0u}}, {{0u, {}}, {1u, {bDown}}}},
+                                      {{0u, {action, action}}}},
              });
 }
 
-// TODO: More tests...
+TEST_CASE (FixedUpdateDispatch)
+{
+    InputAction persistentAction {"Test"_us, "Down"_us};
+    InputAction instantAction {"Test"_us, "Pressed"_us};
+
+    RunTest (
+        {KeyStateTrigger {persistentAction, 'a', true}}, {KeyStateChangedTrigger {instantAction, 'a', true, 0u}},
+        {
+            NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}, false}}, {}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}}, {}},
+            FixedUpdateRequest {{{0u, {persistentAction, instantAction}}}},
+            FixedUpdateRequest {{{0u, {persistentAction}}}},
+            NormalUpdateRequest {{}, {}},
+            FixedUpdateRequest {{{0u, {persistentAction}}}},
+            FixedUpdateRequest {{{0u, {persistentAction}}}},
+            NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {}},
+            FixedUpdateRequest {{{0u, {}}}},
+        });
+}
 
 END_SUITE

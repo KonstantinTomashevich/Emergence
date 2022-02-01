@@ -60,9 +60,8 @@ void World::Update () noexcept
     FixedUpdate (time, world);
 }
 
-void World::RemoveCustomPipeline (Pipeline *_pipeline) noexcept
+void World::RemovePipeline (Pipeline *_pipeline) noexcept
 {
-    assert (_pipeline && _pipeline->GetType () == PipelineType::CUSTOM);
     PipelineNode *node = firstPipeline;
     PipelineNode *previous = nullptr;
 
@@ -70,8 +69,15 @@ void World::RemoveCustomPipeline (Pipeline *_pipeline) noexcept
     {
         if (&node->pipeline == _pipeline)
         {
-            assert (node != normalPipeline);
-            assert (node != fixedPipeline);
+            if (node == normalPipeline)
+            {
+                normalPipeline = nullptr;
+            }
+
+            if (node == fixedPipeline)
+            {
+                fixedPipeline = nullptr;
+            }
 
             PipelineNode *next = node->next;
             node->~PipelineNode ();
@@ -103,9 +109,8 @@ void World::NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     // - World was created and then cached.
     // - Developer stopped program at breakpoint.
     // - Program was frozen for some other reason.
-    // At any of these cases we are falling back to 60 FPS time delta.
+    // In any of these cases we skip one update cycle.
     constexpr uint64_t MAX_TIME_DELTA_NS = 1000000000u;
-    constexpr uint64_t FALLBACK_TIME_DELTA_NS = 16666667u;
 
     const uint64_t currentTimeNs = Emergence::Time::NanosecondsSinceStartup ();
     assert (currentTimeNs >= _time->realNormalTimeNs);
@@ -114,7 +119,7 @@ void World::NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 
     if (realTimeDeltaNs > MAX_TIME_DELTA_NS)
     {
-        realTimeDeltaNs = FALLBACK_TIME_DELTA_NS;
+        return;
     }
 
     _time->realNormalDurationS = static_cast<float> (realTimeDeltaNs) * 1e-9f;
@@ -204,5 +209,51 @@ Pipeline *World::AddPipeline (Memory::UniqueString _id,
     }
 
     return &firstPipeline->pipeline;
+}
+
+// TODO: Having separate setup-and-run functions for testing looks a bit bad. Any ideas how to make it better?
+
+void WorldTestingUtility::RunNormalUpdateOnce (World &_world, uint64_t _timeDeltaNs) noexcept
+{
+    auto [time, world] = ExtractSingletons (_world);
+    time->realNormalDurationS = static_cast<float> (_timeDeltaNs) * 1e-9f;
+
+    assert (time->timeSpeed >= 0.0f);
+    const auto scaledTimeDeltaNs = static_cast<uint64_t> (static_cast<float> (_timeDeltaNs) * time->timeSpeed);
+
+    time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
+    time->normalTimeNs += scaledTimeDeltaNs;
+
+    if (_world.normalPipeline)
+    {
+        _world.normalPipeline->pipeline.Execute();
+    }
+
+    world->fixedUpdateHappened = false;
+}
+
+void WorldTestingUtility::RunFixedUpdateOnce (World &_world) noexcept
+{
+    auto [time, world] = ExtractSingletons (_world);
+
+    // Keep it simple, because we do not need death spiral avoidance there.
+    assert (!time->targetFixedFrameDurationsS.Empty ());
+    time->fixedDurationS = time->targetFixedFrameDurationsS[0u];
+    const auto fixedDurationNs = static_cast<uint64_t> (time->fixedDurationS * 1e9f);
+
+    if (_world.fixedPipeline)
+    {
+        _world.fixedPipeline->pipeline.Execute();
+    }
+
+    time->fixedTimeNs += fixedDurationNs;
+    world->fixedUpdateHappened = true;
+}
+
+std::pair<TimeSingleton *, WorldSingleton *> WorldTestingUtility::ExtractSingletons (World &_world) noexcept
+{
+    auto timeCursor = _world.modifyTime.Execute ();
+    auto worldCursor = _world.modifyWorld.Execute ();
+    return {static_cast<TimeSingleton *> (*timeCursor), static_cast<WorldSingleton *> (*worldCursor)};
 }
 } // namespace Emergence::Celerity

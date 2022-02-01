@@ -34,7 +34,8 @@ struct TimeSingleton final
     /// Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
 
-    Emergence::Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
+    Emergence::Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
+        1000.0f / 120.0f, 1000.0f / 60.0f, 1000.0f / 30.0f};
 
     /// \brief Allows gameplay mechanics to slowdown or speedup time.
     /// \invariant >= 0.0f
