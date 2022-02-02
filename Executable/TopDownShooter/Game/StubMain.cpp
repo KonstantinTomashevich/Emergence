@@ -46,6 +46,7 @@ int main (int /*unused*/, char ** /*unused*/)
 
     Ogre::Root *root = application.getRoot ();
     Ogre::SceneManager *sceneManager = root->createSceneManager ();
+    sceneManager->setAmbientLight (Ogre::ColourValue {0.2f, 0.2f, 0.2f});
 
     Ogre::RTShader::ShaderGenerator *shaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr ();
     shaderGenerator->addSceneManager (sceneManager);
