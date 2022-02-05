@@ -1,7 +1,7 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
-
 #include <thread>
 #include <variant>
+
+#include <Celerity/InputAccumulator.hpp>
 
 #include <Container/Vector.hpp>
 
@@ -13,15 +13,10 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
-BEGIN_MUTING_WARNINGS
-#include <OgreInput.h>
-END_MUTING_WARNINGS
-
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
 
 #include <Test/Input.hpp>
-#include <Test/SharedApplicationContext.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -68,7 +63,6 @@ struct FireKeyDown
 {
     KeyCode key;
     QualifiersMask qualifiers;
-    bool repeat = false;
 };
 
 struct FireKeyUp
@@ -86,41 +80,46 @@ using ConfiguratorStep = std::variant<Steps::CreateListener,
                                       Steps::FireKeyDown,
                                       Steps::FireKeyUp>;
 
-using FrameConfiguration = Emergence::Container::Vector<ConfiguratorStep>;
+using FrameConfiguration = Vector<ConfiguratorStep>;
 
 class Configurator final : public TaskExecutorBase<Configurator>
 {
 public:
     Configurator (TaskConstructor &_constructor,
-                  Emergence::Container::Vector<FrameConfiguration> _steps,
-                  Emergence::Container::Vector<KeyStateTrigger> _keyStateTriggers,
-                  Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateChangedTriggers);
+                  Vector<FrameConfiguration> _steps,
+                  Vector<KeyStateTrigger> _keyStateTriggers,
+                  Vector<KeyStateChangedTrigger> _keyStateChangedTriggers,
+                  InputAccumulator *_eventOutput);
 
     void Execute ();
 
 private:
-    Emergence::Container::Vector<FrameConfiguration> steps;
-    Emergence::Container::Vector<KeyStateTrigger> keyStateTriggers;
-    Emergence::Container::Vector<KeyStateChangedTrigger> keyStateChangedTriggers;
+    Vector<FrameConfiguration> steps;
+    Vector<KeyStateTrigger> keyStateTriggers;
+    Vector<KeyStateChangedTrigger> keyStateChangedTriggers;
     std::size_t framesConfigured = 0u;
 
+    InputAccumulator *eventOutput;
     Emergence::Warehouse::InsertLongTermQuery createListener;
     Emergence::Warehouse::ModifyValueQuery modifyListenerById;
     Emergence::Warehouse::ModifySingletonQuery modifyInput;
 };
 
 Configurator::Configurator (TaskConstructor &_constructor,
-                            Emergence::Container::Vector<FrameConfiguration> _steps,
-                            Emergence::Container::Vector<KeyStateTrigger> _keyStateTriggers,
-                            Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateChangedTriggers)
+                            Vector<FrameConfiguration> _steps,
+                            Vector<KeyStateTrigger> _keyStateTriggers,
+                            Vector<KeyStateChangedTrigger> _keyStateChangedTriggers,
+                            InputAccumulator *_eventOutput)
     : steps (std::move (_steps)),
       keyStateTriggers (std::move (_keyStateTriggers)),
       keyStateChangedTriggers (std::move (_keyStateChangedTriggers)),
+      eventOutput (_eventOutput),
       createListener (_constructor.InsertLongTerm (InputListenerObject::Reflect ().mapping)),
       modifyListenerById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
                                                     {InputListenerObject::Reflect ().objectId})),
       modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping))
 {
+    REQUIRE (eventOutput);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
 }
 
@@ -205,29 +204,22 @@ void Configurator::Execute ()
                 else if constexpr (std::is_same_v<Type, Steps::FireKeyDown>)
                 {
                     EMERGENCE_LOG (INFO, "[Configurator] Fire key down event for \"", _step.key,
-                                   "\" with qualifiers mask ", _step.qualifiers,
-                                   _step.repeat ? " with repeat flag." : " without repeat flag.");
+                                   "\" with qualifiers mask ", _step.qualifiers, ".");
 
-                    OgreBites::Event event;
-                    event.key.type = static_cast<int> (OgreBites::KEYDOWN);
-                    event.key.keysym = {static_cast<OgreBites::Keycode> (_step.key),
-                                        static_cast<unsigned short> (_step.qualifiers)};
-
-                    event.key.repeat = _step.repeat ? 1u : 0u;
-                    SharedApplicationContext::Get ()->_fireInputEvent (event, 0u);
+                    InputEvent event;
+                    event.type = InputType::KEYBOARD;
+                    event.keyboard = {_step.key, true, _step.qualifiers};
+                    eventOutput->PostEvent (event);
                 }
                 else if constexpr (std::is_same_v<Type, Steps::FireKeyUp>)
                 {
                     EMERGENCE_LOG (INFO, "[Configurator] Fire key up event for \"", _step.key,
                                    "\" with qualifiers mask ", _step.qualifiers, ".");
 
-                    OgreBites::Event event;
-                    event.key.type = static_cast<int> (OgreBites::KEYUP);
-                    event.key.keysym = {static_cast<OgreBites::Keycode> (_step.key),
-                                        static_cast<unsigned short> (_step.qualifiers)};
-
-                    event.key.repeat = 0u;
-                    SharedApplicationContext::Get ()->_fireInputEvent (event, 0u);
+                    InputEvent event;
+                    event.type = InputType::KEYBOARD;
+                    event.keyboard = {_step.key, false, _step.qualifiers};
+                    eventOutput->PostEvent (event);
                 }
             },
             step);
@@ -237,34 +229,33 @@ void Configurator::Execute ()
 }
 
 void AddConfiguratorTask (PipelineBuilder &_pipelineBuilder,
-                          Emergence::Container::Vector<FrameConfiguration> _steps,
-                          Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateTriggers,
-                          Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTriggers)
+                          Vector<FrameConfiguration> _steps,
+                          Vector<KeyStateChangedTrigger> _keyStateTriggers,
+                          Vector<KeyStateTrigger> _keyStateChangedTriggers,
+                          InputAccumulator *_eventOutput)
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
+    TaskConstructor constructor = _pipelineBuilder.AddTask ("Configurator"_us);
     constructor.SetExecutor<Configurator> (std::move (_steps), std::move (_keyStateChangedTriggers),
-                                           std::move (_keyStateTriggers));
+                                           std::move (_keyStateTriggers), _eventOutput);
 }
 
-using FrameExpectation =
-    Emergence::Container::Vector<std::pair<std::int64_t, Emergence::Container::Vector<InputAction>>>;
+using FrameExpectation = Vector<std::pair<std::int64_t, Vector<InputAction>>>;
 
 class Validator final : public TaskExecutorBase<Validator>
 {
 public:
-    Validator (TaskConstructor &_constructor, Emergence::Container::Vector<FrameExpectation> _expectations) noexcept;
+    Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept;
 
     void Execute () noexcept;
 
 private:
     std::size_t framesValidated = 0u;
-    Emergence::Container::Vector<FrameExpectation> expectations;
+    Vector<FrameExpectation> expectations;
 
     Emergence::Warehouse::FetchValueQuery fetchListenerById;
 };
 
-Validator::Validator (TaskConstructor &_constructor,
-                      Emergence::Container::Vector<FrameExpectation> _expectations) noexcept
+Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
       fetchListenerById (
           _constructor.FetchValue (InputListenerObject::Reflect ().mapping, {InputListenerObject::Reflect ().objectId}))
@@ -296,9 +287,9 @@ void Validator::Execute () noexcept
     ++framesValidated;
 }
 
-void AddValidatorTask (PipelineBuilder &_pipelineBuilder, Emergence::Container::Vector<FrameExpectation> _expectations)
+void AddValidatorTask (PipelineBuilder &_pipelineBuilder, Vector<FrameExpectation> _expectations)
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator"_us);
+    TaskConstructor constructor = _pipelineBuilder.AddTask ("Validator"_us);
     constructor.SetExecutor<Validator> (std::move (_expectations));
 }
 
@@ -313,19 +304,20 @@ struct FixedUpdateRequest final
     FrameExpectation expectation;
 };
 
-void RunTest (Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTriggers,
-              Emergence::Container::Vector<KeyStateChangedTrigger> _keyStateTriggers,
-              const Emergence::Container::Vector<std::variant<NormalUpdateRequest, FixedUpdateRequest>> &_updates)
+void RunTest (Vector<KeyStateTrigger> _keyStateChangedTriggers,
+              Vector<KeyStateChangedTrigger> _keyStateTriggers,
+              const Vector<std::variant<NormalUpdateRequest, FixedUpdateRequest>> &_updates)
 {
     World world {"TestWorld"_us};
+    InputAccumulator inputAccumulator;
     PipelineBuilder pipelineBuilder {&world};
 
     // In test definitions it's much more convenient to read full frame update configs than three separate vectors,
     // therefore we accept composite vector as parameter and split it inside this helper.
 
-    Emergence::Container::Vector<FrameConfiguration> normalConfiguration;
-    Emergence::Container::Vector<FrameExpectation> normalExpectations;
-    Emergence::Container::Vector<FrameExpectation> fixedExpectations;
+    Vector<FrameConfiguration> normalConfiguration;
+    Vector<FrameExpectation> normalExpectations;
+    Vector<FrameExpectation> fixedExpectations;
 
     for (const auto &request : _updates)
     {
@@ -346,16 +338,16 @@ void RunTest (Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTrig
             request);
     }
 
-    pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
+    pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AddConfiguratorTask (pipelineBuilder, std::move (normalConfiguration), std::move (_keyStateTriggers),
-                         std::move (_keyStateChangedTriggers));
+                         std::move (_keyStateChangedTriggers), &inputAccumulator);
     AddValidatorTask (pipelineBuilder, std::move (normalExpectations));
 
-    Input::AddToNormalUpdate (SharedApplicationContext::Get (), pipelineBuilder);
+    Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
-    pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
+    pipelineBuilder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     AddValidatorTask (pipelineBuilder, std::move (fixedExpectations));
     Input::AddToFixedUpdate (pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
@@ -369,14 +361,16 @@ void RunTest (Emergence::Container::Vector<KeyStateTrigger> _keyStateChangedTrig
                 using Type = std::decay_t<decltype (_request)>;
                 if constexpr (std::is_same_v<Type, NormalUpdateRequest>)
                 {
-                    Emergence::Celerity::WorldTestingUtility::RunNormalUpdateOnce (world, 16666667u);
+                    WorldTestingUtility::RunNormalUpdateOnce (world, 16666667u);
                 }
                 else if constexpr (std::is_same_v<Type, FixedUpdateRequest>)
                 {
-                    Emergence::Celerity::WorldTestingUtility::RunFixedUpdateOnce (world);
+                    WorldTestingUtility::RunFixedUpdateOnce (world);
                 }
             },
             request);
+
+        inputAccumulator.Clear ();
     }
 }
 
@@ -397,7 +391,7 @@ TEST_CASE (SubscriptionManagement)
             NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"A"_us, 0u}},
                                   Steps::CreateListener {1u}, Steps::AddSubscription {{"B"_us, 1u}}},
                                  {}},
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}, Steps::FireKeyDown {'b', 0u}},
                                  {{0u, {aDown}}, {1u, {bDown}}}},
             NormalUpdateRequest {{Steps::AddSubscription {{"B"_us, 0u}}}, {{0u, {aDown, bDown}}, {1u, {bDown}}}},
             NormalUpdateRequest {{Steps::UnsubscribeGroup {"B"_us}}, {{0u, {aDown}}, {1u, {}}}},
@@ -425,18 +419,18 @@ TEST_CASE (KeyStateTrigger)
             NormalUpdateRequest {{}, {{0u, {actionUp}}}},
 
             // Key was both up and down: fire both actions.
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}, Steps::FireKeyUp {'a', 0u}},
                                  {{0u, {actionDown, actionUp}}}},
 
             // Key was both up and down several times: fire both actions, but do not duplicate.
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u},
-                                  Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}, Steps::FireKeyUp {'a', 0u},
+                                  Steps::FireKeyDown {'a', 0u}, Steps::FireKeyUp {'a', 0u}},
                                  {{0u, {actionDown, actionUp}}}},
 
             // Press and hold.
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}}, {{0u, {actionDown}}}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}}, {{0u, {actionDown}}}},
             NormalUpdateRequest {{}, {{0u, {actionDown}}}},
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, true}}, {{0u, {actionDown}}}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}}, {{0u, {actionDown}}}},
             NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {{0u, {actionUp}}}},
         });
 }
@@ -452,8 +446,7 @@ TEST_CASE (OnePersistentActionFromSeveralTriggers)
         {},
         {
             NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
-                                 {{0u, {action}}}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}, Steps::FireKeyDown {'b', 0u}}, {{0u, {action}}}},
         });
 }
 
@@ -461,33 +454,31 @@ TEST_CASE (KeyStateChangedTrigger)
 {
     InputAction actionPressed {"Test"_us, "Pressed"_us};
     InputAction actionReleased {"Test"_us, "Released"_us};
+
+    constexpr QualifiersMask ACTION_MASK = 8u;
     InputAction actionPressedWithQualifiers {"Test"_us, "Pressed"_us};
 
-    RunTest (
-        {},
-        {
-            KeyStateChangedTrigger {actionPressed, 'a', true, 0u},
-            KeyStateChangedTrigger {actionReleased, 'a', false, 0u},
-            KeyStateChangedTrigger {actionPressedWithQualifiers, 'a', true,
-                                    static_cast<QualifiersMask> (OgreBites::KMOD_CTRL)},
-        },
-        {
-            NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
+    RunTest ({},
+             {
+                 KeyStateChangedTrigger {actionPressed, 'a', true, 0u},
+                 KeyStateChangedTrigger {actionReleased, 'a', false, 0u},
+                 KeyStateChangedTrigger {actionPressedWithQualifiers, 'a', true, ACTION_MASK},
+             },
+             {
+                 NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
 
-            // Just press and release immediately.
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyUp {'a', 0u}},
-                                 {{0u, {actionPressed, actionReleased}}}},
+                 // Just press and release immediately.
+                 NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}, Steps::FireKeyUp {'a', 0u}},
+                                      {{0u, {actionPressed, actionReleased}}}},
 
-            // Press and hold.
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}}, {{0u, {actionPressed}}}},
-            NormalUpdateRequest {{}, {}},
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, true}}, {}},
-            NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {{0u, {actionReleased}}}},
+                 // Press and hold.
+                 NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}}, {{0u, {actionPressed}}}},
+                 NormalUpdateRequest {{}, {}},
+                 NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {{0u, {actionReleased}}}},
 
-            // Check trigger with qualifier.
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', static_cast<QualifiersMask> (OgreBites::KMOD_CTRL), false}},
-                                 {{0u, {actionPressedWithQualifiers}}}},
-        });
+                 // Check trigger with qualifier.
+                 NormalUpdateRequest {{Steps::FireKeyDown {'a', ACTION_MASK}}, {{0u, {actionPressedWithQualifiers}}}},
+             });
 }
 
 TEST_CASE (InstantActionDuplication)
@@ -500,7 +491,7 @@ TEST_CASE (InstantActionDuplication)
              },
              {
                  NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}}}, {}},
-                 NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}, Steps::FireKeyDown {'b', 0u, false}},
+                 NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}, Steps::FireKeyDown {'b', 0u}},
                                       {{0u, {action, action}}}},
              });
 }
@@ -514,7 +505,7 @@ TEST_CASE (FixedUpdateDispatch)
         {KeyStateTrigger {persistentAction, 'a', true}}, {KeyStateChangedTrigger {instantAction, 'a', true, 0u}},
         {
             NormalUpdateRequest {{Steps::CreateListener {0u}, Steps::AddSubscription {{"Test"_us, 0u}, false}}, {}},
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u, false}}, {}},
+            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}}, {}},
             FixedUpdateRequest {{{0u, {persistentAction, instantAction}}}},
             FixedUpdateRequest {{{0u, {persistentAction}}}},
             NormalUpdateRequest {{}, {}},

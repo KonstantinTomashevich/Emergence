@@ -22,13 +22,12 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_variant_end ()
 sober_library_end ()
 
-add_executable ("${GAME_NAME}GameLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+add_executable ("${GAME_NAME}GameLauncher" ${URHO3D_EXECUTABLE_TYPE} "${SOBER_TEST_RUNNER_STUB_SOURCE}")
 sober_naming_variant_target ("${GAME_NAME}Game" Original GAME_TARGET)
 target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 
 set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Game")
 
-copy_shared_libraries ("${GAME_NAME}GameLauncher")
-use_ogre_plugins ("${GAME_OUTPUT_DIRECTORY}/Game" RenderSystem_Direct3D11)
+copy_required_shared_libraries ("${GAME_NAME}GameLauncher")
 link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Game")

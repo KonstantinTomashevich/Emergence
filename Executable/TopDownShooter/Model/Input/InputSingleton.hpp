@@ -1,20 +1,18 @@
 #pragma once
 
+#include <Celerity/InputAccumulator.hpp>
+
 #include <Container/InplaceVector.hpp>
 
 #include <Input/InputAction.hpp>
 
 #include <Shared/Constants.hpp>
 
-using KeyCode = std::int32_t;
-
-using QualifiersMask = std::uint32_t;
-
 /// \brief Produces persistent actions when is key down/up.
 struct KeyStateTrigger final
 {
     InputAction action;
-    KeyCode key;
+    Emergence::Celerity::KeyCode key;
     bool down;
 
     bool isDownNow = false;
@@ -35,9 +33,9 @@ struct KeyStateTrigger final
 struct KeyStateChangedTrigger final
 {
     InputAction action;
-    KeyCode key;
+    Emergence::Celerity::KeyCode key;
     bool pressed;
-    QualifiersMask qualifiers;
+    Emergence::Celerity::QualifiersMask qualifiers;
 
     struct Reflection final
     {

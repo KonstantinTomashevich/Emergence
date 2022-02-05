@@ -1,5 +1,12 @@
-# Downloads binary dependencies either from cache or network.
 name: 'Setup dependencies'
+description: "Downloads binary dependencies either from cache or network."
+inputs:
+  platform:
+    description: 'Target platform for dependency binaries.'
+    required: true
+  build_type:
+    description: 'Dependency binaries build type.'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -7,10 +14,10 @@ runs:
       uses: actions/cache@v2
       with:
         path: ./Dependency
-        key: ${{runner.os}}-dependencies
+        key: ${{inputs.platform}}-${{inputs.build_type}}-dependencies
 
     - name: Setup dependencies
       shell: pwsh
       run: |
-        .\Script\Dependency\OGRE.ps1 ${{runner.os}}
-        echo "OGRE_DIR=${{github.workspace}}\Dependency\OGRE\${{runner.os}}" >> $Env:GITHUB_ENV
+        .\Script\Dependency\Urho3D.ps1 ${{inputs.platform}} ${{inputs.build_type}}
+        echo "URHO3D_DIR=${{github.workspace}}\Dependency\Urho3D\${{inputs.platform}}\${{inputs.build_type}}" >> $Env:GITHUB_ENV

@@ -8,10 +8,6 @@
 
 #include <Memory/Profiler/AllocationGroup.hpp>
 
-BEGIN_MUTING_WARNINGS
-#include <OgreInput.h>
-END_MUTING_WARNINGS
-
 #include <Shared/Checkpoint.hpp>
 
 namespace Input
@@ -116,38 +112,16 @@ void FixedInputDispatcher::Execute () noexcept
     input->fixedInstantActionsBuffer.Clear ();
 }
 
-/// \brief Postponed event info.
-/// \details NormalInputDispatcher receives events from Urho3D and postpones processing till execution.
-struct KeyboardEvent final
-{
-    KeyCode key;
-    QualifiersMask qualifiers;
-    bool down;
-};
-
 /// \brief Input dispatcher for normal update.
 /// \details Captures input and routes it not only to normal input subscribers, but to fixed buffers too.
 class NormalInputDispatcher final : public Emergence::Celerity::TaskExecutorBase<NormalInputDispatcher>,
-                                    public InputDispatcherBase,
-                                    public OgreBites::InputListener
+                                    public InputDispatcherBase
 {
 public:
     NormalInputDispatcher (Emergence::Celerity::TaskConstructor &_constructor,
-                           OgreBites::ApplicationContextBase *_application) noexcept;
-
-    NormalInputDispatcher (const NormalInputDispatcher &_other) = delete;
-
-    NormalInputDispatcher (NormalInputDispatcher &&_other) = delete;
-
-    ~NormalInputDispatcher () noexcept final;
+                           Emergence::Celerity::InputAccumulator *_inputAccumulator) noexcept;
 
     void Execute () noexcept;
-
-    bool keyPressed (const OgreBites::KeyboardEvent &_event) override;
-
-    bool keyReleased (const OgreBites::KeyboardEvent &_event) override;
-
-    EMERGENCE_DELETE_ASSIGNMENT (NormalInputDispatcher);
 
 private:
     static void SendAction (InputSingleton *_input, const InputAction &_action, bool _instant) noexcept;
@@ -155,22 +129,16 @@ private:
     void UpdateActionBuffers (InputSingleton *_input) noexcept;
 
     Emergence::Warehouse::FetchSingletonQuery fetchWorld;
-    Emergence::Container::Vector<KeyboardEvent> postponedEvents {Emergence::Memory::Profiler::AllocationGroup::Top ()};
-    OgreBites::ApplicationContextBase *application;
+    Emergence::Celerity::InputAccumulator *inputAccumulator = nullptr;
 };
 
 NormalInputDispatcher::NormalInputDispatcher (Emergence::Celerity::TaskConstructor &_constructor,
-                                              OgreBites::ApplicationContextBase *_application) noexcept
+                                              Emergence::Celerity::InputAccumulator *_inputAccumulator) noexcept
     : InputDispatcherBase (_constructor),
       fetchWorld (_constructor.FetchSingleton (Emergence::Celerity::WorldSingleton::Reflect ().mapping)),
-      application (_application)
+      inputAccumulator (_inputAccumulator)
 {
-    application->addInputListener (this);
-}
-
-NormalInputDispatcher::~NormalInputDispatcher () noexcept
-{
-    application->removeInputListener (this);
+    assert (inputAccumulator);
 }
 
 void NormalInputDispatcher::Execute () noexcept
@@ -191,28 +159,6 @@ void NormalInputDispatcher::Execute () noexcept
     UpdateActionBuffers (input);
     DispatchActions (input->normalSubscriptions, input->normalActionsBuffer);
     input->normalActionsBuffer.Clear ();
-}
-
-bool NormalInputDispatcher::keyPressed (const OgreBites::KeyboardEvent &_event)
-{
-    if (!_event.repeat)
-    {
-        postponedEvents.emplace_back (KeyboardEvent {static_cast<KeyCode> (_event.keysym.sym),
-                                                     static_cast<QualifiersMask> (_event.keysym.mod), true});
-    }
-
-    return InputListener::keyPressed (_event);
-}
-
-bool NormalInputDispatcher::keyReleased (const OgreBites::KeyboardEvent &_event)
-{
-    if (!_event.repeat)
-    {
-        postponedEvents.emplace_back (KeyboardEvent {static_cast<KeyCode> (_event.keysym.sym),
-                                                     static_cast<QualifiersMask> (_event.keysym.mod), false});
-    }
-
-    return InputListener::keyPressed (_event);
 }
 
 void NormalInputDispatcher::SendAction (InputSingleton *_input, const InputAction &_action, bool _instant) noexcept
@@ -241,11 +187,11 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
         // Can not be triggered more than once per frame.
         bool canBeTriggered = true;
 
-        for (const KeyboardEvent &event : postponedEvents)
+        for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (trigger.key == event.key)
+            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.key == event.keyboard.key)
             {
-                trigger.isDownNow = event.down;
+                trigger.isDownNow = event.keyboard.down;
                 if (canBeTriggered && trigger.isDownNow == trigger.down)
                 {
                     canBeTriggered = false;
@@ -262,9 +208,10 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
 
     for (KeyStateChangedTrigger &trigger : _input->keyStateChangedTriggers)
     {
-        for (const KeyboardEvent &event : postponedEvents)
+        for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (trigger.key == event.key && event.down == trigger.pressed && event.qualifiers == trigger.qualifiers)
+            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.key == event.keyboard.key &&
+                event.keyboard.down == trigger.pressed && event.keyboard.qualifiers == trigger.qualifiers)
             {
                 SendAction (_input, trigger.action, true);
             }
@@ -272,7 +219,6 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
     }
 
     _input->accumulatedPersistentActionsForFixedUpdate = _input->fixedPersistentActionsBuffer.GetCount ();
-    postponedEvents.clear ();
 }
 
 using namespace Emergence::Memory::Literals;
@@ -283,10 +229,10 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     constructor.SetExecutor<FixedInputDispatcher> ();
 }
 
-void AddToNormalUpdate (OgreBites::ApplicationContextBase *_application,
+void AddToNormalUpdate (Emergence::Celerity::InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("NormalInputDispatcher"_us);
-    constructor.SetExecutor<NormalInputDispatcher> (_application);
+    constructor.SetExecutor<NormalInputDispatcher> (_inputAccumulator);
 }
 } // namespace Input

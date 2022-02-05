@@ -34,6 +34,9 @@ jobs:
 
       - name: Setup dependencies
         uses: ./.github/actions/SetupDependencies
+        with:
+          platform: ${{runner.os}}
+          build_type: ${{matrix.build_type}}
 
       - name: Install Ninja
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
