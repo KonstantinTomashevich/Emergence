@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<node id="2">
+	<attribute name="Is Enabled" value="true" />
+	<attribute name="Name" value="Scene" />
+	<attribute name="Tags" />
+	<attribute name="Position" value="0 0 -0" />
+	<attribute name="Rotation" value="0.707107 0.707107 0 0" />
+	<attribute name="Scale" value="1 1 1" />
+	<attribute name="Variables" />
+	<node id="3">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Player" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 -0" />
+		<attribute name="Rotation" value="0 -0 -0.707107 0.707107" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="1">
+			<attribute name="Model" value="Model;Models/Player.mdl" />
+			<attribute name="Material" value="Material;Materials/Player.xml" />
+		</component>
+	</node>
+</node>

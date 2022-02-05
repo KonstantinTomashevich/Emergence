@@ -3,5 +3,4 @@
 Build
 settings.json
 /Dependency/
-**/OgreXMLConverter.log
-**/blender2ogre.log
+**/Intermediate/

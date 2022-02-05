@@ -19,6 +19,10 @@ if (WIN32)
     set (URHO3D_EXECUTABLE_TYPE "WIN32")
 endif ()
 
+add_custom_target (TopDownShooterConvertIntermediateAssets
+        powershell ".\\Scripts\\ConvertAssets.ps1" "${URHO3D_HOME}"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory (Editor)
 add_subdirectory (Extension)
 add_subdirectory (Game)
