@@ -94,10 +94,10 @@ public:
     void PopBack () noexcept;
 
     /// \brief Shortcut for std::find on this vector.
-    Iterator Find (const Item &_item) noexcept;
+    [[nodiscard]] Iterator Find (const Item &_item) noexcept;
 
     /// \brief Shortcut for std::find on this vector.
-    ConstIterator Find (const Item &_item) const noexcept;
+    [[nodiscard]] ConstIterator Find (const Item &_item) const noexcept;
 
     bool operator== (const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>;
 
