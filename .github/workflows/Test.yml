@@ -16,7 +16,7 @@ jobs:
         # Only Windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-latest ]
-        toolchain: [ CLangCL, CLang, MSVC ]
+        toolchain: [ CLangCL, MSVC ]
 
     defaults:
       run:
@@ -38,10 +38,6 @@ jobs:
           platform: ${{runner.os}}
           build_type: ${{matrix.build_type}}
 
-      - name: Install Ninja
-        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
-        run: choco install ninja
-
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
@@ -62,13 +58,6 @@ jobs:
           echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
-
-      - name: Select CLang toolset
-        if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLang'
-        run: |
-          echo "CMAKE_GENERATOR=-G `"Ninja Multi-Config`"" >> $Env:GITHUB_ENV
-          echo "CC=clang" >> $Env:GITHUB_ENV
-          echo "CXX=clang++" >> $Env:GITHUB_ENV
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
