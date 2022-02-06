@@ -13,6 +13,8 @@ jobs:
 
     env:
       BUILD_DIRECTORY: ${{github.workspace}}\Build
+      CC: clang-cl
+      CXX: clang-cl
 
     runs-on: windows-latest
     steps:
@@ -34,18 +36,23 @@ jobs:
           platform: ${{runner.os}}
           build_type: Debug
 
+      - name: Install Ninja
+        run: choco install ninja
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
+        # We use CMD instead of PowerShell because of convenient && operator.
+        shell: cmd
         run: >
-          cmake -G "Visual Studio 16 2019" -A x64 -T clangcl ${{github.workspace}} 
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
+          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
 
       - name: Check C++ code style using CLang Tools
         working-directory: ${{github.workspace}}
-        # We need to import Visual Studio environment to find LLVM tools, which is not possible through powershell.
+        # We use CMD instead of PowerShell because of convenient && operator.
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
