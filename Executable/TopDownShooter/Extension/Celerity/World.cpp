@@ -226,7 +226,7 @@ void WorldTestingUtility::RunNormalUpdateOnce (World &_world, uint64_t _timeDelt
 
     if (_world.normalPipeline)
     {
-        _world.normalPipeline->pipeline.Execute();
+        _world.normalPipeline->pipeline.Execute ();
     }
 
     world->fixedUpdateHappened = false;
@@ -243,7 +243,7 @@ void WorldTestingUtility::RunFixedUpdateOnce (World &_world) noexcept
 
     if (_world.fixedPipeline)
     {
-        _world.fixedPipeline->pipeline.Execute();
+        _world.fixedPipeline->pipeline.Execute ();
     }
 
     time->fixedTimeNs += fixedDurationNs;
