@@ -36,9 +36,6 @@ jobs:
           platform: ${{runner.os}}
           build_type: Debug
 
-      - name: Install Ninja
-        run: choco install ninja
-
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
@@ -48,7 +45,7 @@ jobs:
         shell: cmd
         run: >
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
-          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          cmake -G "NMake Makefiles" ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
 
       - name: Check C++ code style using CLang Tools
         working-directory: ${{github.workspace}}
