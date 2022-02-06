@@ -13,8 +13,8 @@ jobs:
 
     env:
       BUILD_DIRECTORY: ${{github.workspace}}\Build
-      CC: clang
-      CXX: clang++
+      CC: clang-cl
+      CXX: clang-cl
 
     runs-on: windows-latest
     steps:
