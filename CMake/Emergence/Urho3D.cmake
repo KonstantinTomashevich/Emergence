@@ -7,7 +7,7 @@ if (DEFINED ENV{URHO3D_DIR})
 endif ()
 
 set (URHO3D_LIB_TYPE SHARED)
-find_package (Urho3D REQUIRED) # TODO: Temporary, to debug CI.
+find_package (Urho3D)
 
 if (URHO3D_FOUND)
     add_library (Urho3D SHARED IMPORTED)
@@ -26,4 +26,10 @@ if (URHO3D_FOUND)
             IMPORTED_IMPLIB "${URHO3D_LIBRARIES}")
 
     add_custom_target (RunUrho3DEditor "${URHO3D_HOME}/bin/Editor" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+else ()
+    message (STATUS "URHO3D_INCLUDE_DIRS: ${URHO3D_INCLUDE_DIRS}")
+    message (STATUS "URHO3D_LIBRARIES: ${URHO3D_LIBRARIES}")
+    message (STATUS "URHO3D_LIB_TYPE: ${URHO3D_LIB_TYPE}")
+    message (STATUS "URHO3D_COMPILE_RESULT: ${URHO3D_COMPILE_RESULT}")
+    message (FATAL_ERROR "Unable to find Urho3D!") # TODO: Temporary, to debug CI.
 endif ()
