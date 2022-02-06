@@ -7,7 +7,7 @@ if (DEFINED ENV{URHO3D_DIR})
 endif ()
 
 set (URHO3D_LIB_TYPE SHARED)
-find_package (Urho3D)
+find_package (Urho3D REQUIRED) # TODO: Temporary, to debug CI.
 
 if (URHO3D_FOUND)
     add_library (Urho3D SHARED IMPORTED)

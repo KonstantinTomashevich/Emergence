@@ -1,5 +1,5 @@
 if (NOT TARGET Urho3D)
-    message (WARNING "Ogre not found, therefore TopDownShooter is excluded from project.")
+    message (WARNING "Urho3D not found, therefore TopDownShooter is excluded from project.")
     return ()
 endif ()
 
