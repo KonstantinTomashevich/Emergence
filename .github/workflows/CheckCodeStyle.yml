@@ -34,16 +34,13 @@ jobs:
           platform: ${{runner.os}}
           build_type: Debug
 
-      - name: Install Ninja
-        run: choco install ninja
-
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: >
-          cmake -G "Visual Studio 16 2019`" -A x64 -T clangcl ${{github.workspace}} 
+          cmake -G "Visual Studio 16 2019" -A x64 -T clangcl ${{github.workspace}} 
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
 
       - name: Check C++ code style using CLang Tools
