@@ -6,6 +6,7 @@ if (DEFINED ENV{URHO3D_DIR})
     set (URHO3D_HOME "${CONVERTED_PATH}")
 endif ()
 
+set (CMAKE_FIND_DEBUG_MODE ON)
 set (URHO3D_LIB_TYPE SHARED)
 find_package (Urho3D)
 
