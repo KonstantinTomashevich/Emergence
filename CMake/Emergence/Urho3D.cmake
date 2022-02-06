@@ -1,15 +1,11 @@
 # Searches for Urho3D engine SDK and creates Urho3D library target on success.
 
-# TODO: ... write if works ...
-option (URHO3D_CLANG_CODE_STYLE_STUB "Ad-hoc solution for code style checking pipeline. See more in TODO here." OFF)
-
 if (DEFINED ENV{URHO3D_DIR})
     file (TO_CMAKE_PATH "$ENV{URHO3D_DIR}" CONVERTED_PATH)
     list (APPEND CMAKE_MODULE_PATH "${CONVERTED_PATH}/share/CMake/Modules")
     set (URHO3D_HOME "${CONVERTED_PATH}")
 endif ()
 
-set (CMAKE_FIND_DEBUG_MODE ON)
 set (URHO3D_LIB_TYPE SHARED)
 find_package (Urho3D)
 
@@ -31,11 +27,12 @@ if (URHO3D_FOUND)
 
     add_custom_target (RunUrho3DEditor "${URHO3D_HOME}/bin/Editor" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-elseif (URHO3D_CLANG_CODE_STYLE_STUB)
+elseif (EMERGENCE_CODE_STYLE_CHECK_ADHOC)
     if (NOT URHO3D_INCLUDE_DIRS)
-        message (FATAL_ERROR "Unable to find Urho3D headers for CLang code style stub.")
+        message (FATAL_ERROR "Unable to find Urho3D headers for code style check adhoc.")
     endif ()
 
+    message (WARNING "Urho3D target create as interface for code style check adhoc.")
     add_library (Urho3D INTERFACE)
     target_include_directories (Urho3D INTERFACE ${URHO3D_INCLUDE_DIRS})
 endif ()

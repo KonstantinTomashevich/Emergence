@@ -39,7 +39,7 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: > 
           cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
-          -DCMAKE_BUILD_TYPE=Debug -DURHO3D_CLANG_CODE_STYLE_STUB=ON
+          -DCMAKE_BUILD_TYPE=Debug -DEMERGENCE_CODE_STYLE_CHECK_ADHOC=ON
 
       - name: Check C++ code style using CLang Tools
         working-directory: ${{github.workspace}}
