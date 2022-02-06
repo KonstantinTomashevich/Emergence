@@ -17,7 +17,7 @@ if (-Not(Test-Path $ObjectsPath -PathType Container))
 
 $SDKPath = $args[0]
 $ConverterPath = "$SDKPath\bin\tool\AssetImporter"
-$Objects = Get-ChildItem $IntermediatePath -Filter "*.dae"
+$Objects = Get-ChildItem $IntermediatePath -Filter "*.fbx"
 
 foreach ($Object in $Objects)
 {

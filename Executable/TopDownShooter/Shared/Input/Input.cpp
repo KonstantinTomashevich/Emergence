@@ -189,7 +189,7 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
 
         for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.key == event.keyboard.key)
+            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.scan == event.keyboard.scan)
             {
                 trigger.isDownNow = event.keyboard.down;
                 if (canBeTriggered && trigger.isDownNow == trigger.down)
@@ -210,7 +210,7 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
     {
         for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.key == event.keyboard.key &&
+            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.scan == event.keyboard.scan &&
                 event.keyboard.down == trigger.pressed && event.keyboard.qualifiers == trigger.qualifiers)
             {
                 SendAction (_input, trigger.action, true);

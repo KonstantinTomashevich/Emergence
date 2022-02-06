@@ -8,6 +8,8 @@ namespace Emergence::Celerity
 {
 using KeyCode = std::int32_t;
 
+using ScanCode = std::int32_t;
+
 using QualifiersMask = std::uint32_t;
 
 enum class InputType
@@ -23,6 +25,7 @@ struct InputEvent final
     {
         struct
         {
+            ScanCode scan;
             KeyCode key;
             bool down;
             QualifiersMask qualifiers;

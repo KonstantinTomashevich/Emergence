@@ -1,11 +1,9 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
-BEGIN_MUTING_WARNINGS
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Engine/Application.h>
 #include <Urho3D/Engine/EngineDefs.h>
 #include <Urho3D/Input/Input.h>
-END_MUTING_WARNINGS
 
 class EditorApplication : public Urho3D::Application
 {

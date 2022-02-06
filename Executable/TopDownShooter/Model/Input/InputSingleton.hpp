@@ -9,10 +9,11 @@
 #include <Shared/Constants.hpp>
 
 /// \brief Produces persistent actions when is key down/up.
+/// \details Keys are identified by scan codes for layout independence.
 struct KeyStateTrigger final
 {
     InputAction action;
-    Emergence::Celerity::KeyCode key;
+    Emergence::Celerity::ScanCode scan;
     bool down;
 
     bool isDownNow = false;
@@ -20,7 +21,7 @@ struct KeyStateTrigger final
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId action;
-        Emergence::StandardLayout::FieldId key;
+        Emergence::StandardLayout::FieldId scan;
         Emergence::StandardLayout::FieldId down;
         Emergence::StandardLayout::FieldId isDownNow;
         Emergence::StandardLayout::Mapping mapping;
@@ -30,17 +31,18 @@ struct KeyStateTrigger final
 };
 
 /// \brief Produces instant actions when key is pressed/released.
+/// \details Keys are identified by scan codes for layout independence.
 struct KeyStateChangedTrigger final
 {
     InputAction action;
-    Emergence::Celerity::KeyCode key;
+    Emergence::Celerity::ScanCode scan;
     bool pressed;
     Emergence::Celerity::QualifiersMask qualifiers;
 
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId action;
-        Emergence::StandardLayout::FieldId key;
+        Emergence::StandardLayout::FieldId scan;
         Emergence::StandardLayout::FieldId pressed;
         Emergence::StandardLayout::FieldId qualifiers;
         Emergence::StandardLayout::Mapping mapping;

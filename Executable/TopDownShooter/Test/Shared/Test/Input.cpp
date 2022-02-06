@@ -61,13 +61,13 @@ struct UnsubscribeGroup
 
 struct FireKeyDown
 {
-    KeyCode key;
+    ScanCode scan;
     QualifiersMask qualifiers;
 };
 
 struct FireKeyUp
 {
-    KeyCode key;
+    ScanCode scan;
     QualifiersMask qualifiers;
 };
 } // namespace Steps
@@ -203,22 +203,26 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, Steps::FireKeyDown>)
                 {
-                    EMERGENCE_LOG (INFO, "[Configurator] Fire key down event for \"", _step.key,
+                    EMERGENCE_LOG (INFO, "[Configurator] Fire key down event for \"", _step.scan,
                                    "\" with qualifiers mask ", _step.qualifiers, ".");
 
                     InputEvent event;
                     event.type = InputType::KEYBOARD;
-                    event.keyboard = {_step.key, true, _step.qualifiers};
+                    // For simplicity, we assume that KeyCode == ScanCode here,
+                    // as it is on QWERTY keyboards on English layout.
+                    event.keyboard = {_step.scan, _step.scan, true, _step.qualifiers};
                     eventOutput->PostEvent (event);
                 }
                 else if constexpr (std::is_same_v<Type, Steps::FireKeyUp>)
                 {
-                    EMERGENCE_LOG (INFO, "[Configurator] Fire key up event for \"", _step.key,
+                    EMERGENCE_LOG (INFO, "[Configurator] Fire key up event for \"", _step.scan,
                                    "\" with qualifiers mask ", _step.qualifiers, ".");
 
                     InputEvent event;
                     event.type = InputType::KEYBOARD;
-                    event.keyboard = {_step.key, false, _step.qualifiers};
+                    // For simplicity, we assume that KeyCode == ScanCode here,
+                    // as it is on QWERTY keyboards on English layout.
+                    event.keyboard = {_step.scan, _step.scan, false, _step.qualifiers};
                     eventOutput->PostEvent (event);
                 }
             },
