@@ -25,6 +25,9 @@ jobs:
 
       - name: Setup Dependencies
         uses: ./.github/actions/SetupDependencies
+        with:
+          platform: ${{runner.os}}
+          build_type: Debug
 
       - name: Install Ninja
         run: choco install ninja
