@@ -70,6 +70,12 @@ struct FireKeyUp
     ScanCode scan;
     QualifiersMask qualifiers;
 };
+
+struct PushCustomAction
+{
+    InputAction action;
+    bool instant;
+};
 } // namespace Steps
 
 using ConfiguratorStep = std::variant<Steps::CreateListener,
@@ -78,7 +84,8 @@ using ConfiguratorStep = std::variant<Steps::CreateListener,
                                       Steps::UnsubscribeListener,
                                       Steps::UnsubscribeGroup,
                                       Steps::FireKeyDown,
-                                      Steps::FireKeyUp>;
+                                      Steps::FireKeyUp,
+                                      Steps::PushCustomAction>;
 
 using FrameConfiguration = Vector<ConfiguratorStep>;
 
@@ -224,6 +231,21 @@ void Configurator::Execute ()
                     // as it is on QWERTY keyboards on English layout.
                     event.keyboard = {_step.scan, _step.scan, false, _step.qualifiers};
                     eventOutput->PostEvent (event);
+                }
+                else if constexpr (std::is_same_v<Type, Steps::PushCustomAction>)
+                {
+                    EMERGENCE_LOG (INFO, "[Configurator] Push custom action \"", _step.action.id, "\" with ",
+                                   _step.instant ? "instant" : "persistent", " mode.");
+
+                    input->normalActionsBuffer.TryEmplaceBack (_step.action);
+                    if (_step.instant)
+                    {
+                        input->fixedInstantActionsBuffer.TryEmplaceBack (_step.action);
+                    }
+                    else
+                    {
+                        input->fixedPersistentActionsBuffer.TryEmplaceBack (_step.action);
+                    }
                 }
             },
             step);
@@ -518,6 +540,31 @@ TEST_CASE (FixedUpdateDispatch)
             NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {}},
             FixedUpdateRequest {{{0u, {}}}},
         });
+}
+
+TEST_CASE (PushCustomAction)
+{
+    InputAction persistentAction {"Test"_us, "Down"_us};
+    InputAction instantAction {"Test"_us, "Pressed"_us};
+
+    RunTest ({}, {},
+             {
+                 NormalUpdateRequest {
+                     {Steps::CreateListener {0u}, Steps::CreateListener {1u},
+                      Steps::AddSubscription {{"Test"_us, 0u}, true}, Steps::AddSubscription {{"Test"_us, 1u}, false}},
+                     {}},
+                 NormalUpdateRequest {
+                     {Steps::PushCustomAction {persistentAction, false}, Steps::PushCustomAction {instantAction, true}},
+                     {{0u, {persistentAction, instantAction}}}},
+                 FixedUpdateRequest {{{1u, {persistentAction, instantAction}}}},
+
+                 // Do second cycle to check how buffer cleanup works with custom actions.
+
+                 NormalUpdateRequest {
+                     {Steps::PushCustomAction {persistentAction, false}, Steps::PushCustomAction {instantAction, true}},
+                     {{0u, {persistentAction, instantAction}}}},
+                 FixedUpdateRequest {{{1u, {persistentAction, instantAction}}}},
+             });
 }
 
 END_SUITE
