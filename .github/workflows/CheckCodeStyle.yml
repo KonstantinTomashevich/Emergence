@@ -44,7 +44,7 @@ jobs:
         # We use CMD instead of PowerShell because of convenient && operator.
         shell: cmd
         run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
           cmake -G "NMake Makefiles" ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
 
       - name: Check C++ code style using CLang Tools
@@ -52,6 +52,6 @@ jobs:
         # We use CMD instead of PowerShell because of convenient && operator.
         shell: cmd
         run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
           powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
           powershell .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
