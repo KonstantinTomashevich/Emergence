@@ -11,7 +11,7 @@ option (EMERGENCE_TREAT_WARNINGS_AS_ERRORS "Enables \"treat warnings as errors\"
 #       use binary dependencies built by MSVC/CLangCL (it searches for `*.so`s and fails). Therefore, I decided
 #       to create adhoc mode for style checking that creates header-only interface targets for dependencies,
 #       that can not be found due to library incompatibility.
-option (EMERGENCE_CODE_STYLE_CHECK_ADHOC "Ad-hoc solution for code style checking pipeline. See more in TODO here." OFF)
+option (EMERGENCE_CODE_STYLE_CHECK_ADHOC "Adhoc solution for code style checking pipeline. See more in TODO here." OFF)
 
 # We can not add common compile options here, because they would affect third party libraries compilation.
 # Therefore every Emergence root source directory must call this function to setup compile options locally.

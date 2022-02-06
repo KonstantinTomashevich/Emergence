@@ -32,7 +32,7 @@ elseif (EMERGENCE_CODE_STYLE_CHECK_ADHOC)
         message (FATAL_ERROR "Unable to find Urho3D headers for code style check adhoc.")
     endif ()
 
-    message (WARNING "Urho3D target create as interface for code style check adhoc.")
+    message (WARNING "Urho3D target is created as interface for code style check adhoc.")
     add_library (Urho3D INTERFACE)
     target_include_directories (Urho3D INTERFACE ${URHO3D_INCLUDE_DIRS})
 endif ()
