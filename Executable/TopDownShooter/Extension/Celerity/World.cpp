@@ -26,18 +26,17 @@ World::World (Memory::UniqueString _name) noexcept
       modifyWorld (registry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
       pipelinePool (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name},
                                                        Memory::UniqueString {"Pipelines"}},
-                    sizeof (PipelineNode),
+                    sizeof (Pipeline),
                     PIPELINES_ON_PAGE)
 {
 }
 
 World::~World ()
 {
-    while (firstPipeline)
+    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
     {
-        PipelineNode *next = firstPipeline->next;
-        firstPipeline->~PipelineNode ();
-        firstPipeline = next;
+        auto *pipeline = static_cast<Pipeline *> (*iterator);
+        pipeline->~Pipeline ();
     }
 }
 
@@ -62,40 +61,25 @@ void World::Update () noexcept
 
 void World::RemovePipeline (Pipeline *_pipeline) noexcept
 {
-    PipelineNode *node = firstPipeline;
-    PipelineNode *previous = nullptr;
-
-    while (node)
+    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
     {
-        if (&node->pipeline == _pipeline)
+        auto *pipeline = static_cast<Pipeline *> (*iterator);
+        if (pipeline == _pipeline)
         {
-            if (node == normalPipeline)
+            if (pipeline == normalPipeline)
             {
                 normalPipeline = nullptr;
             }
 
-            if (node == fixedPipeline)
+            if (pipeline == fixedPipeline)
             {
                 fixedPipeline = nullptr;
             }
 
-            PipelineNode *next = node->next;
-            node->~PipelineNode ();
-
-            if (previous)
-            {
-                previous->next = next;
-            }
-            else
-            {
-                firstPipeline = next;
-            }
-
+            pipeline->~Pipeline ();
+            pipelinePool.Release (pipeline);
             return;
         }
-
-        previous = node;
-        node = node->next;
     }
 
     // Received pipeline from another world?
@@ -136,7 +120,7 @@ void World::NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 
     if (normalPipeline)
     {
-        normalPipeline->pipeline.Execute ();
+        normalPipeline->Execute ();
     }
 }
 
@@ -173,7 +157,7 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     {
         if (fixedPipeline)
         {
-            fixedPipeline->pipeline.Execute ();
+            fixedPipeline->Execute ();
         }
 
         _time->fixedTimeNs += fixedDurationNs;
@@ -189,26 +173,25 @@ Pipeline *World::AddPipeline (Memory::UniqueString _id,
 {
     assert (!normalPipeline || _type != PipelineType::NORMAL);
     assert (!fixedPipeline || _type != PipelineType::FIXED);
-    auto placeholder = Memory::Profiler::AllocationGroup {pipelinePool.GetAllocationGroup (), _id}.PlaceOnTop ();
 
-    firstPipeline = new (pipelinePool.Acquire ())
-        PipelineNode {Pipeline {_id, _type, _collection, _maximumChildThreads}, firstPipeline};
+    auto placeholder = Memory::Profiler::AllocationGroup {pipelinePool.GetAllocationGroup (), _id}.PlaceOnTop ();
+    auto *pipeline = new (pipelinePool.Acquire ()) Pipeline {_id, _type, _collection, _maximumChildThreads};
 
     switch (_type)
     {
     case PipelineType::NORMAL:
-        normalPipeline = firstPipeline;
+        normalPipeline = pipeline;
         break;
 
     case PipelineType::FIXED:
-        fixedPipeline = firstPipeline;
+        fixedPipeline = pipeline;
         break;
 
     case PipelineType::CUSTOM:
         break;
     }
 
-    return &firstPipeline->pipeline;
+    return pipeline;
 }
 
 // TODO: Having separate setup-and-run functions for testing looks a bit bad. Any ideas how to make it better?
@@ -226,7 +209,7 @@ void WorldTestingUtility::RunNormalUpdateOnce (World &_world, uint64_t _timeDelt
 
     if (_world.normalPipeline)
     {
-        _world.normalPipeline->pipeline.Execute ();
+        _world.normalPipeline->Execute ();
     }
 
     world->fixedUpdateHappened = false;
@@ -243,7 +226,7 @@ void WorldTestingUtility::RunFixedUpdateOnce (World &_world) noexcept
 
     if (_world.fixedPipeline)
     {
-        _world.fixedPipeline->pipeline.Execute ();
+        _world.fixedPipeline->Execute ();
     }
 
     time->fixedTimeNs += fixedDurationNs;

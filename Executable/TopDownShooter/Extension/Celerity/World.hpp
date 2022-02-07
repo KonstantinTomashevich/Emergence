@@ -4,7 +4,7 @@
 
 #include <Container/Vector.hpp>
 
-#include <Memory/UnorderedPool.hpp>
+#include <Memory/OrderedPool.hpp>
 
 #include <Warehouse/Registry.hpp>
 
@@ -38,12 +38,6 @@ private:
     friend class TaskConstructor;
     friend class WorldTestingUtility;
 
-    struct PipelineNode final
-    {
-        Pipeline pipeline;
-        PipelineNode *next;
-    };
-
     void NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
 
     void FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
@@ -57,10 +51,9 @@ private:
     Warehouse::ModifySingletonQuery modifyTime;
     Warehouse::ModifySingletonQuery modifyWorld;
 
-    Memory::UnorderedPool pipelinePool;
-    PipelineNode *firstPipeline = nullptr;
-    PipelineNode *normalPipeline = nullptr;
-    PipelineNode *fixedPipeline = nullptr;
+    Memory::OrderedPool pipelinePool;
+    Pipeline *normalPipeline = nullptr;
+    Pipeline *fixedPipeline = nullptr;
 };
 
 class WorldTestingUtility final
