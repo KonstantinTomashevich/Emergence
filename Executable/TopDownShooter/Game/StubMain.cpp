@@ -1,124 +1,40 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
+#include <fstream>
+#include <thread>
+
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/World.hpp>
 
+#include <Input/Input.hpp>
+
 #include <Log/Log.hpp>
 
 #include <Memory/Profiler/Capture.hpp>
-
 #include <Memory/Recording/StreamSerializer.hpp>
-
-BEGIN_MUTING_WARNINGS
-#include <OgreApplicationContext.h>
-#include <OgreEntity.h>
-#include <OgreRenderWindow.h>
-#include <OgreRoot.h>
-END_MUTING_WARNINGS
-
-#include <Input/FixedInputMappingSingleton.hpp>
-#include <Input/InputCollection.hpp>
-#include <Input/NormalInputMappingSingleton.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 
-#include <Time/TimeSingleton.hpp>
-#include <Time/TimeSynchronization.hpp>
+#include <SyntaxSugar/Time.hpp>
+
+#include <Urho3D/Container/Str.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Engine/Application.h>
+#include <Urho3D/Engine/EngineDefs.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Input/InputEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/Scene/Node.h>
+#include <Urho3D/Scene/Scene.h>
+#undef ERROR
 
 using namespace Emergence::Memory::Literals;
-
-class WorldUpdater final
-{
-public:
-    explicit WorldUpdater (OgreBites::ApplicationContext *_application, Emergence::Celerity::World *_world)
-        : application (_application),
-          modifyTime (_world->ModifySingletonExternally (TimeSingleton::Reflect ().mapping))
-    {
-        Emergence::Celerity::PipelineBuilder pipelineBuilder {_world};
-
-        pipelineBuilder.Begin ("FixedUpdate"_us);
-        TimeSynchronization::AddFixedUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
-        InputCollection::AddFixedUpdateTask (application, pipelineBuilder);
-        Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-        fixedUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
-
-        pipelineBuilder.Begin ("NormalUpdate"_us);
-        TimeSynchronization::AddNormalUpdateTasks (application->getRoot ()->getTimer (), pipelineBuilder);
-        InputCollection::AddNormalUpdateTask (application, pipelineBuilder);
-        Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-        normalUpdate = pipelineBuilder.End (std::thread::hardware_concurrency ());
-
-        auto modifyFixedInput = _world->ModifySingletonExternally (FixedInputMappingSingleton::Reflect ().mapping);
-        auto *fixedInput = static_cast<FixedInputMappingSingleton *> (*modifyFixedInput.Execute ());
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Forward"_us, "Movement"_us}, {{OgreBites::Keycode {'w'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Left"_us, "Movement"_us}, {{OgreBites::Keycode {'a'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Backward"_us, "Movement"_us}, {{OgreBites::Keycode {'s'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Right"_us, "Movement"_us}, {{OgreBites::Keycode {'d'}, false}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Explode"_us, "Ability"_us}, {{OgreBites::Keycode {'q'}, true}}});
-
-        fixedInput->inputMapping.keyboardTriggers.EmplaceBack (KeyboardActionTrigger {
-            InputAction {"Dash"_us, "Ability"_us}, {{OgreBites::Keycode {'w'}, false}, {OgreBites::SDLK_SPACE, true}}});
-
-        auto modifyNormalInput = _world->ModifySingletonExternally (NormalInputMappingSingleton::Reflect ().mapping);
-        auto *normalInput = static_cast<NormalInputMappingSingleton *> (*modifyNormalInput.Execute ());
-
-        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Up"_us, "Menu"_us}, {{OgreBites::Keycode {'1'}, true}}});
-
-        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Down"_us, "Menu"_us}, {{OgreBites::Keycode {'2'}, true}}});
-
-        normalInput->inputMapping.keyboardTriggers.EmplaceBack (
-            KeyboardActionTrigger {InputAction {"Confirm"_us, "Menu"_us}, {{OgreBites::Keycode {'e'}, true}}});
-
-        auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
-        time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 60.0f);
-        time->targetFixedFrameDurationsS.EmplaceBack (1.0f / 30.0f);
-    }
-
-    void Execute ()
-    {
-        // Intentionally lift write access to time singleton, because we are expecting changes from pipelines.
-        auto *time = static_cast<TimeSingleton *> (*modifyTime.Execute ());
-        application->pollEvents ();
-
-        const uint64_t timeDifference = time->normalTimeUs > time->fixedTimeUs ?
-                                            time->normalTimeUs - time->fixedTimeUs :
-                                            time->fixedTimeUs - time->normalTimeUs;
-
-        if (timeDifference < 1000000u)
-        {
-            while (time->fixedTimeUs < time->normalTimeUs)
-            {
-                fixedUpdate->Execute ();
-            }
-        }
-        else
-        {
-            // Looks like we were sitting on breakpoint. In this case we will just assume that no time elapsed.
-            time->fixedTimeUs = time->normalTimeUs;
-        }
-
-        normalUpdate->Execute ();
-    }
-
-private:
-    OgreBites::ApplicationContext *application;
-    Emergence::Warehouse::ModifySingletonQuery modifyTime;
-    Emergence::Celerity::Pipeline *fixedUpdate = nullptr;
-    Emergence::Celerity::Pipeline *normalUpdate = nullptr;
-};
 
 static Emergence::Memory::Profiler::EventObserver StartRecording (
     Emergence::Memory::Recording::StreamSerializer &_serializer, std::ostream &_output)
@@ -128,86 +44,205 @@ static Emergence::Memory::Profiler::EventObserver StartRecording (
     return std::move (observer);
 }
 
-int main (int /*unused*/, char ** /*unused*/)
+class GameApplication : public Urho3D::Application
 {
-    // For testing purposes we start memory usage recording right away.
-    std::ofstream memoryEventOutput {"MemoryRecording.track", std::ios::binary};
+    URHO3D_OBJECT (GameApplication, Application)
+
+public:
+    GameApplication (Urho3D::Context *_context);
+
+    GameApplication (const GameApplication &_other) = delete;
+
+    GameApplication (GameApplication &&_other) = delete;
+
+    ~GameApplication () override = default;
+
+    void Setup () override;
+
+    void Start () override;
+
+    void Stop () override;
+
+    GameApplication &operator= (const GameApplication &_other) = delete;
+
+    GameApplication &operator= (GameApplication &&_other) = delete;
+
+private:
+    void HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept;
+
+    void HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept;
+
+    void HandleKeyUp (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept;
+
+    std::ofstream memoryEventOutput;
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
+    Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
-    Emergence::Memory::Profiler::EventObserver memoryEventObserver =
-        StartRecording (memoryEventSerializer, memoryEventOutput);
+    Emergence::Celerity::InputAccumulator inputAccumulator;
+    Emergence::Celerity::World world {"TestWorld"_us};
 
-    OgreBites::ApplicationContext application {"TopDownShooter"};
-    application.initApp ();
+    Urho3D::SharedPtr<Urho3D::Scene> scene;
+    Urho3D::SharedPtr<Urho3D::Node> playerNode;
+    Urho3D::SharedPtr<Urho3D::Node> lightNode;
+};
 
-    Ogre::Root *root = application.getRoot ();
-    Ogre::SceneManager *sceneManager = root->createSceneManager ();
+GameApplication::GameApplication (Urho3D::Context *_context)
+    : Application (_context),
+      memoryEventOutput ("MemoryRecording.track", std::ios::binary),
+      memoryEventObserver (StartRecording (memoryEventSerializer, memoryEventOutput))
+{
+    SubscribeToEvent (Urho3D::E_UPDATE, URHO3D_HANDLER (GameApplication, HandleUpdate));
+    SubscribeToEvent (Urho3D::E_KEYDOWN, URHO3D_HANDLER (GameApplication, HandleKeyDown));
+    SubscribeToEvent (Urho3D::E_KEYUP, URHO3D_HANDLER (GameApplication, HandleKeyUp));
+}
 
-    Ogre::RTShader::ShaderGenerator *shaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr ();
-    shaderGenerator->addSceneManager (sceneManager);
+void GameApplication::Setup ()
+{
+    Application::Setup ();
+    engineParameters_[Urho3D::EP_FULL_SCREEN] = false;
+    engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreAssets;GameAssets";
+    engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "..";
+}
 
-    Ogre::Light *light = sceneManager->createLight ("MainLight");
-    light->setType (Ogre::Light::LT_DIRECTIONAL);
-    light->setSpecularColour (Ogre::ColourValue::White);
+void GameApplication::Start ()
+{
+    Application::Start ();
+    auto *input = GetSubsystem<Urho3D::Input> ();
+    input->SetMouseVisible (true);
+    input->SetMouseMode (Urho3D::MM_FREE);
 
-    Ogre::SceneNode *lightNode = sceneManager->getRootSceneNode ()->createChildSceneNode ();
-    lightNode->lookAt ({0.0f, -2.0f, 0.0f}, Ogre::Node::TS_LOCAL);
-    lightNode->attachObject (light);
+    Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+    pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
+    Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
+    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
 
-    Ogre::Camera *camera = sceneManager->createCamera ("MainCamera");
-    camera->setNearClipDistance (0.5f);
-    camera->setAutoAspectRatio (true);
+    // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?
+    pipelineBuilder.End (std::thread::hardware_concurrency ());
 
-    Ogre::SceneNode *cameraNode = sceneManager->getRootSceneNode ()->createChildSceneNode ();
-    cameraNode->setPosition (0, 5, 5);
-    cameraNode->lookAt ({0.0f, 0.0f, -1.0f}, Ogre::Node::TS_WORLD);
-    cameraNode->attachObject (camera);
+    pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
+    Input::AddToFixedUpdate (pipelineBuilder);
+    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+    pipelineBuilder.End (std::thread::hardware_concurrency ());
+
+    scene = new Urho3D::Scene {GetContext ()};
+    scene->SetUpdateEnabled (false);
+    scene->CreateComponent<Urho3D::Octree> ();
+    auto *cache = GetSubsystem<Urho3D::ResourceCache> ();
+
+    auto *floorTileXml = cache->GetResource<Urho3D::XMLFile> ("Objects/FloorTile.xml");
+    if (!floorTileXml)
+    {
+        EMERGENCE_LOG (ERROR, "Unable to load floor tile prefab!");
+    }
+
+    auto *playerXml = cache->GetResource<Urho3D::XMLFile> ("Objects/Player.xml");
+    if (!playerXml)
+    {
+        EMERGENCE_LOG (ERROR, "Unable to load player prefab!");
+    }
+
+    auto *wallXml = cache->GetResource<Urho3D::XMLFile> ("Objects/Wall.xml");
+    if (!wallXml)
+    {
+        EMERGENCE_LOG (ERROR, "Unable to load wall prefab!");
+    }
 
     for (int x = -4; x <= 4; ++x)
     {
         for (int z = -4; z <= 4; ++z)
         {
-            const bool placeWall = x == -4 || x == 4 || z == -4;
-            Ogre::Entity *tile = sceneManager->createEntity (placeWall ? "Wall.mesh" : "FloorTile.mesh");
+            const bool placeWall = x == -4 || x == 4 || z == -4 || z == 4;
+            Urho3D::XMLFile *prefabXml = placeWall ? wallXml : floorTileXml;
 
-            Ogre::SceneNode *tileNode = sceneManager->getRootSceneNode ()->createChildSceneNode ();
-            tileNode->setPosition (static_cast<float> (x), 0.0f, static_cast<float> (z));
-            tileNode->attachObject (tile);
-        }
-    }
-
-    Ogre::Entity *player = sceneManager->createEntity ("Player.mesh");
-    Ogre::SceneNode *playerNode = sceneManager->getRootSceneNode ()->createChildSceneNode ();
-    playerNode->setPosition (0.0f, 0.0f, 0.0f);
-    playerNode->attachObject (player);
-
-    application.getRenderWindow ()->addViewport (camera);
-
-    {
-        Emergence::Celerity::World world {"TestWorld"_us};
-        WorldUpdater worldUpdater {&application, &world};
-
-        while (!application.getRoot ()->endRenderingQueued ())
-        {
-            worldUpdater.Execute ();
-
-            constexpr const uint64_t MS_PERIOD = 3000u;
-            const uint64_t msGlobal = application.getRoot ()->getTimer ()->getMilliseconds ();
-            const uint64_t msLocal = msGlobal % MS_PERIOD;
-            const float angle = Ogre::Math::PI * 2.0f * (static_cast<float> (msLocal) / static_cast<float> (MS_PERIOD));
-
-            Ogre::Vector3 lookTarget {cos (angle), -1.0f, sin (angle)};
-            lightNode->lookAt (lookTarget, Ogre::Node::TS_WORLD);
-            playerNode->setPosition (cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f);
-            application.getRoot ()->renderOneFrame ();
-
-            while (const Emergence::Memory::Profiler::Event *event = memoryEventObserver.NextEvent ())
+            if (prefabXml)
             {
-                memoryEventSerializer.SerializeEvent (*event);
+                Urho3D::Node *node = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
+                node->LoadXML (prefabXml->GetRoot ());
+                node->SetPosition ({static_cast<float> (x), 0.0f, static_cast<float> (z)});
             }
         }
     }
 
-    application.closeApp ();
-    return 0u;
+    if (playerXml)
+    {
+        playerNode = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
+        playerNode->LoadXML (playerXml->GetRoot ());
+        playerNode->SetPosition ({});
+    }
+
+    lightNode = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
+    auto *light = lightNode->CreateComponent<Urho3D::Light> (Urho3D::LOCAL);
+    light->SetLightType (Urho3D::LIGHT_DIRECTIONAL);
+    lightNode->SetRotation ({30.0f, 0.0f, 0.0f});
+
+    Urho3D::Node *cameraNode = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
+    auto *camera = cameraNode->CreateComponent<Urho3D::Camera> ();
+    cameraNode->SetPosition ({0.0f, 10.0f, -5.0f});
+    cameraNode->SetRotation ({60.0f, 0.0f, 0.0f});
+
+    auto *renderer = GetSubsystem<Urho3D::Renderer> ();
+    renderer->SetViewport (0, new Urho3D::Viewport {GetContext (), scene, camera});
 }
+
+void GameApplication::Stop ()
+{
+    Application::Stop ();
+}
+
+void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
+{
+    world.Update ();
+
+    constexpr const uint64_t NS_PERIOD = 3000000000u;
+    const uint64_t nsGlobal = Emergence::Time::NanosecondsSinceStartup ();
+    const uint64_t nsLocal = nsGlobal % NS_PERIOD;
+    const float angle = M_PI * 2.0f * (static_cast<float> (nsLocal) / static_cast<float> (NS_PERIOD));
+
+    lightNode->LookAt ({cos (angle), -1.0f, sin (angle)});
+    playerNode->SetPosition ({cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f});
+
+    scene->Update (_eventData[Urho3D::Update::P_TIMESTEP].GetFloat ());
+    inputAccumulator.Clear ();
+
+    while (const Emergence::Memory::Profiler::Event *event = memoryEventObserver.NextEvent ())
+    {
+        memoryEventSerializer.SerializeEvent (*event);
+    }
+}
+
+void GameApplication::HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
+{
+    if (_eventData[Urho3D::KeyDown::P_REPEAT].GetBool ())
+    {
+        return;
+    }
+
+    Emergence::Celerity::InputEvent event;
+    event.type = Emergence::Celerity::InputType::KEYBOARD;
+    event.keyboard = {
+        static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
+        static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
+        true,
+        static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
+    };
+
+    inputAccumulator.PostEvent (event);
+}
+
+void GameApplication::HandleKeyUp (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
+{
+    Emergence::Celerity::InputEvent event;
+    event.type = Emergence::Celerity::InputType::KEYBOARD;
+    event.keyboard = {
+        static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyUp::P_SCANCODE].GetInt ()),
+        static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyUp::P_KEY].GetInt ()),
+        false,
+        static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyUp::P_QUALIFIERS].GetInt ()),
+    };
+
+    inputAccumulator.PostEvent (event);
+}
+
+BEGIN_MUTING_WARNINGS
+URHO3D_DEFINE_APPLICATION_MAIN (GameApplication)
+END_MUTING_WARNINGS

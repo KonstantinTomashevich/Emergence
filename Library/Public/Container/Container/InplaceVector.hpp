@@ -59,6 +59,11 @@ public:
     template <typename... Args>
     Item &EmplaceBack (Args &&..._constructorArgs) noexcept;
 
+    /// \brief Constructs new item in next free slot if there is any space left.
+    /// \return Whether item was constructed.
+    template <typename... Args>
+    bool TryEmplaceBack (Args &&..._constructorArgs) noexcept;
+
     /// \brief Resets vector to empty state.
     void Clear () noexcept requires std::is_nothrow_default_constructible_v<Item>;
 
@@ -67,6 +72,14 @@ public:
     /// \invariant _iterator < ::End.
     Iterator EraseExchangingWithLast (const Iterator &_iterator) noexcept requires
         std::is_nothrow_move_assignable_v<Item> && std::is_nothrow_default_constructible_v<Item>;
+
+    /// \brief Erase first `_amount` elements **without** preserving element order (for performance).
+    /// \invariant _amount <= ::GetCount.
+    void DropLeading (std::size_t _amount) noexcept;
+
+    /// \brief Erases last `_amount` elements.
+    /// \invariant _amount <= ::GetCount.
+    void DropTrailing (std::size_t _amount) noexcept requires std::is_nothrow_default_constructible_v<Item>;
 
     /// \return Last item in vector.
     /// \invariant Not ::Empty.
@@ -79,6 +92,12 @@ public:
     /// \return Removes last item from vector.
     /// \invariant Not ::Empty.
     void PopBack () noexcept;
+
+    /// \brief Shortcut for std::find on this vector.
+    [[nodiscard]] Iterator Find (const Item &_item) noexcept;
+
+    /// \brief Shortcut for std::find on this vector.
+    [[nodiscard]] ConstIterator Find (const Item &_item) const noexcept;
 
     bool operator== (const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>;
 
@@ -178,6 +197,19 @@ Item &InplaceVector<Item, Capacity>::EmplaceBack (Args &&..._constructorArgs) no
 }
 
 template <typename Item, std::size_t Capacity>
+template <typename... Args>
+bool InplaceVector<Item, Capacity>::TryEmplaceBack (Args &&..._constructorArgs) noexcept
+{
+    if (count < Capacity)
+    {
+        EmplaceBack (std::forward<Args...> (_constructorArgs...));
+        return true;
+    }
+
+    return false;
+}
+
+template <typename Item, std::size_t Capacity>
 void InplaceVector<Item, Capacity>::Clear () noexcept requires std::is_nothrow_default_constructible_v<Item>
 {
     count = 0u;
@@ -204,11 +236,69 @@ typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::
     else
     {
         // Reassign last item to default values, so it will not hold any real resources.
-        *_iterator = Item ();
+        *_iterator = Item {};
     }
 
     --count;
     return _iterator;
+}
+
+template <typename Item, std::size_t Capacity>
+void InplaceVector<Item, Capacity>::DropLeading (std::size_t _amount) noexcept
+{
+    assert (_amount <= count);
+    if (_amount >= count)
+    {
+        Clear ();
+        return;
+    }
+
+    auto iterator = Begin ();
+    const auto dropEnd = iterator + _amount;
+
+    while (true)
+    {
+        if (iterator == dropEnd)
+        {
+            // We have dropped required amount by exchanging.
+            break;
+        }
+
+        if (dropEnd == End ())
+        {
+            // There is no sense to exchange anymore, because all items above must be dropped.
+            DropTrailing (dropEnd - iterator);
+            break;
+        }
+
+        iterator = EraseExchangingWithLast (iterator);
+        ++iterator;
+    }
+}
+
+template <typename Item, std::size_t Capacity>
+void InplaceVector<Item, Capacity>::DropTrailing (
+    std::size_t _amount) noexcept requires std::is_nothrow_default_constructible_v<Item>
+{
+    assert (_amount <= count);
+    if (_amount >= count)
+    {
+        Clear ();
+        return;
+    }
+
+    // There is no sense to clear trivial items.
+    if constexpr (!std::is_trivial_v<Item>)
+    {
+        auto iterator = End () - _amount;
+        while (iterator != End ())
+        {
+            *iterator = {};
+            ++iterator;
+        }
+    }
+
+    count -= _amount;
 }
 
 template <typename Item, std::size_t Capacity>
@@ -230,6 +320,19 @@ void InplaceVector<Item, Capacity>::PopBack () noexcept
 {
     assert (!Empty ());
     --count;
+}
+
+template <typename Item, std::size_t Capacity>
+typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::Find (const Item &_item) noexcept
+{
+    return std::find (Begin (), End (), _item);
+}
+
+template <typename Item, std::size_t Capacity>
+typename InplaceVector<Item, Capacity>::ConstIterator InplaceVector<Item, Capacity>::Find (
+    const Item &_item) const noexcept
+{
+    return std::find (Begin (), End (), _item);
 }
 
 template <typename Item, std::size_t Capacity>

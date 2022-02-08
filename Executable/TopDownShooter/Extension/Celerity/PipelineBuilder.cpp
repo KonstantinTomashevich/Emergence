@@ -167,17 +167,43 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
 
 PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
     : world (_targetWorld),
-      registeredResources (world->pipelineHeap)
+      registeredResources (world->pipelinePool.GetAllocationGroup ())
 {
     assert (world);
 }
 
-void PipelineBuilder::Begin (Memory::UniqueString _id) noexcept
+bool PipelineBuilder::Begin (Memory::UniqueString _id, PipelineType _type) noexcept
 {
+    switch (_type)
+    {
+    case PipelineType::NORMAL:
+        if (world->normalPipeline)
+        {
+            // Normal pipeline for this world is already built.
+            return false;
+        }
+
+        break;
+    case PipelineType::FIXED:
+        if (world->fixedPipeline)
+        {
+            // Fixed pipeline for this world is already built.
+            return false;
+        }
+
+        break;
+    case PipelineType::CUSTOM:
+        break;
+    }
+
     currentPipelineId = _id;
+    currentPipelineType = _type;
+
     currentPipelineAllocationGroup =
-        Memory::Profiler::AllocationGroup {world->pipelineHeap.GetAllocationGroup (), currentPipelineId};
+        Memory::Profiler::AllocationGroup {world->pipelinePool.GetAllocationGroup (), currentPipelineId};
+
     // taskRegister should be cleared in ::End.
+    return true;
 }
 
 TaskConstructor PipelineBuilder::AddTask (Memory::UniqueString _name) noexcept
@@ -193,8 +219,8 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
 
 Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
 {
-    Pipeline *newPipeline =
-        world->AddPipeline (currentPipelineId, taskRegister.ExportCollection (), _maximumChildThreads);
+    Pipeline *newPipeline = world->AddPipeline (currentPipelineId, currentPipelineType,
+                                                taskRegister.ExportCollection (), _maximumChildThreads);
     taskRegister.Clear ();
     registeredResources.clear ();
     return newPipeline;

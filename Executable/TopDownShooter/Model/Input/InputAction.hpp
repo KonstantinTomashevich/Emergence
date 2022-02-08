@@ -14,18 +14,18 @@ struct InputAction final
 
     InputAction () noexcept = default;
 
-    InputAction (const Emergence::Memory::UniqueString &_id, const Emergence::Memory::UniqueString &_group) noexcept;
+    InputAction (const Emergence::Memory::UniqueString &_group, const Emergence::Memory::UniqueString &_id) noexcept;
 
-    InputAction (const Emergence::Memory::UniqueString &_id,
-                 const Emergence::Memory::UniqueString &_group,
+    InputAction (const Emergence::Memory::UniqueString &_group,
+                 const Emergence::Memory::UniqueString &_id,
                  const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept;
 
-    InputAction (const Emergence::Memory::UniqueString &_id,
-                 const Emergence::Memory::UniqueString &_group,
+    InputAction (const Emergence::Memory::UniqueString &_group,
+                 const Emergence::Memory::UniqueString &_id,
                  const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept;
 
-    Emergence::Memory::UniqueString id;
     Emergence::Memory::UniqueString group;
+    Emergence::Memory::UniqueString id;
 
     union
     {
@@ -39,8 +39,8 @@ struct InputAction final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId id;
         Emergence::StandardLayout::FieldId group;
+        Emergence::StandardLayout::FieldId id;
         std::array<Emergence::StandardLayout::FieldId, MAX_DISCRETE_PARAMETERS> discrete;
         std::array<Emergence::StandardLayout::FieldId, MAX_REAL_PARAMETERS> real;
         Emergence::StandardLayout::Mapping mapping;
