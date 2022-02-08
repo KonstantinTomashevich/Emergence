@@ -136,7 +136,7 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     // Adjust fixed update step to avoid death spiral.
     // Full frame time should be consistently lower than simulation step.
     // We also add small epsilon in order to take possible VSync waits into account.
-    constexpr float VSYNC_EPSILON = 1e-6f;
+    constexpr float VSYNC_EPSILON = 1e-3f;
     const float minimumRealStepTime = _time->averageFullFrameRealDurationS.Get () - VSYNC_EPSILON;
 
     assert (!_time->targetFixedFrameDurationsS.Empty ());

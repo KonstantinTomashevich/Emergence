@@ -22,7 +22,7 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_variant_end ()
 sober_library_end ()
 
-add_executable ("${GAME_NAME}GameLauncher" ${URHO3D_EXECUTABLE_TYPE} "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+add_executable ("${GAME_NAME}GameLauncher" ${GAME_EXECUTABLE_FLAG} "${SOBER_TEST_RUNNER_STUB_SOURCE}")
 sober_naming_variant_target ("${GAME_NAME}Game" Original GAME_TARGET)
 target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 

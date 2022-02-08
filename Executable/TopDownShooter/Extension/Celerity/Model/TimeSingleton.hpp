@@ -31,11 +31,11 @@ struct TimeSingleton final
     /// \details Useful for visuals, that should not be affected by world speed, like UI.
     float realNormalDurationS = 0.0f;
 
-    /// Will be selected automatically from ::targetFixedFrameDurationsS.
+    /// \brief Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
 
     Emergence::Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
-        1000.0f / 120.0f, 1000.0f / 60.0f, 1000.0f / 30.0f};
+        1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
 
     /// \brief Allows gameplay mechanics to slowdown or speedup time.
     /// \invariant >= 0.0f

@@ -14,9 +14,11 @@ function (link_resources_for_development OUTPUT_DIRECTORY)
     file (CREATE_LINK "${GAME_ASSETS}" "${OUTPUT_DIRECTORY}/GameAssets" SYMBOLIC)
 endfunction ()
 
-set (URHO3D_EXECUTABLE_TYPE "")
+# We need to mark game executables with WIN32 on Windows.
+set (GAME_EXECUTABLE_FLAG "")
+
 if (WIN32)
-    set (URHO3D_EXECUTABLE_TYPE "WIN32")
+    set (GAME_EXECUTABLE_FLAG "WIN32")
 endif ()
 
 add_custom_target (TopDownShooterConvertIntermediateAssets

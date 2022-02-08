@@ -1,12 +1,8 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
-
 #include <Celerity/Model/WorldSingleton.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerObject.hpp>
 #include <Input/InputSingleton.hpp>
-
-#include <Memory/Profiler/AllocationGroup.hpp>
 
 #include <Shared/Checkpoint.hpp>
 
@@ -39,7 +35,7 @@ InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &
 {
     _constructor.DependOn (Checkpoint::INPUT_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);
-    // In case if there are no direct pushers.
+    // Enforce checkpoint order even if there are no direct pushers.
     _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
 }
 

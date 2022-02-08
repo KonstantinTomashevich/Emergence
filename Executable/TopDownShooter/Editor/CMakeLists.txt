@@ -16,7 +16,7 @@ sober_library_begin ("${GAME_NAME}Editor" STATIC)
     sober_variant_end ()
 sober_library_end ()
 
-add_executable ("${GAME_NAME}EditorLauncher" ${URHO3D_EXECUTABLE_TYPE} "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+add_executable ("${GAME_NAME}EditorLauncher" ${GAME_EXECUTABLE_FLAG} "${SOBER_TEST_RUNNER_STUB_SOURCE}")
 sober_naming_variant_target ("${GAME_NAME}Editor" Original EDITOR_TARGET)
 target_link_libraries ("${GAME_NAME}EditorLauncher" PUBLIC "${EDITOR_TARGET}")
 

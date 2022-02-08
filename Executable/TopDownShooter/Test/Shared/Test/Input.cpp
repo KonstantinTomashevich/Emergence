@@ -138,7 +138,7 @@ void Configurator::Execute ()
     auto cursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*cursor);
 
-    // Initialize triggers if there are not initialized already.
+    // Initialize triggers if they are not initialized already.
 
     if (input->keyStateTriggers.Empty ())
     {
@@ -456,7 +456,7 @@ TEST_CASE (KeyStateTrigger)
             // Press and hold.
             NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}}, {{0u, {actionDown}}}},
             NormalUpdateRequest {{}, {{0u, {actionDown}}}},
-            NormalUpdateRequest {{Steps::FireKeyDown {'a', 0u}}, {{0u, {actionDown}}}},
+            NormalUpdateRequest {{}, {{0u, {actionDown}}}},
             NormalUpdateRequest {{Steps::FireKeyUp {'a', 0u}}, {{0u, {actionUp}}}},
         });
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SyntaxSugar/MuteWarnings.hpp>
-
 #include <Celerity/InputAccumulator.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
