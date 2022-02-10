@@ -64,6 +64,12 @@ public:
     template <typename... Args>
     bool TryEmplaceBack (Args &&..._constructorArgs) noexcept;
 
+    /// \brief Shifts all elements starting from `_at` by one and constructs new item at `_at`.
+    /// \return Reference to constructed item.
+    /// \invariant ::GetCount is less that ::Capacity.
+    template <typename... Args>
+    Item &EmplaceAt (Iterator _at, Args &&..._constructorArgs) noexcept;
+
     /// \brief Resets vector to empty state.
     void Clear () noexcept requires std::is_nothrow_default_constructible_v<Item>;
 
@@ -207,6 +213,28 @@ bool InplaceVector<Item, Capacity>::TryEmplaceBack (Args &&..._constructorArgs) 
     }
 
     return false;
+}
+
+template <typename Item, std::size_t Capacity>
+template <typename... Args>
+Item &InplaceVector<Item, Capacity>::EmplaceAt (InplaceVector::Iterator _at, Args &&..._constructorArgs) noexcept
+{
+    assert (count < Capacity);
+    if (_at == End ())
+    {
+        return EmplaceBack (std::forward<Args...> (_constructorArgs...));
+    }
+
+    ++count;
+    const auto last = --End ();
+
+    for (auto iterator = _at; iterator != last; ++iterator)
+    {
+        *(iterator + 1u) = std::move (*iterator);
+    }
+
+    Item *item = new (&*_at) Item (std::forward<Args> (_constructorArgs)...);
+    return *item;
 }
 
 template <typename Item, std::size_t Capacity>
