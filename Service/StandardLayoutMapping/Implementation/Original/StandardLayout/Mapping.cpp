@@ -102,6 +102,12 @@ FieldId Mapping::GetFieldId (const Field &_field) const noexcept
     return handle->GetFieldId (*reinterpret_cast<const FieldData *> (_field.handle));
 }
 
+uintptr_t Mapping::Hash () const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    return reinterpret_cast<uintptr_t> (handle.Get ());
+}
+
 Mapping::Mapping (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     assert (_data);

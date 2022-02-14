@@ -75,6 +75,9 @@ public:
     /// \invariant Given field belongs to this mapping.
     [[nodiscard]] FieldId GetFieldId (const Field &_field) const noexcept;
 
+    /// \return Hash for this mapping.
+    [[nodiscard]] uintptr_t Hash () const noexcept;
+
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator== (const Mapping &_other) const noexcept;
 
@@ -106,3 +109,15 @@ Mapping::FieldIterator begin (const Mapping &_mapping) noexcept;
 /// \brief Wraps Mapping::End for foreach sentences.
 Mapping::FieldIterator end (const Mapping &_mapping) noexcept;
 } // namespace Emergence::StandardLayout
+
+namespace std
+{
+template <>
+struct hash<Emergence::StandardLayout::Mapping>
+{
+    std::size_t operator() (const Emergence::StandardLayout::Mapping &_mapping) const noexcept
+    {
+        return static_cast<std::size_t> (_mapping.Hash ());
+    }
+};
+} // namespace std
