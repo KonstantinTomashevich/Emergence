@@ -11,10 +11,18 @@
 
 namespace Emergence::Celerity
 {
+using namespace Memory::Literals;
+
 static Warehouse::Registry ConstructInsideGroup (Memory::UniqueString _worldName)
 {
     auto placeholder = Memory::Profiler::AllocationGroup {_worldName}.PlaceOnTop ();
     return Warehouse::Registry {_worldName};
+}
+
+static Memory::Profiler::AllocationGroup WorldAllocationGroup (Memory::UniqueString _worldName,
+                                                               Memory::UniqueString _groupName)
+{
+    return Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_worldName}, _groupName};
 }
 
 /// It's expected that user will not have a lot of pipelines, therefore no need to waste memory on large pool pages.
@@ -24,10 +32,12 @@ World::World (Memory::UniqueString _name) noexcept
     : registry (ConstructInsideGroup (_name)),
       modifyTime (registry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       modifyWorld (registry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
-      pipelinePool (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name},
-                                                       Memory::UniqueString {"Pipelines"}},
-                    sizeof (Pipeline),
-                    PIPELINES_ON_PAGE)
+      pipelinePool (WorldAllocationGroup (_name, "Pipelines"_us), sizeof (Pipeline), PIPELINES_ON_PAGE),
+      eventCustom (WorldAllocationGroup (_name, "EventCustom"_us)),
+      eventOnAdd (WorldAllocationGroup (_name, "EventOnAdd"_us)),
+      eventOnRemove (WorldAllocationGroup (_name, "EventOnRemove"_us)),
+      eventOnChange (WorldAllocationGroup (_name, "EventOnChange"_us)),
+      changeTrackers (WorldAllocationGroup (_name, "ChangeTrackers"_us))
 {
 }
 

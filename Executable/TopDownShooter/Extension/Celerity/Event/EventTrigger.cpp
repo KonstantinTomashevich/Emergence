@@ -3,8 +3,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include <Celerity/EventRegister.hpp>
-#include <utility>
+#include <Celerity/Event/EventTrigger.hpp>
 
 namespace Emergence
 {
@@ -28,6 +27,7 @@ static Memory::Profiler::AllocationGroup GetEventRegistrationAlgorithmsGroup ()
     return group;
 }
 
+// TODO: Is there any way to prevent block separation by padding?
 static Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> BakeCopyOuts (
     const StandardLayout::Mapping &_recordType,
     const StandardLayout::Mapping &_eventType,
@@ -222,7 +222,7 @@ void OnChangeEventTrigger::Trigger (const void *_changedRecord, const void *_ini
 ChangeTracker::ChangeTracker (
     const Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> &_events) noexcept
     : trackedType (_events[0u]->GetTrackedType ()),
-      bufferHeap (Memory::Profiler::AllocationGroup {"ChangeTracker"_us}),
+      bufferHeap (Memory::Profiler::AllocationGroup {"ChangeTrackerBuffer"_us}),
       buffer (bufferHeap.Acquire (trackedType.GetObjectSize ()))
 {
     for (OnChangeEventTrigger *event : _events)

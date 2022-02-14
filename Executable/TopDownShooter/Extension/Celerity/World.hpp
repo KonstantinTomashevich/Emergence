@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Celerity/Event/EventTrigger.hpp>
 #include <Celerity/Pipeline.hpp>
 
 #include <Container/Vector.hpp>
@@ -31,12 +32,17 @@ public:
 
     EMERGENCE_DELETE_ASSIGNMENT (World);
 
-    // TODO: Rules for automatic edition/addition/deletion event firing.
-
 private:
+    friend class EventRegistrar;
     friend class PipelineBuilder;
     friend class TaskConstructor;
     friend class WorldTestingUtility;
+
+    struct CustomEventInfo
+    {
+        StandardLayout::Mapping type;
+        EventRoute route;
+    };
 
     void NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
 
@@ -54,6 +60,12 @@ private:
     Memory::OrderedPool pipelinePool;
     Pipeline *normalPipeline = nullptr;
     Pipeline *fixedPipeline = nullptr;
+
+    Container::Vector<CustomEventInfo> eventCustom;
+    Container::Vector<TrivialEventTrigger> eventOnAdd;
+    Container::Vector<TrivialEventTrigger> eventOnRemove;
+    Container::Vector<OnChangeEventTrigger> eventOnChange;
+    Container::Vector<ChangeTracker> changeTrackers;
 };
 
 class WorldTestingUtility final

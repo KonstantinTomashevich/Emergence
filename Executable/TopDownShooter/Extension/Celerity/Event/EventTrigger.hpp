@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility>
-
 #include <Container/InplaceVector.hpp>
 #include <Container/Vector.hpp>
 
