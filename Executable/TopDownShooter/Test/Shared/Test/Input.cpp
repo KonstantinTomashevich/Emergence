@@ -107,9 +107,9 @@ private:
     std::size_t framesConfigured = 0u;
 
     InputAccumulator *eventOutput;
-    Emergence::Warehouse::InsertLongTermQuery createListener;
-    Emergence::Warehouse::ModifyValueQuery modifyListenerById;
-    Emergence::Warehouse::ModifySingletonQuery modifyInput;
+    Emergence::Celerity::InsertLongTermQuery createListener;
+    Emergence::Celerity::ModifyValueQuery modifyListenerById;
+    Emergence::Celerity::ModifySingletonQuery modifyInput;
 };
 
 Configurator::Configurator (TaskConstructor &_constructor,
@@ -278,7 +278,7 @@ private:
     std::size_t framesValidated = 0u;
     Vector<FrameExpectation> expectations;
 
-    Emergence::Warehouse::FetchValueQuery fetchListenerById;
+    Emergence::Celerity::FetchValueQuery fetchListenerById;
 };
 
 Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept

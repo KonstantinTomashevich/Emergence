@@ -341,7 +341,7 @@ ChangeTracker::~ChangeTracker () noexcept
     }
 }
 
-void ChangeTracker::StartEdition (const void *_record) noexcept
+void ChangeTracker::BeginEdition (const void *_record) noexcept
 {
     assert (buffer);
     assert (_record);

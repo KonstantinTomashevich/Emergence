@@ -65,20 +65,42 @@ void EventRegistrar::CustomEvent (const ClearableEventSeed &_seed) noexcept
     world->eventCustom.emplace_back (World::CustomEventInfo {_seed.eventType, _seed.route});
 }
 
+static void AddTrivialAutomatedEvent (Container::Vector<TrivialEventTriggerRow> &_target,
+                                      const TrivialAutomatedEventSeed &_seed,
+                                      Warehouse::Registry &_registry)
+{
+    TrivialEventTriggerRow *selectedRow = nullptr;
+    for (TrivialEventTriggerRow &row : _target)
+    {
+        if (row.Empty () || row.Front ().GetTrackedType () == _seed.trackedType)
+        {
+            selectedRow = &row;
+            break;
+        }
+    }
+
+    if (!selectedRow)
+    {
+        selectedRow = &_target.emplace_back ();
+    }
+
+    [[maybe_unused]] bool inserted = selectedRow->TryEmplaceBack (TrivialEventTrigger {
+        _seed.trackedType, _registry.InsertShortTerm (_seed.eventType), _seed.route, _seed.copyOut});
+    assert (inserted);
+}
+
 void EventRegistrar::OnAddEvent (const TrivialAutomatedEventSeed &_seed) noexcept
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    world->eventOnAdd.emplace_back (TrivialEventTrigger {
-        _seed.recordType, world->registry.InsertShortTerm (_seed.eventType), _seed.route, _seed.copyOut});
+    AddTrivialAutomatedEvent (world->eventOnAdd, _seed, world->registry);
 }
 
 void EventRegistrar::OnRemoveEvent (const TrivialAutomatedEventSeed &_seed) noexcept
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    world->eventOnRemove.emplace_back (TrivialEventTrigger {
-        _seed.recordType, world->registry.InsertShortTerm (_seed.eventType), _seed.route, _seed.copyOut});
+    AddTrivialAutomatedEvent (world->eventOnRemove, _seed, world->registry);
 }
 
 void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noexcept
@@ -86,7 +108,7 @@ void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noe
     assert (world);
     AssertEventUniqueness (_seed.eventType);
     world->eventOnChange.emplace_back (
-        OnChangeEventTrigger {_seed.recordType, world->registry.InsertShortTerm (_seed.eventType), _seed.route,
+        OnChangeEventTrigger {_seed.trackedType, world->registry.InsertShortTerm (_seed.eventType), _seed.route,
                               _seed.trackedFields, _seed.copyOutOfInitial, _seed.copyOutOfChanged});
 }
 
@@ -95,14 +117,20 @@ void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayou
 #ifndef NDEBUG
     assert (world);
 
-    for (const TrivialEventTrigger &trigger : world->eventOnAdd)
+    for (const TrivialEventTriggerRow &row : world->eventOnAdd)
     {
-        assert (trigger.GetEventType () != _type);
+        for (const TrivialEventTrigger &trigger : row)
+        {
+            assert (trigger.GetEventType () != _type);
+        }
     }
 
-    for (const TrivialEventTrigger &trigger : world->eventOnRemove)
+    for (const TrivialEventTriggerRow &row : world->eventOnRemove)
     {
-        assert (trigger.GetEventType () != _type);
+        for (const TrivialEventTrigger &trigger : row)
+        {
+            assert (trigger.GetEventType () != _type);
+        }
     }
 
     for (const OnChangeEventTrigger &trigger : world->eventOnChange)

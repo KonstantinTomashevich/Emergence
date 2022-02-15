@@ -30,110 +30,127 @@ void TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) 
     task.dependencyOf.emplace_back (_taskOrCheckpoint);
 }
 
-Warehouse::FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping)
+FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping)
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchSingleton (_typeMapping);
 }
 
-Warehouse::ModifySingletonQuery TaskConstructor::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
+ModifySingletonQuery TaskConstructor::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.ModifySingleton (_typeMapping);
+    return ModifySingletonQuery {parent->world->registry.ModifySingleton (_typeMapping),
+                                 FindChangeTracker (_typeMapping)};
 }
 
-Warehouse::InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
+InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.InsertShortTerm (_typeMapping);
 }
 
-Warehouse::FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
+FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchSequence (_typeMapping);
 }
 
-Warehouse::ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
+ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.ModifySequence (_typeMapping);
 }
 
-Warehouse::InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept
+InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.InsertLongTerm (_typeMapping);
+    TrivialEventTriggerRow *eventsOnAdd = nullptr;
+
+    for (TrivialEventTriggerRow &row : parent->world->eventOnAdd)
+    {
+        if (!row.Empty () && row.Front ().GetTrackedType () == _typeMapping)
+        {
+            eventsOnAdd = &row;
+            break;
+        }
+    }
+
+    return InsertLongTermQuery {parent->world->registry.InsertLongTerm (_typeMapping), eventsOnAdd};
 }
 
-Warehouse::FetchValueQuery TaskConstructor::FetchValue (
-    const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
+FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typeMapping,
+                                             const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchValue (_typeMapping, _keyFields);
 }
 
-Warehouse::ModifyValueQuery TaskConstructor::ModifyValue (
-    const StandardLayout::Mapping &_typeMapping, const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
+ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_typeMapping,
+                                               const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.ModifyValue (_typeMapping, _keyFields);
+    return ModifyValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields),
+                             FindEventsOnRemove (_typeMapping), FindChangeTracker (_typeMapping)};
 }
 
-Warehouse::FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                                          StandardLayout::FieldId _keyField) noexcept
+FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                               StandardLayout::FieldId _keyField) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchAscendingRange (_typeMapping, _keyField);
 }
 
-Warehouse::ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                                            StandardLayout::FieldId _keyField) noexcept
+ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                 StandardLayout::FieldId _keyField) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField);
+    return ModifyAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField),
+                                      FindEventsOnRemove (_typeMapping), FindChangeTracker (_typeMapping)};
 }
 
-Warehouse::FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                                            StandardLayout::FieldId _keyField) noexcept
+FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                 StandardLayout::FieldId _keyField) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchDescendingRange (_typeMapping, _keyField);
 }
 
-Warehouse::ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (
-    const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept
+ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                   StandardLayout::FieldId _keyField) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField);
+    return ModifyDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField),
+                                       FindEventsOnRemove (_typeMapping), FindChangeTracker (_typeMapping)};
 }
 
-Warehouse::FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
+FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchShapeIntersection (_typeMapping, _dimensions);
 }
 
-Warehouse::ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
+ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions);
+    return ModifyShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
+                                         FindEventsOnRemove (_typeMapping), FindChangeTracker (_typeMapping)};
 }
 
-Warehouse::FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
+FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.readAccess.emplace_back (_typeMapping.GetName ());
     return parent->world->registry.FetchRayIntersection (_typeMapping, _dimensions);
 }
 
-Warehouse::ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
+ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
-    return parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions);
+    return ModifyRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions),
+                                       FindEventsOnRemove (_typeMapping), FindChangeTracker (_typeMapping)};
 }
 
 void TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
@@ -163,6 +180,32 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
 {
     assert (parent);
     task.name = _name;
+}
+
+TrivialEventTriggerRow *TaskConstructor::FindEventsOnRemove (const StandardLayout::Mapping &_trackedType) const noexcept
+{
+    for (TrivialEventTriggerRow &row : parent->world->eventOnRemove)
+    {
+        if (!row.Empty () && row.Front ().GetTrackedType () == _trackedType)
+        {
+            return &row;
+        }
+    }
+
+    return nullptr;
+}
+
+ChangeTracker *TaskConstructor::FindChangeTracker (const StandardLayout::Mapping &_trackedType) const noexcept
+{
+    for (ChangeTracker &tracker : parent->world->changeTrackers)
+    {
+        if (tracker.GetTrackedType () == _trackedType)
+        {
+            return &tracker;
+        }
+    }
+
+    return nullptr;
 }
 
 PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
