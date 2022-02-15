@@ -88,12 +88,6 @@ private:
     Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOuts;
 };
 
-struct TrackedZone final
-{
-    std::size_t offset = 0u;
-    std::size_t length = 0u;
-};
-
 /// \brief Trivial OnAdd/OnRemove events for the same tracked type should be stored in rows to make event firing easier.
 /// \details Because of event routing, there could be multiple OnAdd/OnRemove events per tracked type,
 ///          but not more than routes count.
@@ -116,6 +110,15 @@ public:
 
 private:
     friend class ChangeTracker;
+
+    struct TrackedZone final
+    {
+        std::size_t offset = 0u;
+        std::size_t length = 0u;
+    };
+
+    void BakeTrackedFields (const StandardLayout::Mapping &_recordType,
+                            const Container::Vector<StandardLayout::FieldId> &_fields) noexcept;
 
     Container::InplaceVector<TrackedZone, MAX_TRACKED_ZONES_PER_EVENT> trackedZones;
     Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOutOfInitial;
@@ -143,6 +146,13 @@ private:
     static constexpr std::size_t MAX_TRACKED_ZONES = 4u;
 
     static constexpr std::size_t MAX_TRACKING_BUFFER_SIZE = 128u;
+
+    struct TrackedZone final
+    {
+        std::size_t sourceOffset = 0u;
+        std::size_t length = 0u;
+        std::uint8_t *buffer = nullptr;
+    };
 
     struct EventBinding final
     {

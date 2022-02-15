@@ -87,55 +87,6 @@ static Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> Bak
     return result;
 }
 
-static Container::InplaceVector<TrackedZone, MAX_COPY_OUT_BLOCKS_PER_EVENT> BakeTrackedFields (
-    const StandardLayout::Mapping &_recordType, const Container::Vector<StandardLayout::FieldId> &_fields)
-{
-    if (_fields.empty ())
-    {
-        return {};
-    }
-
-    Container::Vector<TrackedZone> converted {GetEventRegistrationAlgorithmsGroup ()};
-    for (const StandardLayout::FieldId fieldId : _fields)
-    {
-        StandardLayout::Field field = _recordType.GetField (fieldId);
-        assert (field);
-        // TODO: Is there any way to add bit support without downgrading overall performance?
-        assert (field.GetArchetype () != StandardLayout::FieldArchetype::BIT);
-        converted.emplace_back (TrackedZone {field.GetOffset (), field.GetSize ()});
-    }
-
-    // In most cases input is already sorted (because it's more convenient to specify fields in order of their
-    // declaration), therefore sort should be almost free here.
-    std::sort (converted.begin (), converted.end (),
-               [] (const TrackedZone &_first, const TrackedZone &_second)
-               {
-                   return _first.offset < _second.offset;
-               });
-
-    Container::InplaceVector<TrackedZone, MAX_COPY_OUT_BLOCKS_PER_EVENT> result;
-    result.EmplaceBack (converted.front ());
-
-    if (converted.size () == 1u)
-    {
-        return result;
-    }
-
-    for (auto iterator = std::next (converted.begin ()); iterator != converted.end (); ++iterator)
-    {
-        if (result.Back ().offset + result.Back ().length == iterator->offset)
-        {
-            result.Back ().length += iterator->length;
-        }
-        else
-        {
-            result.EmplaceBack (*iterator);
-        }
-    }
-
-    return result;
-}
-
 PipelineType GetEventFiringPipeline (EventRoute _route) noexcept
 {
     switch (_route)
@@ -233,10 +184,11 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
                                             const Container::Vector<CopyOutField> &_copyOutOfInitial,
                                             const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept
     : EventTriggerBase (std::move (_trackedType), std::move (_inserter), _route),
-      trackedZones (BakeTrackedFields (_trackedType, _trackedFields)),
       copyOutOfInitial (BakeCopyOuts (trackedType, _inserter.GetTypeMapping (), _copyOutOfInitial)),
       copyOutOfChanged (BakeCopyOuts (trackedType, _inserter.GetTypeMapping (), _copyOutOfChanged))
 {
+    BakeTrackedFields (_trackedType, _trackedFields);
+
 #ifndef _NDEBUG
     for (const CopyOutField &copyOut : _copyOutOfInitial)
     {
@@ -265,13 +217,58 @@ void OnChangeEventTrigger::Trigger (const void *_changedRecord, const void *_ini
     }
 }
 
+void OnChangeEventTrigger::BakeTrackedFields (const StandardLayout::Mapping &_recordType,
+                                              const Container::Vector<StandardLayout::FieldId> &_fields) noexcept
+{
+    if (_fields.empty ())
+    {
+        return;
+    }
+
+    Container::Vector<TrackedZone> converted {GetEventRegistrationAlgorithmsGroup ()};
+    for (const StandardLayout::FieldId fieldId : _fields)
+    {
+        StandardLayout::Field field = _recordType.GetField (fieldId);
+        assert (field);
+        // TODO: Is there any way to add bit support without downgrading overall performance?
+        assert (field.GetArchetype () != StandardLayout::FieldArchetype::BIT);
+        converted.emplace_back (TrackedZone {field.GetOffset (), field.GetSize ()});
+    }
+
+    // In most cases input is already sorted (because it's more convenient to specify fields in order of their
+    // declaration), therefore sort should be almost free here.
+    std::sort (converted.begin (), converted.end (),
+               [] (const TrackedZone &_first, const TrackedZone &_second)
+               {
+                   return _first.offset < _second.offset;
+               });
+
+    trackedZones.EmplaceBack (converted.front ());
+    if (converted.size () == 1u)
+    {
+        return;
+    }
+
+    for (auto iterator = std::next (converted.begin ()); iterator != converted.end (); ++iterator)
+    {
+        if (trackedZones.Back ().offset + trackedZones.Back ().length == iterator->offset)
+        {
+            trackedZones.Back ().length += iterator->length;
+        }
+        else
+        {
+            trackedZones.EmplaceBack (*iterator);
+        }
+    }
+}
+
 ChangeTracker::ChangeTracker (
     const Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> &_events) noexcept
     : trackedType (_events[0u]->GetTrackedType ())
 {
     for (OnChangeEventTrigger *event : _events)
     {
-        for (TrackedZone zone : event->trackedZones)
+        for (OnChangeEventTrigger::TrackedZone zone : event->trackedZones)
         {
             for (auto iterator = trackedZones.Begin (); iterator != trackedZones.End (); ++iterator)
             {
@@ -279,36 +276,36 @@ ChangeTracker::ChangeTracker (
                 // where A illustrates `zone`, B -- `*iterator`, X -- their intersection.
 
                 /// BBBAAA
-                if (zone.offset >= iterator->offset + iterator->length)
+                if (zone.offset >= iterator->sourceOffset + iterator->length)
                 {
                     continue;
                 }
 
                 // AAABBB
-                if (zone.offset + zone.length <= iterator->offset)
+                if (zone.offset + zone.length <= iterator->sourceOffset)
                 {
-                    trackedZones.EmplaceAt (iterator, zone);
+                    trackedZones.EmplaceAt (iterator, TrackedZone {zone.offset, zone.length});
                     zone.length = 0u;
                     break;
                 }
 
                 // AAAXXBBB
-                if (zone.offset < iterator->offset)
+                if (zone.offset < iterator->sourceOffset)
                 {
-                    std::size_t partLength = iterator->offset - zone.offset;
+                    std::size_t partLength = iterator->sourceOffset - zone.offset;
                     trackedZones.EmplaceAt (iterator, TrackedZone {zone.offset, partLength});
                     ++iterator;
 
-                    zone.offset = iterator->offset;
+                    zone.offset = iterator->sourceOffset;
                     zone.length -= partLength;
                 }
 
-                if (zone.offset == iterator->offset)
+                if (zone.offset == iterator->sourceOffset)
                 {
                     // XXXBBB
-                    if (zone.offset + zone.length < iterator->offset + iterator->length)
+                    if (zone.offset + zone.length < iterator->sourceOffset + iterator->length)
                     {
-                        trackedZones.EmplaceAt (std::next (iterator), TrackedZone {iterator->offset + zone.length,
+                        trackedZones.EmplaceAt (std::next (iterator), TrackedZone {iterator->sourceOffset + zone.length,
                                                                                    iterator->length - zone.length});
 
                         iterator->length = zone.length;
@@ -317,16 +314,17 @@ ChangeTracker::ChangeTracker (
                     }
 
                     // XXXAAA
-                    if (zone.offset + zone.length >= iterator->offset + iterator->length)
+                    if (zone.offset + zone.length >= iterator->sourceOffset + iterator->length)
                     {
-                        zone.offset = iterator->offset + iterator->length;
+                        zone.offset = iterator->sourceOffset + iterator->length;
                         zone.length -= iterator->length;
                     }
                 }
-                // BBBXXX??? -- We split B by begging of A and process intersection with second part in next iteration.
+                // BBBXXX??? -- We split B by beginning of A and process
+                //              intersection with second part in next iteration.
                 else
                 {
-                    std::size_t deltaOffset = zone.offset - iterator->offset;
+                    std::size_t deltaOffset = zone.offset - iterator->sourceOffset;
                     trackedZones.EmplaceAt (std::next (iterator),
                                             TrackedZone {zone.offset, iterator->length - deltaOffset});
                     iterator->length = deltaOffset;
@@ -335,20 +333,26 @@ ChangeTracker::ChangeTracker (
 
             if (zone.length > 0u)
             {
-                trackedZones.EmplaceBack (zone);
+                trackedZones.EmplaceBack (TrackedZone {zone.offset, zone.length});
             }
         }
     }
 
-#ifndef NDEBUG
-    std::size_t totalTrackedSize = 0u;
-    for (const TrackedZone &trackerZone : trackedZones)
+    // Calculate buffer offsets.
+    uint8_t *zoneBuffer = &buffer.front ();
+
+    for (TrackedZone &trackedZone : trackedZones)
     {
-        totalTrackedSize += trackerZone.length;
+        trackedZone.buffer = zoneBuffer;
+        zoneBuffer += trackedZone.length;
+
+        if (std::size_t leftover = trackedZone.length % sizeof (std::uintptr_t))
+        {
+            zoneBuffer += sizeof (std::uintptr_t) - leftover;
+        }
     }
 
-    assert (totalTrackedSize <= buffer.size ());
-#endif
+    assert (zoneBuffer <= &*buffer.end ());
 
     for (OnChangeEventTrigger *event : _events)
     {
@@ -359,18 +363,18 @@ ChangeTracker::ChangeTracker (
         // Calculate binding mask.
         for (const TrackedZone &trackedZone : trackedZones)
         {
-            for (const TrackedZone &eventZone : event->trackedZones)
+            for (const OnChangeEventTrigger::TrackedZone &eventZone : event->trackedZones)
             {
-                if (trackedZone.offset >= eventZone.offset &&
-                    trackedZone.offset + trackedZone.length <= eventZone.offset + eventZone.length)
+                if (trackedZone.sourceOffset >= eventZone.offset &&
+                    trackedZone.sourceOffset + trackedZone.length <= eventZone.offset + eventZone.length)
                 {
                     binding.zoneMask |= currentZoneFlag;
                     break;
                 }
 
                 // Assert that there is no intersections: otherwise baking algorithm above is incorrect.
-                assert (trackedZone.offset + trackedZone.length < eventZone.offset ||
-                        eventZone.offset + eventZone.length < trackedZone.offset);
+                assert (trackedZone.sourceOffset + trackedZone.length < eventZone.offset ||
+                        eventZone.offset + eventZone.length < trackedZone.sourceOffset);
             }
 
             currentZoneFlag <<= 1u;
@@ -381,7 +385,6 @@ ChangeTracker::ChangeTracker (
         // Both are sorted.
         auto copyOutIterator = event->copyOutOfInitial.Begin ();
         auto trackedZoneIterator = trackedZones.Begin ();
-        std::size_t bufferOffset = 0u;
 
         while (copyOutIterator != event->copyOutOfInitial.End ())
         {
@@ -390,9 +393,8 @@ ChangeTracker::ChangeTracker (
             // Therefore, we just need to find offset of the first copy out byte in the buffer.
 
             while (trackedZoneIterator != trackedZones.End () &&
-                   trackedZoneIterator->offset + trackedZoneIterator->length < copyOutIterator->sourceOffset)
+                   trackedZoneIterator->sourceOffset + trackedZoneIterator->length < copyOutIterator->sourceOffset)
             {
-                bufferOffset += trackedZoneIterator->offset;
                 ++trackedZoneIterator;
             }
 
@@ -403,8 +405,11 @@ ChangeTracker::ChangeTracker (
                 break;
             }
 
-            assert (trackedZoneIterator->offset >= copyOutIterator->sourceOffset);
-            copyOutIterator->sourceOffset = bufferOffset + copyOutIterator->sourceOffset - trackedZoneIterator->offset;
+            assert (trackedZoneIterator->sourceOffset >= copyOutIterator->sourceOffset);
+            const std::size_t bufferOffset = trackedZoneIterator->buffer - &buffer.front ();
+
+            copyOutIterator->sourceOffset =
+                bufferOffset + copyOutIterator->sourceOffset - trackedZoneIterator->sourceOffset;
             ++copyOutIterator;
         }
     }
@@ -413,32 +418,26 @@ ChangeTracker::ChangeTracker (
 void ChangeTracker::BeginEdition (const void *_record) noexcept
 {
     assert (_record);
-    uint8_t *bufferOutput = &buffer.front ();
-
     for (const TrackedZone &zone : trackedZones)
     {
-        memcpy (bufferOutput, static_cast<const uint8_t *> (_record) + zone.offset, zone.length);
-        bufferOutput += zone.length;
+        memcpy (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length);
     }
 }
 
 void ChangeTracker::EndEdition (const void *_record) noexcept
 {
     assert (_record);
-    const uint8_t *bufferInput = &buffer.front ();
     decltype (EventBinding::zoneMask) changedMask = 0u;
     decltype (EventBinding::zoneMask) currentZoneFlag = 1u;
 
     for (const TrackedZone &zone : trackedZones)
     {
-        if (memcmp (bufferInput, static_cast<const uint8_t *> (_record) + zone.offset, zone.length) != 0)
+        if (memcmp (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length) != 0)
         {
             changedMask |= currentZoneFlag;
         }
 
         currentZoneFlag <<= 1u;
-        // TODO: Alignment?
-        bufferInput += zone.length;
     }
 
     for (EventBinding &binding : bindings)
