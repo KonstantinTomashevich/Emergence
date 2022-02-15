@@ -4,6 +4,7 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/HashSet.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
@@ -27,18 +28,20 @@ struct Task
     /// \see TaskCollection::Item::task
     std::function<void ()> executor;
 
+    // TODO: Ideally we should use flat sets here, because item count is rather small.
+
     /// \brief Names of resources, that are read by this task.
-    Container::Vector<Memory::UniqueString> readAccess {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> readAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of resources, that are modified by this task.
     /// \invariant If task both reads and modifies one resources, this resource should only be added to ::writeAccess.
-    Container::Vector<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, on which this task depends.
-    Container::Vector<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, to which this task injects itself as dependency.
-    Container::Vector<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
 };
 
 /// \brief Allows user to register tasks and export result as task collection or visual graph.

@@ -431,6 +431,18 @@ StandardLayout::Mapping ChangeTracker::GetTrackedType () const noexcept
 {
     return trackedType;
 }
+
+Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> ChangeTracker::GetEventTriggers ()
+    const noexcept
+{
+    Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> triggers;
+    for (const EventBinding &binding : bindings)
+    {
+        triggers.EmplaceBack (binding.event);
+    }
+
+    return triggers;
+}
 } // namespace Celerity
 
 namespace Memory

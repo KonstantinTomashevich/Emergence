@@ -107,10 +107,14 @@ private:
 
     TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
-    [[nodiscard]] TrivialEventTriggerRow *FindEventsOnRemove (
-        const StandardLayout::Mapping &_trackedType) const noexcept;
+    [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::Vector<TrivialEventTriggerRow> &_rows,
+                                                            const StandardLayout::Mapping &_trackedType) noexcept;
 
-    [[nodiscard]] ChangeTracker *FindChangeTracker (const StandardLayout::Mapping &_trackedType) const noexcept;
+    [[nodiscard]] TrivialEventTriggerRow *BindEventsOnAdd (const StandardLayout::Mapping &_trackedType) noexcept;
+
+    [[nodiscard]] TrivialEventTriggerRow *BindEventsOnRemove (const StandardLayout::Mapping &_trackedType) noexcept;
+
+    [[nodiscard]] ChangeTracker *BindChangeTracker (const StandardLayout::Mapping &_trackedType) noexcept;
 
     PipelineBuilder *parent;
     Flow::Task task;

@@ -357,7 +357,7 @@ TEST_CASE (TrivialSafeResourceUsageWithIntroducedCircularDependency)
     using namespace Emergence::Flow::Test;
 
     Seed seed = TRIVIAL_SAFE_RESOURCE_USAGE_SEED;
-    seed.tasks[3u].dependencyOf.emplace_back ("A1");
+    seed.tasks[3u].dependencyOf.emplace ("A1");
     Emergence::VisualGraph::Graph result = Grow (seed).ExportVisual (true);
 
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();
@@ -370,7 +370,7 @@ TEST_CASE (TrivialSafeResourceUsageWithCollision)
     using namespace Emergence::Flow::Test;
 
     Seed seed = TRIVIAL_SAFE_RESOURCE_USAGE_SEED;
-    seed.tasks[3u].writeAccess.emplace_back ("R2");
+    seed.tasks[3u].writeAccess.emplace ("R2");
     Emergence::VisualGraph::Graph result = Grow (seed).ExportVisual (true);
 
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();

@@ -142,6 +142,9 @@ public:
 
     [[nodiscard]] StandardLayout::Mapping GetTrackedType () const noexcept;
 
+    [[nodiscard]] Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> GetEventTriggers ()
+        const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (ChangeTracker);
 
 private:
