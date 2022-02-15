@@ -54,7 +54,6 @@ EventRegistrar::~EventRegistrar () noexcept
             scheme.changeTrackers.reserve (onChangeEventPerType.size ());
             for (auto &[trackedType, events] : onChangeEventPerType)
             {
-                auto placeholder = scheme.changeTrackers.get_allocator ().GetAllocationGroup ().PlaceOnTop ();
                 scheme.changeTrackers.emplace_back (ChangeTracker {events});
             }
 

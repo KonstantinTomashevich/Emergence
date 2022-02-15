@@ -267,9 +267,7 @@ void OnChangeEventTrigger::Trigger (const void *_changedRecord, const void *_ini
 
 ChangeTracker::ChangeTracker (
     const Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> &_events) noexcept
-    : trackedType (_events[0u]->GetTrackedType ()),
-      bufferHeap (Memory::Profiler::AllocationGroup {"ChangeTrackerBuffer"_us}),
-      buffer (bufferHeap.Acquire (trackedType.GetObjectSize ()))
+    : trackedType (_events[0u]->GetTrackedType ())
 {
     for (OnChangeEventTrigger *event : _events)
     {
@@ -342,87 +340,112 @@ ChangeTracker::ChangeTracker (
         }
     }
 
+#ifndef NDEBUG
+    std::size_t totalTrackedSize = 0u;
+    for (const TrackedZone &trackerZone : trackedZones)
+    {
+        totalTrackedSize += trackerZone.length;
+    }
+
+    assert (totalTrackedSize <= buffer.size ());
+#endif
+
     for (OnChangeEventTrigger *event : _events)
     {
         EventBinding &binding = bindings.EmplaceBack ();
         binding.event = event;
         decltype (EventBinding::zoneMask) currentZoneFlag = 1u;
 
-        for (const TrackedZone &trackerZone : trackedZones)
+        // Calculate binding mask.
+        for (const TrackedZone &trackedZone : trackedZones)
         {
             for (const TrackedZone &eventZone : event->trackedZones)
             {
-                if (trackerZone.offset >= eventZone.offset &&
-                    trackerZone.offset + trackerZone.length <= eventZone.offset + eventZone.length)
+                if (trackedZone.offset >= eventZone.offset &&
+                    trackedZone.offset + trackedZone.length <= eventZone.offset + eventZone.length)
                 {
                     binding.zoneMask |= currentZoneFlag;
                     break;
                 }
 
                 // Assert that there is no intersections: otherwise baking algorithm above is incorrect.
-                assert (trackerZone.offset + trackerZone.length < eventZone.offset ||
-                        eventZone.offset + eventZone.length < trackerZone.offset);
+                assert (trackedZone.offset + trackedZone.length < eventZone.offset ||
+                        eventZone.offset + eventZone.length < trackedZone.offset);
             }
 
             currentZoneFlag <<= 1u;
         }
-    }
-}
 
-ChangeTracker::ChangeTracker (ChangeTracker &&_other) noexcept
-    : trackedType (std::move (_other.trackedType)),
-      bufferHeap (std::move (_other.bufferHeap)),
-      buffer (_other.buffer),
-      trackedZones (std::move (_other.trackedZones)),
-      bindings (std::move (_other.bindings))
-{
-    _other.buffer = nullptr;
-}
+        // Adjust initial copy outs to our buffer offsets.
 
-ChangeTracker::~ChangeTracker () noexcept
-{
-    if (buffer)
-    {
-        bufferHeap.Release (buffer, trackedType.GetObjectSize ());
+        // Both are sorted.
+        auto copyOutIterator = event->copyOutOfInitial.Begin ();
+        auto trackedZoneIterator = trackedZones.Begin ();
+        std::size_t bufferOffset = 0u;
+
+        while (copyOutIterator != event->copyOutOfInitial.End ())
+        {
+            // Buffer just stores tracked data without gaps of untracked data.
+            // Copy out of initial points only to tracked data by contract.
+            // Therefore, we just need to find offset of the first copy out byte in the buffer.
+
+            while (trackedZoneIterator != trackedZones.End () &&
+                   trackedZoneIterator->offset + trackedZoneIterator->length < copyOutIterator->sourceOffset)
+            {
+                bufferOffset += trackedZoneIterator->offset;
+                ++trackedZoneIterator;
+            }
+
+            if (trackedZoneIterator == trackedZones.End ())
+            {
+                // Looks like either "copy out only tracked" contract is broken or blocks aren't sorted properly.
+                assert (false);
+                break;
+            }
+
+            assert (trackedZoneIterator->offset >= copyOutIterator->sourceOffset);
+            copyOutIterator->sourceOffset = bufferOffset + copyOutIterator->sourceOffset - trackedZoneIterator->offset;
+            ++copyOutIterator;
+        }
     }
 }
 
 void ChangeTracker::BeginEdition (const void *_record) noexcept
 {
-    assert (buffer);
     assert (_record);
+    uint8_t *bufferOutput = &buffer.front ();
 
     for (const TrackedZone &zone : trackedZones)
     {
-        memcpy (static_cast<uint8_t *> (buffer) + zone.offset, static_cast<const uint8_t *> (_record) + zone.offset,
-                zone.length);
+        memcpy (bufferOutput, static_cast<const uint8_t *> (_record) + zone.offset, zone.length);
+        bufferOutput += zone.length;
     }
 }
 
 void ChangeTracker::EndEdition (const void *_record) noexcept
 {
-    assert (buffer);
     assert (_record);
-
+    const uint8_t *bufferInput = &buffer.front ();
     decltype (EventBinding::zoneMask) changedMask = 0u;
     decltype (EventBinding::zoneMask) currentZoneFlag = 1u;
 
     for (const TrackedZone &zone : trackedZones)
     {
-        if (memcmp (static_cast<uint8_t *> (buffer) + zone.offset, static_cast<const uint8_t *> (_record) + zone.offset,
-                    zone.length) != 0)
+        if (memcmp (bufferInput, static_cast<const uint8_t *> (_record) + zone.offset, zone.length) != 0)
         {
             changedMask |= currentZoneFlag;
         }
 
         currentZoneFlag <<= 1u;
+        // TODO: Alignment?
+        bufferInput += zone.length;
     }
 
     for (EventBinding &binding : bindings)
     {
         if (binding.zoneMask & changedMask)
         {
-            binding.event->Trigger (_record, buffer);
+            binding.event->Trigger (_record, &buffer);
         }
     }
 }

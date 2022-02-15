@@ -130,12 +130,6 @@ public:
     ChangeTracker (
         const Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> &_events) noexcept;
 
-    ChangeTracker (const ChangeTracker &_other) = delete;
-
-    ChangeTracker (ChangeTracker &&_other) noexcept;
-
-    ~ChangeTracker () noexcept;
-
     void BeginEdition (const void *_record) noexcept;
 
     void EndEdition (const void *_record) noexcept;
@@ -145,10 +139,10 @@ public:
     [[nodiscard]] Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> GetEventTriggers ()
         const noexcept;
 
-    EMERGENCE_DELETE_ASSIGNMENT (ChangeTracker);
-
 private:
     static constexpr std::size_t MAX_TRACKED_ZONES = 4u;
+
+    static constexpr std::size_t MAX_TRACKING_BUFFER_SIZE = 128u;
 
     struct EventBinding final
     {
@@ -159,14 +153,9 @@ private:
     };
 
     StandardLayout::Mapping trackedType;
-
-    // TODO: Any better way to allocate buffers? Maybe use inplace array with maximum allowed size lime 256?
-    Memory::Heap bufferHeap;
-
-    void *buffer;
-
     Container::InplaceVector<TrackedZone, MAX_TRACKED_ZONES> trackedZones;
     Container::InplaceVector<EventBinding, MAX_ON_CHANGE_EVENTS_PER_TYPE> bindings;
+    std::array<uint8_t, MAX_TRACKING_BUFFER_SIZE> buffer;
 };
 } // namespace Emergence::Celerity
 
