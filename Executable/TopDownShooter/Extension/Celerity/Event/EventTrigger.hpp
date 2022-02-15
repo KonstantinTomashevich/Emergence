@@ -3,6 +3,8 @@
 #include <Container/InplaceVector.hpp>
 #include <Container/Vector.hpp>
 
+#include <Celerity/Pipeline.hpp>
+
 #include <Memory/Heap.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -33,6 +35,10 @@ enum class EventRoute
 
     COUNT,
 };
+
+PipelineType GetEventFiringPipeline (EventRoute _route) noexcept;
+
+PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept;
 
 struct CopyOutField final
 {

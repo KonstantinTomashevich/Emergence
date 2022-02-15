@@ -66,7 +66,10 @@ InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLayout::Mappi
     task.writeAccess.emplace_back (_typeMapping.GetName ());
     TrivialEventTriggerRow *eventsOnAdd = nullptr;
 
-    for (TrivialEventTriggerRow &row : parent->world->eventOnAdd)
+    World::EventScheme &eventScheme =
+        parent->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
+
+    for (TrivialEventTriggerRow &row : eventScheme.onAdd)
     {
         if (!row.Empty () && row.Front ().GetTrackedType () == _typeMapping)
         {
@@ -89,6 +92,7 @@ ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_t
                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     task.writeAccess.emplace_back (_typeMapping.GetName ());
+    // TODO: DO NOT FORGET TO PLACE WRITE ACCESS ON CREATED EVENTS!
     return ModifyValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields),
                              FindEventsOnRemove (_typeMapping), FindChangeTracker (_typeMapping)};
 }
@@ -184,7 +188,10 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
 
 TrivialEventTriggerRow *TaskConstructor::FindEventsOnRemove (const StandardLayout::Mapping &_trackedType) const noexcept
 {
-    for (TrivialEventTriggerRow &row : parent->world->eventOnRemove)
+    World::EventScheme &eventScheme =
+        parent->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
+
+    for (TrivialEventTriggerRow &row : eventScheme.onRemove)
     {
         if (!row.Empty () && row.Front ().GetTrackedType () == _trackedType)
         {
@@ -197,7 +204,10 @@ TrivialEventTriggerRow *TaskConstructor::FindEventsOnRemove (const StandardLayou
 
 ChangeTracker *TaskConstructor::FindChangeTracker (const StandardLayout::Mapping &_trackedType) const noexcept
 {
-    for (ChangeTracker &tracker : parent->world->changeTrackers)
+    World::EventScheme &eventScheme =
+        parent->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
+
+    for (ChangeTracker &tracker : eventScheme.changeTrackers)
     {
         if (tracker.GetTrackedType () == _trackedType)
         {
@@ -236,6 +246,10 @@ bool PipelineBuilder::Begin (Memory::UniqueString _id, PipelineType _type) noexc
 
         break;
     case PipelineType::CUSTOM:
+        break;
+
+    case PipelineType::COUNT:
+        assert (false);
         break;
     }
 

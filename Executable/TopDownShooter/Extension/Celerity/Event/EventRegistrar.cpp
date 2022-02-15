@@ -12,11 +12,15 @@ EventRegistrar::EventRegistrar (World *_world) noexcept : world (_world)
     // There should be no pipelines, because events augment pipeline building process.
     assert (world->pipelinePool.BeginAcquired () == world->pipelinePool.EndAcquired ());
 
-    world->eventOnAdd.clear ();
-    world->eventOnRemove.clear ();
-    world->eventOnChange.clear ();
-    world->changeTrackers.clear ();
-    world->eventCustom.clear ();
+    // In case we are reusing world and there are old schemes.
+    for (World::EventScheme &scheme : world->eventSchemes)
+    {
+        scheme.custom.clear ();
+        scheme.onAdd.clear ();
+        scheme.onRemove.clear ();
+        scheme.onChange.clear ();
+        scheme.changeTrackers.clear ();
+    }
 }
 
 EventRegistrar::EventRegistrar (EventRegistrar &&_other) noexcept : world (_other.world)
@@ -33,28 +37,33 @@ EventRegistrar::~EventRegistrar () noexcept
                                                                   Memory::UniqueString {"EventRegistrationAlgorithms"}};
 
         Container::HashMap<StandardLayout::Mapping, EventVector> onChangeEventPerType {allocationGroup};
-        for (OnChangeEventTrigger &trigger : world->eventOnChange)
+        for (World::EventScheme &scheme : world->eventSchemes)
         {
-            auto iterator = onChangeEventPerType.find (trigger.GetTrackedType ());
-            if (iterator == onChangeEventPerType.end ())
+            for (OnChangeEventTrigger &trigger : scheme.onChange)
             {
-                iterator = onChangeEventPerType.emplace (trigger.GetTrackedType (), EventVector {}).first;
+                auto iterator = onChangeEventPerType.find (trigger.GetTrackedType ());
+                if (iterator == onChangeEventPerType.end ())
+                {
+                    iterator = onChangeEventPerType.emplace (trigger.GetTrackedType (), EventVector {}).first;
+                }
+
+                [[maybe_unused]] bool inserted = iterator->second.TryEmplaceBack (&trigger);
+                assert (inserted);
             }
 
-            [[maybe_unused]] bool inserted = iterator->second.TryEmplaceBack (&trigger);
-            assert (inserted);
-        }
+            scheme.changeTrackers.reserve (onChangeEventPerType.size ());
+            for (auto &[trackedType, events] : onChangeEventPerType)
+            {
+                auto placeholder = scheme.changeTrackers.get_allocator ().GetAllocationGroup ().PlaceOnTop ();
+                scheme.changeTrackers.emplace_back (ChangeTracker {events});
+            }
 
-        world->changeTrackers.reserve (onChangeEventPerType.size ());
-        for (auto &[trackedType, events] : onChangeEventPerType)
-        {
-            world->changeTrackers.emplace_back (ChangeTracker {events});
+            onChangeEventPerType.clear ();
+            scheme.custom.shrink_to_fit ();
+            scheme.onAdd.shrink_to_fit ();
+            scheme.onRemove.shrink_to_fit ();
+            scheme.onChange.shrink_to_fit ();
         }
-
-        world->eventOnAdd.shrink_to_fit ();
-        world->eventOnRemove.shrink_to_fit ();
-        world->eventOnChange.shrink_to_fit ();
-        world->eventCustom.shrink_to_fit ();
     }
 }
 
@@ -62,7 +71,7 @@ void EventRegistrar::CustomEvent (const ClearableEventSeed &_seed) noexcept
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    world->eventCustom.emplace_back (World::CustomEventInfo {_seed.eventType, _seed.route});
+    SelectScheme (_seed.route).custom.emplace_back (World::CustomEventInfo {_seed.eventType, _seed.route});
 }
 
 static void AddTrivialAutomatedEvent (Container::Vector<TrivialEventTriggerRow> &_target,
@@ -93,23 +102,29 @@ void EventRegistrar::OnAddEvent (const TrivialAutomatedEventSeed &_seed) noexcep
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    AddTrivialAutomatedEvent (world->eventOnAdd, _seed, world->registry);
+    AddTrivialAutomatedEvent (SelectScheme (_seed.route).onAdd, _seed, world->registry);
 }
 
 void EventRegistrar::OnRemoveEvent (const TrivialAutomatedEventSeed &_seed) noexcept
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    AddTrivialAutomatedEvent (world->eventOnRemove, _seed, world->registry);
+    AddTrivialAutomatedEvent (SelectScheme (_seed.route).onRemove, _seed, world->registry);
 }
 
 void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noexcept
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    world->eventOnChange.emplace_back (
-        OnChangeEventTrigger {_seed.trackedType, world->registry.InsertShortTerm (_seed.eventType), _seed.route,
-                              _seed.trackedFields, _seed.copyOutOfInitial, _seed.copyOutOfChanged});
+
+    OnChangeEventTrigger trigger {_seed.trackedType,
+                                  world->registry.InsertShortTerm (_seed.eventType),
+                                  _seed.route,
+                                  _seed.trackedFields,
+                                  _seed.copyOutOfInitial,
+                                  _seed.copyOutOfChanged};
+
+    SelectScheme (_seed.route).onChange.emplace_back (std::move (trigger));
 }
 
 void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayout::Mapping &_type) const noexcept
@@ -117,31 +132,39 @@ void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayou
 #ifndef NDEBUG
     assert (world);
 
-    for (const TrivialEventTriggerRow &row : world->eventOnAdd)
+    for (World::EventScheme &scheme : world->eventSchemes)
     {
-        for (const TrivialEventTrigger &trigger : row)
+        for (const World::CustomEventInfo &info : scheme.custom)
+        {
+            assert (info.type != _type);
+        }
+
+        for (const TrivialEventTriggerRow &row : scheme.onAdd)
+        {
+            for (const TrivialEventTrigger &trigger : row)
+            {
+                assert (trigger.GetEventType () != _type);
+            }
+        }
+
+        for (const TrivialEventTriggerRow &row : scheme.onRemove)
+        {
+            for (const TrivialEventTrigger &trigger : row)
+            {
+                assert (trigger.GetEventType () != _type);
+            }
+        }
+
+        for (const OnChangeEventTrigger &trigger : scheme.onChange)
         {
             assert (trigger.GetEventType () != _type);
         }
-    }
-
-    for (const TrivialEventTriggerRow &row : world->eventOnRemove)
-    {
-        for (const TrivialEventTrigger &trigger : row)
-        {
-            assert (trigger.GetEventType () != _type);
-        }
-    }
-
-    for (const OnChangeEventTrigger &trigger : world->eventOnChange)
-    {
-        assert (trigger.GetEventType () != _type);
-    }
-
-    for (const World::CustomEventInfo &info : world->eventCustom)
-    {
-        assert (info.type != _type);
     }
 #endif
+}
+
+World::EventScheme &EventRegistrar::SelectScheme (EventRoute _route) noexcept
+{
+    return world->eventSchemes[static_cast<std::size_t> (GetEventFiringPipeline (_route))];
 }
 } // namespace Emergence::Celerity

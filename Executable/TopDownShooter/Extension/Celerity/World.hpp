@@ -39,10 +39,23 @@ private:
     friend class TaskConstructor;
     friend class WorldTestingUtility;
 
-    struct CustomEventInfo
+    struct CustomEventInfo final
     {
         StandardLayout::Mapping type;
         EventRoute route;
+    };
+
+    struct EventScheme final
+    {
+        EventScheme (const Memory::Profiler::AllocationGroup &_rootAllocationGroup) noexcept;
+
+        // TODO: What about using ordered pools instead of vectors? We do not need to iterate this data during update.
+
+        Container::Vector<CustomEventInfo> custom;
+        Container::Vector<TrivialEventTriggerRow> onAdd;
+        Container::Vector<TrivialEventTriggerRow> onRemove;
+        Container::Vector<OnChangeEventTrigger> onChange;
+        Container::Vector<ChangeTracker> changeTrackers;
     };
 
     void NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
@@ -65,13 +78,7 @@ private:
     Pipeline *normalPipeline = nullptr;
     Pipeline *fixedPipeline = nullptr;
 
-    // TODO: What about using ordered pools instead of vectors? We do not need to iterate this data during update.
-
-    Container::Vector<CustomEventInfo> eventCustom;
-    Container::Vector<TrivialEventTriggerRow> eventOnAdd;
-    Container::Vector<TrivialEventTriggerRow> eventOnRemove;
-    Container::Vector<OnChangeEventTrigger> eventOnChange;
-    Container::Vector<ChangeTracker> changeTrackers;
+    std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
 };
 
 class WorldTestingUtility final

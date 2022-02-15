@@ -136,6 +136,52 @@ static Container::InplaceVector<TrackedZone, MAX_COPY_OUT_BLOCKS_PER_EVENT> Bake
     return result;
 }
 
+PipelineType GetEventFiringPipeline (EventRoute _route) noexcept
+{
+    switch (_route)
+    {
+    case EventRoute::FIXED:
+    case EventRoute::FROM_FIXED_TO_NORMAL:
+        return PipelineType::FIXED;
+
+    case EventRoute::NORMAL:
+        return PipelineType::NORMAL;
+
+    case EventRoute::CUSTOM:
+        return PipelineType::CUSTOM;
+
+    case EventRoute::COUNT:
+        assert (false);
+        return PipelineType::CUSTOM;
+    }
+
+    assert (false);
+    return PipelineType::CUSTOM;
+}
+
+PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept
+{
+    switch (_route)
+    {
+    case EventRoute::FIXED:
+        return PipelineType::FIXED;
+
+    case EventRoute::NORMAL:
+    case EventRoute::FROM_FIXED_TO_NORMAL:
+        return PipelineType::NORMAL;
+
+    case EventRoute::CUSTOM:
+        return PipelineType::CUSTOM;
+
+    case EventRoute::COUNT:
+        assert (false);
+        return PipelineType::CUSTOM;
+    }
+
+    assert (false);
+    return PipelineType::CUSTOM;
+}
+
 StandardLayout::Mapping EventTriggerBase::GetTrackedType () const noexcept
 {
     return trackedType;

@@ -10,7 +10,8 @@ enum class PipelineType
 {
     NORMAL = 0u,
     FIXED,
-    CUSTOM
+    CUSTOM,
+    COUNT
 };
 
 class Pipeline final

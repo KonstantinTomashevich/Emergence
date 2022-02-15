@@ -33,11 +33,9 @@ World::World (Memory::UniqueString _name) noexcept
       modifyTime (registry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       modifyWorld (registry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
       pipelinePool (WorldAllocationGroup (_name, "Pipelines"_us), sizeof (Pipeline), PIPELINES_ON_PAGE),
-      eventCustom (WorldAllocationGroup (_name, "EventCustom"_us)),
-      eventOnAdd (WorldAllocationGroup (_name, "EventOnAdd"_us)),
-      eventOnRemove (WorldAllocationGroup (_name, "EventOnRemove"_us)),
-      eventOnChange (WorldAllocationGroup (_name, "EventOnChange"_us)),
-      changeTrackers (WorldAllocationGroup (_name, "ChangeTrackers"_us))
+      eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}})
 {
 }
 
@@ -199,9 +197,22 @@ Pipeline *World::AddPipeline (Memory::UniqueString _id,
 
     case PipelineType::CUSTOM:
         break;
+
+    case PipelineType::COUNT:
+        assert (false);
+        break;
     }
 
     return pipeline;
+}
+
+World::EventScheme::EventScheme (const Memory::Profiler::AllocationGroup &_rootAllocationGroup) noexcept
+    : custom (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "Custom"_us}),
+      onAdd (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnAdd"_us}),
+      onRemove (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnRemove"_us}),
+      onChange (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnChange"_us}),
+      changeTrackers (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "ChangeTrackers"_us})
+{
 }
 
 // TODO: Having separate setup-and-run functions for testing looks a bit bad. Any ideas how to make it better?

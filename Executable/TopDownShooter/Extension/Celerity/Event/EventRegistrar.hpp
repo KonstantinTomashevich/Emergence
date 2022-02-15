@@ -59,6 +59,8 @@ public:
 private:
     void AssertEventUniqueness (const StandardLayout::Mapping &_type) const noexcept;
 
+    World::EventScheme &SelectScheme (EventRoute _route) noexcept;
+
     World *world;
 };
 } // namespace Emergence::Celerity
