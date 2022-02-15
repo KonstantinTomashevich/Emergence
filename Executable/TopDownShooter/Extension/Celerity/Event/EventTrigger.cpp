@@ -262,10 +262,65 @@ void OnChangeEventTrigger::BakeTrackedFields (const StandardLayout::Mapping &_re
     }
 }
 
-ChangeTracker::ChangeTracker (
-    const Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> &_events) noexcept
-    : trackedType (_events[0u]->GetTrackedType ())
+ChangeTracker::ChangeTracker (const EventVector &_events) noexcept : trackedType (_events[0u]->GetTrackedType ())
 {
+    BakeTrackedZones (_events);
+    BakeBindings (_events);
+}
+
+void ChangeTracker::BeginEdition (const void *_record) noexcept
+{
+    assert (_record);
+    for (const TrackedZone &zone : trackedZones)
+    {
+        memcpy (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length);
+    }
+}
+
+void ChangeTracker::EndEdition (const void *_record) noexcept
+{
+    assert (_record);
+    decltype (EventBinding::zoneMask) changedMask = 0u;
+    decltype (EventBinding::zoneMask) currentZoneFlag = 1u;
+
+    for (const TrackedZone &zone : trackedZones)
+    {
+        if (memcmp (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length) != 0)
+        {
+            changedMask |= currentZoneFlag;
+        }
+
+        currentZoneFlag <<= 1u;
+    }
+
+    for (EventBinding &binding : bindings)
+    {
+        if (binding.zoneMask & changedMask)
+        {
+            binding.event->Trigger (_record, &buffer);
+        }
+    }
+}
+
+StandardLayout::Mapping ChangeTracker::GetTrackedType () const noexcept
+{
+    return trackedType;
+}
+
+ChangeTracker::EventVector ChangeTracker::GetEventTriggers () const noexcept
+{
+    Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> triggers;
+    for (const EventBinding &binding : bindings)
+    {
+        triggers.EmplaceBack (binding.event);
+    }
+
+    return triggers;
+}
+
+void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events) noexcept
+{
+    // Build set of unique zones from event-specific zones.
     for (OnChangeEventTrigger *event : _events)
     {
         for (OnChangeEventTrigger::TrackedZone zone : event->trackedZones)
@@ -353,7 +408,10 @@ ChangeTracker::ChangeTracker (
     }
 
     assert (zoneBuffer <= &*buffer.end ());
+}
 
+void ChangeTracker::BakeBindings (const ChangeTracker::EventVector &_events) noexcept
+{
     for (OnChangeEventTrigger *event : _events)
     {
         EventBinding &binding = bindings.EmplaceBack ();
@@ -413,57 +471,6 @@ ChangeTracker::ChangeTracker (
             ++copyOutIterator;
         }
     }
-}
-
-void ChangeTracker::BeginEdition (const void *_record) noexcept
-{
-    assert (_record);
-    for (const TrackedZone &zone : trackedZones)
-    {
-        memcpy (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length);
-    }
-}
-
-void ChangeTracker::EndEdition (const void *_record) noexcept
-{
-    assert (_record);
-    decltype (EventBinding::zoneMask) changedMask = 0u;
-    decltype (EventBinding::zoneMask) currentZoneFlag = 1u;
-
-    for (const TrackedZone &zone : trackedZones)
-    {
-        if (memcmp (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length) != 0)
-        {
-            changedMask |= currentZoneFlag;
-        }
-
-        currentZoneFlag <<= 1u;
-    }
-
-    for (EventBinding &binding : bindings)
-    {
-        if (binding.zoneMask & changedMask)
-        {
-            binding.event->Trigger (_record, &buffer);
-        }
-    }
-}
-
-StandardLayout::Mapping ChangeTracker::GetTrackedType () const noexcept
-{
-    return trackedType;
-}
-
-Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> ChangeTracker::GetEventTriggers ()
-    const noexcept
-{
-    Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> triggers;
-    for (const EventBinding &binding : bindings)
-    {
-        triggers.EmplaceBack (binding.event);
-    }
-
-    return triggers;
 }
 } // namespace Celerity
 

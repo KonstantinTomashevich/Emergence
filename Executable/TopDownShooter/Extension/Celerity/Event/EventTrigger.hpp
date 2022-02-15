@@ -130,8 +130,9 @@ constexpr std::size_t MAX_ON_CHANGE_EVENTS_PER_TYPE = 4u;
 class ChangeTracker final
 {
 public:
-    ChangeTracker (
-        const Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> &_events) noexcept;
+    using EventVector = Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE>;
+
+    ChangeTracker (const EventVector &_events) noexcept;
 
     void BeginEdition (const void *_record) noexcept;
 
@@ -139,8 +140,7 @@ public:
 
     [[nodiscard]] StandardLayout::Mapping GetTrackedType () const noexcept;
 
-    [[nodiscard]] Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE> GetEventTriggers ()
-        const noexcept;
+    [[nodiscard]] EventVector GetEventTriggers () const noexcept;
 
 private:
     static constexpr std::size_t MAX_TRACKED_ZONES = 4u;
@@ -161,6 +161,10 @@ private:
 
         static_assert (sizeof (zoneMask) * 8u >= MAX_TRACKED_ZONES);
     };
+
+    void BakeTrackedZones (const EventVector &_events) noexcept;
+
+    void BakeBindings (const EventVector &_events) noexcept;
 
     StandardLayout::Mapping trackedType;
     Container::InplaceVector<TrackedZone, MAX_TRACKED_ZONES> trackedZones;
