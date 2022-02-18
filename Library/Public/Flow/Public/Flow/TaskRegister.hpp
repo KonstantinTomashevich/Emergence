@@ -4,6 +4,7 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/HashMap.hpp>
 #include <Container/HashSet.hpp>
 #include <Container/Vector.hpp>
 
@@ -60,6 +61,12 @@ public:
     inline static const Container::String VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
     inline static const Container::String VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
 
+    /// \brief Contains set with explicit and implicit dependencies for each registered task.
+    /// \details Explicit dependencies are specified during task registration.
+    ///          Implicit dependencies are either specified through Task::dependencyOf in other tasks or
+    ///          are dependencies of dependencies.
+    using UnwrappedDependencyMap = Container::HashMap<Memory::UniqueString, Container::HashSet<Memory::UniqueString>>;
+
     TaskRegister () = default;
 
     /// Copying task registers is counter-intuitive.
@@ -83,6 +90,13 @@ public:
     /// \brief Exports registered tasks, checkpoints and resources as visual graph.
     /// \param _exportResources Should resources be exported?
     [[nodiscard]] VisualGraph::Graph ExportVisual (bool _exportResources) const noexcept;
+
+    /// \brief Constructs unwrapped dependency map from currently registered tasks and checkpoints.
+    /// \details Unwrapped dependency map can be used to select dependencies of automatically created
+    ///          task, like event cleaner, or to do additional user specific verification.
+    /// \return If task graph contains neither circular nor missing dependencies, returns
+    ///         unwrapped dependency map for this graph. Otherwise, returns empty map.
+    [[nodiscard]] UnwrappedDependencyMap ExportUnwrappedDependencyMap () const noexcept;
 
     /// \brief Verifies registered data and exports it as task collection.
     /// \return Valid collection or empty collection if verification failed.
