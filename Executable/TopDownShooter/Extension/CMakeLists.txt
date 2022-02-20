@@ -15,6 +15,7 @@ sober_library_begin ("${GAME_NAME}Extension" STATIC)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
+    sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PRIVATE Memory)
     sober_library_use_service (EXPECTED PRIVATE MemoryProfiler)
     sober_library_use_service (PER_VARIANT PUBLIC TaskExecutor)

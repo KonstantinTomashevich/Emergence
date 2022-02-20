@@ -164,6 +164,6 @@ void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayou
 
 World::EventScheme &EventRegistrar::SelectScheme (EventRoute _route) noexcept
 {
-    return world->eventSchemes[static_cast<std::size_t> (GetEventFiringPipeline (_route))];
+    return world->eventSchemes[static_cast<std::size_t> (GetEventProducingPipeline (_route))];
 }
 } // namespace Emergence::Celerity

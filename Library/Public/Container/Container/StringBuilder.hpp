@@ -19,7 +19,7 @@ class StringBuilder final
 {
 public:
     /// \details We use fixed-size buffer implementation, because it can be allocated directly on stack.
-    static constexpr std::size_t BUFFER_SIZE = 256u;
+    static constexpr std::size_t BUFFER_SIZE = 512u;
 
     StringBuilder () noexcept;
 

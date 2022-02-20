@@ -108,13 +108,17 @@ private:
     TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
     [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::Vector<TrivialEventTriggerRow> &_rows,
-                                                            const StandardLayout::Mapping &_trackedType) noexcept;
+                                                             const StandardLayout::Mapping &_trackedType) noexcept;
 
     [[nodiscard]] TrivialEventTriggerRow *BindEventsOnAdd (const StandardLayout::Mapping &_trackedType) noexcept;
 
     [[nodiscard]] TrivialEventTriggerRow *BindEventsOnRemove (const StandardLayout::Mapping &_trackedType) noexcept;
 
     [[nodiscard]] ChangeTracker *BindChangeTracker (const StandardLayout::Mapping &_trackedType) noexcept;
+
+    void RegisterEventProduction (const StandardLayout::Mapping &_eventType) noexcept;
+
+    void RegisterEventConsumption (const StandardLayout::Mapping &_eventType) noexcept;
 
     PipelineBuilder *parent;
     Flow::Task task;
@@ -145,7 +149,31 @@ public:
 private:
     friend class TaskConstructor;
 
+    /// \brief For each event type, contains set of ids of tasks that use it in associated context.
+    using EventUsageMap = Container::HashMap<StandardLayout::Mapping, Container::HashSet<Memory::UniqueString>>;
+
+    Memory::Profiler::AllocationGroup GetBuildTimeAllocationGroup () noexcept;
+
+    void ImportEventScheme (const World::EventScheme &_scheme) noexcept;
+
     void FinishTaskRegistration (Flow::Task _task) noexcept;
+
+    /// \details In continuous routine, events from current execution can be processed by next execution.
+    ///          Therefore, for each event type pipeline tasks can be separate into ordered category list:
+    ///          PreviousExecutionConsumers -> ClearingTask -> Producers -> CurrentExecutionConsumers.
+    ///
+    ///          This method verifies that such separation can be done for each event type and adds clearing task.
+    void PostProcessContinuousEventRoutine (const EventUsageMap &_production, const EventUsageMap &_consumption);
+
+    /// \details In local event routine, events from current execution are visible only during this execution.
+    ///          Therefore, for each event type pipeline tasks can be separate into ordered category list:
+    ///          Producers -> Consumers -> ClearingTask.
+    ///
+    ///          This method verifies that such separation can be done for each event type and adds clearing task.
+    void PostProcessLocalEventRoutine (const EventUsageMap &_production, const EventUsageMap &_consumption);
+
+    /// \details Adds clearing task for all ::sharedEventTypes, that are consumed in current pipeline.
+    void PostProcessSharedEventRoutine (const EventUsageMap &_consumption);
 
     World *world;
     Memory::UniqueString currentPipelineId;
@@ -154,6 +182,26 @@ private:
 
     Flow::TaskRegister taskRegister;
     Container::HashSet<Memory::UniqueString> registeredResources;
+
+    /// \details Event cleaners need ModifySequenceQuery's to delete events, but creating these queries for
+    ///          events is generally forbidden. Therefore we add this flag to temporary allow query creation.
+    bool postProcessingEvents = false;
+
+    /// \brief If there is any build-time errors, pipeline will not be created in ::End.
+    bool anyErrorsDetected = false;
+
+    // TODO: Maps/sets bellow should be replaced with their flat alternatives.
+
+    /// \brief Used to check whether given type is event type or not.
+    Container::HashSet<StandardLayout::Mapping> eventTypes;
+
+    /// \brief Types of events, that are produced in one pipeline and consumed in another.
+    /// \details For example, see EventRoute::FROM_FIXED_TO_NORMAL.
+    Container::HashSet<StandardLayout::Mapping> sharedEventTypes;
+
+    std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventProduction;
+
+    std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventConsumption;
 };
 
 template <typename Successor>

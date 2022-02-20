@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <Celerity/Pipeline.hpp>
 
 #include <Container/StringBuilder.hpp>
@@ -6,6 +8,28 @@
 
 namespace Emergence::Celerity
 {
+const char *GetPipelineTypeName (PipelineType _type)
+{
+    switch (_type)
+    {
+    case PipelineType::NORMAL:
+        return "Normal";
+
+    case PipelineType::FIXED:
+        return "Fixed";
+
+    case PipelineType::CUSTOM:
+        return "Custom";
+
+    case PipelineType::COUNT:
+        assert (false);
+        return nullptr;
+    }
+
+    assert (false);
+    return nullptr;
+}
+
 Memory::UniqueString Pipeline::GetId () const noexcept
 {
     return id;

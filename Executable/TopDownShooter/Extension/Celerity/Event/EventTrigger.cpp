@@ -87,7 +87,7 @@ static Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> Bak
     return result;
 }
 
-PipelineType GetEventFiringPipeline (EventRoute _route) noexcept
+PipelineType GetEventProducingPipeline (EventRoute _route) noexcept
 {
     switch (_route)
     {

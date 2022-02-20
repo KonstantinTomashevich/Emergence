@@ -36,7 +36,7 @@ enum class EventRoute
     COUNT,
 };
 
-PipelineType GetEventFiringPipeline (EventRoute _route) noexcept;
+PipelineType GetEventProducingPipeline (EventRoute _route) noexcept;
 
 PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept;
 

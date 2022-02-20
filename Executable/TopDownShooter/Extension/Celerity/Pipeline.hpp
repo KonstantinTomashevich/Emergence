@@ -14,6 +14,8 @@ enum class PipelineType
     COUNT
 };
 
+const char *GetPipelineTypeName (PipelineType _type);
+
 class Pipeline final
 {
 public:
