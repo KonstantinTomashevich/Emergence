@@ -199,6 +199,10 @@ private:
     /// \details For example, see EventRoute::FROM_FIXED_TO_NORMAL.
     Container::HashSet<StandardLayout::Mapping> sharedEventTypes;
 
+    /// \brief Types of events, that are produced automatically by on add, on remove and on change triggers.
+    /// \details These events should not be produced manually by user.
+    Container::HashSet<StandardLayout::Mapping> automaticEventTypes;
+
     std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventProduction;
 
     std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventConsumption;

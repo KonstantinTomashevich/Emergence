@@ -78,9 +78,18 @@ ModifySingletonQuery TaskConstructor::ModifySingleton (const StandardLayout::Map
 InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.writeAccess.emplace (_typeMapping.GetName ());
-    if (parent->eventTypes.find (_typeMapping) != parent->eventTypes.end ())
+    if (parent->eventTypes.contains (_typeMapping))
     {
-        RegisterEventProduction (_typeMapping);
+        if (parent->automaticEventTypes.contains (_typeMapping))
+        {
+            parent->anyErrorsDetected = true;
+            EMERGENCE_LOG (ERROR, "Found insertion of automatic events with type \"", _typeMapping.GetName (),
+                           "\". Automatic (on add, on remove and on change) events must not be inserted manually.");
+        }
+        else
+        {
+            RegisterEventProduction (_typeMapping);
+        }
     }
 
     return parent->world->registry.InsertShortTerm (_typeMapping);
@@ -89,7 +98,7 @@ InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Map
 FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.readAccess.emplace (_typeMapping.GetName ());
-    if (parent->eventTypes.find (_typeMapping) != parent->eventTypes.end ())
+    if (parent->eventTypes.contains (_typeMapping))
     {
         RegisterEventConsumption (_typeMapping);
     }
@@ -100,7 +109,7 @@ FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping
 ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     task.writeAccess.emplace (_typeMapping.GetName ());
-    if (parent->eventTypes.find (_typeMapping) != parent->eventTypes.end () && !parent->postProcessingEvents)
+    if (parent->eventTypes.contains (_typeMapping) && !parent->postProcessingEvents)
     {
         parent->anyErrorsDetected = true;
         EMERGENCE_LOG (ERROR, "Found modification of events with type \"", _typeMapping.GetName (),
@@ -317,6 +326,7 @@ PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
       registeredResources (GetBuildTimeAllocationGroup ()),
       eventTypes (GetBuildTimeAllocationGroup ()),
       sharedEventTypes (GetBuildTimeAllocationGroup ()),
+      automaticEventTypes (GetBuildTimeAllocationGroup ()),
       eventProduction ({
           EventUsageMap {GetBuildTimeAllocationGroup ()},
           EventUsageMap {GetBuildTimeAllocationGroup ()},
@@ -465,6 +475,7 @@ void PipelineBuilder::ImportEventScheme (const World::EventScheme &_scheme) noex
         for (const TrivialEventTrigger &trigger : row)
         {
             registerEvent (trigger.GetEventType (), trigger.GetRoute ());
+            automaticEventTypes.emplace (trigger.GetEventType ());
         }
     }
 
@@ -473,12 +484,14 @@ void PipelineBuilder::ImportEventScheme (const World::EventScheme &_scheme) noex
         for (const TrivialEventTrigger &trigger : row)
         {
             registerEvent (trigger.GetEventType (), trigger.GetRoute ());
+            automaticEventTypes.emplace (trigger.GetEventType ());
         }
     }
 
     for (const OnChangeEventTrigger &trigger : _scheme.onChange)
     {
         registerEvent (trigger.GetEventType (), trigger.GetRoute ());
+        automaticEventTypes.emplace (trigger.GetEventType ());
     }
 }
 
