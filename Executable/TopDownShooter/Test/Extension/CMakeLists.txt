@@ -1,4 +1,4 @@
-sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
+sober_library_begin ("${GAME_NAME}ExtensionTest" STATIC)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})
@@ -6,10 +6,10 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    sober_naming_variant_target ("${GAME_NAME}Shared" Original SHARED_TARGET)
+    sober_naming_variant_target ("${GAME_NAME}Extension" Original EXTENSION_TARGET)
     sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 
-    sober_library_link_library (PUBLIC ${SHARED_TARGET})
+    sober_library_link_library (PUBLIC ${EXTENSION_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
@@ -28,17 +28,14 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
     sober_variant_end ()
 sober_library_end ()
 
-add_executable ("${GAME_NAME}SharedTestLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
-sober_naming_variant_target ("${GAME_NAME}SharedTest" Original LIBRARY_TARGET)
-target_link_libraries ("${GAME_NAME}SharedTestLauncher" PUBLIC "${LIBRARY_TARGET}")
+add_executable ("${GAME_NAME}ExtensionTestLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+sober_naming_variant_target ("${GAME_NAME}ExtensionTest" Original LIBRARY_TARGET)
+target_link_libraries ("${GAME_NAME}ExtensionTestLauncher" PUBLIC "${LIBRARY_TARGET}")
 
-set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
-set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
+set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Extension")
+set_target_properties ("${GAME_NAME}ExtensionTestLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
 
-copy_required_shared_libraries ("${GAME_NAME}SharedTestLauncher")
-link_resources_for_development ("${RUNNER_OUTPUT_DIRECTORY}")
-
-add_test (NAME "Test${GAME_NAME}SharedRunner" COMMAND "${GAME_NAME}SharedTestLauncher"
+add_test (NAME "Test${GAME_NAME}ExtensionRunner" COMMAND "${GAME_NAME}ExtensionTestLauncher"
         WORKING_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
-add_dependencies (EmergenceTests "${GAME_NAME}SharedTestLauncher")
+add_dependencies (EmergenceTests "${GAME_NAME}ExtensionTestLauncher")

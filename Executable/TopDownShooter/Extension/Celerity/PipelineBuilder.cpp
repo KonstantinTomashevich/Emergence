@@ -530,7 +530,7 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
         }
 
         auto consumptionIterator = _consumption.find (eventType);
-        if (consumptionIterator == _consumption.end ())
+        if (consumptionIterator == _consumption.end () || consumptionIterator->second.empty ())
         {
             EMERGENCE_LOG (ERROR, "Events of type \"", eventType.GetName (), "\" are produced, but never consumed.");
             anyErrorsDetected = true;
@@ -577,13 +577,13 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
                 if (dependsOnAnyProducer)
                 {
                     Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
-                        "Task \"", consumerTask, " consumes events of type \"", eventType.GetName (),
-                        "\", but graph ensure that task is executed only after some of the producers, instead of "
-                        "after all of them: ");
+                        "Task \"", consumerTask, "\" consumes events of type \"", eventType.GetName (),
+                        "\", but graph ensures that task is executed only after some of the producers, instead of "
+                        "all: ");
 
                     for (const Memory::UniqueString &producerTask : producers)
                     {
-                        builder.Append ("\"", producerTask, "\"");
+                        builder.Append ("\"", producerTask, "\" ");
                     }
 
                     EMERGENCE_LOG (ERROR, builder.Get ());
@@ -620,13 +620,13 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
             }
 
             Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
-                "Task \"", consumerTask, " consumes events of type \"", eventType.GetName (),
+                "Task \"", consumerTask, "\" consumes events of type \"", eventType.GetName (),
                 "\", but it is not correctly positioned in graph. Graph must ensure that this task is always executed "
                 "before all producers or after all producers: ");
 
             for (const Memory::UniqueString &producerTask : producers)
             {
-                builder.Append ("\"", producerTask, "\"");
+                builder.Append ("\"", producerTask, "\" ");
             }
 
             EMERGENCE_LOG (ERROR, builder.Get ());
@@ -651,7 +651,7 @@ void PipelineBuilder::PostProcessLocalEventRoutine (const PipelineBuilder::Event
         }
 
         auto consumptionIterator = _consumption.find (eventType);
-        if (consumptionIterator == _consumption.end ())
+        if (consumptionIterator == _consumption.end () || consumptionIterator->second.empty ())
         {
             EMERGENCE_LOG (ERROR, "Events of type \"", eventType.GetName (), "\" are produced, but never consumed.");
             anyErrorsDetected = true;
