@@ -162,7 +162,7 @@ TrivialEventTrigger::TrivialEventTrigger (StandardLayout::Mapping _trackedType,
                                           EventRoute _route,
                                           const Container::Vector<CopyOutField> &_copyOuts) noexcept
     : EventTriggerBase (std::move (_trackedType), std::move (_inserter), _route),
-      copyOuts (BakeCopyOuts (trackedType, _inserter.GetTypeMapping (), _copyOuts))
+      copyOuts (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOuts))
 {
 }
 
@@ -184,8 +184,8 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
                                             const Container::Vector<CopyOutField> &_copyOutOfInitial,
                                             const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept
     : EventTriggerBase (std::move (_trackedType), std::move (_inserter), _route),
-      copyOutOfInitial (BakeCopyOuts (trackedType, _inserter.GetTypeMapping (), _copyOutOfInitial)),
-      copyOutOfChanged (BakeCopyOuts (trackedType, _inserter.GetTypeMapping (), _copyOutOfChanged))
+      copyOutOfInitial (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOutOfInitial)),
+      copyOutOfChanged (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOutOfChanged))
 {
     BakeTrackedFields (_trackedType, _trackedFields);
 

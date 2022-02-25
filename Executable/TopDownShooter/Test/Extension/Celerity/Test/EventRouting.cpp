@@ -174,7 +174,6 @@ void SimpleConsumptionTest (EventRoute _route, const EventPlan &_plan, bool _pre
         consumptionPlan.emplace (consumptionPlan.begin ());
     }
 
-    Pipeline *pipeline = nullptr;
     const uint64_t steps = productionPlan.size ();
 
     PipelineBuilder builder {&world};
@@ -189,7 +188,7 @@ void SimpleConsumptionTest (EventRoute _route, const EventPlan &_plan, bool _pre
     AddTestTask<EventConsumer> (builder, consumerTask, std::move (consumptionPlan),
                                 {_previousFrameMode ? ""_us : producerTask});
 
-    pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
 
     if (_previousFrameMode && _route == EventRoute::CUSTOM)
     {
@@ -263,19 +262,16 @@ TEST_CASE (FixedToNormal)
         {},
     };
 
-    Pipeline *fixedPipeline = nullptr;
-    Pipeline *normalPipeline = nullptr;
-
     PipelineBuilder builder {&world};
 
     builder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     AddTestTask<EventProducer> (builder, "EventProducer"_us, std::move (productionPlan));
-    fixedPipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *fixedPipeline = builder.End (std::thread::hardware_concurrency ());
     REQUIRE (fixedPipeline);
 
     builder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     AddTestTask<EventConsumer> (builder, "EventConsumer"_us, std::move (consumptionPlan));
-    normalPipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *normalPipeline = builder.End (std::thread::hardware_concurrency ());
     REQUIRE (normalPipeline);
 
     // Pipelines are executed according to scenario, written above in consumption plan.
@@ -307,7 +303,6 @@ TEST_CASE (MultipleProducers)
     EventPlan consumerPlan {{3u, 7u, 7u, 15u}, {21u}, {13u}};
     const std::size_t steps = firstProducerPlan.size ();
 
-    Pipeline *pipeline = nullptr;
     PipelineBuilder builder {&world};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
@@ -318,7 +313,7 @@ TEST_CASE (MultipleProducers)
     AddTestTask<EventProducer> (builder, secondProducer, std::move (secondProducerPlan), {firstProducer});
     AddTestTask<EventConsumer> (builder, "EventConsumer"_us, std::move (consumerPlan), {firstProducer, secondProducer});
 
-    pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
     REQUIRE (pipeline);
 
     for (std::size_t index = 0u; index < steps; ++index)
@@ -333,8 +328,6 @@ TEST_CASE (MultipleConsumers)
     RegisterTestEvent (&world, EventRoute::FIXED);
 
     const EventPlan plan {{3u, 7u, 21u}, {73u, 42u}, {}, {13u, 10u}};
-    Pipeline *pipeline = nullptr;
-
     PipelineBuilder builder {&world};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
@@ -344,7 +337,7 @@ TEST_CASE (MultipleConsumers)
     AddTestTask<EventConsumer> (builder, "FirstConsumer"_us, plan, {producer});
     AddTestTask<EventConsumer> (builder, "SecondConsumer"_us, plan, {producer});
 
-    pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
     REQUIRE (pipeline);
 
     for (std::size_t index = 0u; index < plan.size (); ++index)

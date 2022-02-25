@@ -270,8 +270,6 @@ Item &InplaceVector<Item, Capacity>::EmplaceAt (
 template <typename Item, std::size_t Capacity>
 void InplaceVector<Item, Capacity>::Clear () noexcept
 {
-    count = 0u;
-
     // There is no sense to clear trivial items.
     if constexpr (!std::is_trivial_v<Item>)
     {
@@ -280,6 +278,8 @@ void InplaceVector<Item, Capacity>::Clear () noexcept
             values[index].~Item ();
         }
     }
+
+    count = 0u;
 }
 
 template <typename Item, std::size_t Capacity>
