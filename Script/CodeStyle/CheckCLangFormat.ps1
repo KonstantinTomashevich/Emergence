@@ -20,7 +20,7 @@ foreach ($RootChild in $RootChildren)
 {
     if (($RootChild.Name -ne "ThirdParty") -and ($RootChild.Name -ne "Build") -and ($RootChild.Name -ne "Dependency"))
     {
-        $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp"
+        $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp" -Exclude "*.generated.cpp", "*.generated.hpp"
     }
 }
 

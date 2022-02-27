@@ -54,7 +54,7 @@ EventRegistrar::~EventRegistrar () noexcept
             scheme.changeTrackers.reserve (onChangeEventPerType.size ());
             for (auto &[trackedType, events] : onChangeEventPerType)
             {
-                scheme.changeTrackers.emplace_back (ChangeTracker {events});
+                scheme.changeTrackers.emplace_back (events);
             }
 
             onChangeEventPerType.clear ();

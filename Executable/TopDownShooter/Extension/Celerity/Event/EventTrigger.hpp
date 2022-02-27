@@ -134,6 +134,12 @@ public:
 
     ChangeTracker (const EventVector &_events) noexcept;
 
+    ChangeTracker (const ChangeTracker &_other) = delete;
+
+    ChangeTracker (ChangeTracker &&_other) noexcept;
+
+    ~ChangeTracker () = default;
+
     void BeginEdition (const void *_record) noexcept;
 
     void EndEdition (const void *_record) noexcept;
@@ -141,6 +147,8 @@ public:
     [[nodiscard]] StandardLayout::Mapping GetTrackedType () const noexcept;
 
     [[nodiscard]] EventVector GetEventTriggers () const noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (ChangeTracker);
 
 private:
     static constexpr std::size_t MAX_TRACKED_ZONES = 4u;

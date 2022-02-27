@@ -187,7 +187,7 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
       copyOutOfInitial (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOutOfInitial)),
       copyOutOfChanged (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOutOfChanged))
 {
-    BakeTrackedFields (_trackedType, _trackedFields);
+    BakeTrackedFields (trackedType, _trackedFields);
 
 #ifndef _NDEBUG
     for (const CopyOutField &copyOut : _copyOutOfInitial)
@@ -268,6 +268,19 @@ ChangeTracker::ChangeTracker (const EventVector &_events) noexcept : trackedType
     BakeBindings (_events);
 }
 
+ChangeTracker::ChangeTracker (ChangeTracker &&_other) noexcept
+    : trackedType (std::move (_other.trackedType)),
+      trackedZones (std::move (_other.trackedZones)),
+      bindings (std::move (_other.bindings)),
+      buffer (_other.buffer)
+{
+    // We store local buffer pointers in tracked zones for optimization, therefore we need to migrate them after move.
+    for (TrackedZone &zone : trackedZones)
+    {
+        zone.buffer = &buffer.front () + (zone.buffer - &_other.buffer.front ());
+    }
+}
+
 void ChangeTracker::BeginEdition (const void *_record) noexcept
 {
     assert (_record);
@@ -328,7 +341,7 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
             for (auto iterator = trackedZones.Begin (); iterator != trackedZones.End (); ++iterator)
             {
                 // Cases bellow are illustrated using letters,
-                // where A illustrates `zone`, B -- `*iterator`, X -- their intersection.
+                // where A illustrates `zone`, B -- `*iterator`, X -- their intersection, ? -- any of previous letters.
 
                 /// BBBAAA
                 if (zone.offset >= iterator->sourceOffset + iterator->length)
@@ -344,7 +357,7 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
                     break;
                 }
 
-                // AAAXXBBB
+                // AAAXXX???
                 if (zone.offset < iterator->sourceOffset)
                 {
                     std::size_t partLength = iterator->sourceOffset - zone.offset;
@@ -357,6 +370,13 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
 
                 if (zone.offset == iterator->sourceOffset)
                 {
+                    // XXX (equal)
+                    if (zone.length == iterator->length)
+                    {
+                        zone.length = 0u;
+                        break;
+                    }
+
                     // XXXBBB
                     if (zone.offset + zone.length < iterator->sourceOffset + iterator->length)
                     {
@@ -401,9 +421,41 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
         trackedZone.buffer = zoneBuffer;
         zoneBuffer += trackedZone.length;
 
-        if (std::size_t leftover = trackedZone.length % sizeof (std::uintptr_t))
+        // We need to align buffer blocks to speedup memcmp/memcpy operations.
+        // But alignment can be added only if zone is in the ending of all copy out blocks,
+        // that intersect with this zone. Otherwise, copy out logic will be broken.
+
+        bool addAlignment = true;
+        for (OnChangeEventTrigger *event : _events)
         {
-            zoneBuffer += sizeof (std::uintptr_t) - leftover;
+            for (const CopyOutBlock &block : event->copyOutOfInitial)
+            {
+                if (trackedZone.sourceOffset + trackedZone.length <= block.sourceOffset ||
+                    block.sourceOffset + block.length <= trackedZone.sourceOffset)
+                {
+                    // No intersection.
+                    continue;
+                }
+
+                if (trackedZone.sourceOffset + trackedZone.length != block.sourceOffset + block.length)
+                {
+                    addAlignment = false;
+                    break;
+                }
+            }
+
+            if (!addAlignment)
+            {
+                break;
+            }
+        }
+
+        if (addAlignment)
+        {
+            if (std::size_t leftover = (zoneBuffer - &buffer.front ()) % sizeof (std::uintptr_t))
+            {
+                zoneBuffer += sizeof (std::uintptr_t) - leftover;
+            }
         }
     }
 
@@ -431,8 +483,8 @@ void ChangeTracker::BakeBindings (const ChangeTracker::EventVector &_events) noe
                 }
 
                 // Assert that there is no intersections: otherwise baking algorithm above is incorrect.
-                assert (trackedZone.sourceOffset + trackedZone.length < eventZone.offset ||
-                        eventZone.offset + eventZone.length < trackedZone.sourceOffset);
+                assert (trackedZone.sourceOffset + trackedZone.length <= eventZone.offset ||
+                        eventZone.offset + eventZone.length <= trackedZone.sourceOffset);
             }
 
             currentZoneFlag <<= 1u;
@@ -451,7 +503,7 @@ void ChangeTracker::BakeBindings (const ChangeTracker::EventVector &_events) noe
             // Therefore, we just need to find offset of the first copy out byte in the buffer.
 
             while (trackedZoneIterator != trackedZones.End () &&
-                   trackedZoneIterator->sourceOffset + trackedZoneIterator->length < copyOutIterator->sourceOffset)
+                   trackedZoneIterator->sourceOffset + trackedZoneIterator->length <= copyOutIterator->sourceOffset)
             {
                 ++trackedZoneIterator;
             }

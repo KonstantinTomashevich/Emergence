@@ -3,6 +3,7 @@
 #include <variant>
 
 #include <Celerity/Event/EventRegistrar.hpp>
+#include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Test/EventTriggering.hpp>
 #include <Celerity/World.hpp>
@@ -69,104 +70,126 @@ TestRecord::Reflection &TestRecord::Reflect () noexcept
     return reflection;
 }
 
-struct TestRecordAddedEvent final
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TestRecordAddedEvent, uint64_t, id);
+
+EMERGENCE_CELERITY_EVENT1_REGULAR_IMPLEMENTATION (TestRecordAddedEvent, id)
+
+void RegisterTestRecordAddedEvent (EventRegistrar &_registrar)
 {
-    uint64_t id = 0u;
-
-    bool operator== (const TestRecordAddedEvent &_other) const = default;
-
-    struct Reflection final
-    {
-        StandardLayout::FieldId id;
-        Emergence::StandardLayout::Mapping mapping;
-    };
-
-    static Reflection &Reflect () noexcept;
-};
-
-TestRecordAddedEvent::Reflection &TestRecordAddedEvent::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestRecordAddedEvent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (id)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
-    }();
-
-    return reflection;
+    _registrar.OnAddEvent ({{TestRecordAddedEvent::Reflect ().mapping, EventRoute::FIXED},
+                            TestRecord::Reflect ().mapping,
+                            {{TestRecord::Reflect ().id, TestRecordAddedEvent::Reflect ().id}}});
 }
 
-// In a lot of cases we need to know about addition in several pipelines (fixed and normal, for example).
-// In order to do it, we need to have two event types: one per pipeline.
-// We're using this event type in pair with TestRecordAddedEvent to check that this behaviour works correctly.
-struct TestRecordAddedSharedEvent final
+/// \details In lots of cases we need to know about addition in several pipelines (fixed and normal, for example).
+///          In order to do it, we need to have two event types: one per pipeline. We're using this event type in pair
+///          with TestRecordAddedEvent to check that this behaviour works correctly.
+EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordAddedSharedEvent, uint64_t, id, float, health);
+
+EMERGENCE_CELERITY_EVENT2_REGULAR_IMPLEMENTATION (TestRecordAddedSharedEvent, id, health)
+
+void RegisterTestRecordAddedSharedEvent (EventRegistrar &_registrar)
 {
-    uint64_t id = 0u;
-    float health = 0.0f;
-
-    bool operator== (const TestRecordAddedSharedEvent &_other) const = default;
-
-    struct Reflection final
-    {
-        StandardLayout::FieldId id;
-        StandardLayout::FieldId health;
-        Emergence::StandardLayout::Mapping mapping;
-    };
-
-    static Reflection &Reflect () noexcept;
-};
-
-TestRecordAddedSharedEvent::Reflection &TestRecordAddedSharedEvent::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestRecordAddedSharedEvent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (id)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (health)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
-    }();
-
-    return reflection;
+    _registrar.OnAddEvent ({{TestRecordAddedSharedEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
+                            TestRecord::Reflect ().mapping,
+                            {
+                                {TestRecord::Reflect ().id, TestRecordAddedSharedEvent::Reflect ().id},
+                                {TestRecord::Reflect ().health, TestRecordAddedSharedEvent::Reflect ().health},
+                            }});
 }
 
-struct TestRecordRemovedEvent final
+// Intentionally copy everything except health to test copyout of separated blocks.
+EMERGENCE_CELERITY_EVENT4_DECLARATION (TestRecordRemovedEvent, uint64_t, id, float, x, float, y, float, angle);
+
+EMERGENCE_CELERITY_EVENT4_REGULAR_IMPLEMENTATION (TestRecordRemovedEvent, id, x, y, angle)
+
+void RegisterTestRecordRemovedEvent (EventRegistrar &_registrar)
 {
-    uint64_t id = 0u;
-    // Intentionally add all fields except health in order to check multiblock copy out.
-    float x = 0.0f;
-    float y = 0.0f;
-    float angle = 0.0f;
-
-    bool operator== (const TestRecordRemovedEvent &_other) const = default;
-
-    struct Reflection final
-    {
-        StandardLayout::FieldId id;
-        StandardLayout::FieldId x;
-        StandardLayout::FieldId y;
-        StandardLayout::FieldId angle;
-        Emergence::StandardLayout::Mapping mapping;
-    };
-
-    static Reflection &Reflect () noexcept;
-};
-
-TestRecordRemovedEvent::Reflection &TestRecordRemovedEvent::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestRecordRemovedEvent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (id)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (x)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (y)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (angle)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
-    }();
-
-    return reflection;
+    _registrar.OnRemoveEvent ({{TestRecordRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
+                               TestRecord::Reflect ().mapping,
+                               {
+                                   {TestRecord::Reflect ().id, TestRecordRemovedEvent::Reflect ().id},
+                                   {TestRecord::Reflect ().x, TestRecordRemovedEvent::Reflect ().x},
+                                   {TestRecord::Reflect ().y, TestRecordRemovedEvent::Reflect ().y},
+                                   {TestRecord::Reflect ().angle, TestRecordRemovedEvent::Reflect ().angle},
+                               }});
 }
 
-// TODO: Add on change event triggering test.
+EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordHealthChangedEvent, uint64_t, id, float, previousHealth);
+
+EMERGENCE_CELERITY_EVENT2_REGULAR_IMPLEMENTATION (TestRecordHealthChangedEvent, id, previousHealth)
+
+void RegisterTestRecordHealthChangedEvent (EventRegistrar &_registrar)
+{
+    _registrar.OnChangeEvent (
+        {{TestRecordHealthChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+         TestRecord::Reflect ().mapping,
+         {TestRecord::Reflect ().health},
+         {{TestRecord::Reflect ().health, TestRecordHealthChangedEvent::Reflect ().previousHealth}},
+         {{TestRecord::Reflect ().id, TestRecordHealthChangedEvent::Reflect ().id}}});
+}
+
+EMERGENCE_CELERITY_EVENT4_DECLARATION (
+    TestRecordTransformChangedEvent, uint64_t, id, float, previousX, float, previousY, float, previousAngle);
+
+EMERGENCE_CELERITY_EVENT4_REGULAR_IMPLEMENTATION (
+    TestRecordTransformChangedEvent, id, previousX, previousY, previousAngle)
+
+void RegisterTestRecordTransformChangedEvent (EventRegistrar &_registrar)
+{
+    _registrar.OnChangeEvent (
+        {{TestRecordTransformChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+         TestRecord::Reflect ().mapping,
+         {TestRecord::Reflect ().x, TestRecord::Reflect ().y, TestRecord::Reflect ().angle},
+         {
+             {TestRecord::Reflect ().x, TestRecordTransformChangedEvent::Reflect ().previousX},
+             {TestRecord::Reflect ().y, TestRecordTransformChangedEvent::Reflect ().previousY},
+             {TestRecord::Reflect ().angle, TestRecordTransformChangedEvent::Reflect ().previousAngle},
+         },
+         {{TestRecord::Reflect ().id, TestRecordTransformChangedEvent::Reflect ().id}}});
+}
+
+/// \details Although this event has no practical sense, it is used
+///          to check how change detection in separate blocks works.
+EMERGENCE_CELERITY_EVENT3_DECLARATION (
+    TestRecordHealthOrAngleChangedEvent, uint64_t, id, float, previousHealth, float, previousAngle);
+
+EMERGENCE_CELERITY_EVENT3_REGULAR_IMPLEMENTATION (TestRecordHealthOrAngleChangedEvent,
+                                                  id,
+                                                  previousHealth,
+                                                  previousAngle)
+
+void RegisterTestRecordHealthOrAngleChangedEvent (EventRegistrar &_registrar)
+{
+    _registrar.OnChangeEvent (
+        {{TestRecordHealthOrAngleChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+         TestRecord::Reflect ().mapping,
+         {TestRecord::Reflect ().health, TestRecord::Reflect ().angle},
+         {
+             {TestRecord::Reflect ().health, TestRecordHealthOrAngleChangedEvent::Reflect ().previousHealth},
+             {TestRecord::Reflect ().angle, TestRecordHealthOrAngleChangedEvent::Reflect ().previousAngle},
+         },
+         {{TestRecord::Reflect ().id, TestRecordHealthOrAngleChangedEvent::Reflect ().id}}});
+}
+
+/// \details Although this event has no practical sense, it is used to check how change tracker zoning works.
+EMERGENCE_CELERITY_EVENT3_DECLARATION (
+    TestRecordHealthOrXChangedEvent, uint64_t, id, float, previousHealth, float, previousX);
+
+EMERGENCE_CELERITY_EVENT3_REGULAR_IMPLEMENTATION (TestRecordHealthOrXChangedEvent, id, previousHealth, previousX)
+
+void RegisterTestRecordHealthOrXChangedEvent (EventRegistrar &_registrar)
+{
+    _registrar.OnChangeEvent (
+        {{TestRecordHealthOrXChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+         TestRecord::Reflect ().mapping,
+         {TestRecord::Reflect ().health, TestRecord::Reflect ().x},
+         {
+             {TestRecord::Reflect ().health, TestRecordHealthOrXChangedEvent::Reflect ().previousHealth},
+             {TestRecord::Reflect ().x, TestRecordHealthOrXChangedEvent::Reflect ().previousX},
+         },
+         {{TestRecord::Reflect ().id, TestRecordHealthOrXChangedEvent::Reflect ().id}}});
+}
 
 namespace Tasks
 {
@@ -175,12 +198,18 @@ struct AddRecord final
     TestRecord record;
 };
 
+struct EditRecord final
+{
+    uint64_t recordId;
+    TestRecord replaceWith;
+};
+
 struct RemoveRecord final
 {
     uint64_t recordId;
 };
 
-using Task = std::variant<Tasks::AddRecord, Tasks::RemoveRecord>;
+using Task = std::variant<Tasks::AddRecord, Tasks::EditRecord, Tasks::RemoveRecord>;
 
 class Executor final : public TaskExecutorBase<Executor>
 {
@@ -193,7 +222,13 @@ private:
     InsertLongTermQuery insertRecord;
     ModifyValueQuery modifyRecordById;
     Container::Vector<Task> tasks;
+
+    /// \details We need to verify that edition triggers works both when cursor is increment and when cursor is
+    ///          destructed. Therefore we switch between increment and immediate destruction under the hood.
+    static bool checkEditionCursorIncrement;
 };
+
+bool Executor::checkEditionCursorIncrement = false;
 
 Executor::Executor (TaskConstructor &_constructor, Container::Vector<Task> _tasks) noexcept
     : insertRecord (_constructor.InsertLongTerm (TestRecord::Reflect ().mapping)),
@@ -215,6 +250,28 @@ void Executor::Execute () noexcept
                     LOG ("Adding record ", _task.record.ToString (), ".");
                     auto cursor = insertRecord.Execute ();
                     *static_cast<TestRecord *> (++cursor) = _task.record;
+                }
+                else if constexpr (std::is_same_v<Tasks::EditRecord, Type>)
+                {
+                    LOG ("Editing record with id ", _task.recordId, " by replacing its content with ",
+                         _task.replaceWith.ToString (), ".");
+                    auto cursor = modifyRecordById.Execute (&_task.recordId);
+
+                    if (auto *record = static_cast<TestRecord *> (*cursor))
+                    {
+                        *record = _task.replaceWith;
+                        if (checkEditionCursorIncrement)
+                        {
+                            ++cursor;
+                            CHECK_WITH_MESSAGE (!*cursor, "Record ids are expected to be unique.");
+                        }
+
+                        checkEditionCursorIncrement = !checkEditionCursorIncrement;
+                    }
+                    else
+                    {
+                        CHECK_WITH_MESSAGE (false, "Unable to find record with id ", _task.recordId, ".");
+                    }
                 }
                 else if constexpr (std::is_same_v<Tasks::RemoveRecord, Type>)
                 {
@@ -310,6 +367,112 @@ void AddValidatorTask (PipelineBuilder &_builder,
     }
 }
 
+struct ChangeInfo final
+{
+    TestRecord initial;
+    TestRecord changed;
+};
+
+using ChangeVector = Container::Vector<ChangeInfo>;
+
+Container::Vector<Task> FromChangeVector (const ChangeVector &_changes)
+{
+    Container::Vector<Task> result;
+    for (const ChangeInfo &change : _changes)
+    {
+        result.emplace_back (Tasks::AddRecord {change.initial});
+        result.emplace_back (Tasks::EditRecord {change.initial.id, change.changed});
+    }
+
+    return result;
+}
+
+/// \brief Encapsulates simple routine, shared by most tests that interact with one event type.
+template <typename EventType>
+void SeparatedEventTest (World *_world, Container::Vector<Task> _tasks, Container::Vector<EventType> _expected)
+{
+    PipelineBuilder builder {_world};
+    builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
+    AddExecutorTask (builder, std::move (_tasks));
+    AddValidatorTask<EventType> (builder, std::move (_expected));
+
+    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    REQUIRE (pipeline);
+    pipeline->Execute ();
+}
+
+/// \brief Encapsulates logic for testing multiple on change event triggers.
+/// \details We test several on change events registration orders to make sure that tracker zoning algorithm is correct.
+void OnChangeMultipleTest (World *_world)
+{
+    const ChangeVector changes {
+        {
+            {11u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {11u, 67.f, 23.1f, 43.6f, 67.9f},
+        },
+        {
+            {12u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {12u, 98.4f, 99.6f, 43.6f, 67.9f},
+        },
+        {
+            {13u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {13u, 98.4f, 23.1f, 21.5f, 67.9f},
+        },
+        {
+            {14u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {14u, 98.4f, 23.1f, 43.6f, 21.3f},
+        },
+        {
+            {15u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {15u, 22.4f, 97.1f, 43.6f, 67.9f},
+        },
+        {
+            {16u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {16u, 98.4f, 23.1f, 11.2f, 89.7},
+        },
+        {
+            {42u, 98.4f, 23.1f, 43.6f, 67.9f},
+            {43u, 98.4f, 23.1f, 43.6f, 67.9f},
+        },
+    };
+
+    PipelineBuilder builder {_world};
+    builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
+    AddExecutorTask (builder, FromChangeVector (changes));
+
+    AddValidatorTask<TestRecordHealthChangedEvent> (builder, {
+                                                                 {changes[0u].initial.id, changes[0u].initial.health},
+                                                                 {changes[4u].initial.id, changes[4u].initial.health},
+                                                             });
+
+    AddValidatorTask<TestRecordTransformChangedEvent> (
+        builder, {
+                     {changes[1u].initial.id, changes[1u].initial.x, changes[1u].initial.y, changes[1u].initial.angle},
+                     {changes[2u].initial.id, changes[2u].initial.x, changes[2u].initial.y, changes[2u].initial.angle},
+                     {changes[3u].initial.id, changes[3u].initial.x, changes[3u].initial.y, changes[3u].initial.angle},
+                     {changes[4u].initial.id, changes[4u].initial.x, changes[4u].initial.y, changes[4u].initial.angle},
+                     {changes[5u].initial.id, changes[5u].initial.x, changes[5u].initial.y, changes[5u].initial.angle},
+                 });
+
+    AddValidatorTask<TestRecordHealthOrAngleChangedEvent> (
+        builder, {
+                     {changes[0u].initial.id, changes[0u].initial.health, changes[0u].initial.angle},
+                     {changes[3u].initial.id, changes[3u].initial.health, changes[3u].initial.angle},
+                     {changes[4u].initial.id, changes[4u].initial.health, changes[4u].initial.angle},
+                     {changes[5u].initial.id, changes[5u].initial.health, changes[5u].initial.angle},
+                 });
+
+    AddValidatorTask<TestRecordHealthOrXChangedEvent> (
+        builder, {
+                     {changes[0u].initial.id, changes[0u].initial.health, changes[0u].initial.x},
+                     {changes[1u].initial.id, changes[1u].initial.health, changes[1u].initial.x},
+                     {changes[4u].initial.id, changes[4u].initial.health, changes[4u].initial.x},
+                 });
+
+    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    REQUIRE (pipeline);
+    pipeline->Execute ();
+}
 } // namespace Tasks
 } // namespace
 } // namespace Emergence::Celerity::Test
@@ -326,19 +489,10 @@ TEST_CASE (OnAdd)
 
     {
         EventRegistrar registrar {&world};
-        registrar.OnAddEvent ({{TestRecordAddedEvent::Reflect ().mapping, EventRoute::FIXED},
-                               TestRecord::Reflect ().mapping,
-                               {{TestRecord::Reflect ().id, TestRecordAddedEvent::Reflect ().id}}});
+        RegisterTestRecordAddedEvent (registrar);
     }
 
-    PipelineBuilder builder {&world};
-    builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
-    AddExecutorTask (builder, {AddRecord {{13u}}, AddRecord {{42u}}});
-    AddValidatorTask<TestRecordAddedEvent> (builder, {{13u}, {42u}});
-
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
-    REQUIRE (pipeline);
-    pipeline->Execute ();
+    SeparatedEventTest<TestRecordAddedEvent> (&world, {AddRecord {{13u}}, AddRecord {{42u}}}, {{13u}, {42u}});
 }
 
 TEST_CASE (OnAddShared)
@@ -347,16 +501,8 @@ TEST_CASE (OnAddShared)
 
     {
         EventRegistrar registrar {&world};
-        registrar.OnAddEvent ({{TestRecordAddedEvent::Reflect ().mapping, EventRoute::FIXED},
-                               TestRecord::Reflect ().mapping,
-                               {{TestRecord::Reflect ().id, TestRecordAddedEvent::Reflect ().id}}});
-
-        registrar.OnAddEvent ({{TestRecordAddedSharedEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
-                               TestRecord::Reflect ().mapping,
-                               {
-                                   {TestRecord::Reflect ().id, TestRecordAddedSharedEvent::Reflect ().id},
-                                   {TestRecord::Reflect ().health, TestRecordAddedSharedEvent::Reflect ().health},
-                               }});
+        RegisterTestRecordAddedEvent (registrar);
+        RegisterTestRecordAddedSharedEvent (registrar);
     }
 
     const TestRecord testRecord {21u, 91.7f, 22.3f, 11.8f, 67.2f};
@@ -383,48 +529,135 @@ TEST_CASE (OnRemove)
 
     {
         EventRegistrar registrar {&world};
-        registrar.OnRemoveEvent ({{TestRecordRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
-                                  TestRecord::Reflect ().mapping,
-                                  {{TestRecord::Reflect ().id, TestRecordRemovedEvent::Reflect ().id}}});
+        RegisterTestRecordRemovedEvent (registrar);
     }
 
-    PipelineBuilder builder {&world};
-    builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
-    AddExecutorTask (builder, {AddRecord {{39u}}, AddRecord {{68u}}, RemoveRecord {39u}});
-    AddValidatorTask<TestRecordRemovedEvent> (builder, {{39u}});
-
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
-    REQUIRE (pipeline);
-    pipeline->Execute ();
+    const TestRecord testRecord {42u, 97.3f, 22.3f, 11.8f, 67.2f};
+    SeparatedEventTest<TestRecordRemovedEvent> (&world, {AddRecord {testRecord}, RemoveRecord {testRecord.id}},
+                                                {{testRecord.id, testRecord.x, testRecord.y, testRecord.angle}});
 }
 
-TEST_CASE (OnRemoveMultiblockCopyout)
+TEST_CASE (OnChangeTrivial)
 {
     World world {"TestWorld"_us};
 
     {
         EventRegistrar registrar {&world};
-        registrar.OnRemoveEvent ({{TestRecordRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
-                                  TestRecord::Reflect ().mapping,
-                                  {
-                                      {TestRecord::Reflect ().id, TestRecordRemovedEvent::Reflect ().id},
-                                      {TestRecord::Reflect ().x, TestRecordRemovedEvent::Reflect ().x},
-                                      {TestRecord::Reflect ().y, TestRecordRemovedEvent::Reflect ().y},
-                                      {TestRecord::Reflect ().angle, TestRecordRemovedEvent::Reflect ().angle},
-                                  }});
+        RegisterTestRecordHealthChangedEvent (registrar);
     }
 
-    PipelineBuilder builder {&world};
-    builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
+    const ChangeVector changes {
+        {
+            {42u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {42u, 65.7f, 29.3f, 17.8f, 67.2f},
+        },
+        {
+            {43u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {43u, 97.3f, 22.9f, 11.1f, 67.7f},
+        },
+    };
 
-    const TestRecord testRecord {42u, 97.3f, 22.3f, 11.8f, 67.2f};
+    SeparatedEventTest<TestRecordHealthChangedEvent> (&world, FromChangeVector (changes),
+                                                      {{changes[0u].initial.id, changes[0u].initial.health}});
+}
 
-    AddExecutorTask (builder, {AddRecord {testRecord}, RemoveRecord {testRecord.id}});
-    AddValidatorTask<TestRecordRemovedEvent> (builder, {{testRecord.id, testRecord.x, testRecord.y, testRecord.angle}});
+TEST_CASE (OnChangeContiniousFieldBlock)
+{
+    World world {"TestWorld"_us};
 
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
-    REQUIRE (pipeline);
-    pipeline->Execute ();
+    {
+        EventRegistrar registrar {&world};
+        RegisterTestRecordTransformChangedEvent (registrar);
+    }
+
+    const ChangeVector changes {
+        {
+            {42u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {42u, 97.3f, 22.8f, 11.8f, 67.2f},
+        },
+        {
+            {43u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {43u, 97.3f, 22.3f, 11.3f, 67.2f},
+        },
+        {
+            {44u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {44u, 97.3f, 22.3f, 11.8f, 67.8f},
+        },
+        {
+            {45u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {45u, 61.4f, 22.3f, 11.8f, 67.2f},
+        },
+    };
+
+    SeparatedEventTest<TestRecordTransformChangedEvent> (
+        &world, FromChangeVector (changes),
+        {
+            {changes[0u].initial.id, changes[0u].initial.x, changes[0u].initial.y, changes[0u].initial.angle},
+            {changes[1u].initial.id, changes[1u].initial.x, changes[1u].initial.y, changes[1u].initial.angle},
+            {changes[2u].initial.id, changes[2u].initial.x, changes[2u].initial.y, changes[2u].initial.angle},
+        });
+}
+
+TEST_CASE (OnChangeSeparatedFieldBlocks)
+{
+    World world {"TestWorld"_us};
+
+    {
+        EventRegistrar registrar {&world};
+        RegisterTestRecordHealthOrAngleChangedEvent (registrar);
+    }
+
+    const ChangeVector changes {
+        {
+            {42u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {42u, 65.3f, 22.3f, 11.8f, 67.2f},
+        },
+        {
+            {43u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {43u, 97.3f, 43.1f, 11.3f, 67.2f},
+        },
+        {
+            {44u, 97.3f, 22.3f, 11.8f, 67.2f},
+            {44u, 97.3f, 22.9f, 11.8f, 67.8f},
+        },
+    };
+
+    SeparatedEventTest<TestRecordHealthOrAngleChangedEvent> (
+        &world, FromChangeVector (changes),
+        {
+            {changes[0u].initial.id, changes[0u].initial.health, changes[0u].initial.angle},
+            {changes[2u].initial.id, changes[2u].initial.health, changes[2u].initial.angle},
+        });
+}
+
+TEST_CASE (OnChangeMultipleFirstOrder)
+{
+    World world {"TestWorld"_us};
+
+    {
+        EventRegistrar registrar {&world};
+        RegisterTestRecordTransformChangedEvent (registrar);
+        RegisterTestRecordHealthOrAngleChangedEvent (registrar);
+        RegisterTestRecordHealthChangedEvent (registrar);
+        RegisterTestRecordHealthOrXChangedEvent (registrar);
+    }
+
+    OnChangeMultipleTest (&world);
+}
+
+TEST_CASE (OnChangeMultipleSecondOrder)
+{
+    World world {"TestWorld"_us};
+
+    {
+        EventRegistrar registrar {&world};
+        RegisterTestRecordTransformChangedEvent (registrar);
+        RegisterTestRecordHealthOrXChangedEvent (registrar);
+        RegisterTestRecordHealthChangedEvent (registrar);
+        RegisterTestRecordHealthOrAngleChangedEvent (registrar);
+    }
+
+    OnChangeMultipleTest (&world);
 }
 
 END_SUITE
