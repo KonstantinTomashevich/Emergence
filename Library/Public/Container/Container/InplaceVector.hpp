@@ -22,7 +22,6 @@ public:
     using ConstIterator = typename std::array<Item, Capacity>::const_iterator;
 
     /// \brief Constructs empty inplace vector without initializing reserved memory.
-    // NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::values initialization.
     InplaceVector () noexcept;
 
     /// \brief Copies values from given inplace vector.
@@ -136,6 +135,7 @@ private:
     };
 };
 
+// NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::values initialization.
 template <typename Item, std::size_t Capacity>
 InplaceVector<Item, Capacity>::InplaceVector () noexcept
 {
