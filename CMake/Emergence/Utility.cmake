@@ -17,7 +17,12 @@ endfunction ()
 # Writes given content to given file, unless it already has equal content.
 # Useful for code generation: allows to avoid unnecessary recompilation.
 function (write_if_not_equal FILE CONTENT)
-    file (READ "${FILE}" CURRENT_CONTENT)
+    set (CURRENT_CONTENT)
+
+    if (EXISTS "${FILE}")
+        file (READ "${FILE}" CURRENT_CONTENT)
+    endif ()
+
     if (NOT CONTENT STREQUAL CURRENT_CONTENT)
         file (WRITE "${FILE}" "${CONTENT}")
     endif ()
