@@ -135,8 +135,8 @@ private:
     };
 };
 
-// NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::values initialization.
 template <typename Item, std::size_t Capacity>
+// NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::values initialization.
 InplaceVector<Item, Capacity>::InplaceVector () noexcept
 {
 }
