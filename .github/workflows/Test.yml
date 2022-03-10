@@ -55,7 +55,7 @@ jobs:
       - name: Select CLangCL toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'CLangCL'
         run: |
-          echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
+          echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
 
