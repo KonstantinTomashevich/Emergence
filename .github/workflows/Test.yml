@@ -61,7 +61,7 @@ jobs:
 
       - name: Select MSVC toolset
         if: matrix.os == 'windows-latest' && matrix.toolchain == 'MSVC'
-        run: echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T v142" >> $Env:GITHUB_ENV
+        run: echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T v143" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
@@ -80,7 +80,7 @@ jobs:
         # We need to import Visual Studio environment to find LLVM tools, which is not possible through powershell.
         shell: cmd
         run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsx86_amd64.bat" &&
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}} ${{matrix.build_type}} &&
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
