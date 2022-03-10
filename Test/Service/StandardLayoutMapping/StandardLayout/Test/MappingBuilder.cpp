@@ -710,6 +710,7 @@ TEST_CASE (MappingEquality)
 TEST_CASE (MappingHash)
 {
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMapping = Grow (TWO_INTS_CORRECT_ORDER);
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization): We copy it for testing.
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingCopy = twoIntsCorrectOrderMapping;
     Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (TWO_INTS_REVERSED_ORDER);
 

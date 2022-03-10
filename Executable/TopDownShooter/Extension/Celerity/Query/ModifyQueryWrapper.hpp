@@ -139,6 +139,7 @@
                                                                                                                        \
     QueryClass::QueryClass (const QueryClass &_other) noexcept = default;                                              \
                                                                                                                        \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): We can't put parentheses here. */                                   \
     QueryClass::QueryClass (QueryClass &&_other) noexcept = default;                                                   \
                                                                                                                        \
     void QueryClass::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept                                \
