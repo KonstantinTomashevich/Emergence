@@ -189,7 +189,7 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
 {
     BakeTrackedFields (trackedType, _trackedFields);
 
-#ifndef _NDEBUG
+#ifndef NDEBUG
     for (const CopyOutField &copyOut : _copyOutOfInitial)
     {
         // Only tracked fields can be copied out of unchanged version of record for several reasons:
