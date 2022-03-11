@@ -41,10 +41,8 @@ jobs:
           cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
           -DCMAKE_BUILD_TYPE=Debug -DEMERGENCE_CODE_STYLE_CHECK_ADHOC=ON
 
-      - name: Check C++ code style using CLang Tools
-        working-directory: ${{github.workspace}}
-        # We use CMD instead of PowerShell because of convenient && operator.
-        shell: cmd
-        run: >
-          powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
-          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
+      - name: Run CLang Format
+        run: .\Script\CodeStyle\CheckCLangFormat.ps1
+
+      - name: Run CLang Tidy
+        run: .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
