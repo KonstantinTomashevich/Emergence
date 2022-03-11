@@ -9,14 +9,14 @@ jobs:
   check_code_style:
     defaults:
       run:
-        shell: pwsh
+        shell: cmd
 
     env:
       BUILD_DIRECTORY: ${{github.workspace}}\Build
-      CC: clang
-      CXX: clang++
+      CC: clang-cl
+      CXX: clang-cl
 
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -29,7 +29,6 @@ jobs:
           platform: ${{runner.os}}
           build_type: Debug
 
-      # TODO: Now windows-latest is VS 2022. Try to use CLangCL again?
       - name: Install Ninja
         run: choco install ninja
 
@@ -38,12 +37,16 @@ jobs:
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: > 
-          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
-          -DCMAKE_BUILD_TYPE=Debug -DEMERGENCE_CODE_STYLE_CHECK_ADHOC=ON
+        run: >
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
 
       - name: Run CLang Format
-        run: .\Script\CodeStyle\CheckCLangFormat.ps1
+        run: >
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          .\Script\CodeStyle\CheckCLangFormat.ps1
 
       - name: Run CLang Tidy
-        run: .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
+        run: >
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
