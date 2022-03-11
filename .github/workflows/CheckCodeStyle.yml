@@ -32,6 +32,8 @@ jobs:
       - name: Install Ninja
         run: choco install ninja
 
+      # There is separate LLVM installation on Windows build agents.
+      # We need to remove it from path, otherwise it could be selected instead of VS 2022 CLangCL.
       - name: Remove LLVM from Path
         shell: pwsh
         run: |
@@ -47,12 +49,8 @@ jobs:
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
           cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
 
-      - name: Run CLang Format
+      - name: Run CLang Tools
         run: >
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          powershell .\Script\CodeStyle\CheckCLangFormat.ps1
-
-      - name: Run CLang Tidy
-        run: >
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
           powershell .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
