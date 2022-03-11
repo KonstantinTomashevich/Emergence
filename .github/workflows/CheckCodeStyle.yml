@@ -29,6 +29,7 @@ jobs:
           platform: ${{runner.os}}
           build_type: Debug
 
+      # TODO: Now windows-latest is VS 2022. Try to use CLangCL again?
       - name: Install Ninja
         run: choco install ninja
 
