@@ -92,7 +92,7 @@ jobs:
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
       - name: Upload test and coverage results
-        if: ${{ success() }} || ${{ failure() }}
+        if: env.ENABLE_COVERAGE == 'yes' && (${{ success() }} || ${{ failure() }})
         uses: actions/upload-artifact@v2
         with:
           name: Test and coverage results (${{matrix.build_type}}, ${{matrix.os}}, ${{matrix.toolchain}})
