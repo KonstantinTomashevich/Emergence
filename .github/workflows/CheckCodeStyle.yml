@@ -33,6 +33,7 @@ jobs:
         run: choco install ninja
 
       - name: Remove LLVM from Path
+        shell: pwsh
         run: |
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
