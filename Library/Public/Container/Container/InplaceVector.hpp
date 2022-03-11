@@ -285,7 +285,8 @@ void InplaceVector<Item, Capacity>::Clear () noexcept
 
 template <typename Item, std::size_t Capacity>
 typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::EraseExchangingWithLast (
-    const InplaceVector::Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>
+    const InplaceVector::Iterator &_iterator
+    ) noexcept requires std::is_nothrow_move_assignable_v<Item>
 {
     assert (_iterator < End ());
     auto last = --End ();
