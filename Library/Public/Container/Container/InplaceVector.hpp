@@ -76,7 +76,7 @@ public:
     /// \return New ::End iterator.
     /// \invariant _iterator < ::End.
     Iterator EraseExchangingWithLast (
-        const Iterator &iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>;
+        const Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>;
 
     /// \brief Erase first `_amount` elements **without** preserving element order (for performance).
     /// \invariant _amount <= ::GetCount.
@@ -285,19 +285,19 @@ void InplaceVector<Item, Capacity>::Clear () noexcept
 
 template <typename Item, std::size_t Capacity>
 typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::EraseExchangingWithLast (
-    const InplaceVector::Iterator &iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>
+    const InplaceVector::Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>
 {
-    assert (iterator < End ());
+    assert (_iterator < End ());
     auto last = --End ();
 
-    if (iterator != last)
+    if (_iterator != last)
     {
-        *iterator = std::move (*last);
+        *_iterator = std::move (*last);
     }
 
     last->~Item ();
     --count;
-    return iterator;
+    return _iterator;
 }
 
 template <typename Item, std::size_t Capacity>
