@@ -32,6 +32,11 @@ jobs:
       - name: Install Ninja
         run: choco install ninja
 
+      - name: Remove LLVM from Path
+        run: |
+          $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
+          echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
@@ -44,9 +49,9 @@ jobs:
       - name: Run CLang Format
         run: >
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          .\Script\CodeStyle\CheckCLangFormat.ps1
+          powershell .\Script\CodeStyle\CheckCLangFormat.ps1
 
       - name: Run CLang Tidy
         run: >
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-          .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
+          powershell .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}
