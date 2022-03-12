@@ -1,6 +1,22 @@
 #pragma once
 
 #include <Celerity/Pipeline.hpp>
+#include <Celerity/Query/FetchAscendingRangeQuery.hpp>
+#include <Celerity/Query/FetchDescendingRangeQuery.hpp>
+#include <Celerity/Query/FetchRayIntersectionQuery.hpp>
+#include <Celerity/Query/FetchSequenceQuery.hpp>
+#include <Celerity/Query/FetchShapeIntersectionQuery.hpp>
+#include <Celerity/Query/FetchSingletonQuery.hpp>
+#include <Celerity/Query/FetchValueQuery.hpp>
+#include <Celerity/Query/InsertLongTermQuery.hpp>
+#include <Celerity/Query/InsertShortTermQuery.hpp>
+#include <Celerity/Query/ModifyAscendingRangeQuery.hpp>
+#include <Celerity/Query/ModifyDescendingRangeQuery.hpp>
+#include <Celerity/Query/ModifyRayIntersectionQuery.hpp>
+#include <Celerity/Query/ModifySequenceQuery.hpp>
+#include <Celerity/Query/ModifyShapeIntersectionQuery.hpp>
+#include <Celerity/Query/ModifySingletonQuery.hpp>
+#include <Celerity/Query/ModifyValueQuery.hpp>
 #include <Celerity/World.hpp>
 
 #include <Container/HashSet.hpp>
@@ -28,53 +44,49 @@ public:
 
     void MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
-    [[nodiscard]] Warehouse::FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
+    [[nodiscard]] FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
 
-    [[nodiscard]] Warehouse::ModifySingletonQuery ModifySingleton (
-        const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] ModifySingletonQuery ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    [[nodiscard]] Warehouse::InsertShortTermQuery InsertShortTerm (
-        const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] InsertShortTermQuery InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    [[nodiscard]] Warehouse::FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    [[nodiscard]] Warehouse::ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    [[nodiscard]] Warehouse::InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
+    [[nodiscard]] InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
-    [[nodiscard]] Warehouse::FetchValueQuery FetchValue (
-        const StandardLayout::Mapping &_typeMapping,
-        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    [[nodiscard]] FetchValueQuery FetchValue (const StandardLayout::Mapping &_typeMapping,
+                                              const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
-    [[nodiscard]] Warehouse::ModifyValueQuery ModifyValue (
-        const StandardLayout::Mapping &_typeMapping,
-        const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+    [[nodiscard]] ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
+                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
-    [[nodiscard]] Warehouse::FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
-                                                                           StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                StandardLayout::FieldId _keyField) noexcept;
 
-    [[nodiscard]] Warehouse::ModifyAscendingRangeQuery ModifyAscendingRange (
-        const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                  StandardLayout::FieldId _keyField) noexcept;
 
-    [[nodiscard]] Warehouse::FetchDescendingRangeQuery FetchDescendingRange (
-        const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] FetchDescendingRangeQuery FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                  StandardLayout::FieldId _keyField) noexcept;
 
-    [[nodiscard]] Warehouse::ModifyDescendingRangeQuery ModifyDescendingRange (
-        const StandardLayout::Mapping &_typeMapping, StandardLayout::FieldId _keyField) noexcept;
+    [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                    StandardLayout::FieldId _keyField) noexcept;
 
-    [[nodiscard]] Warehouse::FetchShapeIntersectionQuery FetchShapeIntersection (
+    [[nodiscard]] FetchShapeIntersectionQuery FetchShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    [[nodiscard]] Warehouse::ModifyShapeIntersectionQuery ModifyShapeIntersection (
+    [[nodiscard]] ModifyShapeIntersectionQuery ModifyShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    [[nodiscard]] Warehouse::FetchRayIntersectionQuery FetchRayIntersection (
+    [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    [[nodiscard]] Warehouse::ModifyRayIntersectionQuery ModifyRayIntersection (
+    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
@@ -94,6 +106,19 @@ private:
     friend class PipelineBuilder;
 
     TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
+
+    [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
+                                                             const StandardLayout::Mapping &_trackedType) noexcept;
+
+    [[nodiscard]] TrivialEventTriggerRow *BindEventsOnAdd (const StandardLayout::Mapping &_trackedType) noexcept;
+
+    [[nodiscard]] TrivialEventTriggerRow *BindEventsOnRemove (const StandardLayout::Mapping &_trackedType) noexcept;
+
+    [[nodiscard]] ChangeTracker *BindChangeTracker (const StandardLayout::Mapping &_trackedType) noexcept;
+
+    void RegisterEventProduction (const StandardLayout::Mapping &_eventType) noexcept;
+
+    void RegisterEventConsumption (const StandardLayout::Mapping &_eventType) noexcept;
 
     PipelineBuilder *parent;
     Flow::Task task;
@@ -124,7 +149,31 @@ public:
 private:
     friend class TaskConstructor;
 
+    /// \brief For each event type, contains set of ids of tasks that use it in associated context.
+    using EventUsageMap = Container::HashMap<StandardLayout::Mapping, Container::HashSet<Memory::UniqueString>>;
+
+    Memory::Profiler::AllocationGroup GetBuildTimeAllocationGroup () noexcept;
+
+    void ImportEventScheme (const World::EventScheme &_scheme) noexcept;
+
     void FinishTaskRegistration (Flow::Task _task) noexcept;
+
+    /// \details In continuous routine, events from current execution can be processed by next execution.
+    ///          Therefore, for each event type pipeline tasks can be separate into ordered category list:
+    ///          PreviousExecutionConsumers -> ClearingTask -> Producers -> CurrentExecutionConsumers.
+    ///
+    ///          This method verifies that such separation can be done for each event type and adds clearing task.
+    void PostProcessContinuousEventRoutine (const EventUsageMap &_production, const EventUsageMap &_consumption);
+
+    /// \details In local event routine, events from current execution are visible only during this execution.
+    ///          Therefore, for each event type pipeline tasks can be separate into ordered category list:
+    ///          Producers -> Consumers -> ClearingTask.
+    ///
+    ///          This method verifies that such separation can be done for each event type and adds clearing task.
+    void PostProcessLocalEventRoutine (const EventUsageMap &_production, const EventUsageMap &_consumption);
+
+    /// \details Adds clearing task for all ::sharedEventTypes, that are consumed in current pipeline.
+    void PostProcessSharedEventRoutine (const EventUsageMap &_consumption);
 
     World *world;
     Memory::UniqueString currentPipelineId;
@@ -133,6 +182,30 @@ private:
 
     Flow::TaskRegister taskRegister;
     Container::HashSet<Memory::UniqueString> registeredResources;
+
+    /// \details Event cleaners need ModifySequenceQuery's to delete events, but creating these queries for
+    ///          events is generally forbidden. Therefore we add this flag to temporary allow query creation.
+    bool postProcessingEvents = false;
+
+    /// \brief If there is any build-time errors, pipeline will not be created in ::End.
+    bool anyErrorsDetected = false;
+
+    // TODO: Maps/sets bellow should be replaced with their flat alternatives.
+
+    /// \brief Used to check whether given type is event type or not.
+    Container::HashSet<StandardLayout::Mapping> eventTypes;
+
+    /// \brief Types of events, that are produced in one pipeline and consumed in another.
+    /// \details For example, see EventRoute::FROM_FIXED_TO_NORMAL.
+    Container::HashSet<StandardLayout::Mapping> sharedEventTypes;
+
+    /// \brief Types of events, that are produced automatically by on add, on remove and on change triggers.
+    /// \details These events should not be produced manually by user.
+    Container::HashSet<StandardLayout::Mapping> automaticEventTypes;
+
+    std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventProduction;
+
+    std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventConsumption;
 };
 
 template <typename Successor>

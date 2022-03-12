@@ -26,6 +26,8 @@ public:
 
     [[nodiscard]] Emergence::Task::Collection ExportCollection () const noexcept;
 
+    [[nodiscard]] TaskRegister::UnwrappedDependencyMap ExportUnwrappedDependencyMap () const noexcept;
+
 private:
     struct Node final
     {
@@ -33,6 +35,24 @@ private:
         Container::Optional<std::size_t> sourceTaskIndex;
         std::bitset<MAX_RESOURCES> readAccess;
         std::bitset<MAX_RESOURCES> writeAccess;
+    };
+
+    struct ReachabilityVisitor final
+    {
+        enum class VisitationState
+        {
+            UNVISITED,
+            WAITING_FOR_RESULTS,
+            READY,
+        };
+
+        bool VisitGraph (const TaskGraph &_graph) noexcept;
+
+        Container::Vector<VisitationState> nodeStates {GetDefaultAllocationGroup ()};
+        Container::Vector<std::bitset<MAX_GRAPH_NODES>> reachable {GetDefaultAllocationGroup ()};
+
+    private:
+        bool VisitNode (const TaskGraph &_graph, std::size_t _index) noexcept;
     };
 
     TaskGraph () = default;
@@ -226,76 +246,119 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
     return {};
 }
 
+TaskRegister::UnwrappedDependencyMap TaskGraph::ExportUnwrappedDependencyMap () const noexcept
+{
+    TaskRegister::UnwrappedDependencyMap map {GetDefaultAllocationGroup ()};
+    assert (source);
+    ReachabilityVisitor visitor;
+
+    if (visitor.VisitGraph (*this))
+    {
+        for (std::size_t dependencyIndex = 0u; dependencyIndex < nodes.size (); ++dependencyIndex)
+        {
+            const Node &dependency = nodes[dependencyIndex];
+            if (!dependency.sourceTaskIndex)
+            {
+                // We do not need checkpoints here.
+                continue;
+            }
+
+            for (std::size_t dependantIndex = 0u; dependantIndex < nodes.size (); ++dependantIndex)
+            {
+                if (visitor.reachable[dependencyIndex][dependantIndex])
+                {
+                    const Node &dependant = nodes[dependantIndex];
+                    if (!dependant.sourceTaskIndex)
+                    {
+                        // We do not need checkpoints here.
+                        continue;
+                    }
+
+                    auto iterator = map.find (dependant.name);
+                    if (iterator == map.end ())
+                    {
+                        iterator = map.emplace (dependant.name, GetDefaultAllocationGroup ()).first;
+                    }
+
+                    iterator->second.emplace (dependency.name);
+                }
+            }
+        }
+    }
+
+    return map;
+}
+
+bool TaskGraph::ReachabilityVisitor::VisitGraph (const TaskGraph &_graph) noexcept
+{
+    nodeStates.resize (_graph.nodes.size ());
+    reachable.resize (_graph.nodes.size ());
+
+    std::fill (nodeStates.begin (), nodeStates.end (), VisitationState::UNVISITED);
+    std::fill (reachable.begin (), reachable.end (), 0u);
+
+    for (std::size_t nodeIndex = 0u; nodeIndex < _graph.nodes.size (); ++nodeIndex)
+    {
+        if (!VisitNode (_graph, nodeIndex))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool TaskGraph::ReachabilityVisitor::VisitNode (const TaskGraph &_graph, std::size_t _index) noexcept
+{
+    switch (nodeStates[_index])
+    {
+    case VisitationState::WAITING_FOR_RESULTS:
+        EMERGENCE_LOG (ERROR,
+                       "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
+
+        EMERGENCE_LOG (ERROR, _graph.nodes[_index].name);
+        return false;
+
+    case VisitationState::UNVISITED:
+    {
+        nodeStates[_index] = VisitationState::WAITING_FOR_RESULTS;
+        const Container::Vector<std::size_t> &nodeEdges = _graph.edges[_index];
+
+        for (std::size_t child : nodeEdges)
+        {
+            reachable[_index].set (child);
+            if (VisitNode (_graph, child))
+            {
+                reachable[_index] |= reachable[child];
+            }
+            else
+            {
+                EMERGENCE_LOG (ERROR, _graph.nodes[_index].name);
+                return false;
+            }
+        }
+
+        nodeStates[_index] = VisitationState::READY;
+        [[fallthrough]];
+    }
+
+    case VisitationState::READY:
+        return true;
+    }
+
+    assert (false);
+    return true;
+}
+
 bool TaskGraph::Verify () const noexcept
 {
     assert (source);
 
     // Firstly, we need to traverse graph using DFS to find circular dependencies and collect reachability matrix.
-
-    enum class VisitationState
+    ReachabilityVisitor visitor;
+    if (!visitor.VisitGraph (*this))
     {
-        UNVISITED,
-        WAITING_FOR_RESULTS,
-        READY,
-    };
-
-    struct
-    {
-        Container::Vector<VisitationState> nodeStates {GetDefaultAllocationGroup ()};
-        Container::Vector<std::bitset<MAX_GRAPH_NODES>> reachable {GetDefaultAllocationGroup ()};
-
-        bool VisitNode (const TaskGraph &_graph, std::size_t _index) noexcept
-        {
-            switch (nodeStates[_index])
-            {
-            case VisitationState::WAITING_FOR_RESULTS:
-                EMERGENCE_LOG (
-                    ERROR, "TaskGraph: Circular dependency found during visitation, printing out all nodes in stack.");
-
-                EMERGENCE_LOG (ERROR, _graph.nodes[_index].name);
-                return false;
-
-            case VisitationState::UNVISITED:
-            {
-                nodeStates[_index] = VisitationState::WAITING_FOR_RESULTS;
-                const Container::Vector<std::size_t> &nodeEdges = _graph.edges[_index];
-
-                for (std::size_t child : nodeEdges)
-                {
-                    reachable[_index].set (child);
-                    if (VisitNode (_graph, child))
-                    {
-                        reachable[_index] |= reachable[child];
-                    }
-                    else
-                    {
-                        EMERGENCE_LOG (ERROR, _graph.nodes[_index].name);
-                        return false;
-                    }
-                }
-
-                nodeStates[_index] = VisitationState::READY;
-                [[fallthrough]];
-            }
-
-            case VisitationState::READY:
-                return true;
-            }
-
-            assert (false);
-            return true;
-        }
-    } visitor;
-
-    visitor.nodeStates.resize (nodes.size (), VisitationState::UNVISITED);
-    visitor.reachable.resize (nodes.size ());
-
-    for (std::size_t nodeIndex = 0u; nodeIndex < nodes.size (); ++nodeIndex)
-    {
-        if (!visitor.VisitNode (*this, nodeIndex))
-        {
-            return false;
-        }
+        return false;
     }
 
     // Graph contains no circular dependencies, therefore we can search
@@ -464,6 +527,16 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
     }
 
     return root;
+}
+
+TaskRegister::UnwrappedDependencyMap TaskRegister::ExportUnwrappedDependencyMap () const noexcept
+{
+    if (Container::Optional<TaskGraph> graph = TaskGraph::Build (*this))
+    {
+        return graph.value ().ExportUnwrappedDependencyMap ();
+    }
+
+    return UnwrappedDependencyMap {GetDefaultAllocationGroup ()};
 }
 
 Emergence::Task::Collection TaskRegister::ExportCollection () const noexcept

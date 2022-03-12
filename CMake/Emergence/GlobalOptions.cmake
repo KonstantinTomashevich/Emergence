@@ -6,13 +6,6 @@ option (EMERGENCE_COMPILE_TIME_TRACE "Requests compiler to print time trace. Sup
 option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable code coverage reporting." OFF)
 option (EMERGENCE_TREAT_WARNINGS_AS_ERRORS "Enables \"treat warnings as errors\" compiler policy for all targets." ON)
 
-# TODO: Currently we are using LLVM CLang for code style checking instead of CLang CL because of strange problems
-#       with automatically added `-fsyntax-only` and `-resource-dir=...` parameters. But LLVM CLang is unable to
-#       use binary dependencies built by MSVC/CLangCL (it searches for `*.so`s and fails). Therefore, I decided
-#       to create adhoc mode for style checking that creates header-only interface targets for dependencies,
-#       that can not be found due to library incompatibility.
-option (EMERGENCE_CODE_STYLE_CHECK_ADHOC "Adhoc solution for code style checking pipeline. See more in TODO here." OFF)
-
 # We can not add common compile options here, because they would affect third party libraries compilation.
 # Therefore every Emergence root source directory must call this function to setup compile options locally.
 function (add_common_compile_options)

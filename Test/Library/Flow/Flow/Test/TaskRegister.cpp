@@ -329,6 +329,48 @@ TEST_CASE (ReuseTaskRegister)
 
 END_SUITE
 
+BEGIN_SUITE (ExportUnwrappedDependencyMap)
+
+TEST_CASE (CorrectGraph)
+{
+    const Emergence::Flow::TaskRegister::UnwrappedDependencyMap expected {
+        // There is no records for A* tasks, because they have no dependencies.
+        {"B1"_us, {"A1"_us, "A2"_us, "A3"_us, "A4"_us}},
+        {"B2"_us, {"A1"_us, "A2"_us, "A3"_us, "A4"_us, "A5"_us, "B1"_us}},
+    };
+
+    using namespace Emergence::Flow::Test;
+    Emergence::Flow::TaskRegister taskRegister;
+    Grow (COMPLEX_DEPENDENCIES_SEED, taskRegister);
+    CHECK (taskRegister.ExportUnwrappedDependencyMap () == expected);
+}
+
+TEST_CASE (MissingDependencies)
+{
+    using namespace Emergence::Flow::Test;
+
+    Seed seed = TRIVIAL_SAFE_RESOURCE_USAGE_SEED;
+    seed.tasks[0u].dependsOn.emplace ("MissingDependency");
+
+    Emergence::Flow::TaskRegister taskRegister;
+    Grow (seed, taskRegister);
+    CHECK (taskRegister.ExportUnwrappedDependencyMap ().empty ());
+}
+
+TEST_CASE (CircularDependency)
+{
+    using namespace Emergence::Flow::Test;
+
+    Seed seed = TRIVIAL_SAFE_RESOURCE_USAGE_SEED;
+    seed.tasks[0u].dependsOn.emplace ("B2");
+
+    Emergence::Flow::TaskRegister taskRegister;
+    Grow (seed, taskRegister);
+    CHECK (taskRegister.ExportUnwrappedDependencyMap ().empty ());
+}
+
+END_SUITE
+
 BEGIN_SUITE (ExportVisual)
 
 TEST_CASE (TrivialSafeResourceUsageNoResources)
@@ -357,7 +399,7 @@ TEST_CASE (TrivialSafeResourceUsageWithIntroducedCircularDependency)
     using namespace Emergence::Flow::Test;
 
     Seed seed = TRIVIAL_SAFE_RESOURCE_USAGE_SEED;
-    seed.tasks[3u].dependencyOf.emplace_back ("A1");
+    seed.tasks[3u].dependencyOf.emplace ("A1");
     Emergence::VisualGraph::Graph result = Grow (seed).ExportVisual (true);
 
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();
@@ -370,7 +412,7 @@ TEST_CASE (TrivialSafeResourceUsageWithCollision)
     using namespace Emergence::Flow::Test;
 
     Seed seed = TRIVIAL_SAFE_RESOURCE_USAGE_SEED;
-    seed.tasks[3u].writeAccess.emplace_back ("R2");
+    seed.tasks[3u].writeAccess.emplace ("R2");
     Emergence::VisualGraph::Graph result = Grow (seed).ExportVisual (true);
 
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();

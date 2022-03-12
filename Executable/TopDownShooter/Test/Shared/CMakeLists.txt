@@ -29,8 +29,8 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
 sober_library_end ()
 
 add_executable ("${GAME_NAME}SharedTestLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
-sober_naming_variant_target ("${GAME_NAME}SharedTest" Original GAME_TARGET)
-target_link_libraries ("${GAME_NAME}SharedTestLauncher" PUBLIC "${GAME_TARGET}")
+sober_naming_variant_target ("${GAME_NAME}SharedTest" Original LIBRARY_TARGET)
+target_link_libraries ("${GAME_NAME}SharedTestLauncher" PUBLIC "${LIBRARY_TARGET}")
 
 set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
 set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES

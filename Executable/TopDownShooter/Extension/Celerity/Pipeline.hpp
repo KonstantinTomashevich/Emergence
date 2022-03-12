@@ -10,8 +10,11 @@ enum class PipelineType
 {
     NORMAL = 0u,
     FIXED,
-    CUSTOM
+    CUSTOM,
+    COUNT
 };
+
+const char *GetPipelineTypeName (PipelineType _type);
 
 class Pipeline final
 {

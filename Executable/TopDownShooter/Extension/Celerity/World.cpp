@@ -11,10 +11,18 @@
 
 namespace Emergence::Celerity
 {
+using namespace Memory::Literals;
+
 static Warehouse::Registry ConstructInsideGroup (Memory::UniqueString _worldName)
 {
     auto placeholder = Memory::Profiler::AllocationGroup {_worldName}.PlaceOnTop ();
     return Warehouse::Registry {_worldName};
+}
+
+static Memory::Profiler::AllocationGroup WorldAllocationGroup (Memory::UniqueString _worldName,
+                                                               Memory::UniqueString _groupName)
+{
+    return Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_worldName}, _groupName};
 }
 
 /// It's expected that user will not have a lot of pipelines, therefore no need to waste memory on large pool pages.
@@ -24,10 +32,10 @@ World::World (Memory::UniqueString _name) noexcept
     : registry (ConstructInsideGroup (_name)),
       modifyTime (registry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       modifyWorld (registry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
-      pipelinePool (Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name},
-                                                       Memory::UniqueString {"Pipelines"}},
-                    sizeof (Pipeline),
-                    PIPELINES_ON_PAGE)
+      pipelinePool (WorldAllocationGroup (_name, "Pipelines"_us), sizeof (Pipeline), PIPELINES_ON_PAGE),
+      eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}})
 {
 }
 
@@ -189,9 +197,22 @@ Pipeline *World::AddPipeline (Memory::UniqueString _id,
 
     case PipelineType::CUSTOM:
         break;
+
+    case PipelineType::COUNT:
+        assert (false);
+        break;
     }
 
     return pipeline;
+}
+
+World::EventScheme::EventScheme (const Memory::Profiler::AllocationGroup &_rootAllocationGroup) noexcept
+    : custom (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "Custom"_us}),
+      onAdd (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnAdd"_us}),
+      onRemove (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnRemove"_us}),
+      onChange (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnChange"_us}),
+      changeTrackers (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "ChangeTrackers"_us})
+{
 }
 
 // TODO: Having separate setup-and-run functions for testing looks a bit bad. Any ideas how to make it better?

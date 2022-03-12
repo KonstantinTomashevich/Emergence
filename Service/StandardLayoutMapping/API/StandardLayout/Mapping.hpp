@@ -13,6 +13,12 @@
 
 namespace Emergence::StandardLayout
 {
+// TODO: We need special representation for InplaceVector's and unions for serialization.
+//       There is two possible solutions to this:
+//       - Store this data inside each field, so it will be accessible everywhere, but would eat a lot of memory.
+//       - Store markers between fields (UNION_BEGIN, UNION_SWITCH, UNION_END, etc). Uses a lot less memory,
+//         but can be extracted only through iteration.
+
 /// \brief Finished field mapping for user defined object type.
 ///
 /// \details MappingBuilder should be used to construct mappings.
@@ -69,6 +75,9 @@ public:
     /// \invariant Given field belongs to this mapping.
     [[nodiscard]] FieldId GetFieldId (const Field &_field) const noexcept;
 
+    /// \return Hash for this mapping.
+    [[nodiscard]] uintptr_t Hash () const noexcept;
+
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator== (const Mapping &_other) const noexcept;
 
@@ -100,3 +109,15 @@ Mapping::FieldIterator begin (const Mapping &_mapping) noexcept;
 /// \brief Wraps Mapping::End for foreach sentences.
 Mapping::FieldIterator end (const Mapping &_mapping) noexcept;
 } // namespace Emergence::StandardLayout
+
+namespace std
+{
+template <>
+struct hash<Emergence::StandardLayout::Mapping>
+{
+    std::size_t operator() (const Emergence::StandardLayout::Mapping &_mapping) const noexcept
+    {
+        return static_cast<std::size_t> (_mapping.Hash ());
+    }
+};
+} // namespace std

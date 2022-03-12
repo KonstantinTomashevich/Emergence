@@ -4,6 +4,8 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/HashMap.hpp>
+#include <Container/HashSet.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
@@ -27,18 +29,20 @@ struct Task
     /// \see TaskCollection::Item::task
     std::function<void ()> executor;
 
+    // TODO: Ideally we should use flat sets here, because item count is rather small.
+
     /// \brief Names of resources, that are read by this task.
-    Container::Vector<Memory::UniqueString> readAccess {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> readAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of resources, that are modified by this task.
     /// \invariant If task both reads and modifies one resources, this resource should only be added to ::writeAccess.
-    Container::Vector<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> writeAccess {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, on which this task depends.
-    Container::Vector<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> dependsOn {GetDefaultAllocationGroup ()};
 
     /// \brief Names of tasks, to which this task injects itself as dependency.
-    Container::Vector<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
+    Container::HashSet<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
 };
 
 /// \brief Allows user to register tasks and export result as task collection or visual graph.
@@ -56,6 +60,12 @@ public:
 
     inline static const Container::String VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
     inline static const Container::String VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
+
+    /// \brief Contains set with explicit and implicit dependencies for each registered task.
+    /// \details Explicit dependencies are specified during task registration.
+    ///          Implicit dependencies are either specified through Task::dependencyOf in other tasks or
+    ///          are dependencies of dependencies.
+    using UnwrappedDependencyMap = Container::HashMap<Memory::UniqueString, Container::HashSet<Memory::UniqueString>>;
 
     TaskRegister () = default;
 
@@ -80,6 +90,13 @@ public:
     /// \brief Exports registered tasks, checkpoints and resources as visual graph.
     /// \param _exportResources Should resources be exported?
     [[nodiscard]] VisualGraph::Graph ExportVisual (bool _exportResources) const noexcept;
+
+    /// \brief Constructs unwrapped dependency map from currently registered tasks and checkpoints.
+    /// \details Unwrapped dependency map can be used to select dependencies of automatically created
+    ///          task, like event cleaners, or to do additional user specific verification.
+    /// \return If task graph contains neither circular nor missing dependencies, returns
+    ///         unwrapped dependency map for this graph. Otherwise, returns empty map.
+    [[nodiscard]] UnwrappedDependencyMap ExportUnwrappedDependencyMap () const noexcept;
 
     /// \brief Verifies registered data and exports it as task collection.
     /// \return Valid collection or empty collection if verification failed.

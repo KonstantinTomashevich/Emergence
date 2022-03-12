@@ -8,6 +8,8 @@
 namespace Emergence::Celerity
 {
 /// \brief Singleton for world<->tasks communication and global utility like UID generation.
+/// \warning This singleton is modified by World outside of pipeline execution,
+///          therefore OnChange events do not work with it.
 struct WorldSingleton final
 {
     /// \brief Indicates whether current normal update was separated from previous one by one or more fixed updates.

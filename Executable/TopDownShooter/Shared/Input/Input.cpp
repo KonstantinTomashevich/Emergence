@@ -21,9 +21,9 @@ protected:
     void DispatchActions (InputSingleton::SubscriptionVector &_subscribers,
                           const InputSingleton::ActionsBuffer &_buffer) noexcept;
 
-    Emergence::Warehouse::ModifySingletonQuery modifyInput;
-    Emergence::Warehouse::ModifyValueQuery modifyListenersById;
-    Emergence::Warehouse::ModifyAscendingRangeQuery modifyListeners;
+    Emergence::Celerity::ModifySingletonQuery modifyInput;
+    Emergence::Celerity::ModifyValueQuery modifyListenersById;
+    Emergence::Celerity::ModifyAscendingRangeQuery modifyListeners;
 };
 
 InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -124,7 +124,7 @@ private:
 
     void UpdateActionBuffers (InputSingleton *_input) noexcept;
 
-    Emergence::Warehouse::FetchSingletonQuery fetchWorld;
+    Emergence::Celerity::FetchSingletonQuery fetchWorld;
     Emergence::Celerity::InputAccumulator *inputAccumulator = nullptr;
 };
 

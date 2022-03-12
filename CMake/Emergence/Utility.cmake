@@ -5,3 +5,25 @@ function (copy_required_shared_libraries TARGET)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>
             COMMAND_EXPAND_LISTS)
 endfunction ()
+
+# Executes CMake-driven code generation by including all "*.generated.*.cmake" files.
+function (call_code_generation ROOT_DIRECTORY)
+    file (GLOB_RECURSE GENERATORS "${ROOT_DIRECTORY}/*.generated.*.cmake")
+    foreach (GENERATOR IN LISTS GENERATORS)
+        include (${GENERATOR})
+    endforeach ()
+endfunction ()
+
+# Writes given content to given file, unless it already has equal content.
+# Useful for code generation: allows to avoid unnecessary recompilation.
+function (write_if_not_equal FILE CONTENT)
+    set (CURRENT_CONTENT)
+
+    if (EXISTS "${FILE}")
+        file (READ "${FILE}" CURRENT_CONTENT)
+    endif ()
+
+    if (NOT CONTENT STREQUAL CURRENT_CONTENT)
+        file (WRITE "${FILE}" "${CONTENT}")
+    endif ()
+endfunction ()

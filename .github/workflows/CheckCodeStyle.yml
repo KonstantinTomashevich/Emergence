@@ -9,14 +9,14 @@ jobs:
   check_code_style:
     defaults:
       run:
-        shell: pwsh
+        shell: cmd
 
     env:
       BUILD_DIRECTORY: ${{github.workspace}}\Build
-      CC: clang
-      CXX: clang++
+      CC: clang-cl
+      CXX: clang-cl
 
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,19 +32,25 @@ jobs:
       - name: Install Ninja
         run: choco install ninja
 
+      # There is a separate LLVM installation on Windows build agents.
+      # We need to remove it from path, otherwise it could be selected instead of VS 2022 CLangCL.
+      - name: Remove LLVM from Path
+        shell: pwsh
+        run: |
+          $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
+          echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
+
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}
-        run: > 
-          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
-          -DCMAKE_BUILD_TYPE=Debug -DEMERGENCE_CODE_STYLE_CHECK_ADHOC=ON
-
-      - name: Check C++ code style using CLang Tools
-        working-directory: ${{github.workspace}}
-        # We use CMD instead of PowerShell because of convenient && operator.
-        shell: cmd
         run: >
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          cmake -G Ninja ${{github.workspace}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Run CLang Tools
+        run: >
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
           powershell .\Script\CodeStyle\CheckCLangFormat.ps1 &&
           powershell .\Script\CodeStyle\CheckCLangTidy.ps1 ${{env.BUILD_DIRECTORY}}

@@ -707,4 +707,20 @@ TEST_CASE (MappingEquality)
     CHECK (twoIntsCorrectOrderMappingMoved != twoIntsReversedOrderMapping);
 }
 
+TEST_CASE (MappingHash)
+{
+    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMapping = Grow (TWO_INTS_CORRECT_ORDER);
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization): We copy it for testing.
+    Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingCopy = twoIntsCorrectOrderMapping;
+    Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (TWO_INTS_REVERSED_ORDER);
+
+    CHECK (twoIntsCorrectOrderMapping.Hash () == twoIntsCorrectOrderMapping.Hash ());
+    CHECK (twoIntsCorrectOrderMappingCopy.Hash () == twoIntsCorrectOrderMappingCopy.Hash ());
+    CHECK (twoIntsReversedOrderMapping.Hash () == twoIntsReversedOrderMapping.Hash ());
+
+    CHECK (twoIntsCorrectOrderMapping.Hash () == twoIntsCorrectOrderMappingCopy.Hash ());
+    CHECK (twoIntsCorrectOrderMapping.Hash () != twoIntsReversedOrderMapping.Hash ());
+    CHECK (twoIntsCorrectOrderMappingCopy.Hash () != twoIntsReversedOrderMapping.Hash ());
+}
+
 END_SUITE
