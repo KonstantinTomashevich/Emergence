@@ -32,11 +32,12 @@ EventRegistrar::~EventRegistrar () noexcept
 {
     if (world)
     {
+        // We need to group on change event triggers into change trackers.
         using EventVector = Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE>;
         static Memory::Profiler::AllocationGroup allocationGroup {Memory::Profiler::AllocationGroup::Root (),
                                                                   Memory::UniqueString {"EventRegistrationAlgorithms"}};
-
         Container::HashMap<StandardLayout::Mapping, EventVector> onChangeEventPerType {allocationGroup};
+
         for (World::EventScheme &scheme : world->eventSchemes)
         {
             for (OnChangeEventTrigger &trigger : scheme.onChange)

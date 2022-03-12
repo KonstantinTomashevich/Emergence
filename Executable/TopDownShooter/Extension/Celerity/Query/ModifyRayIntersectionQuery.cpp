@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-WAREHOUSE_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ModifyRayIntersectionQuery)
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ModifyRayIntersectionQuery)
 
 ModifyRayIntersectionQuery::Cursor ModifyRayIntersectionQuery::Execute (Warehouse::Ray _ray,
                                                                         float _maxDistance) noexcept

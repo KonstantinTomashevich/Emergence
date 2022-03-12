@@ -5,13 +5,15 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Base seed for all events, that are managed by Celerity.
 struct ClearableEventSeed
 {
     StandardLayout::Mapping eventType;
     EventRoute route;
 };
 
-/// \invariant Records of ::recordType were added using InsertLongTermQuery. Short term objects are not supported,
+/// \brief Seed for trivial (on add, on remove) automated events.
+/// \invariant Records of ::trackedType were added using InsertLongTermQuery. Short term objects are not supported,
 ///            because of event insertion prepared query construction problem: if prepared query triggers events,
 ///            it must be constructed after all relevant automated events are constructed, therefore additional
 ///            ordering step would be required. Also, short term objects are usually events, therefore usually
@@ -22,6 +24,7 @@ struct TrivialAutomatedEventSeed : public ClearableEventSeed
     Container::Vector<CopyOutField> copyOut;
 };
 
+/// \brief Seed for automated event, that is fired when any record field from ::trackedFields is changed.
 /// \invariant Records of ::recordType are either singletons or long term objects.
 ///            For explanation check same invariant in ::TrivialAutomatedEventSeed.
 struct OnChangeAutomatedEventSeed : public ClearableEventSeed

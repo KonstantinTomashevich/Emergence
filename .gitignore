@@ -1,4 +1,4 @@
-# IDE-specific files/
+# IDE-specific files.
 .idea
 .vscode
 settings.json

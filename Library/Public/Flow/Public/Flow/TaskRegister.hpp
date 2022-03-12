@@ -93,7 +93,7 @@ public:
 
     /// \brief Constructs unwrapped dependency map from currently registered tasks and checkpoints.
     /// \details Unwrapped dependency map can be used to select dependencies of automatically created
-    ///          task, like event cleaner, or to do additional user specific verification.
+    ///          task, like event cleaners, or to do additional user specific verification.
     /// \return If task graph contains neither circular nor missing dependencies, returns
     ///         unwrapped dependency map for this graph. Otherwise, returns empty map.
     [[nodiscard]] UnwrappedDependencyMap ExportUnwrappedDependencyMap () const noexcept;

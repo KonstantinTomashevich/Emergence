@@ -6,15 +6,15 @@
 
 namespace Emergence::Celerity
 {
-static Memory::UniqueString GetEventClearerName (const StandardLayout::Mapping &_eventType) noexcept
+static Memory::UniqueString GetEventCleanerName (const StandardLayout::Mapping &_eventType) noexcept
 {
-    return Memory::UniqueString {EMERGENCE_BUILD_STRING ("ClearEventsOfType", _eventType.GetName ())};
+    return Memory::UniqueString {EMERGENCE_BUILD_STRING (_eventType.GetName (), "Cleaner")};
 }
 
-class EventClearer final : public TaskExecutorBase<EventClearer>
+class EventCleaner final : public TaskExecutorBase<EventCleaner>
 {
 public:
-    EventClearer (TaskConstructor &_constructor, const StandardLayout::Mapping &_eventType) noexcept;
+    EventCleaner (TaskConstructor &_constructor, const StandardLayout::Mapping &_eventType) noexcept;
 
     void Execute ();
 
@@ -22,12 +22,12 @@ private:
     ModifySequenceQuery modifyEvents;
 };
 
-EventClearer::EventClearer (TaskConstructor &_constructor, const StandardLayout::Mapping &_eventType) noexcept
+EventCleaner::EventCleaner (TaskConstructor &_constructor, const StandardLayout::Mapping &_eventType) noexcept
     : modifyEvents (_constructor.ModifySequence (_eventType))
 {
 }
 
-void EventClearer::Execute ()
+void EventCleaner::Execute ()
 {
     auto cursor = modifyEvents.Execute ();
     while (*cursor)
@@ -537,8 +537,8 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
             continue;
         }
 
-        TaskConstructor constructor = AddTask (GetEventClearerName (eventType));
-        constructor.SetExecutor<EventClearer> (eventType);
+        TaskConstructor constructor = AddTask (GetEventCleanerName (eventType));
+        constructor.SetExecutor<EventCleaner> (eventType);
 
         for (const Memory::UniqueString &producerTask : producers)
         {
@@ -658,8 +658,8 @@ void PipelineBuilder::PostProcessLocalEventRoutine (const PipelineBuilder::Event
             continue;
         }
 
-        TaskConstructor constructor = AddTask (GetEventClearerName (eventType));
-        constructor.SetExecutor<EventClearer> (eventType);
+        TaskConstructor constructor = AddTask (GetEventCleanerName (eventType));
+        constructor.SetExecutor<EventCleaner> (eventType);
 
         for (const Memory::UniqueString &consumerTask : consumptionIterator->second)
         {
@@ -703,8 +703,8 @@ void PipelineBuilder::PostProcessSharedEventRoutine (const PipelineBuilder::Even
         auto consumptionIterator = _consumption.find (eventType);
         if (consumptionIterator != _consumption.end ())
         {
-            TaskConstructor constructor = AddTask (GetEventClearerName (eventType));
-            constructor.SetExecutor<EventClearer> (eventType);
+            TaskConstructor constructor = AddTask (GetEventCleanerName (eventType));
+            constructor.SetExecutor<EventCleaner> (eventType);
 
             for (const Memory::UniqueString &consumerTask : consumptionIterator->second)
             {

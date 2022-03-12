@@ -6,5 +6,5 @@
 
 namespace Emergence::Celerity
 {
-WAREHOUSE_MODIFY_QUERY_WRAPPER_DECLARATION (ModifyShapeIntersectionQuery, Warehouse::Shape _shape);
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_DECLARATION (ModifyShapeIntersectionQuery, Warehouse::Shape _shape);
 } // namespace Emergence::Celerity

@@ -13,14 +13,14 @@
 
 namespace Emergence::Celerity
 {
-// TODO: This routes should be used to generate clearing tasks and validate event usage.
+/// \brief Describes how event should be processed in context of world pipelines.
 enum class EventRoute
 {
     /// \brief Can be created and accessed only during fixed update.
     /// \details Accessible both in creation frame and the next frame, cleared right before creation of new ones.
     /// \invariant All tasks, that create or access event type, should be grouped like that:
     ///            (next frame accessors) -> (event creators) -> (current frame accessors)
-    ///            in order to be correctly processed with event leaking or partial retrieval.
+    ///            in order to correctly process events without leaks or partial retrievals.
     FIXED = 0u,
 
     /// \brief The same as ::FIXED, but can be created only during normal update.
@@ -36,10 +36,16 @@ enum class EventRoute
     COUNT,
 };
 
+/// \return Pipeline type, that is allowed to produce events.
 PipelineType GetEventProducingPipeline (EventRoute _route) noexcept;
 
+/// \return Pipeline type, that is allowed to consume events.
 PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept;
 
+/// \brief Pair of record-event fields, used for automatic copying when event is fired.
+/// \invariant Both fields have the same archetype and size.
+/// \invariant FieldArchetype::BIT is not supported.
+/// \invariant Field must be trivially copyable.
 struct CopyOutField final
 {
     StandardLayout::FieldId recordField;
@@ -106,7 +112,7 @@ public:
                           const Container::Vector<CopyOutField> &_copyOutOfInitial,
                           const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept;
 
-    void Trigger (const void *_changedRecord, const void *_initialRecord) noexcept;
+    void Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept;
 
 private:
     friend class ChangeTracker;

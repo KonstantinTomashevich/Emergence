@@ -32,7 +32,7 @@ jobs:
       - name: Install Ninja
         run: choco install ninja
 
-      # There is separate LLVM installation on Windows build agents.
+      # There is a separate LLVM installation on Windows build agents.
       # We need to remove it from path, otherwise it could be selected instead of VS 2022 CLangCL.
       - name: Remove LLVM from Path
         shell: pwsh

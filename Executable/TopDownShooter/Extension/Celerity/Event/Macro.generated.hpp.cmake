@@ -37,9 +37,9 @@ foreach (ARG_COUNT RANGE 1 4)
     string (APPEND CONTENT "        static Reflection &Reflect () noexcept; \\\n")
     string (APPEND CONTENT "    }\n\n")
 
-    string (APPEND CONTENT "#define EMERGENCE_CELERITY_EVENT${ARG_COUNT}_REGULAR_IMPLEMENTATION(Class")
+    string (APPEND CONTENT "#define EMERGENCE_CELERITY_EVENT${ARG_COUNT}_IMPLEMENTATION(Class")
     foreach (ARG_N RANGE 1 ${ARG_COUNT})
-        string (APPEND CONTENT ", Field${ARG_N}Name")
+        string (APPEND CONTENT ", Field${ARG_N}Registrar, Field${ARG_N}Name")
     endforeach ()
 
     string (APPEND CONTENT ") \\\n")
@@ -50,7 +50,7 @@ foreach (ARG_COUNT RANGE 1 4)
     string (APPEND CONTENT "            EMERGENCE_MAPPING_REGISTRATION_BEGIN (Class)\\\n")
 
     foreach (ARG_N RANGE 1 ${ARG_COUNT})
-        string (APPEND CONTENT "            EMERGENCE_MAPPING_REGISTER_REGULAR (Field${ARG_N}Name)\\\n")
+        string (APPEND CONTENT "            EMERGENCE_MAPPING_REGISTER_ ## Field${ARG_N}Registrar (Field${ARG_N}Name)\\\n")
     endforeach ()
 
     string (APPEND CONTENT "            EMERGENCE_MAPPING_REGISTRATION_END () \\\n")

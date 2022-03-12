@@ -10,7 +10,7 @@
 ///          are created by tasks, therefore this methods are not needed.
 /// \details Macros are used instead of template to avoid increasing compilation time: these queries are likely to be
 ///          used in almost every task, therefore number of template instantiations per translation unit could be huge.
-#define WAREHOUSE_MODIFY_QUERY_WRAPPER_DECLARATION(QueryClass, ...)                                                    \
+#define EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_DECLARATION(QueryClass, ...)                                           \
     /** \brief Wrapper for Emergence::Warehouse::QueryClass, that integrates insertion with Celerity events. */        \
     class QueryClass final                                                                                             \
     {                                                                                                                  \
@@ -50,9 +50,9 @@
         Emergence::Celerity::ChangeTracker *changeTracker;                                                             \
     }
 
-/// \brief Implements all methods, declared by WAREHOUSE_MODIFY_QUERY_WRAPPER_DECLARATION, except Execute.
+/// \brief Implements all methods, declared by EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_DECLARATION, except Execute.
 /// \details Query parameters are custom, therefore it is difficult to cover Execute method with macro.
-#define WAREHOUSE_MODIFY_QUERY_WRAPPER_IMPLEMENTATION(QueryClass)                                                      \
+#define EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION(QueryClass)                                             \
     QueryClass::Cursor::Cursor (QueryClass::Cursor &&_other) noexcept                                                  \
         : source (std::move (_other.source)),                                                                          \
           eventsOnRemove (_other.eventsOnRemove),                                                                      \

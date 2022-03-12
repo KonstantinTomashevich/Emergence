@@ -18,7 +18,7 @@ jobs:
         os: [ windows-2022 ]
         toolchain: [ CLangCL, MSVC ]
         include:
-          # As of March 2022, there is strange problem with llvm coverage on clang-cl 13.0 from VS 2022:
+          # As of March 2022, there is a strange problem with llvm coverage on clang-cl 13.0 from VS 2022:
           # llvm-profdata emits 'unsupported instrumentation profile format version' error for profraw's, emitted
           # by programs, compiled using same clang-cl package.
           # Therefore, we are using separate VS 2019 build to check coverage.
@@ -50,7 +50,7 @@ jobs:
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
 
         # We have separate build for coverage check, therefore we have separate configuration step for it here.
-        # On Windows images there is the second LLVM installation that is already in Env:Path.
+        # On Windows images there is a separate LLVM installation that is already in Env:Path.
         # We want to use CLangCL for coverage, therefore we must delete this installation from path to avoid mismatches.
       - name: Configure coverage check
         if: matrix.build_type == 'Debug' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLangCL'

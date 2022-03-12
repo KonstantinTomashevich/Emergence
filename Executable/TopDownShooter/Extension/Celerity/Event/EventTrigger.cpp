@@ -27,7 +27,7 @@ static Memory::Profiler::AllocationGroup GetEventRegistrationAlgorithmsGroup ()
     return group;
 }
 
-// TODO: Is there any way to prevent block separation by padding?
+// TODO: Think how to efficiently prevent block separation by padding.
 static Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> BakeCopyOuts (
     const StandardLayout::Mapping &_recordType,
     const StandardLayout::Mapping &_eventType,
@@ -55,8 +55,8 @@ static Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> Bak
         converted.emplace_back (CopyOutBlock {source.GetOffset (), target.GetOffset (), source.GetSize ()});
     }
 
-    // In most cases input is already sorted (because it's more convenient to specify fields in order of their
-    // declaration), therefore sort should be almost free here.
+    // In most cases input is already sorted (because it's more convenient to specify fields
+    // in order of their declaration), therefore sort should be almost free here.
     std::sort (converted.begin (), converted.end (),
                [] (const CopyOutBlock &_first, const CopyOutBlock &_second)
                {
@@ -194,21 +194,21 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
     {
         // Only tracked fields can be copied out of unchanged version of record for several reasons:
         // - Requiring old copies of fields, changes in which you do not track, looks strange and bugprone.
-        // - Implementation of such behaviour adds unneeded complexity to ChangeTracker baking algorithm.
+        // - Implementation of such behaviour adds excessive complexity to ChangeTracker baking algorithm.
         assert (std::find (_trackedFields.begin (), _trackedFields.end (), copyOut.recordField) !=
                 _trackedFields.end ());
     }
 #endif
 }
 
-void OnChangeEventTrigger::Trigger (const void *_changedRecord, const void *_initialRecord) noexcept
+void OnChangeEventTrigger::Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept
 {
     auto cursor = inserter.Execute ();
     void *event = ++cursor;
 
     for (const CopyOutBlock &block : copyOutOfInitial)
     {
-        ApplyCopyOut (block, _initialRecord, event);
+        ApplyCopyOut (block, _trackingBuffer, event);
     }
 
     for (const CopyOutBlock &block : copyOutOfChanged)
@@ -422,37 +422,37 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
         zoneBuffer += trackedZone.length;
 
         // We need to align buffer blocks to speedup memcmp/memcpy operations.
-        // But alignment can be added only if zone is in the ending of all copy out blocks,
+        // But alignment can be added only if zone is in the end of all copy out blocks,
         // that intersect with this zone. Otherwise, copy out logic will be broken.
 
-        bool addAlignment = true;
-        for (OnChangeEventTrigger *event : _events)
+        if (std::size_t leftover = (zoneBuffer - &buffer.front ()) % sizeof (std::uintptr_t))
         {
-            for (const CopyOutBlock &block : event->copyOutOfInitial)
+            bool addAlignment = true;
+            for (OnChangeEventTrigger *event : _events)
             {
-                if (trackedZone.sourceOffset + trackedZone.length <= block.sourceOffset ||
-                    block.sourceOffset + block.length <= trackedZone.sourceOffset)
+                for (const CopyOutBlock &block : event->copyOutOfInitial)
                 {
-                    // No intersection.
-                    continue;
+                    if (trackedZone.sourceOffset + trackedZone.length <= block.sourceOffset ||
+                        block.sourceOffset + block.length <= trackedZone.sourceOffset)
+                    {
+                        // No intersection.
+                        continue;
+                    }
+
+                    if (trackedZone.sourceOffset + trackedZone.length != block.sourceOffset + block.length)
+                    {
+                        addAlignment = false;
+                        break;
+                    }
                 }
 
-                if (trackedZone.sourceOffset + trackedZone.length != block.sourceOffset + block.length)
+                if (!addAlignment)
                 {
-                    addAlignment = false;
                     break;
                 }
             }
 
-            if (!addAlignment)
-            {
-                break;
-            }
-        }
-
-        if (addAlignment)
-        {
-            if (std::size_t leftover = (zoneBuffer - &buffer.front ()) % sizeof (std::uintptr_t))
+            if (addAlignment)
             {
                 zoneBuffer += sizeof (std::uintptr_t) - leftover;
             }
