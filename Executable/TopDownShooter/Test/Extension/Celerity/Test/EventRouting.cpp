@@ -3,6 +3,7 @@
 #include <thread>
 
 #include <Celerity/Event/EventRegistrar.hpp>
+#include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Test/EventRouting.hpp>
 #include <Celerity/World.hpp>
@@ -24,30 +25,9 @@ bool EventRoutingTestIncludeMarker () noexcept
 
 namespace
 {
-struct TestEvent final
-{
-    uint64_t data = 0u;
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TestEvent, uint64_t, data);
 
-    struct Reflection final
-    {
-        StandardLayout::FieldId data;
-        Emergence::StandardLayout::Mapping mapping;
-    };
-
-    static Reflection &Reflect () noexcept;
-};
-
-TestEvent::Reflection &TestEvent::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestEvent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (data)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
-    }();
-
-    return reflection;
-}
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestEvent, REGULAR, data)
 
 using EventPlan = Container::Vector<Container::Vector<uint64_t>>;
 

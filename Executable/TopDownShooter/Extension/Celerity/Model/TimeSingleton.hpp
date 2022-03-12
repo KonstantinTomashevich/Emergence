@@ -11,6 +11,8 @@ namespace Emergence::Celerity
 /// \note For small periods of time floats are the most suitable format, therefore we them use for frame durations.
 ///       But for long periods of time (more than several hours) they may become a bit unstable, therefore we
 ///       use 64-bit nanosecond counters.
+/// \warning This singleton is modified by World outside of pipeline execution,
+///          therefore OnChange events do not work with it.
 struct TimeSingleton final
 {
     static constexpr std::size_t MAXIMUM_TARGET_FIXED_DURATIONS = 3u;

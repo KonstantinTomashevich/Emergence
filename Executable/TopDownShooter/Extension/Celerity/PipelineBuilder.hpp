@@ -107,7 +107,7 @@ private:
 
     TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
-    [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::Vector<TrivialEventTriggerRow> &_rows,
+    [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                              const StandardLayout::Mapping &_trackedType) noexcept;
 
     [[nodiscard]] TrivialEventTriggerRow *BindEventsOnAdd (const StandardLayout::Mapping &_trackedType) noexcept;

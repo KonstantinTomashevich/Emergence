@@ -111,15 +111,15 @@ private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
 };
 
-/// \brief Wraps Pool::BeginAcquired for foreach sentences.
+/// \brief Wraps OrderedPool::BeginAcquired for foreach sentences.
 OrderedPool::AcquiredChunkConstIterator begin (const OrderedPool &_pool) noexcept;
 
-/// \brief Wraps Pool::EndAcquired for foreach sentences.
+/// \brief Wraps OrderedPool::EndAcquired for foreach sentences.
 OrderedPool::AcquiredChunkConstIterator end (const OrderedPool &_pool) noexcept;
 
-/// \brief Wraps Pool::BeginAcquired for foreach sentences.
+/// \brief Wraps OrderedPool::BeginAcquired for foreach sentences.
 OrderedPool::AcquiredChunkIterator begin (OrderedPool &_pool) noexcept;
 
-/// \brief Wraps Pool::EndAcquired for foreach sentences.
+/// \brief Wraps OrderedPool::EndAcquired for foreach sentences.
 OrderedPool::AcquiredChunkIterator end (OrderedPool &_pool) noexcept;
 } // namespace Emergence::Memory

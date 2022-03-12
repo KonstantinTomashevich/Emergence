@@ -229,7 +229,7 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
     task.name = _name;
 }
 
-TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::Vector<TrivialEventTriggerRow> &_rows,
+TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                             const StandardLayout::Mapping &_trackedType) noexcept
 {
     for (TrivialEventTriggerRow &row : _rows)

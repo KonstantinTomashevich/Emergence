@@ -4,7 +4,7 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
 
-#include <Container/Vector.hpp>
+#include <Container/TypedOrderedPool.hpp>
 
 #include <Memory/OrderedPool.hpp>
 
@@ -49,13 +49,11 @@ private:
     {
         EventScheme (const Memory::Profiler::AllocationGroup &_rootAllocationGroup) noexcept;
 
-        // TODO: What about using ordered pools instead of vectors? We do not need to iterate this data during update.
-
-        Container::Vector<CustomEventInfo> custom;
-        Container::Vector<TrivialEventTriggerRow> onAdd;
-        Container::Vector<TrivialEventTriggerRow> onRemove;
-        Container::Vector<OnChangeEventTrigger> onChange;
-        Container::Vector<ChangeTracker> changeTrackers;
+        Container::TypedOrderedPool<CustomEventInfo> custom;
+        Container::TypedOrderedPool<TrivialEventTriggerRow> onAdd;
+        Container::TypedOrderedPool<TrivialEventTriggerRow> onRemove;
+        Container::TypedOrderedPool<OnChangeEventTrigger> onChange;
+        Container::TypedOrderedPool<ChangeTracker> changeTrackers;
     };
 
     void NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
@@ -69,8 +67,6 @@ private:
 
     Warehouse::Registry registry;
 
-    // TODO: World modifies this singletons outside of any pipeline,
-    //       therefore OnChange events don't work with them. Is it normal?
     Warehouse::ModifySingletonQuery modifyTime;
     Warehouse::ModifySingletonQuery modifyWorld;
 

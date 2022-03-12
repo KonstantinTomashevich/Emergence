@@ -98,7 +98,7 @@ void RegisterTestRecordAddedSharedEvent (EventRegistrar &_registrar)
                             }});
 }
 
-// Intentionally copy everything except health to test copyout of separated blocks.
+// Intentionally copy everything except health to test copy out of separate blocks.
 EMERGENCE_CELERITY_EVENT4_DECLARATION (TestRecordRemovedEvent, uint64_t, id, float, x, float, y, float, angle);
 
 EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordRemovedEvent, REGULAR, id, REGULAR, x, REGULAR, y, REGULAR, angle)
@@ -222,7 +222,7 @@ private:
     ModifyValueQuery modifyRecordById;
     Container::Vector<Task> tasks;
 
-    /// \details We need to verify that edition triggers works both when cursor is increment and when cursor is
+    /// \details We need to verify that change trackers works both when cursor is incremented and when cursor is
     ///          destructed. Therefore we switch between increment and immediate destruction under the hood.
     static bool checkEditionCursorIncrement;
 };

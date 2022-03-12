@@ -15,11 +15,11 @@ EventRegistrar::EventRegistrar (World *_world) noexcept : world (_world)
     // In case we are reusing world and there are old schemes.
     for (World::EventScheme &scheme : world->eventSchemes)
     {
-        scheme.custom.clear ();
-        scheme.onAdd.clear ();
-        scheme.onRemove.clear ();
-        scheme.onChange.clear ();
-        scheme.changeTrackers.clear ();
+        scheme.custom.Clear ();
+        scheme.onAdd.Clear ();
+        scheme.onRemove.Clear ();
+        scheme.onChange.Clear ();
+        scheme.changeTrackers.Clear ();
     }
 }
 
@@ -52,17 +52,16 @@ EventRegistrar::~EventRegistrar () noexcept
                 assert (inserted);
             }
 
-            scheme.changeTrackers.reserve (onChangeEventPerType.size ());
             for (auto &[trackedType, events] : onChangeEventPerType)
             {
-                scheme.changeTrackers.emplace_back (events);
+                scheme.changeTrackers.Acquire (events);
             }
 
             onChangeEventPerType.clear ();
-            scheme.custom.shrink_to_fit ();
-            scheme.onAdd.shrink_to_fit ();
-            scheme.onRemove.shrink_to_fit ();
-            scheme.onChange.shrink_to_fit ();
+            scheme.custom.Shrink ();
+            scheme.onAdd.Shrink ();
+            scheme.onRemove.Shrink ();
+            scheme.onChange.Shrink ();
         }
     }
 }
@@ -71,10 +70,10 @@ void EventRegistrar::CustomEvent (const ClearableEventSeed &_seed) noexcept
 {
     assert (world);
     AssertEventUniqueness (_seed.eventType);
-    SelectScheme (_seed.route).custom.emplace_back (World::CustomEventInfo {_seed.eventType, _seed.route});
+    SelectScheme (_seed.route).custom.Acquire (World::CustomEventInfo {_seed.eventType, _seed.route});
 }
 
-static void AddTrivialAutomatedEvent (Container::Vector<TrivialEventTriggerRow> &_target,
+static void AddTrivialAutomatedEvent (Container::TypedOrderedPool<TrivialEventTriggerRow> &_target,
                                       const TrivialAutomatedEventSeed &_seed,
                                       Warehouse::Registry &_registry)
 {
@@ -90,7 +89,7 @@ static void AddTrivialAutomatedEvent (Container::Vector<TrivialEventTriggerRow> 
 
     if (!selectedRow)
     {
-        selectedRow = &_target.emplace_back ();
+        selectedRow = &_target.Acquire ();
     }
 
     [[maybe_unused]] bool inserted = selectedRow->TryEmplaceBack (TrivialEventTrigger {
@@ -124,7 +123,7 @@ void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noe
                                   _seed.copyOutOfInitial,
                                   _seed.copyOutOfChanged};
 
-    SelectScheme (_seed.route).onChange.emplace_back (std::move (trigger));
+    SelectScheme (_seed.route).onChange.Acquire (std::move (trigger));
 }
 
 void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayout::Mapping &_type) const noexcept
