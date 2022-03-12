@@ -12,9 +12,6 @@
 
 namespace Emergence::Galleon
 {
-// TODO: Short term container was planned to be event container with possibility of release-all mechanics.
-//       Maybe we should reevaluate current implementation to make it fit better for its real purpose?
-
 /// \brief Container for objects that are created and destroyed frequently.
 class ShortTermContainer final : public ContainerBase
 {
