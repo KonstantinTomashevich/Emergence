@@ -16,3 +16,6 @@
 [submodule "ThirdParty/imgui"]
 	path = ThirdParty/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "ThirdParty/cglm"]
+	path = ThirdParty/cglm
+	url = https://github.com/recp/cglm.git
