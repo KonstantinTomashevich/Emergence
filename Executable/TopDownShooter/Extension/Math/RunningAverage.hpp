@@ -4,7 +4,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence
+namespace Emergence::Math
 {
 template <std::size_t SampleSize>
 class RunningAverage final
@@ -65,4 +65,4 @@ const typename RunningAverage<SampleSize>::Reflection &RunningAverage<SampleSize
 
     return reflection;
 }
-} // namespace Emergence
+} // namespace Emergence::Math
