@@ -10,6 +10,7 @@ class Vector3f final
 {
 public:
     static const Vector3f ZERO;
+    static const Vector3f ONE;
 
     static const Vector3f RIGHT;
     static const Vector3f LEFT;
