@@ -4,9 +4,12 @@
 
 // We use CGLM for math (especially non-trivial one), because it is written in an optimized way (including SIMD usage).
 // We use a lot of const casts, because CGLM doesn't use const keyword even when arguments are constant.
+#include <cglm/affine.h>
 #include <cglm/mat4.h>
+#include <cglm/quat.h>
 
 #include <Math/Matrix4x4f.hpp>
+#include <Math/Transform3d.hpp>
 
 namespace Emergence::Math
 {
@@ -20,13 +23,21 @@ const Matrix4x4f Matrix4x4f::IDENTITY {
     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}};
 
 // NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::components initialization.
-Matrix4x4f::Matrix4x4f () noexcept
+Matrix4x4f::Matrix4x4f (const NoInitializationFlag & /*unused*/) noexcept
 {
 }
 
 Matrix4x4f::Matrix4x4f (const std::array<float, 16u> &_values) noexcept
 {
     memcpy (columns, &_values.front (), sizeof (columns));
+}
+
+Matrix4x4f::Matrix4x4f (const Transform3d &_transform) noexcept
+{
+    Matrix4x4f intermediate {NoInitializationFlag::Confirm ()};
+    glm_translate_make (intermediate.columns, const_cast<float *> (_transform.translation.components));
+    glm_quat_rotate (intermediate.columns, const_cast<float *> (_transform.rotation.components), columns);
+    glm_scale (columns, const_cast<float *> (_transform.scale.components));
 }
 
 Matrix4x4f::Matrix4x4f (const Matrix4x4f &_other) noexcept
@@ -48,7 +59,7 @@ Matrix4x4f &Matrix4x4f::Transpose () noexcept
 
 Matrix4x4f Matrix4x4f::CalculateInverse () const noexcept
 {
-    Matrix4x4f result;
+    Matrix4x4f result {NoInitializationFlag::Confirm ()};
     glm_mat4_inv (const_cast<Column *> (columns), result.columns);
     return result;
 }
@@ -65,7 +76,7 @@ float Matrix4x4f::CalculateDeterminant () const noexcept
 
 Matrix4x4f Matrix4x4f::operator* (const Matrix4x4f &_other) const noexcept
 {
-    Matrix4x4f result;
+    Matrix4x4f result {NoInitializationFlag::Confirm ()};
     glm_mat4_mul (const_cast<Column *> (columns), const_cast<Column *> (_other.columns), result.columns);
     return result;
 }
@@ -94,5 +105,13 @@ Matrix4x4f &Matrix4x4f::operator= (Matrix4x4f &&_other) noexcept
     // We have trivial destructor, therefore we can just invoke constructor.
     new (this) Matrix4x4f (_other);
     return *this;
+}
+
+Matrix4x4f MultiplyTransformMatrices (const Matrix4x4f &_left, const Matrix4x4f &_right) noexcept
+{
+    Matrix4x4f result {NoInitializationFlag::Confirm ()};
+    glm_mul (const_cast<Matrix4x4f::Column *> (_left.columns), const_cast<Matrix4x4f::Column *> (_right.columns),
+             result.columns);
+    return result;
 }
 } // namespace Emergence::Math

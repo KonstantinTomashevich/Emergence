@@ -2,17 +2,16 @@
 
 #include <type_traits>
 
+#include <Math/NoInitializationFlag.hpp>
 #include <Math/Vector3f.hpp>
 
 namespace Emergence::Math
 {
-class alignas (16) Quaternion final
+struct alignas (sizeof (float) * 4u) Quaternion final
 {
-public:
     static const Quaternion IDENTITY;
 
-    /// \details Special no-initialization constructor, used in algorithms to avoid unnecessary initialization.
-    Quaternion () noexcept;
+    Quaternion (const NoInitializationFlag & /*unused*/) noexcept;
 
     Quaternion (float _x, float _y, float _z, float _w) noexcept;
 

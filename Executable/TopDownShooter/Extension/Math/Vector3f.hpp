@@ -3,12 +3,12 @@
 #include <type_traits>
 
 #include <Math/Constants.hpp>
+#include <Math/NoInitializationFlag.hpp>
 
 namespace Emergence::Math
 {
-class Vector3f final
+struct alignas(float) Vector3f final
 {
-public:
     static const Vector3f ZERO;
     static const Vector3f ONE;
 
@@ -21,8 +21,7 @@ public:
     static const Vector3f FORWARD;
     static const Vector3f BACKWARD;
 
-    /// \details Special no-initialization constructor, used in algorithms to avoid unnecessary initialization.
-    Vector3f () noexcept;
+    Vector3f (const NoInitializationFlag & /*unused*/) noexcept;
 
     Vector3f (float _x, float _y, float _z) noexcept;
 

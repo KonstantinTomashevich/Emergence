@@ -3,18 +3,22 @@
 #include <array>
 #include <type_traits>
 
+#include <Math/NoInitializationFlag.hpp>
+
 namespace Emergence::Math
 {
-class alignas (16) Matrix4x4f final
+struct Transform3d;
+
+struct alignas (sizeof (float) * 4u) Matrix4x4f final
 {
-public:
     static const Matrix4x4f ZERO;
     static const Matrix4x4f IDENTITY;
 
-    /// \details Special no-initialization constructor, used in algorithms to avoid unnecessary initialization.
-    Matrix4x4f () noexcept;
+    Matrix4x4f (const NoInitializationFlag & /*unused*/) noexcept;
 
     Matrix4x4f (const std::array<float, 16u> &_values) noexcept;
+
+    Matrix4x4f (const Transform3d &_transform) noexcept;
 
     Matrix4x4f (const Matrix4x4f &_other) noexcept;
 
@@ -44,4 +48,7 @@ public:
 
     Column columns[4u];
 };
+
+/// \brief Special multiplication for transform matrices, that is slightly faster that usual multiplication.
+Matrix4x4f MultiplyTransformMatrices (const Matrix4x4f &_left, const Matrix4x4f &_right) noexcept;
 } // namespace Emergence::Math

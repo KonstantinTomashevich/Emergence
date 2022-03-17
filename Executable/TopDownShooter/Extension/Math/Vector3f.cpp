@@ -16,7 +16,7 @@ const Vector3f Vector3f::FORWARD {0.0f, 0.0f, 1.0f};
 const Vector3f Vector3f::BACKWARD {0.0f, 0.0f, -1.0f};
 
 // NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::components initialization.
-Vector3f::Vector3f () noexcept
+Vector3f::Vector3f (const NoInitializationFlag & /*unused*/) noexcept
 {
 }
 

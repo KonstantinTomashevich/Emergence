@@ -14,7 +14,7 @@ static_assert (alignof (Quaternion) == alignof (versor));
 const Quaternion Quaternion::IDENTITY {0.0f, 0.0f, 0.0f, 1.0f};
 
 // NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::components initialization.
-Quaternion::Quaternion () noexcept
+Quaternion::Quaternion (const NoInitializationFlag & /*unused*/) noexcept
 {
 }
 
@@ -48,21 +48,21 @@ Quaternion &Quaternion::Normalize () noexcept
 
 Quaternion Quaternion::CalculateConjugate () const noexcept
 {
-    Quaternion conjugate;
+    Quaternion conjugate {NoInitializationFlag::Confirm ()};
     glm_quat_conjugate (const_cast<float *> (components), conjugate.components);
     return conjugate;
 }
 
 Quaternion Quaternion::CalculateInverse () const noexcept
 {
-    Quaternion inverse;
+    Quaternion inverse {NoInitializationFlag::Confirm ()};
     glm_quat_inv (const_cast<float *> (components), inverse.components);
     return inverse;
 }
 
 Vector3f Quaternion::CalculateEuler () const noexcept
 {
-    Vector3f result;
+    Vector3f result {NoInitializationFlag::Confirm ()};
     mat4 rotationMatrix;
 
     glm_quat_mat4 (const_cast<float *> (components), rotationMatrix);
@@ -73,7 +73,7 @@ Vector3f Quaternion::CalculateEuler () const noexcept
 #define IMPLEMENT_OPERATOR(Operator, CGLMName)                                                                         \
     Quaternion Quaternion::operator Operator (const Quaternion &_other) const noexcept                                 \
     {                                                                                                                  \
-        Quaternion result;                                                                                             \
+        Quaternion result {NoInitializationFlag::Confirm ()};                                                          \
         glm_quat_##CGLMName (const_cast<float *> (components), const_cast<float *> (_other.components),                \
                              result.components);                                                                       \
         return result;                                                                                                 \
@@ -95,7 +95,7 @@ IMPLEMENT_ASSIGNMENT_OPERATOR (*, mul)
 
 Quaternion Lerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept
 {
-    Quaternion result;
+    Quaternion result {NoInitializationFlag::Confirm ()};
     glm_quat_lerp (const_cast<float *> (_begin.components), const_cast<float *> (_end.components), _t,
                    result.components);
     return result;
@@ -103,7 +103,7 @@ Quaternion Lerp (const Quaternion &_begin, const Quaternion &_end, float _t) noe
 
 Quaternion NLerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept
 {
-    Quaternion result;
+    Quaternion result {NoInitializationFlag::Confirm ()};
     glm_quat_nlerp (const_cast<float *> (_begin.components), const_cast<float *> (_end.components), _t,
                     result.components);
     return result;
@@ -111,7 +111,7 @@ Quaternion NLerp (const Quaternion &_begin, const Quaternion &_end, float _t) no
 
 Quaternion SLerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept
 {
-    Quaternion result;
+    Quaternion result {NoInitializationFlag::Confirm ()};
     glm_quat_slerp (const_cast<float *> (_begin.components), const_cast<float *> (_end.components), _t,
                     result.components);
     return result;
@@ -119,14 +119,14 @@ Quaternion SLerp (const Quaternion &_begin, const Quaternion &_end, float _t) no
 
 Quaternion ForwardRotation (const Vector3f &_forward, const Vector3f &_up) noexcept
 {
-    Quaternion result;
+    Quaternion result {NoInitializationFlag::Confirm ()};
     glm_quat_for (const_cast<float *> (_forward.components), const_cast<float *> (_up.components), result.components);
     return result;
 }
 
 Vector3f Rotate (const Vector3f &_vector, const Quaternion &_rotation) noexcept
 {
-    Vector3f result;
+    Vector3f result {NoInitializationFlag::Confirm ()};
     glm_quat_rotatev (const_cast<float *> (_rotation.components), const_cast<float *> (_vector.components),
                       result.components);
     return result;
