@@ -10,7 +10,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-struct InputListenerObject final
+struct InputListenerComponent final
 {
     constexpr static const std::size_t MAX_ACTIONS_PER_CYCLE = 16u;
 
