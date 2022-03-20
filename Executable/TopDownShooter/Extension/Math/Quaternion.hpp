@@ -5,6 +5,8 @@
 #include <Math/NoInitializationFlag.hpp>
 #include <Math/Vector3f.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Math
 {
 struct alignas (sizeof (float) * 4u) Quaternion final
@@ -61,6 +63,17 @@ struct alignas (sizeof (float) * 4u) Quaternion final
             float real;
         };
     };
+
+    struct Reflection final
+    {
+        Emergence::StandardLayout::FieldId x;
+        Emergence::StandardLayout::FieldId y;
+        Emergence::StandardLayout::FieldId z;
+        Emergence::StandardLayout::FieldId w;
+        Emergence::StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 
 static_assert (std::is_trivially_copy_constructible_v<Quaternion>);

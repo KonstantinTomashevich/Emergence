@@ -1,6 +1,8 @@
 #include <Math/Scalar.hpp>
 #include <Math/Vector3f.hpp>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 namespace Emergence::Math
 {
 const Vector3f Vector3f::ZERO {0.0f, 0.0f, 0.0f};
@@ -102,6 +104,20 @@ IMPLEMENT_SCALAR_OPERATOR (*)
 IMPLEMENT_SCALAR_ASSIGNMENT_OPERATOR (*)
 IMPLEMENT_SCALAR_OPERATOR (/)
 IMPLEMENT_SCALAR_ASSIGNMENT_OPERATOR (/)
+
+const Vector3f::Reflection &Vector3f::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Vector3f)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (x)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (y)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (z)
+        EMERGENCE_MAPPING_REGISTRATION_END ()
+    }();
+
+    return reflection;
+}
 
 float Dot (const Vector3f &_first, const Vector3f &_second) noexcept
 {

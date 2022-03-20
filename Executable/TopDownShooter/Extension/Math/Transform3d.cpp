@@ -4,6 +4,8 @@
 
 #include <Math/Transform3d.hpp>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 namespace Emergence::Math
 {
 Transform3d::Transform3d (const NoInitializationFlag &_guard) noexcept
@@ -34,5 +36,19 @@ Transform3d::Transform3d (const Matrix4x4f &_transformMatrix) noexcept
 Transform3d Transform3d::operator* (const Transform3d &_other) noexcept
 {
     return MultiplyTransformMatrices (Matrix4x4f (*this), Matrix4x4f (_other));
+}
+
+const Transform3d::Reflection &Transform3d::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3d)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (translation)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (rotation)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (scale)
+        EMERGENCE_MAPPING_REGISTRATION_END ()
+    }();
+
+    return reflection;
 }
 } // namespace Emergence::Math

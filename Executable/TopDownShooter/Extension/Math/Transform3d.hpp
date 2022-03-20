@@ -7,6 +7,8 @@
 #include <Math/Quaternion.hpp>
 #include <Math/Vector3f.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Math
 {
 struct alignas (sizeof (float) * 4u) Transform3d final
@@ -24,6 +26,16 @@ struct alignas (sizeof (float) * 4u) Transform3d final
     Vector3f translation;
     Quaternion rotation;
     Vector3f scale;
+
+    struct Reflection final
+    {
+        Emergence::StandardLayout::FieldId translation;
+        Emergence::StandardLayout::FieldId rotation;
+        Emergence::StandardLayout::FieldId scale;
+        Emergence::StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 
 static_assert (std::is_trivially_copy_constructible_v<Transform3d>);

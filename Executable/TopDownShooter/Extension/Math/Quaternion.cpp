@@ -6,6 +6,8 @@
 
 #include <Math/Quaternion.hpp>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 namespace Emergence::Math
 {
 static_assert (sizeof (Quaternion) == sizeof (versor));
@@ -92,6 +94,21 @@ IMPLEMENT_OPERATOR (-, sub)
 IMPLEMENT_ASSIGNMENT_OPERATOR (-, sub)
 IMPLEMENT_OPERATOR (*, mul)
 IMPLEMENT_ASSIGNMENT_OPERATOR (*, mul)
+
+const Quaternion::Reflection &Quaternion::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Quaternion)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (x)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (y)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (z)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (w)
+        EMERGENCE_MAPPING_REGISTRATION_END ()
+    }();
+
+    return reflection;
+}
 
 Quaternion Lerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept
 {

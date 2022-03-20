@@ -5,9 +5,11 @@
 #include <Math/Constants.hpp>
 #include <Math/NoInitializationFlag.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Math
 {
-struct alignas(float) Vector3f final
+struct alignas (float) Vector3f final
 {
     static const Vector3f ZERO;
     static const Vector3f ONE;
@@ -75,6 +77,16 @@ struct alignas(float) Vector3f final
             float z;
         };
     };
+
+    struct Reflection final
+    {
+        Emergence::StandardLayout::FieldId x;
+        Emergence::StandardLayout::FieldId y;
+        Emergence::StandardLayout::FieldId z;
+        Emergence::StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 
 static_assert (std::is_trivially_copy_constructible_v<Vector3f>);
