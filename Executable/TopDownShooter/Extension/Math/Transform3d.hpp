@@ -15,7 +15,9 @@ struct alignas (sizeof (float) * 4u) Transform3d final
 {
     Transform3d (const NoInitializationFlag &_guard) noexcept;
 
-    Transform3d (const Vector3f &_translation, const Quaternion &_rotation, const Vector3f &_scale) noexcept;
+    Transform3d (const Vector3f &_translation = Vector3f::ZERO,
+                 const Quaternion &_rotation = Quaternion::IDENTITY,
+                 const Vector3f &_scale = Vector3f::ONE) noexcept;
 
     Transform3d (const Matrix4x4f &_transformMatrix) noexcept;
 
