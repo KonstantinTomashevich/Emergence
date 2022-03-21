@@ -34,6 +34,7 @@ void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_t
 {
     logicalLocalTransform = _transform;
     ++logicalLocalTransformRevision;
+    visualTransformSyncNeeded = true;
 }
 
 const Math::Transform3d &Transform3dComponent::GetLogicalWorldTransform (
@@ -117,6 +118,10 @@ const Transform3dComponent::Reflection &Transform3dComponent::Reflect () noexcep
         EMERGENCE_MAPPING_REGISTER_REGULAR (parentObjectId)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (logicalLocalTransform)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (visualLocalTransform)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformSyncNeeded)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (lastObservedLogicalTransformRevision)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (logicalTransformLastObservationTimeNs)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformLastSyncTimeNs)
         EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 

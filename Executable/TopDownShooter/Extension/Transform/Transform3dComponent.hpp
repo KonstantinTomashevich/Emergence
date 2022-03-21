@@ -10,6 +10,16 @@ namespace Emergence::Transform
 {
 class Transform3dWorldAccessor;
 
+/// \details There are two types of object transform:
+///          - Logical, used for deterministic simulation in fixed update pipeline.
+///          - Visual, used for object rendering in normal update pipeline.
+///          We can not use logical transform for rendering, because it will cause tearing.
+///
+///          If object is used inside gameplay logic, only its logical transform should be changed:
+///          task from Transform::VisualSync::AddToNormalUpdate will take care of synchronizing and smoothing.
+///
+///          If object is used only for visual effects, only its visual transform should be changed,
+///          because it has no "logical" gameplay meaning.
 class Transform3dComponent final
 {
 public:
@@ -36,6 +46,8 @@ public:
     const Math::Transform3d &GetVisualWorldTransform (Transform3dWorldAccessor &_accessor) const noexcept;
 
 private:
+    friend class Transform3dVisualSynchronizer;
+
     /// \return Whether cache was actually changed.
     bool UpdateLogicalWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept;
 
@@ -55,6 +67,11 @@ private:
     mutable uint64_t visualParentTransformRevision = 0u;
     mutable Math::Transform3d visualWorldTransform;
 
+    bool visualTransformSyncNeeded = false;
+    uint64_t lastObservedLogicalTransformRevision = 0u;
+    uint64_t logicalTransformLastObservationTimeNs = 0u;
+    uint64_t visualTransformLastSyncTimeNs = 0u;
+
 public:
     struct Reflection final
     {
@@ -62,6 +79,10 @@ public:
         Emergence::StandardLayout::FieldId parentObjectId;
         Emergence::StandardLayout::FieldId logicalLocalTransform;
         Emergence::StandardLayout::FieldId visualLocalTransform;
+        Emergence::StandardLayout::FieldId visualTransformSyncNeeded;
+        Emergence::StandardLayout::FieldId lastObservedLogicalTransformRevision;
+        Emergence::StandardLayout::FieldId logicalTransformLastObservationTimeNs;
+        Emergence::StandardLayout::FieldId visualTransformLastSyncTimeNs;
         Emergence::StandardLayout::Mapping mapping;
     };
 
