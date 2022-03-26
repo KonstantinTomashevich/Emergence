@@ -106,6 +106,11 @@ void SingletonContainer::LastReferenceUnregistered () noexcept
     deck->DetachContainer (this);
 }
 
+void SingletonContainer::SetUnsafeFetchAllowed (bool _allowed) noexcept
+{
+    accessCounter.SetUnsafeFetchAllowed (_allowed);
+}
+
 SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
       usedAllocationGroup (typeMapping.GetName ())

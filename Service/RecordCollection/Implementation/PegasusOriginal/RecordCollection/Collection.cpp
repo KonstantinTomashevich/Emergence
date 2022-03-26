@@ -212,6 +212,13 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
         reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
 }
 
+void Collection::SetUnsafeReadAllowed (bool _allowed) noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    internal.storage->SetUnsafeReadAllowed (_allowed);
+}
+
 Collection &Collection::operator= (Collection &&_other) noexcept
 {
     if (this != &_other)

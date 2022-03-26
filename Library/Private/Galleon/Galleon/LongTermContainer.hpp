@@ -331,6 +331,8 @@ public:
 
     void LastReferenceUnregistered () noexcept;
 
+    void SetUnsafeFetchAllowed (bool _allowed) noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (LongTermContainer);
 
 private:

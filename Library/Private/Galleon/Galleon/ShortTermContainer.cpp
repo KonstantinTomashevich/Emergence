@@ -212,6 +212,11 @@ void ShortTermContainer::LastReferenceUnregistered () noexcept
     deck->DetachContainer (this);
 }
 
+void ShortTermContainer::SetUnsafeFetchAllowed (bool _allowed) noexcept
+{
+    accessCounter.SetUnsafeFetchAllowed (_allowed);
+}
+
 ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
       pool (Memory::Profiler::AllocationGroup {Memory::UniqueString {typeMapping.GetName ()}},

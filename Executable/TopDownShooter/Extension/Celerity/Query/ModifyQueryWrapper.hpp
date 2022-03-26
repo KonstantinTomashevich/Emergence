@@ -36,7 +36,14 @@
             Emergence::Celerity::ChangeTracker *changeTracker;                                                         \
         };                                                                                                             \
                                                                                                                        \
-        EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (QueryClass, Cursor, __VA_ARGS__);                                \
+        /* We use common instead of editable here, because we don't need custom UnsafeFetchAccessToken. */             \
+        EMERGENCE_PREPARED_QUERY_OPERATIONS_COMMON (QueryClass);                                                       \
+                                                                                                                       \
+        /*! \invariant There is no other cursors for ::GetTypeMapping type in registry. */                             \
+        Cursor Execute (__VA_ARGS__) noexcept;                                                                         \
+                                                                                                                       \
+        /*! \see Emergence::Warehouse::QueryClass::UnsafeFetchAccessToken */                                           \
+        Emergence::Warehouse::QueryClass::UnsafeFetchAccessToken AllowUnsafeFetchAccess () noexcept;                   \
                                                                                                                        \
     private:                                                                                                           \
         friend class TaskConstructor;                                                                                  \
@@ -141,6 +148,11 @@
                                                                                                                        \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses): We can't put parentheses here. */                                   \
     QueryClass::QueryClass (QueryClass &&_other) noexcept = default;                                                   \
+                                                                                                                       \
+    Emergence::Warehouse::QueryClass::UnsafeFetchAccessToken QueryClass::AllowUnsafeFetchAccess () noexcept            \
+    {                                                                                                                  \
+        return source.AllowUnsafeFetchAccess ();                                                                       \
+    }                                                                                                                  \
                                                                                                                        \
     void QueryClass::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept                                \
     {                                                                                                                  \

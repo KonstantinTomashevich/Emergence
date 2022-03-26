@@ -305,17 +305,24 @@ Storage::VolumetricIndexIterator Storage::EndVolumetricIndices () const noexcept
     return Storage::VolumetricIndexIterator (volumetricIndices.End ());
 }
 
+void Storage::SetUnsafeReadAllowed (bool _allowed) noexcept
+{
+    // Unsafe access should be carefully controlled by user, therefore there should be no set-set or unset-unset calls.
+    assert (unsafeReadAllowed != _allowed);
+    unsafeReadAllowed = _allowed;
+}
+
 void Storage::RegisterReader () noexcept
 {
     // Writers counter can not be changed by thread safe operations, therefore it's ok to check it here.
-    assert (writers == 0u);
+    assert (writers == 0u || unsafeReadAllowed);
     ++readers;
 }
 
 void Storage::RegisterWriter () noexcept
 {
     assert (writers == 0u);
-    assert (readers == 0u);
+    assert (readers == 0u || unsafeReadAllowed);
     ++writers;
 }
 

@@ -174,6 +174,18 @@ public:
     /// \return Iterator, that points to ending of volumetric representations range.
     [[nodiscard]] VolumetricRepresentationIterator VolumetricRepresentationEnd () const noexcept;
 
+    /// \brief Allows to lift `no edit cursors` invariant for read cursors and `no read cursors` for edit cursors.
+    /// \details By lifting these requirements user states that these invariants are true:
+    ///          - There is no multi thread access to Collection during this period.
+    ///          - Key fields of read cursors are not modified by edit cursors.
+    ///          - New records are not allocated.
+    ///          - Edit cursor is not deleting records.
+    ///          Breaking these invariants results in undefined behaviour.
+    ///
+    ///          In most cases user should avoid entering unsafe read mode, but some rare tasks, that are usually
+    ///          connected with hierarchical access, can not be solved without this tricky approach.
+    void SetUnsafeReadAllowed (bool _allowed) noexcept;
+
     /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
     Collection &operator= (const Collection &_other) = delete;
 

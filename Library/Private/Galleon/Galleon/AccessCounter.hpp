@@ -15,7 +15,7 @@ public:
 
     AccessCounter (const AccessCounter &_other) = delete;
 
-    AccessCounter (AccessCounter &&_other) noexcept;
+    AccessCounter (AccessCounter &&_other) = delete;
 
     ~AccessCounter () = default;
 
@@ -29,6 +29,8 @@ public:
 
     void UnregisterWriteAccess () noexcept;
 
+    void SetUnsafeFetchAllowed (bool _allowed) noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (AccessCounter);
 
 private:
@@ -37,5 +39,7 @@ private:
     static_assert (decltype (read)::is_always_lock_free);
 
     std::size_t write {0u};
+
+    bool unsafeFetchAllowed = false;
 };
 } // namespace Emergence::Galleon
