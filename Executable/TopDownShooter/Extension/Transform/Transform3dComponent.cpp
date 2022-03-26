@@ -30,11 +30,13 @@ const Math::Transform3d &Transform3dComponent::GetLogicalLocalTransform () const
     return logicalLocalTransform;
 }
 
-void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_transform) noexcept
+void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_transform,
+                                                     bool _skipInterpolation) noexcept
 {
     logicalLocalTransform = _transform;
     ++logicalLocalTransformRevision;
     visualTransformSyncNeeded = true;
+    interpolationSkipRequested |= _skipInterpolation;
 }
 
 const Math::Transform3d &Transform3dComponent::GetLogicalWorldTransform (
@@ -119,6 +121,7 @@ const Transform3dComponent::Reflection &Transform3dComponent::Reflect () noexcep
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (logicalLocalTransform)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (visualLocalTransform)
         EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformSyncNeeded)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (interpolationSkipRequested)
         EMERGENCE_MAPPING_REGISTER_REGULAR (lastObservedLogicalTransformRevision)
         EMERGENCE_MAPPING_REGISTER_REGULAR (logicalTransformLastObservationTimeNs)
         EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformLastSyncTimeNs)

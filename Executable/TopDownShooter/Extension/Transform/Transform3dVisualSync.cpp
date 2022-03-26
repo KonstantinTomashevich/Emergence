@@ -43,16 +43,12 @@ void Transform3dVisualSynchronizer::Execute () noexcept
             transform->logicalTransformLastObservationTimeNs = time->fixedTimeNs;
         }
 
-        const bool firstSync = transform->visualTransformLastSyncTimeNs == 0u;
-        constexpr uint64_t MIN_DELAY_FOR_TELEPORTATION_NS = 10000000000u; // 10s
-        const bool firstMovementAfterLongDelay =
-            time->normalTimeNs - transform->visualTransformLastSyncTimeNs > MIN_DELAY_FOR_TELEPORTATION_NS;
-
-        if (firstSync || firstMovementAfterLongDelay)
+        if (transform->interpolationSkipRequested)
         {
             // Just teleport object.
             transform->SetVisualLocalTransform (transform->GetLogicalLocalTransform ());
             transform->visualTransformLastSyncTimeNs = transform->logicalTransformLastObservationTimeNs;
+            transform->interpolationSkipRequested = false;
         }
         else
         {

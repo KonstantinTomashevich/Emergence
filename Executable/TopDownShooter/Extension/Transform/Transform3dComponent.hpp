@@ -35,7 +35,7 @@ public:
 
     const Math::Transform3d &GetLogicalLocalTransform () const noexcept;
 
-    void SetLogicalLocalTransform (const Math::Transform3d &_transform) noexcept;
+    void SetLogicalLocalTransform (const Math::Transform3d &_transform, bool _skipInterpolation = false) noexcept;
 
     const Math::Transform3d &GetLogicalWorldTransform (Transform3dWorldAccessor &_accessor) const noexcept;
 
@@ -68,6 +68,10 @@ private:
     mutable Math::Transform3d visualWorldTransform;
 
     bool visualTransformSyncNeeded = false;
+
+    /// \details We need to skip interpolation for transform initialization.
+    bool interpolationSkipRequested = true;
+
     uint64_t lastObservedLogicalTransformRevision = 0u;
     uint64_t logicalTransformLastObservationTimeNs = 0u;
     uint64_t visualTransformLastSyncTimeNs = 0u;
@@ -80,6 +84,7 @@ public:
         Emergence::StandardLayout::FieldId logicalLocalTransform;
         Emergence::StandardLayout::FieldId visualLocalTransform;
         Emergence::StandardLayout::FieldId visualTransformSyncNeeded;
+        Emergence::StandardLayout::FieldId interpolationSkipRequested;
         Emergence::StandardLayout::FieldId lastObservedLogicalTransformRevision;
         Emergence::StandardLayout::FieldId logicalTransformLastObservationTimeNs;
         Emergence::StandardLayout::FieldId visualTransformLastSyncTimeNs;
