@@ -107,6 +107,10 @@ private:
 
     TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
+    void RegisterReadAccess (Memory::UniqueString _resourceName) noexcept;
+
+    void RegisterWriteAccess (Memory::UniqueString _resourceName) noexcept;
+
     [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                              const StandardLayout::Mapping &_trackedType) noexcept;
 

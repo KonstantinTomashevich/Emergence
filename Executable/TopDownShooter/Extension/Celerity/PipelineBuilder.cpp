@@ -64,20 +64,20 @@ void TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) 
 
 FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping)
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchSingleton (_typeMapping);
 }
 
 ModifySingletonQuery TaskConstructor::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return ModifySingletonQuery {parent->world->registry.ModifySingleton (_typeMapping),
                                  BindChangeTracker (_typeMapping)};
 }
 
 InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     if (parent->eventTypes.contains (_typeMapping))
     {
         if (parent->automaticEventTypes.contains (_typeMapping))
@@ -97,7 +97,7 @@ InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Map
 
 FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     if (parent->eventTypes.contains (_typeMapping))
     {
         RegisterEventConsumption (_typeMapping);
@@ -108,7 +108,7 @@ FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping
 
 ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     if (parent->eventTypes.contains (_typeMapping) && !parent->postProcessingEvents)
     {
         parent->anyErrorsDetected = true;
@@ -121,21 +121,21 @@ ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mappi
 
 InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return InsertLongTermQuery {parent->world->registry.InsertLongTerm (_typeMapping), BindEventsOnAdd (_typeMapping)};
 }
 
 FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typeMapping,
                                              const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchValue (_typeMapping, _keyFields);
 }
 
 ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields),
                              BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
@@ -143,14 +143,14 @@ ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_t
 FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                StandardLayout::FieldId _keyField) noexcept
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchAscendingRange (_typeMapping, _keyField);
 }
 
 ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField),
                                       BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
@@ -158,14 +158,14 @@ ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardL
 FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchDescendingRange (_typeMapping, _keyField);
 }
 
 ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                    StandardLayout::FieldId _keyField) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField),
                                        BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
@@ -173,14 +173,14 @@ ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const Standar
 FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchShapeIntersection (_typeMapping, _dimensions);
 }
 
 ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
                                          BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
@@ -188,14 +188,14 @@ ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
 FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
-    task.readAccess.emplace (_typeMapping.GetName ());
+    RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchRayIntersection (_typeMapping, _dimensions);
 }
 
 ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
-    task.writeAccess.emplace (_typeMapping.GetName ());
+    RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions),
                                        BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
@@ -229,6 +229,20 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
     task.name = _name;
 }
 
+void TaskConstructor::RegisterReadAccess (Memory::UniqueString _resourceName) noexcept
+{
+    if (!task.writeAccess.contains (_resourceName))
+    {
+        task.readAccess.emplace (_resourceName);
+    }
+}
+
+void TaskConstructor::RegisterWriteAccess (Memory::UniqueString _resourceName) noexcept
+{
+    task.writeAccess.emplace (_resourceName);
+    task.readAccess.erase (_resourceName);
+}
+
 TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                             const StandardLayout::Mapping &_trackedType) noexcept
 {
@@ -238,7 +252,7 @@ TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::TypedOrde
         {
             for (const TrivialEventTrigger &trigger : row)
             {
-                task.writeAccess.emplace (trigger.GetEventType ().GetName ());
+                RegisterWriteAccess (trigger.GetEventType ().GetName ());
                 RegisterEventProduction (trigger.GetEventType ());
             }
 
@@ -274,7 +288,7 @@ ChangeTracker *TaskConstructor::BindChangeTracker (const StandardLayout::Mapping
         {
             for (OnChangeEventTrigger *trigger : tracker.GetEventTriggers ())
             {
-                task.writeAccess.emplace (trigger->GetEventType ().GetName ());
+                RegisterWriteAccess (trigger->GetEventType ().GetName ());
                 RegisterEventProduction (trigger->GetEventType ());
             }
 
