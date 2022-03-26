@@ -15,6 +15,18 @@ namespace Emergence::Celerity
 struct TimeSingleton;
 struct WorldSingleton;
 
+/// TODO: Note about performance.
+///       Celerity is built on top of Warehouse and RecordCollection, and that services use standard layout mappings
+///       extensively. It is convenient from code architecture perspective, but may result in performance problems.
+///       There is a lot of mapping-related logic, that should be optimized, but nevertheless mapping usage creates
+///       unavoidable performance barrier.
+///       If all modules (both engine-level and game-level) are compiled from single source, then all used mapping data
+///       is visible during compile time. We can use this fact for Chameleon-like approach: scan codebase and generate
+///       optimized code for all storages, that supports all use cases by hard coding them. To make code scanning faster
+///       we might use macro-driven approach like UnrealEngine. This code generation allows us to achieve hard code
+///       performance without losing Celerity features, but it has one significant downside: we can no longer separate
+///       game source and engine source, otherwise Chameleon will not be able to generate code for all use cases.
+
 class World final
 {
 public:
