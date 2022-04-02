@@ -2,7 +2,6 @@
 
 #include <type_traits>
 
-#include <Math/Constants.hpp>
 #include <Math/NoInitializationFlag.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -33,7 +32,7 @@ struct alignas (float) Vector3f final
 
     Vector3f &Normalize () noexcept;
 
-    Vector3f &NormalizeSafe (float _epsilon = EPSILON) noexcept;
+    Vector3f &NormalizeSafe () noexcept;
 
     Vector3f operator+ (const Vector3f &_other) const noexcept;
 
@@ -104,4 +103,6 @@ float UnsignedAngle (const Vector3f &_from, const Vector3f &_to) noexcept;
 float SignedAngle (const Vector3f &_from, const Vector3f &_to, const Vector3f &_axis = Vector3f::UP) noexcept;
 
 Vector3f Lerp (const Vector3f &_begin, const Vector3f &_end, float _t) noexcept;
+
+bool NearlyEqual (const Vector3f &_first, const Vector3f &_second) noexcept;
 } // namespace Emergence::Math

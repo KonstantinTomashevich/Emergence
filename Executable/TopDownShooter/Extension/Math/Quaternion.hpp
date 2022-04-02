@@ -91,4 +91,6 @@ Quaternion SLerp (const Quaternion &_begin, const Quaternion &_end, float _t) no
 Quaternion ForwardRotation (const Vector3f &_forward, const Vector3f &_up = Vector3f::UP) noexcept;
 
 Vector3f Rotate (const Vector3f &_vector, const Quaternion &_rotation) noexcept;
+
+bool NearlyEqual (const Quaternion &_first, const Quaternion &_second) noexcept;
 } // namespace Emergence::Math

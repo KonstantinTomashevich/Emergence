@@ -33,6 +33,8 @@ void Transform3dVisualSynchronizer::Execute () noexcept
     const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
 
     const auto updateNeeded = static_cast<uint8_t> (true);
+    // TODO: This approach is quite bad for performance: we never access list for `false` value, but index would
+    //       build and maintain it nevertheless. We should create special-case optimization for such usage.
     auto transformCursor = modifyTransformsWithUpdateFlag.Execute (&updateNeeded);
 
     while (auto *transform = static_cast<Transform3dComponent *> (*transformCursor))

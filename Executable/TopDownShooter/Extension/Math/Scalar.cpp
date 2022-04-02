@@ -1,5 +1,6 @@
 #include <cmath>
 
+#include <Math/Constants.hpp>
 #include <Math/Scalar.hpp>
 
 namespace Emergence::Math
@@ -37,5 +38,11 @@ float Clamp (float _value, float _min, float _max) noexcept
 float Lerp (float _begin, float _end, float _t) noexcept
 {
     return _begin * (1.0f - _t) + _end * _t;
+}
+
+bool NearlyEqual (float _first, float _second) noexcept
+{
+    const float difference = _first - _second;
+    return difference > -EPSILON && difference < EPSILON;
 }
 } // namespace Emergence::Math

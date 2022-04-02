@@ -5,6 +5,7 @@
 #include <cglm/quat.h>
 
 #include <Math/Quaternion.hpp>
+#include <Math/Scalar.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
@@ -147,5 +148,11 @@ Vector3f Rotate (const Vector3f &_vector, const Quaternion &_rotation) noexcept
     glm_quat_rotatev (const_cast<float *> (_rotation.components), const_cast<float *> (_vector.components),
                       result.components);
     return result;
+}
+
+bool NearlyEqual (const Quaternion &_first, const Quaternion &_second) noexcept
+{
+    return NearlyEqual (_first.x, _second.x) && NearlyEqual (_first.y, _second.y) &&
+           NearlyEqual (_first.z, _second.z) && NearlyEqual (_first.w, _second.w);
 }
 } // namespace Emergence::Math

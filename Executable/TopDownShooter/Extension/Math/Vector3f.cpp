@@ -1,3 +1,4 @@
+#include <Math/Constants.hpp>
 #include <Math/Scalar.hpp>
 #include <Math/Vector3f.hpp>
 
@@ -41,10 +42,10 @@ Vector3f &Vector3f::Normalize () noexcept
     return *this /= Length ();
 }
 
-Vector3f &Vector3f::NormalizeSafe (float _epsilon) noexcept
+Vector3f &Vector3f::NormalizeSafe () noexcept
 {
     const float length = Length ();
-    if (length > _epsilon)
+    if (length > EPSILON)
     {
         *this /= length;
     }
@@ -155,5 +156,10 @@ float SignedAngle (const Vector3f &_from, const Vector3f &_to, const Vector3f &_
 Vector3f Lerp (const Vector3f &_begin, const Vector3f &_end, float _t) noexcept
 {
     return _begin * (1.0f - _t) + _end * _t;
+}
+
+bool NearlyEqual (const Vector3f &_first, const Vector3f &_second) noexcept
+{
+    return NearlyEqual (_first.x, _second.x) && NearlyEqual (_first.y, _second.y) && NearlyEqual (_first.z, _second.z);
 }
 } // namespace Emergence::Math

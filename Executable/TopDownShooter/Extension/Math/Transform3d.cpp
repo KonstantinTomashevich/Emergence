@@ -51,4 +51,10 @@ const Transform3d::Reflection &Transform3d::Reflect () noexcept
 
     return reflection;
 }
+
+bool NearlyEqual (const Transform3d &_first, const Transform3d &_second) noexcept
+{
+    return NearlyEqual (_first.translation, _second.translation) && NearlyEqual (_first.rotation, _second.rotation) &&
+           NearlyEqual (_first.scale, _second.scale);
+}
 } // namespace Emergence::Math
