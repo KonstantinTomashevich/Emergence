@@ -39,7 +39,10 @@ Executor::Executor (Celerity::TaskConstructor &_constructor, Container::Vector<R
 
 void Executor::Execute () noexcept
 {
-    REQUIRE (executionIndex < requests.size ());
+    if (executionIndex >= requests.size ())
+    {
+        return;
+    }
 
 #define TRANSFORM_LOG_SEQUENCE(transform)                                                                              \
     "translation {", (transform).translation.x, ", ", (transform).translation.y, ", ", (transform).translation.z,      \

@@ -23,7 +23,7 @@ struct alignas (sizeof (float) * 4u) Transform3d final
 
     /// \warning This is just a shortcut for multiplication through matrices.
     ///          If you need to multiply several transforms, consider explicitly using matrices for performance.
-    Transform3d operator* (const Transform3d &_other) noexcept;
+    Transform3d operator* (const Transform3d &_other) const noexcept;
 
     Vector3f translation;
     Quaternion rotation;

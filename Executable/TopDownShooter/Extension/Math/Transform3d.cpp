@@ -33,7 +33,7 @@ Transform3d::Transform3d (const Matrix4x4f &_transformMatrix) noexcept
     glm_mat4_quat (rotationMatrix.columns, rotation.components);
 }
 
-Transform3d Transform3d::operator* (const Transform3d &_other) noexcept
+Transform3d Transform3d::operator* (const Transform3d &_other) const noexcept
 {
     return MultiplyTransformMatrices (Matrix4x4f (*this), Matrix4x4f (_other));
 }

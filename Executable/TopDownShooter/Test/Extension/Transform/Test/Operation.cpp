@@ -7,7 +7,6 @@
 #include <Testing/Testing.hpp>
 
 #include <Transform/Test/Task.hpp>
-#include <Transform/Transform3dComponent.hpp>
 
 namespace Emergence::Transform::Test
 {
