@@ -36,8 +36,7 @@ struct TimeSingleton final
     /// \brief Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
 
-    Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
-        1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
+    Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
     /// \brief Allows gameplay mechanics to slowdown or speedup time.
     /// \invariant >= 0.0f
