@@ -63,13 +63,13 @@ private:
     Math::Transform3d logicalLocalTransform;
     uint64_t logicalLocalTransformRevision = 0u;
     mutable uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
-    mutable uint64_t logicalLastUpdateLocalTransformRevision = UNKNOWN_REVISION;
+    mutable bool logicalLocalTransformChangedSinceLastUpdate = false;
     mutable Math::Transform3d logicalWorldTransform;
 
     Math::Transform3d visualLocalTransform;
     uint64_t visualLocalTransformRevision = 0u;
     mutable uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
-    mutable uint64_t visualLastUpdateLocalTransformRevision = UNKNOWN_REVISION;
+    mutable bool visualLocalTransformChangedSinceLastUpdate = false;
     mutable Math::Transform3d visualWorldTransform;
 
     bool visualTransformSyncNeeded = false;

@@ -39,6 +39,7 @@ void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_t
     ++logicalLocalTransformRevision;
     visualTransformSyncNeeded = true;
     interpolationSkipRequested |= _skipInterpolation;
+    logicalLocalTransformChangedSinceLastUpdate = true;
 }
 
 const Math::Transform3d &Transform3dComponent::GetLogicalWorldTransform (
@@ -60,6 +61,7 @@ void Transform3dComponent::SetVisualLocalTransform (const Math::Transform3d &_tr
 {
     visualLocalTransform = _transform;
     ++visualLocalTransformRevision;
+    visualLocalTransformChangedSinceLastUpdate = true;
 }
 
 const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
@@ -80,15 +82,15 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
     {                                                                                                                  \
         if (parent->Update##MethodTag##WorldTransformCache (_accessor) ||                                              \
             parent->VariableTag##LocalTransformRevision != VariableTag##LastUpdateParentTransformRevision ||           \
-            VariableTag##LocalTransformRevision != VariableTag##LastUpdateLocalTransformRevision)                      \
+            VariableTag##LocalTransformChangedSinceLastUpdate)                                                         \
         {                                                                                                              \
             /* TODO: We already had matrix representation of `parent->*WorldTransform` during                          \
                      `parent->Update*WorldTransformCache` call unless parent is a root node. Therefore,                \
                      we might try to optimize this method by introducing matrix caching. However, it would             \
                      slow down root node getters, because they would calculate unneeded matrix. */                     \
             VariableTag##WorldTransform = parent->VariableTag##WorldTransform * VariableTag##LocalTransform;           \
-            VariableTag##LastUpdateParentTransformRevision = parent->VariableTag##LastUpdateLocalTransformRevision;    \
-            VariableTag##LastUpdateLocalTransformRevision = VariableTag##LocalTransformRevision;                       \
+            VariableTag##LastUpdateParentTransformRevision = parent->VariableTag##LocalTransformRevision;              \
+            VariableTag##LocalTransformChangedSinceLastUpdate = false;                                                 \
             return true;                                                                                               \
         }                                                                                                              \
                                                                                                                        \
@@ -96,10 +98,10 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
     }                                                                                                                  \
                                                                                                                        \
     /* This component is a root node. */                                                                               \
-    if (VariableTag##LocalTransformRevision != VariableTag##LastUpdateLocalTransformRevision)                          \
+    if (VariableTag##LocalTransformChangedSinceLastUpdate)                                                             \
     {                                                                                                                  \
         VariableTag##WorldTransform = VariableTag##LocalTransform;                                                     \
-        VariableTag##LastUpdateLocalTransformRevision = VariableTag##LocalTransformRevision;                           \
+        VariableTag##LocalTransformChangedSinceLastUpdate = false;                                                     \
         return true;                                                                                                   \
     }                                                                                                                  \
                                                                                                                        \
