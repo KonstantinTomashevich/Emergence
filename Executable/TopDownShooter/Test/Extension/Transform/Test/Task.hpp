@@ -9,7 +9,7 @@
 
 #include <Math/Transform3d.hpp>
 
-namespace Emergence::Transform
+namespace Emergence::Transform::Test
 {
 namespace Requests
 {
@@ -17,6 +17,12 @@ struct CreateTransform final
 {
     Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
     Celerity::ObjectId parentId = Celerity::INVALID_OBJECT_ID;
+};
+
+struct ChangeParent final
+{
+    Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
+    Celerity::ObjectId newParentId = Celerity::INVALID_OBJECT_ID;
 };
 
 struct SetLocalTransform final
@@ -35,12 +41,16 @@ struct CheckTransform final
     Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
     bool logical = true;
     bool local = true;
+
+    /// \warning Ignored if ::local.
     bool useModifyQuery = false;
+
     Math::Transform3d expectedTransform;
 };
 } // namespace Requests
 
-using Request = std::variant<Requests::CreateTransform, Requests::SetLocalTransform, Requests::CheckTransform>;
+using Request = std::
+    variant<Requests::CreateTransform, Requests::ChangeParent, Requests::SetLocalTransform, Requests::CheckTransform>;
 
 namespace RequestExecutor
 {
@@ -52,4 +62,4 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                         Container::Vector<RequestPacket> _requests) noexcept;
 } // namespace RequestExecutor
-} // namespace Emergence::Transform
+} // namespace Emergence::Transform::Test

@@ -7,7 +7,7 @@
 #include <Transform/Transform3dVisualSync.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
 
-namespace Emergence::Transform::RequestExecutor
+namespace Emergence::Transform::Test::RequestExecutor
 {
 class Executor final : public Celerity::TaskExecutorBase<Executor>
 {
@@ -62,6 +62,20 @@ void Executor::Execute () noexcept
                     component->SetObjectId (_request.id);
                     component->SetParentObjectId (_request.parentId);
                 }
+                else if constexpr (std::is_same_v<Type, Requests::ChangeParent>)
+                {
+                    LOG ("Changing transform with id ", _request.id, " parent id to ", _request.newParentId, ".");
+
+                    auto cursor = modifyTransform.Execute (&_request.id);
+                    if (auto *component = static_cast<Transform3dComponent *> (*cursor))
+                    {
+                        component->SetParentObjectId (_request.newParentId);
+                    }
+                    else
+                    {
+                        CHECK_WITH_MESSAGE (false, "Unable to find transform with required id!");
+                    }
+                }
                 else if constexpr (std::is_same_v<Type, Requests::SetLocalTransform>)
                 {
                     LOG ("Setting local ", _request.logical ? "logical" : "visual", " transform with id ", _request.id,
@@ -109,7 +123,10 @@ void Executor::Execute () noexcept
                                                                component->GetVisualWorldTransform (worldAccessor);
                             }
 
-                            CHECK (NearlyEqual (transform, _request.expectedTransform));
+                            const bool equal = NearlyEqual (transform, _request.expectedTransform);
+                            CHECK_WITH_MESSAGE (
+                                equal, "Real transform: ", TRANSFORM_LOG_SEQUENCE (transform),
+                                ". Expected transform: ", TRANSFORM_LOG_SEQUENCE (_request.expectedTransform), ".");
                         }
                         else
                         {
@@ -150,4 +167,4 @@ void AddToNormalUpdate (Celerity::PipelineBuilder &_pipelineBuilder,
     constructor.DependOn (VisualSync::Checkpoint::SYNC_FINISHED);
     constructor.SetExecutor<Executor> (std::move (_requests));
 }
-} // namespace Emergence::Transform::RequestExecutor
+} // namespace Emergence::Transform::Test::RequestExecutor

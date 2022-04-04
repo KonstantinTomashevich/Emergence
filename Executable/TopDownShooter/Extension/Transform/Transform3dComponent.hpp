@@ -48,6 +48,9 @@ public:
 private:
     friend class Transform3dVisualSynchronizer;
 
+    /// \brief Used to inform transform caching logic that parent transform was never observed yet.
+    static constexpr std::size_t UNKNOWN_REVISION = std::numeric_limits<Celerity::ObjectId>::max ();
+
     /// \return Whether cache was actually changed.
     bool UpdateLogicalWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept;
 
@@ -59,12 +62,14 @@ private:
 
     Math::Transform3d logicalLocalTransform;
     uint64_t logicalLocalTransformRevision = 0u;
-    mutable uint64_t logicalParentTransformRevision = 0u;
+    mutable uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
+    mutable uint64_t logicalLastUpdateLocalTransformRevision = UNKNOWN_REVISION;
     mutable Math::Transform3d logicalWorldTransform;
 
     Math::Transform3d visualLocalTransform;
     uint64_t visualLocalTransformRevision = 0u;
-    mutable uint64_t visualParentTransformRevision = 0u;
+    mutable uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
+    mutable uint64_t visualLastUpdateLocalTransformRevision = UNKNOWN_REVISION;
     mutable Math::Transform3d visualWorldTransform;
 
     bool visualTransformSyncNeeded = false;
