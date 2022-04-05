@@ -15,22 +15,22 @@
 namespace Emergence::Math
 {
 Transform3d::Transform3d (const NoInitializationFlag &_guard) noexcept
-    : translation (_guard),
-      rotation (_guard),
+    : rotation (_guard),
+      translation (_guard),
       scale (_guard)
 {
 }
 
 Transform3d::Transform3d (const Vector3f &_translation, const Quaternion &_rotation, const Vector3f &_scale) noexcept
-    : translation (_translation),
-      rotation (_rotation),
+    : rotation (_rotation),
+      translation (_translation),
       scale (_scale)
 {
 }
 
 Transform3d::Transform3d (const Matrix4x4f &_transformMatrix) noexcept
-    : translation (NoInitializationFlag::Confirm ()),
-      rotation (NoInitializationFlag::Confirm ()),
+    : rotation (NoInitializationFlag::Confirm ()),
+      translation (NoInitializationFlag::Confirm ()),
       scale (NoInitializationFlag::Confirm ())
 {
     Matrix4x4f rotationMatrix {NoInitializationFlag::Confirm ()};
@@ -49,8 +49,8 @@ const Transform3d::Reflection &Transform3d::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3d)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (translation)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (rotation)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (translation)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (scale)
         EMERGENCE_MAPPING_REGISTRATION_END ()
     }();

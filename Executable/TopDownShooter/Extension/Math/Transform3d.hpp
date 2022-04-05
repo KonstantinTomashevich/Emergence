@@ -25,14 +25,16 @@ struct alignas (sizeof (float) * 4u) Transform3d final
     ///          If you need to multiply several transforms, consider explicitly using matrices for performance.
     Transform3d operator* (const Transform3d &_other) const noexcept;
 
-    Vector3f translation;
+    // This order of fields is used to avoid alignment padding.
+
     Quaternion rotation;
+    Vector3f translation;
     Vector3f scale;
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId translation;
         Emergence::StandardLayout::FieldId rotation;
+        Emergence::StandardLayout::FieldId translation;
         Emergence::StandardLayout::FieldId scale;
         Emergence::StandardLayout::Mapping mapping;
     };
