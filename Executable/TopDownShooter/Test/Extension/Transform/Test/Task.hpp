@@ -9,6 +9,12 @@
 
 #include <Math/Transform3d.hpp>
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#    pragma warning(push)
+// We do not care about excessive padding in test tasks.
+#    pragma warning(disable : 4324)
+#endif
+
 namespace Emergence::Transform::Test
 {
 namespace Requests
@@ -63,3 +69,7 @@ void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                         Container::Vector<RequestPacket> _requests) noexcept;
 } // namespace RequestExecutor
 } // namespace Emergence::Transform::Test
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#    pragma warning(pop)
+#endif
