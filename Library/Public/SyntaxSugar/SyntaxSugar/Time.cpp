@@ -21,9 +21,9 @@ static TimeData &AccessTimeData ()
 uint64_t Time::NanosecondsSinceStartup () noexcept
 {
     TimeData &data = AccessTimeData ();
-    if (data.frozen) [[unlikely]]
+    if (data.frozen)
     {
-        return data.frozenValue;
+        [[unlikely]] return data.frozenValue;
     }
     else
     {
