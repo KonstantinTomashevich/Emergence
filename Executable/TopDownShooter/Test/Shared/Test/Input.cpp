@@ -283,8 +283,8 @@ private:
 
 Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
-      fetchListenerById (
-          _constructor.FetchValue (InputListenerComponent::Reflect ().mapping, {InputListenerComponent::Reflect ().objectId}))
+      fetchListenerById (_constructor.FetchValue (InputListenerComponent::Reflect ().mapping,
+                                                  {InputListenerComponent::Reflect ().objectId}))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
 }
