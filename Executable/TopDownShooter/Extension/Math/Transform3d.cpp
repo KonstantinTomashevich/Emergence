@@ -6,6 +6,12 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
+// There is no align-mismatch check in old versions.
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+
+// Alignment requirement should be satisfied because of matrix alignment, therefore CLang warnings are false positive.
+#pragma clang diagnostic ignored "-Walign-mismatch"
+
 namespace Emergence::Math
 {
 Transform3d::Transform3d (const NoInitializationFlag &_guard) noexcept

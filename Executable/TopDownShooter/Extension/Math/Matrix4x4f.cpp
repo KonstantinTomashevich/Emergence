@@ -11,6 +11,12 @@
 #include <Math/Matrix4x4f.hpp>
 #include <Math/Transform3d.hpp>
 
+// There is no align-mismatch check in old versions.
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+
+// Alignment requirement should be satisfied because of matrix alignment, therefore CLang warnings are false positive.
+#pragma clang diagnostic ignored "-Walign-mismatch"
+
 namespace Emergence::Math
 {
 static_assert (sizeof (Matrix4x4f) == sizeof (mat4));
@@ -42,7 +48,6 @@ Matrix4x4f::Matrix4x4f (const Transform3d &_transform) noexcept
 
 Matrix4x4f::Matrix4x4f (const Matrix4x4f &_other) noexcept
 {
-    // Alignment requirement should be satisfied because of matrix alignment, therefore CLion warning is false positive.
     glm_mat4_copy (const_cast<Column *> (_other.columns), columns);
 }
 
