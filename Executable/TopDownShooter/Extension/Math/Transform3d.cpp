@@ -6,11 +6,13 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
+#if defined(__clang__)
 // There is no align-mismatch check in old versions.
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 
 // Alignment requirement should be satisfied because of matrix alignment, therefore CLang warnings are false positive.
 #pragma clang diagnostic ignored "-Walign-mismatch"
+#endif
 
 namespace Emergence::Math
 {
