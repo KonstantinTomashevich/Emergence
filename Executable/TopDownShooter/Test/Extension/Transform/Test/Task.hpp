@@ -1,5 +1,11 @@
 #pragma once
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#    pragma warning(push)
+// We do not care about excessive padding in test tasks. Also, we need to include it before variant declaration.
+#    pragma warning(disable : 4324)
+#endif
+
 #include <variant>
 
 #include <Celerity/Constants.hpp>
@@ -8,12 +14,6 @@
 #include <Container/Vector.hpp>
 
 #include <Math/Transform3d.hpp>
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#    pragma warning(push)
-// We do not care about excessive padding in test tasks.
-#    pragma warning(disable : 4324)
-#endif
 
 namespace Emergence::Transform::Test
 {
