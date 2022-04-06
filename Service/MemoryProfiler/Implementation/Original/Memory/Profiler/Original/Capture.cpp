@@ -52,7 +52,8 @@ CapturedAllocationGroup::Iterator::Iterator (Handling::Handle<CapturedAllocation
 
 static UnorderedPool &GetCapturedAllocationGroupPool ()
 {
-    static UnorderedPool pool {Profiler::AllocationGroup {}, sizeof (CapturedAllocationGroup)};
+    static UnorderedPool pool {Profiler::AllocationGroup {}, sizeof (CapturedAllocationGroup),
+                               alignof (CapturedAllocationGroup)};
     return pool;
 }
 

@@ -38,21 +38,21 @@ struct FullPoolContext
                      PAGES_TO_FILL * (PAGE_CAPACITY * sizeof (TestItem) + RESERVED_FOR_PAGE_INTERNALS));
     }
 
-    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), PAGE_CAPACITY};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem), PAGE_CAPACITY};
     Container::Vector<void *> items;
 };
 
 template <typename Pool>
 void AcquireNotNull ()
 {
-    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem)};
     CHECK (pool.Acquire ());
 }
 
 template <typename Pool>
 void MultipleAcquiresDoNotOverlap ()
 {
-    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem)};
     auto *first = static_cast<TestItem *> (pool.Acquire ());
     auto *second = static_cast<TestItem *> (pool.Acquire ());
 
@@ -74,7 +74,7 @@ void MultipleAcquiresDoNotOverlap ()
 template <typename Pool>
 void MemoryReused ()
 {
-    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
+    Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem)};
     void *item = pool.Acquire ();
     pool.Release (item);
 
@@ -130,7 +130,7 @@ template <typename Pool>
 void Profiling ()
 {
     Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
-    Pool pool {group, sizeof (TestItem), 2u};
+    Pool pool {group, sizeof (TestItem), alignof (TestItem), 2u};
     CHECK_EQUAL (group.GetReserved (), 0u);
     CHECK_EQUAL (group.GetAcquired (), 0u);
     CHECK_EQUAL (group.GetTotal (), 0u);
@@ -160,6 +160,43 @@ void Profiling ()
     CHECK_EQUAL (group.GetAcquired (), 0u);
     CHECK_EQUAL (group.GetTotal (), 0u);
 }
+
+template <typename Pool>
+void NonStandardAlignment ()
+{
+    auto testFor = [] (std::size_t _objectSize, std::size_t _alignment)
+    {
+        constexpr std::size_t SAMPLE_COUNT = 32u;
+
+        Profiler::AllocationGroup group = GetUniqueAllocationGroup ();
+        Pool pool {group, _objectSize, _alignment, SAMPLE_COUNT / 4u};
+        Container::Vector<void *> alreadyAcquired;
+
+        for (std::size_t index = 0u; index < SAMPLE_COUNT; ++index)
+        {
+            void *chunk = pool.Acquire ();
+            CHECK (reinterpret_cast<uintptr_t> (chunk) % _alignment == 0u);
+
+            for (void *other : alreadyAcquired)
+            {
+                if (other < chunk)
+                {
+                    CHECK (static_cast<uint8_t *> (chunk) - static_cast<uint8_t *> (other) >= _objectSize);
+                }
+                else
+                {
+                    CHECK (static_cast<uint8_t *> (other) - static_cast<uint8_t *> (chunk) >= _objectSize);
+                }
+            }
+
+            alreadyAcquired.emplace_back (chunk);
+        }
+    };
+
+    testFor (64u, 16u);
+    testFor (64u, 32u);
+    testFor (50u, 16u);
+}
 } // namespace Emergence::Memory::Test::Pool
 
 #define SHARED_POOL_TEST(ImplementationClass, TestName)                                                                \
@@ -175,4 +212,5 @@ void Profiling ()
     SHARED_POOL_TEST (ImplementationClass, Clear)                                                                      \
     SHARED_POOL_TEST (ImplementationClass, Move)                                                                       \
     SHARED_POOL_TEST (ImplementationClass, MoveAssign)                                                                 \
-    SHARED_POOL_TEST (ImplementationClass, Profiling)
+    SHARED_POOL_TEST (ImplementationClass, Profiling)                                                                  \
+    SHARED_POOL_TEST (ImplementationClass, NonStandardAlignment)

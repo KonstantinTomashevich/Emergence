@@ -244,7 +244,7 @@ void TaskConstructor::SetExecutor (Args... _args) noexcept
 {
     static_assert (std::is_base_of_v<TaskExecutorBase<Executor>, Executor>);
     auto placeholder = heap.GetAllocationGroup ().PlaceOnTop ();
-    Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor)))
+    Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor), alignof (Executor)))
                                            Executor {*this, std::forward<Args> (_args)...}};
 
     SetExecutor (

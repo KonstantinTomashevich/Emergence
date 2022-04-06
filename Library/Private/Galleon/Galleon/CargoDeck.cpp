@@ -47,7 +47,8 @@ Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const
 
     auto placeholder = singletonHeap.GetAllocationGroup ().PlaceOnTop ();
     return singletonContainers.emplace_back (new (singletonHeap.Acquire (
-        sizeof (SingletonContainer) + _typeMapping.GetObjectSize ())) SingletonContainer (this, _typeMapping));
+        sizeof (SingletonContainer) + _typeMapping.GetObjectSize (), alignof (SingletonContainer)))
+                                                 SingletonContainer (this, _typeMapping));
 }
 
 Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const StandardLayout::Mapping &_typeMapping)
@@ -61,8 +62,8 @@ Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const
     }
 
     auto placeholder = shortTermHeap.GetAllocationGroup ().PlaceOnTop ();
-    return shortTermContainers.emplace_back (new (shortTermHeap.Acquire (sizeof (ShortTermContainer)))
-                                                 ShortTermContainer (this, _typeMapping));
+    return shortTermContainers.emplace_back (new (shortTermHeap.Acquire (
+        sizeof (ShortTermContainer), alignof (ShortTermContainer))) ShortTermContainer (this, _typeMapping));
 }
 
 Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping)
@@ -76,8 +77,8 @@ Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const S
     }
 
     auto placeholder = longTermHeap.GetAllocationGroup ().PlaceOnTop ();
-    return longTermContainers.emplace_back (new (longTermHeap.Acquire (sizeof (LongTermContainer)))
-                                                LongTermContainer (this, _typeMapping));
+    return longTermContainers.emplace_back (new (longTermHeap.Acquire (
+        sizeof (LongTermContainer), alignof (LongTermContainer))) LongTermContainer (this, _typeMapping));
 }
 
 bool CargoDeck::IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept

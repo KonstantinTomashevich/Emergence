@@ -27,7 +27,7 @@ public:
 
     /// \brief Acquires chunk of memory with given size from the stack head.
     /// \param _alignAs Required alignment for requested chunk.
-    [[nodiscard]] void *Acquire (size_t _chunkSize, uintptr_t _alignAs = sizeof (uintptr_t)) noexcept;
+    [[nodiscard]] void *Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept;
 
     /// \return Current stack head, that points to first free byte.
     [[nodiscard]] const void *Head () const noexcept;

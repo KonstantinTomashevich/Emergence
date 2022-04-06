@@ -78,8 +78,8 @@ Collection::Collection (StandardLayout::Mapping _typeMapping)
 {
     auto &internal = *new (&data) InternalData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
-    internal.storage =
-        new (internal.heap.Acquire (sizeof (Pegasus::Storage))) Pegasus::Storage (std::move (_typeMapping));
+    internal.storage = new (internal.heap.Acquire (sizeof (Pegasus::Storage), alignof (Pegasus::Storage)))
+        Pegasus::Storage (std::move (_typeMapping));
 }
 
 Collection::Collection (Collection &&_other) noexcept

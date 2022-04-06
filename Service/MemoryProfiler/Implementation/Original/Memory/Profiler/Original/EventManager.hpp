@@ -64,7 +64,7 @@ private:
 
     // We use stub allocation group, otherwise program will be stuck in recursive
     // event allocation: we will be creating events about allocation of events.
-    UnorderedPool events {Profiler::AllocationGroup {}, sizeof (EventNode)};
+    UnorderedPool events {Profiler::AllocationGroup {}, sizeof (EventNode), alignof (EventNode)};
 
     EventNode *first = nullptr;
     EventNode *last = nullptr;

@@ -180,7 +180,7 @@ PlainMapping::~PlainMapping () noexcept
 
 void *PlainMapping::operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept
 {
-    return GetHeap ().Acquire (CalculateMappingSize (_fieldCapacity));
+    return GetHeap ().Acquire (CalculateMappingSize (_fieldCapacity), alignof (PlainMapping));
 }
 
 void PlainMapping::operator delete (void *_pointer) noexcept
@@ -191,8 +191,8 @@ void PlainMapping::operator delete (void *_pointer) noexcept
 PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexcept
 {
     assert (_newFieldCapacity >= fieldCount);
-    auto *newInstance = static_cast<PlainMapping *> (
-        GetHeap ().Resize (this, CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
+    auto *newInstance = static_cast<PlainMapping *> (GetHeap ().Resize (
+        this, alignof (PlainMapping), CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
 
     newInstance->fieldCapacity = _newFieldCapacity;
     return newInstance;

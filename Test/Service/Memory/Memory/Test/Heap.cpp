@@ -28,8 +28,8 @@ TEST_CASE (AcquireNoOverlap)
     static const char *secondString = "Hello, world again!";
 
     Emergence::Memory::Heap heap {GetUniqueAllocationGroup ()};
-    void *first = heap.Acquire (strlen (firstString) + 1u);
-    void *second = heap.Acquire (strlen (secondString) + 1u);
+    void *first = heap.Acquire (strlen (firstString) + 1u, sizeof (uintptr_t));
+    void *second = heap.Acquire (strlen (secondString) + 1u, sizeof (uintptr_t));
 
     strcpy (reinterpret_cast<char *> (first), firstString);
     strcpy (reinterpret_cast<char *> (second), secondString);
@@ -45,7 +45,7 @@ TEST_CASE (AcquireAlignment)
 {
     constexpr std::size_t SIZE = 128u;
     Emergence::Memory::Heap heap {GetUniqueAllocationGroup ()};
-    void *record = heap.Acquire (SIZE);
+    void *record = heap.Acquire (SIZE, sizeof (uintptr_t));
 
     CHECK_EQUAL (reinterpret_cast<uintptr_t> (record) % sizeof (uintptr_t), 0u);
     heap.Release (record, SIZE);
@@ -58,12 +58,12 @@ TEST_CASE (Resize)
     constexpr std::size_t NEW_SIZE = 1024u;
 
     Emergence::Memory::Heap heap {GetUniqueAllocationGroup ()};
-    void *record = heap.Acquire (size);
+    void *record = heap.Acquire (size, sizeof (uintptr_t));
 
     strcpy (reinterpret_cast<char *> (record), string);
     CHECK (strcmp (reinterpret_cast<char *> (record), string) == 0);
 
-    record = heap.Resize (record, size, NEW_SIZE);
+    record = heap.Resize (record, sizeof (uintptr_t), size, NEW_SIZE);
     CHECK (strcmp (reinterpret_cast<char *> (record), string) == 0);
     heap.Release (record, NEW_SIZE);
 }
@@ -96,12 +96,12 @@ TEST_CASE (Profiling)
     constexpr std::size_t FIRST_OBJECT_SIZE = 32u;
     constexpr std::size_t SECOND_OBJECT_SIZE = 128u;
 
-    void *first = heap.Acquire (FIRST_OBJECT_SIZE);
+    void *first = heap.Acquire (FIRST_OBJECT_SIZE, sizeof (uintptr_t));
     CHECK_EQUAL (group.GetTotal (), FIRST_OBJECT_SIZE);
     CHECK_EQUAL (group.GetReserved (), 0u);
     CHECK_EQUAL (group.GetAcquired (), FIRST_OBJECT_SIZE);
 
-    void *second = heap.Acquire (SECOND_OBJECT_SIZE);
+    void *second = heap.Acquire (SECOND_OBJECT_SIZE, sizeof (uintptr_t));
     CHECK_EQUAL (group.GetTotal (), FIRST_OBJECT_SIZE + SECOND_OBJECT_SIZE);
     CHECK_EQUAL (group.GetReserved (), 0u);
     CHECK_EQUAL (group.GetAcquired (), FIRST_OBJECT_SIZE + SECOND_OBJECT_SIZE);

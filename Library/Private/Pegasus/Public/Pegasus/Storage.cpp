@@ -77,7 +77,7 @@ Handling::Handle<VolumetricIndex> Storage::VolumetricIndexIterator::operator* ()
 using namespace Memory::Literals;
 
 Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
-    : records (Memory::Profiler::AllocationGroup {"Records"_us}, _recordMapping.GetObjectSize ()),
+    : records (Memory::Profiler::AllocationGroup {"Records"_us}, _recordMapping.GetObjectSize (), ...),
       hashIndexHeap (Memory::Profiler::AllocationGroup {"HashIndex"_us}),
       orderedIndexHeap (Memory::Profiler::AllocationGroup {"OrderedIndex"_us}),
       volumetricIndexHeap (Memory::Profiler::AllocationGroup {"VolumetricIndex"_us}),
@@ -158,9 +158,10 @@ Handling::Handle<HashIndex> Storage::CreateHashIndex (
     constexpr std::size_t DEFAULT_INITIAL_BUCKETS = 32u;
 
     auto placeholder = hashIndexHeap.GetAllocationGroup ().PlaceOnTop ();
-    IndexHolder<HashIndex> &holder = hashIndices.EmplaceBack (IndexHolder<HashIndex> {
-        new (hashIndexHeap.Acquire (sizeof (HashIndex))) HashIndex (this, DEFAULT_INITIAL_BUCKETS, _indexedFields),
-        0u});
+    IndexHolder<HashIndex> &holder = hashIndices.EmplaceBack (
+        IndexHolder<HashIndex> {new (hashIndexHeap.Acquire (sizeof (HashIndex), alignof (HashIndex)))
+                                    HashIndex (this, DEFAULT_INITIAL_BUCKETS, _indexedFields),
+                                0u});
 
     for (const StandardLayout::Field &indexedField : holder.index->GetIndexedFields ())
     {
@@ -200,8 +201,10 @@ Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fiel
     assert (readers == 0u);
 
     auto placeholder = orderedIndexHeap.GetAllocationGroup ().PlaceOnTop ();
-    IndexHolder<OrderedIndex> &holder = orderedIndices.EmplaceBack (IndexHolder<OrderedIndex> {
-        new (orderedIndexHeap.Acquire (sizeof (OrderedIndex))) OrderedIndex (this, _indexedField), 0u});
+    IndexHolder<OrderedIndex> &holder = orderedIndices.EmplaceBack (
+        IndexHolder<OrderedIndex> {new (orderedIndexHeap.Acquire (sizeof (OrderedIndex), alignof (OrderedIndex)))
+                                       OrderedIndex (this, _indexedField),
+                                   0u});
 
     RegisterIndexedFieldUsage (holder.index->GetIndexedField ());
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
@@ -241,7 +244,9 @@ Handling::Handle<VolumetricIndex> Storage::CreateVolumetricIndex (
 
     auto placeholder = volumetricIndexHeap.GetAllocationGroup ().PlaceOnTop ();
     IndexHolder<VolumetricIndex> &holder = volumetricIndices.EmplaceBack (IndexHolder<VolumetricIndex> {
-        new (volumetricIndexHeap.Acquire (sizeof (VolumetricIndex))) VolumetricIndex (this, _dimensions), 0u});
+        new (volumetricIndexHeap.Acquire (sizeof (VolumetricIndex), alignof (VolumetricIndex)))
+            VolumetricIndex (this, _dimensions),
+        0u});
 
     for (const VolumetricIndex::Dimension &dimension : holder.index->GetDimensions ())
     {
