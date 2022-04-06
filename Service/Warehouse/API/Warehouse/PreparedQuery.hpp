@@ -54,7 +54,7 @@
      *          Breaking these invariants results in undefined behaviour.                                              \
      *                                                                                                                 \
      *          In most cases user should avoid entering unsafe fetch mode, but some rare tasks, that are usually      \
-     *          connected with hierarchical access, can not be solved without this tricky approach.                    \
+     *          connected to hierarchical access, can not be solved without this tricky approach.                      \
      */                                                                                                                \
     class UnsafeFetchAccessToken final                                                                                 \
     {                                                                                                                  \

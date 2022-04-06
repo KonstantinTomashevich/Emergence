@@ -64,7 +64,7 @@ void HierarchyTest (bool _logical, bool _useModifyQuery)
         CheckTransform {5u, _logical, false, _useModifyQuery, expectedTransform5},
         CheckTransform {5u, _logical, false, _useModifyQuery, expectedTransform5},
 
-        // Check that caching reacts to hierarchy change correctly.
+        // Check that caching reacts to change inside hierarchy correctly.
         SetLocalTransform {2u, _logical, false, {}},
         CheckTransform {3u, _logical, false, _useModifyQuery, expectedTransform3Changed},
         CheckTransform {3u, _logical, false, _useModifyQuery, expectedTransform3Changed},

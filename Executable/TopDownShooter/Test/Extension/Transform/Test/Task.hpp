@@ -2,14 +2,14 @@
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #    pragma warning(push)
-// We do not care about excessive padding in test tasks. Also, we need to include it before variant declaration.
+// We do not care about excessive padding in test tasks. Also, we need to do it before variant declaration.
 #    pragma warning(disable : 4324)
 #endif
 
 #include <variant>
 
-#include <Celerity/Constants.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Standard/ObjectId.hpp>
 
 #include <Container/Vector.hpp>
 

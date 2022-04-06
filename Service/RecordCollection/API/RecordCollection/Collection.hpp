@@ -183,7 +183,7 @@ public:
     ///          Breaking these invariants results in undefined behaviour.
     ///
     ///          In most cases user should avoid entering unsafe read mode, but some rare tasks, that are usually
-    ///          connected with hierarchical access, can not be solved without this tricky approach.
+    ///          connected to hierarchical access, can not be solved without this tricky approach.
     void SetUnsafeReadAllowed (bool _allowed) noexcept;
 
     /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.

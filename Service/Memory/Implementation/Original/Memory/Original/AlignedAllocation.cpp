@@ -10,7 +10,7 @@ namespace Emergence::Memory::Original
 void *AlignedAllocate (size_t _alignment, size_t _amount) noexcept
 {
 #if defined(_MSVC_STL_VERSION)
-    return _aligned_malloc (_amount, _alignment);
+    return _aligned_malloc (CorrectAlignedBlockSize (_alignment, _amount), _alignment);
 #else
     return std::aligned_alloc (_alignment, _amount);
 #endif
@@ -19,11 +19,11 @@ void *AlignedAllocate (size_t _alignment, size_t _amount) noexcept
 void *AlignedReallocate (void *_block, size_t _alignment, [[maybe_unused]] size_t _oldSize, size_t _newSize) noexcept
 {
 #if defined(_MSVC_STL_VERSION)
-    return _aligned_realloc (_block, _newSize, _alignment);
+    return _aligned_realloc (_block, CorrectAlignedBlockSize (_alignment, _newSize), _alignment);
 #else
     // Aligned realloc is not supported by STL, but it is needed for some rare cases.
     // This implementation is not the best, because it does allocate+copy every time.
-    // But it is not possible to design better implementation without under-the-hood access to allocation data.
+    // But it is not possible to design better implementation without under-the-hood access to the allocation data.
 
     void *newStorage = AlignedAllocate (_alignment, _newSize);
     memcpy (newStorage, _block, _oldSize);
@@ -41,14 +41,14 @@ void AlignedFree (void *_block) noexcept
 #endif
 }
 
-size_t CorrectPageChunkSize (size_t _alignment, size_t _requestedChunkSize) noexcept
+size_t CorrectAlignedBlockSize (size_t _alignment, size_t _requestedBlockSize) noexcept
 {
-    if (const size_t leftover = _requestedChunkSize % _alignment)
+    if (const size_t leftover = _requestedBlockSize % _alignment)
     {
-        return _requestedChunkSize + _alignment - leftover;
+        return _requestedBlockSize + _alignment - leftover;
     }
 
-    return _requestedChunkSize;
+    return _requestedBlockSize;
 }
 
 size_t GetPageSize (size_t _chunkSize, size_t _capacity) noexcept

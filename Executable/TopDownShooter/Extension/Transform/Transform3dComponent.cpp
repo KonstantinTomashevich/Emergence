@@ -13,8 +13,6 @@ Celerity::ObjectId Transform3dComponent::GetObjectId () const noexcept
 void Transform3dComponent::SetObjectId (Celerity::ObjectId _objectId) noexcept
 {
     objectId = _objectId;
-    logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
-    visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
 }
 
 Celerity::ObjectId Transform3dComponent::GetParentObjectId () const noexcept
@@ -25,6 +23,8 @@ Celerity::ObjectId Transform3dComponent::GetParentObjectId () const noexcept
 void Transform3dComponent::SetParentObjectId (Celerity::ObjectId _parentObjectId) noexcept
 {
     parentObjectId = _parentObjectId;
+    logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
+    visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
 }
 
 const Math::Transform3d &Transform3dComponent::GetLogicalLocalTransform () const noexcept
@@ -49,7 +49,7 @@ const Math::Transform3d &Transform3dComponent::GetLogicalWorldTransform (
     AtomicFlagGuard guard {lock};
 
     UpdateLogicalWorldTransformCache (_accessor);
-    return logicalWorldTransform;
+    return logicalWorldTransformCache;
 }
 
 const Math::Transform3d &Transform3dComponent::GetVisualLocalTransform () const noexcept
@@ -71,7 +71,7 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
     AtomicFlagGuard guard {lock};
 
     UpdateVisualWorldTransformCache (_accessor);
-    return visualWorldTransform;
+    return visualWorldTransformCache;
 }
 
 #define CACHE_UPDATE_METHOD(MethodTag, VariableTag)                                                                    \
@@ -88,7 +88,7 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
                      `parent->Update*WorldTransformCache` call unless parent is a root node. Therefore,                \
                      we might try to optimize this method by introducing matrix caching. However, it would             \
                      slow down root node getters, because they would calculate unneeded matrix. */                     \
-            VariableTag##WorldTransform = parent->VariableTag##WorldTransform * VariableTag##LocalTransform;           \
+            VariableTag##WorldTransformCache = parent->VariableTag##WorldTransformCache * VariableTag##LocalTransform; \
             VariableTag##LastUpdateParentTransformRevision = parent->VariableTag##LocalTransformRevision;              \
             VariableTag##LocalTransformChangedSinceLastUpdate = false;                                                 \
             return true;                                                                                               \
@@ -98,9 +98,10 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
     }                                                                                                                  \
                                                                                                                        \
     /* This component is a root node. */                                                                               \
+                                                                                                                       \
     if (VariableTag##LocalTransformChangedSinceLastUpdate)                                                             \
     {                                                                                                                  \
-        VariableTag##WorldTransform = VariableTag##LocalTransform;                                                     \
+        VariableTag##WorldTransformCache = VariableTag##LocalTransform;                                                \
         VariableTag##LocalTransformChangedSinceLastUpdate = false;                                                     \
         return true;                                                                                                   \
     }                                                                                                                  \

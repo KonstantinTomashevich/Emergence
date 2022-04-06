@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Celerity/Constants.hpp>
+#include <Celerity/Standard/ObjectId.hpp>
 
 #include <Math/Transform3d.hpp>
 
@@ -64,13 +64,13 @@ private:
     uint64_t logicalLocalTransformRevision = 0u;
     mutable uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool logicalLocalTransformChangedSinceLastUpdate = false;
-    mutable Math::Transform3d logicalWorldTransform;
+    mutable Math::Transform3d logicalWorldTransformCache;
 
     Math::Transform3d visualLocalTransform;
     uint64_t visualLocalTransformRevision = 0u;
     mutable uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool visualLocalTransformChangedSinceLastUpdate = false;
-    mutable Math::Transform3d visualWorldTransform;
+    mutable Math::Transform3d visualWorldTransformCache;
 
     bool visualTransformSyncNeeded = false;
 

@@ -12,7 +12,7 @@ void *AlignedReallocate (void *_block, size_t _alignment, size_t _oldSize, size_
 
 void AlignedFree (void *_block) noexcept;
 
-size_t CorrectPageChunkSize (size_t _alignment, size_t _requestedChunkSize) noexcept;
+size_t CorrectAlignedBlockSize (size_t _alignment, size_t _requestedBlockSize) noexcept;
 
 size_t GetPageSize (size_t _chunkSize, size_t _capacity) noexcept;
 

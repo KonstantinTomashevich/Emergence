@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Constants.hpp>
 #include <Celerity/InputAccumulator.hpp>
+#include <Celerity/Standard/ObjectId.hpp>
 
 #include <Container/InplaceVector.hpp>
 

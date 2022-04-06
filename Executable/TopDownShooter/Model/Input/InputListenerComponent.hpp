@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include <Celerity/Constants.hpp>
+#include <Celerity/Standard/ObjectId.hpp>
 
 #include <Container/InplaceVector.hpp>
 

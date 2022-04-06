@@ -9,7 +9,7 @@ UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group,
                               size_t _chunkSize,
                               size_t _alignment,
                               size_t _pageCapacity) noexcept
-    : chunkSize (CorrectPageChunkSize (_alignment, _chunkSize)),
+    : chunkSize (CorrectAlignedBlockSize (_alignment, _chunkSize)),
       alignment (_alignment),
       pageCapacity (_pageCapacity),
       topPage (nullptr),

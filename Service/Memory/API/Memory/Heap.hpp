@@ -23,7 +23,7 @@ public:
 
     ~Heap () noexcept;
 
-    /// \brief Acquires given amount of memory with default alignment.
+    /// \brief Acquires given amount of memory with given alignment.
     void *Acquire (size_t _bytes, size_t _alignment) noexcept;
 
     /// \brief Resizes given record pointer and copies it byte-to-byte to the new location if needed.
