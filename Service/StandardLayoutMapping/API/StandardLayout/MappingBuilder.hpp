@@ -21,7 +21,7 @@ public:
 
     /// \brief Starts mapping construction routine.
     /// \invariant There is no active mapping construction routine, that uses this builder.
-    void Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept;
+    void Begin (Memory::UniqueString _name, std::size_t _objectSize, std::size_t _objectAlignment) noexcept;
 
     /// \brief Finishes mapping construction routine.
     /// \invariant There is active mapping construction routine, that uses this builder.

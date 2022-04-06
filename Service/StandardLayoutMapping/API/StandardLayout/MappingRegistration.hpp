@@ -13,7 +13,7 @@
 /// \see EMERGENCE_MAPPING_REGISTRATION_END
 #define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
     Emergence::StandardLayout::MappingBuilder builder;                                                                 \
-    builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class));                                          \
+    builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class), alignof (Class));                         \
     using Type = Class;                                                                                                \
                                                                                                                        \
     if constexpr (std::is_default_constructible_v<Class> && !std::is_trivially_default_constructible_v<Class>)         \

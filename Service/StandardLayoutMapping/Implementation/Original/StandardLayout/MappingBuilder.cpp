@@ -24,9 +24,9 @@ MappingBuilder::~MappingBuilder () noexcept
     block_cast<PlainMappingBuilder> (data).~PlainMappingBuilder ();
 }
 
-void MappingBuilder::Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept
+void MappingBuilder::Begin (Memory::UniqueString _name, std::size_t _objectSize, std::size_t _objectAlignment) noexcept
 {
-    block_cast<PlainMappingBuilder> (data).Begin (_name, _objectSize);
+    block_cast<PlainMappingBuilder> (data).Begin (_name, _objectSize, _objectAlignment);
 }
 
 Mapping MappingBuilder::End () noexcept
