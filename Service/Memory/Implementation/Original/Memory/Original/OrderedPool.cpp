@@ -205,6 +205,7 @@ void *OrderedPool::Acquire () noexcept
         SetNextPagePointer (newPage, chunkSize, pageCapacity, insertPageBefore);
         if (insertPageAfter)
         {
+            // NOLINTNEXTLINE(readability-suspicious-call-argument): All is correct, this is a false positive.
             SetNextPagePointer (insertPageAfter, chunkSize, pageCapacity, newPage);
         }
         else
