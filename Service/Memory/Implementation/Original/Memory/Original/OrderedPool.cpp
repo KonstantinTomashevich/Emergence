@@ -38,7 +38,7 @@ OrderedPool::AcquiredChunkConstIterator &OrderedPool::AcquiredChunkConstIterator
         if (currentChunk >= pageEnd)
         {
             currentPage =
-                NextPagePointer (const_cast<AlignedPoolPage *> (currentPage), pool->chunkSize, pool->pageCapacity);
+                GetNextPagePointer (const_cast<AlignedPoolPage *> (currentPage), pool->chunkSize, pool->pageCapacity);
 
             if (currentPage)
             {
@@ -199,13 +199,13 @@ void *OrderedPool::Acquire () noexcept
         while (insertPageBefore && newPage > insertPageBefore)
         {
             insertPageAfter = insertPageBefore;
-            insertPageBefore = NextPagePointer (insertPageBefore, chunkSize, pageCapacity);
+            insertPageBefore = GetNextPagePointer (insertPageBefore, chunkSize, pageCapacity);
         }
 
-        NextPagePointer (newPage, chunkSize, pageCapacity) = insertPageBefore;
+        SetNextPagePointer (newPage, chunkSize, pageCapacity, insertPageBefore);
         if (insertPageAfter)
         {
-            NextPagePointer (insertPageAfter, chunkSize, pageCapacity) = newPage;
+            SetNextPagePointer (insertPageAfter, chunkSize, pageCapacity, newPage);
         }
         else
         {
@@ -284,7 +284,7 @@ void OrderedPool::Shrink () noexcept
         if (pageFreeChunks == pageCapacity)
         {
             // All chunks in current page are free, therefore we can safely release it.
-            AlignedPoolPage *nextPage = NextPagePointer (currentPage, chunkSize, pageCapacity);
+            AlignedPoolPage *nextPage = GetNextPagePointer (currentPage, chunkSize, pageCapacity);
             AlignedFree (currentPage);
 
             group.Release (GetPageMetadataSize ());
@@ -293,7 +293,7 @@ void OrderedPool::Shrink () noexcept
             currentPage = nextPage;
             if (previousPage)
             {
-                NextPagePointer (previousPage, chunkSize, pageCapacity) = currentPage;
+                SetNextPagePointer (previousPage, chunkSize, pageCapacity, currentPage);
             }
             else
             {
@@ -303,7 +303,7 @@ void OrderedPool::Shrink () noexcept
         else
         {
             previousPage = currentPage;
-            currentPage = NextPagePointer (currentPage, chunkSize, pageCapacity);
+            currentPage = GetNextPagePointer (currentPage, chunkSize, pageCapacity);
         }
     }
 }
@@ -321,7 +321,7 @@ void OrderedPool::Clear () noexcept
         group.Release (GetPageMetadataSize ());
         group.Free (pageSize);
 
-        AlignedPoolPage *next = NextPagePointer (page, chunkSize, pageCapacity);
+        AlignedPoolPage *next = GetNextPagePointer (page, chunkSize, pageCapacity);
         AlignedFree (page);
         page = next;
     }

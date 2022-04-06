@@ -49,7 +49,7 @@ void *UnorderedPool::Acquire () noexcept
         group.Acquire (GetPageMetadataSize ());
 
         auto *newPage = static_cast<AlignedPoolPage *> (AlignedAllocate (alignment, pageSize));
-        NextPagePointer (newPage, chunkSize, pageCapacity) = topPage;
+        SetNextPagePointer (newPage, chunkSize, pageCapacity, topPage);
         topPage = newPage;
         auto *currentChunk = static_cast<Chunk *> (GetPageChunksBegin (newPage));
 
@@ -95,7 +95,7 @@ void UnorderedPool::Clear () noexcept
         group.Release (GetPageMetadataSize ());
         group.Free (pageSize);
 
-        AlignedPoolPage *next = NextPagePointer (page, chunkSize, pageCapacity);
+        AlignedPoolPage *next = GetNextPagePointer (page, chunkSize, pageCapacity);
         AlignedFree (page);
         page = next;
     }

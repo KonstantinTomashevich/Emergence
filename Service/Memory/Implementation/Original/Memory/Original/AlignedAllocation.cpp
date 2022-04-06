@@ -66,8 +66,13 @@ void *GetPageChunksEnd (AlignedPoolPage *_page, size_t _chunkSize, size_t _capac
     return static_cast<uint8_t *> (_page) + _chunkSize * _capacity;
 }
 
-AlignedPoolPage *&NextPagePointer (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity) noexcept
+AlignedPoolPage *GetNextPagePointer (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity) noexcept
 {
     return *reinterpret_cast<AlignedPoolPage **> (GetPageChunksEnd (_page, _chunkSize, _capacity));
+}
+
+void SetNextPagePointer (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity, AlignedPoolPage *_next) noexcept
+{
+    *reinterpret_cast<AlignedPoolPage **> (GetPageChunksEnd (_page, _chunkSize, _capacity)) = _next;
 }
 } // namespace Emergence::Memory::Original

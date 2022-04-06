@@ -22,7 +22,9 @@ void *GetPageChunksBegin (AlignedPoolPage *_page) noexcept;
 
 void *GetPageChunksEnd (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity) noexcept;
 
-AlignedPoolPage *&NextPagePointer (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity) noexcept;
+AlignedPoolPage *GetNextPagePointer (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity) noexcept;
+
+void SetNextPagePointer (AlignedPoolPage *_page, size_t _chunkSize, size_t _capacity, AlignedPoolPage *_next) noexcept;
 
 constexpr size_t GetPageMetadataSize () noexcept
 {
