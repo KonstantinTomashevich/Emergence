@@ -3,8 +3,8 @@
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
-#include <Container/Vector.hpp>
 #include <Container/TypedOrderedPool.hpp>
+#include <Container/Vector.hpp>
 
 #include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
