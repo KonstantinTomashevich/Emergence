@@ -330,6 +330,11 @@ void OrderedPool::Clear () noexcept
     topFreeChunk = nullptr;
 }
 
+bool OrderedPool::IsEmpty () const noexcept
+{
+    return acquiredChunkCount == 0u;
+}
+
 OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noexcept
 {
     return AcquiredChunkConstIterator {this};

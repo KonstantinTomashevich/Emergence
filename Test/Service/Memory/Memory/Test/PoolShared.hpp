@@ -46,7 +46,9 @@ template <typename Pool>
 void AcquireNotNull ()
 {
     Pool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem)};
+    CHECK (pool.IsEmpty ());
     CHECK (pool.Acquire ());
+    CHECK (!pool.IsEmpty ());
 }
 
 template <typename Pool>
@@ -86,11 +88,14 @@ template <typename Pool>
 void Clear ()
 {
     FullPoolContext<Pool> context;
+    CHECK (!context.pool.IsEmpty ());
     context.pool.Clear ();
+    CHECK (context.pool.IsEmpty ());
     CHECK_EQUAL (context.pool.GetAllocationGroup ().GetTotal (), 0u);
 
     // Acquire one item to ensure that pool is in working state.
     CHECK (context.pool.Acquire ());
+    CHECK (!context.pool.IsEmpty ());
 }
 
 template <typename Pool>

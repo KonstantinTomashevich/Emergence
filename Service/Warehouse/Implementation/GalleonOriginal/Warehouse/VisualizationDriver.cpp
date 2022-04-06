@@ -41,23 +41,23 @@ void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph, const CargoDe
         mappingEdge.color = MAPPING_USAGE_COLOR;
     };
 
-    for (const SingletonContainer *container : _cargoDeck.singletonContainers)
+    for (const SingletonContainer &container : _cargoDeck.singleton)
     {
         VisualGraph::Graph &subgraph = _graph.subgraphs.emplace_back ();
-        setupContainerGraph (subgraph, *container);
+        setupContainerGraph (subgraph, container);
     }
 
-    for (const ShortTermContainer *container : _cargoDeck.shortTermContainers)
+    for (const ShortTermContainer &container : _cargoDeck.shortTerm)
     {
         VisualGraph::Graph &subgraph = _graph.subgraphs.emplace_back ();
-        setupContainerGraph (subgraph, *container);
+        setupContainerGraph (subgraph, container);
     }
 
-    for (const LongTermContainer *container : _cargoDeck.longTermContainers)
+    for (const LongTermContainer &container : _cargoDeck.longTerm)
     {
         VisualGraph::Graph &subgraph = _graph.subgraphs.emplace_back ();
-        setupContainerGraph (subgraph, *container);
-        subgraph.subgraphs.emplace_back (RecordCollection::Visualization::GraphFromCollection (container->collection));
+        setupContainerGraph (subgraph, container);
+        subgraph.subgraphs.emplace_back (RecordCollection::Visualization::GraphFromCollection (container.collection));
     }
 }
 

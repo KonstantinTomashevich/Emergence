@@ -45,6 +45,11 @@ void UnorderedPool::Clear () noexcept
     block_cast<Original::UnorderedPool> (data).Clear ();
 }
 
+bool UnorderedPool::IsEmpty () const noexcept
+{
+    return block_cast<Original::UnorderedPool> (data).IsEmpty ();
+}
+
 const Profiler::AllocationGroup &UnorderedPool::GetAllocationGroup () const noexcept
 {
     return block_cast<Original::UnorderedPool> (data).GetAllocationGroup ();

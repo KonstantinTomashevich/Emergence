@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Container/Vector.hpp>
+#include <Container/TypedOrderedPool.hpp>
 
 #include <Galleon/LongTermContainer.hpp>
 #include <Galleon/ShortTermContainer.hpp>
@@ -68,12 +68,8 @@ private:
 
     Memory::UniqueString name;
 
-    Memory::Heap singletonHeap;
-    Memory::Heap shortTermHeap;
-    Memory::Heap longTermHeap;
-
-    Container::Vector<SingletonContainer *> singletonContainers;
-    Container::Vector<ShortTermContainer *> shortTermContainers;
-    Container::Vector<LongTermContainer *> longTermContainers;
+    Container::TypedOrderedPool<SingletonContainer> singleton;
+    Container::TypedOrderedPool<ShortTermContainer> shortTerm;
+    Container::TypedOrderedPool<LongTermContainer> longTerm;
 };
 } // namespace Emergence::Galleon

@@ -16,13 +16,13 @@ ShortTermContainer::InsertQuery::Cursor::~Cursor () noexcept
 void *ShortTermContainer::InsertQuery::Cursor::operator++ () noexcept
 {
     assert (container);
-    auto *node = static_cast<Node *> (container->pool.Acquire ());
-    node->next = container->firstNode;
+    void *node = container->pool.Acquire ();
+    container->SetNextNode (node, container->firstNode);
     container->firstNode = node;
 
     auto placeholder = container->pool.GetAllocationGroup ().PlaceOnTop ();
-    container->typeMapping.Construct (&node->content);
-    return &node->content;
+    container->typeMapping.Construct (ShortTermContainer::GetNodeContent (node));
+    return ShortTermContainer::GetNodeContent (node);
 }
 
 ShortTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle<ShortTermContainer> _container) noexcept
@@ -51,7 +51,7 @@ ShortTermContainer::InsertQuery::InsertQuery (Handling::Handle<ShortTermContaine
 
 ShortTermContainer::FetchQuery::Cursor::Cursor (const ShortTermContainer::FetchQuery::Cursor &_other) noexcept
     : container (_other.container),
-      current (_other.current)
+      currentNode (_other.currentNode)
 {
     assert (container);
     container->accessCounter.RegisterReadAccess ();
@@ -59,9 +59,9 @@ ShortTermContainer::FetchQuery::Cursor::Cursor (const ShortTermContainer::FetchQ
 
 ShortTermContainer::FetchQuery::Cursor::Cursor (ShortTermContainer::FetchQuery::Cursor &&_other) noexcept
     : container (std::move (_other.container)),
-      current (_other.current)
+      currentNode (_other.currentNode)
 {
-    _other.current = nullptr;
+    _other.currentNode = nullptr;
 }
 
 ShortTermContainer::FetchQuery::Cursor::~Cursor () noexcept
@@ -75,20 +75,20 @@ ShortTermContainer::FetchQuery::Cursor::~Cursor () noexcept
 const void *ShortTermContainer::FetchQuery::Cursor::operator* () const noexcept
 {
     assert (container);
-    return current ? &current->content : nullptr;
+    return ShortTermContainer::GetNodeContent (currentNode);
 }
 
 ShortTermContainer::FetchQuery::Cursor &ShortTermContainer::FetchQuery::Cursor::operator++ () noexcept
 {
     assert (container);
-    assert (current);
-    current = current->next;
+    assert (currentNode);
+    currentNode = container->GetNextNode (currentNode);
     return *this;
 }
 
 ShortTermContainer::FetchQuery::Cursor::Cursor (Handling::Handle<ShortTermContainer> _container) noexcept
     : container (std::move (_container)),
-      current (container->firstNode)
+      currentNode (container->firstNode)
 {
     assert (container);
     container->accessCounter.RegisterReadAccess ();
@@ -113,11 +113,11 @@ ShortTermContainer::FetchQuery::FetchQuery (Handling::Handle<ShortTermContainer>
 
 ShortTermContainer::ModifyQuery::Cursor::Cursor (ShortTermContainer::ModifyQuery::Cursor &&_other) noexcept
     : container (std::move (_other.container)),
-      current (_other.current),
-      previous (_other.previous)
+      currentNode (_other.currentNode),
+      previousNode (_other.previousNode)
 {
-    _other.current = nullptr;
-    _other.previous = nullptr;
+    _other.currentNode = nullptr;
+    _other.previousNode = nullptr;
 }
 
 ShortTermContainer::ModifyQuery::Cursor::~Cursor () noexcept
@@ -131,32 +131,32 @@ ShortTermContainer::ModifyQuery::Cursor::~Cursor () noexcept
 void *ShortTermContainer::ModifyQuery::Cursor::operator* () noexcept
 {
     assert (container);
-    return current ? &current->content : nullptr;
+    return currentNode ? ShortTermContainer::GetNodeContent (currentNode) : nullptr;
 }
 
 ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor::operator++ () noexcept
 {
     assert (container);
-    assert (current);
+    assert (currentNode);
 
-    previous = current;
-    current = current->next;
+    previousNode = currentNode;
+    currentNode = container->GetNextNode (currentNode);
     return *this;
 }
 
 ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor::operator~ () noexcept
 {
     assert (container);
-    assert (current);
+    assert (currentNode);
 
-    Node *next = current->next;
-    container->typeMapping.Destruct (&current->content);
-    container->pool.Release (current);
-    current = next;
+    void *next = container->GetNextNode (currentNode);
+    container->typeMapping.Destruct (ShortTermContainer::GetNodeContent (currentNode));
+    container->pool.Release (currentNode);
+    currentNode = next;
 
-    if (previous)
+    if (previousNode)
     {
-        previous->next = next;
+        container->SetNextNode (previousNode, next);
     }
     else
     {
@@ -168,7 +168,7 @@ ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor
 
 ShortTermContainer::ModifyQuery::Cursor::Cursor (Handling::Handle<ShortTermContainer> _container) noexcept
     : container (std::move (_container)),
-      current (container->firstNode)
+      currentNode (container->firstNode)
 {
     assert (container);
     container->accessCounter.RegisterWriteAccess ();
@@ -217,20 +217,47 @@ void ShortTermContainer::SetUnsafeFetchAllowed (bool _allowed) noexcept
     accessCounter.SetUnsafeFetchAllowed (_allowed);
 }
 
+void *ShortTermContainer::GetNodeContent (void *_node) noexcept
+{
+    return _node;
+}
+
+const void *ShortTermContainer::GetNodeContent (const void *_node) noexcept
+{
+    return _node;
+}
+
 ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
       pool (Memory::Profiler::AllocationGroup {Memory::UniqueString {typeMapping.GetName ()}},
-            sizeof (Node) + typeMapping.GetObjectSize ())
+            typeMapping.GetObjectSize () + sizeof (uintptr_t),
+            typeMapping.GetObjectAlignment ())
 {
+    assert (typeMapping.GetObjectSize () % sizeof (uintptr_t) == 0u);
 }
 
 ShortTermContainer::~ShortTermContainer () noexcept
 {
-    Node *node = firstNode;
+    void *node = firstNode;
     while (node)
     {
-        typeMapping.Destruct (&node->content);
-        node = node->next;
+        typeMapping.Destruct (GetNodeContent (node));
+        node = GetNextNode (node);
     }
+}
+
+const void *ShortTermContainer::GetNextNode (const void *_node) noexcept
+{
+    return *reinterpret_cast<void *const *> (static_cast<const uint8_t *> (_node) + typeMapping.GetObjectSize ());
+}
+
+void *ShortTermContainer::GetNextNode (void *_node) noexcept
+{
+    return const_cast<void *> (GetNextNode (const_cast<const void *> (_node)));
+}
+
+void ShortTermContainer::SetNextNode (void *_node, void *_next) noexcept
+{
+    *reinterpret_cast<void **> (static_cast<uint8_t *> (_node) + typeMapping.GetObjectSize ()) = _next;
 }
 } // namespace Emergence::Galleon

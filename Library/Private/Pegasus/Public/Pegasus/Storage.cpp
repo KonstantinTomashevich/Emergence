@@ -77,7 +77,9 @@ Handling::Handle<VolumetricIndex> Storage::VolumetricIndexIterator::operator* ()
 using namespace Memory::Literals;
 
 Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
-    : records (Memory::Profiler::AllocationGroup {"Records"_us}, _recordMapping.GetObjectSize (), ...),
+    : records (Memory::Profiler::AllocationGroup {"Records"_us},
+               _recordMapping.GetObjectSize (),
+               _recordMapping.GetObjectAlignment ()),
       hashIndexHeap (Memory::Profiler::AllocationGroup {"HashIndex"_us}),
       orderedIndexHeap (Memory::Profiler::AllocationGroup {"OrderedIndex"_us}),
       volumetricIndexHeap (Memory::Profiler::AllocationGroup {"VolumetricIndex"_us}),

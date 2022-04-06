@@ -44,6 +44,9 @@ public:
     /// \brief Releases all pages.
     void Clear () noexcept;
 
+    /// \return True if there is no acquired items.
+    [[nodiscard]] bool IsEmpty () const noexcept;
+
     /// \return Allocation group to which this allocator belongs.
     /// \warning Group will report zero memory usage if it is a placeholder or
     ///          if executable is linked to no-profile implementation.

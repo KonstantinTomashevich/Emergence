@@ -88,6 +88,9 @@ public:
     /// \warning Invalidates iterators.
     void Clear () noexcept;
 
+    /// \return True if there is no acquired items.
+    [[nodiscard]] bool IsEmpty () const noexcept;
+
     /// \return Iterator, that points to beginning of acquired chunks sequence.
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 

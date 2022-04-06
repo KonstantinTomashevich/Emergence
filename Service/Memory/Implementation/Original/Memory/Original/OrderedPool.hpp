@@ -63,6 +63,8 @@ public:
 
     void Clear () noexcept;
 
+    [[nodiscard]] bool IsEmpty () const noexcept;
+
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
     [[nodiscard]] AcquiredChunkConstIterator EndAcquired () const noexcept;

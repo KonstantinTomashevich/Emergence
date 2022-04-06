@@ -104,6 +104,11 @@ void UnorderedPool::Clear () noexcept
     topFreeChunk = nullptr;
 }
 
+bool UnorderedPool::IsEmpty () const noexcept
+{
+    return acquiredChunkCount == 0u;
+}
+
 const Profiler::AllocationGroup &UnorderedPool::GetAllocationGroup () const noexcept
 {
     return group;

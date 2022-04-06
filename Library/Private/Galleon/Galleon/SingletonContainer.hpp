@@ -4,6 +4,8 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/TypedOrderedPool.hpp>
+
 #include <Galleon/AccessCounter.hpp>
 #include <Galleon/ContainerBase.hpp>
 
@@ -124,8 +126,9 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (SingletonContainer);
 
 private:
-    /// CargoDeck constructs and destructs containers.
-    friend class CargoDeck;
+    /// Pool from CargoDeck constructs and destructs containers.
+    template <typename Item>
+    friend class Container::TypedOrderedPool;
 
     /// \warning Must be used in pair with custom ::new.
     explicit SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
@@ -134,9 +137,8 @@ private:
 
     AccessCounter accessCounter;
 
-    /// \details We log memory usage of inplace-allocated singleton into separate group for readability.
-    Memory::Profiler::AllocationGroup usedAllocationGroup;
+    void *singletonInstance;
 
-    uint8_t storage[0u];
+    Memory::Heap singletonHeap;
 };
 } // namespace Emergence::Galleon

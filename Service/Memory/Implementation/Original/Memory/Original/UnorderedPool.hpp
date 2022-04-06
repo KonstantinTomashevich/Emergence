@@ -33,6 +33,8 @@ public:
 
     void Clear () noexcept;
 
+    [[nodiscard]] bool IsEmpty () const noexcept;
+
     [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (UnorderedPool);

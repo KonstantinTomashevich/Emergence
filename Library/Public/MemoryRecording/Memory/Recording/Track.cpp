@@ -90,7 +90,8 @@ size_t RecordedAllocationGroup::GetTotal () const noexcept
 
 UnorderedPool &RecordedAllocationGroup::GetGroupPool () noexcept
 {
-    static UnorderedPool pool {Constants::AllocationGroup (), sizeof (RecordedAllocationGroup)};
+    static UnorderedPool pool {Constants::AllocationGroup (), sizeof (RecordedAllocationGroup),
+                               alignof (RecordedAllocationGroup)};
     return pool;
 }
 
@@ -251,7 +252,7 @@ Track::EventIterator::EventIterator (const Track *_track, const Track::EventNode
 
 Track::Track () noexcept
     : idToGroup (Constants::AllocationGroup ()),
-      events (Constants::AllocationGroup (), sizeof (EventNode))
+      events (Constants::AllocationGroup (), sizeof (EventNode), alignof (EventNode))
 {
 }
 

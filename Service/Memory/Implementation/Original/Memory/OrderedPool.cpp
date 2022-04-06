@@ -75,6 +75,11 @@ void OrderedPool::Clear () noexcept
     block_cast<Original::OrderedPool> (data).Clear ();
 }
 
+bool OrderedPool::IsEmpty () const noexcept
+{
+    return block_cast<Original::OrderedPool> (data).IsEmpty ();
+}
+
 OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).BeginAcquired ();
