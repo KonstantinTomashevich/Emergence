@@ -94,8 +94,8 @@ Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexc
 {
     auto &internal = *new (&data) InternalData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
-    internal.executor =
-        new (internal.heap.Acquire (sizeof (ExecutorImplementation))) ExecutorImplementation (_collection);
+    internal.executor = new (internal.heap.Acquire (sizeof (ExecutorImplementation), alignof (ExecutorImplementation)))
+        ExecutorImplementation (_collection);
 }
 
 Executor::Executor (Executor &&_other) noexcept

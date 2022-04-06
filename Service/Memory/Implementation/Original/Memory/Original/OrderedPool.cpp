@@ -2,7 +2,6 @@
 #include <cstdlib>
 
 #include <Memory/Original/OrderedPool.hpp>
-#include <utility>
 
 namespace Emergence::Memory::Original
 {
@@ -30,21 +29,23 @@ OrderedPool::AcquiredChunkConstIterator &OrderedPool::AcquiredChunkConstIterator
     assert (currentPage);
     assert (currentChunk);
 
-    const std::size_t pageSize = pool->chunkSize * pool->pageCapacity;
-    const auto *pageEnd =
-        reinterpret_cast<const Chunk *> (reinterpret_cast<const uint8_t *> (&currentPage->chunks[0u]) + pageSize);
+    const void *pageEnd =
+        GetPageChunksEnd (const_cast<AlignedPoolPage *> (currentPage), pool->chunkSize, pool->pageCapacity);
 
     while (true)
     {
         currentChunk = reinterpret_cast<const Chunk *> (&currentChunk->bytes[0u] + pool->chunkSize);
         if (currentChunk >= pageEnd)
         {
-            currentPage = currentPage->next;
+            currentPage =
+                GetNextPagePointer (const_cast<AlignedPoolPage *> (currentPage), pool->chunkSize, pool->pageCapacity);
+
             if (currentPage)
             {
-                pageEnd = reinterpret_cast<const Chunk *> (
-                    reinterpret_cast<const uint8_t *> (&currentPage->chunks[0u]) + pageSize);
-                currentChunk = &currentPage->chunks[0u];
+                pageEnd =
+                    GetPageChunksEnd (const_cast<AlignedPoolPage *> (currentPage), pool->chunkSize, pool->pageCapacity);
+
+                currentChunk = static_cast<Chunk *> (GetPageChunksBegin (const_cast<AlignedPoolPage *> (currentPage)));
             }
             else
             {
@@ -91,9 +92,9 @@ OrderedPool::AcquiredChunkConstIterator::AcquiredChunkConstIterator (const Order
       currentFreeChunk (_pool->topFreeChunk),
       pool (_pool)
 {
-    if (pool->topPage)
+    if (currentPage)
     {
-        currentChunk = &currentPage->chunks[0u];
+        currentChunk = static_cast<Chunk *> (GetPageChunksBegin (const_cast<AlignedPoolPage *> (currentPage)));
 
         // Because ordering is guaranteed, we can check is first chunk free by this simple comparison.
         if (currentChunk == currentFreeChunk)
@@ -148,9 +149,13 @@ OrderedPool::AcquiredChunkIterator::AcquiredChunkIterator (AcquiredChunkConstIte
 {
 }
 
-OrderedPool::OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept
-    : pageCapacity (_pageCapacity),
-      chunkSize (_chunkSize),
+OrderedPool::OrderedPool (Profiler::AllocationGroup _group,
+                          size_t _chunkSize,
+                          size_t _alignment,
+                          size_t _pageCapacity) noexcept
+    : chunkSize (CorrectAlignedBlockSize (_alignment, _chunkSize)),
+      alignment (_alignment),
+      pageCapacity (_pageCapacity),
       topPage (nullptr),
       topFreeChunk (nullptr),
       acquiredChunkCount (0u),
@@ -161,8 +166,9 @@ OrderedPool::OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, s
 }
 
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
-    : pageCapacity (_other.pageCapacity),
-      chunkSize (_other.chunkSize),
+    : chunkSize (_other.chunkSize),
+      alignment (_other.alignment),
+      pageCapacity (_other.pageCapacity),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk),
       acquiredChunkCount (_other.acquiredChunkCount),
@@ -182,30 +188,32 @@ void *OrderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
-        group.Allocate (sizeof (Page) + pageCapacity * chunkSize);
-        group.Acquire (sizeof (Page));
+        const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
+        group.Allocate (pageSize);
+        group.Acquire (GetPageMetadataSize ());
 
-        Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
-        Page *insertPageBefore = topPage;
-        Page *insertPageAfter = nullptr;
+        auto *newPage = static_cast<AlignedPoolPage *> (AlignedAllocate (alignment, pageSize));
+        AlignedPoolPage *insertPageBefore = topPage;
+        AlignedPoolPage *insertPageAfter = nullptr;
 
         while (insertPageBefore && newPage > insertPageBefore)
         {
             insertPageAfter = insertPageBefore;
-            insertPageBefore = insertPageBefore->next;
+            insertPageBefore = GetNextPagePointer (insertPageBefore, chunkSize, pageCapacity);
         }
 
-        newPage->next = insertPageBefore;
+        SetNextPagePointer (newPage, chunkSize, pageCapacity, insertPageBefore);
         if (insertPageAfter)
         {
-            insertPageAfter->next = newPage;
+            // NOLINTNEXTLINE(readability-suspicious-call-argument): All is correct, this is a false positive.
+            SetNextPagePointer (insertPageAfter, chunkSize, pageCapacity, newPage);
         }
         else
         {
             topPage = newPage;
         }
 
-        Chunk *currentChunk = &newPage->chunks[0u];
+        auto *currentChunk = static_cast<Chunk *> (GetPageChunksBegin (newPage));
         for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
             auto *next = reinterpret_cast<Chunk *> (reinterpret_cast<uint8_t *> (currentChunk) + chunkSize);
@@ -214,7 +222,7 @@ void *OrderedPool::Acquire () noexcept
         }
 
         currentChunk->nextFree = nullptr;
-        topFreeChunk = &newPage->chunks[0u];
+        topFreeChunk = static_cast<Chunk *> (GetPageChunksBegin (newPage));
     }
 
     group.Acquire (chunkSize);
@@ -253,20 +261,20 @@ void OrderedPool::Release (void *_chunk) noexcept
 
 void OrderedPool::Shrink () noexcept
 {
-    Page *previousPage = nullptr;
-    Page *currentPage = topPage;
+    AlignedPoolPage *previousPage = nullptr;
+    AlignedPoolPage *currentPage = topPage;
     Chunk *currentFreeChunk = topFreeChunk;
+    const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
 
     while (currentPage && currentFreeChunk)
     {
         // Due to the ordering and shrink logic, this assert should always be true.
         // It's left here to highlight that this case is impossible in current algorithm.
-        assert (currentFreeChunk >= &currentPage->chunks[0u]);
+        assert (currentFreeChunk >= GetPageChunksBegin (currentPage));
 
         // Count free chunks that belong to this page.
         std::size_t pageFreeChunks = 0u;
-        auto *pageEnd = reinterpret_cast<Chunk *> (reinterpret_cast<uint8_t *> (&currentPage->chunks[0u]) +
-                                                   chunkSize * pageCapacity);
+        void *pageEnd = GetPageChunksEnd (currentPage, chunkSize, pageCapacity);
 
         while (currentFreeChunk && currentFreeChunk < pageEnd)
         {
@@ -277,16 +285,16 @@ void OrderedPool::Shrink () noexcept
         if (pageFreeChunks == pageCapacity)
         {
             // All chunks in current page are free, therefore we can safely release it.
-            Page *nextPage = currentPage->next;
-            free (currentPage);
+            AlignedPoolPage *nextPage = GetNextPagePointer (currentPage, chunkSize, pageCapacity);
+            AlignedFree (currentPage);
 
-            group.Release (sizeof (Page));
-            group.Free (sizeof (Page) + pageCapacity * chunkSize);
+            group.Release (GetPageMetadataSize ());
+            group.Free (pageSize);
 
             currentPage = nextPage;
             if (previousPage)
             {
-                previousPage->next = currentPage;
+                SetNextPagePointer (previousPage, chunkSize, pageCapacity, currentPage);
             }
             else
             {
@@ -296,7 +304,7 @@ void OrderedPool::Shrink () noexcept
         else
         {
             previousPage = currentPage;
-            currentPage = currentPage->next;
+            currentPage = GetNextPagePointer (currentPage, chunkSize, pageCapacity);
         }
     }
 }
@@ -305,20 +313,27 @@ void OrderedPool::Clear () noexcept
 {
     group.Release (chunkSize * acquiredChunkCount);
     acquiredChunkCount = 0u;
-    Page *page = topPage;
+
+    AlignedPoolPage *page = topPage;
+    const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
 
     while (page)
     {
-        group.Release (sizeof (Page));
-        group.Free (sizeof (Page) + pageCapacity * chunkSize);
+        group.Release (GetPageMetadataSize ());
+        group.Free (pageSize);
 
-        Page *next = page->next;
-        free (page);
+        AlignedPoolPage *next = GetNextPagePointer (page, chunkSize, pageCapacity);
+        AlignedFree (page);
         page = next;
     }
 
     topPage = nullptr;
     topFreeChunk = nullptr;
+}
+
+bool OrderedPool::IsEmpty () const noexcept
+{
+    return acquiredChunkCount == 0u;
 }
 
 OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noexcept

@@ -107,6 +107,10 @@ private:
 
     TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString _name) noexcept;
 
+    void RegisterReadAccess (Memory::UniqueString _resourceName) noexcept;
+
+    void RegisterWriteAccess (Memory::UniqueString _resourceName) noexcept;
+
     [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                              const StandardLayout::Mapping &_trackedType) noexcept;
 
@@ -240,7 +244,7 @@ void TaskConstructor::SetExecutor (Args... _args) noexcept
 {
     static_assert (std::is_base_of_v<TaskExecutorBase<Executor>, Executor>);
     auto placeholder = heap.GetAllocationGroup ().PlaceOnTop ();
-    Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor)))
+    Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor), alignof (Executor)))
                                            Executor {*this, std::forward<Args> (_args)...}};
 
     SetExecutor (

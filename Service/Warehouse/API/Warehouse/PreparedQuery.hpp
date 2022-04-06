@@ -41,4 +41,39 @@
     EMERGENCE_PREPARED_QUERY_OPERATIONS_COMMON (Class);                                                                \
                                                                                                                        \
     /*! \invariant There is no other cursors for ::GetTypeMapping type in registry. */                                 \
-    Cursor Execute (__VA_ARGS__) noexcept
+    Cursor Execute (__VA_ARGS__) noexcept;                                                                             \
+                                                                                                                       \
+    /*!                                                                                                                \
+     * \brief Allows to temporarily lift `no modify cursors` invariant for fetch queries                               \
+     *        and `no fetch cursors` for edit queries.                                                                 \
+     * \details By lifting these requirements user states that these invariants are true:                              \
+     *          - There is no multi thread access to any query, that works with the same type, during this period.     \
+     *          - Key fields of any fetch cursors are not modified by any modify cursors.                              \
+     *          - New objects with the same type are not inserted.                                                     \
+     *          - Modify cursor is not deleting objects with the same type.                                            \
+     *          Breaking these invariants results in undefined behaviour.                                              \
+     *                                                                                                                 \
+     *          In most cases user should avoid entering unsafe fetch mode, but some rare tasks, that are usually      \
+     *          connected to hierarchical access, can not be solved without this tricky approach.                      \
+     */                                                                                                                \
+    class UnsafeFetchAccessToken final                                                                                 \
+    {                                                                                                                  \
+    public:                                                                                                            \
+        UnsafeFetchAccessToken (const UnsafeFetchAccessToken &_other) = delete;                                        \
+                                                                                                                       \
+        UnsafeFetchAccessToken (UnsafeFetchAccessToken &&_other) noexcept;                                             \
+                                                                                                                       \
+        ~UnsafeFetchAccessToken () noexcept;                                                                           \
+                                                                                                                       \
+        EMERGENCE_DELETE_ASSIGNMENT (UnsafeFetchAccessToken);                                                          \
+                                                                                                                       \
+    private:                                                                                                           \
+        friend class Class;                                                                                            \
+                                                                                                                       \
+        UnsafeFetchAccessToken (void *_handle) noexcept;                                                               \
+                                                                                                                       \
+        EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();                                                                       \
+    };                                                                                                                 \
+                                                                                                                       \
+    /*! \see UnsafeFetchAccessToken */                                                                                 \
+    UnsafeFetchAccessToken AllowUnsafeFetchAccess () noexcept

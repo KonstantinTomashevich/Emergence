@@ -5,6 +5,7 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/Original/AlignedAllocation.hpp>
 #include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Memory::Original
@@ -12,8 +13,6 @@ namespace Emergence::Memory::Original
 class OrderedPool final
 {
 private:
-    struct Page;
-
     struct Chunk;
 
 public:
@@ -29,7 +28,7 @@ public:
 
         AcquiredChunkConstIterator (const OrderedPool *_pool) noexcept;
 
-        const Page *currentPage = nullptr;
+        const AlignedPoolPage *currentPage = nullptr;
         const Chunk *currentChunk = nullptr;
         const Chunk *currentFreeChunk = nullptr;
         const OrderedPool *pool = nullptr;
@@ -48,7 +47,7 @@ public:
         AcquiredChunkConstIterator base;
     };
 
-    OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _alignment, size_t _pageCapacity) noexcept;
 
     OrderedPool (const OrderedPool &_other) = delete;
 
@@ -63,6 +62,8 @@ public:
     void Shrink () noexcept;
 
     void Clear () noexcept;
+
+    [[nodiscard]] bool IsEmpty () const noexcept;
 
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
@@ -89,16 +90,11 @@ private:
         };
     };
 
-    struct Page
-    {
-        Page *next;
-
-        Chunk chunks[0u];
-    };
-
-    const size_t pageCapacity;
     const size_t chunkSize;
-    Page *topPage;
+    const size_t alignment;
+    const size_t pageCapacity;
+
+    AlignedPoolPage *topPage;
     Chunk *topFreeChunk;
 
     /// \brief Acquired chunk counter required to correctly log memory usage for profiling.

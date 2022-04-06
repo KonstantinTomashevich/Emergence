@@ -23,12 +23,12 @@ public:
 
     ~Heap () noexcept;
 
-    /// \brief Acquires given amount of memory with default alignment.
-    void *Acquire (size_t _bytes) noexcept;
+    /// \brief Acquires given amount of memory with given alignment.
+    void *Acquire (size_t _bytes, size_t _alignment) noexcept;
 
     /// \brief Resizes given record pointer and copies it byte-to-byte to the new location if needed.
     /// \param _currentSize Record current size, required for the same reasons as `_bytes` in ::Release.
-    void *Resize (void *_record, size_t _currentSize, size_t _newSize) noexcept;
+    void *Resize (void *_record, size_t _alignment, size_t _currentSize, size_t _newSize) noexcept;
 
     /// \brief Releases given record pointer.
     /// \param _bytes Record size, must be equal to allocated value, passed through ::Acquire or ::Resize.
@@ -93,7 +93,7 @@ public:
     Type *allocate (size_t _count) noexcept
     {
         // NOLINTNEXTLINE(bugprone-sizeof-expression): Type might be pointer.
-        return static_cast<Type *> (heap.Acquire (sizeof (Type) * _count));
+        return static_cast<Type *> (heap.Acquire (sizeof (Type) * _count, alignof (Type)));
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming): STD naming.

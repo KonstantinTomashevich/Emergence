@@ -5,6 +5,8 @@
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/TypedOrderedPool.hpp>
+
 #include <Galleon/ContainerBase.hpp>
 
 #include <RecordCollection/Collection.hpp>
@@ -331,11 +333,14 @@ public:
 
     void LastReferenceUnregistered () noexcept;
 
+    void SetUnsafeFetchAllowed (bool _allowed) noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (LongTermContainer);
 
 private:
-    /// CargoDeck constructs containers.
-    friend class CargoDeck;
+    /// Pool from CargoDeck constructs and destructs containers.
+    template <typename Item>
+    friend class Container::TypedOrderedPool;
 
     /// VisualizationDriver for Warehouse service should be able to directly access ::collection.
     friend class VisualizationDriver;

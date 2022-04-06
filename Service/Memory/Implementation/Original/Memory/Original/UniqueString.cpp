@@ -41,7 +41,7 @@ static const char *RegisterValue (const std::string_view &_value)
                                                           Memory::UniqueString {MEMORY_PROFILING_GROUP_ID}};
 
         // For flexibility, we dynamically allocate new string stacks instead of using one big stack.
-        static UnorderedPool stacksPool {allocationGroup, sizeof (Stack), STACK_POOL_PAGE_CAPACITY};
+        static UnorderedPool stacksPool {allocationGroup, sizeof (Stack), alignof (Stack), STACK_POOL_PAGE_CAPACITY};
 
         // Usually, unique strings are quite small (<100 characters), therefore it's ok to use
         // only last allocated stack instead of trying to insert into all allocated stacks.

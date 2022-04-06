@@ -17,7 +17,7 @@ using CursorImplementation = QueryImplementation::Cursor;
 
 EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (Cursor, CursorImplementation)
 
-EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (ModifyAscendingRangeQuery, QueryImplementation)
+EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifyAscendingRangeQuery, QueryImplementation)
 
 Cursor ModifyAscendingRangeQuery::Execute (Bound _min, Bound _max) noexcept
 {

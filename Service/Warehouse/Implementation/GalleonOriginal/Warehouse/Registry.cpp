@@ -60,7 +60,8 @@ Registry::Registry (Memory::UniqueString _name) noexcept
 {
     auto &internal = *new (&data) InternalData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
-    internal.deck = new (internal.heap.Acquire (sizeof (Galleon::CargoDeck))) Galleon::CargoDeck (_name);
+    internal.deck = new (internal.heap.Acquire (sizeof (Galleon::CargoDeck), alignof (Galleon::CargoDeck)))
+        Galleon::CargoDeck (_name);
 }
 
 Registry::Registry (Registry &&_other) noexcept

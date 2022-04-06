@@ -1,7 +1,7 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 
 #include <Input/Input.hpp>
-#include <Input/InputListenerObject.hpp>
+#include <Input/InputListenerComponent.hpp>
 #include <Input/InputSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
@@ -28,10 +28,10 @@ protected:
 
 InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping)),
-      modifyListenersById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
-                                                     {InputListenerObject::Reflect ().objectId})),
-      modifyListeners (_constructor.ModifyAscendingRange (InputListenerObject::Reflect ().mapping,
-                                                          InputListenerObject::Reflect ().objectId))
+      modifyListenersById (_constructor.ModifyValue (InputListenerComponent::Reflect ().mapping,
+                                                     {InputListenerComponent::Reflect ().objectId})),
+      modifyListeners (_constructor.ModifyAscendingRange (InputListenerComponent::Reflect ().mapping,
+                                                          InputListenerComponent::Reflect ().objectId))
 {
     _constructor.DependOn (Checkpoint::INPUT_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);
@@ -44,7 +44,7 @@ void InputDispatcherBase::ClearListeners () noexcept
     auto cursor = modifyListeners.Execute (nullptr, nullptr);
     while (*cursor)
     {
-        auto *listener = static_cast<InputListenerObject *> (*cursor);
+        auto *listener = static_cast<InputListenerComponent *> (*cursor);
         listener->actions.Clear ();
         ++cursor;
     }
@@ -62,7 +62,7 @@ void InputDispatcherBase::DispatchActions (InputSingleton::SubscriptionVector &_
     {
         const InputSubscription &subscription = *iterator;
         auto listenerCursor = modifyListenersById.Execute (&subscription.listenerId);
-        auto *listener = static_cast<InputListenerObject *> (*listenerCursor);
+        auto *listener = static_cast<InputListenerComponent *> (*listenerCursor);
 
         if (!listener)
         {

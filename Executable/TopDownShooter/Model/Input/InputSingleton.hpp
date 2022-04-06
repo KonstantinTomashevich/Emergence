@@ -1,12 +1,11 @@
 #pragma once
 
 #include <Celerity/InputAccumulator.hpp>
+#include <Celerity/Standard/ObjectId.hpp>
 
 #include <Container/InplaceVector.hpp>
 
 #include <Input/InputAction.hpp>
-
-#include <Shared/Constants.hpp>
 
 /// \brief Produces persistent actions when key is down/up.
 /// \details Keys are identified by scan codes for layout independence.
@@ -56,7 +55,7 @@ struct KeyStateChangedTrigger final
 struct InputSubscription final
 {
     Emergence::Memory::UniqueString group;
-    std::uintptr_t listenerId = INVALID_OBJECT_ID;
+    Emergence::Celerity::ObjectId listenerId = Emergence::Celerity::INVALID_OBJECT_ID;
 
     struct Reflection final
     {

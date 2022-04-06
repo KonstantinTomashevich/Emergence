@@ -252,7 +252,7 @@ Executor::Executor (const Collection &_collection, std::size_t _maximumChildThre
 {
     auto &internal = *new (&data) InternalData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
-    internal.executor = new (internal.heap.Acquire (sizeof (ExecutorImplementation)))
+    internal.executor = new (internal.heap.Acquire (sizeof (ExecutorImplementation), alignof (ExecutorImplementation)))
         ExecutorImplementation (_collection, _maximumChildThreads);
 }
 

@@ -25,7 +25,7 @@ SingletonContainer::FetchQuery::Cursor::~Cursor () noexcept
 const void *SingletonContainer::FetchQuery::Cursor::operator* () const noexcept
 {
     assert (container);
-    return &container->storage;
+    return container->singletonInstance;
 }
 
 SingletonContainer::FetchQuery::Cursor::Cursor (Handling::Handle<SingletonContainer> _container) noexcept
@@ -63,7 +63,7 @@ SingletonContainer::ModifyQuery::Cursor::~Cursor () noexcept
 void *SingletonContainer::ModifyQuery::Cursor::operator* () const noexcept
 {
     assert (container);
-    return &container->storage;
+    return container->singletonInstance;
 }
 
 SingletonContainer::ModifyQuery::Cursor::Cursor (Handling::Handle<SingletonContainer> _container) noexcept
@@ -106,29 +106,22 @@ void SingletonContainer::LastReferenceUnregistered () noexcept
     deck->DetachContainer (this);
 }
 
+void SingletonContainer::SetUnsafeFetchAllowed (bool _allowed) noexcept
+{
+    accessCounter.SetUnsafeFetchAllowed (_allowed);
+}
+
 SingletonContainer::SingletonContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
-      usedAllocationGroup (typeMapping.GetName ())
+      singletonHeap (Memory::Profiler::AllocationGroup (typeMapping.GetName ()))
 {
-    auto placeholder = usedAllocationGroup.PlaceOnTop ();
-    typeMapping.Construct (&storage);
-
-    // Move singleton memory usage from parent group into our internal group.
-    usedAllocationGroup.Parent ().Release (typeMapping.GetObjectSize ());
-    usedAllocationGroup.Parent ().Free (typeMapping.GetObjectSize ());
-    usedAllocationGroup.Allocate (typeMapping.GetObjectSize ());
-    usedAllocationGroup.Acquire (typeMapping.GetObjectSize ());
+    singletonInstance = singletonHeap.Acquire (typeMapping.GetObjectSize (), typeMapping.GetObjectAlignment ());
+    typeMapping.Construct (singletonInstance);
 }
 
 SingletonContainer::~SingletonContainer () noexcept
 {
-    typeMapping.Destruct (&storage);
-
-    // Move singleton memory usage from internal group into parent group, because it was actually acquired
-    // from parent allocator. Otherwise, profiler will detect deallocation of unregistered memory and crash.
-    usedAllocationGroup.Release (typeMapping.GetObjectSize ());
-    usedAllocationGroup.Free (typeMapping.GetObjectSize ());
-    usedAllocationGroup.Parent ().Allocate (typeMapping.GetObjectSize ());
-    usedAllocationGroup.Parent ().Acquire (typeMapping.GetObjectSize ());
+    typeMapping.Destruct (singletonInstance);
+    singletonHeap.Release (singletonInstance, typeMapping.GetObjectSize ());
 }
 } // namespace Emergence::Galleon

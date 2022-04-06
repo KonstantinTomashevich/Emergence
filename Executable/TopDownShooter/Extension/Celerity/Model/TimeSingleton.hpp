@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-#include <StandardLayout/Mapping.hpp>
+#include <Math/RunningAverage.hpp>
 
-#include <Utility/RunningAverage.hpp>
+#include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
@@ -36,8 +36,7 @@ struct TimeSingleton final
     /// \brief Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
 
-    Emergence::Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
-        1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
+    Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
     /// \brief Allows gameplay mechanics to slowdown or speedup time.
     /// \invariant >= 0.0f
@@ -45,24 +44,24 @@ struct TimeSingleton final
 
     /// \brief Average time of frames, where at least one normal and at least fixed update was executed.
     /// \details Used to adjust ::fixedDurationS in order to avoid death spiraling.
-    Emergence::RunningAverage<30u> averageFullFrameRealDurationS;
+    Math::RunningAverage<30u> averageFullFrameRealDurationS;
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId normalTimeNs;
-        Emergence::StandardLayout::FieldId realNormalTimeNs;
-        Emergence::StandardLayout::FieldId fixedTimeNs;
+        StandardLayout::FieldId normalTimeNs;
+        StandardLayout::FieldId realNormalTimeNs;
+        StandardLayout::FieldId fixedTimeNs;
 
-        Emergence::StandardLayout::FieldId normalDurationS;
-        Emergence::StandardLayout::FieldId realNormalDurationS;
-        Emergence::StandardLayout::FieldId fixedDurationS;
-        std::array<Emergence::StandardLayout::FieldId, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
+        StandardLayout::FieldId normalDurationS;
+        StandardLayout::FieldId realNormalDurationS;
+        StandardLayout::FieldId fixedDurationS;
+        std::array<StandardLayout::FieldId, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
-        Emergence::StandardLayout::FieldId timeSpeed;
+        StandardLayout::FieldId timeSpeed;
 
-        Emergence::StandardLayout::FieldId averageFullFrameRealDurationS;
+        StandardLayout::FieldId averageFullFrameRealDurationS;
 
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

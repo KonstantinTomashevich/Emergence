@@ -3,6 +3,7 @@
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Container/TypedOrderedPool.hpp>
 #include <Container/Vector.hpp>
 
 #include <Galleon/AccessCounter.hpp>
@@ -15,15 +16,6 @@ namespace Emergence::Galleon
 /// \brief Container for objects that are created and destroyed frequently.
 class ShortTermContainer final : public ContainerBase
 {
-private:
-    /// \brief Container node, that contains single object and points to node with next object.
-    struct Node final
-    {
-        Node *next = nullptr;
-
-        uint8_t content[0u];
-    };
-
 public:
     /// \brief Prepared query, used to start insertion transactions.
     class InsertQuery final
@@ -88,7 +80,7 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            Node *current = nullptr;
+            void *currentNode = nullptr;
         };
 
         FetchQuery (const FetchQuery &_other) noexcept = default;
@@ -129,8 +121,8 @@ public:
 
             Handling::Handle<ShortTermContainer> container;
 
-            Node *current = nullptr;
-            Node *previous = nullptr;
+            void *currentNode = nullptr;
+            void *previousNode = nullptr;
         };
 
         ModifyQuery (const ModifyQuery &_other) noexcept = default;
@@ -166,19 +158,32 @@ public:
 
     void LastReferenceUnregistered () noexcept;
 
+    void SetUnsafeFetchAllowed (bool _allowed) noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (ShortTermContainer);
 
 private:
-    /// CargoDeck constructs and destructs containers.
-    friend class CargoDeck;
+    /// Pool from CargoDeck constructs and destructs containers.
+    template <typename Item>
+    friend class Container::TypedOrderedPool;
+
+    static void *GetNodeContent (void *_node) noexcept;
+
+    static const void *GetNodeContent (const void *_node) noexcept;
 
     explicit ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept;
 
     ~ShortTermContainer () noexcept;
 
+    const void *GetNextNode (const void *_node) noexcept;
+
+    void *GetNextNode (void *_node) noexcept;
+
+    void SetNextNode (void *_node, void *_next) noexcept;
+
     Memory::UnorderedPool pool;
 
-    Node *firstNode = nullptr;
+    void *firstNode = nullptr;
 
     AccessCounter accessCounter;
 };

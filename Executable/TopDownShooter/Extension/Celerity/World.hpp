@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Celerity/Event/EventTrigger.hpp>
+#include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
 
@@ -12,13 +13,30 @@
 
 namespace Emergence::Celerity
 {
-struct TimeSingleton;
 struct WorldSingleton;
+
+// TODO: Note about performance.
+//       Celerity is built on top of Warehouse and RecordCollection, and that services use standard layout mappings
+//       extensively. It is convenient from code architecture perspective, but may result in performance problems.
+//       There is a lot of mapping-related logic, that should be optimized, but nevertheless mapping usage creates
+//       unavoidable performance barrier.
+//       If all modules (both engine-level and game-level) are compiled from single source, then all used mapping data
+//       is visible during compile time. We can use this fact for Chameleon-like approach: scan codebase and generate
+//       optimized code for all storages, that supports all use cases by hard coding them. To make code scanning easier
+//       we might use macro-driven approach like UnrealEngine. This code generation allows us to achieve hard code
+//       performance without losing Celerity features, but it has one significant downside: we can no longer separate
+//       game source and engine source, otherwise Chameleon will not be able to generate code for all use cases.
+
+struct WorldConfiguration final
+{
+    Container::InplaceVector<float, TimeSingleton::MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
+        1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
+};
 
 class World final
 {
 public:
-    explicit World (Memory::UniqueString _name) noexcept;
+    World (Memory::UniqueString _name, const WorldConfiguration &_configuration = {}) noexcept;
 
     World (const World &_other) = delete;
 
@@ -56,7 +74,7 @@ private:
         Container::TypedOrderedPool<ChangeTracker> changeTrackers;
     };
 
-    void NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
+    static void TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
 
     void FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
 
@@ -82,8 +100,12 @@ class WorldTestingUtility final
 public:
     WorldTestingUtility () = delete;
 
+    /// \brief Updates only normal time by given delta and runs normal update once.
+    /// \warning Do not use if normal-fixed time integrity is required! Update world conventionally instead.
     static void RunNormalUpdateOnce (World &_world, uint64_t _timeDeltaNs) noexcept;
 
+    /// \brief Updates only fixed time by one frame and runs fixed update once.
+    /// \warning Do not use if normal-fixed time integrity is required! Update world conventionally instead.
     static void RunFixedUpdateOnce (World &_world) noexcept;
 
 private:

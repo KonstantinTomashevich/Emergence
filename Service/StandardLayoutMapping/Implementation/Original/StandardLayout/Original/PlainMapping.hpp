@@ -132,6 +132,8 @@ public:
 
     [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 
+    [[nodiscard]] std::size_t GetObjectAlignment () const noexcept;
+
     [[nodiscard]] std::size_t GetFieldCount () const noexcept;
 
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
@@ -164,7 +166,7 @@ private:
     /// \return Size of mapping object, that can hold up to _fieldCapacity fields.
     static std::size_t CalculateMappingSize (std::size_t _fieldCapacity) noexcept;
 
-    explicit PlainMapping (Memory::UniqueString _name, std::size_t _objectSize) noexcept;
+    explicit PlainMapping (Memory::UniqueString _name, std::size_t _objectSize, std::size_t _objectAlignment) noexcept;
 
     ~PlainMapping () noexcept;
 
@@ -185,6 +187,7 @@ private:
     PlainMapping *ChangeCapacity (std::size_t _newFieldCapacity) noexcept;
 
     std::size_t objectSize = 0u;
+    std::size_t objectAlignment = 0u;
     std::size_t fieldCount = 0u;
     std::size_t fieldCapacity = 0u;
     Memory::UniqueString name;
@@ -211,7 +214,7 @@ public:
 
     ~PlainMappingBuilder ();
 
-    void Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept;
+    void Begin (Memory::UniqueString _name, std::size_t _objectSize, std::size_t _objectAlignment) noexcept;
 
     Handling::Handle<PlainMapping> End () noexcept;
 

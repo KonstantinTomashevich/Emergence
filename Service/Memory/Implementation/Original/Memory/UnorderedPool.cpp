@@ -7,16 +7,17 @@ namespace Emergence::Memory
 {
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize) noexcept
-    : UnorderedPool (std::move (_group), _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _alignment) noexcept
+    : UnorderedPool (std::move (_group), _chunkSize, _alignment, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
 UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group,
                               std::size_t _chunkSize,
+                              std::size_t _alignment,
                               std::size_t _preferredPageCapacity) noexcept
 {
-    new (&data) Original::UnorderedPool (std::move (_group), _chunkSize, _preferredPageCapacity);
+    new (&data) Original::UnorderedPool (std::move (_group), _chunkSize, _alignment, _preferredPageCapacity);
 }
 
 UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
@@ -42,6 +43,11 @@ void UnorderedPool::Release (void *_chunk) noexcept
 void UnorderedPool::Clear () noexcept
 {
     block_cast<Original::UnorderedPool> (data).Clear ();
+}
+
+bool UnorderedPool::IsEmpty () const noexcept
+{
+    return block_cast<Original::UnorderedPool> (data).IsEmpty ();
 }
 
 const Profiler::AllocationGroup &UnorderedPool::GetAllocationGroup () const noexcept

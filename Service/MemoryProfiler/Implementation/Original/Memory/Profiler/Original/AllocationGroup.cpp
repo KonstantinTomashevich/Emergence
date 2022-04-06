@@ -55,7 +55,8 @@ AllocationGroup::Iterator::Iterator (AllocationGroup *_current) noexcept : curre
 static UnorderedPool &GetAllocationGroupPool () noexcept
 {
     // There is no sense to profile memory usage of profiling classes, therefore we use stub-group.
-    static UnorderedPool allocationGroupPool {Profiler::AllocationGroup {}, sizeof (AllocationGroup)};
+    static UnorderedPool allocationGroupPool {Profiler::AllocationGroup {}, sizeof (AllocationGroup),
+                                              alignof (AllocationGroup)};
     return allocationGroupPool;
 }
 

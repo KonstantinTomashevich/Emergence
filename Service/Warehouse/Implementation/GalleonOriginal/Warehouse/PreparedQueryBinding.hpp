@@ -35,3 +35,34 @@
     {                                                                                                                  \
         new (&data) QueryImplementation (std::move (block_cast<QueryImplementation> (*_data)));                        \
     }
+
+#define EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS(Query, QueryImplementation)                                      \
+    EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (Query, QueryImplementation)                                                \
+                                                                                                                       \
+    Query::UnsafeFetchAccessToken::UnsafeFetchAccessToken (Query::UnsafeFetchAccessToken &&_other) noexcept            \
+        : handle (_other.handle)                                                                                       \
+    {                                                                                                                  \
+        assert (handle);                                                                                               \
+        _other.handle = nullptr;                                                                                       \
+    }                                                                                                                  \
+                                                                                                                       \
+    Query::UnsafeFetchAccessToken::~UnsafeFetchAccessToken () noexcept                                                 \
+    {                                                                                                                  \
+        if (handle)                                                                                                    \
+        {                                                                                                              \
+            /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                               \
+            static_cast<QueryImplementation *> (handle)->GetContainer ()->SetUnsafeFetchAllowed (false);               \
+        }                                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    Query::UnsafeFetchAccessToken::UnsafeFetchAccessToken (void *_handle) noexcept : handle (_handle)                  \
+    {                                                                                                                  \
+        assert (handle);                                                                                               \
+        /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                   \
+        static_cast<QueryImplementation *> (handle)->GetContainer ()->SetUnsafeFetchAllowed (true);                    \
+    }                                                                                                                  \
+                                                                                                                       \
+    Query::UnsafeFetchAccessToken Query::AllowUnsafeFetchAccess () noexcept                                            \
+    {                                                                                                                  \
+        return {&block_cast<QueryImplementation> (data)};                                                              \
+    }

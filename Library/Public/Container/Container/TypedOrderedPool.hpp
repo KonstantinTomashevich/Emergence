@@ -64,6 +64,9 @@ public:
     /// \see OrderedPool::Clear
     void Clear () noexcept;
 
+    /// \see OrderedPool::IsEmpty
+    [[nodiscard]] bool IsEmpty () const noexcept;
+
     [[nodiscard]] AcquiredConstIterator Begin () const noexcept;
 
     [[nodiscard]] AcquiredConstIterator End () const noexcept;
@@ -71,6 +74,9 @@ public:
     [[nodiscard]] AcquiredIterator Begin () noexcept;
 
     [[nodiscard]] AcquiredIterator End () noexcept;
+
+    /// \see OrderedPool::GetAllocationGroup
+    [[nodiscard]] const Memory::Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
     TypedOrderedPool &operator= (const TypedOrderedPool &_other) = delete;
 
@@ -234,7 +240,7 @@ TypedOrderedPool<Item>::AcquiredIterator::AcquiredIterator (
 
 template <typename Item>
 TypedOrderedPool<Item>::TypedOrderedPool (Memory::Profiler::AllocationGroup _group) noexcept
-    : pool (std::move (_group), sizeof (Item))
+    : pool (std::move (_group), sizeof (Item), alignof (Item))
 {
 }
 
@@ -267,12 +273,21 @@ void TypedOrderedPool<Item>::Shrink () noexcept
 template <typename Item>
 void TypedOrderedPool<Item>::Clear () noexcept
 {
-    for (Item &item : *this)
+    if (!IsEmpty ())
     {
-        item.~Item ();
+        for (Item &item : *this)
+        {
+            item.~Item ();
+        }
     }
 
     pool.Clear ();
+}
+
+template <typename Item>
+bool TypedOrderedPool<Item>::IsEmpty () const noexcept
+{
+    return pool.IsEmpty ();
 }
 
 template <typename Item>
@@ -297,6 +312,12 @@ template <typename Item>
 typename TypedOrderedPool<Item>::AcquiredIterator TypedOrderedPool<Item>::End () noexcept
 {
     return pool.EndAcquired ();
+}
+
+template <typename Item>
+const Memory::Profiler::AllocationGroup &TypedOrderedPool<Item>::GetAllocationGroup () const noexcept
+{
+    return pool.GetAllocationGroup ();
 }
 
 template <typename Item>

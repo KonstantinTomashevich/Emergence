@@ -5,9 +5,13 @@
 
 namespace Emergence::Memory::Original
 {
-UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept
-    : pageCapacity (_pageCapacity),
-      chunkSize (_chunkSize),
+UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group,
+                              size_t _chunkSize,
+                              size_t _alignment,
+                              size_t _pageCapacity) noexcept
+    : chunkSize (CorrectAlignedBlockSize (_alignment, _chunkSize)),
+      alignment (_alignment),
+      pageCapacity (_pageCapacity),
       topPage (nullptr),
       topFreeChunk (nullptr),
       acquiredChunkCount (0u),
@@ -18,8 +22,9 @@ UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group, size_t _chunkSiz
 }
 
 UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
-    : pageCapacity (_other.pageCapacity),
-      chunkSize (_other.chunkSize),
+    : chunkSize (_other.chunkSize),
+      alignment (_other.alignment),
+      pageCapacity (_other.pageCapacity),
       topPage (_other.topPage),
       topFreeChunk (_other.topFreeChunk),
       acquiredChunkCount (_other.acquiredChunkCount),
@@ -39,13 +44,14 @@ void *UnorderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
-        group.Allocate (sizeof (Page) + pageCapacity * chunkSize);
-        group.Acquire (sizeof (Page));
+        const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
+        group.Allocate (pageSize);
+        group.Acquire (GetPageMetadataSize ());
 
-        Page *newPage = static_cast<Page *> (malloc (sizeof (Page) + pageCapacity * chunkSize));
-        newPage->next = topPage;
+        auto *newPage = static_cast<AlignedPoolPage *> (AlignedAllocate (alignment, pageSize));
+        SetNextPagePointer (newPage, chunkSize, pageCapacity, topPage);
         topPage = newPage;
-        Chunk *currentChunk = &newPage->chunks[0u];
+        auto *currentChunk = static_cast<Chunk *> (GetPageChunksBegin (newPage));
 
         for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
@@ -55,7 +61,7 @@ void *UnorderedPool::Acquire () noexcept
         }
 
         currentChunk->nextFree = nullptr;
-        topFreeChunk = &newPage->chunks[0u];
+        topFreeChunk = static_cast<Chunk *> (GetPageChunksBegin (newPage));
     }
 
     group.Acquire (chunkSize);
@@ -80,20 +86,27 @@ void UnorderedPool::Clear () noexcept
 {
     group.Release (chunkSize * acquiredChunkCount);
     acquiredChunkCount = 0u;
-    Page *page = topPage;
+
+    AlignedPoolPage *page = topPage;
+    const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
 
     while (page)
     {
-        group.Release (sizeof (Page));
-        group.Free (sizeof (Page) + pageCapacity * chunkSize);
+        group.Release (GetPageMetadataSize ());
+        group.Free (pageSize);
 
-        Page *next = page->next;
-        free (page);
+        AlignedPoolPage *next = GetNextPagePointer (page, chunkSize, pageCapacity);
+        AlignedFree (page);
         page = next;
     }
 
     topPage = nullptr;
     topFreeChunk = nullptr;
+}
+
+bool UnorderedPool::IsEmpty () const noexcept
+{
+    return acquiredChunkCount == 0u;
 }
 
 const Profiler::AllocationGroup &UnorderedPool::GetAllocationGroup () const noexcept

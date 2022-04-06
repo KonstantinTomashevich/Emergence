@@ -143,6 +143,8 @@ public:
 
     VolumetricIndexIterator EndVolumetricIndices () const noexcept;
 
+    void SetUnsafeReadAllowed (bool _allowed) noexcept;
+
     Storage &operator= (const Storage &_other) = delete;
 
     /// Move assign could be useful, but we don't implement it
@@ -229,5 +231,7 @@ private:
     static_assert (decltype (readers)::is_always_lock_free);
 
     void *editedRecordBackup = nullptr;
+
+    bool unsafeReadAllowed = false;
 };
 } // namespace Emergence::Pegasus

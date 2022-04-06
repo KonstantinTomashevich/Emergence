@@ -1,8 +1,11 @@
+#include <RecordCollection/Collection.hpp>
 #include <RecordCollection/Test/Collection.hpp>
 #include <RecordCollection/Test/Scenario.hpp>
 
 #include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/Data.hpp>
+
+#include <StandardLayout/MappingRegistration.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -94,6 +97,41 @@ TEST_CASE (DropRepresentation)
                                      }},
         }}
         .Execute ();
+}
+
+struct alignas (16u) Align16 final
+{
+    std::array<float, 4u> simdData;
+
+    struct Reflection final
+    {
+        std::array<Emergence::StandardLayout::FieldId, 4u> simdData;
+        Emergence::StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect ()
+    {
+        static Reflection reflection = [] ()
+        {
+            EMERGENCE_MAPPING_REGISTRATION_BEGIN (Align16)
+            EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (simdData)
+            EMERGENCE_MAPPING_REGISTRATION_END ()
+        }();
+
+        return reflection;
+    }
+};
+
+TEST_CASE (NonStandardAlignment)
+{
+    constexpr std::size_t SAMPLE_COUNT = 16u;
+    Emergence::RecordCollection::Collection collection (Align16::Reflect ().mapping);
+    Emergence::RecordCollection::Collection::Allocator allocator = collection.AllocateAndInsert ();
+
+    for (std::size_t index = 0u; index < SAMPLE_COUNT; ++index)
+    {
+        CHECK_EQUAL (reinterpret_cast<uintptr_t> (allocator.Allocate ()) % alignof (Align16), 0u);
+    }
 }
 
 END_SUITE

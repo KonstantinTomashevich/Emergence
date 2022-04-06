@@ -8,7 +8,7 @@
 #include <Log/Log.hpp>
 
 #include <Input/Input.hpp>
-#include <Input/InputListenerObject.hpp>
+#include <Input/InputListenerComponent.hpp>
 #include <Input/InputSingleton.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -121,9 +121,9 @@ Configurator::Configurator (TaskConstructor &_constructor,
       keyStateTriggers (std::move (_keyStateTriggers)),
       keyStateChangedTriggers (std::move (_keyStateChangedTriggers)),
       eventOutput (_eventOutput),
-      createListener (_constructor.InsertLongTerm (InputListenerObject::Reflect ().mapping)),
-      modifyListenerById (_constructor.ModifyValue (InputListenerObject::Reflect ().mapping,
-                                                    {InputListenerObject::Reflect ().objectId})),
+      createListener (_constructor.InsertLongTerm (InputListenerComponent::Reflect ().mapping)),
+      modifyListenerById (_constructor.ModifyValue (InputListenerComponent::Reflect ().mapping,
+                                                    {InputListenerComponent::Reflect ().objectId})),
       modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping))
 {
     REQUIRE (eventOutput);
@@ -168,7 +168,7 @@ void Configurator::Execute ()
                 {
                     EMERGENCE_LOG (INFO, "[Configurator] Create listener ", _step.id, ".");
                     auto cursor = createListener.Execute ();
-                    (new (++cursor) InputListenerObject ())->objectId = _step.id;
+                    (new (++cursor) InputListenerComponent ())->objectId = _step.id;
                 }
                 else if constexpr (std::is_same_v<Type, Steps::DeleteListener>)
                 {
@@ -283,8 +283,8 @@ private:
 
 Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
-      fetchListenerById (
-          _constructor.FetchValue (InputListenerObject::Reflect ().mapping, {InputListenerObject::Reflect ().objectId}))
+      fetchListenerById (_constructor.FetchValue (InputListenerComponent::Reflect ().mapping,
+                                                  {InputListenerComponent::Reflect ().objectId}))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
 }
@@ -295,7 +295,7 @@ void Validator::Execute () noexcept
     for (const auto &[objectId, actions] : expectations[framesValidated])
     {
         auto cursor = fetchListenerById.Execute (&objectId);
-        const auto *listener = static_cast<const InputListenerObject *> (*cursor);
+        const auto *listener = static_cast<const InputListenerComponent *> (*cursor);
 
         CHECK_EQUAL (listener->actions.GetCount (), actions.size ());
         const std::size_t actionsToCheck = std::min (listener->actions.GetCount (), actions.size ());

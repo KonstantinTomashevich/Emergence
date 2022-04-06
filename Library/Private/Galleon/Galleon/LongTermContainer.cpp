@@ -321,6 +321,11 @@ void LongTermContainer::LastReferenceUnregistered () noexcept
     deck->DetachContainer (this);
 }
 
+void LongTermContainer::SetUnsafeFetchAllowed (bool _allowed) noexcept
+{
+    collection.SetUnsafeReadAllowed (_allowed);
+}
+
 static RecordCollection::Collection ConstructInsideGroup (StandardLayout::Mapping _typeMapping)
 {
     auto placeholder = Memory::Profiler::AllocationGroup {Memory::UniqueString {_typeMapping.GetName ()}}.PlaceOnTop ();

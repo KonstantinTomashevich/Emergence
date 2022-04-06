@@ -50,13 +50,17 @@ public:
     };
 
     /// \param _chunkSize Fixed chunk size.
+    /// \param _alignment Address alignment, required for each chunk.
     /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
-    explicit OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _alignment) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
     /// \see ::Pool (std::size_t)
     /// \invariant _preferredPageCapacity must be greater than zero.
-    OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _preferredPageCapacity) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group,
+                 std::size_t _chunkSize,
+                 std::size_t _alignment,
+                 std::size_t _preferredPageCapacity) noexcept;
 
     /// Copying memory pool contradicts with its usage practices.
     OrderedPool (const OrderedPool &_other) = delete;
@@ -84,6 +88,9 @@ public:
     /// \warning Invalidates iterators.
     void Clear () noexcept;
 
+    /// \return True if there is no acquired items.
+    [[nodiscard]] bool IsEmpty () const noexcept;
+
     /// \return Iterator, that points to beginning of acquired chunks sequence.
     [[nodiscard]] AcquiredChunkConstIterator BeginAcquired () const noexcept;
 
@@ -108,7 +115,7 @@ public:
     OrderedPool &operator= (OrderedPool &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 7u);
 };
 
 /// \brief Wraps OrderedPool::BeginAcquired for foreach sentences.

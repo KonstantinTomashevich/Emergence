@@ -110,12 +110,13 @@ struct MappingSeed final
 {
     Memory::UniqueString name;
     std::size_t objectSize;
+    std::size_t objectAlignment;
     Container::Vector<FieldSeed> fields;
 };
 
 Mapping Grow (MappingSeed &_seed, MappingBuilder &_builder)
 {
-    _builder.Begin (_seed.name, _seed.objectSize);
+    _builder.Begin (_seed.name, _seed.objectSize, _seed.objectAlignment);
     for (FieldSeed &packedSeed : _seed.fields)
     {
         std::visit (
@@ -200,6 +201,8 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
 {
     Mapping mapping = Grow (_seed, _builder);
     CHECK_EQUAL (_seed.name, mapping.GetName ());
+    CHECK_EQUAL (_seed.objectSize, mapping.GetObjectSize ());
+    CHECK_EQUAL (_seed.objectAlignment, mapping.GetObjectAlignment ());
     Container::HashSet<FieldId> idsFound;
 
     for (FieldSeed &packedSeed : _seed.fields)
@@ -385,6 +388,7 @@ struct TwoIntsTest
 
 static const MappingSeed TWO_INTS_CORRECT_ORDER {"TwoInts"_us,
                                                  sizeof (TwoIntsTest),
+                                                 alignof (TwoIntsTest),
                                                  {
                                                      UInt32FieldSeed {{"first"_us, offsetof (TwoIntsTest, first)}},
                                                      Int16FieldSeed {{"second"_us, offsetof (TwoIntsTest, second)}},
@@ -392,6 +396,7 @@ static const MappingSeed TWO_INTS_CORRECT_ORDER {"TwoInts"_us,
 
 static const MappingSeed TWO_INTS_REVERSED_ORDER {"TwoInts"_us,
                                                   sizeof (TwoIntsTest),
+                                                  alignof (TwoIntsTest),
                                                   {
                                                       Int16FieldSeed {{"second"_us, offsetof (TwoIntsTest, second)}},
                                                       UInt32FieldSeed {{"first"_us, offsetof (TwoIntsTest, first)}},
@@ -422,6 +427,7 @@ struct AllBasicTypesTest final
 static const MappingSeed ALL_BASIC_TYPES {
     "AllBasicTypes"_us,
     sizeof (AllBasicTypesTest),
+    alignof (AllBasicTypesTest),
     {
         BitFieldSeed {{"flag0"_us, offsetof (AllBasicTypesTest, someFlags)}, 0u},
         BitFieldSeed {{"flag1"_us, offsetof (AllBasicTypesTest, someFlags)}, 1u},
@@ -472,6 +478,7 @@ struct UnionWithBasicTypesTest
 static const MappingSeed UNION_WITH_BASIC_TYPES {
     "UnionWithBasicTypes"_us,
     sizeof (UnionWithBasicTypesTest),
+    alignof (UnionWithBasicTypesTest),
     {
         BlockFieldSeed {{"nonUnionField"_us, offsetof (UnionWithBasicTypesTest, nonUnionField)},
                         sizeof (UnionWithBasicTypesTest::nonUnionField)},
@@ -501,6 +508,7 @@ struct NestedOneSublevelTest
 static const MappingSeed NESTED_ONE_SUBLEVEL {
     "NestedOneSublevel"_us,
     sizeof (NestedOneSublevelTest),
+    alignof (NestedOneSublevelTest),
     {
         UInt64FieldSeed {{"uint64"_us, offsetof (NestedOneSublevelTest, uint64)}},
         NestedObjectFieldSeed {{"firstNested"_us, offsetof (NestedOneSublevelTest, firstNested)},
@@ -525,6 +533,7 @@ struct NestedInUnionOneSublevelTest
 static const MappingSeed NESTED_IN_UNION_ONE_SUBLEVEL {
     "NestedInUnionOneSublevel"_us,
     sizeof (NestedInUnionOneSublevelTest),
+    alignof (NestedInUnionOneSublevelTest),
     {
         UInt64FieldSeed {{"uint64"_us, offsetof (NestedInUnionOneSublevelTest, uint64)}},
         NestedObjectFieldSeed {{"firstNested"_us, offsetof (NestedInUnionOneSublevelTest, firstNested)},
@@ -546,6 +555,7 @@ struct NestedTwoSublevelsTest
 static const MappingSeed NESTED_TWO_SUBLEVELS {
     "NestedTwoSublevels"_us,
     sizeof (NestedTwoSublevelsTest),
+    alignof (NestedTwoSublevelsTest),
     {
         FloatFieldSeed {{"floating"_us, offsetof (NestedTwoSublevelsTest, floating)}},
         NestedObjectFieldSeed {{"firstNested"_us, offsetof (NestedTwoSublevelsTest, firstNested)},

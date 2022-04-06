@@ -1,3 +1,4 @@
+add_subdirectory (cglm)
 add_subdirectory (doctest)
 
 # ImGUI is not using CMake, therefore we need to add our own library target.

@@ -28,7 +28,7 @@ static Memory::Profiler::AllocationGroup WorldAllocationGroup (Memory::UniqueStr
 /// It's expected that user will not have a lot of pipelines, therefore no need to waste memory on large pool pages.
 static constexpr std::size_t PIPELINES_ON_PAGE = 8u;
 
-World::World (Memory::UniqueString _name) noexcept
+World::World (Memory::UniqueString _name, const WorldConfiguration &_configuration) noexcept
     : registry (ConstructInsideGroup (_name)),
       modifyTime (registry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       modifyWorld (registry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
@@ -37,6 +37,9 @@ World::World (Memory::UniqueString _name) noexcept
                      EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
                      EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}})
 {
+    auto timeCursor = modifyTime.Execute ();
+    auto *time = static_cast<TimeSingleton *> (*timeCursor);
+    time->targetFixedFrameDurationsS = _configuration.targetFixedFrameDurationsS;
 }
 
 World::~World ()
@@ -63,8 +66,25 @@ void World::Update () noexcept
         // Intentionally release cursors, so pipelines will be able to access singletons.
     }
 
-    NormalUpdate (time, world);
+    // Currently, we're using time->fixed->normal update execution order.
+    // It is not ideal solution, but it is the most popular one. Comparison with time->normal->fixed:
+    //
+    // Pros:
+    // - Normal time is always behind fixed time, therefore interpolation never causes tearing.
+    //
+    // Cons:
+    // - Fixed input processing is delayed by one frame.
+    // - Unstable fixed updates may cause tearing, because time delta is calculated before fixed update.
+    //
+    // This is not the final decision: might be changed during next iterations.
+
+    TimeUpdate (time, world);
     FixedUpdate (time, world);
+
+    if (normalPipeline)
+    {
+        normalPipeline->Execute ();
+    }
 }
 
 void World::RemovePipeline (Pipeline *_pipeline) noexcept
@@ -94,7 +114,7 @@ void World::RemovePipeline (Pipeline *_pipeline) noexcept
     assert (false);
 }
 
-void World::NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
+void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 {
     // If time delta is higher than 1 seconds, then world update was frozen. It could be because of several reasons:
     // - This is first world update.
@@ -125,16 +145,11 @@ void World::NormalUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     const auto scaledTimeDeltaNs = static_cast<uint64_t> (static_cast<float> (realTimeDeltaNs) * _time->timeSpeed);
     _time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
     _time->normalTimeNs += scaledTimeDeltaNs;
-
-    if (normalPipeline)
-    {
-        normalPipeline->Execute ();
-    }
 }
 
 void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 {
-    if (_time->fixedTimeNs >= _time->normalTimeNs)
+    if (_time->fixedTimeNs > _time->normalTimeNs)
     {
         // We are ahead of normal time, no need to do anything.
         _world->fixedUpdateHappened = false;
@@ -161,7 +176,7 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     const auto fixedDurationNs = static_cast<uint64_t> (_time->fixedDurationS * 1e9f);
 
     // Catch up to normal time.
-    while (_time->fixedTimeNs < _time->normalTimeNs)
+    while (_time->fixedTimeNs <= _time->normalTimeNs)
     {
         if (fixedPipeline)
         {

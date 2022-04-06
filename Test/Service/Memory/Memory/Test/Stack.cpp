@@ -60,31 +60,31 @@ TEST_CASE (AcquireAlignment)
 TEST_CASE (ClearAndReuse)
 {
     Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
-    void *firstRecord = stack.Acquire (225u);
+    void *firstRecord = stack.Acquire (225u, sizeof (uintptr_t));
     stack.Clear ();
 
-    void *secondRecord = stack.Acquire (123u);
+    void *secondRecord = stack.Acquire (123u, sizeof (uintptr_t));
     CHECK_EQUAL (firstRecord, secondRecord);
 }
 
 TEST_CASE (ReleaseAndReuse)
 {
     Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
-    [[maybe_unused]] void *historicalShift = stack.Acquire (225u);
+    [[maybe_unused]] void *historicalShift = stack.Acquire (225u, sizeof (uintptr_t));
     const void *cachedHead = stack.Head ();
 
     constexpr size_t FIRST_RECORD_SIZE = 128u;
     constexpr size_t SECOND_RECORD_SIZE = 128u;
     constexpr size_t THIRD_RECORD_SIZE = 128u;
 
-    void *firstRecord = stack.Acquire (FIRST_RECORD_SIZE);
-    [[maybe_unused]] void *secondRecord = stack.Acquire (SECOND_RECORD_SIZE);
-    void *thirdRecord = stack.Acquire (THIRD_RECORD_SIZE);
+    void *firstRecord = stack.Acquire (FIRST_RECORD_SIZE, sizeof (uintptr_t));
+    [[maybe_unused]] void *secondRecord = stack.Acquire (SECOND_RECORD_SIZE, sizeof (uintptr_t));
+    void *thirdRecord = stack.Acquire (THIRD_RECORD_SIZE, sizeof (uintptr_t));
 
     stack.Release (cachedHead);
     CHECK_EQUAL (stack.Head (), cachedHead);
-    CHECK_EQUAL (stack.Acquire (FIRST_RECORD_SIZE + SECOND_RECORD_SIZE), firstRecord);
-    CHECK_EQUAL (stack.Acquire (THIRD_RECORD_SIZE), thirdRecord);
+    CHECK_EQUAL (stack.Acquire (FIRST_RECORD_SIZE + SECOND_RECORD_SIZE, sizeof (uintptr_t)), firstRecord);
+    CHECK_EQUAL (stack.Acquire (THIRD_RECORD_SIZE, sizeof (uintptr_t)), thirdRecord);
 }
 
 TEST_CASE (FreeSize)
@@ -113,14 +113,14 @@ TEST_CASE (FreeSize)
 TEST_CASE (Move)
 {
     Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
-    [[maybe_unused]] void *firstRecord = stack.Acquire (32u);
+    [[maybe_unused]] void *firstRecord = stack.Acquire (32u, sizeof (uintptr_t));
     const void *cachedHead = stack.Head ();
 
     Emergence::Memory::Stack movedStack {std::move (stack)};
     CHECK_EQUAL (movedStack.Head (), cachedHead);
 
     // Acquire to check usability.
-    [[maybe_unused]] void *secondRecord = movedStack.Acquire (128u);
+    [[maybe_unused]] void *secondRecord = movedStack.Acquire (128u, sizeof (uintptr_t));
 }
 
 TEST_CASE (MoveAssign)
@@ -128,14 +128,14 @@ TEST_CASE (MoveAssign)
     Emergence::Memory::Stack stack {GetUniqueAllocationGroup (), 1024u};
     Emergence::Memory::Stack anotherStack {GetUniqueAllocationGroup (), 1024u};
 
-    [[maybe_unused]] void *firstRecord = stack.Acquire (32u);
+    [[maybe_unused]] void *firstRecord = stack.Acquire (32u, sizeof (uintptr_t));
     const void *cachedHead = stack.Head ();
 
     anotherStack = std::move (stack);
     CHECK_EQUAL (anotherStack.Head (), cachedHead);
 
     // Acquire to check usability.
-    [[maybe_unused]] void *secondRecord = anotherStack.Acquire (128u);
+    [[maybe_unused]] void *secondRecord = anotherStack.Acquire (128u, sizeof (uintptr_t));
 }
 
 TEST_CASE (Profiling)
@@ -151,14 +151,14 @@ TEST_CASE (Profiling)
     CHECK_EQUAL (group.GetAcquired (), 0u);
     CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
 
-    [[maybe_unused]] void *first = stack.Acquire (FIRST_ALLOCATION);
+    [[maybe_unused]] void *first = stack.Acquire (FIRST_ALLOCATION, sizeof (uintptr_t));
     const void *headAfterFirst = stack.Head ();
 
     CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION);
     CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION);
     CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);
 
-    [[maybe_unused]] void *second = stack.Acquire (SECOND_ALLOCATION);
+    [[maybe_unused]] void *second = stack.Acquire (SECOND_ALLOCATION, sizeof (uintptr_t));
     CHECK_EQUAL (group.GetReserved (), STACK_CAPACITY - FIRST_ALLOCATION - SECOND_ALLOCATION);
     CHECK_EQUAL (group.GetAcquired (), FIRST_ALLOCATION + SECOND_ALLOCATION);
     CHECK_EQUAL (group.GetTotal (), STACK_CAPACITY);

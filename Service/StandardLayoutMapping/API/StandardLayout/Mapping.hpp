@@ -49,6 +49,9 @@ public:
     /// \return User defined object size in bytes including alignment gaps.
     [[nodiscard]] std::size_t GetObjectSize () const noexcept;
 
+    /// \return User defined object alignment in bytes.
+    [[nodiscard]] std::size_t GetObjectAlignment () const noexcept;
+
     /// \return Readable name for object type, described by this mapping.
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 

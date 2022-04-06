@@ -32,16 +32,17 @@ void *OrderedPool::AcquiredChunkIterator::operator* () const noexcept
 
 static constexpr std::size_t DEFAULT_PAGE_SIZE = 4096u;
 
-OrderedPool::OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize) noexcept
-    : OrderedPool (std::move (_group), _chunkSize, DEFAULT_PAGE_SIZE / _chunkSize)
+OrderedPool::OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _alignment) noexcept
+    : OrderedPool (std::move (_group), _chunkSize, _alignment, DEFAULT_PAGE_SIZE / _chunkSize)
 {
 }
 
 OrderedPool::OrderedPool (Profiler::AllocationGroup _group,
                           std::size_t _chunkSize,
+                          std::size_t _alignment,
                           std::size_t _preferredPageCapacity) noexcept
 {
-    new (&data) Original::OrderedPool (std::move (_group), _chunkSize, _preferredPageCapacity);
+    new (&data) Original::OrderedPool (std::move (_group), _chunkSize, _alignment, _preferredPageCapacity);
 }
 
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
@@ -72,6 +73,11 @@ void OrderedPool::Shrink () noexcept
 void OrderedPool::Clear () noexcept
 {
     block_cast<Original::OrderedPool> (data).Clear ();
+}
+
+bool OrderedPool::IsEmpty () const noexcept
+{
+    return block_cast<Original::OrderedPool> (data).IsEmpty ();
 }
 
 OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noexcept

@@ -4,6 +4,7 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Memory/Original/AlignedAllocation.hpp>
 #include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/UniqueString.hpp>
 
@@ -12,12 +13,13 @@ namespace Emergence::Memory::Original
 class UnorderedPool final
 {
 private:
-    struct Page;
-
     struct Chunk;
 
 public:
-    UnorderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _pageCapacity) noexcept;
+    UnorderedPool (Profiler::AllocationGroup _group,
+                   size_t _chunkSize,
+                   size_t _alignment,
+                   size_t _pageCapacity) noexcept;
 
     UnorderedPool (const UnorderedPool &_other) = delete;
 
@@ -30,6 +32,8 @@ public:
     void Release (void *_chunk) noexcept;
 
     void Clear () noexcept;
+
+    [[nodiscard]] bool IsEmpty () const noexcept;
 
     [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 
@@ -48,16 +52,11 @@ private:
         };
     };
 
-    struct Page
-    {
-        Page *next;
-
-        Chunk chunks[0u];
-    };
-
-    const size_t pageCapacity;
     const size_t chunkSize;
-    Page *topPage;
+    const size_t alignment;
+    const size_t pageCapacity;
+
+    AlignedPoolPage *topPage;
     Chunk *topFreeChunk;
 
     /// \brief Acquired chunk counter required to correctly log memory usage for profiling.

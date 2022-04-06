@@ -31,7 +31,7 @@ ModifySingletonQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data)
     new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (*_data)));
 }
 
-EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (ModifySingletonQuery, QueryImplementation)
+EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifySingletonQuery, QueryImplementation)
 
 ModifySingletonQuery::Cursor ModifySingletonQuery::Execute () noexcept
 {

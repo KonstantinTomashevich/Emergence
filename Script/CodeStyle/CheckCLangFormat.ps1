@@ -13,19 +13,26 @@ if (-Not(Get-Command $CLangFormatExecutable))
     exit -2
 }
 
-$Sources = @()
+$AllChecksSuccessful = $true
 $RootChildren = Get-ChildItem -Directory
 
 foreach ($RootChild in $RootChildren)
 {
     if (($RootChild.Name -ne "ThirdParty") -and ($RootChild.Name -ne "Build") -and ($RootChild.Name -ne "Dependency"))
     {
-        $Sources += Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp" -Exclude "*.generated.cpp", "*.generated.hpp"
+        $Sources = Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp" -Exclude "*.generated.cpp", "*.generated.hpp"
+        foreach ($Source in $Sources)
+        {
+            & $CLangFormatExecutable --Werror --dry-run $Source
+            if (-not$?)
+            {
+                $AllChecksSuccessful = $false
+            }
+        }
     }
 }
 
-& $CLangFormatExecutable --Werror --dry-run $Sources
-if ($?)
+if ($AllChecksSuccessful)
 {
     exit 0
 }

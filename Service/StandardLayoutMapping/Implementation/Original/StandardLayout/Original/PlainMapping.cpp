@@ -98,6 +98,11 @@ std::size_t PlainMapping::GetObjectSize () const noexcept
     return objectSize;
 }
 
+std::size_t PlainMapping::GetObjectAlignment () const noexcept
+{
+    return objectAlignment;
+}
+
 std::size_t PlainMapping::GetFieldCount () const noexcept
 {
     return fieldCount;
@@ -163,8 +168,9 @@ std::size_t PlainMapping::CalculateMappingSize (std::size_t _fieldCapacity) noex
     return sizeof (PlainMapping) + _fieldCapacity * sizeof (FieldData);
 }
 
-PlainMapping::PlainMapping (Memory::UniqueString _name, std::size_t _objectSize) noexcept
+PlainMapping::PlainMapping (Memory::UniqueString _name, std::size_t _objectSize, std::size_t _objectAlignment) noexcept
     : objectSize (_objectSize),
+      objectAlignment (_objectAlignment),
       name (_name)
 {
     assert (objectSize > 0u);
@@ -180,7 +186,7 @@ PlainMapping::~PlainMapping () noexcept
 
 void *PlainMapping::operator new (std::size_t /*unused*/, std::size_t _fieldCapacity) noexcept
 {
-    return GetHeap ().Acquire (CalculateMappingSize (_fieldCapacity));
+    return GetHeap ().Acquire (CalculateMappingSize (_fieldCapacity), alignof (PlainMapping));
 }
 
 void PlainMapping::operator delete (void *_pointer) noexcept
@@ -191,8 +197,8 @@ void PlainMapping::operator delete (void *_pointer) noexcept
 PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexcept
 {
     assert (_newFieldCapacity >= fieldCount);
-    auto *newInstance = static_cast<PlainMapping *> (
-        GetHeap ().Resize (this, CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
+    auto *newInstance = static_cast<PlainMapping *> (GetHeap ().Resize (
+        this, alignof (PlainMapping), CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
 
     newInstance->fieldCapacity = _newFieldCapacity;
     return newInstance;
@@ -219,10 +225,12 @@ PlainMappingBuilder::~PlainMappingBuilder ()
     delete underConstruction;
 }
 
-void PlainMappingBuilder::Begin (Memory::UniqueString _name, std::size_t _objectSize) noexcept
+void PlainMappingBuilder::Begin (Memory::UniqueString _name,
+                                 std::size_t _objectSize,
+                                 std::size_t _objectAlignment) noexcept
 {
     assert (!underConstruction);
-    underConstruction = new (INITIAL_FIELD_CAPACITY) PlainMapping (_name, _objectSize);
+    underConstruction = new (INITIAL_FIELD_CAPACITY) PlainMapping (_name, _objectSize, _objectAlignment);
     underConstruction->fieldCapacity = INITIAL_FIELD_CAPACITY;
 }
 

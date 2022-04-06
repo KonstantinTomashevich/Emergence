@@ -24,9 +24,9 @@ struct WorldSingleton final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId fixedUpdateHappened;
+        StandardLayout::FieldId fixedUpdateHappened;
         // uidCounter is a special internal field with synchronization, therefore it is not reflected.
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

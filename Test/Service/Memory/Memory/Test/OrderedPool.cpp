@@ -93,13 +93,13 @@ TEST_CASE (Move)
 
 TEST_CASE (IterateEmpty)
 {
-    Emergence::Memory::OrderedPool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem)};
     CHECK (pool.BeginAcquired () == pool.EndAcquired ());
 }
 
 TEST_CASE (IterationFirstItem)
 {
-    Emergence::Memory::OrderedPool pool {GetUniqueAllocationGroup (), sizeof (TestItem)};
+    Emergence::Memory::OrderedPool pool {GetUniqueAllocationGroup (), sizeof (TestItem), alignof (TestItem)};
     void *first = pool.Acquire ();
     void *second = pool.Acquire ();
 
