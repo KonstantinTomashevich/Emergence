@@ -1,3 +1,12 @@
+# Bullet overrides cmake library path, but we don't need it. Therefore we cache and restore it.
+set (BUILD_BULLET2_DEMOS OFF)
+set (BUILD_BULLET2_DEMOS OFF)
+set (BUILD_EXTRAS OFF)
+set (BUILD_OPENGL3_DEMOS OFF)
+set (BUILD_UNIT_TESTS OFF)
+add_subdirectory (bullet3)
+unset (LIBRARY_OUTPUT_PATH CACHE)
+
 add_subdirectory (cglm)
 add_subdirectory (doctest)
 
