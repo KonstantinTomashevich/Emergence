@@ -13,16 +13,16 @@ sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
 sober_library_use_service (EXPECTED PUBLIC Memory)
 sober_library_use_service (EXPECTED PUBLIC MemoryProfiler)
 sober_library_use_service (PER_VARIANT PRIVATE Hashing)
-    sober_library_use_service (PER_VARIANT PUBLIC PegasusConstants)
+sober_library_use_service (PER_VARIANT PUBLIC PegasusConstants)
 
-    sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
-    sober_library_link_library (PUBLIC ${API_COMMON_LIBRARY_TARGET})
+sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
+sober_library_link_library (PUBLIC ${API_COMMON_LIBRARY_TARGET})
 
-    sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
-    sober_library_link_library (PUBLIC "${CONTAINER_LIBRARY_TARGET}")
+sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
+sober_library_link_library (PUBLIC "${CONTAINER_LIBRARY_TARGET}")
 
-    sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
-    sober_library_link_library (PUBLIC ${HANDLING_LIBRARY_TARGET})
+sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
+sober_library_link_library (PUBLIC ${HANDLING_LIBRARY_TARGET})
 
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
