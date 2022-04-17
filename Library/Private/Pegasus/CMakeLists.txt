@@ -1,18 +1,18 @@
 add_subdirectory (Constants)
 
 sober_library_begin (Pegasus STATIC)
-    file (GLOB_RECURSE HEADERS *.hpp)
-    file (GLOB_RECURSE SOURCES *.cpp)
-    list (APPEND SOURCES ${HEADERS})
+file (GLOB_RECURSE HEADERS "Public/*.hpp" "Private/*.hpp")
+file (GLOB_RECURSE SOURCES "Public/*.cpp" "Private/*.cpp")
+list (APPEND SOURCES ${HEADERS})
 
-    sober_library_set_sources ("${SOURCES}")
-    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public")
-    sober_library_include_directory (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
+sober_library_set_sources ("${SOURCES}")
+sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public")
+sober_library_include_directory (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
 
-    sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
-    sober_library_use_service (EXPECTED PUBLIC Memory)
-    sober_library_use_service (EXPECTED PUBLIC MemoryProfiler)
-    sober_library_use_service (PER_VARIANT PRIVATE Hashing)
+sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
+sober_library_use_service (EXPECTED PUBLIC Memory)
+sober_library_use_service (EXPECTED PUBLIC MemoryProfiler)
+sober_library_use_service (PER_VARIANT PRIVATE Hashing)
     sober_library_use_service (PER_VARIANT PUBLIC PegasusConstants)
 
     sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)

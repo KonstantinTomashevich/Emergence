@@ -17,6 +17,8 @@
 #include <Pegasus/Constants/HashIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
+#include <SyntaxSugar/Union.hpp>
+
 namespace Emergence::Pegasus
 {
 class HashIndex final : public IndexBase
@@ -63,7 +65,55 @@ private:
         const void *backup = nullptr;
     };
 
-    struct Hasher final
+    // We have 2 hashing strategies:
+    //
+    // - Direct hashing, as its name suggests, treats field value as hash function result. It is only applicable for
+    //   indices on one fields that is smaller or equal to `size_t`. This approach allows to minimize performance
+    //   cost of hash index usage for such one-field indices.
+    // - Generic hashing treats fields as sequences of bytes and applies Hashing service to these sequences. This
+    //   approach works for any combinations of fields, but is very ineffective for one-field indices.
+    //
+    // Hashing strategy is selected during index creation. To minimize runtime polymorphism cost we use union+switch
+    // approach on external calls. This makes code compiler-optimization friendly (in comparison with virtual) and
+    // provides control over each branch and instruction (unlike variant, that has some unavoidable `if`s inside).
+
+    struct DirectHasher final
+    {
+        using is_transparent = void;
+
+        DirectHasher (HashIndex *_owner) noexcept;
+
+        std::size_t operator() (const void *_record) const noexcept;
+
+        std::size_t operator() (const RecordWithBackup &_record) const noexcept;
+
+        std::size_t operator() (const LookupRequest &_request) const noexcept;
+
+        size_t mask = 0u;
+        size_t offset = 0u;
+    };
+
+    struct DirectComparator final
+    {
+        using is_transparent = void;
+
+        DirectComparator (HashIndex *_owner) noexcept;
+
+        bool operator() (const void *_firstRecord, const void *_secondRecord) const noexcept;
+
+        bool operator() (const void *_record, const RecordWithBackup &_recordWithBackup) const noexcept;
+
+        bool operator() (const void *_record, const LookupRequest &_request) const noexcept;
+
+        bool operator() (const LookupRequest &_request, const void *_record) const noexcept;
+
+        size_t mask = 0u;
+        size_t offset = 0u;
+    };
+
+    using DirectHashSet = Container::HashMultiSet<const void *, DirectHasher, DirectComparator>;
+
+    struct GenericHasher final
     {
         using is_transparent = void;
 
@@ -76,7 +126,7 @@ private:
         HashIndex *owner;
     };
 
-    struct Comparator final
+    struct GenericComparator final
     {
         using is_transparent = void;
 
@@ -91,29 +141,45 @@ private:
         HashIndex *owner;
     };
 
-    using RecordHashSet = Container::HashMultiSet<const void *, Hasher, Comparator>;
+    using GenericHashSet = Container::HashMultiSet<const void *, GenericHasher, GenericComparator>;
+
+    EMERGENCE_UNION2 (RecordHashSet, DirectHashSet, direct, GenericHashSet, generic);
+
+    static_assert (std::is_same_v<DirectHashSet::const_iterator, GenericHashSet::const_iterator>);
+    using RecordHashSetConstIterator = DirectHashSet::const_iterator;
+
+    static_assert (std::is_same_v<DirectHashSet::iterator, GenericHashSet::iterator>);
+    using RecordHashSetIterator = DirectHashSet::iterator;
+
+    static_assert (std::is_same_v<DirectHashSet::node_type, GenericHashSet::node_type>);
+    using RecordHashSetNode = DirectHashSet::node_type;
 
     explicit HashIndex (Storage *_owner,
                         std::size_t _initialBuckets,
                         const Container::Vector<StandardLayout::FieldId> &_indexedFields);
 
-    ~HashIndex () = default;
+    ~HashIndex () noexcept;
 
     void InsertRecord (const void *_record) noexcept;
 
     void OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept;
 
-    RecordHashSet::iterator DeleteRecordMyself (const RecordHashSet::iterator &_position) noexcept;
+    RecordHashSetIterator DeleteRecordMyself0 (const RecordHashSetIterator &_position) noexcept;
+
+    RecordHashSetIterator DeleteRecordMyself1 (const RecordHashSetIterator &_position) noexcept;
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
-    void OnRecordChangedByMe (RecordHashSet::iterator _position) noexcept;
+    void OnRecordChangedByMe0 (RecordHashSetIterator _position) noexcept;
+
+    void OnRecordChangedByMe1 (RecordHashSetIterator _position) noexcept;
 
     void OnWriterClosed () noexcept;
 
     IndexedFieldVector indexedFields;
+    size_t implementationSwitch = 0u;
     RecordHashSet records;
-    Container::Vector<RecordHashSet::node_type> changedNodes;
+    Container::Vector<RecordHashSetNode> changedNodes;
 
 public:
     class ReadCursor final
@@ -124,13 +190,11 @@ public:
     private:
         friend class HashIndex;
 
-        ReadCursor (HashIndex *_index,
-                    RecordHashSet::const_iterator _begin,
-                    RecordHashSet::const_iterator _end) noexcept;
+        ReadCursor (HashIndex *_index, RecordHashSetConstIterator _begin, RecordHashSetConstIterator _end) noexcept;
 
         HashIndex *index;
-        RecordHashSet::const_iterator current;
-        RecordHashSet::const_iterator end;
+        RecordHashSetConstIterator current;
+        RecordHashSetConstIterator end;
     };
 
     class EditCursor final
@@ -141,13 +205,13 @@ public:
     private:
         friend class HashIndex;
 
-        EditCursor (HashIndex *_index, RecordHashSet::iterator _begin, RecordHashSet::iterator _end) noexcept;
+        EditCursor (HashIndex *_index, RecordHashSetConstIterator _begin, RecordHashSetConstIterator _end) noexcept;
 
         void BeginRecordEdition () const noexcept;
 
         HashIndex *index;
-        RecordHashSet::iterator current;
-        RecordHashSet::iterator end;
+        RecordHashSetConstIterator current;
+        RecordHashSetConstIterator end;
     };
 
     ReadCursor LookupToRead (const LookupRequest &_request) noexcept;
