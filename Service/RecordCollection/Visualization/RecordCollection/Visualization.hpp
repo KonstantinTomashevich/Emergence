@@ -19,6 +19,9 @@ VisualGraph::Graph GraphFromLinearRepresentation (const LinearRepresentation &_r
 VisualGraph::Graph GraphFromPointRepresentation (const PointRepresentation &_representation);
 
 /// \brief Creates visual graph from given representation.
+VisualGraph::Graph GraphFromSignalRepresentation (const SignalRepresentation &_representation);
+
+/// \brief Creates visual graph from given representation.
 VisualGraph::Graph GraphFromVolumetricRepresentation (const VolumetricRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given collection.
@@ -29,6 +32,9 @@ Container::String GraphId (const LinearRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given representation.
 Container::String GraphId (const PointRepresentation &_representation);
+
+/// \return Id of a graph, that could be created from given representation.
+Container::String GraphId (const SignalRepresentation &_representation);
 
 /// \return Id of a graph, that could be created from given representation.
 Container::String GraphId (const VolumetricRepresentation &_representation);

@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <cassert>
+#include <cstring>
 
 #include <Container/StringBuilder.hpp>
 
@@ -54,6 +55,11 @@ StringBuilder &StringBuilder::Append (const std::string_view &_value) noexcept
     return Append (_value.data ());
 }
 
+StringBuilder &StringBuilder::Append (bool _value) noexcept
+{
+    return _value ? Append ("true") : Append ("false");
+}
+
 StringBuilder &StringBuilder::Append (char _value) noexcept
 {
     SNPRINTF_APPEND ("%c");
@@ -102,6 +108,105 @@ StringBuilder &StringBuilder::Append (double _value) noexcept
 StringBuilder &StringBuilder::Append (long double _value) noexcept
 {
     SNPRINTF_APPEND ("%Lf");
+}
+
+StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexcept
+{
+    switch (_reflectedField.reflection.GetArchetype ())
+    {
+    case StandardLayout::FieldArchetype::BIT:
+        return Append (*static_cast<const uint8_t *> (_reflectedField.pointer) != 0u);
+
+    case StandardLayout::FieldArchetype::INT:
+    {
+        switch (_reflectedField.reflection.GetSize ())
+        {
+        case 1u:
+            return Append (static_cast<int> (*static_cast<const int8_t *> (_reflectedField.pointer)));
+        case 2u:
+            return Append (static_cast<int> (*static_cast<const int16_t *> (_reflectedField.pointer)));
+        case 4u:
+            return Append (*static_cast<const int32_t *> (_reflectedField.pointer));
+        case 8u:
+            return Append (*static_cast<const int64_t *> (_reflectedField.pointer));
+        }
+
+        return Append ("<unknown int size>");
+    }
+
+    case StandardLayout::FieldArchetype::UINT:
+    {
+        switch (_reflectedField.reflection.GetSize ())
+        {
+        case 1u:
+            return Append (static_cast<unsigned> (*static_cast<const uint8_t *> (_reflectedField.pointer)));
+        case 2u:
+            return Append (static_cast<unsigned> (*static_cast<const uint16_t *> (_reflectedField.pointer)));
+        case 4u:
+            return Append (*static_cast<const uint32_t *> (_reflectedField.pointer));
+        case 8u:
+            return Append (*static_cast<const uint64_t *> (_reflectedField.pointer));
+        }
+
+        return Append ("<unknown uint size>");
+    }
+
+    case StandardLayout::FieldArchetype::FLOAT:
+    {
+        switch (_reflectedField.reflection.GetSize ())
+        {
+        case 4u:
+            return Append (*static_cast<const float *> (_reflectedField.pointer));
+        case 8u:
+            return Append (*static_cast<const double *> (_reflectedField.pointer));
+        }
+
+        return Append ("<unknown float size>");
+    }
+
+    case StandardLayout::FieldArchetype::STRING:
+        return Append (static_cast<const char *> (_reflectedField.pointer));
+
+    case StandardLayout::FieldArchetype::BLOCK:
+    {
+        const auto *block = static_cast<const uint8_t *> (_reflectedField.pointer);
+        for (size_t index = 0u; index < _reflectedField.reflection.GetSize (); ++index)
+        {
+            Append (static_cast<unsigned> (block[index]));
+        }
+
+        return *this;
+    }
+
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
+        return Append (*static_cast<const Memory::UniqueString *> (_reflectedField.pointer));
+
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        return Append (ObjectPointer {_reflectedField.pointer, _reflectedField.reflection.GetNestedObjectMapping ()});
+    }
+}
+
+StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noexcept
+{
+    Append ("{ ");
+    for (auto iterator = _reflectedObject.reflection.Begin (); iterator != _reflectedObject.reflection.End ();
+         ++iterator)
+    {
+        StandardLayout::Field field = *iterator;
+        if (iterator != _reflectedObject.reflection.Begin ())
+        {
+            Append (", ");
+        }
+
+        // Ignore projected fields.
+        if (!strchr (*field.GetName (), StandardLayout::PROJECTION_NAME_SEPARATOR))
+        {
+            Append (field.GetName (), " = ", FieldPointer {field.GetValue (_reflectedObject.pointer), field});
+        }
+    }
+
+    Append (" }");
+    return *this;
 }
 
 std::size_t StringBuilder::SpaceLeft () const noexcept

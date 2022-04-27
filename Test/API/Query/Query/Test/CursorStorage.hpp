@@ -15,7 +15,8 @@
 namespace Emergence::Query::Test
 {
 template <typename Cursor>
-requires std::is_copy_constructible_v<Cursor> Cursor CopyCursor (const Cursor &_other)
+    requires std::is_copy_constructible_v<Cursor>
+Cursor CopyCursor (const Cursor &_other)
 {
     return _other;
 }
@@ -86,42 +87,26 @@ struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Curso
 {
 };
 
-inline Container::String ObjectToString (const StandardLayout::Mapping &_mapping, const void *_object)
-{
-    const auto *current = static_cast<const uint8_t *> (_object);
-    const auto *end = current + _mapping.GetObjectSize ();
-    Container::StringBuilder builder;
-
-    while (current != end)
-    {
-        builder.Append (static_cast<std::size_t> (*current), " ");
-        ++current;
-    }
-
-    return builder.Get ();
-}
+template <typename T>
+concept ReturnsEditablePointer = requires (T _cursor) {
+                                     {
+                                         *_cursor
+                                         } -> std::convertible_to<void *>;
+                                 };
 
 template <typename T>
-concept ReturnsEditablePointer = requires (T _cursor)
-{
-    {
-        *_cursor
-        } -> std::convertible_to<void *>;
-};
+concept AllowsObjectDeletion = requires (T _cursor) {
+                                   {
+                                       ~_cursor
+                                   };
+                               };
 
 template <typename T>
-concept AllowsObjectDeletion = requires (T _cursor)
-{
-    {~_cursor};
-};
-
-template <typename T>
-concept Movable = requires (T _cursor)
-{
-    {
-        ++_cursor
-        } -> std::convertible_to<T &>;
-};
+concept Movable = requires (T _cursor) {
+                      {
+                          ++_cursor
+                          } -> std::convertible_to<T &>;
+                  };
 
 template <typename Cursor>
 void AddObject (CursorStorage<Cursor> &_storage,
@@ -151,9 +136,12 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheck &_ta
                 if (object)
                 {
                     bool equal = memcmp (object, _task.expectedObject, _mapping.GetObjectSize ()) == 0u;
-                    CHECK_WITH_MESSAGE (equal, "Expected and pointed objects should be equal!\nObject: ",
-                                        ObjectToString (_mapping, object),
-                                        "\nExpected object: ", ObjectToString (_mapping, _task.expectedObject));
+                    CHECK_WITH_MESSAGE (
+                        equal, "Expected and pointed objects should be equal!\nObject: ",
+                        EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {object, _mapping}),
+                        "\nExpected object: ",
+                        EMERGENCE_BUILD_STRING (
+                            Container::StringBuilder::ObjectPointer {_task.expectedObject, _mapping}));
                 }
                 else
                 {
@@ -195,15 +183,18 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllOr
                     if (object && expected)
                     {
                         bool equal = memcmp (object, expected, _mapping.GetObjectSize ()) == 0;
-                        CHECK_WITH_MESSAGE (equal, "Checking that received object ", object, " and expected object ",
-                                            expected, " at position ", position,
-                                            " are equal.\nReceived: ", ObjectToString (_mapping, object),
-                                            "\nExpected: ", ObjectToString (_mapping, expected));
+                        CHECK_WITH_MESSAGE (
+                            equal, "Checking that received object ", object, " and expected object ", expected,
+                            " at position ", position, " are equal.\nReceived: ",
+                            EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {object, _mapping}),
+                            "\nExpected: ",
+                            EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {expected, _mapping}));
                     }
                     else if (object)
                     {
-                        CHECK_WITH_MESSAGE (false, "Expecting nothing at position ", position, ", receiving ",
-                                            ObjectToString (_mapping, object));
+                        CHECK_WITH_MESSAGE (
+                            false, "Expecting nothing at position ", position, ", receiving ",
+                            EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {object, _mapping}));
                     }
                     else
                     {
@@ -267,7 +258,8 @@ void ExecuteTask (CursorStorage<Cursor> &_storage, const Tasks::CursorCheckAllUn
 
                     if (countInCursor != countExpected)
                     {
-                        LOG ("Checked object: ", ObjectToString (mapping, objectFromCursor));
+                        LOG ("Checked object: ", EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {
+                                                     objectFromCursor, mapping}));
                     }
                 }
             }

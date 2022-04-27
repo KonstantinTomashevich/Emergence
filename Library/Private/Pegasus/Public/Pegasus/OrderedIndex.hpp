@@ -1,7 +1,5 @@
 #pragma once
 
-#include <atomic>
-
 #include <API/Common/Cursor.hpp>
 
 #include <Container/Vector.hpp>
@@ -155,7 +153,7 @@ private:
         OrderedIndex *owner;
     };
 
-    explicit OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField);
+    OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedField);
 
     ~OrderedIndex () = default;
 

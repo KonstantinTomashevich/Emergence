@@ -1,9 +1,7 @@
 #pragma once
 
-#include <atomic>
-#include <functional>
-
 #include <API/Common/Cursor.hpp>
+#include <API/Common/Shortcuts.hpp>
 
 #include <Container/HashMultiSet.hpp>
 #include <Container/InplaceVector.hpp>
@@ -48,11 +46,7 @@ public:
 
     void Drop () noexcept;
 
-    /// There is no sense to copy assign indices.
-    HashIndex &operator= (const HashIndex &_other) = delete;
-
-    /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
-    HashIndex &operator= (HashIndex &&_other) = delete;
+    EMERGENCE_DELETE_ASSIGNMENT (HashIndex);
 
 private:
     friend class Storage;

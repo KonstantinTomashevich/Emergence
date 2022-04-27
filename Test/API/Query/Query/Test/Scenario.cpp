@@ -179,6 +179,18 @@ std::ostream &operator<< (std::ostream &_output, const Container::Vector<Sources
     return _output << ")";
 }
 
+std::ostream &operator<< (std::ostream &_output, const QuerySignalToRead &_task)
+{
+    return _output << "Query signaled objects from \"" << _task.sourceName << "\" and save read only cursor as \""
+                   << _task.cursorName << "\".";
+}
+
+std::ostream &operator<< (std::ostream &_output, const QuerySignalToEdit &_task)
+{
+    return _output << "Query signaled objects from \"" << _task.sourceName << "\" and save editable cursor as \""
+                   << _task.cursorName << "\".";
+}
+
 std::ostream &operator<< (std::ostream &_output, const QueryShapeIntersectionToRead &_task)
 {
     return _output << "Query objects from \"" << _task.sourceName << "\" using shape (min = (" << _task.min

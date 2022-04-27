@@ -40,6 +40,13 @@ struct Range final
     StandardLayout::FieldId queriedField;
 };
 
+struct Signal final
+{
+    Container::String name;
+    StandardLayout::FieldId queriedField;
+    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+};
+
 struct Volumetric final
 {
     union SupportedValue final
@@ -96,8 +103,12 @@ struct Volumetric final
 std::ostream &operator<< (std::ostream &_output, const Volumetric::SupportedValue &_value);
 } // namespace Sources
 
-using Source =
-    std::variant<Sources::Singleton, Sources::UnorderedSequence, Sources::Value, Sources::Range, Sources::Volumetric>;
+using Source = std::variant<Sources::Singleton,
+                            Sources::UnorderedSequence,
+                            Sources::Value,
+                            Sources::Range,
+                            Sources::Signal,
+                            Sources::Volumetric>;
 
 struct Storage final
 {
@@ -167,6 +178,14 @@ struct QueryDescendingRangeToRead final : public RangeQueryBase
 };
 
 struct QueryDescendingRangeToEdit final : public RangeQueryBase
+{
+};
+
+struct QuerySignalToRead : public QueryBase
+{
+};
+
+struct QuerySignalToEdit : public QueryBase
 {
 };
 
@@ -258,6 +277,10 @@ std::ostream &operator<< (std::ostream &_output, const QueryDescendingRangeToRea
 
 std::ostream &operator<< (std::ostream &_output, const QueryDescendingRangeToEdit &_task);
 
+std::ostream &operator<< (std::ostream &_output, const QuerySignalToRead &_task);
+
+std::ostream &operator<< (std::ostream &_output, const QuerySignalToEdit &_task);
+
 std::ostream &operator<< (std::ostream &_output, const QueryShapeIntersectionToRead &_task);
 
 std::ostream &operator<< (std::ostream &_output, const QueryShapeIntersectionToEdit &_task);
@@ -291,6 +314,8 @@ using Task = std::variant<Tasks::QuerySingletonToRead,
                           Tasks::QueryAscendingRangeToEdit,
                           Tasks::QueryDescendingRangeToRead,
                           Tasks::QueryDescendingRangeToEdit,
+                          Tasks::QuerySignalToRead,
+                          Tasks::QuerySignalToEdit,
                           Tasks::QueryShapeIntersectionToRead,
                           Tasks::QueryShapeIntersectionToEdit,
                           Tasks::QueryRayIntersectionToRead,

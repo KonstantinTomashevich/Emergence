@@ -6,10 +6,13 @@
 #include <RecordCollection/Test/Visualization.hpp>
 #include <RecordCollection/Visualization.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 #include <Testing/Testing.hpp>
 
-using namespace Emergence;
+using namespace Emergence::Memory::Literals;
 using namespace Emergence::RecordCollection::Test;
+using namespace Emergence;
 
 bool Emergence::RecordCollection::Test::VisualizationTestIncludeMarker () noexcept
 {
@@ -45,6 +48,12 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
                     StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
                                                         Query::Test::Player::Reflect ().alive),
                 }},
+
+            CreateSignalRepresentation {
+                "playerId",
+                StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
+                                                    Query::Test::Player::Reflect ().id),
+                array_cast<uint32_t, sizeof (uint64_t)> (176345u)},
 
             CreateVolumetricRepresentation {
                 "2d",
@@ -87,6 +96,11 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
           {},
           {{REPRESENTATION_ROOT, {}}},
           {{REPRESENTATION_ROOT, mappingPath + "player.alive", MAPPING_EDGE_COLOR}}},
+         {"SignalRepresentation {player.id = 176345}",
+          {},
+          {},
+          {{REPRESENTATION_ROOT, {}}},
+          {{REPRESENTATION_ROOT, mappingPath + "player.id", MAPPING_EDGE_COLOR}}},
          {"VolumetricRepresentation {{boundingBox.minX, boundingBox.maxX}, {boundingBox.minY, boundingBox.maxY}}",
           {},
           {},
@@ -161,6 +175,39 @@ TEST_CASE (MultipleInstancesOfPointRepresentation)
                                            {},
                                            {{REPRESENTATION_ROOT, {}}},
                                            {{REPRESENTATION_ROOT, mappingPath + "name", MAPPING_EDGE_COLOR}}}},
+                                         {{COLLECTION_ROOT, {}}},
+                                         {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR}}};
+
+    CHECK (result == expected);
+}
+
+TEST_CASE (MultipleInstancesOfSignalRepresentation)
+{
+    const VisualGraph::Graph result = Scenario {
+        Query::Test::Player::Reflect ().mapping,
+        {
+            CreateSignalRepresentation {"playerId", Query::Test::Player::Reflect ().id,
+                                        array_cast<uint32_t, sizeof (uint64_t)> (349u)},
+            CreateSignalRepresentation {"classId", Query::Test::Player::Reflect ().classId,
+                                        array_cast<Memory::UniqueString, sizeof (uint64_t)> ("Knight"_us)},
+        }}.ExecuteAndVisualize ();
+
+    const Container::String mappingPath =
+        GetPathToMappings ()
+            .Append (Query::Test::Player::Reflect ().mapping.GetName (), VisualGraph::NODE_PATH_SEPARATOR)
+            .Get ();
+    const VisualGraph::Graph expected = {"RecordCollection {Player}",
+                                         {},
+                                         {{"SignalRepresentation {id = 349}",
+                                           {},
+                                           {},
+                                           {{REPRESENTATION_ROOT, {}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "id", MAPPING_EDGE_COLOR}}},
+                                          {"SignalRepresentation {classId = Knight}",
+                                           {},
+                                           {},
+                                           {{REPRESENTATION_ROOT, {}}},
+                                           {{REPRESENTATION_ROOT, mappingPath + "classId", MAPPING_EDGE_COLOR}}}},
                                          {{COLLECTION_ROOT, {}}},
                                          {{COLLECTION_ROOT, mappingPath + MAPPING_ROOT, MAPPING_EDGE_COLOR}}};
 

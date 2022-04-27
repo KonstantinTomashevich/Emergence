@@ -56,6 +56,18 @@ PointRepresentation Collection::PointRepresentationIterator::operator* () const 
     return PointRepresentation ((*block_cast<Pegasus::Storage::HashIndexIterator> (data)).Get ());
 }
 
+using SignalRepresentationIterator = Collection::SignalRepresentationIterator;
+
+using SignalRepresentationIteratorImplementation = Pegasus::Storage::SignalIndexIterator;
+
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (SignalRepresentationIterator,
+                                                                 SignalRepresentationIteratorImplementation)
+
+SignalRepresentation Collection::SignalRepresentationIterator::operator* () const noexcept
+{
+    return SignalRepresentation ((*block_cast<Pegasus::Storage::SignalIndexIterator> (data)).Get ());
+}
+
 using VolumetricRepresentationIterator = Collection::VolumetricRepresentationIterator;
 
 using VolumetricRepresentationIteratorImplementation = Pegasus::Storage::VolumetricIndexIterator;
@@ -127,6 +139,15 @@ PointRepresentation Collection::CreatePointRepresentation (
     return PointRepresentation (index.Get ());
 }
 
+SignalRepresentation Collection::CreateSignalRepresentation (
+    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Handling::Handle<Pegasus::SignalIndex> index = internal.storage->CreateSignalIndex (_keyField, _signaledValue);
+    return SignalRepresentation (index.Get ());
+}
+
 VolumetricRepresentation Collection::CreateVolumetricRepresentation (
     const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
 {
@@ -190,6 +211,22 @@ Collection::PointRepresentationIterator Collection::PointRepresentationEnd () co
     assert (internal.storage);
     Pegasus::Storage::HashIndexIterator iterator = internal.storage->EndHashIndices ();
     return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
+}
+
+Collection::SignalRepresentationIterator Collection::SignalRepresentationBegin () const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::SignalIndexIterator iterator = internal.storage->BeginSignalIndices ();
+    return SignalRepresentationIterator (reinterpret_cast<decltype (SignalRepresentationIterator::data) *> (&iterator));
+}
+
+Collection::SignalRepresentationIterator Collection::SignalRepresentationEnd () const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::SignalIndexIterator iterator = internal.storage->EndSignalIndices ();
+    return SignalRepresentationIterator (reinterpret_cast<decltype (SignalRepresentationIterator::data) *> (&iterator));
 }
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () const noexcept

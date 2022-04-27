@@ -7,7 +7,13 @@
     static constexpr std::size_t DATA_MAX_SIZE = (DataMaxSize);                                                        \
                                                                                                                        \
     /*! \brief Iterator implementation-specific data. */                                                               \
-    std::array<uint8_t, DATA_MAX_SIZE> data
+    std::array<uint8_t, DATA_MAX_SIZE> data;                                                                           \
+                                                                                                                       \
+    /*!                                                                                                                \
+     * \details Binding implementation through ::data results in 1-byte alignment, which is not suitable for most use  \
+     *          cases. This zero-size array is added to solve this problem by enforcing default arch-byte alignment.   \
+     */                                                                                                                \
+    [[maybe_unused]] uintptr_t alignmentFixer[0u]
 
 /// \brief Adds implementation handle field with brief documentation comment.
 #define EMERGENCE_BIND_IMPLEMENTATION_HANDLE()                                                                         \

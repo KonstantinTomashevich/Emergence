@@ -8,6 +8,8 @@
 
 #include <Memory/UniqueString.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Container
 {
 /// \brief Provides API for composite string construction without excessive allocations.
@@ -20,6 +22,20 @@ class StringBuilder final
 public:
     /// \details We use fixed-size buffer implementation, because it can be allocated directly on stack.
     static constexpr std::size_t BUFFER_SIZE = 512u;
+
+    /// \brief Combines pointer to field with reflection data in order to make it printable.
+    struct FieldPointer
+    {
+        const void *pointer;
+        StandardLayout::Field reflection;
+    };
+
+    /// \brief Combines pointer to object with reflection data in order to make it printable.
+    struct ObjectPointer
+    {
+        const void *pointer;
+        StandardLayout::Mapping reflection;
+    };
 
     StringBuilder () noexcept;
 
@@ -46,6 +62,9 @@ public:
 
     /// \brief Append given string view to the buffer.
     StringBuilder &Append (const std::string_view &_value) noexcept;
+
+    /// \brief Append given boolean value to the buffer.
+    StringBuilder &Append (bool _value) noexcept;
 
     /// \brief Append given symbol to the buffer.
     StringBuilder &Append (char _value) noexcept;
@@ -76,6 +95,12 @@ public:
 
     /// \brief Append given number to the buffer.
     StringBuilder &Append (long double _value) noexcept;
+
+    /// \brief Append value of pointed field using given reflection data.
+    StringBuilder &Append (const FieldPointer &_reflectedField) noexcept;
+
+    /// \brief Append value of pointed object using given reflection data.
+    StringBuilder &Append (const ObjectPointer &_reflectedObject) noexcept;
 
     /// \brief Helper, that calls Append for each given argument.
     template <typename... Args>

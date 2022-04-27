@@ -65,6 +65,15 @@ Handling::Handle<OrderedIndex> Storage::OrderedIndexIterator::operator* () const
     return iterator->index;
 }
 
+using SignalIndexIterator = Storage::SignalIndexIterator;
+
+EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (SignalIndexIterator, iterator)
+
+Handling::Handle<SignalIndex> Storage::SignalIndexIterator::operator* () const noexcept
+{
+    return iterator->index;
+}
+
 using VolumetricIndexIterator = Storage::VolumetricIndexIterator;
 
 EMERGENCE_IMPLEMENT_BIDIRECTIONAL_ITERATOR_OPERATIONS_AS_WRAPPER (VolumetricIndexIterator, iterator)
@@ -82,6 +91,7 @@ Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
                _recordMapping.GetObjectAlignment ()),
       hashIndexHeap (Memory::Profiler::AllocationGroup {"HashIndex"_us}),
       orderedIndexHeap (Memory::Profiler::AllocationGroup {"OrderedIndex"_us}),
+      signalIndexHeap (Memory::Profiler::AllocationGroup {"SignalIndex"_us}),
       volumetricIndexHeap (Memory::Profiler::AllocationGroup {"VolumetricIndex"_us}),
       recordMapping (std::move (_recordMapping))
 {
@@ -134,6 +144,13 @@ Storage::~Storage () noexcept
         orderedIndexHeap.Release (index, sizeof (OrderedIndex));
     }
 
+    for (auto &[index, mask] : signalIndices)
+    {
+        assert (index->CanBeDropped ());
+        index->~SignalIndex ();
+        signalIndexHeap.Release (index, sizeof (SignalIndex));
+    }
+
     for (auto &[index, mask] : volumetricIndices)
     {
         assert (index->CanBeDropped ());
@@ -171,29 +188,7 @@ Handling::Handle<HashIndex> Storage::CreateHashIndex (
     }
 
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
-    if (!orderedIndices.Empty ())
-    {
-        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
-        OrderedIndex::AscendingReadCursor cursor =
-            orderedIndices.Begin ()->index->LookupToReadAscending ({nullptr}, {nullptr});
-
-        while (const void *record = *cursor)
-        {
-            holder.index->InsertRecord (record);
-            ++cursor;
-        }
-    }
-    else
-    {
-        for (const void *record : records)
-        {
-            if (record != editedRecordBackup)
-            {
-                holder.index->InsertRecord (record);
-            }
-        }
-    }
-
+    InsertRecordsToIndex (holder.index);
     return holder.index;
 }
 
@@ -210,6 +205,8 @@ Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fiel
 
     RegisterIndexedFieldUsage (holder.index->GetIndexedField ());
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
+
+    // We use mass insertion to insert records into new index without overhead.
     OrderedIndex::MassInsertionExecutor inserter = holder.index->StartMassInsertion ();
 
     if (orderedIndices.GetCount () > 1u)
@@ -238,6 +235,24 @@ Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fiel
     return holder.index;
 }
 
+Handling::Handle<SignalIndex> Storage::CreateSignalIndex (
+    StandardLayout::FieldId _indexedField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    assert (writers == 0u);
+    assert (readers == 0u);
+
+    auto placeholder = signalIndexHeap.GetAllocationGroup ().PlaceOnTop ();
+    IndexHolder<SignalIndex> &holder = signalIndices.EmplaceBack (
+        IndexHolder<SignalIndex> {new (signalIndexHeap.Acquire (sizeof (SignalIndex), alignof (SignalIndex)))
+                                      SignalIndex (this, _indexedField, _signaledValue),
+                                  0u});
+
+    RegisterIndexedFieldUsage (holder.index->GetIndexedField ());
+    holder.indexedFieldMask = BuildIndexMask (*holder.index);
+    InsertRecordsToIndex (holder.index);
+    return holder.index;
+}
+
 Handling::Handle<VolumetricIndex> Storage::CreateVolumetricIndex (
     const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
 {
@@ -257,59 +272,48 @@ Handling::Handle<VolumetricIndex> Storage::CreateVolumetricIndex (
     }
 
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
-    if (!orderedIndices.Empty ())
-    {
-        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
-        OrderedIndex::AscendingReadCursor cursor =
-            orderedIndices.Begin ()->index->LookupToReadAscending ({nullptr}, {nullptr});
-
-        while (const void *record = *cursor)
-        {
-            holder.index->InsertRecord (record);
-            ++cursor;
-        }
-    }
-    else
-    {
-        for (const void *record : records)
-        {
-            if (record != editedRecordBackup)
-            {
-                holder.index->InsertRecord (record);
-            }
-        }
-    }
+    InsertRecordsToIndex (holder.index);
     return holder.index;
 }
 
 Storage::HashIndexIterator Storage::BeginHashIndices () const noexcept
 {
-    return Storage::HashIndexIterator (hashIndices.Begin ());
+    return HashIndexIterator (hashIndices.Begin ());
 }
 
 Storage::HashIndexIterator Storage::EndHashIndices () const noexcept
 {
-    return Storage::HashIndexIterator (hashIndices.End ());
+    return HashIndexIterator (hashIndices.End ());
 }
 
 Storage::OrderedIndexIterator Storage::BeginOrderedIndices () const noexcept
 {
-    return Storage::OrderedIndexIterator (orderedIndices.Begin ());
+    return OrderedIndexIterator (orderedIndices.Begin ());
 }
 
 Storage::OrderedIndexIterator Storage::EndOrderedIndices () const noexcept
 {
-    return Storage::OrderedIndexIterator (orderedIndices.End ());
+    return OrderedIndexIterator (orderedIndices.End ());
+}
+
+SignalIndexIterator Storage::BeginSignalIndices () const noexcept
+{
+    return SignalIndexIterator (signalIndices.Begin ());
+}
+
+SignalIndexIterator Storage::EndSignalIndices () const noexcept
+{
+    return SignalIndexIterator (signalIndices.End ());
 }
 
 Storage::VolumetricIndexIterator Storage::BeginVolumetricIndices () const noexcept
 {
-    return Storage::VolumetricIndexIterator (volumetricIndices.Begin ());
+    return VolumetricIndexIterator (volumetricIndices.Begin ());
 }
 
 Storage::VolumetricIndexIterator Storage::EndVolumetricIndices () const noexcept
 {
-    return Storage::VolumetricIndexIterator (volumetricIndices.End ());
+    return VolumetricIndexIterator (volumetricIndices.End ());
 }
 
 void Storage::SetUnsafeReadAllowed (bool _allowed) noexcept
@@ -343,20 +347,11 @@ void Storage::UnregisterWriter () noexcept
     assert (writers == 1u);
     --writers;
 
-    for (auto &[index, mask] : hashIndices)
-    {
-        index->OnWriterClosed ();
-    }
-
-    for (auto &[index, mask] : orderedIndices)
-    {
-        index->OnWriterClosed ();
-    }
-
-    for (auto &[index, mask] : volumetricIndices)
-    {
-        index->OnWriterClosed ();
-    }
+    VisitEveryIndex (
+        [] (auto *_index, Constants::Storage::IndexedFieldMask /*unused*/)
+        {
+            _index->OnWriterClosed ();
+        });
 }
 
 void *Storage::AllocateRecord () noexcept
@@ -376,20 +371,11 @@ void Storage::InsertRecord (const void *_record) noexcept
     assert (readers == 0u);
     assert (writers == 1u);
 
-    for (auto &[index, mask] : hashIndices)
-    {
-        index->InsertRecord (_record);
-    }
-
-    for (auto &[index, mask] : orderedIndices)
-    {
-        index->InsertRecord (_record);
-    }
-
-    for (auto &[index, mask] : volumetricIndices)
-    {
-        index->InsertRecord (_record);
-    }
+    VisitEveryIndex (
+        [_record] (auto *_index, Constants::Storage::IndexedFieldMask /*unused*/)
+        {
+            _index->InsertRecord (_record);
+        });
 }
 
 void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexcept
@@ -398,29 +384,14 @@ void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexce
     assert (readers == 0u);
     assert (writers == 1u);
 
-    for (auto &[index, mask] : hashIndices)
-    {
-        if (index != _requestedByIndex)
+    VisitEveryIndex (
+        [this, _record, _requestedByIndex] (auto *_index, Constants::Storage::IndexedFieldMask /*unused*/)
         {
-            index->OnRecordDeleted (const_cast<const void *> (_record), editedRecordBackup);
-        }
-    }
-
-    for (auto &[index, mask] : orderedIndices)
-    {
-        if (index != _requestedByIndex)
-        {
-            index->OnRecordDeleted (const_cast<const void *> (_record), editedRecordBackup);
-        }
-    }
-
-    for (auto &[index, mask] : volumetricIndices)
-    {
-        if (index != _requestedByIndex)
-        {
-            index->OnRecordDeleted (const_cast<const void *> (_record), editedRecordBackup);
-        }
-    }
+            if (_index != _requestedByIndex)
+            {
+                _index->OnRecordDeleted (const_cast<const void *> (_record), editedRecordBackup);
+            }
+        });
 
     recordMapping.Destruct (_record);
     records.Release (_record);
@@ -507,50 +478,22 @@ bool Storage::EndRecordEdition (const void *_record, const void *_requestedByInd
     }
 
     bool requesterAffected = false;
-    for (auto &[index, mask] : hashIndices)
-    {
-        if (changedIndexedFields & mask)
+    VisitEveryIndex (
+        [this, &requesterAffected, changedIndexedFields, _record, _requestedByIndex] (
+            auto *_index, Constants::Storage::IndexedFieldMask _mask)
         {
-            if (index != _requestedByIndex)
+            if (changedIndexedFields & _mask)
             {
-                index->OnRecordChanged (_record, editedRecordBackup);
+                if (_index != _requestedByIndex)
+                {
+                    _index->OnRecordChanged (_record, editedRecordBackup);
+                }
+                else
+                {
+                    requesterAffected = true;
+                }
             }
-            else
-            {
-                requesterAffected = true;
-            }
-        }
-    }
-
-    for (auto &[index, mask] : orderedIndices)
-    {
-        if (changedIndexedFields & mask)
-        {
-            if (index != _requestedByIndex)
-            {
-                index->OnRecordChanged (_record, editedRecordBackup);
-            }
-            else
-            {
-                requesterAffected = true;
-            }
-        }
-    }
-
-    for (auto &[index, mask] : volumetricIndices)
-    {
-        if (changedIndexedFields & mask)
-        {
-            if (index != _requestedByIndex)
-            {
-                index->OnRecordChanged (_record, editedRecordBackup);
-            }
-            else
-            {
-                requesterAffected = true;
-            }
-        }
-    }
+        });
 
     return requesterAffected;
 }
@@ -584,6 +527,19 @@ void Storage::DropIndex (const OrderedIndex &_index) noexcept
     RebuildIndexMasks ();
 }
 
+void Storage::DropIndex (const SignalIndex &_index) noexcept
+{
+    UnregisterIndexedFieldUsage (_index.GetIndexedField ());
+    signalIndices.EraseExchangingWithLast (
+        std::find_if (signalIndices.Begin (), signalIndices.End (),
+                      [&_index] (const IndexHolder<SignalIndex> &_indexHolder) -> bool
+                      {
+                          return _indexHolder.index == &_index;
+                      }));
+
+    RebuildIndexMasks ();
+}
+
 void Storage::DropIndex (const VolumetricIndex &_index) noexcept
 {
     for (const VolumetricIndex::Dimension &dimension : _index.GetDimensions ())
@@ -604,23 +560,11 @@ void Storage::DropIndex (const VolumetricIndex &_index) noexcept
 
 void Storage::RebuildIndexMasks () noexcept
 {
-    for (auto &[index, mask] : hashIndices)
-    {
-        assert (index);
-        mask = BuildIndexMask (*index);
-    }
-
-    for (auto &[index, mask] : orderedIndices)
-    {
-        assert (index);
-        mask = BuildIndexMask (*index);
-    }
-
-    for (auto &[index, mask] : volumetricIndices)
-    {
-        assert (index);
-        mask = BuildIndexMask (*index);
-    }
+    VisitEveryIndex (
+        [this] (auto *_index, Constants::Storage::IndexedFieldMask &_mask)
+        {
+            _mask = BuildIndexMask (*_index);
+        });
 }
 
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_index) noexcept
@@ -649,14 +593,22 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_
 
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) noexcept
 {
-    auto fieldIterator = std::find_if (indexedFields.Begin (), indexedFields.End (),
-                                       [&_index] (const IndexedField &_field) -> bool
-                                       {
-                                           return _field.field.IsSame (_index.GetIndexedField ());
-                                       });
+#define BUILD_SINGLE_FIELD_MASK                                                                                        \
+    auto fieldIterator = std::find_if (indexedFields.Begin (), indexedFields.End (),                                   \
+                                       [&_index] (const IndexedField &_field) -> bool                                  \
+                                       {                                                                               \
+                                           return _field.field.IsSame (_index.GetIndexedField ());                     \
+                                       });                                                                             \
+                                                                                                                       \
+    assert (fieldIterator != indexedFields.End ());                                                                    \
+    return 1u << (fieldIterator - indexedFields.Begin ())
+    BUILD_SINGLE_FIELD_MASK;
+}
 
-    assert (fieldIterator != indexedFields.End ());
-    return 1u << (fieldIterator - indexedFields.Begin ());
+Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const SignalIndex &_index) noexcept
+{
+    BUILD_SINGLE_FIELD_MASK;
+#undef BUILD_SINGLE_FIELD_MASK
 }
 
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIndex &_index) noexcept
@@ -715,6 +667,61 @@ void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) 
     if (iterator->usages == 0u)
     {
         indexedFields.EraseExchangingWithLast (iterator);
+    }
+}
+
+template <typename Index>
+void Storage::InsertRecordsToIndex (Index *_index) noexcept
+{
+    if (!orderedIndices.Empty ())
+    {
+        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
+        OrderedIndex::AscendingReadCursor cursor =
+            orderedIndices.Begin ()->index->LookupToReadAscending ({nullptr}, {nullptr});
+
+        while (const void *record = *cursor)
+        {
+            _index->InsertRecord (record);
+            ++cursor;
+        }
+    }
+    else
+    {
+        for (const void *record : records)
+        {
+            if (record != editedRecordBackup)
+            {
+                _index->InsertRecord (record);
+            }
+        }
+    }
+}
+
+template <typename Functor>
+void Storage::VisitEveryIndex (Functor _functor) noexcept
+{
+    for (auto &[index, mask] : hashIndices)
+    {
+        assert (index);
+        _functor (index, mask);
+    }
+
+    for (auto &[index, mask] : orderedIndices)
+    {
+        assert (index);
+        _functor (index, mask);
+    }
+
+    for (auto &[index, mask] : signalIndices)
+    {
+        assert (index);
+        _functor (index, mask);
+    }
+
+    for (auto &[index, mask] : volumetricIndices)
+    {
+        assert (index);
+        _functor (index, mask);
     }
 }
 } // namespace Emergence::Pegasus
