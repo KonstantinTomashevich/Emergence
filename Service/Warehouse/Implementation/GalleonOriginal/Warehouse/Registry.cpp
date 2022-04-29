@@ -200,7 +200,7 @@ FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapp
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchSignal (_keyField, _signaledValue);
-    return FetchSignalQuery(reinterpret_cast<decltype (FetchSignalQuery::data) *> (&query));
+    return FetchSignalQuery (reinterpret_cast<decltype (FetchSignalQuery::data) *> (&query));
 }
 
 ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMapping,
@@ -211,7 +211,7 @@ ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMa
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifySignal (_keyField, _signaledValue);
-    return ModifySignalQuery(reinterpret_cast<decltype (ModifySignalQuery::data) *> (&query));
+    return ModifySignalQuery (reinterpret_cast<decltype (ModifySignalQuery::data) *> (&query));
 }
 
 FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayout::Mapping &_typeMapping,

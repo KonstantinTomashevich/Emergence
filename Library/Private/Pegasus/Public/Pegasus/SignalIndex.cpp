@@ -84,7 +84,7 @@ void *SignalIndex::EditCursor::operator* () noexcept
     return current != index->signaledRecords.end () ? const_cast<void *> (*current) : nullptr;
 }
 
-SignalIndex::EditCursor &SignalIndex::EditCursor::operator~() noexcept
+SignalIndex::EditCursor &SignalIndex::EditCursor::operator~ () noexcept
 {
     assert (index);
     assert (current != index->signaledRecords.end ());

@@ -197,7 +197,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
         return current != end ? const_cast<void *> (*current) : nullptr;                                               \
     }                                                                                                                  \
                                                                                                                        \
-    OrderedIndex::Cursor &OrderedIndex::Cursor::operator~() noexcept                                                   \
+    OrderedIndex::Cursor &OrderedIndex::Cursor::operator~ () noexcept                                                  \
     {                                                                                                                  \
         assert (index);                                                                                                \
         assert (current != end);                                                                                       \
