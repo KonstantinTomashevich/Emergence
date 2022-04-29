@@ -17,7 +17,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - [MemoryProfiler](./Service/MemoryProfiler/README.md): provides mechanism for memory usage registration and
   observation, integrated with `Memory` service.
 - [RecordCollection](./Service/RecordCollection/README.md): storage for records of the same type, that provides fast
-  lookups for point, linear and volumetric representations of records.
+  lookups for point, linear, signal and volumetric representations of records.
 - [StandardLayoutMapping](./Service/StandardLayoutMapping/README.md): fast field-only reflection for standard layout
   structures.
 - [TaskExecutor](./Service/TaskExecutor/README.md): provides execution interface for tasks, stored
