@@ -1,5 +1,7 @@
 #include <Query/Test/DataTypes.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 #include <Testing/Testing.hpp>
 
 #include <Warehouse/Test/Scenario.hpp>
@@ -88,6 +90,16 @@ TEST_CASE (LongTerms)
 
             PrepareFetchValueQuery {{playerReflection.mapping, "FetchAlive"}, {playerReflection.alive}},
             PrepareModifyValueQuery {{playerReflection.mapping, "ModifyAlive"}, {playerReflection.alive}},
+
+            PrepareFetchSignalQuery {
+                {playerReflection.mapping, "FetchPoisoned"},
+                playerReflection.poisoned,
+                array_cast<uint8_t, sizeof (uint64_t)> (Query::Test::Player::Status::FLAG_POISONED)},
+
+            PrepareModifySignalQuery {
+                {playerReflection.mapping, "ModifyPoisoned"},
+                playerReflection.poisoned,
+                array_cast<uint8_t, sizeof (uint64_t)> (Query::Test::Player::Status::FLAG_POISONED)},
 
             PrepareFetchShapeIntersectionQuery {{boxReflection.mapping, "FetchShape"}, dimensions},
             PrepareModifyShapeIntersectionQuery {{boxReflection.mapping, "ModifyShape"}, dimensions},

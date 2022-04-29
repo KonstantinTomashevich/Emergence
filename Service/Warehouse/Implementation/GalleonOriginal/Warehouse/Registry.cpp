@@ -192,6 +192,28 @@ ModifyDescendingRangeQuery Registry::ModifyDescendingRange (const StandardLayout
     return ModifyDescendingRangeQuery (reinterpret_cast<decltype (ModifyDescendingRangeQuery::data) *> (&query));
 }
 
+FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapping,
+                                        StandardLayout::FieldId _keyField,
+                                        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.deck);
+    auto container = UseLongTermContainer (*internal.deck, _typeMapping);
+    auto query = container->FetchSignal (_keyField, _signaledValue);
+    return FetchSignalQuery(reinterpret_cast<decltype (FetchSignalQuery::data) *> (&query));
+}
+
+ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMapping,
+                                          StandardLayout::FieldId _keyField,
+                                          const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.deck);
+    auto container = UseLongTermContainer (*internal.deck, _typeMapping);
+    auto query = container->ModifySignal (_keyField, _signaledValue);
+    return ModifySignalQuery(reinterpret_cast<decltype (ModifySignalQuery::data) *> (&query));
+}
+
 FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayout::Mapping &_typeMapping,
                                                               const Container::Vector<Dimension> &_dimensions) noexcept
 {

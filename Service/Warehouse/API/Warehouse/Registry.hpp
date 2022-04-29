@@ -13,6 +13,7 @@
 #include <Warehouse/FetchRayIntersectionQuery.hpp>
 #include <Warehouse/FetchSequenceQuery.hpp>
 #include <Warehouse/FetchShapeIntersectionQuery.hpp>
+#include <Warehouse/FetchSignalQuery.hpp>
 #include <Warehouse/FetchSingletonQuery.hpp>
 #include <Warehouse/FetchValueQuery.hpp>
 #include <Warehouse/InsertLongTermQuery.hpp>
@@ -22,6 +23,7 @@
 #include <Warehouse/ModifyRayIntersectionQuery.hpp>
 #include <Warehouse/ModifySequenceQuery.hpp>
 #include <Warehouse/ModifyShapeIntersectionQuery.hpp>
+#include <Warehouse/ModifySignalQuery.hpp>
 #include <Warehouse/ModifySingletonQuery.hpp>
 #include <Warehouse/ModifyValueQuery.hpp>
 
@@ -67,6 +69,8 @@ namespace Emergence::Warehouse
 ///     - ModifyAscendingRangeQuery.
 ///     - FetchDescendingRangeQuery.
 ///     - ModifyDescendingRangeQuery.
+///     - FetchSignalQuery.
+///     - ModifySignalQuery.
 ///     - FetchShapeIntersectionQuery.
 ///     - ModifyShapeIntersectionQuery.
 ///     - FetchRayIntersectionQuery.
@@ -140,6 +144,17 @@ public:
     /// \brief Prepare ModifyDescendingRangeQuery for given type on given key field.
     [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                     StandardLayout::FieldId _keyField) noexcept;
+
+    /// \brief Prepare FetchSignalQuery, that treats objects with given value in given field as signaled.
+    [[nodiscard]] FetchSignalQuery FetchSignal (const StandardLayout::Mapping &_typeMapping,
+                                                StandardLayout::FieldId _keyField,
+                                                const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
+    /// \brief Prepare ModifySignalQuery, that treats objects with given value in given field as signaled.
+    [[nodiscard]] ModifySignalQuery ModifySignal (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Prepare FetchShapeIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.

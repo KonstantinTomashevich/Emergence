@@ -1,5 +1,6 @@
 #include <Query/Test/AllParametricQueryTypesInOneStorage.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
+#include <Query/Test/SignalQueryTests.hpp>
 #include <Query/Test/SingletonQueryTests.hpp>
 #include <Query/Test/UnorderedSequenceQueryTests.hpp>
 #include <Query/Test/ValueQueryTests.hpp>
@@ -26,6 +27,12 @@ END_SUITE
 BEGIN_SUITE (QueryAPIRange)
 
 REGISTER_ALL_RANGE_QUERY_TESTS (TestQueryApiDriver)
+
+END_SUITE
+
+BEGIN_SUITE (QueryAPISignal)
+
+REGISTER_ALL_SIGNAL_QUERY_TESTS (TestQueryApiDriver)
 
 END_SUITE
 

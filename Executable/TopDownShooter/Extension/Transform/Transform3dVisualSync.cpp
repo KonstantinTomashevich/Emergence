@@ -2,6 +2,8 @@
 
 #include <Math/Scalar.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dVisualSync.hpp>
 
@@ -16,13 +18,15 @@ public:
 
 private:
     Celerity::FetchSingletonQuery fetchTime;
-    Celerity::ModifyValueQuery modifyTransformsWithUpdateFlag;
+    Celerity::ModifySignalQuery modifyTransformsWithUpdateFlag;
 };
 
 Transform3dVisualSynchronizer::Transform3dVisualSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (_constructor.FetchSingleton (Celerity::TimeSingleton::Reflect ().mapping)),
-      modifyTransformsWithUpdateFlag (_constructor.ModifyValue (
-          Transform3dComponent::Reflect ().mapping, {Transform3dComponent::Reflect ().visualTransformSyncNeeded}))
+      modifyTransformsWithUpdateFlag (
+          _constructor.ModifySignal (Transform3dComponent::Reflect ().mapping,
+                                     Transform3dComponent::Reflect ().visualTransformSyncNeeded,
+                                     array_cast<bool, sizeof (uint64_t)> (true)))
 {
     _constructor.MakeDependencyOf (VisualSync::Checkpoint::SYNC_FINISHED);
 }
@@ -31,11 +35,7 @@ void Transform3dVisualSynchronizer::Execute () noexcept
 {
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
-
-    const auto updateNeeded = static_cast<uint8_t> (true);
-    // TODO: This approach is quite bad for performance: we never access list for `false` value, but index would
-    //       build and maintain it nevertheless. We should create special-case optimization for such usage.
-    auto transformCursor = modifyTransformsWithUpdateFlag.Execute (&updateNeeded);
+    auto transformCursor = modifyTransformsWithUpdateFlag.Execute ();
 
     while (auto *transform = static_cast<Transform3dComponent *> (*transformCursor))
     {

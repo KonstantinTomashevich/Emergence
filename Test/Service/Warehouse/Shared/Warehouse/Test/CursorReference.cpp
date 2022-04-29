@@ -1,6 +1,9 @@
 #include <Query/Test/Data.hpp>
 
 #include <Reference/Test/Tests.hpp>
+
+#include <SyntaxSugar/BlockCast.hpp>
+
 #include <Testing/Testing.hpp>
 
 #include <Warehouse/Test/CursorReference.hpp>
@@ -46,6 +49,7 @@ static Emergence::Container::Vector<Emergence::Query::Test::Storage> GetEnvironm
          {
              Sources::Value {"Value", {GetPlayedIdField ()}},
              Sources::Range {"Range", GetPlayedIdField ()},
+             Sources::Signal {"Signal", GetPlayedIdField (), array_cast<uint32_t, sizeof (uint64_t)> (0u)},
              Sources::Volumetric {"Volumetric", GetTestDimensions ()},
          }}};
 }
@@ -124,6 +128,20 @@ static void ExecuteModifyDescendingRangeQueryCursorReferenceApiTest (
     TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (),
                                         QueryDescendingRangeToEdit {{{"Range", {}}, nullptr, nullptr}},
                                         &Emergence::Query::Test::KARL_1_MIN_M2_1_0_MAX_0_4_2);
+}
+
+static void ExecuteFetchSignalQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QuerySignalToRead {{"Signal", {}}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
+}
+
+static void ExecuteModifySignalQueryCursorReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    using namespace Emergence::Query::Test;
+    TestReferenceApiDrivers::ForCursor (_scenario, GetEnvironment (), QuerySignalToEdit {{"Signal", {}}},
+                                        &Emergence::Query::Test::HUGO_0_MIN_10_8_4_MAX_11_9_5);
 }
 
 static void ExecuteFetchShapeIntersectionQueryCursorReferenceApiTest (
@@ -231,6 +249,22 @@ BEGIN_SUITE (ModifyDescendingRangeQueryCursorReferences)
 REGISTER_REFERENCE_TEST (ExecuteModifyDescendingRangeQueryCursorReferenceApiTest, ConstructAndDestructSingle)
 
 REGISTER_REFERENCE_TEST (ExecuteModifyDescendingRangeQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (FetchSignalQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteFetchSignalQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteFetchSignalQueryCursorReferenceApiTest, MoveChain)
+
+END_SUITE
+
+BEGIN_SUITE (ModifySignalQueryCursorReferences)
+
+REGISTER_REFERENCE_TEST (ExecuteModifySignalQueryCursorReferenceApiTest, ConstructAndDestructSingle)
+
+REGISTER_REFERENCE_TEST (ExecuteModifySignalQueryCursorReferenceApiTest, MoveChain)
 
 END_SUITE
 

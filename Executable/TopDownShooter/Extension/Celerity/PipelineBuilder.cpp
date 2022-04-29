@@ -170,6 +170,23 @@ ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const Standar
                                        BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
 
+FetchSignalQuery TaskConstructor::FetchSignal (const StandardLayout::Mapping &_typeMapping,
+                                               StandardLayout::FieldId _keyField,
+                                               const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    RegisterReadAccess (_typeMapping.GetName ());
+    return parent->world->registry.FetchSignal (_typeMapping, _keyField, _signaledValue);
+}
+
+ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &_typeMapping,
+                                                 StandardLayout::FieldId _keyField,
+                                                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return ModifySignalQuery {parent->world->registry.ModifySignal (_typeMapping, _keyField, _signaledValue),
+                              BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+}
+
 FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {

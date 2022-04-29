@@ -24,6 +24,8 @@ using PreparedQuery = std::variant<FetchSingletonQuery,
                                    ModifyAscendingRangeQuery,
                                    FetchDescendingRangeQuery,
                                    ModifyDescendingRangeQuery,
+                                   FetchSignalQuery,
+                                   ModifySignalQuery,
                                    FetchShapeIntersectionQuery,
                                    ModifyShapeIntersectionQuery,
                                    FetchRayIntersectionQuery,
@@ -39,6 +41,8 @@ using Cursor = std::variant<FetchSingletonQuery::Cursor,
                             ModifyAscendingRangeQuery::Cursor,
                             FetchDescendingRangeQuery::Cursor,
                             ModifyDescendingRangeQuery::Cursor,
+                            FetchSignalQuery::Cursor,
+                            ModifySignalQuery::Cursor,
                             FetchShapeIntersectionQuery::Cursor,
                             ModifyShapeIntersectionQuery::Cursor,
                             FetchRayIntersectionQuery::Cursor,
@@ -213,6 +217,30 @@ void ExecuteTask (ExecutionContext &_context, const PrepareModifyDescendingRange
 }
 
 template <typename Query>
+void ValidateCreatedQuery (const StandardLayout::Mapping &_typeMapping,
+                           StandardLayout::FieldId _keyField,
+                           const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+                           const Query &_query)
+{
+    CHECK (_typeMapping.GetField (_keyField).IsSame (_query.GetKeyField ()));
+    CHECK (_query.IsSignaledValue (_signaledValue));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareFetchSignalQuery &_task)
+{
+    auto query = _context.registry.FetchSignal (_task.typeMapping, _task.keyField, _task.signaledValue);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyField, _task.signaledValue, query);
+    AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
+}
+
+void ExecuteTask (ExecutionContext &_context, const PrepareModifySignalQuery &_task)
+{
+    auto query = _context.registry.ModifySignal (_task.typeMapping, _task.keyField, _task.signaledValue);
+    ValidateCreatedQuery (_task.typeMapping, _task.keyField, _task.signaledValue, query);
+    AddObject<PreparedQuery> (_context, _task.queryName, std::move (query));
+}
+
+template <typename Query>
 void ValidateCreatedQuery (const Container::Vector<Dimension> &_dimensions, const Query &_query)
 {
     auto queryIterator = _query.DimensionBegin ();
@@ -362,6 +390,18 @@ void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &
                        query.Execute (_task.minValue, _task.maxValue));
 }
 
+void ExecuteTask (ExecutionContext &_context, const QuerySignalToRead &_task)
+{
+    auto &query = std::get<FetchSignalQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
+    AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const QuerySignalToEdit &_task)
+{
+    auto &query = std::get<ModifySignalQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
+    AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute ());
+}
+
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
 {
     auto &query = std::get<FetchShapeIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
@@ -493,6 +533,24 @@ std::ostream &operator<< (std::ostream &_output, const PrepareModifyDescendingRa
                    << _task.typeMapping.GetField (_task.keyField).GetName () << "\".";
 }
 
+std::ostream &operator<< (std::ostream &_output, const PrepareFetchSignalQuery &_task)
+{
+    StandardLayout::Field field = _task.typeMapping.GetField (_task.keyField);
+    return _output << "Prepare fetch signal query \"" << _task.queryName << "\" for type mapping \""
+                   << _task.typeMapping.GetName () << "\" on field \"" << field.GetName () << "\" with signaled value "
+                   << EMERGENCE_BUILD_STRING (Container::StringBuilder::FieldPointer {&_task.signaledValue, field})
+                   << ".";
+}
+
+std::ostream &operator<< (std::ostream &_output, const PrepareModifySignalQuery &_task)
+{
+    StandardLayout::Field field = _task.typeMapping.GetField (_task.keyField);
+    return _output << "Prepare modify signal query \"" << _task.queryName << "\" for type mapping \""
+                   << _task.typeMapping.GetName () << "\" on field \"" << field.GetName () << "\" with signaled value "
+                   << EMERGENCE_BUILD_STRING (Container::StringBuilder::FieldPointer {&_task.signaledValue, field})
+                   << ".";
+}
+
 std::ostream &operator<< (
     std::ostream &_output,
     const std::pair<StandardLayout::Mapping, Container::Vector<Query::Test::Sources::Volumetric::Dimension>> &_data)
@@ -620,6 +678,18 @@ Task ImportTask (const QueryDescendingRangeToEdit &_task)
 }
 
 template <>
+Task ImportTask (const QuerySignalToRead &_task)
+{
+    return QuerySignalToRead {{_task.sourceName + "::FetchSignal", _task.cursorName}};
+}
+
+template <>
+Task ImportTask (const QuerySignalToEdit &_task)
+{
+    return QuerySignalToEdit {{_task.sourceName + "::ModifySignal", _task.cursorName}};
+}
+
+template <>
 Task ImportTask (const QueryShapeIntersectionToRead &_task)
 {
     return QueryShapeIntersectionToRead {{{_task.sourceName + "::FetchShape", _task.cursorName}, _task.min, _task.max}};
@@ -662,6 +732,7 @@ static Task InsertQueryPreparationTaskFromSource (const Query::Test::Source &_so
 
     const bool isParametricSource = std::holds_alternative<Query::Test::Sources::Value> (_source) ||
                                     std::holds_alternative<Query::Test::Sources::Range> (_source) ||
+                                    std::holds_alternative<Query::Test::Sources::Signal> (_source) ||
                                     std::holds_alternative<Query::Test::Sources::Volumetric> (_source);
 
     REQUIRE (isParametricSource);
@@ -691,13 +762,11 @@ static Container::Vector<Task> ImportStorage (const Query::Test::Storage &_stora
                 if constexpr (std::is_same_v<SourceType, Query::Test::Sources::Singleton>)
                 {
                     tasks.emplace_back (PrepareFetchSingletonQuery {{_storage.dataType, _source.name + "::Fetch"}});
-
                     tasks.emplace_back (PrepareModifySingletonQuery {{_storage.dataType, _source.name + "::Modify"}});
                 }
                 else if constexpr (std::is_same_v<SourceType, Query::Test::Sources::UnorderedSequence>)
                 {
                     tasks.emplace_back (PrepareFetchSequenceQuery {{_storage.dataType, _source.name + "::Fetch"}});
-
                     tasks.emplace_back (PrepareModifySequenceQuery {{_storage.dataType, _source.name + "::Modify"}});
                 }
                 else if constexpr (std::is_same_v<SourceType, Query::Test::Sources::Value>)
@@ -721,6 +790,16 @@ static Container::Vector<Task> ImportStorage (const Query::Test::Storage &_stora
 
                     tasks.emplace_back (PrepareModifyDescendingRangeQuery {
                         {_storage.dataType, _source.name + "::ModifyDescending"}, _source.queriedField});
+                }
+                else if constexpr (std::is_same_v<SourceType, Query::Test::Sources::Signal>)
+                {
+                    tasks.emplace_back (PrepareFetchSignalQuery {{_storage.dataType, _source.name + "::FetchSignal"},
+                                                                 _source.queriedField,
+                                                                 _source.signaledValue});
+
+                    tasks.emplace_back (PrepareModifySignalQuery {{_storage.dataType, _source.name + "::ModifySignal"},
+                                                                  _source.queriedField,
+                                                                  _source.signaledValue});
                 }
                 else if constexpr (std::is_same_v<SourceType, Query::Test::Sources::Volumetric>)
                 {
@@ -800,6 +879,8 @@ concept IndexedQueryPreparation = OneOf<Type,
                                         PrepareModifyAscendingRangeQuery,
                                         PrepareFetchDescendingRangeQuery,
                                         PrepareModifyDescendingRangeQuery,
+                                        PrepareFetchSignalQuery,
+                                        PrepareModifySignalQuery,
                                         PrepareFetchShapeIntersectionQuery,
                                         PrepareModifyShapeIntersectionQuery,
                                         PrepareFetchRayIntersectionQuery,

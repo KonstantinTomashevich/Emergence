@@ -12,6 +12,7 @@ sober_test_begin (ExportGraph)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
+    sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
     sober_library_use_service (SHARED PRIVATE Testing)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

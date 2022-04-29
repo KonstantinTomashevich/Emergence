@@ -23,6 +23,9 @@ VisualGraph::Graph GraphFromQuery (const FetchSequenceQuery &_query);
 VisualGraph::Graph GraphFromQuery (const FetchShapeIntersectionQuery &_query);
 
 /// \brief Creates visual graph from given query.
+VisualGraph::Graph GraphFromQuery (const FetchSignalQuery &_query);
+
+/// \brief Creates visual graph from given query.
 VisualGraph::Graph GraphFromQuery (const FetchSingletonQuery &_query);
 
 /// \brief Creates visual graph from given query.
@@ -50,6 +53,9 @@ VisualGraph::Graph GraphFromQuery (const ModifySequenceQuery &_query);
 VisualGraph::Graph GraphFromQuery (const ModifyShapeIntersectionQuery &_query);
 
 /// \brief Creates visual graph from given query.
+VisualGraph::Graph GraphFromQuery (const ModifySignalQuery &_query);
+
+/// \brief Creates visual graph from given query.
 VisualGraph::Graph GraphFromQuery (const ModifySingletonQuery &_query);
 
 /// \brief Creates visual graph from given query.
@@ -69,6 +75,9 @@ Container::String GraphId (const FetchSequenceQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
 Container::String GraphId (const FetchShapeIntersectionQuery &_query);
+
+/// \return Id of a graph, that could be created from given query.
+Container::String GraphId (const FetchSignalQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
 Container::String GraphId (const FetchSingletonQuery &_query);
@@ -96,6 +105,9 @@ Container::String GraphId (const ModifySequenceQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
 Container::String GraphId (const ModifyShapeIntersectionQuery &_query);
+
+/// \return Id of a graph, that could be created from given query.
+Container::String GraphId (const ModifySignalQuery &_query);
 
 /// \return Id of a graph, that could be created from given query.
 Container::String GraphId (const ModifySingletonQuery &_query);

@@ -214,6 +214,50 @@ public:
                                     RecordCollection::LinearRepresentation _representation) noexcept;
     };
 
+    /// \brief Prepared query, used to gain thread safe readonly access to objects that are considered signaled based on
+    ///        field value, selected during query creation.
+    class FetchSignalQuery final : public RepresentationQueryBase<RecordCollection::SignalRepresentation>
+    {
+    public:
+        using Cursor = RecordCollection::SignalRepresentation::ReadCursor;
+
+        Cursor Execute () noexcept;
+
+        [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
+
+        [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+
+        [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const noexcept;
+
+    private:
+        friend class LongTermContainer;
+
+        FetchSignalQuery (Handling::Handle<LongTermContainer> _container,
+                          RecordCollection::SignalRepresentation _representation) noexcept;
+    };
+
+    /// \brief Prepared query, used to gain readwrite access to objects that are considered signaled based on
+    //         field value, selected during query creation.
+    class ModifySignalQuery final : public RepresentationQueryBase<RecordCollection::SignalRepresentation>
+    {
+    public:
+        using Cursor = RecordCollection::SignalRepresentation::EditCursor;
+
+        Cursor Execute () noexcept;
+
+        [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
+
+        [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+
+        [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const noexcept;
+
+    private:
+        friend class LongTermContainer;
+
+        ModifySignalQuery (Handling::Handle<LongTermContainer> _container,
+                           RecordCollection::SignalRepresentation _representation) noexcept;
+    };
+
     /// \brief Prepared query, used to gain thread safe readonly access to objects that match criteria:
     ////       shape, described by values of object key dimensions, intersects with given shape.
     class FetchShapeIntersectionQuery final : public RepresentationQueryBase<RecordCollection::VolumetricRepresentation>
@@ -319,6 +363,12 @@ public:
 
     ModifyDescendingRangeQuery ModifyDescendingRange (StandardLayout::FieldId _keyField) noexcept;
 
+    FetchSignalQuery FetchSignal (StandardLayout::FieldId _keyField,
+                                  const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
+    ModifySignalQuery ModifySignal (StandardLayout::FieldId _keyField,
+                                    const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
     FetchShapeIntersectionQuery FetchShapeIntersection (
         const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
 
@@ -357,6 +407,9 @@ private:
 
     RecordCollection::PointRepresentation AcquirePointRepresentation (
         const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+
+    RecordCollection::SignalRepresentation AcquireSignalRepresentation (
+        StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
     RecordCollection::VolumetricRepresentation AcquireVolumetricRepresentation (
         const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
