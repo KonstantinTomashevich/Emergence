@@ -184,6 +184,8 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         return Append (ObjectPointer {_reflectedField.pointer, _reflectedField.reflection.GetNestedObjectMapping ()});
     }
+
+    return Append ("<unknown field archetype>");
 }
 
 StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noexcept
