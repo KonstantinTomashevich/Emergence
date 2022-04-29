@@ -16,7 +16,7 @@
          *          which is not suitable for most use cases. This pointer-size integer                                \
          *          is added to solve this problem by enforcing default arch-byte alignment.                           \
          */                                                                                                            \
-        [[maybe_unused]] uintptr_t alignmentFixer;                                                                   \
+        [[maybe_unused]] uintptr_t alignmentFixer;                                                                     \
     }
 
 /// \brief Adds implementation handle field with brief documentation comment.
