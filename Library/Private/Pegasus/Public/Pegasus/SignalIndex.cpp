@@ -198,7 +198,7 @@ static size_t CalculateOffset (const StandardLayout::Field &_field)
 static uint64_t CalculateMask (const StandardLayout::Field &_field, size_t _offset)
 {
     std::array<uint8_t, sizeof (uint64_t)> maskData;
-    std::fill (maskData.begin (), maskData.end (), 0u);
+    std::fill (maskData.begin (), maskData.end (), uint8_t (0u));
     const size_t offsetDelta = _field.GetOffset () - _offset;
 
     if (_field.GetArchetype () == StandardLayout::FieldArchetype::BIT)

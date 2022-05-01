@@ -26,7 +26,7 @@ static size_t CalculateMask (const StandardLayout::Field &_field)
 {
     assert (_field.GetSize () <= sizeof (size_t));
     std::array<uint8_t, sizeof (size_t)> byteRepresentation;
-    std::fill (byteRepresentation.begin (), byteRepresentation.end (), 0u);
+    std::fill (byteRepresentation.begin (), byteRepresentation.end (), uint8_t (0u));
 
     if (_field.GetArchetype () == StandardLayout::FieldArchetype::BIT)
     {
