@@ -115,7 +115,8 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
     switch (_reflectedField.reflection.GetArchetype ())
     {
     case StandardLayout::FieldArchetype::BIT:
-        return Append (*static_cast<const uint8_t *> (_reflectedField.pointer) != 0u);
+        return Append ((*static_cast<const uint8_t *> (_reflectedField.pointer) &
+                        (1u << _reflectedField.reflection.GetBitOffset ())) != 0u);
 
     case StandardLayout::FieldArchetype::INT:
     {
@@ -173,6 +174,10 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
         for (size_t index = 0u; index < _reflectedField.reflection.GetSize (); ++index)
         {
             Append (static_cast<unsigned> (block[index]));
+            if (index + 1u != _reflectedField.reflection.GetSize ())
+            {
+                Append (' ');
+            }
         }
 
         return *this;
@@ -195,14 +200,15 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
          ++iterator)
     {
         StandardLayout::Field field = *iterator;
-        if (iterator != _reflectedObject.reflection.Begin ())
-        {
-            Append (", ");
-        }
 
         // Ignore projected fields.
         if (!strchr (*field.GetName (), StandardLayout::PROJECTION_NAME_SEPARATOR))
         {
+            if (iterator != _reflectedObject.reflection.Begin ())
+            {
+                Append (", ");
+            }
+
             Append (field.GetName (), " = ", FieldPointer {field.GetValue (_reflectedObject.pointer), field});
         }
     }
