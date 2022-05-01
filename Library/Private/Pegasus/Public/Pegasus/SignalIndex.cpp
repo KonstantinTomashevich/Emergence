@@ -163,6 +163,7 @@ std::array<uint8_t, sizeof (uint64_t)> SignalIndex::GetSignaledValue () const
 {
     const size_t offsetDelta = indexedField.GetOffset () - offset;
     std::array<uint8_t, sizeof (uint64_t)> result;
+    std::fill (result.begin (), result.end (), uint8_t (0u));
 
     for (size_t index = 0u; index < indexedField.GetSize (); ++index)
     {
