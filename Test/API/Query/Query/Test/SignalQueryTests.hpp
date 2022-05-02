@@ -37,4 +37,4 @@ Scenario MultipleSourcesDeletion ();
     REGISTER_SIGNAL_QUERY_TEST (Driver, EditSignaled)                                                                  \
     REGISTER_SIGNAL_QUERY_TEST (Driver, DeleteSignaled)                                                                \
     REGISTER_SIGNAL_QUERY_TEST (Driver, MultipleSourcesEdition)                                                        \
-    REGISTER_SIGNAL_QUERY_TEST (Driver, MultipleSourcesDeletion)\
+    REGISTER_SIGNAL_QUERY_TEST (Driver, MultipleSourcesDeletion)

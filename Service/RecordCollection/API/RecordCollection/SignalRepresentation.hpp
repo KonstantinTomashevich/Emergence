@@ -14,7 +14,7 @@ namespace Emergence::RecordCollection
 ///
 /// \details This representation is a special case of PointRepresentation: we can think of it as a representation of
 ///          one specific point, given during construction, in one-dimensional area. SignalRepresentation is intended
-///          to be used instead of PointRepresentation when user is interested only in one specific point. For example:
+///          to be used instead of PointRepresentation when user is interested only in one such point. For example:
 ///
 ///          - User needs to retrieve all records with `true` value of boolean flag.
 ///          - User needs to retrieve all records with `MY_SPECIAL_TYPE` value of user-defined enumeration.
@@ -23,11 +23,10 @@ namespace Emergence::RecordCollection
 ///          Prevents destruction unless there is only one reference to instance.
 ///
 /// \note Performance considerations
-///       Most common case of signal field usage is N-producers-1-consumer model, where multiple producers may change
-///       value from unsignaled to signaled, but only single consumer walks through records using SignalRepresentation
-///       and changes value from signaled to unsignaled. Through any scenarios of signaled<->unsignaled change is
-///       supported, it is recommended to stick to N-producers-1-consumer model, because implementations are likely
-///       to be optimized for this usage model.
+///       In most cases, signaled to unsignaled transaction is done only from special cycles, that process all signaled
+///       records. It means that implementations are highly likely to be designed to process signaled to unsignaled
+///       transaction when edition was done through SignalRepresentation::EditCursor as fast as possible while
+///       sacrificing performance for the cases when this change is done through other means.
 class SignalRepresentation final
 {
 public:

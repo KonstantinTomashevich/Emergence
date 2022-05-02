@@ -62,7 +62,7 @@ private:
     // We have 2 hashing strategies:
     //
     // - Direct hashing, as its name suggests, treats field value as hash function result. It is only applicable for
-    //   indices on one fields that is smaller or equal to `size_t`. This approach allows to minimize performance
+    //   indices on one field that is smaller or equal to `size_t`. This approach allows to minimize performance
     //   cost of hash index usage for such one-field indices.
     // - Generic hashing treats fields as sequences of bytes and applies Hashing service to these sequences. This
     //   approach works for any combinations of fields, but is very ineffective for one-field indices.
