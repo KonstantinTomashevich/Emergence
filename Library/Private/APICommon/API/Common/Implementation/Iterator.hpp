@@ -103,7 +103,7 @@
     ServiceClass ServiceClass::operator++ (int) noexcept                                                               \
     {                                                                                                                  \
         ImplementationClass previous = block_cast<ImplementationClass> (data)++;                                       \
-        return ServiceClass (reinterpret_cast<decltype (data) *> (&previous));                                         \
+        return ServiceClass (array_cast (previous));                                                                   \
     }                                                                                                                  \
                                                                                                                        \
     bool ServiceClass::operator== (const ServiceClass &_other) const noexcept                                          \
@@ -148,9 +148,9 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    ServiceClass::ServiceClass (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept                              \
+    ServiceClass::ServiceClass (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                              \
     {                                                                                                                  \
-        new (&data) ImplementationClass (block_cast<ImplementationClass> (*_data));                                    \
+        new (&data) ImplementationClass (block_cast<ImplementationClass> (_data));                                     \
     }
 
 /// \brief Binds all bidirectional service iterator operations
@@ -168,5 +168,5 @@
     ServiceClass ServiceClass::operator-- (int) noexcept                                                               \
     {                                                                                                                  \
         ImplementationClass previous = block_cast<ImplementationClass> (data)--;                                       \
-        return ServiceClass (reinterpret_cast<decltype (data) *> (&previous));                                         \
+        return ServiceClass (array_cast (previous));                                                                   \
     }

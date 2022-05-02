@@ -37,7 +37,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit FieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit FieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     Mapping (const Mapping &_other) noexcept;
@@ -100,10 +100,10 @@ private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
     /// \brief Copies implementation-specific values from given pointer.
-    explicit Mapping (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit Mapping (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 
     /// \brief Moves implementation-specific values from given pointer.
-    explicit Mapping (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit Mapping (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 
 /// \brief Wraps Mapping::Begin for foreach sentences.

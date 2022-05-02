@@ -45,7 +45,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-        explicit Allocator (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection linear representations.
@@ -62,7 +62,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit LinearRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit LinearRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection point representations.
@@ -79,7 +79,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit PointRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit PointRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection signal representations.
@@ -96,7 +96,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit SignalRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit SignalRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection volumetric representations.
@@ -113,7 +113,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit VolumetricRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit VolumetricRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.

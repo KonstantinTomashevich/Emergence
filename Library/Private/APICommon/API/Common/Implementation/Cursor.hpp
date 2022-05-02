@@ -33,9 +33,9 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    ServiceClass::ServiceClass (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept                                    \
+    ServiceClass::ServiceClass (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                    \
     {                                                                                                                  \
-        new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (*_data)));                        \
+        new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_data)));                         \
     }
 
 /// \brief Binds all edit cursor operations to implementation read cursor.
@@ -71,7 +71,7 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    ServiceClass::ServiceClass (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept                                    \
+    ServiceClass::ServiceClass (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                    \
     {                                                                                                                  \
-        new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (*_data)));                        \
+        new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_data)));                         \
     }

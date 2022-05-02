@@ -4,6 +4,8 @@
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 namespace Emergence
 {
 namespace StandardLayout
@@ -56,7 +58,7 @@ Mapping Field::GetNestedObjectMapping () const noexcept
 {
     assert (IsHandleValid ());
     Handling::Handle<PlainMapping> nestedMapping = static_cast<const FieldData *> (handle)->GetNestedObjectMapping ();
-    return Mapping (reinterpret_cast<decltype (Mapping::data) *> (&nestedMapping));
+    return Mapping (array_cast (nestedMapping));
 }
 
 Memory::UniqueString Field::GetName () const noexcept

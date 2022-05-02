@@ -22,18 +22,18 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (FetchShapeIntersectionQuery, QueryImplem
 Cursor FetchShapeIntersectionQuery::Execute (Shape _shape) noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute (_shape);
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 
 DimensionIterator FetchShapeIntersectionQuery::DimensionBegin () const noexcept
 {
     auto iterator = block_cast<QueryImplementation> (data).DimensionBegin ();
-    return DimensionIterator (reinterpret_cast<decltype (DimensionIterator::data) *> (&iterator));
+    return DimensionIterator (array_cast (iterator));
 }
 
 DimensionIterator FetchShapeIntersectionQuery::DimensionEnd () const noexcept
 {
     auto iterator = block_cast<QueryImplementation> (data).DimensionEnd ();
-    return DimensionIterator (reinterpret_cast<decltype (DimensionIterator::data) *> (&iterator));
+    return DimensionIterator (array_cast (iterator));
 }
 } // namespace Emergence::Warehouse

@@ -89,7 +89,7 @@ FetchSingletonQuery Registry::FetchSingleton (const StandardLayout::Mapping &_ty
     auto &internal = block_cast<InternalData> (data);
     assert (internal.deck);
     auto query = UseSingletonContainer (*internal.deck, _typeMapping)->Fetch ();
-    return FetchSingletonQuery (reinterpret_cast<decltype (FetchSingletonQuery::data) *> (&query));
+    return FetchSingletonQuery (array_cast (query));
 }
 
 ModifySingletonQuery Registry::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -97,7 +97,7 @@ ModifySingletonQuery Registry::ModifySingleton (const StandardLayout::Mapping &_
     auto &internal = block_cast<InternalData> (data);
     assert (internal.deck);
     auto query = UseSingletonContainer (*internal.deck, _typeMapping)->Modify ();
-    return ModifySingletonQuery (reinterpret_cast<decltype (ModifySingletonQuery::data) *> (&query));
+    return ModifySingletonQuery (array_cast (query));
 }
 
 InsertShortTermQuery Registry::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -105,7 +105,7 @@ InsertShortTermQuery Registry::InsertShortTerm (const StandardLayout::Mapping &_
     auto &internal = block_cast<InternalData> (data);
     assert (internal.deck);
     auto query = UseShortTermContainer (*internal.deck, _typeMapping)->Insert ();
-    return InsertShortTermQuery (reinterpret_cast<decltype (InsertShortTermQuery::data) *> (&query));
+    return InsertShortTermQuery (array_cast (query));
 }
 
 FetchSequenceQuery Registry::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -113,7 +113,7 @@ FetchSequenceQuery Registry::FetchSequence (const StandardLayout::Mapping &_type
     auto &internal = block_cast<InternalData> (data);
     assert (internal.deck);
     auto query = UseShortTermContainer (*internal.deck, _typeMapping)->Fetch ();
-    return FetchSequenceQuery (reinterpret_cast<decltype (FetchSequenceQuery::data) *> (&query));
+    return FetchSequenceQuery (array_cast (query));
 }
 
 ModifySequenceQuery Registry::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -121,7 +121,7 @@ ModifySequenceQuery Registry::ModifySequence (const StandardLayout::Mapping &_ty
     auto &internal = block_cast<InternalData> (data);
     assert (internal.deck);
     auto query = UseShortTermContainer (*internal.deck, _typeMapping)->Modify ();
-    return ModifySequenceQuery (reinterpret_cast<decltype (ModifySequenceQuery::data) *> (&query));
+    return ModifySequenceQuery (array_cast (query));
 }
 
 InsertLongTermQuery Registry::InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -129,7 +129,7 @@ InsertLongTermQuery Registry::InsertLongTerm (const StandardLayout::Mapping &_ty
     auto &internal = block_cast<InternalData> (data);
     assert (internal.deck);
     auto query = UseLongTermContainer (*internal.deck, _typeMapping)->Insert ();
-    return InsertLongTermQuery (reinterpret_cast<decltype (InsertLongTermQuery::data) *> (&query));
+    return InsertLongTermQuery (array_cast (query));
 }
 
 FetchValueQuery Registry::FetchValue (const StandardLayout::Mapping &_typeMapping,
@@ -139,7 +139,7 @@ FetchValueQuery Registry::FetchValue (const StandardLayout::Mapping &_typeMappin
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchValue (_keyFields);
-    return FetchValueQuery (reinterpret_cast<decltype (FetchValueQuery::data) *> (&query));
+    return FetchValueQuery (array_cast (query));
 }
 
 ModifyValueQuery Registry::ModifyValue (const StandardLayout::Mapping &_typeMapping,
@@ -149,7 +149,7 @@ ModifyValueQuery Registry::ModifyValue (const StandardLayout::Mapping &_typeMapp
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyValue (_keyFields);
-    return ModifyValueQuery (reinterpret_cast<decltype (ModifyValueQuery::data) *> (&query));
+    return ModifyValueQuery (array_cast (query));
 }
 
 FetchAscendingRangeQuery Registry::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -159,7 +159,7 @@ FetchAscendingRangeQuery Registry::FetchAscendingRange (const StandardLayout::Ma
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchAscendingRange (_keyField);
-    return FetchAscendingRangeQuery (reinterpret_cast<decltype (FetchAscendingRangeQuery::data) *> (&query));
+    return FetchAscendingRangeQuery (array_cast (query));
 }
 
 ModifyAscendingRangeQuery Registry::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -169,7 +169,7 @@ ModifyAscendingRangeQuery Registry::ModifyAscendingRange (const StandardLayout::
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyAscendingRange (_keyField);
-    return ModifyAscendingRangeQuery (reinterpret_cast<decltype (ModifyAscendingRangeQuery::data) *> (&query));
+    return ModifyAscendingRangeQuery (array_cast (query));
 }
 
 FetchDescendingRangeQuery Registry::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -179,7 +179,7 @@ FetchDescendingRangeQuery Registry::FetchDescendingRange (const StandardLayout::
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchDescendingRange (_keyField);
-    return FetchDescendingRangeQuery (reinterpret_cast<decltype (FetchDescendingRangeQuery::data) *> (&query));
+    return FetchDescendingRangeQuery (array_cast (query));
 }
 
 ModifyDescendingRangeQuery Registry::ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -189,7 +189,7 @@ ModifyDescendingRangeQuery Registry::ModifyDescendingRange (const StandardLayout
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyDescendingRange (_keyField);
-    return ModifyDescendingRangeQuery (reinterpret_cast<decltype (ModifyDescendingRangeQuery::data) *> (&query));
+    return ModifyDescendingRangeQuery (array_cast (query));
 }
 
 FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapping,
@@ -200,7 +200,7 @@ FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapp
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchSignal (_keyField, _signaledValue);
-    return FetchSignalQuery (reinterpret_cast<decltype (FetchSignalQuery::data) *> (&query));
+    return FetchSignalQuery (array_cast (query));
 }
 
 ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMapping,
@@ -211,7 +211,7 @@ ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMa
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifySignal (_keyField, _signaledValue);
-    return ModifySignalQuery (reinterpret_cast<decltype (ModifySignalQuery::data) *> (&query));
+    return ModifySignalQuery (array_cast (query));
 }
 
 FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayout::Mapping &_typeMapping,
@@ -221,7 +221,7 @@ FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayo
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchShapeIntersection (ConvertDimensions (_typeMapping, _dimensions));
-    return FetchShapeIntersectionQuery (reinterpret_cast<decltype (FetchShapeIntersectionQuery::data) *> (&query));
+    return FetchShapeIntersectionQuery (array_cast (query));
 }
 
 ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (
@@ -231,7 +231,7 @@ ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyShapeIntersection (ConvertDimensions (_typeMapping, _dimensions));
-    return ModifyShapeIntersectionQuery (reinterpret_cast<decltype (ModifyShapeIntersectionQuery::data) *> (&query));
+    return ModifyShapeIntersectionQuery (array_cast (query));
 }
 
 FetchRayIntersectionQuery Registry::FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
@@ -241,7 +241,7 @@ FetchRayIntersectionQuery Registry::FetchRayIntersection (const StandardLayout::
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchRayIntersection (ConvertDimensions (_typeMapping, _dimensions));
-    return FetchRayIntersectionQuery (reinterpret_cast<decltype (FetchRayIntersectionQuery::data) *> (&query));
+    return FetchRayIntersectionQuery (array_cast (query));
 }
 
 ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
@@ -251,7 +251,7 @@ ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout
     assert (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyRayIntersection (ConvertDimensions (_typeMapping, _dimensions));
-    return ModifyRayIntersectionQuery (reinterpret_cast<decltype (ModifyRayIntersectionQuery::data) *> (&query));
+    return ModifyRayIntersectionQuery (array_cast (query));
 }
 
 Memory::UniqueString Registry::GetName () const noexcept

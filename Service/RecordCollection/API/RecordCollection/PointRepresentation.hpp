@@ -31,7 +31,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -47,7 +47,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over PointRepresentation key fields.
@@ -62,7 +62,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit KeyFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit KeyFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Defines point by specifying value for each key field.

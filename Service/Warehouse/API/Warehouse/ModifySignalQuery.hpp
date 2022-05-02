@@ -24,9 +24,9 @@ public:
         /// Prepared query constructs cursors.
         friend class ModifySignalQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifySignalQuery, Cursor);
@@ -45,6 +45,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit ModifySignalQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit ModifySignalQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

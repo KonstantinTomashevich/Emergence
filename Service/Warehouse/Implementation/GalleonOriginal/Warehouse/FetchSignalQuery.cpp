@@ -22,7 +22,7 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (FetchSignalQuery, QueryImplementation)
 Cursor FetchSignalQuery::Execute () noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute ();
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 
 StandardLayout::Field FetchSignalQuery::GetKeyField () const noexcept

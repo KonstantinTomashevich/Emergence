@@ -73,7 +73,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     CapturedAllocationGroup (const CapturedAllocationGroup &_other) noexcept;
@@ -139,7 +139,7 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit EventObserver (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit EventObserver (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 
 /// \brief Provides API for capturing memory consumption.

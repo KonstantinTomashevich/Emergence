@@ -28,7 +28,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyDescendingRangeQuery, Cursor, Bound _min, Bound _max);
@@ -41,6 +41,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit ModifyDescendingRangeQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit ModifyDescendingRangeQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

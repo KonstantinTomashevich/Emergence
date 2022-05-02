@@ -36,7 +36,7 @@ public:
         /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 22u);
 
-        explicit ShapeIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -53,7 +53,7 @@ public:
         /// About uint64_t: see comment in ShapeIntersectionReadCursor.
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 22u);
 
-        explicit ShapeIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ShapeIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read records, that match criteria, specified
@@ -71,7 +71,7 @@ public:
         /// About uint64_t: same as in comment in ShapeIntersectionReadCursor, but for Ray caching.
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
 
-        explicit RayIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit RayIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
@@ -88,7 +88,7 @@ public:
         /// About uint64_t: see comment in RayIntersectionReadCursor.
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
 
-        explicit RayIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit RayIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over VolumetricRepresentation dimensions.
@@ -123,7 +123,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Defines shape by specifying min-max value pair for each dimension.

@@ -13,7 +13,7 @@ CapturedAllocationGroup::Iterator &CapturedAllocationGroup::Iterator::operator++
 
 CapturedAllocationGroup::Iterator CapturedAllocationGroup::Iterator::operator++ (int) noexcept
 {
-    return Iterator {nullptr};
+    return Iterator {{}};
 }
 
 CapturedAllocationGroup CapturedAllocationGroup::Iterator::operator* () const noexcept
@@ -43,7 +43,7 @@ bool CapturedAllocationGroup::Iterator::operator!= (const CapturedAllocationGrou
     return false;
 }
 
-CapturedAllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> * /*unused*/) noexcept
+CapturedAllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &data;
@@ -58,13 +58,13 @@ CapturedAllocationGroup::~CapturedAllocationGroup () noexcept = default;
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 CapturedAllocationGroup::Iterator CapturedAllocationGroup::BeginChildren () const noexcept
 {
-    return Iterator {nullptr};
+    return Iterator {{}};
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 CapturedAllocationGroup::Iterator CapturedAllocationGroup::EndChildren () const noexcept
 {
-    return Iterator {nullptr};
+    return Iterator {{}};
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
@@ -119,7 +119,7 @@ const Event *EventObserver::NextEvent () noexcept
     return nullptr;
 }
 
-EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> * /*unused*/) noexcept
+EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &data;
@@ -127,6 +127,7 @@ EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> * /*unused*/) n
 
 std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
 {
-    return {CapturedAllocationGroup {nullptr}, EventObserver {nullptr}};
+    static std::array<uint8_t, EventObserver::DATA_MAX_SIZE> stub;
+    return {CapturedAllocationGroup {nullptr}, EventObserver {stub}};
 }
 } // namespace Emergence::Memory::Profiler

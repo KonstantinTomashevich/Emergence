@@ -118,14 +118,14 @@ Iterator AllocationGroup::BeginChildren () const noexcept
     Original::AllocationGroup::Iterator iterator =
         handle ? static_cast<Original::AllocationGroup *> (handle)->BeginChildren () :
                  Original::AllocationGroup::EndChildren ();
-    return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
+    return Iterator (array_cast (iterator));
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is part of the API.
 Iterator AllocationGroup::EndChildren () const noexcept
 {
     Original::AllocationGroup::Iterator iterator = Original::AllocationGroup::EndChildren ();
-    return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
+    return Iterator (array_cast (iterator));
 }
 
 UniqueString AllocationGroup::GetId () const noexcept

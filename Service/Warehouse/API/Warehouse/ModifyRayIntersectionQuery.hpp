@@ -30,7 +30,7 @@ public:
         /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifyRayIntersectionQuery, Cursor, Ray _ray, float _maxDistance);
@@ -45,6 +45,6 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-    explicit ModifyRayIntersectionQuery (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit ModifyRayIntersectionQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

@@ -46,7 +46,7 @@ ReadCursor SignalRepresentation::ReadSignaled () noexcept
     assert (handle);
     Pegasus::SignalIndex *index = reinterpret_cast<Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ();
     Pegasus::SignalIndex::ReadCursor cursor = index->LookupSignaledToRead ();
-    return ReadCursor (reinterpret_cast<decltype (ReadCursor::data) *> (&cursor));
+    return ReadCursor (array_cast (cursor));
 }
 
 EditCursor SignalRepresentation::EditSignaled () noexcept
@@ -54,7 +54,7 @@ EditCursor SignalRepresentation::EditSignaled () noexcept
     assert (handle);
     Pegasus::SignalIndex *index = reinterpret_cast<Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ();
     Pegasus::SignalIndex::EditCursor cursor = index->LookupSignaledToEdit ();
-    return EditCursor (reinterpret_cast<decltype (EditCursor::data) *> (&cursor));
+    return EditCursor (array_cast (cursor));
 }
 
 StandardLayout::Field SignalRepresentation::GetKeyField () const noexcept

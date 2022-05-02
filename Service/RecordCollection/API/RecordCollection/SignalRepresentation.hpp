@@ -43,7 +43,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete signaled records.
@@ -58,7 +58,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     SignalRepresentation (const SignalRepresentation &_other) noexcept;

@@ -26,9 +26,9 @@ void *InsertShortTermQuery::Cursor::operator++ () noexcept
     return ++block_cast<CursorImplementation> (data);
 }
 
-InsertShortTermQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+InsertShortTermQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
-    new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (*_data)));
+    new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (_data)));
 }
 
 EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (InsertShortTermQuery, QueryImplementation)
@@ -36,6 +36,6 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (InsertShortTermQuery, QueryImplementatio
 InsertShortTermQuery::Cursor InsertShortTermQuery::Execute () noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute ();
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 } // namespace Emergence::Warehouse

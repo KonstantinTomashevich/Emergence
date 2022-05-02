@@ -31,7 +31,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
 
-        explicit AcquiredChunkConstIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AcquiredChunkConstIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over acquired chunks.
@@ -46,7 +46,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
 
-        explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \param _chunkSize Fixed chunk size.

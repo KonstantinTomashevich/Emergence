@@ -20,11 +20,11 @@ Field Mapping::FieldIterator::operator* () const noexcept
     return Field (block_cast<FieldData *> (data));
 }
 
-Mapping::Mapping (const Mapping &_other) noexcept : Mapping (&_other.data)
+Mapping::Mapping (const Mapping &_other) noexcept : Mapping (_other.data)
 {
 }
 
-Mapping::Mapping (Mapping &&_other) noexcept : Mapping (&_other.data)
+Mapping::Mapping (Mapping &&_other) noexcept : Mapping (_other.data)
 {
 }
 
@@ -86,7 +86,7 @@ Mapping::FieldIterator Mapping::Begin () const noexcept
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
     assert (handle);
     const FieldData *iterator = handle->Begin ();
-    return FieldIterator (reinterpret_cast<decltype (FieldIterator::data) *> (&iterator));
+    return FieldIterator (array_cast (iterator));
 }
 
 Mapping::FieldIterator Mapping::End () const noexcept
@@ -94,7 +94,7 @@ Mapping::FieldIterator Mapping::End () const noexcept
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
     assert (handle);
     const FieldData *iterator = handle->End ();
-    return FieldIterator (reinterpret_cast<decltype (FieldIterator::data) *> (&iterator));
+    return FieldIterator (array_cast (iterator));
 }
 
 FieldId Mapping::GetFieldId (const Mapping::FieldIterator &_iterator) const noexcept
@@ -115,16 +115,14 @@ uintptr_t Mapping::Hash () const noexcept
     return reinterpret_cast<uintptr_t> (handle.Get ());
 }
 
-Mapping::Mapping (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+Mapping::Mapping (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
-    assert (_data);
-    new (&data) Handling::Handle<PlainMapping> (block_cast<Handling::Handle<PlainMapping>> (*_data));
+    new (&data) Handling::Handle<PlainMapping> (block_cast<Handling::Handle<PlainMapping>> (_data));
 }
 
-Mapping::Mapping (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+Mapping::Mapping (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
-    assert (_data);
-    new (&data) Handling::Handle<PlainMapping> (std::move (block_cast<Handling::Handle<PlainMapping>> (*_data)));
+    new (&data) Handling::Handle<PlainMapping> (std::move (block_cast<Handling::Handle<PlainMapping>> (_data)));
 }
 
 Mapping::~Mapping () noexcept

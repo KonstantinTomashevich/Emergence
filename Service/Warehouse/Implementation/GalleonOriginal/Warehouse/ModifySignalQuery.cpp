@@ -22,7 +22,7 @@ EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifySignalQuery, QueryImplement
 Cursor ModifySignalQuery::Execute () noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute ();
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 
 StandardLayout::Field ModifySignalQuery::GetKeyField () const noexcept
