@@ -154,6 +154,58 @@ LongTermContainer::ModifyDescendingRangeQuery::ModifyDescendingRangeQuery (
 {
 }
 
+LongTermContainer::FetchSignalQuery::Cursor LongTermContainer::FetchSignalQuery::Execute () noexcept
+{
+    return representation.ReadSignaled ();
+}
+
+StandardLayout::Field LongTermContainer::FetchSignalQuery::GetKeyField () const noexcept
+{
+    return representation.GetKeyField ();
+}
+
+bool LongTermContainer::FetchSignalQuery::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+{
+    return representation.IsSignaledValue (_value);
+}
+
+std::array<uint8_t, sizeof (uint64_t)> LongTermContainer::FetchSignalQuery::GetSignaledValue () const noexcept
+{
+    return representation.GetSignaledValue ();
+}
+
+LongTermContainer::FetchSignalQuery::FetchSignalQuery (Handling::Handle<LongTermContainer> _container,
+                                                       RecordCollection::SignalRepresentation _representation) noexcept
+    : RepresentationQueryBase (std::move (_container), std::move (_representation))
+{
+}
+
+LongTermContainer::ModifySignalQuery::Cursor LongTermContainer::ModifySignalQuery::Execute () noexcept
+{
+    return representation.EditSignaled ();
+}
+
+StandardLayout::Field LongTermContainer::ModifySignalQuery::GetKeyField () const noexcept
+{
+    return representation.GetKeyField ();
+}
+
+bool LongTermContainer::ModifySignalQuery::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+{
+    return representation.IsSignaledValue (_value);
+}
+
+std::array<uint8_t, sizeof (uint64_t)> LongTermContainer::ModifySignalQuery::GetSignaledValue () const noexcept
+{
+    return representation.GetSignaledValue ();
+}
+
+LongTermContainer::ModifySignalQuery::ModifySignalQuery (
+    Handling::Handle<LongTermContainer> _container, RecordCollection::SignalRepresentation _representation) noexcept
+    : RepresentationQueryBase (std::move (_container), std::move (_representation))
+{
+}
+
 LongTermContainer::FetchShapeIntersectionQuery::Cursor LongTermContainer::FetchShapeIntersectionQuery::Execute (
     RecordCollection::VolumetricRepresentation::Shape _shape) noexcept
 {
@@ -291,6 +343,18 @@ LongTermContainer::ModifyDescendingRangeQuery LongTermContainer::ModifyDescendin
     return {this, AcquireLinearRepresentation (_keyField)};
 }
 
+LongTermContainer::FetchSignalQuery LongTermContainer::FetchSignal (
+    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    return {this, AcquireSignalRepresentation (_keyField, _signaledValue)};
+}
+
+LongTermContainer::ModifySignalQuery LongTermContainer::ModifySignal (
+    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    return {this, AcquireSignalRepresentation (_keyField, _signaledValue)};
+}
+
 LongTermContainer::FetchShapeIntersectionQuery LongTermContainer::FetchShapeIntersection (
     const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept
 {
@@ -388,6 +452,23 @@ RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentat
     }
 
     return collection.CreatePointRepresentation (_keyFields);
+}
+
+RecordCollection::SignalRepresentation LongTermContainer::AcquireSignalRepresentation (
+    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    for (auto iterator = collection.SignalRepresentationBegin (); iterator != collection.SignalRepresentationEnd ();
+         ++iterator)
+    {
+        RecordCollection::SignalRepresentation representation = *iterator;
+        if (representation.GetKeyField ().IsSame (typeMapping.GetField (_keyField)) &&
+            representation.IsSignaledValue (_signaledValue))
+        {
+            return representation;
+        }
+    }
+
+    return collection.CreateSignalRepresentation (_keyField, _signaledValue);
 }
 
 RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricRepresentation (

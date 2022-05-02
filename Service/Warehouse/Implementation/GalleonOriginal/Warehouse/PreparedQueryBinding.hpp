@@ -31,9 +31,9 @@
         return block_cast<QueryImplementation> (data).GetContainer ()->GetTypeMapping ();                              \
     }                                                                                                                  \
                                                                                                                        \
-    Query::Query (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept                                                  \
+    Query::Query (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                                  \
     {                                                                                                                  \
-        new (&data) QueryImplementation (std::move (block_cast<QueryImplementation> (*_data)));                        \
+        new (&data) QueryImplementation (std::move (block_cast<QueryImplementation> (_data)));                         \
     }
 
 #define EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS(Query, QueryImplementation)                                      \

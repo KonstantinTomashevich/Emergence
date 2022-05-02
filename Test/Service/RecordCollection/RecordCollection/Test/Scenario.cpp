@@ -14,7 +14,8 @@
 
 namespace Emergence::RecordCollection::Test
 {
-using RepresentationReference = std::variant<LinearRepresentation, PointRepresentation, VolumetricRepresentation>;
+using RepresentationReference =
+    std::variant<LinearRepresentation, PointRepresentation, SignalRepresentation, VolumetricRepresentation>;
 
 using Cursor = std::variant<LinearRepresentation::AscendingReadCursor,
                             LinearRepresentation::AscendingEditCursor,
@@ -22,6 +23,8 @@ using Cursor = std::variant<LinearRepresentation::AscendingReadCursor,
                             LinearRepresentation::DescendingEditCursor,
                             PointRepresentation::ReadCursor,
                             PointRepresentation::EditCursor,
+                            SignalRepresentation::ReadCursor,
+                            SignalRepresentation::EditCursor,
                             VolumetricRepresentation::ShapeIntersectionReadCursor,
                             VolumetricRepresentation::ShapeIntersectionEditCursor,
                             VolumetricRepresentation::RayIntersectionReadCursor,
@@ -100,62 +103,31 @@ void IterateOverRepresentations (const ExecutionContext &_context)
     // During iterations below we will execute some unnecessary operations
     // with iterator to cover more iteration-related operations.
 
-    for (auto iterator = _context.collection.LinearRepresentationBegin ();
-         iterator != _context.collection.LinearRepresentationEnd (); ++iterator)
-    {
-        if (iterator != _context.collection.LinearRepresentationBegin ())
-        {
-            auto iteratorCopy = iterator;
-            CHECK (*(iterator--) == *iteratorCopy);
-            CHECK (RepresentationReference (*(iterator++)) == found.back ());
-            CHECK (iterator == iteratorCopy);
-
-            --iteratorCopy;
-            CHECK (iterator != iteratorCopy);
-            iteratorCopy = iterator;
-            CHECK (iterator == iteratorCopy);
-        }
-
-        found.emplace_back (*iterator);
+#define COVER_ITERATORS(RepresentationType)                                                                            \
+    for (auto iterator = _context.collection.RepresentationType##RepresentationBegin ();                               \
+         iterator != _context.collection.RepresentationType##RepresentationEnd (); ++iterator)                         \
+    {                                                                                                                  \
+        if (iterator != _context.collection.RepresentationType##RepresentationBegin ())                                \
+        {                                                                                                              \
+            auto iteratorCopy = iterator;                                                                              \
+            CHECK (*(iterator--) == *iteratorCopy);                                                                    \
+            CHECK (RepresentationReference (*(iterator++)) == found.back ());                                          \
+            CHECK (iterator == iteratorCopy);                                                                          \
+                                                                                                                       \
+            --iteratorCopy;                                                                                            \
+            CHECK (iterator != iteratorCopy);                                                                          \
+            iteratorCopy = iterator;                                                                                   \
+            CHECK (iterator == iteratorCopy);                                                                          \
+        }                                                                                                              \
+                                                                                                                       \
+        found.emplace_back (*iterator);                                                                                \
     }
 
-    for (auto iterator = _context.collection.PointRepresentationBegin ();
-         iterator != _context.collection.PointRepresentationEnd (); ++iterator)
-    {
-        if (iterator != _context.collection.PointRepresentationBegin ())
-        {
-            auto iteratorCopy = iterator;
-            CHECK (*(iterator--) == *iteratorCopy);
-            CHECK (RepresentationReference (*(iterator++)) == found.back ());
-            CHECK (iterator == iteratorCopy);
-
-            --iteratorCopy;
-            CHECK (iterator != iteratorCopy);
-            iteratorCopy = iterator;
-            CHECK (iterator == iteratorCopy);
-        }
-
-        found.emplace_back (*iterator);
-    }
-
-    for (auto iterator = _context.collection.VolumetricRepresentationBegin ();
-         iterator != _context.collection.VolumetricRepresentationEnd (); ++iterator)
-    {
-        if (iterator != _context.collection.VolumetricRepresentationBegin ())
-        {
-            auto iteratorCopy = iterator;
-            CHECK (*(iterator--) == *iteratorCopy);
-            CHECK (RepresentationReference (*(iterator++)) == found.back ());
-            CHECK (iterator == iteratorCopy);
-
-            --iteratorCopy;
-            CHECK (iterator != iteratorCopy);
-            iteratorCopy = iterator;
-            CHECK (iterator == iteratorCopy);
-        }
-
-        found.emplace_back (*iterator);
-    }
+    COVER_ITERATORS (Linear)
+    COVER_ITERATORS (Point)
+    COVER_ITERATORS (Signal)
+    COVER_ITERATORS (Volumetric)
+#undef COVER_ITERATORS
 
     for (const auto &representation : found)
     {
@@ -170,6 +142,15 @@ void IterateOverRepresentations (const ExecutionContext &_context)
                             "Searching known representation with address ",
                             *reinterpret_cast<const void *const *> (&representation), " in received list.");
     }
+}
+
+void ExecuteTask (ExecutionContext &_context, const CreateLinearRepresentation &_task)
+{
+    LinearRepresentation representation = _context.collection.CreateLinearRepresentation (_task.keyField);
+    CHECK (_context.collection.GetTypeMapping ().GetField (_task.keyField).IsSame (representation.GetKeyField ()));
+
+    AddObject<RepresentationReference> (_context, _task.name, representation);
+    IterateOverRepresentations (_context);
 }
 
 void ExecuteTask (ExecutionContext &_context, const CreatePointRepresentation &_task)
@@ -203,10 +184,13 @@ void ExecuteTask (ExecutionContext &_context, const CreatePointRepresentation &_
     IterateOverRepresentations (_context);
 }
 
-void ExecuteTask (ExecutionContext &_context, const CreateLinearRepresentation &_task)
+void ExecuteTask (ExecutionContext &_context, const CreateSignalRepresentation &_task)
 {
-    LinearRepresentation representation = _context.collection.CreateLinearRepresentation (_task.keyField);
+    SignalRepresentation representation =
+        _context.collection.CreateSignalRepresentation (_task.keyField, _task.signaledValue);
+
     CHECK (_context.collection.GetTypeMapping ().GetField (_task.keyField).IsSame (representation.GetKeyField ()));
+    CHECK (representation.IsSignaledValue (_task.signaledValue));
 
     AddObject<RepresentationReference> (_context, _task.name, representation);
     IterateOverRepresentations (_context);
@@ -353,6 +337,24 @@ void ExecuteTask (ExecutionContext &_context, const QueryDescendingRangeToEdit &
                        representation.EditDescendingInterval (_task.minValue, _task.maxValue));
 }
 
+void ExecuteTask (ExecutionContext &_context, const QuerySignalToRead &_task)
+{
+    SignalRepresentation representation =
+        std::get<SignalRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
+
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
+                       representation.ReadSignaled ());
+}
+
+void ExecuteTask (ExecutionContext &_context, const QuerySignalToEdit &_task)
+{
+    SignalRepresentation representation =
+        std::get<SignalRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
+
+    AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
+                       representation.EditSignaled ());
+}
+
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead &_task)
 {
     VolumetricRepresentation representation =
@@ -415,6 +417,11 @@ std::ostream &operator<< (std::ostream &_output, const CreatePointRepresentation
     }
 
     return _output << ".";
+}
+
+std::ostream &operator<< (std::ostream &_output, const CreateSignalRepresentation &_task)
+{
+    return _output << "Create signal representation \"" << _task.name << "\" on field " << _task.keyField << ".";
 }
 
 std::ostream &operator<< (std::ostream &_output, const CreateVolumetricRepresentation &_task)
@@ -508,6 +515,11 @@ Container::Vector<Task> CreateRepresentations (const Query::Test::Storage &_stor
                 else if constexpr (std::is_same_v<Source, Query::Test::Sources::Range>)
                 {
                     tasks.emplace_back (CreateLinearRepresentation {_source.name, _source.queriedField});
+                }
+                else if constexpr (std::is_same_v<Source, Query::Test::Sources::Signal>)
+                {
+                    tasks.emplace_back (
+                        CreateSignalRepresentation {_source.name, _source.queriedField, _source.signaledValue});
                 }
                 else if constexpr (std::is_same_v<Source, Query::Test::Sources::Volumetric>)
                 {

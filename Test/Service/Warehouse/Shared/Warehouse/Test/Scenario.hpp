@@ -80,6 +80,18 @@ struct PrepareModifyDescendingRangeQuery : public QueryPreparationBase
     StandardLayout::FieldId keyField = 0u;
 };
 
+struct PrepareFetchSignalQuery : public QueryPreparationBase
+{
+    StandardLayout::FieldId keyField = 0u;
+    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+};
+
+struct PrepareModifySignalQuery : public QueryPreparationBase
+{
+    StandardLayout::FieldId keyField = 0u;
+    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+};
+
 struct PrepareFetchShapeIntersectionQuery : public QueryPreparationBase
 {
     Container::Vector<Query::Test::Sources::Volumetric::Dimension> dimensions;
@@ -118,6 +130,8 @@ using Task = std::variant<PrepareFetchSingletonQuery,
                           PrepareModifyAscendingRangeQuery,
                           PrepareFetchDescendingRangeQuery,
                           PrepareModifyDescendingRangeQuery,
+                          PrepareFetchSignalQuery,
+                          PrepareModifySignalQuery,
                           PrepareFetchShapeIntersectionQuery,
                           PrepareModifyShapeIntersectionQuery,
                           PrepareFetchRayIntersectionQuery,
@@ -136,6 +150,8 @@ using Task = std::variant<PrepareFetchSingletonQuery,
                           QueryAscendingRangeToEdit,
                           QueryDescendingRangeToRead,
                           QueryDescendingRangeToEdit,
+                          QuerySignalToRead,
+                          QuerySignalToEdit,
                           QueryShapeIntersectionToRead,
                           QueryShapeIntersectionToEdit,
                           QueryRayIntersectionToRead,

@@ -22,6 +22,91 @@ void HashIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
+static size_t CalculateMask (const StandardLayout::Field &_field)
+{
+    assert (_field.GetSize () <= sizeof (size_t));
+    std::array<uint8_t, sizeof (size_t)> byteRepresentation;
+    std::fill (byteRepresentation.begin (), byteRepresentation.end (), uint8_t (0u));
+
+    if (_field.GetArchetype () == StandardLayout::FieldArchetype::BIT)
+    {
+        byteRepresentation[0u] = 1u << _field.GetBitOffset ();
+    }
+    else
+    {
+        for (size_t index = 0u; index < _field.GetSize (); ++index)
+        {
+            byteRepresentation[index] = 255u;
+        }
+    }
+
+    return *reinterpret_cast<size_t *> (&byteRepresentation.front ());
+}
+
+inline size_t ExtractFromRecord (const void *_record, size_t _mask, size_t _offset)
+{
+    return _mask & *reinterpret_cast<const size_t *> (static_cast<const uint8_t *> (_record) + _offset);
+}
+
+inline size_t ExtractFromLookup (const void *_lookup, size_t _mask)
+{
+    return _mask & *static_cast<const size_t *> (_lookup);
+}
+
+HashIndex::DirectHasher::DirectHasher (HashIndex *_owner) noexcept
+    : mask (CalculateMask (_owner->GetIndexedFields ().Front ())),
+      offset (_owner->GetIndexedFields ().Front ().GetOffset ())
+{
+}
+
+std::size_t HashIndex::DirectHasher::operator() (const void *_record) const noexcept
+{
+    return ExtractFromRecord (_record, mask, offset);
+}
+
+std::size_t HashIndex::DirectHasher::operator() (const HashIndex::RecordWithBackup &_record) const noexcept
+{
+    return (*this) (_record.backup);
+}
+
+std::size_t HashIndex::DirectHasher::operator() (const HashIndex::LookupRequest &_request) const noexcept
+{
+    return ExtractFromLookup (_request.indexedFieldValues, mask);
+}
+
+HashIndex::DirectComparator::DirectComparator (HashIndex *_owner) noexcept
+    : mask (CalculateMask (_owner->GetIndexedFields ().Front ())),
+      offset (_owner->GetIndexedFields ().Front ().GetOffset ())
+{
+}
+
+bool HashIndex::DirectComparator::operator() (const void *_firstRecord, const void *_secondRecord) const noexcept
+{
+    return _firstRecord == _secondRecord;
+}
+
+bool HashIndex::DirectComparator::operator() (const void *_record,
+                                              const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
+{
+    return _record == _recordWithBackup.record;
+}
+
+bool HashIndex::DirectComparator::operator() (const void *_record,
+                                              const HashIndex::LookupRequest &_request) const noexcept
+{
+    // Theoretically, we can modify offset and mask to make sure that size_t pointer will always be aligned.
+    // It would speed up record value extraction, but it would also decrease lookup value extraction. In most
+    // situations, direct hashing is used with size_t variables, therefore alignment is always correct, it means that
+    // there is no practical sense to modify offset and mask as it would not change general performance drastically.
+    return ExtractFromRecord (_record, mask, offset) == ExtractFromLookup (_request.indexedFieldValues, mask);
+}
+
+bool HashIndex::DirectComparator::operator() (const HashIndex::LookupRequest &_request,
+                                              const void *_record) const noexcept
+{
+    return (*this) (_record, _request);
+}
+
 static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Field &_indexedField, const uint8_t *_value)
 {
     // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
@@ -79,7 +164,7 @@ static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Fiel
     }
 }
 
-std::size_t HashIndex::Hasher::operator() (const void *_record) const noexcept
+std::size_t HashIndex::GenericHasher::operator() (const void *_record) const noexcept
 {
     assert (owner);
     assert (_record);
@@ -93,12 +178,12 @@ std::size_t HashIndex::Hasher::operator() (const void *_record) const noexcept
     return hasher.GetCurrentValue () % std::numeric_limits<std::size_t>::max ();
 }
 
-std::size_t HashIndex::Hasher::operator() (const HashIndex::RecordWithBackup &_record) const noexcept
+std::size_t HashIndex::GenericHasher::operator() (const HashIndex::RecordWithBackup &_record) const noexcept
 {
     return (*this) (_record.backup);
 }
 
-std::size_t HashIndex::Hasher::operator() (const HashIndex::LookupRequest &_request) const noexcept
+std::size_t HashIndex::GenericHasher::operator() (const HashIndex::LookupRequest &_request) const noexcept
 {
     assert (owner);
     assert (_request.indexedFieldValues);
@@ -115,32 +200,19 @@ std::size_t HashIndex::Hasher::operator() (const HashIndex::LookupRequest &_requ
     return hasher.GetCurrentValue () % std::numeric_limits<std::size_t>::max ();
 }
 
-bool HashIndex::Comparator::operator() (const void *_firstRecord, const void *_secondRecord) const noexcept
+bool HashIndex::GenericComparator::operator() (const void *_firstRecord, const void *_secondRecord) const noexcept
 {
-    assert (_firstRecord);
-    assert (_secondRecord);
-
-    for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
-    {
-        // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        assert (indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
-        if (!AreRecordValuesEqual (_firstRecord, _secondRecord, indexedField))
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return _firstRecord == _secondRecord;
 }
 
-bool HashIndex::Comparator::operator() (const void *_record,
-                                        const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
+bool HashIndex::GenericComparator::operator() (const void *_record,
+                                               const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
 {
     return _record == _recordWithBackup.record;
 }
 
-bool HashIndex::Comparator::operator() (const void *_record, const HashIndex::LookupRequest &_request) const noexcept
+bool HashIndex::GenericComparator::operator() (const void *_record,
+                                               const HashIndex::LookupRequest &_request) const noexcept
 {
     assert (_record);
     assert (_request.indexedFieldValues);
@@ -163,7 +235,8 @@ bool HashIndex::Comparator::operator() (const void *_record, const HashIndex::Lo
     return true;
 }
 
-bool HashIndex::Comparator::operator() (const HashIndex::LookupRequest &_request, const void *_record) const noexcept
+bool HashIndex::GenericComparator::operator() (const HashIndex::LookupRequest &_request,
+                                               const void *_record) const noexcept
 {
     return (*this) (_record, _request);
 }
@@ -174,7 +247,6 @@ HashIndex::HashIndex (Storage *_owner,
                       std::size_t _initialBuckets,
                       const Container::Vector<StandardLayout::FieldId> &_indexedFields)
     : IndexBase (_owner),
-      records (_initialBuckets, Hasher {this}, Comparator {this}, Memory::Profiler::AllocationGroup {"MultiSet"_us}),
       changedNodes (Memory::Profiler::AllocationGroup {"ChangedNodes"_us})
 {
     assert (!_indexedFields.empty ());
@@ -189,83 +261,127 @@ HashIndex::HashIndex (Storage *_owner,
         assert (indexedField.IsHandleValid ());
         indexedFields.EmplaceBack (indexedField);
     }
+
+    if (indexedFields.GetCount () == 1u && indexedFields.Front ().GetSize () <= sizeof (size_t))
+    {
+        implementationSwitch = 0u;
+        new (&records.direct) DirectHashSet {_initialBuckets, DirectHasher {this}, DirectComparator {this},
+                                             Memory::Profiler::AllocationGroup {"MultiSet"_us}};
+    }
+    else
+    {
+        implementationSwitch = 1u;
+        new (&records.generic) GenericHashSet {_initialBuckets, GenericHasher {this}, GenericComparator {this},
+                                               Memory::Profiler::AllocationGroup {"MultiSet"_us}};
+    }
+}
+
+HashIndex::~HashIndex () noexcept
+{
+    EMERGENCE_UNION2_DESTRUCT (records, implementationSwitch);
 }
 
 void HashIndex::InsertRecord (const void *_record) noexcept
 {
-    records.emplace (_record);
+    EMERGENCE_UNION2_CALL (records, implementationSwitch, void, emplace, _record);
 }
 
 void HashIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
 {
-    auto iterator = records.find (RecordWithBackup {_record, _recordBackup});
-    assert (iterator != records.end ());
+    VisitUnion2<void> (
+        [_record, _recordBackup] (auto &_records)
+        {
+            auto iterator = _records.find (RecordWithBackup {_record, _recordBackup});
+            assert (iterator != _records.end ());
 
-    // To erase record using iterator unordered multiset must calculate hash once more.
-    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
-    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with
-    // RecordWithBackup) to erase operation.
-    const_cast<void const *&> (*iterator) = _recordBackup;
+            // To erase record using iterator unordered multiset must calculate hash once more.
+            // But record, to which iterator points, could be changed, therefore hash could be incorrect.
+            // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
+            // This adhok could be eliminated by addition of alternative queries support (like find with
+            // RecordWithBackup) to erase operation.
+            const_cast<void const *&> (*iterator) = _recordBackup;
 
-    records.erase (iterator);
+            _records.erase (iterator);
+        },
+        records, implementationSwitch);
 }
 
-HashIndex::RecordHashSet::iterator HashIndex::DeleteRecordMyself (const RecordHashSet::iterator &_position) noexcept
-{
-    assert (_position != records.end ());
-    const void *record = *_position;
+#define DELETE_RECORD_MYSELF(SwitchId)                                                                                 \
+    HashIndex::RecordHashSetIterator HashIndex::DeleteRecordMyself##SwitchId (                                         \
+        const RecordHashSetIterator &_position) noexcept                                                               \
+    {                                                                                                                  \
+        assert (_position != records._##SwitchId.end ());                                                              \
+        const void *record = *_position;                                                                               \
+                                                                                                                       \
+        /* To erase record using iterator unordered multiset must calculate hash once more.                            \
+           But record, to which iterator points, could be changed, therefore hash could be incorrect.                  \
+           We forcefully rewrite pointed value with backup to ensure that computed has will be correct.                \
+           This adhok could be eliminated by addition of alternative queries support (like find with                   \
+           RecordWithBackup) to erase operation. */                                                                    \
+        const_cast<void const *&> (*_position) = storage->GetEditedRecordBackup ();                                    \
+                                                                                                                       \
+        auto next = records._##SwitchId.erase (_position);                                                             \
+        storage->DeleteRecord (const_cast<void *> (record), this);                                                     \
+        return next;                                                                                                   \
+    }
 
-    // To erase record using iterator unordered multiset must calculate hash once more.
-    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
-    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with
-    // RecordWithBackup) to erase operation.
-    const_cast<void const *&> (*_position) = storage->GetEditedRecordBackup ();
-
-    auto next = records.erase (_position);
-    storage->DeleteRecord (const_cast<void *> (record), this);
-    return next;
-}
+DELETE_RECORD_MYSELF (0)
+DELETE_RECORD_MYSELF (1)
+#undef DELETE_RECORD_MYSELF
 
 void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
-    auto iterator = records.find (RecordWithBackup {_record, _recordBackup});
-    assert (iterator != records.end ());
+    VisitUnion2<void> (
+        [this, _record, _recordBackup] (auto &_records)
+        {
+            auto iterator = _records.find (RecordWithBackup {_record, _recordBackup});
+            assert (iterator != _records.end ());
 
-    // To extract record using iterator unordered multiset must calculate hash once more.
-    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
-    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with
-    // RecordWithBackup) to extract operation.
-    const_cast<void const *&> (*iterator) = _recordBackup;
+            // To extract record using iterator unordered multiset must calculate hash once more.
+            // But record, to which iterator points, could be changed, therefore hash could be incorrect.
+            // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
+            // This adhok could be eliminated by addition of alternative queries support (like find with
+            // RecordWithBackup) to extract operation.
+            const_cast<void const *&> (*iterator) = _recordBackup;
 
-    // After extraction we must restore node value, because this node will be reinserted later.
-    changedNodes.emplace_back (records.extract (iterator)).value () = _record;
+            // After extraction, we must restore node value, because this node will be reinserted later.
+            changedNodes.emplace_back (_records.extract (iterator)).value () = _record;
+        },
+        records, implementationSwitch);
 }
 
-void HashIndex::OnRecordChangedByMe (RecordHashSet::iterator _position) noexcept
-{
-    const void *record = *_position;
-    // To extract record using iterator unordered multiset must calculate hash once more.
-    // But record, to which iterator points, could be changed, therefore hash could be incorrect.
-    // We forcefully rewrite pointed value with backup to ensure that computed has will be correct.
-    // This adhok could be eliminated by addition of alternative queries support (like find with
-    // RecordWithBackup) to extract operation.
-    const_cast<void const *&> (*_position) = storage->GetEditedRecordBackup ();
+#define ON_RECORD_CHANGED_BY_ME(SwitchId)                                                                              \
+    void HashIndex::OnRecordChangedByMe##SwitchId (RecordHashSetIterator _position) noexcept                           \
+    {                                                                                                                  \
+        const void *record = *_position;                                                                               \
+        /* To extract record using iterator unordered multiset must calculate hash once more.                          \
+           But record, to which iterator points, could be changed, therefore hash could be incorrect.                  \
+           We forcefully rewrite pointed value with backup to ensure that computed has will be correct.                \
+           This adhok could be eliminated by addition of alternative queries support (like find with                   \
+           RecordWithBackup) to extract operation. */                                                                  \
+        const_cast<void const *&> (*_position) = storage->GetEditedRecordBackup ();                                    \
+                                                                                                                       \
+        /* After extraction we must restore node value, because this node will be reinserted later. */                 \
+        changedNodes.emplace_back (records._##SwitchId.extract (_position)).value () = record;                         \
+    }
 
-    // After extraction we must restore node value, because this node will be reinserted later.
-    changedNodes.emplace_back (records.extract (_position)).value () = record;
-}
+ON_RECORD_CHANGED_BY_ME (0)
+ON_RECORD_CHANGED_BY_ME (1)
+#undef ON_RECORD_CHANGED_BY_ME
 
 void HashIndex::OnWriterClosed () noexcept
 {
     // Reinsert extracted changed nodes back into index.
-    for (auto &changedNode : changedNodes)
-    {
-        assert (changedNode);
-        records.insert (std::move (changedNode));
-    }
+    VisitUnion2<void> (
+        [this] (auto &_records)
+        {
+            for (auto &changedNode : changedNodes)
+            {
+                assert (changedNode);
+                _records.insert (std::move (changedNode));
+            }
+        },
+        records, implementationSwitch);
 
     changedNodes.clear ();
 }
@@ -314,8 +430,8 @@ HashIndex::ReadCursor &HashIndex::ReadCursor::operator++ () noexcept
 }
 
 HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
-                                   RecordHashSet::const_iterator _begin,
-                                   RecordHashSet::const_iterator _end) noexcept
+                                   RecordHashSetConstIterator _begin,
+                                   RecordHashSetConstIterator _end) noexcept
     : index (_index),
       current (_begin),
       end (_end)
@@ -340,7 +456,7 @@ HashIndex::EditCursor::~EditCursor () noexcept
     {
         if (current != end && index->storage->EndRecordEdition (*current, index))
         {
-            index->OnRecordChangedByMe (current);
+            EMERGENCE_UNION2_SWITCH_CALL (index->implementationSwitch, index->OnRecordChangedByMe, current);
         }
 
         --index->activeCursors;
@@ -359,7 +475,7 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator~ () noexcept
     assert (index);
     assert (current != end);
 
-    current = index->DeleteRecordMyself (current);
+    current = EMERGENCE_UNION2_SWITCH_CALL (index->implementationSwitch, index->DeleteRecordMyself, current);
     BeginRecordEdition ();
     return *this;
 }
@@ -374,7 +490,7 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator++ () noexcept
 
     if (index->storage->EndRecordEdition (record, index))
     {
-        index->OnRecordChangedByMe (previous);
+        EMERGENCE_UNION2_SWITCH_CALL (index->implementationSwitch, index->OnRecordChangedByMe, previous);
     }
 
     BeginRecordEdition ();
@@ -382,8 +498,8 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator++ () noexcept
 }
 
 HashIndex::EditCursor::EditCursor (HashIndex *_index,
-                                   RecordHashSet::iterator _begin,
-                                   RecordHashSet::iterator _end) noexcept
+                                   RecordHashSetConstIterator _begin,
+                                   RecordHashSetConstIterator _end) noexcept
     : index (_index),
       current (_begin),
       end (_end)
@@ -405,13 +521,15 @@ void HashIndex::EditCursor::BeginRecordEdition () const noexcept
 
 HashIndex::ReadCursor HashIndex::LookupToRead (const HashIndex::LookupRequest &_request) noexcept
 {
-    auto [begin, end] = records.equal_range (_request);
+    using IteratorPair = std::pair<RecordHashSetConstIterator, RecordHashSetConstIterator>;
+    auto [begin, end] = EMERGENCE_UNION2_CALL (records, implementationSwitch, IteratorPair, equal_range, _request);
     return {this, begin, end};
 }
 
 HashIndex::EditCursor HashIndex::LookupToEdit (const HashIndex::LookupRequest &_request) noexcept
 {
-    auto [begin, end] = records.equal_range (_request);
+    using IteratorPair = std::pair<RecordHashSetIterator, RecordHashSetIterator>;
+    auto [begin, end] = EMERGENCE_UNION2_CALL (records, implementationSwitch, IteratorPair, equal_range, _request);
     return {this, begin, end};
 }
 } // namespace Emergence::Pegasus

@@ -2,6 +2,8 @@
 
 #include <Galleon/CargoDeck.hpp>
 
+#include <RecordCollection/Visualization.hpp>
+
 #include <Visual/Graph.hpp>
 
 namespace Emergence::Galleon
@@ -25,17 +27,9 @@ public:
 
     static void PostProcess (VisualGraph::Graph &_graph, const LongTermContainer::InsertQuery &_query);
 
-    static void PostProcess (
-        VisualGraph::Graph &_graph,
-        const LongTermContainer::RepresentationQueryBase<RecordCollection::LinearRepresentation> &_query);
-
-    static void PostProcess (
-        VisualGraph::Graph &_graph,
-        const LongTermContainer::RepresentationQueryBase<RecordCollection::PointRepresentation> &_query);
-
-    static void PostProcess (
-        VisualGraph::Graph &_graph,
-        const LongTermContainer::RepresentationQueryBase<RecordCollection::VolumetricRepresentation> &_query);
+    template <typename Representation>
+    static void PostProcess (VisualGraph::Graph &_graph,
+                             const LongTermContainer::RepresentationQueryBase<Representation> &_query);
 
 private:
     // Forward declare helpers, so they will gain friend access to required classes.
@@ -48,4 +42,40 @@ private:
     template <typename Query>
     static void LinkToRepresentation (VisualGraph::Graph &_graph, const Query &_query);
 };
+
+constexpr const char *CONTAINER_ROOT_NODE = ".";
+
+template <typename Representation>
+void VisualizationDriver::PostProcess (VisualGraph::Graph &_graph,
+                                       const LongTermContainer::RepresentationQueryBase<Representation> &_query)
+{
+    LinkToContainer (_graph, _query);
+    LinkToRepresentation (_graph, _query);
+}
+
+template <typename Query>
+void VisualizationDriver::LinkToContainer (VisualGraph::Graph &_graph, const Query &_query)
+{
+    using namespace VisualGraph::Common::Constants;
+    VisualGraph::Edge &edge = _graph.edges.emplace_back ();
+    edge.from = WAREHOUSE_QUERY_ROOT_NODE;
+    edge.to = GetPathToContainer (_query.GetContainer ()).Append (CONTAINER_ROOT_NODE).Get ();
+}
+
+template <typename Query>
+void VisualizationDriver::LinkToRepresentation (VisualGraph::Graph &_graph, const Query &_query)
+{
+    using namespace VisualGraph::Common::Constants;
+    VisualGraph::Edge &edge = _graph.edges.emplace_back ();
+    edge.from = WAREHOUSE_QUERY_ROOT_NODE;
+
+    const RecordCollection::Collection &collection = _query.GetContainer ()->collection;
+    Container::String collectionGraphId = RecordCollection::Visualization::GraphId (collection);
+    Container::String representationGraphId = RecordCollection::Visualization::GraphId (_query.representation);
+
+    edge.to = GetPathToContainer (_query.GetContainer ())
+                  .Append (collectionGraphId + VisualGraph::NODE_PATH_SEPARATOR + representationGraphId +
+                           VisualGraph::NODE_PATH_SEPARATOR + RECORD_COLLECTION_REPRESENTATION_ROOT_NODE)
+                  .Get ();
+}
 } // namespace Emergence::Galleon

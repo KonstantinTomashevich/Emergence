@@ -59,7 +59,7 @@ LinearRepresentation::AscendingReadCursor LinearRepresentation::ReadAscendingInt
     assert (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::AscendingReadCursor cursor = index->LookupToReadAscending ({_min}, {_max});
-    return AscendingReadCursor (reinterpret_cast<decltype (AscendingReadCursor::data) *> (&cursor));
+    return AscendingReadCursor (array_cast (cursor));
 }
 
 LinearRepresentation::AscendingEditCursor LinearRepresentation::EditAscendingInterval (
@@ -68,7 +68,7 @@ LinearRepresentation::AscendingEditCursor LinearRepresentation::EditAscendingInt
     assert (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::AscendingEditCursor cursor = index->LookupToEditAscending ({_min}, {_max});
-    return AscendingEditCursor (reinterpret_cast<decltype (AscendingEditCursor::data) *> (&cursor));
+    return AscendingEditCursor (array_cast (cursor));
 }
 
 LinearRepresentation::DescendingReadCursor LinearRepresentation::ReadDescendingInterval (
@@ -78,7 +78,7 @@ LinearRepresentation::DescendingReadCursor LinearRepresentation::ReadDescendingI
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::DescendingReadCursor cursor = index->LookupToReadDescending ({_min}, {_max});
 
-    return DescendingReadCursor (reinterpret_cast<decltype (DescendingReadCursor::data) *> (&cursor));
+    return DescendingReadCursor (array_cast (cursor));
 }
 
 LinearRepresentation::DescendingEditCursor LinearRepresentation::EditDescendingInterval (
@@ -88,7 +88,7 @@ LinearRepresentation::DescendingEditCursor LinearRepresentation::EditDescendingI
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::DescendingEditCursor cursor = index->LookupToEditDescending ({_min}, {_max});
 
-    return DescendingEditCursor (reinterpret_cast<decltype (DescendingEditCursor::data) *> (&cursor));
+    return DescendingEditCursor (array_cast (cursor));
 }
 
 StandardLayout::Field LinearRepresentation::GetKeyField () const noexcept

@@ -11,6 +11,7 @@
 
 #include <RecordCollection/LinearRepresentation.hpp>
 #include <RecordCollection/PointRepresentation.hpp>
+#include <RecordCollection/SignalRepresentation.hpp>
 #include <RecordCollection/VolumetricRepresentation.hpp>
 
 namespace Emergence::RecordCollection
@@ -44,7 +45,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 
-        explicit Allocator (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Allocator (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection linear representations.
@@ -61,7 +62,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit LinearRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit LinearRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection point representations.
@@ -78,7 +79,24 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit PointRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit PointRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    };
+
+    /// \brief Allows iteration over Collection signal representations.
+    ///
+    /// \warning Collection::CreateSignalRepresentation invalidates these iterators.
+    class SignalRepresentationIterator final
+    {
+    public:
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (SignalRepresentationIterator, SignalRepresentation);
+
+    private:
+        /// Collection constructs iterators for signal representations.
+        friend class Collection;
+
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit SignalRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Collection volumetric representations.
@@ -95,7 +113,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit VolumetricRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit VolumetricRepresentationIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
@@ -147,6 +165,11 @@ public:
     [[nodiscard]] PointRepresentation CreatePointRepresentation (
         const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    /// \brief Adds SignalRepresentation to Collection, which shows only records with specific value in given field.
+    /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
+    [[nodiscard]] SignalRepresentation CreateSignalRepresentation (
+        StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
     /// \brief Adds VolumetricRepresentation to Collection, that uses given _dimensions.
     /// \invariant There is no active allocation transactions in this collection and cursors in its representations.
     /// \invariant All border fields for all dimensions should have same archetype and same size.
@@ -167,6 +190,12 @@ public:
 
     /// \return Iterator, that points to ending of point representations range.
     [[nodiscard]] PointRepresentationIterator PointRepresentationEnd () const noexcept;
+
+    /// \return Iterator, that points to beginning of signal representations range.
+    [[nodiscard]] SignalRepresentationIterator SignalRepresentationBegin () const noexcept;
+
+    /// \return Iterator, that points to ending of signal representations range.
+    [[nodiscard]] SignalRepresentationIterator SignalRepresentationEnd () const noexcept;
 
     /// \return Iterator, that points to beginning of volumetric representations range.
     [[nodiscard]] VolumetricRepresentationIterator VolumetricRepresentationBegin () const noexcept;

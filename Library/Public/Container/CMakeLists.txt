@@ -7,6 +7,7 @@ sober_library_begin (Container STATIC)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
     sober_library_use_service (EXPECTED PUBLIC Memory)
+    sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
 
     sober_variant_begin (Original)
     sober_variant_end ()

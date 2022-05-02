@@ -9,7 +9,7 @@ AllocationGroup::Iterator &AllocationGroup::Iterator::operator++ () noexcept
 
 AllocationGroup::Iterator AllocationGroup::Iterator::operator++ (int) noexcept
 {
-    return Iterator {nullptr};
+    return Iterator {{}};
 }
 
 AllocationGroup AllocationGroup::Iterator::operator* () const noexcept
@@ -38,7 +38,7 @@ bool AllocationGroup::Iterator::operator!= (const AllocationGroup::Iterator & /*
     return false;
 }
 
-AllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> * /*unused*/) noexcept
+AllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &data;
@@ -110,13 +110,13 @@ AllocationGroup AllocationGroup::Parent () const noexcept
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup::Iterator AllocationGroup::BeginChildren () const noexcept
 {
-    return Iterator {nullptr};
+    return Iterator {{}};
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
 AllocationGroup::Iterator AllocationGroup::EndChildren () const noexcept
 {
-    return Iterator {nullptr};
+    return Iterator {{}};
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.

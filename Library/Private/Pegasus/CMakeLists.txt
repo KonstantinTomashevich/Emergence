@@ -1,8 +1,8 @@
 add_subdirectory (Constants)
 
 sober_library_begin (Pegasus STATIC)
-    file (GLOB_RECURSE HEADERS *.hpp)
-    file (GLOB_RECURSE SOURCES *.cpp)
+    file (GLOB_RECURSE HEADERS "Public/*.hpp" "Private/*.hpp")
+    file (GLOB_RECURSE SOURCES "Public/*.cpp" "Private/*.cpp")
     list (APPEND SOURCES ${HEADERS})
 
     sober_library_set_sources ("${SOURCES}")

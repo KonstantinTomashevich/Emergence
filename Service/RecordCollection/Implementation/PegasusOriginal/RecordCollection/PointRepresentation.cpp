@@ -62,7 +62,7 @@ PointRepresentation::ReadCursor PointRepresentation::ReadPoint (PointRepresentat
     assert (handle);
     Pegasus::HashIndex *index = reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     Pegasus::HashIndex::ReadCursor cursor = index->LookupToRead ({_point});
-    return ReadCursor (reinterpret_cast<decltype (ReadCursor::data) *> (&cursor));
+    return ReadCursor (array_cast (cursor));
 }
 
 PointRepresentation::EditCursor PointRepresentation::EditPoint (PointRepresentation::Point _point) noexcept
@@ -70,7 +70,7 @@ PointRepresentation::EditCursor PointRepresentation::EditPoint (PointRepresentat
     assert (handle);
     Pegasus::HashIndex *index = reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     Pegasus::HashIndex::EditCursor cursor = index->LookupToEdit ({_point});
-    return EditCursor (reinterpret_cast<decltype (EditCursor::data) *> (&cursor));
+    return EditCursor (array_cast (cursor));
 }
 
 PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldBegin () const noexcept
@@ -78,7 +78,7 @@ PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldBegin () cons
     assert (handle);
     Pegasus::HashIndex *index = reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     auto iterator = index->GetIndexedFields ().Begin ();
-    return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
+    return KeyFieldIterator (array_cast (iterator));
 }
 
 PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const noexcept
@@ -86,7 +86,7 @@ PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const 
     assert (handle);
     Pegasus::HashIndex *index = reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     auto iterator = index->GetIndexedFields ().End ();
-    return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
+    return KeyFieldIterator (array_cast (iterator));
 }
 
 const StandardLayout::Mapping &PointRepresentation::GetTypeMapping () const noexcept

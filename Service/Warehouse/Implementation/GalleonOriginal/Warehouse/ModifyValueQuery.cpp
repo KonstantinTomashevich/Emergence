@@ -22,18 +22,18 @@ EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifyValueQuery, QueryImplementa
 Cursor ModifyValueQuery::Execute (ValueSequence _values) noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute (_values);
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 
 KeyFieldIterator ModifyValueQuery::KeyFieldBegin () const noexcept
 {
     auto iterator = block_cast<QueryImplementation> (data).KeyFieldBegin ();
-    return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
+    return KeyFieldIterator (array_cast (iterator));
 }
 
 KeyFieldIterator ModifyValueQuery::KeyFieldEnd () const noexcept
 {
     auto iterator = block_cast<QueryImplementation> (data).KeyFieldEnd ();
-    return KeyFieldIterator (reinterpret_cast<decltype (KeyFieldIterator::data) *> (&iterator));
+    return KeyFieldIterator (array_cast (iterator));
 }
 } // namespace Emergence::Warehouse

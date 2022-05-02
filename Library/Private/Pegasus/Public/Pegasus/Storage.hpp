@@ -16,6 +16,7 @@
 #include <Pegasus/Constants/Storage.hpp>
 #include <Pegasus/HashIndex.hpp>
 #include <Pegasus/OrderedIndex.hpp>
+#include <Pegasus/SignalIndex.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -94,6 +95,21 @@ public:
         BaseIterator iterator;
     };
 
+    class SignalIndexIterator final
+    {
+    public:
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (SignalIndexIterator, Handling::Handle<SignalIndex>);
+
+    private:
+        friend class Storage;
+
+        using BaseIterator = IndexVector<SignalIndex>::ConstIterator;
+
+        explicit SignalIndexIterator (BaseIterator _baseIterator) noexcept;
+
+        BaseIterator iterator;
+    };
+
     class VolumetricIndexIterator final
     {
     public:
@@ -128,6 +144,9 @@ public:
 
     Handling::Handle<OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
 
+    Handling::Handle<SignalIndex> CreateSignalIndex (
+        StandardLayout::FieldId _indexedField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
     Handling::Handle<VolumetricIndex> CreateVolumetricIndex (
         const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
 
@@ -138,6 +157,10 @@ public:
     OrderedIndexIterator BeginOrderedIndices () const noexcept;
 
     OrderedIndexIterator EndOrderedIndices () const noexcept;
+
+    SignalIndexIterator BeginSignalIndices () const noexcept;
+
+    SignalIndexIterator EndSignalIndices () const noexcept;
 
     VolumetricIndexIterator BeginVolumetricIndices () const noexcept;
 
@@ -155,6 +178,8 @@ private:
     friend class HashIndex;
 
     friend class OrderedIndex;
+
+    friend class SignalIndex;
 
     friend class VolumetricIndex;
 
@@ -197,6 +222,8 @@ private:
 
     void DropIndex (const OrderedIndex &_index) noexcept;
 
+    void DropIndex (const SignalIndex &_index) noexcept;
+
     void DropIndex (const VolumetricIndex &_index) noexcept;
 
     void RebuildIndexMasks () noexcept;
@@ -205,21 +232,31 @@ private:
 
     Constants::Storage::IndexedFieldMask BuildIndexMask (const OrderedIndex &_index) noexcept;
 
+    Constants::Storage::IndexedFieldMask BuildIndexMask (const SignalIndex &_index) noexcept;
+
     Constants::Storage::IndexedFieldMask BuildIndexMask (const VolumetricIndex &_index) noexcept;
 
     void RegisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
     void UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept;
 
+    template <typename Index>
+    void InsertRecordsToIndex (Index *_index) noexcept;
+
+    template <typename Functor>
+    void VisitEveryIndex (Functor _functor) noexcept;
+
     // TODO: Automatically shrink pool from time to time?
     Memory::OrderedPool records;
 
     Memory::Heap hashIndexHeap;
     Memory::Heap orderedIndexHeap;
+    Memory::Heap signalIndexHeap;
     Memory::Heap volumetricIndexHeap;
 
     IndexVector<HashIndex> hashIndices;
     IndexVector<OrderedIndex> orderedIndices;
+    IndexVector<SignalIndex> signalIndices;
     IndexVector<VolumetricIndex> volumetricIndices;
 
     StandardLayout::Mapping recordMapping;

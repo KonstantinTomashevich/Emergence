@@ -32,7 +32,7 @@ void MappingBuilder::Begin (Memory::UniqueString _name, std::size_t _objectSize,
 Mapping MappingBuilder::End () noexcept
 {
     Handling::Handle<PlainMapping> mapping = block_cast<PlainMappingBuilder> (data).End ();
-    return Mapping (reinterpret_cast<decltype (Mapping::data) *> (&mapping));
+    return Mapping (array_cast (mapping));
 }
 
 void MappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept

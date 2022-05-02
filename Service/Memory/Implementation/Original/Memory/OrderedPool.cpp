@@ -83,27 +83,25 @@ bool OrderedPool::IsEmpty () const noexcept
 OrderedPool::AcquiredChunkConstIterator OrderedPool::BeginAcquired () const noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).BeginAcquired ();
-    return AcquiredChunkConstIterator (
-        reinterpret_cast<const decltype (AcquiredChunkConstIterator::data) *> (&iterator));
+    return AcquiredChunkConstIterator (array_cast (iterator));
 }
 
 OrderedPool::AcquiredChunkConstIterator OrderedPool::EndAcquired () const noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).EndAcquired ();
-    return AcquiredChunkConstIterator (
-        reinterpret_cast<const decltype (AcquiredChunkConstIterator::data) *> (&iterator));
+    return AcquiredChunkConstIterator (array_cast (iterator));
 }
 
 OrderedPool::AcquiredChunkIterator OrderedPool::BeginAcquired () noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).BeginAcquired ();
-    return AcquiredChunkIterator (reinterpret_cast<const decltype (AcquiredChunkIterator::data) *> (&iterator));
+    return AcquiredChunkIterator (array_cast (iterator));
 }
 
 OrderedPool::AcquiredChunkIterator OrderedPool::EndAcquired () noexcept
 {
     auto iterator = block_cast<Original::OrderedPool> (data).EndAcquired ();
-    return AcquiredChunkIterator (reinterpret_cast<const decltype (AcquiredChunkIterator::data) *> (&iterator));
+    return AcquiredChunkIterator (array_cast (iterator));
 }
 
 const Profiler::AllocationGroup &OrderedPool::GetAllocationGroup () const noexcept

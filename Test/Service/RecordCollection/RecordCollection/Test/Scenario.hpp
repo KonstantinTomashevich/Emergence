@@ -32,6 +32,13 @@ struct CreatePointRepresentation
     Container::Vector<StandardLayout::FieldId> keyFields;
 };
 
+struct CreateSignalRepresentation
+{
+    Container::String name;
+    StandardLayout::FieldId keyField;
+    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+};
+
 struct CreateVolumetricRepresentation
 {
     Container::String name;
@@ -64,6 +71,7 @@ struct CloseAllocator
 
 using Task = std::variant<CreateLinearRepresentation,
                           CreatePointRepresentation,
+                          CreateSignalRepresentation,
                           CreateVolumetricRepresentation,
                           Move<struct RepresentationReferenceTag>,
                           Copy<struct RepresentationReferenceTag>,
@@ -81,6 +89,8 @@ using Task = std::variant<CreateLinearRepresentation,
                           QueryAscendingRangeToEdit,
                           QueryDescendingRangeToRead,
                           QueryDescendingRangeToEdit,
+                          QuerySignalToRead,
+                          QuerySignalToEdit,
                           QueryShapeIntersectionToRead,
                           QueryShapeIntersectionToEdit,
                           QueryRayIntersectionToRead,

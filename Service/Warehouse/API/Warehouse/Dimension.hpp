@@ -50,7 +50,7 @@ private:
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-    explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse
 

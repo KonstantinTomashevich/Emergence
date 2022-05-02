@@ -6,6 +6,7 @@
 #include <Celerity/Query/FetchRayIntersectionQuery.hpp>
 #include <Celerity/Query/FetchSequenceQuery.hpp>
 #include <Celerity/Query/FetchShapeIntersectionQuery.hpp>
+#include <Celerity/Query/FetchSignalQuery.hpp>
 #include <Celerity/Query/FetchSingletonQuery.hpp>
 #include <Celerity/Query/FetchValueQuery.hpp>
 #include <Celerity/Query/InsertLongTermQuery.hpp>
@@ -15,6 +16,7 @@
 #include <Celerity/Query/ModifyRayIntersectionQuery.hpp>
 #include <Celerity/Query/ModifySequenceQuery.hpp>
 #include <Celerity/Query/ModifyShapeIntersectionQuery.hpp>
+#include <Celerity/Query/ModifySignalQuery.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
 #include <Celerity/Query/ModifyValueQuery.hpp>
 #include <Celerity/World.hpp>
@@ -73,6 +75,15 @@ public:
 
     [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                     StandardLayout::FieldId _keyField) noexcept;
+
+    [[nodiscard]] FetchSignalQuery FetchSignal (const StandardLayout::Mapping &_typeMapping,
+                                                StandardLayout::FieldId _keyField,
+                                                const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
+    [[nodiscard]] ModifySignalQuery ModifySignal (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
     [[nodiscard]] FetchShapeIntersectionQuery FetchShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,

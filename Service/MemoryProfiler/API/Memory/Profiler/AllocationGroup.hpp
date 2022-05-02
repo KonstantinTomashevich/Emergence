@@ -51,7 +51,7 @@ public:
 
         EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
 
-        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \return Root group of the AllocationGroup tree. Always exists.

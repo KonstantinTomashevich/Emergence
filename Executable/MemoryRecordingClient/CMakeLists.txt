@@ -18,6 +18,7 @@ sober_library_begin (MemoryRecordingClient STATIC)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
+    sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
 
     sober_variant_begin (Original)
     sober_variant_end ()

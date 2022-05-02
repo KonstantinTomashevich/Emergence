@@ -17,6 +17,9 @@ inline const Player KARL_1_MAGE_ALIVE_IMMOBILIZED {
 inline const Player KARL_0_MAGE_ALIVE_IMMOBILIZED {
     0u, {"karl"}, "Mage"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_IMMOBILIZED};
 
+inline const Player KARL_2_MAGE_ALIVE_IMMOBILIZED {
+    2u, {"karl"}, "Mage"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_IMMOBILIZED};
+
 inline const Player XAVIER_2_ARCHER_ALIVE_POISONED {
     2u, {"xavier"}, "Archer"_us, Player::Status::FLAG_ALIVE | Player::Status::FLAG_POISONED};
 

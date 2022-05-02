@@ -1,6 +1,9 @@
 #include <Query/Test/Data.hpp>
 
 #include <Reference/Test/Tests.hpp>
+
+#include <SyntaxSugar/BlockCast.hpp>
+
 #include <Testing/Testing.hpp>
 
 #include <Warehouse/Test/Data.hpp>
@@ -94,6 +97,24 @@ static void ExecuteModifyDescendingRangeQueryReferenceApiTest (const Emergence::
 {
     TestReferenceApiDrivers::ForPreparedQuery (
         _scenario, PrepareModifyDescendingRangeQuery {{Player::Reflect ().mapping, {}}, Player::Reflect ().id},
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
+}
+
+static void ExecuteFetchSignalQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario,
+        PrepareFetchSignalQuery {
+            {Player::Reflect ().mapping, {}}, Player::Reflect ().id, array_cast<uint32_t, sizeof (uint64_t)> (0u)},
+        &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
+}
+
+static void ExecuteModifySignalQueryReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)
+{
+    TestReferenceApiDrivers::ForPreparedQuery (
+        _scenario,
+        PrepareModifySignalQuery {
+            {Player::Reflect ().mapping, {}}, Player::Reflect ().id, array_cast<uint32_t, sizeof (uint64_t)> (0u)},
         &Emergence::Query::Test::HUGO_0_KNIGHT_ALIVE_STUNNED);
 }
 
@@ -202,6 +223,18 @@ END_SUITE
 BEGIN_SUITE (ModifyDescendingRangeQueryReferences)
 
 REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifyDescendingRangeQueryReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (FetchSignalQueryReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteFetchSignalQueryReferenceApiTest)
+
+END_SUITE
+
+BEGIN_SUITE (ModifySignalQueryReferences)
+
+REGISTER_ALL_REFERENCE_TESTS_WITHOUT_ASSIGNMENT (ExecuteModifySignalQueryReferenceApiTest)
 
 END_SUITE
 

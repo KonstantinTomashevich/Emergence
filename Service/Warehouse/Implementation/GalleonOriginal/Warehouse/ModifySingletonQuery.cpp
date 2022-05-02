@@ -26,9 +26,9 @@ void *ModifySingletonQuery::Cursor::operator* () const noexcept
     return *block_cast<CursorImplementation> (data);
 }
 
-ModifySingletonQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+ModifySingletonQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
-    new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (*_data)));
+    new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (_data)));
 }
 
 EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifySingletonQuery, QueryImplementation)
@@ -36,6 +36,6 @@ EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifySingletonQuery, QueryImplem
 ModifySingletonQuery::Cursor ModifySingletonQuery::Execute () noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute ();
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 } // namespace Emergence::Warehouse

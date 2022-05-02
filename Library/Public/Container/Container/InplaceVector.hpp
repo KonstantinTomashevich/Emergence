@@ -6,7 +6,7 @@
 
 namespace Emergence::Container
 {
-// TODO: Add tests for InplaceVector?
+// TODO: Add tests for InplaceVector? Right now it is covered by other tests, but it is not good.
 
 /// \brief Allows to use std::array as inplace vector with fixed capacity.
 template <typename Item, std::size_t Capacity>

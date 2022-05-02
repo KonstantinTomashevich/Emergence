@@ -121,6 +121,13 @@ VisualGraph::Graph GraphFromQuery (const FetchShapeIntersectionQuery &_query)
                             _query.DimensionEnd ());
 }
 
+VisualGraph::Graph GraphFromQuery (const FetchSignalQuery &_query)
+{
+    VisualGraph::Graph graph = BaseGraphForQuery (_query);
+    ConnectToField (graph, _query.GetTypeMapping (), _query.GetKeyField ());
+    return graph;
+}
+
 VisualGraph::Graph GraphFromQuery (const FetchSingletonQuery &_query)
 {
     return BaseGraphForQuery (_query);
@@ -171,6 +178,13 @@ VisualGraph::Graph GraphFromQuery (const ModifyShapeIntersectionQuery &_query)
 {
     return ConnectToFields (BaseGraphForQuery (_query), _query.GetTypeMapping (), _query.DimensionBegin (),
                             _query.DimensionEnd ());
+}
+
+VisualGraph::Graph GraphFromQuery (const ModifySignalQuery &_query)
+{
+    VisualGraph::Graph graph = BaseGraphForQuery (_query);
+    ConnectToField (graph, _query.GetTypeMapping (), _query.GetKeyField ());
+    return graph;
 }
 
 VisualGraph::Graph GraphFromQuery (const ModifySingletonQuery &_query)
@@ -254,6 +268,14 @@ Container::String GraphId (const FetchShapeIntersectionQuery &_query)
     return AppendDimensionSequence (builder, _query.DimensionBegin (), _query.DimensionEnd ()).Append ("}").Get ();
 }
 
+Container::String GraphId (const FetchSignalQuery &_query)
+{
+    const std::array<uint8_t, sizeof (uint64_t)> &signaledValue = _query.GetSignaledValue ();
+    return EMERGENCE_BUILD_STRING ("FetchSignalQuery {", _query.GetTypeMapping ().GetName (), ": ",
+                                   _query.GetKeyField ().GetName (), " = ",
+                                   Container::StringBuilder::FieldPointer {&signaledValue, _query.GetKeyField ()}, "}");
+}
+
 Container::String GraphId (const FetchSingletonQuery &_query)
 {
     return EMERGENCE_BUILD_STRING ("FetchSingletonQuery {", _query.GetTypeMapping ().GetName (), "}");
@@ -305,6 +327,14 @@ Container::String GraphId (const ModifyShapeIntersectionQuery &_query)
     Container::StringBuilder builder =
         EMERGENCE_BEGIN_BUILDING_STRING ("ModifyShapeIntersectionQuery {", _query.GetTypeMapping ().GetName (), ": ");
     return AppendDimensionSequence (builder, _query.DimensionBegin (), _query.DimensionEnd ()).Append ("}").Get ();
+}
+
+Container::String GraphId (const ModifySignalQuery &_query)
+{
+    const std::array<uint8_t, sizeof (uint64_t)> &signaledValue = _query.GetSignaledValue ();
+    return EMERGENCE_BUILD_STRING ("ModifySignalQuery {", _query.GetTypeMapping ().GetName (), ": ",
+                                   _query.GetKeyField ().GetName (), " = ",
+                                   Container::StringBuilder::FieldPointer {&signaledValue, _query.GetKeyField ()}, "}");
 }
 
 Container::String GraphId (const ModifySingletonQuery &_query)

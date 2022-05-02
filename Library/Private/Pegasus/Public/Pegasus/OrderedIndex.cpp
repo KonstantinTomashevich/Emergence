@@ -110,279 +110,149 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
     return static_cast<const uint8_t *> (_record) + fieldOffset;
 }
 
-OrderedIndex::AscendingReadCursor::AscendingReadCursor (const OrderedIndex::AscendingReadCursor &_other) noexcept
-    : index (_other.index),
-      current (_other.current),
-      end (_other.end)
-{
-    assert (index);
-    ++index->activeCursors;
-    index->storage->RegisterReader ();
-}
-
-OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex::AscendingReadCursor &&_other) noexcept
-    : index (_other.index),
-      current (_other.current),
-      end (_other.end)
-{
-    assert (index);
-    _other.index = nullptr;
-}
-
-OrderedIndex::AscendingReadCursor::~AscendingReadCursor () noexcept
-{
-    if (index)
-    {
-        --index->activeCursors;
-        index->storage->UnregisterReader ();
-    }
-}
-
-const void *OrderedIndex::AscendingReadCursor::operator* () const noexcept
-{
-    assert (index);
-    return current != end ? *current : nullptr;
-}
-
-OrderedIndex::AscendingReadCursor &OrderedIndex::AscendingReadCursor::operator++ () noexcept
-{
-    assert (index);
-    assert (current != end);
-
-    ++current;
-    return *this;
-}
-
-OrderedIndex::AscendingReadCursor::AscendingReadCursor (OrderedIndex *_index,
-                                                        Container::Vector<const void *>::const_iterator _begin,
-                                                        Container::Vector<const void *>::const_iterator _end) noexcept
-    : index (_index),
-      current (_begin),
-      end (_end)
-{
-    assert (index);
-    assert (current <= end);
-
-    ++index->activeCursors;
-    index->storage->RegisterReader ();
-}
-
-OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex::AscendingEditCursor &&_other) noexcept
-    : index (_other.index),
-      current (_other.current),
-      end (_other.end)
-{
-    assert (index);
-    _other.index = nullptr;
-}
-
-OrderedIndex::AscendingEditCursor::~AscendingEditCursor () noexcept
-{
-    if (index)
-    {
-        if (current != end && index->storage->EndRecordEdition (*current, index))
-        {
-            index->OnRecordChangedByMe (current);
-        }
-
-        --index->activeCursors;
-        index->storage->UnregisterWriter ();
-    }
-}
-
-void *OrderedIndex::AscendingEditCursor::operator* () noexcept
-{
-    assert (index);
-    return current != end ? const_cast<void *> (*current) : nullptr;
-}
-
-OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator~ () noexcept
-{
-    assert (index);
-    assert (current != end);
-
-    index->DeleteRecordMyself (current);
-    ++current;
-    BeginRecordEdition ();
-    return *this;
-}
-
-OrderedIndex::AscendingEditCursor &OrderedIndex::AscendingEditCursor::operator++ () noexcept
-{
-    assert (index);
-    assert (current != end);
-
-    if (index->storage->EndRecordEdition (*current, index))
-    {
-        index->OnRecordChangedByMe (current);
+#define READ_CURSOR_IMPLEMENTATION(Cursor, Iterator)                                                                   \
+    OrderedIndex::Cursor::Cursor (const OrderedIndex::Cursor &_other) noexcept                                         \
+        : index (_other.index),                                                                                        \
+          current (_other.current),                                                                                    \
+          end (_other.end)                                                                                             \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        ++index->activeCursors;                                                                                        \
+        index->storage->RegisterReader ();                                                                             \
+    }                                                                                                                  \
+                                                                                                                       \
+    OrderedIndex::Cursor::Cursor (OrderedIndex::Cursor &&_other) noexcept                                              \
+        : index (_other.index),                                                                                        \
+          current (_other.current),                                                                                    \
+          end (_other.end)                                                                                             \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        _other.index = nullptr;                                                                                        \
+    }                                                                                                                  \
+                                                                                                                       \
+    OrderedIndex::Cursor::~Cursor () noexcept                                                                          \
+    {                                                                                                                  \
+        if (index)                                                                                                     \
+        {                                                                                                              \
+            --index->activeCursors;                                                                                    \
+            index->storage->UnregisterReader ();                                                                       \
+        }                                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    const void *OrderedIndex::Cursor::operator* () const noexcept                                                      \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        return current != end ? *current : nullptr;                                                                    \
+    }                                                                                                                  \
+                                                                                                                       \
+    OrderedIndex::Cursor &OrderedIndex::Cursor::operator++ () noexcept                                                 \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        assert (current != end);                                                                                       \
+                                                                                                                       \
+        ++current;                                                                                                     \
+        return *this;                                                                                                  \
+    }                                                                                                                  \
+                                                                                                                       \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
+    OrderedIndex::Cursor::Cursor (OrderedIndex *_index, Iterator _begin, Iterator _end) noexcept                       \
+        : index (_index),                                                                                              \
+          current (_begin),                                                                                            \
+          end (_end)                                                                                                   \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        assert (current <= end);                                                                                       \
+                                                                                                                       \
+        ++index->activeCursors;                                                                                        \
+        index->storage->RegisterReader ();                                                                             \
     }
 
-    ++current;
-    BeginRecordEdition ();
-    return *this;
-}
-
-OrderedIndex::AscendingEditCursor::AscendingEditCursor (OrderedIndex *_index,
-                                                        Container::Vector<const void *>::iterator _begin,
-                                                        Container::Vector<const void *>::iterator _end) noexcept
-    : index (_index),
-      current (_begin),
-      end (_end)
-{
-    assert (index);
-    assert (current <= end);
-
-    ++index->activeCursors;
-    index->storage->RegisterWriter ();
-    BeginRecordEdition ();
-}
-
-void OrderedIndex::AscendingEditCursor::BeginRecordEdition () const noexcept
-{
-    assert (index);
-    if (current != end)
-    {
-        index->storage->BeginRecordEdition (*current);
-    }
-}
-
-OrderedIndex::DescendingReadCursor::DescendingReadCursor (const OrderedIndex::DescendingReadCursor &_other) noexcept
-    : index (_other.index),
-      current (_other.current),
-      end (_other.end)
-{
-    assert (index);
-    ++index->activeCursors;
-    index->storage->RegisterReader ();
-}
-
-OrderedIndex::DescendingReadCursor::DescendingReadCursor (OrderedIndex::DescendingReadCursor &&_other) noexcept
-    : index (_other.index),
-      current (_other.current),
-      end (_other.end)
-{
-    assert (index);
-    _other.index = nullptr;
-}
-
-OrderedIndex::DescendingReadCursor::~DescendingReadCursor () noexcept
-{
-    if (index)
-    {
-        --index->activeCursors;
-        index->storage->UnregisterReader ();
-    }
-}
-
-const void *OrderedIndex::DescendingReadCursor::operator* () const noexcept
-{
-    assert (index);
-    return current != end ? *current : nullptr;
-}
-
-OrderedIndex::DescendingReadCursor &OrderedIndex::DescendingReadCursor::operator++ () noexcept
-{
-    assert (index);
-    assert (current != end);
-
-    ++current;
-    return *this;
-}
-
-OrderedIndex::DescendingReadCursor::DescendingReadCursor (
-    OrderedIndex *_index,
-    Container::Vector<const void *>::const_reverse_iterator _begin,
-    Container::Vector<const void *>::const_reverse_iterator _end) noexcept
-    : index (_index),
-      current (_begin),
-      end (_end)
-{
-    assert (index);
-    assert (current <= end);
-
-    ++index->activeCursors;
-    index->storage->RegisterReader ();
-}
-
-OrderedIndex::DescendingEditCursor::DescendingEditCursor (OrderedIndex::DescendingEditCursor &&_other) noexcept
-    : index (_other.index),
-      current (_other.current),
-      end (_other.end)
-{
-    assert (index);
-    _other.index = nullptr;
-}
-
-OrderedIndex::DescendingEditCursor::~DescendingEditCursor () noexcept
-{
-    if (index)
-    {
-        if (current != end && index->storage->EndRecordEdition (*current, index))
-        {
-            index->OnRecordChangedByMe (current);
-        }
-
-        --index->activeCursors;
-        index->storage->UnregisterWriter ();
-    }
-}
-
-void *OrderedIndex::DescendingEditCursor::operator* () noexcept
-{
-    assert (index);
-    return current != end ? const_cast<void *> (*current) : nullptr;
-}
-
-OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator~ () noexcept
-{
-    assert (index);
-    assert (current != end);
-
-    index->DeleteRecordMyself (current);
-    ++current;
-    BeginRecordEdition ();
-    return *this;
-}
-
-OrderedIndex::DescendingEditCursor &OrderedIndex::DescendingEditCursor::operator++ () noexcept
-{
-    assert (index);
-    assert (current != end);
-
-    if (index->storage->EndRecordEdition (*current, index))
-    {
-        index->OnRecordChangedByMe (current);
+#define EDIT_CURSOR_IMPLEMENTATION(Cursor, Iterator)                                                                   \
+    OrderedIndex::Cursor::Cursor (OrderedIndex::Cursor &&_other) noexcept                                              \
+        : index (_other.index),                                                                                        \
+          current (_other.current),                                                                                    \
+          end (_other.end)                                                                                             \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        _other.index = nullptr;                                                                                        \
+    }                                                                                                                  \
+                                                                                                                       \
+    OrderedIndex::Cursor::~Cursor () noexcept                                                                          \
+    {                                                                                                                  \
+        if (index)                                                                                                     \
+        {                                                                                                              \
+            if (current != end && index->storage->EndRecordEdition (*current, index))                                  \
+            {                                                                                                          \
+                index->OnRecordChangedByMe (current);                                                                  \
+            }                                                                                                          \
+                                                                                                                       \
+            --index->activeCursors;                                                                                    \
+            index->storage->UnregisterWriter ();                                                                       \
+        }                                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    void *OrderedIndex::Cursor::operator* () noexcept                                                                  \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        return current != end ? const_cast<void *> (*current) : nullptr;                                               \
+    }                                                                                                                  \
+                                                                                                                       \
+    OrderedIndex::Cursor &OrderedIndex::Cursor::operator~ () noexcept                                                  \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        assert (current != end);                                                                                       \
+                                                                                                                       \
+        index->DeleteRecordMyself (current);                                                                           \
+        ++current;                                                                                                     \
+        BeginRecordEdition ();                                                                                         \
+        return *this;                                                                                                  \
+    }                                                                                                                  \
+                                                                                                                       \
+    OrderedIndex::Cursor &OrderedIndex::Cursor::operator++ () noexcept                                                 \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        assert (current != end);                                                                                       \
+                                                                                                                       \
+        if (index->storage->EndRecordEdition (*current, index))                                                        \
+        {                                                                                                              \
+            index->OnRecordChangedByMe (current);                                                                      \
+        }                                                                                                              \
+                                                                                                                       \
+        ++current;                                                                                                     \
+        BeginRecordEdition ();                                                                                         \
+        return *this;                                                                                                  \
+    }                                                                                                                  \
+                                                                                                                       \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
+    OrderedIndex::Cursor::Cursor (OrderedIndex *_index, Iterator _begin, Iterator _end) noexcept                       \
+        : index (_index),                                                                                              \
+          current (_begin),                                                                                            \
+          end (_end)                                                                                                   \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        assert (current <= end);                                                                                       \
+                                                                                                                       \
+        ++index->activeCursors;                                                                                        \
+        index->storage->RegisterWriter ();                                                                             \
+        BeginRecordEdition ();                                                                                         \
+    }                                                                                                                  \
+                                                                                                                       \
+    void OrderedIndex::Cursor::BeginRecordEdition () const noexcept                                                    \
+    {                                                                                                                  \
+        assert (index);                                                                                                \
+        if (current != end)                                                                                            \
+        {                                                                                                              \
+            index->storage->BeginRecordEdition (*current);                                                             \
+        }                                                                                                              \
     }
 
-    ++current;
-    BeginRecordEdition ();
-    return *this;
-}
+READ_CURSOR_IMPLEMENTATION (AscendingReadCursor, Container::Vector<const void *>::const_iterator)
 
-OrderedIndex::DescendingEditCursor::DescendingEditCursor (
-    OrderedIndex *_index,
-    Container::Vector<const void *>::reverse_iterator _begin,
-    Container::Vector<const void *>::reverse_iterator _end) noexcept
-    : index (_index),
-      current (_begin),
-      end (_end)
-{
-    assert (index);
-    assert (current <= end);
+EDIT_CURSOR_IMPLEMENTATION (AscendingEditCursor, Container::Vector<const void *>::iterator)
 
-    ++index->activeCursors;
-    index->storage->RegisterWriter ();
-    BeginRecordEdition ();
-}
+READ_CURSOR_IMPLEMENTATION (DescendingReadCursor, Container::Vector<const void *>::const_reverse_iterator)
 
-void OrderedIndex::DescendingEditCursor::BeginRecordEdition () const noexcept
-{
-    assert (index);
-    if (current != end)
-    {
-        index->storage->BeginRecordEdition (*current);
-    }
-}
+EDIT_CURSOR_IMPLEMENTATION (DescendingEditCursor, Container::Vector<const void *>::reverse_iterator)
 
 OrderedIndex::AscendingReadCursor OrderedIndex::LookupToReadAscending (const OrderedIndex::Bound &_min,
                                                                        const OrderedIndex::Bound &_max) noexcept

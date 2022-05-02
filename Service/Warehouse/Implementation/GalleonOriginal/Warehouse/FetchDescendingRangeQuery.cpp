@@ -22,7 +22,7 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (FetchDescendingRangeQuery, QueryImplemen
 Cursor FetchDescendingRangeQuery::Execute (Bound _min, Bound _max) noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute (_min, _max);
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 
 StandardLayout::Field FetchDescendingRangeQuery::GetKeyField () const noexcept

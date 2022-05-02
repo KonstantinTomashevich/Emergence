@@ -22,6 +22,6 @@ EMERGENCE_BIND_QUERY_COMMON_OPERATIONS (FetchSequenceQuery, QueryImplementation)
 Cursor FetchSequenceQuery::Execute () noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute ();
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 } // namespace Emergence::Warehouse

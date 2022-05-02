@@ -22,7 +22,7 @@ EMERGENCE_BIND_MODIFY_QUERY_COMMON_OPERATIONS (ModifyAscendingRangeQuery, QueryI
 Cursor ModifyAscendingRangeQuery::Execute (Bound _min, Bound _max) noexcept
 {
     CursorImplementation cursor = block_cast<QueryImplementation> (data).Execute (_min, _max);
-    return Cursor (reinterpret_cast<decltype (Cursor::data) *> (&cursor));
+    return Cursor (array_cast (cursor));
 }
 
 StandardLayout::Field ModifyAscendingRangeQuery::GetKeyField () const noexcept

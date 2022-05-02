@@ -27,9 +27,9 @@ void *Collection::Allocator::Allocate () noexcept
     return block_cast<Pegasus::Storage::Allocator> (data).Next ();
 }
 
-Collection::Allocator::Allocator (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+Collection::Allocator::Allocator (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
-    new (&data) Pegasus::Storage::Allocator (std::move (block_cast<Pegasus::Storage::Allocator> (*_data)));
+    new (&data) Pegasus::Storage::Allocator (std::move (block_cast<Pegasus::Storage::Allocator> (_data)));
 }
 
 using LinearRepresentationIterator = Collection::LinearRepresentationIterator;
@@ -54,6 +54,18 @@ EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (PointRepresenta
 PointRepresentation Collection::PointRepresentationIterator::operator* () const noexcept
 {
     return PointRepresentation ((*block_cast<Pegasus::Storage::HashIndexIterator> (data)).Get ());
+}
+
+using SignalRepresentationIterator = Collection::SignalRepresentationIterator;
+
+using SignalRepresentationIteratorImplementation = Pegasus::Storage::SignalIndexIterator;
+
+EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (SignalRepresentationIterator,
+                                                                 SignalRepresentationIteratorImplementation)
+
+SignalRepresentation Collection::SignalRepresentationIterator::operator* () const noexcept
+{
+    return SignalRepresentation ((*block_cast<Pegasus::Storage::SignalIndexIterator> (data)).Get ());
 }
 
 using VolumetricRepresentationIterator = Collection::VolumetricRepresentationIterator;
@@ -107,7 +119,7 @@ Collection::Allocator Collection::AllocateAndInsert () noexcept
     auto &internal = block_cast<InternalData> (data);
     assert (internal.storage);
     Pegasus::Storage::Allocator allocator = internal.storage->AllocateAndInsert ();
-    return Allocator (reinterpret_cast<decltype (Allocator::data) *> (&allocator));
+    return Allocator (array_cast (allocator));
 }
 
 LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::FieldId _keyField) noexcept
@@ -125,6 +137,15 @@ PointRepresentation Collection::CreatePointRepresentation (
     assert (internal.storage);
     Handling::Handle<Pegasus::HashIndex> index = internal.storage->CreateHashIndex (_keyFields);
     return PointRepresentation (index.Get ());
+}
+
+SignalRepresentation Collection::CreateSignalRepresentation (
+    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Handling::Handle<Pegasus::SignalIndex> index = internal.storage->CreateSignalIndex (_keyField, _signaledValue);
+    return SignalRepresentation (index.Get ());
 }
 
 VolumetricRepresentation Collection::CreateVolumetricRepresentation (
@@ -164,7 +185,7 @@ Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin (
     assert (internal.storage);
     Pegasus::Storage::OrderedIndexIterator iterator = internal.storage->BeginOrderedIndices ();
 
-    return LinearRepresentationIterator (reinterpret_cast<decltype (LinearRepresentationIterator::data) *> (&iterator));
+    return LinearRepresentationIterator (array_cast (iterator));
 }
 
 Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () const noexcept
@@ -173,7 +194,7 @@ Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () 
     assert (internal.storage);
     Pegasus::Storage::OrderedIndexIterator iterator = internal.storage->EndOrderedIndices ();
 
-    return LinearRepresentationIterator (reinterpret_cast<decltype (LinearRepresentationIterator::data) *> (&iterator));
+    return LinearRepresentationIterator (array_cast (iterator));
 }
 
 Collection::PointRepresentationIterator Collection::PointRepresentationBegin () const noexcept
@@ -181,7 +202,7 @@ Collection::PointRepresentationIterator Collection::PointRepresentationBegin () 
     const auto &internal = block_cast<InternalData> (data);
     assert (internal.storage);
     Pegasus::Storage::HashIndexIterator iterator = internal.storage->BeginHashIndices ();
-    return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
+    return PointRepresentationIterator (array_cast (iterator));
 }
 
 Collection::PointRepresentationIterator Collection::PointRepresentationEnd () const noexcept
@@ -189,7 +210,23 @@ Collection::PointRepresentationIterator Collection::PointRepresentationEnd () co
     const auto &internal = block_cast<InternalData> (data);
     assert (internal.storage);
     Pegasus::Storage::HashIndexIterator iterator = internal.storage->EndHashIndices ();
-    return PointRepresentationIterator (reinterpret_cast<decltype (PointRepresentationIterator::data) *> (&iterator));
+    return PointRepresentationIterator (array_cast (iterator));
+}
+
+Collection::SignalRepresentationIterator Collection::SignalRepresentationBegin () const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::SignalIndexIterator iterator = internal.storage->BeginSignalIndices ();
+    return SignalRepresentationIterator (array_cast (iterator));
+}
+
+Collection::SignalRepresentationIterator Collection::SignalRepresentationEnd () const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    assert (internal.storage);
+    Pegasus::Storage::SignalIndexIterator iterator = internal.storage->EndSignalIndices ();
+    return SignalRepresentationIterator (array_cast (iterator));
 }
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () const noexcept
@@ -198,8 +235,7 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
     assert (internal.storage);
     Pegasus::Storage::VolumetricIndexIterator iterator = internal.storage->BeginVolumetricIndices ();
 
-    return VolumetricRepresentationIterator (
-        reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
+    return VolumetricRepresentationIterator (array_cast (iterator));
 }
 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationEnd () const noexcept
@@ -208,8 +244,7 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
     assert (internal.storage);
     Pegasus::Storage::VolumetricIndexIterator iterator = internal.storage->EndVolumetricIndices ();
 
-    return VolumetricRepresentationIterator (
-        reinterpret_cast<decltype (VolumetricRepresentationIterator::data) *> (&iterator));
+    return VolumetricRepresentationIterator (array_cast (iterator));
 }
 
 void Collection::SetUnsafeReadAllowed (bool _allowed) noexcept

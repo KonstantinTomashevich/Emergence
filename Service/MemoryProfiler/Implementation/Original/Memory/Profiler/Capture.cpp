@@ -51,14 +51,14 @@ Iterator CapturedAllocationGroup::BeginChildren () const noexcept
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
     assert (group);
     auto iterator = group->BeginChildren ();
-    return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
+    return Iterator (array_cast (iterator));
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is part of the API.
 Iterator CapturedAllocationGroup::EndChildren () const noexcept
 {
     auto iterator = Original::CapturedAllocationGroup::EndChildren ();
-    return Iterator (reinterpret_cast<decltype (Iterator::data) *> (&iterator));
+    return Iterator (array_cast (iterator));
 }
 
 UniqueString CapturedAllocationGroup::GetId () const noexcept
@@ -126,9 +126,9 @@ const Event *EventObserver::NextEvent () noexcept
     return block_cast<Original::EventObserver> (data).NextEvent (lock);
 }
 
-EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
-    new (&data) Original::EventObserver (std::move (block_cast<Original::EventObserver> (*_data)));
+    new (&data) Original::EventObserver (std::move (block_cast<Original::EventObserver> (_data)));
 }
 
 std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
@@ -141,7 +141,6 @@ std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
         new Original::CapturedAllocationGroup {*Original::AllocationGroup::Root (), lock, sharedCaptureTime};
     Original::EventObserver observer {lock};
 
-    return {CapturedAllocationGroup {capturedRoot},
-            EventObserver {reinterpret_cast<decltype (EventObserver::data) *> (&observer)}};
+    return {CapturedAllocationGroup {capturedRoot}, EventObserver {array_cast (observer)}};
 }
 } // namespace Emergence::Memory::Profiler

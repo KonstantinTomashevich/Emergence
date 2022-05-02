@@ -16,6 +16,7 @@ target_include_directories (SDL2ImGUI PUBLIC
 target_link_libraries (SDL2ImGUI PUBLIC SDL2)
 
 # TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?
+set (SDL_SHARED ON)
 add_subdirectory (SDL)
 
 # We don't need exceptions neither from spdlog nor fmt.

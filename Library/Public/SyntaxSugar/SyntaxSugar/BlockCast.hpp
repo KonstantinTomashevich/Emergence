@@ -26,3 +26,23 @@ Target &block_cast (std::array<uint8_t, _blockSize> &_memoryBlock)
     return const_cast<Target &> (
         block_cast<Target> (const_cast<const std::array<uint8_t, _blockSize> &> (_memoryBlock)));
 }
+
+/// \brief Reinterprets given object as memory block, represented by array.
+/// \details Syntax-sugar, opposite to ::block_cast.
+///
+/// \tparam Source Type of reinterpreted object.
+/// \tparam Size Size of reinterpreted array. By default it is equal to object size.
+/// \param _source Reference to object, that will be reinterpreted.
+/// \return _source data, reinterpreted as array.
+template <typename Source, size_t Size = sizeof (Source)>
+const std::array<uint8_t, Size> &array_cast (const Source &_source)
+{
+    return *reinterpret_cast<const std::array<uint8_t, Size> *> (&_source);
+}
+
+/// \see Const version of this cast function.
+template <typename Source, size_t Size = sizeof (Source)>
+std::array<uint8_t, Size> &array_cast (Source &_source)
+{
+    return const_cast<std::array<uint8_t, Size> &> (array_cast<Source, Size> (const_cast<const Source &> (_source)));
+}

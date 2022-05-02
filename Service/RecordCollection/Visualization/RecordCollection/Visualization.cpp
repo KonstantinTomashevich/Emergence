@@ -2,6 +2,8 @@
 
 #include <RecordCollection/Visualization.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 namespace Emergence::RecordCollection::Visualization
 {
 using namespace VisualGraph::Common::Constants;
@@ -40,6 +42,12 @@ VisualGraph::Graph GraphFromCollection (const Collection &_collection)
         graph.subgraphs.emplace_back (GraphFromPointRepresentation (*iterator));
     }
 
+    for (auto iterator = _collection.SignalRepresentationBegin (); iterator != _collection.SignalRepresentationEnd ();
+         ++iterator)
+    {
+        graph.subgraphs.emplace_back (GraphFromSignalRepresentation (*iterator));
+    }
+
     for (auto iterator = _collection.VolumetricRepresentationBegin ();
          iterator != _collection.VolumetricRepresentationEnd (); ++iterator)
     {
@@ -59,6 +67,18 @@ static VisualGraph::Edge ConnectRepresentationToField (const char *_typeName, co
 }
 
 VisualGraph::Graph GraphFromLinearRepresentation (const LinearRepresentation &_representation)
+{
+    VisualGraph::Graph graph;
+    graph.id = GraphId (_representation);
+    graph.nodes.emplace_back ().id = RECORD_COLLECTION_REPRESENTATION_ROOT_NODE;
+
+    graph.edges.emplace_back (ConnectRepresentationToField (*_representation.GetTypeMapping ().GetName (),
+                                                            *_representation.GetKeyField ().GetName ()));
+
+    return graph;
+}
+
+VisualGraph::Graph GraphFromSignalRepresentation (const SignalRepresentation &_representation)
 {
     VisualGraph::Graph graph;
     graph.id = GraphId (_representation);
@@ -134,6 +154,14 @@ Container::String GraphId (const PointRepresentation &_representation)
     }
 
     return builder.Append ("}").Get ();
+}
+
+Container::String GraphId (const SignalRepresentation &_representation)
+{
+    const std::array<uint8_t, sizeof (uint64_t)> &signaledValue = _representation.GetSignaledValue ();
+    return EMERGENCE_BUILD_STRING (
+        "SignalRepresentation {", _representation.GetKeyField ().GetName (), " = ",
+        Container::StringBuilder::FieldPointer {&signaledValue, _representation.GetKeyField ()}, "}");
 }
 
 Container::String GraphId (const VolumetricRepresentation &_representation)
