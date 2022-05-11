@@ -1,21 +1,11 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <fstream>
-#include <memory>
 #include <thread>
-#include <type_traits>
 
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/World.hpp>
-
-BEGIN_MUTING_WARNINGS
-#include <ndWorld.h>
-END_MUTING_WARNINGS
-
-#undef DEBUG
-#undef ERROR
-#undef max
 
 #include <Input/Input.hpp>
 
@@ -42,6 +32,7 @@ END_MUTING_WARNINGS
 #include <Urho3D/Resource/XMLFile.h>
 #include <Urho3D/Scene/Node.h>
 #include <Urho3D/Scene/Scene.h>
+#undef ERROR
 
 using namespace Emergence::Memory::Literals;
 
