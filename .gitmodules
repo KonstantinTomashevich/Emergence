@@ -19,3 +19,6 @@
 [submodule "ThirdParty/cglm"]
 	path = ThirdParty/cglm
 	url = https://github.com/recp/cglm.git
+[submodule "ThirdParty/newton-dynamics"]
+	path = ThirdParty/newton-dynamics
+	url = https://github.com/KonstantinTomashevich/newton-dynamics.git

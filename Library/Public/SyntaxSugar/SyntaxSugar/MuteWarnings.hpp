@@ -17,6 +17,7 @@
         _Pragma ("GCC diagnostic push")                                                                                \
         _Pragma ("GCC diagnostic ignored \"-Winconsistent-missing-override\"")                                         \
         _Pragma ("GCC diagnostic ignored \"-Wlanguage-extension-token\"")                                              \
+        _Pragma ("GCC diagnostic ignored \"-Wsign-compare\"")                                                          \
         _Pragma ("GCC diagnostic ignored \"-Wunused-parameter\"")
 // clang-format on
 

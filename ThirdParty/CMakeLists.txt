@@ -15,6 +15,9 @@ target_include_directories (SDL2ImGUI PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
 target_link_libraries (SDL2ImGUI PUBLIC SDL2)
 
+set (NEWTON_BUILD_SANDBOX_DEMOS OFF)
+add_subdirectory (newton-dynamics/newton-4.00)
+
 # TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?
 set (SDL_SHARED ON)
 add_subdirectory (SDL)
