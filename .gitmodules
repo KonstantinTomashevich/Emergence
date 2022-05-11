@@ -19,6 +19,3 @@
 [submodule "ThirdParty/cglm"]
 	path = ThirdParty/cglm
 	url = https://github.com/recp/cglm.git
-[submodule "ThirdParty/bullet3"]
-	path = ThirdParty/bullet3
-	url = https://github.com/bulletphysics/bullet3.git
