@@ -14,6 +14,22 @@
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
 
+#include <PxFoundation.h>
+#include <PxPhysics.h>
+#include <PxPhysicsVersion.h>
+#include <PxRigidDynamic.h>
+#include <PxRigidStatic.h>
+#include <PxScene.h>
+#include <common/PxTolerancesScale.h>
+#include <extensions/PxDefaultAllocator.h>
+#include <extensions/PxDefaultCpuDispatcher.h>
+#include <extensions/PxDefaultErrorCallback.h>
+#include <extensions/PxDefaultSimulationFilterShader.h>
+#include <extensions/PxRigidBodyExt.h>
+#include <extensions/PxSimpleFactory.h>
+#include <pvd/PxPvd.h>
+#include <pvd/PxPvdTransport.h>
+
 #include <Shared/CelerityUtils.hpp>
 
 #include <SyntaxSugar/Time.hpp>
@@ -55,7 +71,7 @@ public:
 
     GameApplication (GameApplication &&_other) = delete;
 
-    ~GameApplication () override = default;
+    ~GameApplication () override;
 
     void Setup () override;
 
@@ -84,6 +100,21 @@ private:
     Urho3D::SharedPtr<Urho3D::Scene> scene;
     Urho3D::SharedPtr<Urho3D::Node> playerNode;
     Urho3D::SharedPtr<Urho3D::Node> lightNode;
+
+    physx::PxDefaultAllocator gAllocator;
+    physx::PxDefaultErrorCallback gErrorCallback;
+
+    physx::PxFoundation *gFoundation = nullptr;
+    physx::PxPhysics *gPhysics = nullptr;
+
+    physx::PxDefaultCpuDispatcher *gDispatcher = nullptr;
+    physx::PxScene *gScene = nullptr;
+
+    physx::PxMaterial *gMaterial = nullptr;
+
+    physx::PxPvd *gPvd = nullptr;
+
+    physx::PxRigidDynamic *boxBody = nullptr;
 };
 
 GameApplication::GameApplication (Urho3D::Context *_context)
@@ -94,6 +125,28 @@ GameApplication::GameApplication (Urho3D::Context *_context)
     SubscribeToEvent (Urho3D::E_UPDATE, URHO3D_HANDLER (GameApplication, HandleUpdate));
     SubscribeToEvent (Urho3D::E_KEYDOWN, URHO3D_HANDLER (GameApplication, HandleKeyDown));
     SubscribeToEvent (Urho3D::E_KEYUP, URHO3D_HANDLER (GameApplication, HandleKeyUp));
+
+    gFoundation = PxCreateFoundation (PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+    gPvd = physx::PxCreatePvd (*gFoundation);
+    physx::PxPvdTransport *transport = physx::PxDefaultPvdSocketTransportCreate ("127.0.0.1", 5425, 10);
+    gPvd->connect (*transport, physx::PxPvdInstrumentationFlag::eALL);
+    gPhysics = PxCreatePhysics (PX_PHYSICS_VERSION, *gFoundation, physx::PxTolerancesScale (), true, gPvd);
+}
+
+GameApplication::~GameApplication ()
+{
+    gScene->release ();
+    gDispatcher->release ();
+    gPhysics->release ();
+
+    if (gPvd)
+    {
+        physx::PxPvdTransport *transport = gPvd->getTransport ();
+        gPvd->release ();
+        transport->release ();
+    }
+
+    gFoundation->release ();
 }
 
 void GameApplication::Setup ()
@@ -182,6 +235,33 @@ void GameApplication::Start ()
 
     auto *renderer = GetSubsystem<Urho3D::Renderer> ();
     renderer->SetViewport (0, new Urho3D::Viewport {GetContext (), scene, camera});
+
+    physx::PxSceneDesc sceneDesc (gPhysics->getTolerancesScale ());
+    sceneDesc.gravity = physx::PxVec3 (0.0f, -9.81f, 0.0f);
+    gDispatcher = physx::PxDefaultCpuDispatcherCreate (2);
+    sceneDesc.cpuDispatcher = gDispatcher;
+    sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+    gScene = gPhysics->createScene (sceneDesc);
+
+    physx::PxPvdSceneClient *pvdClient = gScene->getScenePvdClient ();
+    if (pvdClient)
+    {
+        pvdClient->setScenePvdFlag (physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+        pvdClient->setScenePvdFlag (physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        pvdClient->setScenePvdFlag (physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+    }
+
+    gMaterial = gPhysics->createMaterial (0.5f, 0.5f, 0.6f);
+    physx::PxRigidStatic *groundPlane =
+        physx::PxCreatePlane (*gPhysics, physx::PxPlane (0.0f, 1.0f, 0.0f, 0.0f), *gMaterial);
+    gScene->addActor (*groundPlane);
+
+    boxBody = gPhysics->createRigidDynamic (physx::PxTransform (0.0f, 10.0f, 0.0f));
+    physx::PxShape *boxShape = gPhysics->createShape (physx::PxBoxGeometry (0.5f, 0.5f, 0.5f), *gMaterial);
+    boxBody->attachShape (*boxShape);
+    physx::PxRigidBodyExt::updateMassAndInertia (*boxBody, 10.0f);
+    gScene->addActor (*boxBody);
+    boxShape->release ();
 }
 
 void GameApplication::Stop ()
@@ -193,13 +273,19 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
 {
     world.Update ();
 
+    gScene->simulate (_eventData[Urho3D::Update::P_TIMESTEP].GetFloat ());
+    gScene->fetchResults (true);
+    const physx::PxTransform boxTransform = boxBody->getGlobalPose ();
+
     constexpr const uint64_t NS_PERIOD = 3000000000u;
     const uint64_t nsGlobal = Emergence::Time::NanosecondsSinceStartup ();
     const uint64_t nsLocal = nsGlobal % NS_PERIOD;
     const float angle = M_PI * 2.0f * (static_cast<float> (nsLocal) / static_cast<float> (NS_PERIOD));
 
     lightNode->LookAt ({cos (angle), -1.0f, sin (angle)});
-    playerNode->SetPosition ({cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f});
+    // playerNode->SetPosition ({cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f});
+    playerNode->SetPosition ({boxTransform.p.x, boxTransform.p.y, boxTransform.p.z});
+    playerNode->SetRotation ({boxTransform.q.w, boxTransform.q.x, boxTransform.q.y, boxTransform.q.z});
 
     scene->Update (_eventData[Urho3D::Update::P_TIMESTEP].GetFloat ());
     inputAccumulator.Clear ();
