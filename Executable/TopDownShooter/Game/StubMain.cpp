@@ -259,7 +259,7 @@ void GameApplication::Start ()
     boxBody = gPhysics->createRigidDynamic (physx::PxTransform (0.0f, 10.0f, 0.0f));
     physx::PxShape *boxShape = gPhysics->createShape (physx::PxBoxGeometry (0.5f, 0.5f, 0.5f), *gMaterial);
     boxBody->attachShape (*boxShape);
-    physx::PxRigidBodyExt::updateMassAndInertia (*boxBody, 10.0f);
+    physx::PxRigidBodyExt::updateMassAndInertia (*boxBody, 1000.0f);
     gScene->addActor (*boxBody);
     boxShape->release ();
 }

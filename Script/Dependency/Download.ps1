@@ -8,8 +8,8 @@ if ($args.Count -ne 2)
 
 $Platform = $args[0]
 $BuildType = $args[1]
-
 $Dependencies = "Urho3D", "PhysX"
+
 foreach ($Dependency in $Dependencies)
 {
     $SDKFileName = "Emergence_${Dependency}_SDK_${Platform}_${BuildType}.zip"
