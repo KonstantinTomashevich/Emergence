@@ -5,7 +5,7 @@
 
 namespace Emergence::Celerity
 {
-using ObjectId = std::uint64_t;
+using UniqueId = std::uint64_t;
 
-constexpr ObjectId INVALID_OBJECT_ID = std::numeric_limits<ObjectId>::max ();
+constexpr UniqueId INVALID_UNIQUE_ID = std::numeric_limits<UniqueId>::max ();
 } // namespace Emergence::Celerity

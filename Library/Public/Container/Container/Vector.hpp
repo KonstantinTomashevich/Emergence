@@ -24,4 +24,24 @@ Iterator EraseExchangingWithLast (Vector &_vector, const Iterator &_iterator)
     _vector.pop_back ();
     return _iterator;
 }
+
+/// \brief Adds value to given vector if this vector doesn't contain this value already.
+template <typename Value>
+void AddUnique (Vector<Value> &_vector, const Value &_value)
+{
+    if (std::find (_vector.begin (), _vector.end (), _value) == _vector.end ())
+    {
+        _vector.emplace_back (_value);
+    }
+}
+
+/// \brief Same as alternative above, but with move semantics.
+template <typename Value>
+void AddUnique (Vector<Value> &_vector, Value &&_value)
+{
+    if (std::find (_vector.begin (), _vector.end (), _value) == _vector.end ())
+    {
+        _vector.emplace_back (std::move (_value));
+    }
+}
 } // namespace Emergence::Container

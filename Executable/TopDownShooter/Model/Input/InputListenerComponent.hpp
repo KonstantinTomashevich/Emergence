@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include <Celerity/Standard/ObjectId.hpp>
+#include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/InplaceVector.hpp>
 
@@ -14,7 +14,7 @@ struct InputListenerComponent final
 {
     constexpr static const std::size_t MAX_ACTIONS_PER_CYCLE = 16u;
 
-    Emergence::Celerity::ObjectId objectId = Emergence::Celerity::INVALID_OBJECT_ID;
+    Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
     Emergence::Container::InplaceVector<InputAction, MAX_ACTIONS_PER_CYCLE> actions;
 
     struct Reflection final

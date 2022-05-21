@@ -34,12 +34,12 @@ namespace Steps
 {
 struct CreateListener
 {
-    std::uintptr_t id = INVALID_OBJECT_ID;
+    UniqueId id = INVALID_UNIQUE_ID;
 };
 
 struct DeleteListener
 {
-    std::uintptr_t id = INVALID_OBJECT_ID;
+    UniqueId id = INVALID_UNIQUE_ID;
 };
 
 struct AddSubscription
@@ -50,7 +50,7 @@ struct AddSubscription
 
 struct UnsubscribeListener
 {
-    std::uintptr_t id = INVALID_OBJECT_ID;
+    UniqueId id = INVALID_UNIQUE_ID;
     bool normal = true;
 };
 

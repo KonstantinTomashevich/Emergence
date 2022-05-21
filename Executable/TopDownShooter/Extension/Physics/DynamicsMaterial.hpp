@@ -1,26 +1,20 @@
 #pragma once
 
-#include <cstdint>
-
 #include <API/Common/Shortcuts.hpp>
+
+#include <Memory/UniqueString.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Physics
 {
+/// \warning Dynamics material removal causes removal of all associated shapes,
+///          because shapes can not exist without material.
 struct DynamicsMaterial final
 {
-    DynamicsMaterial () = default;
+    EMERGENCE_STATIONARY_DATA_TYPE (DynamicsMaterial);
 
-    DynamicsMaterial (const DynamicsMaterial &_other) = delete;
-
-    DynamicsMaterial (DynamicsMaterial &&_other) = delete;
-
-    ~DynamicsMaterial() noexcept;
-
-    EMERGENCE_DELETE_ASSIGNMENT (DynamicsMaterial);
-
-    uint64_t id = 0u;
+    Memory::UniqueString id;
 
     float dynamicFriction = 0.0f;
 
@@ -42,6 +36,7 @@ struct DynamicsMaterial final
         Emergence::StandardLayout::FieldId enableFriction;
         Emergence::StandardLayout::FieldId restitution;
         Emergence::StandardLayout::FieldId density;
+        Emergence::StandardLayout::FieldId implementationHandle;
         Emergence::StandardLayout::Mapping mapping;
     };
 

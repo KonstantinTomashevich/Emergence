@@ -2,8 +2,12 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Celerity/Standard/UniqueId.hpp>
+
 #include <Math/Quaternion.hpp>
 #include <Math/Vector3f.hpp>
+
+#include <Memory/UniqueString.hpp>
 
 #include <Physics/CollisionGeometry.hpp>
 
@@ -11,23 +15,21 @@ namespace Emergence::Physics
 {
 struct CollisionShapeComponent final
 {
-    CollisionShapeComponent () noexcept = default;
+    EMERGENCE_STATIONARY_DATA_TYPE (CollisionShapeComponent);
 
-    CollisionShapeComponent (const CollisionShapeComponent &_other) = delete;
+    /// \details Must be assigned using PhysicsWorldSingleton::GenerateShapeUID.
+    Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
 
-    CollisionShapeComponent (CollisionShapeComponent &&_other) = delete;
+    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
 
-    ~CollisionShapeComponent () noexcept;
+    Memory::UniqueString materialId;
 
-    EMERGENCE_DELETE_ASSIGNMENT (CollisionShapeComponent);
-
+    /// \invariant Geometry type cannot be changed after initialization!
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
 
     Math::Vector3f translation = Math::Vector3f::ONE;
 
     Math::Quaternion rotation = Math::Quaternion::IDENTITY;
-
-    uint64_t materialId = 0u;
 
     bool enabled = true;
     bool trigger = false;
@@ -40,14 +42,17 @@ struct CollisionShapeComponent final
 
     struct Reflection final
     {
+        Emergence::StandardLayout::FieldId shapeId;
+        Emergence::StandardLayout::FieldId objectId;
+        Emergence::StandardLayout::FieldId materialId;
         Emergence::StandardLayout::FieldId geometry;
         Emergence::StandardLayout::FieldId translation;
         Emergence::StandardLayout::FieldId rotation;
-        Emergence::StandardLayout::FieldId materialId;
         Emergence::StandardLayout::FieldId enabled;
         Emergence::StandardLayout::FieldId trigger;
         Emergence::StandardLayout::FieldId visibleToWorldQueries;
         Emergence::StandardLayout::FieldId collisionGroup;
+        Emergence::StandardLayout::FieldId implementationHandle;
         Emergence::StandardLayout::Mapping mapping;
     };
 

@@ -85,8 +85,7 @@ const Memory::UniqueString Checkpoint::SYNC_FINISHED {"Transform3dVisualSyncFini
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor =
-        _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"});
+    Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"});
     constructor.SetExecutor<Transform3dVisualSynchronizer> ();
 }
 } // namespace VisualSync

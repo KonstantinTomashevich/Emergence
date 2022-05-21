@@ -2,6 +2,8 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Celerity/Standard/UniqueId.hpp>
+
 #include <Math/Vector3f.hpp>
 
 namespace Emergence::Physics
@@ -15,17 +17,11 @@ enum class RigidBodyType
 
 struct RigidBodyComponent final
 {
-    RigidBodyComponent () noexcept = default;
+    EMERGENCE_STATIONARY_DATA_TYPE (RigidBodyComponent);
 
-    RigidBodyComponent (const RigidBodyComponent &_other) = delete;
-
-    RigidBodyComponent (RigidBodyComponent &&_other) = delete;
-
-    ~RigidBodyComponent () noexcept;
-
-    EMERGENCE_DELETE_ASSIGNMENT (RigidBodyComponent);
-
+    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
     RigidBodyType type = RigidBodyType::STATIC;
+
     bool continuousCollisionDetection = false;
     bool affectedByGravity = true;
 
@@ -42,6 +38,7 @@ struct RigidBodyComponent final
 
     struct Reflection final
     {
+        Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId type;
         Emergence::StandardLayout::FieldId continuousCollisionDetection;
         Emergence::StandardLayout::FieldId affectedByGravity;
@@ -51,6 +48,7 @@ struct RigidBodyComponent final
         Emergence::StandardLayout::FieldId additiveAngularImpulse;
         Emergence::StandardLayout::FieldId linearDamping;
         Emergence::StandardLayout::FieldId angularDamping;
+        Emergence::StandardLayout::FieldId implementationHandle;
         Emergence::StandardLayout::Mapping mapping;
     };
 

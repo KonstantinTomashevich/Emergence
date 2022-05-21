@@ -9,7 +9,7 @@
 #include <variant>
 
 #include <Celerity/PipelineBuilder.hpp>
-#include <Celerity/Standard/ObjectId.hpp>
+#include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Vector.hpp>
 
@@ -21,19 +21,19 @@ namespace Requests
 {
 struct CreateTransform final
 {
-    Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
-    Celerity::ObjectId parentId = Celerity::INVALID_OBJECT_ID;
+    Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
+    Celerity::UniqueId parentId = Celerity::INVALID_UNIQUE_ID;
 };
 
 struct ChangeParent final
 {
-    Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
-    Celerity::ObjectId newParentId = Celerity::INVALID_OBJECT_ID;
+    Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
+    Celerity::UniqueId newParentId = Celerity::INVALID_UNIQUE_ID;
 };
 
 struct SetLocalTransform final
 {
-    Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
+    Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
     bool logical = true;
 
     /// \warning Ignored if not ::logical.
@@ -44,7 +44,7 @@ struct SetLocalTransform final
 
 struct CheckTransform final
 {
-    Celerity::ObjectId id = Celerity::INVALID_OBJECT_ID;
+    Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
     bool logical = true;
     bool local = true;
 
