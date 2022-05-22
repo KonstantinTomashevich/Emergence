@@ -22,6 +22,7 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
+#include <Transform/Events.hpp>
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
 
@@ -68,6 +69,8 @@ private:
     static void UpdateGravity (PhysicsWorldSingleton *_physicsWorld) noexcept;
 
     static void UpdateRemoteDebugging (PhysicsWorldSingleton *_physicsWorld) noexcept;
+
+    void CleanupAfterTransformRemoval () noexcept;
 
     void InitializeMaterials (PhysicsWorldSingleton *_physicsWorld) noexcept;
 
@@ -126,6 +129,8 @@ private:
     Celerity::ModifyValueQuery modifyTransformByObjectId;
     Transform::Transform3dWorldAccessor transformWorldAccessor;
 
+    Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
+
     /// \details Mass invalidation occurs only when shapes are added/changed/removed or materials are changed.
     ///          Because several shapes on one body might be after during same frame, we collect all object
     ///          ids in this array and then schedule recalculation.
@@ -172,7 +177,10 @@ PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor 
                                                          {Transform::Transform3dComponent::Reflect ().objectId})),
       modifyTransformByObjectId (_constructor.ModifyValue (Transform::Transform3dComponent::Reflect ().mapping,
                                                            {Transform::Transform3dComponent::Reflect ().objectId})),
-      transformWorldAccessor (_constructor)
+      transformWorldAccessor (_constructor),
+
+      fetchTransformRemovedEvents (
+          _constructor.FetchSequence (Transform::Transform3dComponentRemovedFixedEvent::Reflect ().mapping))
 {
     _constructor.DependOn (Checkpoint::SIMULATION_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::SIMULATION_FINISHED);
@@ -192,7 +200,7 @@ void PhysicsSimulationExecutor::Execute () noexcept
     UpdateGravity (physicsWorld);
     UpdateRemoteDebugging (physicsWorld);
 
-    // TODO: Delete bodies and shapes when Transform3dComponent is removed from object.
+    CleanupAfterTransformRemoval ();
 
     InitializeMaterials (physicsWorld);
     ApplyMaterialChanges ();
@@ -296,10 +304,38 @@ void PhysicsSimulationExecutor::UpdateRemoteDebugging (PhysicsWorldSingleton *_p
     }
 }
 
+void PhysicsSimulationExecutor::CleanupAfterTransformRemoval () noexcept
+{
+    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
+         const auto *event = static_cast<const Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        auto transformCursor = fetchTransformByObjectId.Execute (&event->objectId);
+        if (*transformCursor)
+        {
+            // Another transform component was added.
+            continue;
+        }
+
+        // Delete shapes from objects without transform.
+        for (auto shapeCursor = modifyShapeByObjectId.Execute (&event->objectId); *shapeCursor;)
+        {
+            ~shapeCursor;
+        }
+
+        // Delete body from object without transform.
+        auto bodyCursor = modifyBodyByObjectId.Execute (&event->objectId);
+
+        if (*bodyCursor)
+        {
+            ~bodyCursor;
+        }
+    }
+}
+
 void PhysicsSimulationExecutor::InitializeMaterials (PhysicsWorldSingleton *_physicsWorld) noexcept
 {
     auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
-
     for (auto eventCursor = fetchMaterialAddedEvents.Execute ();
          const auto *event = static_cast<const DynamicsMaterialAddedEvent *> (*eventCursor); ++eventCursor)
     {
@@ -353,13 +389,10 @@ void PhysicsSimulationExecutor::ApplyMaterialDestruction () noexcept
     for (auto eventCursor = fetchMaterialRemovedEvents.Execute ();
          const auto *event = static_cast<const DynamicsMaterialRemovedEvent *> (*eventCursor); ++eventCursor)
     {
-        auto shapeCursor = modifyShapeByMaterialId.Execute (&event->id);
-        while (*shapeCursor)
+        for (auto shapeCursor = modifyShapeByMaterialId.Execute (&event->id); *shapeCursor;)
         {
             // Shapes can not exist without material, therefore we are cleaning them up.
             ~shapeCursor;
-            // Shape removal will produce event, that will be processed later.
-            // Therefore, we don't need to execute body mass recalculation right here.
         }
     }
 }
@@ -438,7 +471,9 @@ void PhysicsSimulationExecutor::ApplyShapeMaterialChanges () noexcept
         auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
         if (auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor))
         {
+            Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
             auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
+
             if (const auto *material = static_cast<const DynamicsMaterial *> (*materialCursor))
             {
                 auto *pxMaterial = static_cast<physx::PxMaterial *> (material->implementationHandle);
@@ -473,6 +508,7 @@ void PhysicsSimulationExecutor::ApplyShapeGeometryChanges () noexcept
             continue;
         }
 
+        Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
         auto *pxShape = static_cast<physx::PxShape *> (shape->implementationHandle);
         auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
         const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
@@ -482,6 +518,8 @@ void PhysicsSimulationExecutor::ApplyShapeGeometryChanges () noexcept
             EMERGENCE_LOG (ERROR,
                            "PhysicsSimulationExecutor: Unable to update CollisionShapeComponent to object with id ",
                            shape->objectId, ", because it has no Transform3dComponent!");
+
+            ~shapeCursor;
             continue;
         }
 
@@ -507,7 +545,6 @@ void PhysicsSimulationExecutor::ApplyShapeGeometryChanges () noexcept
         }
 
         UpdateShapeLocalPose (shape, worldScale);
-        Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
         ENSURE_TRANSFORM_UNIQUENESS
         ENSURE_SHAPE_UNIQUENESS
     }
@@ -524,6 +561,7 @@ void PhysicsSimulationExecutor::ApplyShapeAttributesChanges () noexcept
         {
             static_cast<physx::PxShape *> (shape->implementationHandle)->setFlags (CalculateShapeFlags (shape));
             UpdateShapeFilter (shape);
+            Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
             ENSURE_SHAPE_UNIQUENESS
         }
     }
@@ -540,7 +578,6 @@ void PhysicsSimulationExecutor::DetachRemovedShapes () noexcept
             static_cast<physx::PxRigidBody *> (body->implementationHandle)
                 ->detachShape (*static_cast<physx::PxShape *> (const_cast<void *> (event->implementationHandle)));
             Container::AddUnique (objectsWithInvalidMasses, body->objectId);
-
             ENSURE_BODY_UNIQUENESS
         }
         else
