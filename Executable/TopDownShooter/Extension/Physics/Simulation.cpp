@@ -299,14 +299,12 @@ void PhysicsSimulationExecutor::UpdateRemoteDebugging (PhysicsWorldSingleton *_p
 void PhysicsSimulationExecutor::InitializeMaterials (PhysicsWorldSingleton *_physicsWorld) noexcept
 {
     auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
-    auto eventCursor = fetchMaterialAddedEvents.Execute ();
 
-    while (const auto *event = static_cast<const DynamicsMaterialAddedEvent *> (*eventCursor))
+    for (auto eventCursor = fetchMaterialAddedEvents.Execute ();
+         const auto *event = static_cast<const DynamicsMaterialAddedEvent *> (*eventCursor); ++eventCursor)
     {
         auto materialCursor = modifyMaterialById.Execute (&event->id);
-        auto *material = static_cast<DynamicsMaterial *> (*materialCursor);
-
-        if (material)
+        if (auto *material = static_cast<DynamicsMaterial *> (*materialCursor))
         {
             assert (!material->implementationHandle);
 
@@ -318,22 +316,18 @@ void PhysicsSimulationExecutor::InitializeMaterials (PhysicsWorldSingleton *_phy
         }
         else
         {
-            // Material is already destroyed, event was outdated.
+            // Material is already removed, event was outdated.
         }
-
-        ++eventCursor;
     }
 }
 
 void PhysicsSimulationExecutor::ApplyMaterialChanges () noexcept
 {
-    auto eventCursor = fetchMaterialChangedEvents.Execute ();
-    while (const auto *event = static_cast<const DynamicsMaterialChangedEvent *> (*eventCursor))
+    for (auto eventCursor = fetchMaterialChangedEvents.Execute ();
+         const auto *event = static_cast<const DynamicsMaterialChangedEvent *> (*eventCursor); ++eventCursor)
     {
         auto materialCursor = modifyMaterialById.Execute (&event->id);
-        auto *material = static_cast<DynamicsMaterial *> (*materialCursor);
-
-        if (material)
+        if (auto *material = static_cast<DynamicsMaterial *> (*materialCursor))
         {
             auto *pxMaterial = static_cast<physx::PxMaterial *> (material->implementationHandle);
             pxMaterial->setStaticFriction (material->staticFriction);
@@ -349,17 +343,15 @@ void PhysicsSimulationExecutor::ApplyMaterialChanges () noexcept
         }
         else
         {
-            // Material is already destroyed, event was outdated.
+            // Material is already removed, event was outdated.
         }
-
-        ++eventCursor;
     }
 }
 
 void PhysicsSimulationExecutor::ApplyMaterialDestruction () noexcept
 {
-    auto eventCursor = fetchMaterialRemovedEvents.Execute ();
-    while (const auto *event = static_cast<const DynamicsMaterialRemovedEvent *> (*eventCursor))
+    for (auto eventCursor = fetchMaterialRemovedEvents.Execute ();
+         const auto *event = static_cast<const DynamicsMaterialRemovedEvent *> (*eventCursor); ++eventCursor)
     {
         auto shapeCursor = modifyShapeByMaterialId.Execute (&event->id);
         while (*shapeCursor)
@@ -369,17 +361,79 @@ void PhysicsSimulationExecutor::ApplyMaterialDestruction () noexcept
             // Shape removal will produce event, that will be processed later.
             // Therefore, we don't need to execute body mass recalculation right here.
         }
-
-        ++eventCursor;
     }
 }
 
 void PhysicsSimulationExecutor::InitializeShapes (PhysicsWorldSingleton *_physicsWorld) noexcept
 {
     auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
-    auto eventCursor = fetchShapeAddedEvents.Execute ();
+    for (auto eventCursor = fetchShapeAddedEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    {
+        auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
+        auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor);
 
-    while (const auto *event = static_cast<const CollisionShapeComponentAddedEvent *> (*eventCursor))
+        if (!shape)
+        {
+            // Shape is already removed.
+            continue;
+        }
+
+        auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
+        const auto *material = static_cast<const DynamicsMaterial *> (*materialCursor);
+
+        if (!material)
+        {
+            EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to find DynamicsMaterial with id ",
+                           shape->materialId, "! Shape, that attempts to use this material, will be deleted.");
+
+            ~shapeCursor;
+            continue;
+        }
+
+        const auto *pxMaterial = static_cast<const physx::PxMaterial *> (material->implementationHandle);
+        auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
+        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to add CollisionShapeComponent to object with id ",
+                           shape->objectId, ", because it has no Transform3dComponent!");
+
+            ~shapeCursor;
+            continue;
+        }
+
+        const Math::Vector3f worldScale = transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
+        ConstructPxShape (shape, pxWorld, *pxMaterial, worldScale);
+        auto bodyCursor = modifyBodyByObjectId.Execute (&shape->objectId);
+
+        if (auto *body = static_cast<RigidBodyComponent *> (*bodyCursor))
+        {
+            if (auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle))
+            {
+                pxBody->attachShape (*static_cast<physx::PxShape *> (shape->implementationHandle));
+                Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
+            }
+            else
+            {
+                // Body is not initialized yet. Shape will be added during initialization.
+            }
+
+            ENSURE_BODY_UNIQUENESS
+        }
+
+        ENSURE_TRANSFORM_UNIQUENESS
+        ENSURE_MATERIAL_UNIQUENESS
+        ENSURE_SHAPE_UNIQUENESS
+    }
+}
+
+void PhysicsSimulationExecutor::ApplyShapeMaterialChanges () noexcept
+{
+    for (auto eventCursor = fetchShapeMaterialChangedEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentMaterialChangedEvent *> (*eventCursor);
+         ++eventCursor)
     {
         auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
         if (auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor))
@@ -387,182 +441,98 @@ void PhysicsSimulationExecutor::InitializeShapes (PhysicsWorldSingleton *_physic
             auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
             if (const auto *material = static_cast<const DynamicsMaterial *> (*materialCursor))
             {
-                const auto *pxMaterial = static_cast<const physx::PxMaterial *> (material->implementationHandle);
-                auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
-
-                if (const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor))
-                {
-                    const Math::Vector3f worldScale =
-                        transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
-
-                    ConstructPxShape (shape, pxWorld, *pxMaterial, worldScale);
-                    auto bodyCursor = modifyBodyByObjectId.Execute (&shape->objectId);
-
-                    if (auto *body = static_cast<RigidBodyComponent *> (*bodyCursor))
-                    {
-                        if (auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle))
-                        {
-                            pxBody->attachShape (*static_cast<physx::PxShape *> (shape->implementationHandle));
-                            Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
-                        }
-                        else
-                        {
-                            // Body is not initialized yet. Shape will be added during initialization.
-                        }
-
-                        ENSURE_BODY_UNIQUENESS
-                    }
-
-                    ENSURE_TRANSFORM_UNIQUENESS
-                }
-                else
-                {
-                    EMERGENCE_LOG (
-                        ERROR, "PhysicsSimulationExecutor: Unable to add CollisionShapeComponent to object with id ",
-                        shape->objectId, ", because it has no Transform3dComponent!");
-                }
-
+                auto *pxMaterial = static_cast<physx::PxMaterial *> (material->implementationHandle);
+                static_cast<physx::PxShape *> (shape->implementationHandle)->setMaterials (&pxMaterial, 1u);
                 ENSURE_MATERIAL_UNIQUENESS
             }
             else
             {
                 EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to find DynamicsMaterial with id ",
-                               shape->materialId, "!");
+                               shape->materialId, "! Shape, that attempts to use this material, will be deleted.");
+
+                ~shapeCursor;
+                continue;
             }
 
             ENSURE_SHAPE_UNIQUENESS
         }
-        else
-        {
-            // Shape is already removed.
-        }
-
-        ++eventCursor;
-    }
-}
-
-void PhysicsSimulationExecutor::ApplyShapeMaterialChanges () noexcept
-{
-    auto eventCursor = fetchShapeMaterialChangedEvents.Execute ();
-    while (const auto *event = static_cast<const CollisionShapeComponentMaterialChangedEvent *> (*eventCursor))
-    {
-        auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
-        if (auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor))
-        {
-            if (auto *pxShape = static_cast<physx::PxShape *> (shape->implementationHandle))
-            {
-                auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
-                if (const auto *material = static_cast<const DynamicsMaterial *> (*materialCursor))
-                {
-                    auto *pxMaterial = static_cast<physx::PxMaterial *> (material->implementationHandle);
-                    pxShape->setMaterials (&pxMaterial, 1u);
-                    ENSURE_MATERIAL_UNIQUENESS
-                }
-                else
-                {
-                    EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to find DynamicsMaterial with id ",
-                                   shape->materialId, "!");
-                }
-            }
-            else
-            {
-                // Shape not initialized, therefore there is nothing to update.
-            }
-
-            ENSURE_SHAPE_UNIQUENESS
-        }
-
-        ++eventCursor;
     }
 }
 
 void PhysicsSimulationExecutor::ApplyShapeGeometryChanges () noexcept
 {
-    auto eventCursor = fetchShapeGeometryChangedEvents.Execute ();
-    while (const auto *event = static_cast<const CollisionShapeComponentGeometryChangedEvent *> (*eventCursor))
+    for (auto eventCursor = fetchShapeGeometryChangedEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentGeometryChangedEvent *> (*eventCursor);
+         ++eventCursor)
     {
         auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
-        if (auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor))
+        auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor);
+
+        if (!shape)
         {
-            if (auto *pxShape = static_cast<physx::PxShape *> (shape->implementationHandle))
-            {
-                auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
-                if (const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor))
-                {
-                    const Math::Vector3f worldScale =
-                        transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
-                    assert (pxShape->getGeometryType () == ToPxGeometryType (shape->geometry.type));
-
-                    switch (shape->geometry.type)
-                    {
-                    case CollisionGeometryType::BOX:
-                        pxShape->setGeometry (physx::PxBoxGeometry {shape->geometry.boxHalfExtents.x * worldScale.x,
-                                                                    shape->geometry.boxHalfExtents.y * worldScale.y,
-                                                                    shape->geometry.boxHalfExtents.z * worldScale.z});
-                        break;
-
-                    case CollisionGeometryType::SPHERE:
-                        pxShape->setGeometry (physx::PxSphereGeometry {shape->geometry.sphereRadius * worldScale.x});
-                        break;
-
-                    case CollisionGeometryType::CAPSULE:
-                        pxShape->setGeometry (
-                            physx::PxCapsuleGeometry {shape->geometry.capsuleRadius * worldScale.x,
-                                                      shape->geometry.capsuleHalfHeight * worldScale.x});
-                        break;
-                    }
-
-                    UpdateShapeLocalPose (shape, worldScale);
-                    Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
-                }
-                else
-                {
-                    EMERGENCE_LOG (
-                        ERROR, "PhysicsSimulationExecutor: Unable to update CollisionShapeComponent to object with id ",
-                        shape->objectId, ", because it has no Transform3dComponent!");
-                }
-            }
-            else
-            {
-                // Shape not initialized, therefore there is nothing to update.
-            }
-
-            ENSURE_SHAPE_UNIQUENESS
+            continue;
         }
 
-        ++eventCursor;
+        auto *pxShape = static_cast<physx::PxShape *> (shape->implementationHandle);
+        auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
+        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            EMERGENCE_LOG (ERROR,
+                           "PhysicsSimulationExecutor: Unable to update CollisionShapeComponent to object with id ",
+                           shape->objectId, ", because it has no Transform3dComponent!");
+            continue;
+        }
+
+        const Math::Vector3f worldScale = transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
+        assert (pxShape->getGeometryType () == ToPxGeometryType (shape->geometry.type));
+
+        switch (shape->geometry.type)
+        {
+        case CollisionGeometryType::BOX:
+            pxShape->setGeometry (physx::PxBoxGeometry {shape->geometry.boxHalfExtents.x * worldScale.x,
+                                                        shape->geometry.boxHalfExtents.y * worldScale.y,
+                                                        shape->geometry.boxHalfExtents.z * worldScale.z});
+            break;
+
+        case CollisionGeometryType::SPHERE:
+            pxShape->setGeometry (physx::PxSphereGeometry {shape->geometry.sphereRadius * worldScale.x});
+            break;
+
+        case CollisionGeometryType::CAPSULE:
+            pxShape->setGeometry (physx::PxCapsuleGeometry {shape->geometry.capsuleRadius * worldScale.x,
+                                                            shape->geometry.capsuleHalfHeight * worldScale.x});
+            break;
+        }
+
+        UpdateShapeLocalPose (shape, worldScale);
+        Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
+        ENSURE_TRANSFORM_UNIQUENESS
+        ENSURE_SHAPE_UNIQUENESS
     }
 }
 
 void PhysicsSimulationExecutor::ApplyShapeAttributesChanges () noexcept
 {
-    auto eventCursor = fetchShapeGeometryChangedEvents.Execute ();
-    while (const auto *event = static_cast<const CollisionShapeComponentGeometryChangedEvent *> (*eventCursor))
+    for (auto eventCursor = fetchShapeGeometryChangedEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentGeometryChangedEvent *> (*eventCursor);
+         ++eventCursor)
     {
         auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
         if (auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor))
         {
-            if (auto *pxShape = static_cast<physx::PxShape *> (shape->implementationHandle))
-            {
-                pxShape->setFlags (CalculateShapeFlags (shape));
-                UpdateShapeFilter (shape);
-            }
-            else
-            {
-                // Shape not initialized, therefore there is nothing to update.
-            }
-
+            static_cast<physx::PxShape *> (shape->implementationHandle)->setFlags (CalculateShapeFlags (shape));
+            UpdateShapeFilter (shape);
             ENSURE_SHAPE_UNIQUENESS
         }
-
-        ++eventCursor;
     }
 }
 
 void PhysicsSimulationExecutor::DetachRemovedShapes () noexcept
 {
-    auto eventCursor = fetchShapeRemovedEvents.Execute ();
-    while (const auto *event = static_cast<const CollisionShapeComponentRemovedEvent *> (*eventCursor))
+    for (auto eventCursor = fetchShapeRemovedEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentRemovedEvent *> (*eventCursor); ++eventCursor)
     {
         auto bodyCursor = modifyBodyByObjectId.Execute (&event->objectId);
         if (auto *body = static_cast<RigidBodyComponent *> (*bodyCursor))
@@ -577,8 +547,6 @@ void PhysicsSimulationExecutor::DetachRemovedShapes () noexcept
         {
             // Body was removed too.
         }
-
-        ++eventCursor;
     }
 }
 
@@ -595,74 +563,75 @@ void PhysicsSimulationExecutor::RecalculateBodyMasses () noexcept
     for (Celerity::UniqueId objectId : objectsWithInvalidMasses)
     {
         auto bodyCursor = modifyBodyByObjectId.Execute (&objectId);
-        if (auto *body = static_cast<RigidBodyComponent *> (*bodyCursor))
+        auto *body = static_cast<RigidBodyComponent *> (*bodyCursor);
+
+        if (!body)
         {
-            auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle);
-            shapes.resize (pxBody->getNbShapes ());
-            pxBody->getShapes (shapes.data (), shapes.size ());
+            // Body is already removed, no need to bother with recalculation.
+            continue;
+        }
 
-            for (auto iterator = shapes.begin (); iterator != shapes.end ();)
+        auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle);
+        shapes.resize (pxBody->getNbShapes ());
+        pxBody->getShapes (shapes.data (), shapes.size ());
+
+        for (auto iterator = shapes.begin (); iterator != shapes.end ();)
+        {
+            if ((*iterator)->getFlags () & physx::PxShapeFlag::eSIMULATION_SHAPE)
             {
-                if ((*iterator)->getFlags () & physx::PxShapeFlag::eSIMULATION_SHAPE)
-                {
-                    ++iterator;
-                }
-                else
-                {
-                    iterator = shapes.erase (iterator);
-                }
-            }
-
-            if (shapes.empty ())
-            {
-                continue;
-            }
-
-            densities.resize (shapes.size ());
-            uint32_t shapesFound = 0u;
-            auto shapeCursor = fetchShapeByObjectId.Execute (&objectId);
-
-            while (const auto *shape = static_cast<const CollisionShapeComponent *> (*shapeCursor))
-            {
-                auto iterator = std::find (shapes.begin (), shapes.end (),
-                                           static_cast<physx::PxShape *> (shape->implementationHandle));
-
-                if (iterator == shapes.end ())
-                {
-                    // Not all shapes are attached: this case will be processed inside other routine.
-                    break;
-                }
-
-                auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
-                const auto *material = static_cast<const DynamicsMaterial *> (*materialCursor);
-
-                if (!material)
-                {
-                    // Shapes can not exist without material. How this happened?
-                    assert (false);
-                    break;
-                }
-
-                densities[iterator - shapes.begin ()] = material->density;
-                ++shapesFound;
-                ENSURE_MATERIAL_UNIQUENESS
-            }
-
-            if (shapesFound == shapes.size ())
-            {
-                physx::PxRigidBodyExt::updateMassAndInertia (*pxBody, densities.data (), densities.size ());
+                ++iterator;
             }
             else
             {
-                // Body is not ready for recalculation. It will be called from other routine when body will be ready.
+                iterator = shapes.erase (iterator);
+            }
+        }
+
+        if (shapes.empty ())
+        {
+            continue;
+        }
+
+        densities.resize (shapes.size ());
+        uint32_t shapesFound = 0u;
+        auto shapeCursor = fetchShapeByObjectId.Execute (&objectId);
+
+        while (const auto *shape = static_cast<const CollisionShapeComponent *> (*shapeCursor))
+        {
+            auto iterator =
+                std::find (shapes.begin (), shapes.end (), static_cast<physx::PxShape *> (shape->implementationHandle));
+
+            if (iterator == shapes.end ())
+            {
+                // Not all shapes are attached: this case will be processed inside other routine.
+                break;
             }
 
-            ENSURE_BODY_UNIQUENESS
+            auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
+            const auto *material = static_cast<const DynamicsMaterial *> (*materialCursor);
+
+            if (!material)
+            {
+                // Shapes can not exist without material. How this happened?
+                assert (false);
+                break;
+            }
+
+            densities[iterator - shapes.begin ()] = material->density;
+            ++shapesFound;
+            ENSURE_MATERIAL_UNIQUENESS
+        }
+
+        if (shapesFound == shapes.size ())
+        {
+            physx::PxRigidBodyExt::updateMassAndInertia (*pxBody, densities.data (), densities.size ());
         }
         else
         {
-            // Body is already removed, no need to bother with recalculation.
+            // Body is not ready for recalculation. It will be called from other routine when body will be ready.
         }
+
+        ENSURE_BODY_UNIQUENESS
     }
 }
 
