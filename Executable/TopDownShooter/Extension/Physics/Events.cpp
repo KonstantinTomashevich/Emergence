@@ -2,6 +2,7 @@
 #include <Physics/DynamicsMaterial.hpp>
 #include <Physics/Events.hpp>
 #include <Physics/PhysicsWorldSingleton.hpp>
+#include <Physics/RigidBodyComponent.hpp>
 
 namespace Emergence::Physics
 {
@@ -13,14 +14,68 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialRemovedEvent, UNIQUE_S
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedEvent, REGULAR, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentMaterialChangedEvent, REGULAR, shapeId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentMaterialChangedEvent, REGULAR, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentGeometryChangedEvent, REGULAR, shapeId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentGeometryChangedEvent, REGULAR, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAttributesChangedEvent, REGULAR, shapeId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAttributesChangedEvent, REGULAR, shapeId)
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    CollisionShapeComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle);
+    CollisionShapeComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedEvent, REGULAR, objectId)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAttributesChangedEvent, REGULAR, objectId)
+
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
+    RigidBodyComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (ContactFoundEvent,
+                                          REGULAR,
+                                          firstObjectId,
+                                          REGULAR,
+                                          firstShapeId,
+                                          REGULAR,
+                                          secondObjectId,
+                                          REGULAR,
+                                          secondShapeId,
+                                          REGULAR,
+                                          initialContact)
+
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
+    ContactPersistsEvent, REGULAR, firstObjectId, REGULAR, firstShapeId, REGULAR, secondObjectId, REGULAR, secondShapeId)
+
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (ContactLostEvent,
+                                          REGULAR,
+                                          firstObjectId,
+                                          REGULAR,
+                                          firstShapeId,
+                                          REGULAR,
+                                          secondObjectId,
+                                          REGULAR,
+                                          secondShapeId,
+                                          REGULAR,
+                                          lastContact)
+
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TriggerEnteredEvent,
+                                          REGULAR,
+                                          triggerObjectId,
+                                          REGULAR,
+                                          triggerShapeId,
+                                          REGULAR,
+                                          intruderObjectId,
+                                          REGULAR,
+                                          intruderShapeId)
+
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TriggerExitedEvent,
+                                          REGULAR,
+                                          triggerObjectId,
+                                          REGULAR,
+                                          triggerShapeId,
+                                          REGULAR,
+                                          intruderObjectId,
+                                          REGULAR,
+                                          intruderShapeId)
 
 void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
 {
@@ -95,5 +150,42 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
              {CollisionShapeComponent::Reflect ().implementationHandle,
               CollisionShapeComponentRemovedEvent::Reflect ().implementationHandle},
          }});
+
+    // RigidBodyComponent
+
+    _registrar.OnAddEvent (
+        {{RigidBodyComponentAddedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+         RigidBodyComponent::Reflect ().mapping,
+         {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAddedEvent::Reflect ().objectId}}});
+
+    _registrar.OnChangeEvent (
+        {{RigidBodyComponentAttributesChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+         RigidBodyComponent::Reflect ().mapping,
+         {
+
+             RigidBodyComponent::Reflect ().linearDamping,
+             RigidBodyComponent::Reflect ().angularDamping,
+             RigidBodyComponent::Reflect ().continuousCollisionDetection,
+             RigidBodyComponent::Reflect ().affectedByGravity,
+         },
+         {},
+         {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAttributesChangedEvent::Reflect ().objectId}}});
+
+    _registrar.OnRemoveEvent (
+        {{RigidBodyComponentRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+         RigidBodyComponent::Reflect ().mapping,
+         {
+             {RigidBodyComponent::Reflect ().objectId, RigidBodyComponentRemovedEvent::Reflect ().objectId},
+             {RigidBodyComponent::Reflect ().implementationHandle,
+              RigidBodyComponentRemovedEvent::Reflect ().implementationHandle},
+         }});
+
+    // Simulation.
+
+    _registrar.CustomEvent ({ContactFoundEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent ({ContactPersistsEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent ({ContactLostEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent ({TriggerEnteredEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent ({TriggerExitedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
 }
 } // namespace Emergence::Physics

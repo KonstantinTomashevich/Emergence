@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <Celerity/Model/TimeSingleton.hpp>
+
 #include <Log/Log.hpp>
 
 #include <Math/Scalar.hpp>
@@ -15,7 +17,10 @@
 #include <PxMaterial.h>
 #include <PxPhysicsVersion.h>
 #include <PxRigidBody.h>
+#include <PxRigidDynamic.h>
+#include <PxRigidStatic.h>
 #include <PxShape.h>
+#include <PxSimulationEventCallback.h>
 #include <extensions/PxDefaultSimulationFilterShader.h>
 #include <extensions/PxRigidBodyExt.h>
 #include <pvd/PxPvdTransport.h>
@@ -56,15 +61,32 @@ namespace Emergence::Physics::Simulation
     ENSURE_UNIQUENESS (transformCursor, "PhysicsSimulationExecutor: Object with id ", transform->GetObjectId (),       \
                        " has multiple Transform3dComponent's!")
 
-class PhysicsSimulationExecutor final : public Celerity::TaskExecutorBase<PhysicsSimulationExecutor>
+class PhysicsSimulationExecutor final : public Celerity::TaskExecutorBase<PhysicsSimulationExecutor>,
+                                        public physx::PxSimulationEventCallback
 {
 public:
     PhysicsSimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
+    void onConstraintBreak (physx::PxConstraintInfo * /*unused*/, physx::PxU32 /*unused*/) override;
+
+    void onWake (physx::PxActor ** /*unused*/, physx::PxU32 /*unused*/) override;
+
+    void onSleep (physx::PxActor ** /*unused*/, physx::PxU32 /*unused*/) override;
+
+    void onContact (const physx::PxContactPairHeader &_pairHeader,
+                    const physx::PxContactPair *_pairs,
+                    physx::PxU32 _nbPairs) override;
+
+    void onTrigger (physx::PxTriggerPair *_pairs, physx::PxU32 _count) override;
+
+    void onAdvance (const physx::PxRigidBody *const * /*unused*/,
+                    const physx::PxTransform * /*unused*/,
+                    physx::PxU32 /*unused*/) override;
+
 private:
-    static void EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld) noexcept;
+    void EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld) noexcept;
 
     static void UpdateGravity (PhysicsWorldSingleton *_physicsWorld) noexcept;
 
@@ -88,21 +110,37 @@ private:
 
     void DetachRemovedShapes () noexcept;
 
+    void InitializeBodies (PhysicsWorldSingleton *_physicsWorld) noexcept;
+
+    void ApplyBodyAttributesChanges () noexcept;
+
+    void ReleaseRemovedBodies () noexcept;
+
     void RecalculateBodyMasses () noexcept;
+
+    void SyncBodiesWithOutsideManipulations () noexcept;
+
+    void ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld) noexcept;
+
+    void SyncKinematicAndDynamicBodies () noexcept;
 
     static physx::PxShapeFlags CalculateShapeFlags (const CollisionShapeComponent *_shape) noexcept;
 
     static physx::PxGeometryType::Enum ToPxGeometryType (CollisionGeometryType _type) noexcept;
 
-    static void UpdateShapeLocalPose (CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept;
+    static void UpdateShapeGeometry (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept;
 
-    static void UpdateShapeFilter (CollisionShapeComponent *_shape) noexcept;
+    static void UpdateShapeLocalPose (const CollisionShapeComponent *_shape,
+                                      const Math::Vector3f &_worldScale) noexcept;
+
+    static void UpdateShapeFilter (const CollisionShapeComponent *_shape) noexcept;
 
     static void ConstructPxShape (CollisionShapeComponent *_shape,
                                   PhysXWorld &_pxWorld,
                                   const physx::PxMaterial &_pxMaterial,
                                   const Math::Vector3f &_worldScale) noexcept;
 
+    Celerity::FetchSingletonQuery fetchTime;
     Celerity::ModifySingletonQuery modifyPhysicsWorld;
 
     Celerity::FetchValueQuery fetchMaterialById;
@@ -112,6 +150,7 @@ private:
     Celerity::FetchSequenceQuery fetchMaterialChangedEvents;
     Celerity::FetchSequenceQuery fetchMaterialRemovedEvents;
 
+    Celerity::FetchValueQuery fetchShapeByShapeId;
     Celerity::ModifyValueQuery modifyShapeByShapeId;
     Celerity::FetchValueQuery fetchShapeByObjectId;
     Celerity::ModifyValueQuery modifyShapeByObjectId;
@@ -124,12 +163,25 @@ private:
     Celerity::FetchSequenceQuery fetchShapeRemovedEvents;
 
     Celerity::ModifyValueQuery modifyBodyByObjectId;
+    Celerity::ModifySignalQuery modifyBodyWithOutsideManipulations;
+    Celerity::ModifySignalQuery modifyKinematicBody;
+    Celerity::ModifySignalQuery modifyDynamicBody;
+
+    Celerity::FetchSequenceQuery fetchBodyAddedEvents;
+    Celerity::FetchSequenceQuery fetchBodyAttributesChangedEvents;
+    Celerity::FetchSequenceQuery fetchBodyRemovedEvents;
 
     Celerity::FetchValueQuery fetchTransformByObjectId;
     Celerity::ModifyValueQuery modifyTransformByObjectId;
     Transform::Transform3dWorldAccessor transformWorldAccessor;
 
     Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
+
+    Celerity::InsertShortTermQuery insertContactFoundEvents;
+    Celerity::InsertShortTermQuery insertContactPersistsEvents;
+    Celerity::InsertShortTermQuery insertContactLostEvents;
+    Celerity::InsertShortTermQuery insertTriggerEnteredEvents;
+    Celerity::InsertShortTermQuery insertTriggerExitedEvents;
 
     /// \details Mass invalidation occurs only when shapes are added/changed/removed or materials are changed.
     ///          Because several shapes on one body might be after during same frame, we collect all object
@@ -141,7 +193,8 @@ private:
 };
 
 PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.ModifySingleton (PhysicsWorldSingleton::Reflect ().mapping)),
+    : fetchTime (_constructor.FetchSingleton (Celerity::TimeSingleton::Reflect ().mapping)),
+      modifyPhysicsWorld (_constructor.ModifySingleton (PhysicsWorldSingleton::Reflect ().mapping)),
 
       fetchMaterialById (
           _constructor.FetchValue (DynamicsMaterial::Reflect ().mapping, {DynamicsMaterial::Reflect ().id})),
@@ -152,6 +205,8 @@ PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor 
       fetchMaterialChangedEvents (_constructor.FetchSequence (DynamicsMaterialChangedEvent::Reflect ().mapping)),
       fetchMaterialRemovedEvents (_constructor.FetchSequence (DynamicsMaterialRemovedEvent::Reflect ().mapping)),
 
+      fetchShapeByShapeId (_constructor.FetchValue (CollisionShapeComponent::Reflect ().mapping,
+                                                    {CollisionShapeComponent::Reflect ().shapeId})),
       modifyShapeByShapeId (_constructor.ModifyValue (CollisionShapeComponent::Reflect ().mapping,
                                                       {CollisionShapeComponent::Reflect ().shapeId})),
       fetchShapeByObjectId (_constructor.FetchValue (CollisionShapeComponent::Reflect ().mapping,
@@ -172,6 +227,23 @@ PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor 
 
       modifyBodyByObjectId (
           _constructor.ModifyValue (RigidBodyComponent::Reflect ().mapping, {RigidBodyComponent::Reflect ().objectId})),
+      modifyBodyWithOutsideManipulations (
+          _constructor.ModifySignal (RigidBodyComponent::Reflect ().mapping,
+                                     RigidBodyComponent::Reflect ().manipulatedOutsideOfSimulation,
+                                     array_cast<bool, sizeof (uint64_t)> (true))),
+      modifyKinematicBody (
+          _constructor.ModifySignal (RigidBodyComponent::Reflect ().mapping,
+                                     RigidBodyComponent::Reflect ().type,
+                                     array_cast<RigidBodyType, sizeof (uint64_t)> (RigidBodyType::KINEMATIC))),
+      modifyDynamicBody (
+          _constructor.ModifySignal (RigidBodyComponent::Reflect ().mapping,
+                                     RigidBodyComponent::Reflect ().type,
+                                     array_cast<RigidBodyType, sizeof (uint64_t)> (RigidBodyType::DYNAMIC))),
+
+      fetchBodyAddedEvents (_constructor.FetchSequence (RigidBodyComponentAddedEvent::Reflect ().mapping)),
+      fetchBodyAttributesChangedEvents (
+          _constructor.FetchSequence (RigidBodyComponentAttributesChangedEvent::Reflect ().mapping)),
+      fetchBodyRemovedEvents (_constructor.FetchSequence (RigidBodyComponentRemovedEvent::Reflect ().mapping)),
 
       fetchTransformByObjectId (_constructor.FetchValue (Transform::Transform3dComponent::Reflect ().mapping,
                                                          {Transform::Transform3dComponent::Reflect ().objectId})),
@@ -180,10 +252,143 @@ PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor 
       transformWorldAccessor (_constructor),
 
       fetchTransformRemovedEvents (
-          _constructor.FetchSequence (Transform::Transform3dComponentRemovedFixedEvent::Reflect ().mapping))
+          _constructor.FetchSequence (Transform::Transform3dComponentRemovedFixedEvent::Reflect ().mapping)),
+
+      insertContactFoundEvents (_constructor.InsertShortTerm (ContactFoundEvent::Reflect ().mapping)),
+      insertContactPersistsEvents (_constructor.InsertShortTerm (ContactPersistsEvent::Reflect ().mapping)),
+      insertContactLostEvents (_constructor.InsertShortTerm (ContactLostEvent::Reflect ().mapping)),
+      insertTriggerEnteredEvents (_constructor.InsertShortTerm (TriggerEnteredEvent::Reflect ().mapping)),
+      insertTriggerExitedEvents (_constructor.InsertShortTerm (TriggerExitedEvent::Reflect ().mapping))
 {
     _constructor.DependOn (Checkpoint::SIMULATION_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::SIMULATION_FINISHED);
+}
+
+void PhysicsSimulationExecutor::onConstraintBreak (physx::PxConstraintInfo * /*unused*/, physx::PxU32 /*unused*/)
+{
+    // No events right now.
+}
+
+void PhysicsSimulationExecutor::onWake (physx::PxActor ** /*unused*/, physx::PxU32 /*unused*/)
+{
+    // No events right now.
+}
+
+void PhysicsSimulationExecutor::onSleep (physx::PxActor ** /*unused*/, physx::PxU32 /*unused*/)
+{
+    // No events right now.
+}
+
+void PhysicsSimulationExecutor::onContact (const physx::PxContactPairHeader &_pairHeader,
+                                           const physx::PxContactPair *_pairs,
+                                           physx::PxU32 _nbPairs)
+{
+    if (_pairHeader.flags &
+        (physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_0 | physx::PxContactPairHeaderFlag::eREMOVED_ACTOR_1))
+    {
+        // There is no way to send correct event after shapes or bodies were removed.
+        // User logic should listen to removal events to be aware of such situations.
+        return;
+    }
+
+    const auto *firstBody = static_cast<const RigidBodyComponent *> (_pairHeader.actors[0u]->userData);
+    const auto *secondBody = static_cast<const RigidBodyComponent *> (_pairHeader.actors[1u]->userData);
+
+    if (!firstBody->sendContactEvents && !secondBody->sendContactEvents)
+    {
+        return;
+    }
+
+    for (uint32_t index = 0u; index < _nbPairs; ++index)
+    {
+        const physx::PxContactPair &pair = _pairs[index];
+        if (pair.flags & (physx::PxContactPairFlag::eREMOVED_SHAPE_0 | physx::PxContactPairFlag::eREMOVED_SHAPE_1))
+        {
+            // Same as for bodies.
+            continue;
+        }
+
+        const auto *firstShape = static_cast<const CollisionShapeComponent *> (pair.shapes[0u]->userData);
+        const auto *secondShape = static_cast<const CollisionShapeComponent *> (pair.shapes[1u]->userData);
+
+#define FILL_EVENT                                                                                                     \
+    event->firstObjectId = firstShape->objectId;                                                                       \
+    event->firstShapeId = firstShape->shapeId;                                                                         \
+    event->secondObjectId = secondShape->objectId;                                                                     \
+    event->secondShapeId = secondShape->shapeId;
+
+        if (pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+        {
+            auto cursor = insertContactFoundEvents.Execute ();
+            auto *event = static_cast<ContactFoundEvent *> (++cursor);
+            FILL_EVENT
+            event->initialContact = pair.flags & physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH;
+        }
+
+        if (pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
+        {
+            auto cursor = insertContactPersistsEvents.Execute ();
+            auto *event = static_cast<ContactPersistsEvent *> (++cursor);
+            FILL_EVENT
+        }
+
+        if (pair.events & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+        {
+            auto cursor = insertContactLostEvents.Execute ();
+            auto *event = static_cast<ContactLostEvent *> (++cursor);
+            FILL_EVENT
+            event->lastContact = pair.flags & physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH;
+        }
+
+#undef FILL_EVENT
+    }
+}
+
+void PhysicsSimulationExecutor::onTrigger (physx::PxTriggerPair *_pairs, physx::PxU32 _count)
+{
+    for (uint32_t index = 0u; index < _count; ++index)
+    {
+        const physx::PxTriggerPair &pair = _pairs[index];
+        if (pair.flags &
+            (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+        {
+            // There is no way to send correct event after shapes or bodies were removed.
+            // User logic should listen to removal events to be aware of such situations.
+            continue;
+        }
+
+        const auto *triggerShape = static_cast<const CollisionShapeComponent *> (pair.triggerShape->userData);
+        const auto *intruderShape = static_cast<const CollisionShapeComponent *> (pair.otherShape->userData);
+
+#define FILL_EVENT                                                                                                     \
+    event->triggerObjectId = triggerShape->objectId;                                                                   \
+    event->triggerShapeId = triggerShape->shapeId;                                                                     \
+    event->intruderObjectId = intruderShape->objectId;                                                                 \
+    event->intruderShapeId = intruderShape->shapeId;
+
+        if (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+        {
+            auto cursor = insertTriggerEnteredEvents.Execute ();
+            auto *event = static_cast<TriggerEnteredEvent *> (++cursor);
+            FILL_EVENT
+        }
+        else
+        {
+            assert (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST);
+            auto cursor = insertTriggerExitedEvents.Execute ();
+            auto *event = static_cast<TriggerExitedEvent *> (++cursor);
+            FILL_EVENT
+        }
+
+#undef FILL_EVENT
+    }
+}
+
+void PhysicsSimulationExecutor::onAdvance (const physx::PxRigidBody *const * /*unused*/,
+                                           const physx::PxTransform * /*unused*/,
+                                           const physx::PxU32 /*unused*/)
+{
+    // No events right now.
 }
 
 void PhysicsSimulationExecutor::Execute () noexcept
@@ -212,15 +417,15 @@ void PhysicsSimulationExecutor::Execute () noexcept
     ApplyShapeAttributesChanges ();
     DetachRemovedShapes ();
 
-    // TODO: Rigid body addition.
-    // TODO: Rigid body changes.
-    // TODO: Rigid body removal.
+    InitializeBodies (physicsWorld);
+    ApplyShapeAttributesChanges ();
+    ReleaseRemovedBodies ();
 
     RecalculateBodyMasses ();
 
-    // TODO: Game -> PhysX transform and velocity sync.
-    // TODO: Simulation.
-    // TODO: PhysX -> Game transform and velocity sync.
+    SyncBodiesWithOutsideManipulations ();
+    ExecuteSimulation (physicsWorld);
+    SyncKinematicAndDynamicBodies ();
 }
 
 void PhysicsSimulationExecutor::EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld) noexcept
@@ -255,7 +460,9 @@ void PhysicsSimulationExecutor::EnsurePhysicsWorldReady (PhysicsWorldSingleton *
         sceneDescriptor.gravity = {_physicsWorld->gravity.x, _physicsWorld->gravity.y, _physicsWorld->gravity.z};
         sceneDescriptor.cpuDispatcher = pxWorld.dispatcher;
         sceneDescriptor.filterShader = physx::PxDefaultSimulationFilterShader;
+
         pxWorld.scene = pxWorld.physics->createScene (sceneDescriptor);
+        pxWorld.scene->setSimulationEventCallback (this);
     }
 }
 
@@ -509,7 +716,6 @@ void PhysicsSimulationExecutor::ApplyShapeGeometryChanges () noexcept
         }
 
         Container::AddUnique (objectsWithInvalidMasses, shape->objectId);
-        auto *pxShape = static_cast<physx::PxShape *> (shape->implementationHandle);
         auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
         const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
 
@@ -524,26 +730,7 @@ void PhysicsSimulationExecutor::ApplyShapeGeometryChanges () noexcept
         }
 
         const Math::Vector3f worldScale = transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
-        assert (pxShape->getGeometryType () == ToPxGeometryType (shape->geometry.type));
-
-        switch (shape->geometry.type)
-        {
-        case CollisionGeometryType::BOX:
-            pxShape->setGeometry (physx::PxBoxGeometry {shape->geometry.boxHalfExtents.x * worldScale.x,
-                                                        shape->geometry.boxHalfExtents.y * worldScale.y,
-                                                        shape->geometry.boxHalfExtents.z * worldScale.z});
-            break;
-
-        case CollisionGeometryType::SPHERE:
-            pxShape->setGeometry (physx::PxSphereGeometry {shape->geometry.sphereRadius * worldScale.x});
-            break;
-
-        case CollisionGeometryType::CAPSULE:
-            pxShape->setGeometry (physx::PxCapsuleGeometry {shape->geometry.capsuleRadius * worldScale.x,
-                                                            shape->geometry.capsuleHalfHeight * worldScale.x});
-            break;
-        }
-
+        UpdateShapeGeometry (shape, worldScale);
         UpdateShapeLocalPose (shape, worldScale);
         ENSURE_TRANSFORM_UNIQUENESS
         ENSURE_SHAPE_UNIQUENESS
@@ -556,8 +743,8 @@ void PhysicsSimulationExecutor::ApplyShapeAttributesChanges () noexcept
          const auto *event = static_cast<const CollisionShapeComponentGeometryChangedEvent *> (*eventCursor);
          ++eventCursor)
     {
-        auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
-        if (auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor))
+        auto shapeCursor = fetchShapeByShapeId.Execute (&event->shapeId);
+        if (const auto *shape = static_cast<const CollisionShapeComponent *> (*shapeCursor))
         {
             static_cast<physx::PxShape *> (shape->implementationHandle)->setFlags (CalculateShapeFlags (shape));
             UpdateShapeFilter (shape);
@@ -583,6 +770,121 @@ void PhysicsSimulationExecutor::DetachRemovedShapes () noexcept
         else
         {
             // Body was removed too.
+        }
+    }
+}
+
+void PhysicsSimulationExecutor::InitializeBodies (PhysicsWorldSingleton *_physicsWorld) noexcept
+{
+    auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+    for (auto eventCursor = fetchBodyAddedEvents.Execute ();
+         const auto *event = static_cast<const RigidBodyComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    {
+        auto bodyCursor = modifyBodyByObjectId.Execute (&event->objectId);
+        auto *body = static_cast<RigidBodyComponent *> (*bodyCursor);
+
+        if (!body)
+        {
+            // Body is already removed.
+            continue;
+        }
+
+        auto transformCursor = fetchTransformByObjectId.Execute (&event->objectId);
+        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            EMERGENCE_LOG (ERROR,
+                           "PhysicsSimulationExecutor: Unable to initialize RigidBodyComponent on object with id ",
+                           body->objectId, ", because it has no Transform3dComponent!");
+
+            ~bodyCursor;
+            continue;
+        }
+
+        const Math::Transform3d &logicalTransform = transform->GetLogicalWorldTransform (transformWorldAccessor);
+        const physx::PxTransform pxTransform {
+            {logicalTransform.translation.x, logicalTransform.translation.y, logicalTransform.translation.z},
+            {logicalTransform.rotation.x, logicalTransform.rotation.y, logicalTransform.rotation.z,
+             logicalTransform.rotation.w}};
+
+        physx::PxRigidActor *pxActor = nullptr;
+        switch (body->type)
+        {
+        case RigidBodyType::STATIC:
+        {
+            pxActor = pxWorld.physics->createRigidStatic (pxTransform);
+            break;
+        }
+
+        case RigidBodyType::KINEMATIC:
+        case RigidBodyType::DYNAMIC:
+        {
+            physx::PxRigidDynamic *pxBody = pxWorld.physics->createRigidDynamic (pxTransform);
+            pxActor = pxBody;
+
+            pxBody->setLinearDamping (body->linearDamping);
+            pxBody->setAngularDamping (body->angularDamping);
+            pxBody->setRigidBodyFlag (physx::PxRigidBodyFlag::eENABLE_CCD, body->continuousCollisionDetection);
+            break;
+        }
+        }
+
+        body->implementationHandle = pxActor;
+        pxActor->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, !body->affectedByGravity);
+        pxActor->userData = body;
+
+        for (auto shapeCursor = modifyShapeByObjectId.Execute (&body->objectId);
+             auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor); ++shapeCursor)
+        {
+            pxActor->attachShape (*static_cast<physx::PxShape *> (shape->implementationHandle));
+        }
+
+        // We can calculate body mass more effectively here, but there is no
+        // sense to add complexity, because body addition is not common event.
+        Container::AddUnique (objectsWithInvalidMasses, body->objectId);
+
+        ENSURE_TRANSFORM_UNIQUENESS
+        ENSURE_BODY_UNIQUENESS
+    }
+}
+
+void PhysicsSimulationExecutor::ApplyBodyAttributesChanges () noexcept
+{
+    for (auto eventCursor = fetchBodyAttributesChangedEvents.Execute ();
+         const auto *event = static_cast<const RigidBodyComponentAttributesChangedEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        auto bodyCursor = modifyBodyByObjectId.Execute (&event->objectId);
+        if (auto *body = static_cast<RigidBodyComponent *> (*bodyCursor))
+        {
+            auto *pxActor = static_cast<physx::PxRigidActor *> (body->implementationHandle);
+            pxActor->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, !body->affectedByGravity);
+
+            if (auto *pxBody = dynamic_cast<physx::PxRigidBody *> (pxActor))
+            {
+                pxBody->setLinearDamping (body->linearDamping);
+                pxBody->setAngularDamping (body->angularDamping);
+                pxBody->setRigidBodyFlag (physx::PxRigidBodyFlag::eENABLE_CCD, body->continuousCollisionDetection);
+            }
+
+            ENSURE_BODY_UNIQUENESS
+        }
+        else
+        {
+            // Body is already removed.
+        }
+    }
+}
+
+void PhysicsSimulationExecutor::ReleaseRemovedBodies () noexcept
+{
+    for (auto eventCursor = fetchBodyRemovedEvents.Execute ();
+         const auto *event = static_cast<const RigidBodyComponentRemovedEvent *> (*eventCursor); ++eventCursor)
+    {
+        if (auto *pxActor = static_cast<physx::PxRigidActor *> (event->implementationHandle))
+        {
+            pxActor->release ();
         }
     }
 }
@@ -672,6 +974,110 @@ void PhysicsSimulationExecutor::RecalculateBodyMasses () noexcept
     }
 }
 
+void PhysicsSimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
+{
+    for (auto bodyCursor = modifyBodyWithOutsideManipulations.Execute ();
+         auto *body = static_cast<RigidBodyComponent *> (*bodyCursor); ++bodyCursor)
+    {
+        auto *pxActor = static_cast<physx::PxRigidActor *> (body->implementationHandle);
+        auto transformCursor = fetchTransformByObjectId.Execute (&body->objectId);
+        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            // Transformless body must've been removed by other routines.
+            assert (false);
+            continue;
+        }
+
+        const Math::Transform3d &logicalTransform = transform->GetLogicalWorldTransform (transformWorldAccessor);
+        pxActor->setGlobalPose (
+            {{logicalTransform.translation.x, logicalTransform.translation.y, logicalTransform.translation.z},
+             {logicalTransform.rotation.x, logicalTransform.rotation.y, logicalTransform.rotation.z,
+              logicalTransform.rotation.w}});
+
+        if (auto *pxBody = dynamic_cast<physx::PxRigidBody *> (pxActor))
+        {
+            pxBody->setLinearVelocity ({body->linearVelocity.x, body->linearVelocity.y, body->linearVelocity.z});
+            pxBody->setAngularVelocity ({body->angularVelocity.x, body->angularVelocity.y, body->angularVelocity.z});
+
+            if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
+            {
+                pxBody->addForce (
+                    {body->additiveLinearImpulse.x, body->additiveLinearImpulse.y, body->additiveLinearImpulse.z},
+                    physx::PxForceMode::eIMPULSE);
+            }
+
+            if (!Math::NearlyEqual (body->additiveAngularImpulse, Math::Vector3f::ZERO))
+            {
+                pxBody->addTorque (
+                    {body->additiveAngularImpulse.x, body->additiveAngularImpulse.y, body->additiveAngularImpulse.z},
+                    physx::PxForceMode::eIMPULSE);
+            }
+        }
+
+        for (auto shapeCursor = fetchShapeByObjectId.Execute (&body->objectId);
+             const auto *shape = static_cast<const CollisionShapeComponent *> (*shapeCursor); ++shapeCursor)
+        {
+            UpdateShapeGeometry (shape, logicalTransform.scale);
+            UpdateShapeLocalPose (shape, logicalTransform.scale);
+        }
+    }
+}
+
+void PhysicsSimulationExecutor::ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld) noexcept
+{
+    auto timeCursor = fetchTime.Execute ();
+    const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
+
+    auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+    // TODO: Make use of scratch buffer?
+    pxWorld.scene->simulate (time->fixedDurationS);
+    pxWorld.scene->fetchResults (true);
+}
+
+void PhysicsSimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
+{
+    auto sync = [this] (RigidBodyComponent *_body)
+    {
+        auto *pxBody = static_cast<physx::PxRigidBody *> (_body->implementationHandle);
+        const physx::PxVec3 &pxLinearVelocity = pxBody->getLinearVelocity ();
+        const physx::PxVec3 &pxAngularVelocity = pxBody->getAngularVelocity ();
+
+        _body->linearVelocity = {pxLinearVelocity.x, pxLinearVelocity.y, pxLinearVelocity.z};
+        _body->angularVelocity = {pxAngularVelocity.x, pxAngularVelocity.y, pxAngularVelocity.z};
+
+        _body->additiveLinearImpulse = Math::Vector3f::ZERO;
+        _body->additiveAngularImpulse = Math::Vector3f::ZERO;
+
+        auto transformCursor = modifyTransformByObjectId.Execute (&_body->objectId);
+        if (auto *transform = static_cast<Transform::Transform3dComponent *> (*transformCursor))
+        {
+            const physx::PxTransform &pxTransform = pxBody->getGlobalPose ();
+            const Math::Vector3f &scale = transform->GetLogicalLocalTransform ().scale;
+
+            // TODO: Currently, we assume that non-static bodies are attached to transform root elements only.
+            transform->SetLogicalLocalTransform ({{pxTransform.p.x, pxTransform.p.y, pxTransform.p.z},
+                                                  {pxTransform.q.x, pxTransform.q.y, pxTransform.q.z, pxTransform.q.w},
+                                                  scale});
+
+            ENSURE_TRANSFORM_UNIQUENESS
+        }
+    };
+
+    for (auto kinematicCursor = modifyKinematicBody.Execute ();
+         auto *body = static_cast<RigidBodyComponent *> (*kinematicCursor); ++kinematicCursor)
+    {
+        sync (body);
+    }
+
+    for (auto dynamicCursor = modifyDynamicBody.Execute ();
+         auto *body = static_cast<RigidBodyComponent *> (*dynamicCursor); ++dynamicCursor)
+    {
+        sync (body);
+    }
+}
+
 physx::PxShapeFlags PhysicsSimulationExecutor::CalculateShapeFlags (const CollisionShapeComponent *_shape) noexcept
 {
     physx::PxShapeFlags flags = physx::PxShapeFlag::eVISUALIZATION;
@@ -710,7 +1116,32 @@ physx::PxGeometryType::Enum PhysicsSimulationExecutor::ToPxGeometryType (Collisi
     return physx::PxGeometryType::eINVALID;
 }
 
-void PhysicsSimulationExecutor::UpdateShapeLocalPose (CollisionShapeComponent *_shape,
+void PhysicsSimulationExecutor::UpdateShapeGeometry (const CollisionShapeComponent *_shape,
+                                                     const Math::Vector3f &_worldScale) noexcept
+{
+    auto *pxShape = static_cast<physx::PxShape *> (_shape->implementationHandle);
+    assert (pxShape->getGeometryType () == ToPxGeometryType (_shape->geometry.type));
+
+    switch (_shape->geometry.type)
+    {
+    case CollisionGeometryType::BOX:
+        pxShape->setGeometry (physx::PxBoxGeometry {_shape->geometry.boxHalfExtents.x * _worldScale.x,
+                                                    _shape->geometry.boxHalfExtents.y * _worldScale.y,
+                                                    _shape->geometry.boxHalfExtents.z * _worldScale.z});
+        break;
+
+    case CollisionGeometryType::SPHERE:
+        pxShape->setGeometry (physx::PxSphereGeometry {_shape->geometry.sphereRadius * _worldScale.x});
+        break;
+
+    case CollisionGeometryType::CAPSULE:
+        pxShape->setGeometry (physx::PxCapsuleGeometry {_shape->geometry.capsuleRadius * _worldScale.x,
+                                                        _shape->geometry.capsuleHalfHeight * _worldScale.x});
+        break;
+    }
+}
+
+void PhysicsSimulationExecutor::UpdateShapeLocalPose (const CollisionShapeComponent *_shape,
                                                       const Math::Vector3f &_worldScale) noexcept
 {
     auto *pxShape = static_cast<physx::PxShape *> (_shape->implementationHandle);
@@ -723,7 +1154,7 @@ void PhysicsSimulationExecutor::UpdateShapeLocalPose (CollisionShapeComponent *_
         {localTransform.rotation.x, localTransform.rotation.y, localTransform.rotation.z, localTransform.rotation.w}});
 }
 
-void PhysicsSimulationExecutor::UpdateShapeFilter (CollisionShapeComponent *_shape) noexcept
+void PhysicsSimulationExecutor::UpdateShapeFilter (const CollisionShapeComponent *_shape) noexcept
 {
     auto *pxShape = static_cast<physx::PxShape *> (_shape->implementationHandle);
     const physx::PxFilterData filterData {static_cast<uint32_t> (_shape->collisionGroup), 0u, 0u, 0u};
@@ -771,6 +1202,8 @@ void PhysicsSimulationExecutor::ConstructPxShape (CollisionShapeComponent *_shap
     }
 
     _shape->implementationHandle = pxShape;
+    pxShape->userData = _shape;
+
     UpdateShapeLocalPose (_shape, _worldScale);
     UpdateShapeFilter (_shape);
 }
