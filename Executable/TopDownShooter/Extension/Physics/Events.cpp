@@ -10,7 +10,8 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedEvent, UNIQUE_STR
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialChangedEvent, UNIQUE_STRING, id)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialRemovedEvent, UNIQUE_STRING, id)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
+    DynamicsMaterialRemovedEvent, UNIQUE_STRING, id, POINTER_AS_REGULAR, implementationHandle)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedEvent, REGULAR, shapeId)
 
@@ -42,8 +43,15 @@ EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (ContactFoundEvent,
                                           REGULAR,
                                           initialContact)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
-    ContactPersistsEvent, REGULAR, firstObjectId, REGULAR, firstShapeId, REGULAR, secondObjectId, REGULAR, secondShapeId)
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (ContactPersistsEvent,
+                                          REGULAR,
+                                          firstObjectId,
+                                          REGULAR,
+                                          firstShapeId,
+                                          REGULAR,
+                                          secondObjectId,
+                                          REGULAR,
+                                          secondShapeId)
 
 EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (ContactLostEvent,
                                           REGULAR,
@@ -99,7 +107,11 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
 
     _registrar.OnRemoveEvent ({{DynamicsMaterialRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
                                DynamicsMaterial::Reflect ().mapping,
-                               {{DynamicsMaterial::Reflect ().id, DynamicsMaterialRemovedEvent::Reflect ().id}}});
+                               {
+                                   {DynamicsMaterial::Reflect ().id, DynamicsMaterialRemovedEvent::Reflect ().id},
+                                   {DynamicsMaterial::Reflect ().implementationHandle,
+                                    DynamicsMaterialRemovedEvent::Reflect ().implementationHandle},
+                               }});
 
     // CollisionShapeComponent
 

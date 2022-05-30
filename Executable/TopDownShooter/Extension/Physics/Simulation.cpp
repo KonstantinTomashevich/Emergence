@@ -38,7 +38,7 @@ namespace Emergence::Physics::Simulation
 #    define ENSURE_UNIQUENESS(...)
 #else
 #    define ENSURE_UNIQUENESS(Cursor, ...)                                                                             \
-        if (!*++Cursor)                                                                                                \
+        if (*++Cursor)                                                                                                 \
         {                                                                                                              \
             EMERGENCE_LOG (ERROR, __VA_ARGS__);                                                                        \
         }
@@ -140,21 +140,9 @@ private:
                                   const physx::PxMaterial &_pxMaterial,
                                   const Math::Vector3f &_worldScale) noexcept;
 
-    Celerity::FetchSingletonQuery fetchTime;
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
-
-    Celerity::FetchValueQuery fetchMaterialById;
-    Celerity::ModifyValueQuery modifyMaterialById;
-
     Celerity::FetchSequenceQuery fetchMaterialAddedEvents;
     Celerity::FetchSequenceQuery fetchMaterialChangedEvents;
     Celerity::FetchSequenceQuery fetchMaterialRemovedEvents;
-
-    Celerity::FetchValueQuery fetchShapeByShapeId;
-    Celerity::ModifyValueQuery modifyShapeByShapeId;
-    Celerity::FetchValueQuery fetchShapeByObjectId;
-    Celerity::ModifyValueQuery modifyShapeByObjectId;
-    Celerity::ModifyValueQuery modifyShapeByMaterialId;
 
     Celerity::FetchSequenceQuery fetchShapeAddedEvents;
     Celerity::FetchSequenceQuery fetchShapeMaterialChangedEvents;
@@ -162,20 +150,32 @@ private:
     Celerity::FetchSequenceQuery fetchShapeAttributesChangedEvents;
     Celerity::FetchSequenceQuery fetchShapeRemovedEvents;
 
+    Celerity::FetchSequenceQuery fetchBodyAddedEvents;
+    Celerity::FetchSequenceQuery fetchBodyAttributesChangedEvents;
+    Celerity::FetchSequenceQuery fetchBodyRemovedEvents;
+
+    Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
+
+    Celerity::FetchSingletonQuery fetchTime;
+    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+
+    Celerity::FetchValueQuery fetchMaterialById;
+    Celerity::ModifyValueQuery modifyMaterialById;
+
+    Celerity::FetchValueQuery fetchShapeByShapeId;
+    Celerity::ModifyValueQuery modifyShapeByShapeId;
+    Celerity::FetchValueQuery fetchShapeByObjectId;
+    Celerity::ModifyValueQuery modifyShapeByObjectId;
+    Celerity::ModifyValueQuery modifyShapeByMaterialId;
+
     Celerity::ModifyValueQuery modifyBodyByObjectId;
     Celerity::ModifySignalQuery modifyBodyWithOutsideManipulations;
     Celerity::ModifySignalQuery modifyKinematicBody;
     Celerity::ModifySignalQuery modifyDynamicBody;
 
-    Celerity::FetchSequenceQuery fetchBodyAddedEvents;
-    Celerity::FetchSequenceQuery fetchBodyAttributesChangedEvents;
-    Celerity::FetchSequenceQuery fetchBodyRemovedEvents;
-
     Celerity::FetchValueQuery fetchTransformByObjectId;
     Celerity::ModifyValueQuery modifyTransformByObjectId;
     Transform::Transform3dWorldAccessor transformWorldAccessor;
-
-    Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 
     Celerity::InsertShortTermQuery insertContactFoundEvents;
     Celerity::InsertShortTermQuery insertContactPersistsEvents;
@@ -193,17 +193,34 @@ private:
 };
 
 PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.FetchSingleton (Celerity::TimeSingleton::Reflect ().mapping)),
+    : fetchMaterialAddedEvents (_constructor.FetchSequence (DynamicsMaterialAddedEvent::Reflect ().mapping)),
+      fetchMaterialChangedEvents (_constructor.FetchSequence (DynamicsMaterialChangedEvent::Reflect ().mapping)),
+      fetchMaterialRemovedEvents (_constructor.FetchSequence (DynamicsMaterialRemovedEvent::Reflect ().mapping)),
+
+      fetchShapeAddedEvents (_constructor.FetchSequence (CollisionShapeComponentAddedEvent::Reflect ().mapping)),
+      fetchShapeMaterialChangedEvents (
+          _constructor.FetchSequence (CollisionShapeComponentMaterialChangedEvent::Reflect ().mapping)),
+      fetchShapeGeometryChangedEvents (
+          _constructor.FetchSequence (CollisionShapeComponentGeometryChangedEvent::Reflect ().mapping)),
+      fetchShapeAttributesChangedEvents (
+          _constructor.FetchSequence (CollisionShapeComponentAttributesChangedEvent::Reflect ().mapping)),
+      fetchShapeRemovedEvents (_constructor.FetchSequence (CollisionShapeComponentRemovedEvent::Reflect ().mapping)),
+
+      fetchBodyAddedEvents (_constructor.FetchSequence (RigidBodyComponentAddedEvent::Reflect ().mapping)),
+      fetchBodyAttributesChangedEvents (
+          _constructor.FetchSequence (RigidBodyComponentAttributesChangedEvent::Reflect ().mapping)),
+      fetchBodyRemovedEvents (_constructor.FetchSequence (RigidBodyComponentRemovedEvent::Reflect ().mapping)),
+
+      fetchTransformRemovedEvents (
+          _constructor.FetchSequence (Transform::Transform3dComponentRemovedFixedEvent::Reflect ().mapping)),
+
+      fetchTime (_constructor.FetchSingleton (Celerity::TimeSingleton::Reflect ().mapping)),
       modifyPhysicsWorld (_constructor.ModifySingleton (PhysicsWorldSingleton::Reflect ().mapping)),
 
       fetchMaterialById (
           _constructor.FetchValue (DynamicsMaterial::Reflect ().mapping, {DynamicsMaterial::Reflect ().id})),
       modifyMaterialById (
           _constructor.ModifyValue (DynamicsMaterial::Reflect ().mapping, {DynamicsMaterial::Reflect ().id})),
-
-      fetchMaterialAddedEvents (_constructor.FetchSequence (DynamicsMaterialAddedEvent::Reflect ().mapping)),
-      fetchMaterialChangedEvents (_constructor.FetchSequence (DynamicsMaterialChangedEvent::Reflect ().mapping)),
-      fetchMaterialRemovedEvents (_constructor.FetchSequence (DynamicsMaterialRemovedEvent::Reflect ().mapping)),
 
       fetchShapeByShapeId (_constructor.FetchValue (CollisionShapeComponent::Reflect ().mapping,
                                                     {CollisionShapeComponent::Reflect ().shapeId})),
@@ -215,15 +232,6 @@ PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor 
                                                        {CollisionShapeComponent::Reflect ().objectId})),
       modifyShapeByMaterialId (_constructor.ModifyValue (CollisionShapeComponent::Reflect ().mapping,
                                                          {CollisionShapeComponent::Reflect ().materialId})),
-
-      fetchShapeAddedEvents (_constructor.FetchSequence (CollisionShapeComponentAddedEvent::Reflect ().mapping)),
-      fetchShapeMaterialChangedEvents (
-          _constructor.FetchSequence (CollisionShapeComponentMaterialChangedEvent::Reflect ().mapping)),
-      fetchShapeGeometryChangedEvents (
-          _constructor.FetchSequence (CollisionShapeComponentGeometryChangedEvent::Reflect ().mapping)),
-      fetchShapeAttributesChangedEvents (
-          _constructor.FetchSequence (CollisionShapeComponentAttributesChangedEvent::Reflect ().mapping)),
-      fetchShapeRemovedEvents (_constructor.FetchSequence (CollisionShapeComponentRemovedEvent::Reflect ().mapping)),
 
       modifyBodyByObjectId (
           _constructor.ModifyValue (RigidBodyComponent::Reflect ().mapping, {RigidBodyComponent::Reflect ().objectId})),
@@ -240,19 +248,11 @@ PhysicsSimulationExecutor::PhysicsSimulationExecutor (Celerity::TaskConstructor 
                                      RigidBodyComponent::Reflect ().type,
                                      array_cast<RigidBodyType, sizeof (uint64_t)> (RigidBodyType::DYNAMIC))),
 
-      fetchBodyAddedEvents (_constructor.FetchSequence (RigidBodyComponentAddedEvent::Reflect ().mapping)),
-      fetchBodyAttributesChangedEvents (
-          _constructor.FetchSequence (RigidBodyComponentAttributesChangedEvent::Reflect ().mapping)),
-      fetchBodyRemovedEvents (_constructor.FetchSequence (RigidBodyComponentRemovedEvent::Reflect ().mapping)),
-
       fetchTransformByObjectId (_constructor.FetchValue (Transform::Transform3dComponent::Reflect ().mapping,
                                                          {Transform::Transform3dComponent::Reflect ().objectId})),
       modifyTransformByObjectId (_constructor.ModifyValue (Transform::Transform3dComponent::Reflect ().mapping,
                                                            {Transform::Transform3dComponent::Reflect ().objectId})),
       transformWorldAccessor (_constructor),
-
-      fetchTransformRemovedEvents (
-          _constructor.FetchSequence (Transform::Transform3dComponentRemovedFixedEvent::Reflect ().mapping)),
 
       insertContactFoundEvents (_constructor.InsertShortTerm (ContactFoundEvent::Reflect ().mapping)),
       insertContactPersistsEvents (_constructor.InsertShortTerm (ContactPersistsEvent::Reflect ().mapping)),
@@ -596,10 +596,19 @@ void PhysicsSimulationExecutor::ApplyMaterialDestruction () noexcept
     for (auto eventCursor = fetchMaterialRemovedEvents.Execute ();
          const auto *event = static_cast<const DynamicsMaterialRemovedEvent *> (*eventCursor); ++eventCursor)
     {
+        auto *pxMaterial = static_cast<physx::PxMaterial *> (event->implementationHandle);
         for (auto shapeCursor = modifyShapeByMaterialId.Execute (&event->id); *shapeCursor;)
         {
             // Shapes can not exist without material, therefore we are cleaning them up.
             ~shapeCursor;
+
+            // TODO: Shape removal event will not be sent, because we can not consume and produce events at the
+            //       same time. Fix the code that relies on such behaviour.
+        }
+
+        if (pxMaterial)
+        {
+            pxMaterial->release ();
         }
     }
 }
@@ -759,17 +768,23 @@ void PhysicsSimulationExecutor::DetachRemovedShapes () noexcept
     for (auto eventCursor = fetchShapeRemovedEvents.Execute ();
          const auto *event = static_cast<const CollisionShapeComponentRemovedEvent *> (*eventCursor); ++eventCursor)
     {
+        auto *pxShape = static_cast<physx::PxShape *> (event->implementationHandle);
         auto bodyCursor = modifyBodyByObjectId.Execute (&event->objectId);
+
         if (auto *body = static_cast<RigidBodyComponent *> (*bodyCursor))
         {
-            static_cast<physx::PxRigidBody *> (body->implementationHandle)
-                ->detachShape (*static_cast<physx::PxShape *> (const_cast<void *> (event->implementationHandle)));
+            static_cast<physx::PxRigidBody *> (body->implementationHandle)->detachShape (*pxShape);
             Container::AddUnique (objectsWithInvalidMasses, body->objectId);
             ENSURE_BODY_UNIQUENESS
         }
         else
         {
             // Body was removed too.
+        }
+
+        if (pxShape)
+        {
+            pxShape->release ();
         }
     }
 }

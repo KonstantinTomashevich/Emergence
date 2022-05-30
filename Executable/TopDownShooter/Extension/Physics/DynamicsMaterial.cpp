@@ -8,13 +8,7 @@ namespace Emergence::Physics
 {
 DynamicsMaterial::DynamicsMaterial () noexcept = default;
 
-DynamicsMaterial::~DynamicsMaterial () noexcept
-{
-    if (implementationHandle)
-    {
-        static_cast<physx::PxMaterial *> (implementationHandle)->release ();
-    }
-}
+DynamicsMaterial::~DynamicsMaterial () noexcept = default;
 
 const DynamicsMaterial::Reflection &DynamicsMaterial::Reflect () noexcept
 {

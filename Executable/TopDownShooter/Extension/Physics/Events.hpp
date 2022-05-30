@@ -12,7 +12,8 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialAddedEvent, Memory::Uniqu
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialChangedEvent, Memory::UniqueString, id);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialRemovedEvent, Memory::UniqueString, id);
+EMERGENCE_CELERITY_EVENT2_DECLARATION (
+    DynamicsMaterialRemovedEvent, Memory::UniqueString, id, void *, implementationHandle);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedEvent, Celerity::UniqueId, shapeId);
 

@@ -8,8 +8,6 @@ namespace Emergence::Physics
 {
 RigidBodyComponent::RigidBodyComponent () noexcept = default;
 
-// We can not release bodies from destructor, because it will affect shapes and might cause race condition.
-// Therefore, we are deleting these implementation handles inside simulation callback.
 RigidBodyComponent::~RigidBodyComponent () noexcept = default;
 
 const RigidBodyComponent::Reflection &RigidBodyComponent::Reflect () noexcept

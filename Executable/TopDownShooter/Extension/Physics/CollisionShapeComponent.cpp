@@ -9,13 +9,7 @@ namespace Emergence::Physics
 {
 CollisionShapeComponent::CollisionShapeComponent () noexcept = default;
 
-CollisionShapeComponent::~CollisionShapeComponent () noexcept
-{
-    if (implementationHandle)
-    {
-        static_cast<physx::PxShape *> (implementationHandle)->release ();
-    }
-}
+CollisionShapeComponent::~CollisionShapeComponent () noexcept = default;
 
 const CollisionShapeComponent::Reflection &CollisionShapeComponent::Reflect () noexcept
 {
