@@ -1,10 +1,10 @@
-#include <Celerity/Query/ModifyDescendingRangeQuery.hpp>
+#include <Celerity/Query/RemoveDescendingRangeQuery.hpp>
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (DescendingRangeQuery)
+EMERGENCE_CELERITY_REMOVE_QUERY_WRAPPER_IMPLEMENTATION (DescendingRangeQuery)
 
-ModifyDescendingRangeQuery::Cursor ModifyDescendingRangeQuery::Execute (Warehouse::Bound _min,
+RemoveDescendingRangeQuery::Cursor RemoveDescendingRangeQuery::Execute (Warehouse::Bound _min,
                                                                         Warehouse::Bound _max) noexcept
 {
     return Cursor {source.Execute (_min, _max), eventsOnRemove, changeTracker};

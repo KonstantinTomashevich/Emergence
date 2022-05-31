@@ -6,5 +6,5 @@
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_DECLARATION (ValueQuery, Warehouse::ValueSequence _values);
+EMERGENCE_CELERITY_REMOVE_QUERY_WRAPPER_DECLARATION (ValueQuery, Warehouse::ValueSequence _values);
 } // namespace Emergence::Celerity

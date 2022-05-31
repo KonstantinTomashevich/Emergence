@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ModifyShapeIntersectionQuery)
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ShapeIntersectionQuery)
 
 ModifyShapeIntersectionQuery::Cursor ModifyShapeIntersectionQuery::Execute (Warehouse::Shape _shape) noexcept
 {

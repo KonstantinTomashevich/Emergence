@@ -1,10 +1,10 @@
-#include <Celerity/Query/ModifyRayIntersectionQuery.hpp>
+#include <Celerity/Query/RemoveRayIntersectionQuery.hpp>
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (RayIntersectionQuery)
+EMERGENCE_CELERITY_REMOVE_QUERY_WRAPPER_IMPLEMENTATION (RayIntersectionQuery)
 
-ModifyRayIntersectionQuery::Cursor ModifyRayIntersectionQuery::Execute (Warehouse::Ray _ray,
+RemoveRayIntersectionQuery::Cursor RemoveRayIntersectionQuery::Execute (Warehouse::Ray _ray,
                                                                         float _maxDistance) noexcept
 {
     return Cursor {source.Execute (_ray, _maxDistance), eventsOnRemove, changeTracker};
