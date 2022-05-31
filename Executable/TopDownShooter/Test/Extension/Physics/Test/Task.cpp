@@ -85,12 +85,23 @@ void Configurator::Execute ()
                     auto cursor = insertMaterial.Execute ();
                     auto *material = static_cast<DynamicsMaterial *> (++cursor);
 
-                    material->id = _task.id;
-                    material->dynamicFriction = _task.dynamicFriction;
-                    material->staticFriction = _task.staticFriction;
-                    material->enableFriction = _task.enableFriction;
-                    material->restitution = _task.restitution;
-                    material->density = _task.density;
+#define FILL_MATERIAL                                                                                                  \
+    material->id = _task.id;                                                                                           \
+    material->dynamicFriction = _task.dynamicFriction;                                                                 \
+    material->staticFriction = _task.staticFriction;                                                                   \
+    material->enableFriction = _task.enableFriction;                                                                   \
+    material->restitution = _task.restitution;                                                                         \
+    material->density = _task.density
+
+                    FILL_MATERIAL;
+                }
+                else if constexpr (std::is_same_v<Type, ConfiguratorTasks::UpdateDynamicsMaterial>)
+                {
+                    LOG ("Updating DynamicsMaterial with id \"", _task.id, "\".");
+                    auto cursor = modifyMaterialById.Execute (&_task.id);
+                    auto *material = static_cast<DynamicsMaterial *> (*cursor);
+                    REQUIRE (material);
+                    FILL_MATERIAL;
                 }
                 else if constexpr (std::is_same_v<Type, ConfiguratorTasks::RemoveDynamicsMaterial>)
                 {
@@ -107,6 +118,14 @@ void Configurator::Execute ()
                     transform->SetObjectId (_task.objectId);
                     transform->SetLogicalLocalTransform (_task.transform);
                 }
+                else if constexpr (std::is_same_v<Type, ConfiguratorTasks::UpdateTransform>)
+                {
+                    LOG ("Updating Transform3dComponent on object with id ", _task.objectId, ".");
+                    auto cursor = modifyTransformById.Execute (&_task.objectId);
+                    auto *transform = static_cast<Transform::Transform3dComponent *> (*cursor);
+                    REQUIRE (transform);
+                    transform->SetLogicalLocalTransform (_task.transform);
+                }
                 else if constexpr (std::is_same_v<Type, ConfiguratorTasks::RemoveTransform>)
                 {
                     LOG ("Removing Transform3dComponent from object with id ", _task.objectId, ".");
@@ -120,17 +139,29 @@ void Configurator::Execute ()
                     auto cursor = insertBody.Execute ();
                     auto *body = static_cast<RigidBodyComponent *> (++cursor);
 
-                    body->objectId = _task.objectId;
-                    body->type = _task.type;
-                    body->linearDamping = _task.linearDamping;
-                    body->angularDamping = _task.angularDamping;
+#define FILL_BODY                                                                                                      \
+    body->objectId = _task.objectId;                                                                                   \
+    body->type = _task.type;                                                                                           \
+    body->linearDamping = _task.linearDamping;                                                                         \
+    body->angularDamping = _task.angularDamping;                                                                       \
+                                                                                                                       \
+    body->continuousCollisionDetection = _task.continuousCollisionDetection;                                           \
+    body->affectedByGravity = _task.affectedByGravity;                                                                 \
+    body->manipulatedOutsideOfSimulation = _task.manipulatedOutsideOfSimulation;                                       \
+    body->sendContactEvents = _task.sendContactEvents;                                                                 \
+    body->linearVelocity = _task.linearVelocity;                                                                       \
+    body->angularVelocity = _task.angularVelocity
 
-                    body->continuousCollisionDetection = _task.continuousCollisionDetection;
-                    body->affectedByGravity = _task.affectedByGravity;
-                    body->manipulatedOutsideOfSimulation = _task.manipulatedOutsideOfSimulation;
-                    body->sendContactEvents = _task.sendContactEvents;
-                    body->linearVelocity = _task.linearVelocity;
-                    body->angularVelocity = _task.angularVelocity;
+                    FILL_BODY;
+                }
+                else if constexpr (std::is_same_v<Type, ConfiguratorTasks::UpdateRigidBody>)
+                {
+                    LOG ("Update RigidBodyComponent on object with id ", _task.objectId, ".");
+                    auto cursor = modifyBodyById.Execute (&_task.objectId);
+                    auto *body = static_cast<RigidBodyComponent *> (*cursor);
+                    REQUIRE (body);
+                    FILL_BODY;
+#undef FILL_BODY
                 }
                 else if constexpr (std::is_same_v<Type, ConfiguratorTasks::RemoveRigidBody>)
                 {
@@ -147,17 +178,32 @@ void Configurator::Execute ()
                     auto cursor = insertShape.Execute ();
                     auto *shape = static_cast<CollisionShapeComponent *> (++cursor);
 
-                    shape->shapeId = _task.shapeId;
-                    shape->objectId = _task.objectId;
-                    shape->materialId = _task.materialId;
-                    shape->geometry = _task.geometry;
-                    shape->translation = _task.translation;
-                    shape->rotation = _task.rotation;
+#define FILL_SHAPE                                                                                                     \
+    shape->shapeId = _task.shapeId;                                                                                    \
+    shape->objectId = _task.objectId;                                                                                  \
+    shape->materialId = _task.materialId;                                                                              \
+    shape->geometry = _task.geometry;                                                                                  \
+    shape->translation = _task.translation;                                                                            \
+    shape->rotation = _task.rotation;                                                                                  \
+                                                                                                                       \
+    shape->enabled = _task.enabled;                                                                                    \
+    shape->trigger = _task.trigger;                                                                                    \
+    shape->visibleToWorldQueries = _task.visibleToWorldQueries;                                                        \
+    shape->collisionGroup = _task.collisionGroup
 
-                    shape->enabled = _task.enabled;
-                    shape->trigger = _task.trigger;
-                    shape->visibleToWorldQueries = _task.visibleToWorldQueries;
-                    shape->collisionGroup = _task.collisionGroup;
+                    FILL_SHAPE;
+                }
+                else if constexpr (std::is_same_v<Type, ConfiguratorTasks::UpdateCollisionShape>)
+                {
+                    LOG ("Update CollisionShapeComponent with shape id ", _task.shapeId, " on object with id ",
+                         _task.objectId, ".");
+
+                    auto cursor = modifyShapeByShapeId.Execute (&_task.shapeId);
+                    auto *shape = static_cast<CollisionShapeComponent *> (*cursor);
+                    REQUIRE (shape);
+                    REQUIRE (shape->objectId == _task.objectId);
+                    FILL_SHAPE;
+#undef FILL_SHAPE
                 }
                 else if constexpr (std::is_same_v<Type, ConfiguratorTasks::RemoveCollisionShape>)
                 {

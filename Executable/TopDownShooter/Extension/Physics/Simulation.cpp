@@ -65,7 +65,7 @@ static physx::PxShapeFlags CalculateShapeFlags (const CollisionShapeComponent *_
 
 static physx::PxGeometryType::Enum ToPxGeometryType (CollisionGeometryType _type) noexcept;
 
-static void UpdateShapeGeometry (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept;
+static bool UpdateShapeGeometry (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept;
 
 static void UpdateShapeLocalPose (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept;
 
@@ -459,8 +459,8 @@ void ShapeInitializer::Execute ()
 
         if (!material)
         {
-            EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to find DynamicsMaterial with id ",
-                           shape->materialId, "! Shape, that attempts to use this material, will be deleted.");
+            EMERGENCE_LOG (ERROR, "Physics: Unable to find DynamicsMaterial with id ", shape->materialId,
+                           "! Shape, that attempts to use this material, will be deleted.");
 
             ~shapeCursor;
             continue;
@@ -472,8 +472,8 @@ void ShapeInitializer::Execute ()
 
         if (!transform)
         {
-            EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to add CollisionShapeComponent to object with id ",
-                           shape->objectId, ", because it has no Transform3dComponent!");
+            EMERGENCE_LOG (ERROR, "Physics: Unable to add CollisionShapeComponent to object with id ", shape->objectId,
+                           ", because it has no Transform3dComponent!");
 
             ~shapeCursor;
             continue;
@@ -573,8 +573,8 @@ void ShapeChangesSynchronizer::ApplyShapeMaterialChanges () noexcept
             }
             else
             {
-                EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: Unable to find DynamicsMaterial with id ",
-                               shape->materialId, "! Shape, that attempts to use this material, will be deleted.");
+                EMERGENCE_LOG (ERROR, "Physics: Unable to find DynamicsMaterial with id ", shape->materialId,
+                               "! Shape, that attempts to use this material, will be deleted.");
 
                 ~shapeCursor;
                 continue;
@@ -604,8 +604,7 @@ void ShapeChangesSynchronizer::ApplyShapeGeometryChanges () noexcept
 
         if (!transform)
         {
-            EMERGENCE_LOG (ERROR,
-                           "PhysicsSimulationExecutor: Unable to update CollisionShapeComponent to object with id ",
+            EMERGENCE_LOG (ERROR, "Physics: Unable to update CollisionShapeComponent to object with id ",
                            shape->objectId, ", because it has no Transform3dComponent!");
 
             ~shapeCursor;
@@ -613,7 +612,13 @@ void ShapeChangesSynchronizer::ApplyShapeGeometryChanges () noexcept
         }
 
         const Math::Vector3f worldScale = transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
-        UpdateShapeGeometry (shape, worldScale);
+        if (!UpdateShapeGeometry (shape, worldScale))
+        {
+            // Shape type was changed, therefore shape can not be correctly represented anymore.
+            ~shapeCursor;
+            continue;
+        }
+
         UpdateShapeLocalPose (shape, worldScale);
     }
 }
@@ -744,9 +749,8 @@ void BodyInitializer::Execute ()
 
         if (!transform)
         {
-            EMERGENCE_LOG (ERROR,
-                           "PhysicsSimulationExecutor: Unable to initialize RigidBodyComponent on object with id ",
-                           body->objectId, ", because it has no Transform3dComponent!");
+            EMERGENCE_LOG (ERROR, "Physics: Unable to initialize RigidBodyComponent on object with id ", body->objectId,
+                           ", because it has no Transform3dComponent!");
 
             ~bodyCursor;
             continue;
@@ -878,6 +882,12 @@ void BodyMassSynchronizer::Execute ()
             continue;
         }
 
+        if (body->type == RigidBodyType::STATIC)
+        {
+            // Static bodies have no mass.
+            continue;
+        }
+
         auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle);
         shapes.resize (pxBody->getNbShapes ());
         pxBody->getShapes (shapes.data (), shapes.size ());
@@ -901,9 +911,9 @@ void BodyMassSynchronizer::Execute ()
 
         densities.resize (shapes.size ());
         uint32_t shapesFound = 0u;
-        auto shapeCursor = fetchShapeByObjectId.Execute (&objectId);
 
-        while (const auto *shape = static_cast<const CollisionShapeComponent *> (*shapeCursor))
+        for (auto shapeCursor = fetchShapeByObjectId.Execute (&objectId);
+             const auto *shape = static_cast<const CollisionShapeComponent *> (*shapeCursor); ++shapeCursor)
         {
             auto iterator =
                 std::find (shapes.begin (), shapes.end (), static_cast<physx::PxShape *> (shape->implementationHandle));
@@ -1303,10 +1313,16 @@ static physx::PxGeometryType::Enum ToPxGeometryType (CollisionGeometryType _type
     return physx::PxGeometryType::eINVALID;
 }
 
-static void UpdateShapeGeometry (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept
+static bool UpdateShapeGeometry (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept
 {
     auto *pxShape = static_cast<physx::PxShape *> (_shape->implementationHandle);
-    assert (pxShape->getGeometryType () == ToPxGeometryType (_shape->geometry.type));
+    if (pxShape->getGeometryType () != ToPxGeometryType (_shape->geometry.type))
+    {
+        EMERGENCE_LOG (
+            ERROR,
+            "Physics: Unable to update CollisionShapeComponent geometry, because changing geometry type is forbidden!");
+        return false;
+    }
 
     switch (_shape->geometry.type)
     {
@@ -1325,6 +1341,8 @@ static void UpdateShapeGeometry (const CollisionShapeComponent *_shape, const Ma
                                                         _shape->geometry.capsuleHalfHeight * _worldScale.x});
         break;
     }
+
+    return true;
 }
 
 static void UpdateShapeLocalPose (const CollisionShapeComponent *_shape, const Math::Vector3f &_worldScale) noexcept
@@ -1357,7 +1375,7 @@ static void ConstructPxShape (CollisionShapeComponent *_shape,
          _shape->geometry.type == CollisionGeometryType::CAPSULE) &&
         (!Math::NearlyEqual (_worldScale.x, _worldScale.y) || !Math::NearlyEqual (_worldScale.y, _worldScale.z)))
     {
-        EMERGENCE_LOG (ERROR, "PhysicsSimulationExecutor: CollisionShapeComponent's can only work with uniform scale!");
+        EMERGENCE_LOG (ERROR, "Physics: CollisionShapeComponent's can only work with uniform scale!");
     }
 
     const physx::PxShapeFlags shapeFlags = CalculateShapeFlags (_shape);

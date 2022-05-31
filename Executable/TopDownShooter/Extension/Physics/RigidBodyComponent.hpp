@@ -20,6 +20,8 @@ struct RigidBodyComponent final
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBodyComponent);
 
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+
+    /// \invariant Can not be changed after body creation.
     RigidBodyType type = RigidBodyType::STATIC;
 
     float linearDamping = 0.0f;

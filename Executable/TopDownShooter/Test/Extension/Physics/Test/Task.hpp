@@ -18,17 +18,7 @@ namespace Emergence::Physics::Test
 {
 namespace ConfiguratorTasks
 {
-struct AddDynamicsMaterial final
-{
-    Memory::UniqueString id;
-    float dynamicFriction = 0.0f;
-    float staticFriction = 0.0f;
-    bool enableFriction = true;
-    float restitution = 0.0f;
-    float density = 0.0f;
-};
-
-struct RemoveDynamicsMaterial final
+struct DynamicsMaterialData
 {
     Memory::UniqueString id;
     float dynamicFriction = 0.0f;
@@ -38,10 +28,31 @@ struct RemoveDynamicsMaterial final
     float density = 1.0f;
 };
 
-struct AddTransform final
+struct AddDynamicsMaterial final : public DynamicsMaterialData
+{
+};
+
+struct UpdateDynamicsMaterial final : public DynamicsMaterialData
+{
+};
+
+struct RemoveDynamicsMaterial final
+{
+    Memory::UniqueString id;
+};
+
+struct TransformData
 {
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
     Math::Transform3d transform {Math::Vector3f::ZERO, Math::Quaternion::IDENTITY, Math::Vector3f::ONE};
+};
+
+struct AddTransform final : public TransformData
+{
+};
+
+struct UpdateTransform final : public TransformData
+{
 };
 
 struct RemoveTransform final
@@ -49,7 +60,7 @@ struct RemoveTransform final
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
 };
 
-struct AddRigidBody final
+struct RigidBodyData
 {
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
     RigidBodyType type = RigidBodyType::STATIC;
@@ -66,13 +77,20 @@ struct AddRigidBody final
     Math::Vector3f angularVelocity = Math::Vector3f::ZERO;
 };
 
+struct AddRigidBody final : public RigidBodyData
+{
+};
+
+struct UpdateRigidBody final : public RigidBodyData
+{
+};
+
 struct RemoveRigidBody final
 {
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
 };
 
-struct AddCollisionShape final
-{
+struct CollisionShapeData {
     Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
     Memory::UniqueString materialId;
@@ -87,19 +105,30 @@ struct AddCollisionShape final
     uint8_t collisionGroup = 0u;
 };
 
+struct AddCollisionShape final : public CollisionShapeData
+{
+};
+
+struct UpdateCollisionShape final : public CollisionShapeData
+{
+};
+
 struct RemoveCollisionShape final
 {
     Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
 };
 } // namespace ConfiguratorTasks
 
-using ConfiguratorTask = std::variant<ConfiguratorTasks::AddDynamicsMaterial,
+using ConfiguratorTask = std::variant<ConfiguratorTasks::AddDynamicsMaterial,ConfiguratorTasks::UpdateDynamicsMaterial,
                                       ConfiguratorTasks::RemoveDynamicsMaterial,
                                       ConfiguratorTasks::AddTransform,
+                                      ConfiguratorTasks::UpdateTransform,
                                       ConfiguratorTasks::RemoveTransform,
                                       ConfiguratorTasks::AddRigidBody,
+                                      ConfiguratorTasks::UpdateRigidBody,
                                       ConfiguratorTasks::RemoveRigidBody,
                                       ConfiguratorTasks::AddCollisionShape,
+                                      ConfiguratorTasks::UpdateCollisionShape,
                                       ConfiguratorTasks::RemoveCollisionShape>;
 
 struct ConfiguratorFrame final
