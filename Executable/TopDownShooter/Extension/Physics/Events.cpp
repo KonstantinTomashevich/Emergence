@@ -26,7 +26,7 @@ EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedEvent, REGULAR, objectId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAttributesChangedEvent, REGULAR, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentMassInvalidatedEvent, REGULAR, objectId);
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     RigidBodyComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
@@ -170,18 +170,7 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
          RigidBodyComponent::Reflect ().mapping,
          {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAddedEvent::Reflect ().objectId}}});
 
-    _registrar.OnChangeEvent (
-        {{RigidBodyComponentAttributesChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
-         RigidBodyComponent::Reflect ().mapping,
-         {
-
-             RigidBodyComponent::Reflect ().linearDamping,
-             RigidBodyComponent::Reflect ().angularDamping,
-             RigidBodyComponent::Reflect ().continuousCollisionDetection,
-             RigidBodyComponent::Reflect ().affectedByGravity,
-         },
-         {},
-         {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAttributesChangedEvent::Reflect ().objectId}}});
+    _registrar.CustomEvent ({RigidBodyComponentMassInvalidatedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
 
     _registrar.OnRemoveEvent (
         {{RigidBodyComponentRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},

@@ -28,7 +28,7 @@ EMERGENCE_CELERITY_EVENT2_DECLARATION (
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedEvent, Celerity::UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAttributesChangedEvent, Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentMassInvalidatedEvent, Celerity::UniqueId, objectId);
 
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
     RigidBodyComponentRemovedEvent, Celerity::UniqueId, objectId, void *, implementationHandle);

@@ -28,7 +28,8 @@ struct RigidBodyComponent final
     bool continuousCollisionDetection = false;
     bool affectedByGravity = true;
 
-    /// \brief Whether rigid body transform, velocity or impulse can be edited outside of physics simulation.
+    /// \brief Whether rigid body transform, flags, attributes, velocity or impulse
+    ///        can be edited outside of physics simulation.
     bool manipulatedOutsideOfSimulation = false;
 
     /// \brief Whether rigid body should send events on physical contact during simulation.
