@@ -1,5 +1,7 @@
 #include <thread>
 
+#include <Celerity/PipelineBuilderMacros.hpp>
+
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <SyntaxSugar/Time.hpp>
@@ -47,21 +49,17 @@ Configurator::Configurator (Celerity::TaskConstructor &_constructor,
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
-      insertMaterial (_constructor.InsertLongTerm (DynamicsMaterial::Reflect ().mapping)),
-      modifyMaterialById (
-          _constructor.ModifyValue (DynamicsMaterial::Reflect ().mapping, {DynamicsMaterial::Reflect ().id})),
+      insertMaterial (_constructor.MInsertLongTerm (DynamicsMaterial)),
+      modifyMaterialById (_constructor.MModifyValue1F (DynamicsMaterial, id)),
 
-      insertTransform (_constructor.InsertLongTerm (Transform::Transform3dComponent::Reflect ().mapping)),
-      modifyTransformById (_constructor.ModifyValue (Transform::Transform3dComponent::Reflect ().mapping,
-                                                     {Transform::Transform3dComponent::Reflect ().objectId})),
+      insertTransform (_constructor.MInsertLongTerm (Transform::Transform3dComponent)),
+      modifyTransformById (_constructor.MModifyValue1F (Transform::Transform3dComponent, objectId)),
 
-      insertBody (_constructor.InsertLongTerm (RigidBodyComponent::Reflect ().mapping)),
-      modifyBodyById (
-          _constructor.ModifyValue (RigidBodyComponent::Reflect ().mapping, {RigidBodyComponent::Reflect ().objectId})),
+      insertBody (_constructor.MInsertLongTerm (RigidBodyComponent)),
+      modifyBodyById (_constructor.MModifyValue1F (RigidBodyComponent, objectId)),
 
-      insertShape (_constructor.InsertLongTerm (CollisionShapeComponent::Reflect ().mapping)),
-      modifyShapeByShapeId (_constructor.ModifyValue (CollisionShapeComponent::Reflect ().mapping,
-                                                      {CollisionShapeComponent::Reflect ().shapeId}))
+      insertShape (_constructor.MInsertLongTerm (CollisionShapeComponent)),
+      modifyShapeByShapeId (_constructor.MModifyValue1F (CollisionShapeComponent, shapeId))
 {
     _constructor.MakeDependencyOf (Simulation::Checkpoint::SIMULATION_STARTED);
 }
@@ -188,32 +186,30 @@ private:
     Container::Vector<ValidatorFrame> frames;
     Container::Vector<ValidatorFrame>::const_iterator framesIterator;
 
+    Celerity::FetchValueQuery fetchBodyById;
+    Celerity::FetchValueQuery fetchShapeByShapeId;
+
     Celerity::FetchSequenceQuery fetchContactFoundEvents;
     Celerity::FetchSequenceQuery fetchContactPersistsEvents;
     Celerity::FetchSequenceQuery fetchContactLostEvents;
 
     Celerity::FetchSequenceQuery fetchTriggerEnteredEvents;
     Celerity::FetchSequenceQuery fetchTriggerExitedEvents;
-
-    Celerity::FetchValueQuery fetchBodyById;
-    Celerity::FetchValueQuery fetchShapeByShapeId;
 };
 
 Validator::Validator (Celerity::TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
-      fetchContactFoundEvents (_constructor.FetchSequence (ContactFoundEvent::Reflect().mapping)),
-      fetchContactPersistsEvents (_constructor.FetchSequence (ContactPersistsEvent::Reflect().mapping)),
-      fetchContactLostEvents (_constructor.FetchSequence (ContactLostEvent::Reflect().mapping)),
+      fetchBodyById (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
+      fetchShapeByShapeId (_constructor.MFetchValue1F (CollisionShapeComponent, shapeId)),
 
-      fetchTriggerEnteredEvents (_constructor.FetchSequence (TriggerEnteredEvent::Reflect().mapping)),
-      fetchTriggerExitedEvents (_constructor.FetchSequence (TriggerExitedEvent::Reflect().mapping)),
+      fetchContactFoundEvents (_constructor.MFetchSequence (ContactFoundEvent)),
+      fetchContactPersistsEvents (_constructor.MFetchSequence (ContactPersistsEvent)),
+      fetchContactLostEvents (_constructor.MFetchSequence (ContactLostEvent)),
 
-      fetchBodyById (
-          _constructor.FetchValue (RigidBodyComponent::Reflect ().mapping, {RigidBodyComponent::Reflect ().objectId})),
-      fetchShapeByShapeId (_constructor.FetchValue (CollisionShapeComponent::Reflect ().mapping,
-                                                    {CollisionShapeComponent::Reflect ().shapeId}))
+      fetchTriggerEnteredEvents (_constructor.MFetchSequence (TriggerEnteredEvent)),
+      fetchTriggerExitedEvents (_constructor.MFetchSequence (TriggerExitedEvent))
 {
     _constructor.DependOn (Simulation::Checkpoint::SIMULATION_FINISHED);
 }

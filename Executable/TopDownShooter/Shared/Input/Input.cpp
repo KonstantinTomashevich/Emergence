@@ -1,4 +1,5 @@
 #include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
@@ -22,16 +23,14 @@ protected:
                           const InputSingleton::ActionsBuffer &_buffer) noexcept;
 
     Emergence::Celerity::ModifySingletonQuery modifyInput;
-    Emergence::Celerity::ModifyValueQuery modifyListenersById;
-    Emergence::Celerity::ModifyAscendingRangeQuery modifyListeners;
+    Emergence::Celerity::EditValueQuery editListenerById;
+    Emergence::Celerity::EditAscendingRangeQuery editListeners;
 };
 
 InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping)),
-      modifyListenersById (_constructor.ModifyValue (InputListenerComponent::Reflect ().mapping,
-                                                     {InputListenerComponent::Reflect ().objectId})),
-      modifyListeners (_constructor.ModifyAscendingRange (InputListenerComponent::Reflect ().mapping,
-                                                          InputListenerComponent::Reflect ().objectId))
+      editListenerById (_constructor.MEditValue1F (InputListenerComponent, objectId)),
+      editListeners (_constructor.MEditAscendingRange (InputListenerComponent, objectId))
 {
     _constructor.DependOn (Checkpoint::INPUT_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);
@@ -41,7 +40,7 @@ InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &
 
 void InputDispatcherBase::ClearListeners () noexcept
 {
-    auto cursor = modifyListeners.Execute (nullptr, nullptr);
+    auto cursor = editListeners.Execute (nullptr, nullptr);
     while (*cursor)
     {
         auto *listener = static_cast<InputListenerComponent *> (*cursor);
@@ -61,7 +60,7 @@ void InputDispatcherBase::DispatchActions (InputSingleton::SubscriptionVector &_
     for (auto iterator = _subscribers.Begin (); iterator != _subscribers.End (); ++iterator)
     {
         const InputSubscription &subscription = *iterator;
-        auto listenerCursor = modifyListenersById.Execute (&subscription.listenerId);
+        auto listenerCursor = editListenerById.Execute (&subscription.listenerId);
         auto *listener = static_cast<InputListenerComponent *> (*listenerCursor);
 
         if (!listener)

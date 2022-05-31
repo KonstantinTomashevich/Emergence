@@ -4,8 +4,6 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
-// TODO: Try to use these macro in other tasks, not only physics.
-
 // This file contains macros, that shorten TaskConstructor query creation calls.
 // These macros provide no additional logic and work as syntax sugar, that makes calls less verbose.
 

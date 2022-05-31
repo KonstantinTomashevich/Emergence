@@ -5,6 +5,7 @@
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Test/EventRouting.hpp>
 #include <Celerity/World.hpp>
 
@@ -46,7 +47,7 @@ private:
 
 Emergence::Celerity::Test::EventProducer::EventProducer (TaskConstructor &_constructor,
                                                          EventPlan _productionPlan) noexcept
-    : insertEvents (_constructor.InsertShortTerm (TestEvent::Reflect ().mapping)),
+    : insertEvents (_constructor.MInsertShortTerm (TestEvent)),
       productionPlan (std::move (_productionPlan))
 {
 }
@@ -80,7 +81,7 @@ private:
 
 Emergence::Celerity::Test::EventConsumer::EventConsumer (TaskConstructor &_constructor,
                                                          EventPlan _consumptionPlan) noexcept
-    : fetchEvents (_constructor.FetchSequence (TestEvent::Reflect ().mapping)),
+    : fetchEvents (_constructor.MFetchSequence (TestEvent)),
       consumptionPlan (std::move (_consumptionPlan))
 {
     for (auto &framePlan : consumptionPlan)

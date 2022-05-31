@@ -1,3 +1,5 @@
+#include <Celerity/PipelineBuilderMacros.hpp>
+
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
@@ -22,17 +24,15 @@ private:
 
     Celerity::InsertLongTermQuery insertTransform;
     Celerity::FetchValueQuery fetchTransform;
-    Celerity::ModifyValueQuery modifyTransform;
+    Celerity::EditValueQuery editTransform;
     Transform3dWorldAccessor worldAccessor;
 };
 
 Executor::Executor (Celerity::TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept
     : requests (std::move (_requests)),
-      insertTransform (_constructor.InsertLongTerm (Transform3dComponent::Reflect ().mapping)),
-      fetchTransform (_constructor.FetchValue (Transform3dComponent::Reflect ().mapping,
-                                               {Transform3dComponent::Reflect ().objectId})),
-      modifyTransform (_constructor.ModifyValue (Transform3dComponent::Reflect ().mapping,
-                                                 {Transform3dComponent::Reflect ().objectId})),
+      insertTransform (_constructor.MInsertLongTerm (Transform3dComponent)),
+      fetchTransform (_constructor.MFetchValue1F (Transform3dComponent, objectId)),
+      editTransform (_constructor.MEditValue1F (Transform3dComponent, objectId)),
       worldAccessor (_constructor)
 {
 }
@@ -69,7 +69,7 @@ void Executor::Execute () noexcept
                 {
                     LOG ("Changing transform with id ", _request.id, " parent id to ", _request.newParentId, ".");
 
-                    auto cursor = modifyTransform.Execute (&_request.id);
+                    auto cursor = editTransform.Execute (&_request.id);
                     if (auto *component = static_cast<Transform3dComponent *> (*cursor))
                     {
                         component->SetParentObjectId (_request.newParentId);
@@ -85,7 +85,7 @@ void Executor::Execute () noexcept
                          _request.skipInterpolation ? " (skipping logical transform interpolation)" : "",
                          " to value: ", TRANSFORM_LOG_SEQUENCE (_request.transform));
 
-                    auto cursor = modifyTransform.Execute (&_request.id);
+                    auto cursor = editTransform.Execute (&_request.id);
                     if (auto *component = static_cast<Transform3dComponent *> (*cursor))
                     {
                         if (_request.logical)
@@ -139,8 +139,8 @@ void Executor::Execute () noexcept
 
                     if (_request.useModifyQuery)
                     {
-                        auto unsafeAccess = modifyTransform.AllowUnsafeFetchAccess ();
-                        executeWithQuery (modifyTransform);
+                        auto unsafeAccess = editTransform.AllowUnsafeFetchAccess ();
+                        executeWithQuery (editTransform);
                     }
                     else
                     {

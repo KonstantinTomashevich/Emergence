@@ -5,6 +5,7 @@
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Test/EventTriggering.hpp>
 #include <Celerity/World.hpp>
 
@@ -230,8 +231,8 @@ private:
 bool Executor::checkEditionCursorIncrement = false;
 
 Executor::Executor (TaskConstructor &_constructor, Container::Vector<Task> _tasks) noexcept
-    : insertRecord (_constructor.InsertLongTerm (TestRecord::Reflect ().mapping)),
-      modifyRecordById (_constructor.ModifyValue (TestRecord::Reflect ().mapping, {TestRecord::Reflect ().id})),
+    : insertRecord (_constructor.MInsertLongTerm (TestRecord)),
+      modifyRecordById (_constructor.MModifyValue1F (TestRecord, id)),
       tasks (std::move (_tasks))
 {
 }
@@ -315,7 +316,7 @@ private:
 
 template <typename EventType>
 Validator<EventType>::Validator (TaskConstructor &_constructor, Container::Vector<EventType> _expected) noexcept
-    : fetch (_constructor.FetchSequence (EventType::Reflect ().mapping)),
+    : fetch (_constructor.MFetchSequence (EventType)),
       expected (std::move (_expected))
 {
 }

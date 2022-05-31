@@ -1,4 +1,5 @@
 #include <Celerity/Model/TimeSingleton.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Math/Scalar.hpp>
 
@@ -18,15 +19,13 @@ public:
 
 private:
     Celerity::FetchSingletonQuery fetchTime;
-    Celerity::ModifySignalQuery modifyTransformsWithUpdateFlag;
+    Celerity::EditSignalQuery editTransformsWithUpdateFlag;
 };
 
 Transform3dVisualSynchronizer::Transform3dVisualSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.FetchSingleton (Celerity::TimeSingleton::Reflect ().mapping)),
-      modifyTransformsWithUpdateFlag (
-          _constructor.ModifySignal (Transform3dComponent::Reflect ().mapping,
-                                     Transform3dComponent::Reflect ().visualTransformSyncNeeded,
-                                     array_cast<bool, sizeof (uint64_t)> (true)))
+    : fetchTime (_constructor.MFetchSingleton (Celerity::TimeSingleton)),
+      editTransformsWithUpdateFlag (
+          _constructor.MEditSignal (Transform3dComponent, visualTransformSyncNeeded, true))
 {
     _constructor.MakeDependencyOf (VisualSync::Checkpoint::SYNC_FINISHED);
 }
@@ -35,7 +34,7 @@ void Transform3dVisualSynchronizer::Execute () noexcept
 {
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
-    auto transformCursor = modifyTransformsWithUpdateFlag.Execute ();
+    auto transformCursor = editTransformsWithUpdateFlag.Execute ();
 
     while (auto *transform = static_cast<Transform3dComponent *> (*transformCursor))
     {
