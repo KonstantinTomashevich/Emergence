@@ -666,6 +666,12 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
             continue;
         }
 
+        if (producers.empty ())
+        {
+            EMERGENCE_LOG (WARNING, "Events of type \"", eventType.GetName (), "\" are consumed, but never produced.");
+            continue;
+        }
+
         TaskConstructor constructor = AddTask (GetEventCleanerName (eventType));
         constructor.SetExecutor<EventCleaner> (eventType);
 

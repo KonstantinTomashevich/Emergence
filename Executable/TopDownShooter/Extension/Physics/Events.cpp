@@ -6,6 +6,8 @@
 
 namespace Emergence::Physics
 {
+EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (PhysicsWorldConfigurationChanged)
+
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedEvent, UNIQUE_STRING, id)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialChangedEvent, UNIQUE_STRING, id)
@@ -87,6 +89,17 @@ EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TriggerExitedEvent,
 
 void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
 {
+    // PhysicsWorldSingleton
+
+    _registrar.OnChangeEvent ({{PhysicsWorldConfigurationChanged::Reflect ().mapping, Celerity::EventRoute::FIXED},
+                               PhysicsWorldSingleton::Reflect ().mapping,
+                               {
+                                   PhysicsWorldSingleton::Reflect ().gravity,
+                                   PhysicsWorldSingleton::Reflect ().collisionMaskBlock,
+                               },
+                               {},
+                               {}});
+
     // DynamicsMaterial
 
     _registrar.OnAddEvent ({{DynamicsMaterialAddedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},

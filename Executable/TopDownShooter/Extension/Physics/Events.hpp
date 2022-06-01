@@ -8,6 +8,8 @@
 
 namespace Emergence::Physics
 {
+EMERGENCE_CELERITY_EVENT0_DECLARATION(PhysicsWorldConfigurationChanged);
+
 EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialAddedEvent, Memory::UniqueString, id);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialChangedEvent, Memory::UniqueString, id);

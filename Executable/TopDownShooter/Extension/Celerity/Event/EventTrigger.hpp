@@ -159,7 +159,7 @@ public:
 private:
     static constexpr std::size_t MAX_TRACKED_ZONES = 4u;
 
-    static constexpr std::size_t MAX_TRACKING_BUFFER_SIZE = 128u;
+    static constexpr std::size_t MAX_TRACKING_BUFFER_SIZE = 256u;
 
     struct TrackedZone final
     {

@@ -10,6 +10,7 @@
 #include <Physics/CollisionShapeComponent.hpp>
 #include <Physics/DynamicsMaterial.hpp>
 #include <Physics/Events.hpp>
+#include <Physics/PhysXAccessSingleton.hpp>
 #include <Physics/PhysXInternalUtils.hpp>
 #include <Physics/PhysXWorld.hpp>
 #include <Physics/PhysicsWorldSingleton.hpp>
@@ -73,7 +74,7 @@ static void UpdateShapeLocalPose (const CollisionShapeComponent *_shape, const M
 static void UpdateShapeFilter (const CollisionShapeComponent *_shape) noexcept;
 
 static void ConstructPxShape (CollisionShapeComponent *_shape,
-                              PhysXWorld &_pxWorld,
+                              const PhysXWorld &_pxWorld,
                               const physx::PxMaterial &_pxMaterial,
                               const Math::Vector3f &_worldScale) noexcept;
 
@@ -85,33 +86,42 @@ public:
     void Execute () noexcept;
 
 private:
-    static void EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld) noexcept;
+    static void EnsurePhysicsWorldReady (const PhysicsWorldSingleton *_physicsWorld) noexcept;
 
-    static void UpdateGravity (PhysicsWorldSingleton *_physicsWorld) noexcept;
+    void UpdateConfiguration (const PhysicsWorldSingleton *_physicsWorld) noexcept;
 
-    static void UpdateRemoteDebugging (PhysicsWorldSingleton *_physicsWorld) noexcept;
+    static void UpdateCollisionMask (const PhysicsWorldSingleton *_physicsWorld) noexcept;
 
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    static void UpdateRemoteDebugging (const PhysicsWorldSingleton *_physicsWorld) noexcept;
+
+    Celerity::ModifySingletonQuery modifyPhysX;
+    Celerity::FetchSingletonQuery fetchPhysicsWorld;
+    Celerity::FetchSequenceQuery fetchConfigurationChangedEvents;
 };
 
 WorldUpdater::WorldUpdater (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton))
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
+      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
+      fetchConfigurationChangedEvents (_constructor.MFetchSequence (PhysicsWorldConfigurationChanged))
 {
     _constructor.DependOn (Checkpoint::SIMULATION_STARTED);
 }
 
 void WorldUpdater::Execute () noexcept
 {
-    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
-    auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
     EnsurePhysicsWorldReady (physicsWorld);
-    UpdateGravity (physicsWorld);
     UpdateRemoteDebugging (physicsWorld);
+    UpdateConfiguration (physicsWorld);
 }
 
-void WorldUpdater::EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld) noexcept
+void WorldUpdater::EnsurePhysicsWorldReady (const PhysicsWorldSingleton *_physicsWorld) noexcept
 {
-    auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+    // We are free to const cast here, because we're modifying PhysX-related objects,
+    // which is under PhysXAccessSingleton access control.
+    auto &pxWorld = const_cast<PhysXWorld &> (block_cast<PhysXWorld> (_physicsWorld->implementationBlock));
+
     if (!pxWorld.foundation)
     {
         physx::PxAllocatorCallback *allocator;
@@ -141,40 +151,48 @@ void WorldUpdater::EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld
         sceneDescriptor.gravity = {_physicsWorld->gravity.x, _physicsWorld->gravity.y, _physicsWorld->gravity.z};
         sceneDescriptor.cpuDispatcher = pxWorld.dispatcher;
         sceneDescriptor.filterShader = physx::PxDefaultSimulationFilterShader;
+
         pxWorld.scene = pxWorld.physics->createScene (sceneDescriptor);
+        UpdateCollisionMask (_physicsWorld);
+    }
+}
 
-        for (uint16_t firstGroupIndex = 0u; firstGroupIndex < 32u; ++firstGroupIndex)
+void WorldUpdater::UpdateConfiguration (const PhysicsWorldSingleton *_physicsWorld) noexcept
+{
+    auto eventCursor = fetchConfigurationChangedEvents.Execute ();
+    if (!*eventCursor)
+    {
+        return;
+    }
+
+    const auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+    pxWorld.scene->setGravity ({_physicsWorld->gravity.x, _physicsWorld->gravity.y, _physicsWorld->gravity.z});
+    UpdateCollisionMask (_physicsWorld);
+}
+
+void WorldUpdater::UpdateCollisionMask (const PhysicsWorldSingleton *_physicsWorld) noexcept
+{
+    for (uint16_t firstGroupIndex = 0u; firstGroupIndex < 32u; ++firstGroupIndex)
+    {
+        for (uint16_t secondGroupIndex = 0u; secondGroupIndex < 32u; ++secondGroupIndex)
         {
-            for (uint16_t secondGroupIndex = 0u; secondGroupIndex < 32u; ++secondGroupIndex)
-            {
-                const bool firstWithSecond = _physicsWorld->collisionMasks[firstGroupIndex] & (1u << secondGroupIndex);
-                const bool secondWithFirst = _physicsWorld->collisionMasks[secondGroupIndex] & (1u << firstGroupIndex);
+            const bool firstWithSecond = _physicsWorld->collisionMasks[firstGroupIndex] & (1u << secondGroupIndex);
+            const bool secondWithFirst = _physicsWorld->collisionMasks[secondGroupIndex] & (1u << firstGroupIndex);
 
-                // For simplicity, we treat `1->2 != 2->1` case as collision too.
-                // It allows user to avoid duplicating every group info.
-                const bool collides = firstWithSecond || secondWithFirst;
-                physx::PxSetGroupCollisionFlag (firstGroupIndex, secondGroupIndex, collides);
-            }
+            // For simplicity, we treat `1->2 != 2->1` case as collision too.
+            // It allows user to avoid duplicating every group info.
+            const bool collides = firstWithSecond || secondWithFirst;
+            physx::PxSetGroupCollisionFlag (firstGroupIndex, secondGroupIndex, collides);
         }
     }
 }
 
-void WorldUpdater::UpdateGravity (PhysicsWorldSingleton *_physicsWorld) noexcept
+void WorldUpdater::UpdateRemoteDebugging (const PhysicsWorldSingleton *_physicsWorld) noexcept
 {
-    auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
-    const physx::PxVec3 &gravity = pxWorld.scene->getGravity ();
+    // We are free to const cast here, because we're modifying PhysX-related objects,
+    // which is under PhysXAccessSingleton access control.
+    auto &pxWorld = const_cast<PhysXWorld &> (block_cast<PhysXWorld> (_physicsWorld->implementationBlock));
 
-    if (!Math::NearlyEqual (gravity.x, _physicsWorld->gravity.x) ||
-        !Math::NearlyEqual (gravity.y, _physicsWorld->gravity.y) ||
-        !Math::NearlyEqual (gravity.z, _physicsWorld->gravity.z))
-    {
-        pxWorld.scene->setGravity ({_physicsWorld->gravity.x, _physicsWorld->gravity.y, _physicsWorld->gravity.z});
-    }
-}
-
-void WorldUpdater::UpdateRemoteDebugging (PhysicsWorldSingleton *_physicsWorld) noexcept
-{
-    auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
     if (pxWorld.remoteDebuggerEnabled != _physicsWorld->enableRemoteDebugger)
     {
         if (_physicsWorld->enableRemoteDebugger)
@@ -212,7 +230,7 @@ public:
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::RemoveValueQuery removeShapeByObjectId;
     Celerity::RemoveValueQuery removeBodyByObjectId;
     Celerity::FetchValueQuery fetchTransformByObjectId;
@@ -220,7 +238,7 @@ private:
 };
 
 TransformEventProcessor::TransformEventProcessor (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       removeShapeByObjectId (_constructor.MRemoveValue1F (CollisionShapeComponent, objectId)),
       removeBodyByObjectId (_constructor.MRemoveValue1F (RigidBodyComponent, objectId)),
       fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
@@ -266,13 +284,15 @@ public:
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
+    Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Celerity::ModifyValueQuery modifyMaterialById;
     Celerity::FetchSequenceQuery fetchMaterialAddedEvents;
 };
 
 MaterialInitializer::MaterialInitializer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
+      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
       modifyMaterialById (_constructor.MModifyValue1F (DynamicsMaterial, id)),
       fetchMaterialAddedEvents (_constructor.MFetchSequence (DynamicsMaterialAddedEvent))
 {
@@ -281,9 +301,9 @@ MaterialInitializer::MaterialInitializer (Celerity::TaskConstructor &_constructo
 
 void MaterialInitializer::Execute () noexcept
 {
-    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
-    auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-    auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
+    const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
     for (auto eventCursor = fetchMaterialAddedEvents.Execute ();
          const auto *event = static_cast<const DynamicsMaterialAddedEvent *> (*eventCursor); ++eventCursor)
@@ -313,7 +333,7 @@ public:
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::FetchValueQuery fetchMaterialById;
     Celerity::FetchSequenceQuery fetchMaterialChangedEvents;
     Celerity::FetchValueQuery fetchShapeByMaterialId;
@@ -321,7 +341,7 @@ private:
 };
 
 MaterialChangesSynchronizer::MaterialChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
       fetchMaterialChangedEvents (_constructor.MFetchSequence (DynamicsMaterialChangedEvent)),
       fetchShapeByMaterialId (_constructor.MFetchValue1F (CollisionShapeComponent, materialId)),
@@ -366,13 +386,13 @@ public:
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::FetchSequenceQuery fetchMaterialRemovedEvents;
     Celerity::RemoveValueQuery removeShapeByMaterialId;
 };
 
 MaterialDeleter::MaterialDeleter (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchMaterialRemovedEvents (_constructor.MFetchSequence (DynamicsMaterialRemovedEvent)),
       removeShapeByMaterialId (_constructor.MRemoveValue1F (CollisionShapeComponent, materialId))
 {
@@ -406,7 +426,8 @@ public:
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
+    Celerity::FetchSingletonQuery fetchPhysicsWorld;
 
     Celerity::ModifyValueQuery modifyShapeByShapeId;
     Celerity::FetchValueQuery fetchMaterialById;
@@ -420,7 +441,8 @@ private:
 };
 
 ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
+      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
 
       modifyShapeByShapeId (_constructor.MModifyValue1F (CollisionShapeComponent, shapeId)),
       fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
@@ -437,9 +459,9 @@ ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noe
 
 void ShapeInitializer::Execute ()
 {
-    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
-    auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-    auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
+    const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
     for (auto eventCursor = fetchShapeAddedEvents.Execute ();
          const auto *event = static_cast<const CollisionShapeComponentAddedEvent *> (*eventCursor); ++eventCursor)
@@ -512,7 +534,7 @@ private:
 
     void ApplyShapeAttributesChanges () noexcept;
 
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
 
     Celerity::FetchValueQuery fetchShapeByShapeId;
     Celerity::RemoveValueQuery removeShapeByShapeId;
@@ -529,7 +551,7 @@ private:
 };
 
 ShapeChangesSynchronizer::ShapeChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchShapeByShapeId (_constructor.MFetchValue1F (CollisionShapeComponent, shapeId)),
       removeShapeByShapeId (_constructor.MRemoveValue1F (CollisionShapeComponent, shapeId)),
       fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
@@ -648,14 +670,14 @@ public:
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::FetchValueQuery fetchBodyByObjectId;
     Celerity::FetchSequenceQuery fetchShapeRemovedEvents;
     Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
 ShapeDeleter::ShapeDeleter (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchBodyByObjectId (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
       fetchShapeRemovedEvents (_constructor.MFetchSequence (CollisionShapeComponentRemovedEvent)),
       insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
@@ -695,7 +717,8 @@ public:
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
+    Celerity::FetchSingletonQuery fetchPhysicsWorld;
 
     Celerity::ModifyValueQuery modifyBodyByObjectId;
     Celerity::FetchValueQuery fetchShapeByObjectId;
@@ -707,7 +730,8 @@ private:
 };
 
 BodyInitializer::BodyInitializer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
+      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
 
       modifyBodyByObjectId (_constructor.MModifyValue1F (RigidBodyComponent, objectId)),
       fetchShapeByObjectId (_constructor.MFetchValue1F (CollisionShapeComponent, objectId)),
@@ -722,9 +746,9 @@ BodyInitializer::BodyInitializer (Celerity::TaskConstructor &_constructor) noexc
 
 void BodyInitializer::Execute ()
 {
-    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
-    auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-    auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
+    const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
     for (auto eventCursor = fetchBodyAddedEvents.Execute ();
          const auto *event = static_cast<const RigidBodyComponentAddedEvent *> (*eventCursor); ++eventCursor)
@@ -824,12 +848,12 @@ public:
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::FetchSequenceQuery fetchBodyRemovedEvents;
 };
 
 BodyDeleter::BodyDeleter (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchBodyRemovedEvents (_constructor.MFetchSequence (RigidBodyComponentRemovedEvent))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_BODIES);
@@ -855,7 +879,7 @@ public:
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::FetchValueQuery fetchBodyByObjectId;
     Celerity::FetchValueQuery fetchShapeByObjectId;
     Celerity::FetchValueQuery fetchMaterialById;
@@ -863,7 +887,7 @@ private:
 };
 
 BodyMassSynchronizer::BodyMassSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchBodyByObjectId (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
       fetchShapeByObjectId (_constructor.MFetchValue1F (CollisionShapeComponent, objectId)),
       fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
@@ -993,11 +1017,12 @@ private:
 
     void UpdateKinematicTargets (float _timeStep) noexcept;
 
-    void ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept;
+    void ExecuteSimulation (const PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept;
 
     void SyncKinematicAndDynamicBodies () noexcept;
 
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Celerity::ModifySingletonQuery modifyPhysX;
+    Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Celerity::FetchSingletonQuery fetchTime;
 
     Celerity::FetchValueQuery fetchShapeByObjectId;
@@ -1018,7 +1043,8 @@ private:
 };
 
 SimulationExecutor::SimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
+      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
       fetchTime (_constructor.MFetchSingleton (Celerity::TimeSingleton)),
 
       fetchShapeByObjectId (_constructor.MFetchValue1F (CollisionShapeComponent, objectId)),
@@ -1044,8 +1070,8 @@ SimulationExecutor::SimulationExecutor (Celerity::TaskConstructor &_constructor)
 
 void SimulationExecutor::Execute ()
 {
-    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
-    auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
@@ -1240,7 +1266,7 @@ void SimulationExecutor::UpdateKinematicTargets (float _timeStep) noexcept
         auto *pxBody = static_cast<physx::PxRigidDynamic *> (body->implementationHandle);
         physx::PxTransform target = pxBody->getGlobalPose ();
 
-        target.p += ToPhysX (body->linearVelocity);
+        target.p += ToPhysX (body->linearVelocity * _timeStep);
         target.q *= ToPhysX (Math::Quaternion {body->angularVelocity * _timeStep});
         target.q.normalize ();
 
@@ -1248,9 +1274,9 @@ void SimulationExecutor::UpdateKinematicTargets (float _timeStep) noexcept
     }
 }
 
-void SimulationExecutor::ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept
+void SimulationExecutor::ExecuteSimulation (const PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept
 {
-    auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+    const auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
     pxWorld.scene->setSimulationEventCallback (this);
     // TODO: Make use of scratch buffer?
     pxWorld.scene->simulate (_timeStep);
@@ -1383,7 +1409,7 @@ static void UpdateShapeFilter (const CollisionShapeComponent *_shape) noexcept
 }
 
 static void ConstructPxShape (CollisionShapeComponent *_shape,
-                              PhysXWorld &_pxWorld,
+                              const PhysXWorld &_pxWorld,
                               const physx::PxMaterial &_pxMaterial,
                               const Math::Vector3f &_worldScale) noexcept
 {
