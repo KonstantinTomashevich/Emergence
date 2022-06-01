@@ -10,6 +10,7 @@
 #include <Physics/CollisionShapeComponent.hpp>
 #include <Physics/DynamicsMaterial.hpp>
 #include <Physics/Events.hpp>
+#include <Physics/PhysXInternalUtils.hpp>
 #include <Physics/PhysXWorld.hpp>
 #include <Physics/PhysicsWorldSingleton.hpp>
 #include <Physics/RigidBodyComponent.hpp>
@@ -103,12 +104,6 @@ void WorldUpdater::Execute () noexcept
 {
     auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
     auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-
-    if (!physicsWorld)
-    {
-        return;
-    }
-
     EnsurePhysicsWorldReady (physicsWorld);
     UpdateGravity (physicsWorld);
     UpdateRemoteDebugging (physicsWorld);
@@ -147,6 +142,20 @@ void WorldUpdater::EnsurePhysicsWorldReady (PhysicsWorldSingleton *_physicsWorld
         sceneDescriptor.cpuDispatcher = pxWorld.dispatcher;
         sceneDescriptor.filterShader = physx::PxDefaultSimulationFilterShader;
         pxWorld.scene = pxWorld.physics->createScene (sceneDescriptor);
+
+        for (uint16_t firstGroupIndex = 0u; firstGroupIndex < 32u; ++firstGroupIndex)
+        {
+            for (uint16_t secondGroupIndex = 0u; secondGroupIndex < 32u; ++secondGroupIndex)
+            {
+                const bool firstWithSecond = _physicsWorld->collisionMasks[firstGroupIndex] & (1u << secondGroupIndex);
+                const bool secondWithFirst = _physicsWorld->collisionMasks[secondGroupIndex] & (1u << firstGroupIndex);
+
+                // For simplicity, we treat `1->2 != 2->1` case as collision too.
+                // It allows user to avoid duplicating every group info.
+                const bool collides = firstWithSecond || secondWithFirst;
+                physx::PxSetGroupCollisionFlag (firstGroupIndex, secondGroupIndex, collides);
+            }
+        }
     }
 }
 
@@ -274,13 +283,8 @@ void MaterialInitializer::Execute () noexcept
 {
     auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
     auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-
-    if (!physicsWorld)
-    {
-        return;
-    }
-
     auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
+
     for (auto eventCursor = fetchMaterialAddedEvents.Execute ();
          const auto *event = static_cast<const DynamicsMaterialAddedEvent *> (*eventCursor); ++eventCursor)
     {
@@ -435,13 +439,8 @@ void ShapeInitializer::Execute ()
 {
     auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
     auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-
-    if (!physicsWorld)
-    {
-        return;
-    }
-
     auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
+
     for (auto eventCursor = fetchShapeAddedEvents.Execute ();
          const auto *event = static_cast<const CollisionShapeComponentAddedEvent *> (*eventCursor); ++eventCursor)
     {
@@ -725,13 +724,8 @@ void BodyInitializer::Execute ()
 {
     auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
     auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
-
-    if (!physicsWorld)
-    {
-        return;
-    }
-
     auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
+
     for (auto eventCursor = fetchBodyAddedEvents.Execute ();
          const auto *event = static_cast<const RigidBodyComponentAddedEvent *> (*eventCursor); ++eventCursor)
     {
@@ -757,10 +751,8 @@ void BodyInitializer::Execute ()
         }
 
         const Math::Transform3d &logicalTransform = transform->GetLogicalWorldTransform (transformWorldAccessor);
-        const physx::PxTransform pxTransform {
-            {logicalTransform.translation.x, logicalTransform.translation.y, logicalTransform.translation.z},
-            {logicalTransform.rotation.x, logicalTransform.rotation.y, logicalTransform.rotation.z,
-             logicalTransform.rotation.w}};
+        const physx::PxTransform pxTransform {ToPhysX (logicalTransform.translation),
+                                              ToPhysX (logicalTransform.rotation)};
 
         physx::PxRigidActor *pxActor = nullptr;
         switch (body->type)
@@ -772,6 +764,13 @@ void BodyInitializer::Execute ()
         }
 
         case RigidBodyType::KINEMATIC:
+        {
+            physx::PxRigidDynamic *pxBody = pxWorld.physics->createRigidDynamic (pxTransform);
+            pxActor = pxBody;
+            pxBody->setRigidBodyFlag (physx::PxRigidBodyFlag::eKINEMATIC, true);
+            break;
+        }
+
         case RigidBodyType::DYNAMIC:
         {
             physx::PxRigidDynamic *pxBody = pxWorld.physics->createRigidDynamic (pxTransform);
@@ -780,6 +779,20 @@ void BodyInitializer::Execute ()
             pxBody->setLinearDamping (body->linearDamping);
             pxBody->setAngularDamping (body->angularDamping);
             pxBody->setRigidBodyFlag (physx::PxRigidBodyFlag::eENABLE_CCD, body->continuousCollisionDetection);
+
+            pxBody->setLinearVelocity (ToPhysX (body->linearVelocity));
+            pxBody->setAngularVelocity (ToPhysX ({body->angularVelocity}));
+
+            if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
+            {
+                pxBody->addForce (ToPhysX (body->additiveLinearImpulse), physx::PxForceMode::eIMPULSE);
+            }
+
+            if (!Math::NearlyEqual (body->additiveAngularImpulse, Math::Vector3f::ZERO))
+            {
+                pxBody->addTorque (ToPhysX (body->additiveAngularImpulse), physx::PxForceMode::eIMPULSE);
+            }
+
             break;
         }
         }
@@ -793,6 +806,8 @@ void BodyInitializer::Execute ()
         {
             pxActor->attachShape (*static_cast<physx::PxShape *> (shape->implementationHandle));
         }
+
+        pxWorld.scene->addActor (*pxActor);
 
         // We can calculate body mass more effectively here, but there is no
         // sense to add complexity, because body addition is not common event.
@@ -882,7 +897,7 @@ void BodyMassSynchronizer::Execute ()
             continue;
         }
 
-        if (body->type == RigidBodyType::STATIC)
+        if (body->type != RigidBodyType::DYNAMIC)
         {
             // Static bodies have no mass.
             continue;
@@ -976,7 +991,9 @@ public:
 private:
     void SyncBodiesWithOutsideManipulations () noexcept;
 
-    void ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld) noexcept;
+    void UpdateKinematicTargets (float _timeStep) noexcept;
+
+    void ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept;
 
     void SyncKinematicAndDynamicBodies () noexcept;
 
@@ -1030,13 +1047,12 @@ void SimulationExecutor::Execute ()
     auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
     auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*physicsWorldCursor);
 
-    if (!physicsWorld)
-    {
-        return;
-    }
+    auto timeCursor = fetchTime.Execute ();
+    const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
 
     SyncBodiesWithOutsideManipulations ();
-    ExecuteSimulation (physicsWorld);
+    UpdateKinematicTargets (time->fixedDurationS);
+    ExecuteSimulation (physicsWorld, time->fixedDurationS);
     SyncKinematicAndDynamicBodies ();
 }
 
@@ -1184,32 +1200,26 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
         }
 
         const Math::Transform3d &logicalTransform = transform->GetLogicalWorldTransform (transformWorldAccessor);
-        pxActor->setGlobalPose (
-            {{logicalTransform.translation.x, logicalTransform.translation.y, logicalTransform.translation.z},
-             {logicalTransform.rotation.x, logicalTransform.rotation.y, logicalTransform.rotation.z,
-              logicalTransform.rotation.w}});
+        pxActor->setGlobalPose ({ToPhysX (logicalTransform.translation), ToPhysX (logicalTransform.rotation)});
 
-        if (auto *pxBody = dynamic_cast<physx::PxRigidBody *> (pxActor))
+        if (body->type == RigidBodyType::DYNAMIC)
         {
+            auto *pxBody = static_cast<physx::PxRigidBody *> (pxActor);
             pxBody->setLinearDamping (body->linearDamping);
             pxBody->setAngularDamping (body->angularDamping);
             pxBody->setRigidBodyFlag (physx::PxRigidBodyFlag::eENABLE_CCD, body->continuousCollisionDetection);
 
-            pxBody->setLinearVelocity ({body->linearVelocity.x, body->linearVelocity.y, body->linearVelocity.z});
-            pxBody->setAngularVelocity ({body->angularVelocity.x, body->angularVelocity.y, body->angularVelocity.z});
+            pxBody->setLinearVelocity (ToPhysX (body->linearVelocity));
+            pxBody->setAngularVelocity (ToPhysX (body->angularVelocity));
 
             if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
             {
-                pxBody->addForce (
-                    {body->additiveLinearImpulse.x, body->additiveLinearImpulse.y, body->additiveLinearImpulse.z},
-                    physx::PxForceMode::eIMPULSE);
+                pxBody->addForce (ToPhysX (body->additiveLinearImpulse), physx::PxForceMode::eIMPULSE);
             }
 
             if (!Math::NearlyEqual (body->additiveAngularImpulse, Math::Vector3f::ZERO))
             {
-                pxBody->addTorque (
-                    {body->additiveAngularImpulse.x, body->additiveAngularImpulse.y, body->additiveAngularImpulse.z},
-                    physx::PxForceMode::eIMPULSE);
+                pxBody->addTorque (ToPhysX (body->additiveAngularImpulse), physx::PxForceMode::eIMPULSE);
             }
         }
 
@@ -1222,56 +1232,64 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
     }
 }
 
-void SimulationExecutor::ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld) noexcept
+void SimulationExecutor::UpdateKinematicTargets (float _timeStep) noexcept
 {
-    auto timeCursor = fetchTime.Execute ();
-    const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
+    for (auto kinematicCursor = editKinematicBody.Execute ();
+         auto *body = static_cast<RigidBodyComponent *> (*kinematicCursor); ++kinematicCursor)
+    {
+        auto *pxBody = static_cast<physx::PxRigidDynamic *> (body->implementationHandle);
+        physx::PxTransform target = pxBody->getGlobalPose ();
 
+        target.p += ToPhysX (body->linearVelocity);
+        target.q *= ToPhysX (Math::Quaternion {body->angularVelocity * _timeStep});
+        target.q.normalize ();
+
+        pxBody->setKinematicTarget (target);
+    }
+}
+
+void SimulationExecutor::ExecuteSimulation (PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept
+{
     auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
     pxWorld.scene->setSimulationEventCallback (this);
-
     // TODO: Make use of scratch buffer?
-    pxWorld.scene->simulate (time->fixedDurationS);
+    pxWorld.scene->simulate (_timeStep);
     pxWorld.scene->fetchResults (true);
 }
 
 void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
 {
-    auto sync = [this] (RigidBodyComponent *_body)
+    auto syncTransform = [this] (RigidBodyComponent *_body)
     {
         auto *pxBody = static_cast<physx::PxRigidBody *> (_body->implementationHandle);
-        const physx::PxVec3 &pxLinearVelocity = pxBody->getLinearVelocity ();
-        const physx::PxVec3 &pxAngularVelocity = pxBody->getAngularVelocity ();
-
-        _body->linearVelocity = {pxLinearVelocity.x, pxLinearVelocity.y, pxLinearVelocity.z};
-        _body->angularVelocity = {pxAngularVelocity.x, pxAngularVelocity.y, pxAngularVelocity.z};
-
-        _body->additiveLinearImpulse = Math::Vector3f::ZERO;
-        _body->additiveAngularImpulse = Math::Vector3f::ZERO;
-
         auto transformCursor = editTransformByObjectId.Execute (&_body->objectId);
+
         if (auto *transform = static_cast<Transform::Transform3dComponent *> (*transformCursor))
         {
             const physx::PxTransform &pxTransform = pxBody->getGlobalPose ();
             const Math::Vector3f &scale = transform->GetLogicalLocalTransform ().scale;
 
             // TODO: Currently, we assume that non-static bodies are attached to transform root elements only.
-            transform->SetLogicalLocalTransform ({{pxTransform.p.x, pxTransform.p.y, pxTransform.p.z},
-                                                  {pxTransform.q.x, pxTransform.q.y, pxTransform.q.z, pxTransform.q.w},
-                                                  scale});
+            transform->SetLogicalLocalTransform ({FromPhysX (pxTransform.p), FromPhysX (pxTransform.q), scale});
         }
     };
 
     for (auto kinematicCursor = editKinematicBody.Execute ();
          auto *body = static_cast<RigidBodyComponent *> (*kinematicCursor); ++kinematicCursor)
     {
-        sync (body);
+        syncTransform (body);
     }
 
     for (auto dynamicCursor = editDynamicBody.Execute ();
          auto *body = static_cast<RigidBodyComponent *> (*dynamicCursor); ++dynamicCursor)
     {
-        sync (body);
+        auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle);
+        body->linearVelocity = FromPhysX (pxBody->getLinearVelocity ());
+        body->angularVelocity = FromPhysX (pxBody->getAngularVelocity ());
+
+        body->additiveLinearImpulse = Math::Vector3f::ZERO;
+        body->additiveAngularImpulse = Math::Vector3f::ZERO;
+        syncTransform (body);
     }
 }
 
@@ -1352,9 +1370,8 @@ static void UpdateShapeLocalPose (const CollisionShapeComponent *_shape, const M
         Math::Transform3d {Math::Vector3f::ZERO, Math::Quaternion::IDENTITY, _worldScale} *
         Math::Transform3d {_shape->translation, _shape->rotation, Math::Vector3f::ONE};
 
-    pxShape->setLocalPose (physx::PxTransform {
-        {localTransform.translation.x, localTransform.translation.y, localTransform.translation.z},
-        {localTransform.rotation.x, localTransform.rotation.y, localTransform.rotation.z, localTransform.rotation.w}});
+    pxShape->setLocalPose (
+        physx::PxTransform {ToPhysX (localTransform.translation), ToPhysX (localTransform.rotation)});
 }
 
 static void UpdateShapeFilter (const CollisionShapeComponent *_shape) noexcept

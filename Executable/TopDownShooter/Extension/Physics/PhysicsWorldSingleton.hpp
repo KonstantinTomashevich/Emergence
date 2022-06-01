@@ -28,7 +28,9 @@ struct PhysicsWorldSingleton final
     /// \invariant Do not access directly, use ::GenerateShapeUID.
     std::atomic_unsigned_lock_free shapeUIDCounter = 0u;
 
-    // TODO: Collision masks.
+    /// \invariant Can not be changed after first physics simulation during fixed frame.
+    ///            It is advised to fill this data from custom configuration routine.
+    std::array<uint32_t, 32u> collisionMasks;
 
     std::array<uint8_t, 88u> implementationBlock;
 
@@ -43,6 +45,7 @@ struct PhysicsWorldSingleton final
         Emergence::StandardLayout::FieldId enableRemoteDebugger;
         Emergence::StandardLayout::FieldId remoteDebuggerUrl;
         Emergence::StandardLayout::FieldId remoteDebuggerPort;
+        std::array<Emergence::StandardLayout::FieldId, 32u> collisionMasks;
         Emergence::StandardLayout::Mapping mapping;
     };
 
