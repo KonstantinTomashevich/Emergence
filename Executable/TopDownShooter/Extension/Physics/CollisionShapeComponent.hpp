@@ -35,6 +35,9 @@ struct CollisionShapeComponent final
     bool trigger = false;
     bool visibleToWorldQueries = true;
 
+    /// \brief Whether collision shape should send events on physical contact during simulation.
+    bool sendContactEvents = false;
+
     /// \invariant < 32u
     uint8_t collisionGroup = 0u;
 
@@ -51,6 +54,7 @@ struct CollisionShapeComponent final
         Emergence::StandardLayout::FieldId enabled;
         Emergence::StandardLayout::FieldId trigger;
         Emergence::StandardLayout::FieldId visibleToWorldQueries;
+        Emergence::StandardLayout::FieldId sendContactEvents;
         Emergence::StandardLayout::FieldId collisionGroup;
         Emergence::StandardLayout::FieldId implementationHandle;
         Emergence::StandardLayout::Mapping mapping;

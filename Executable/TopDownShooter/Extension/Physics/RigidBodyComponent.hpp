@@ -31,11 +31,10 @@ struct RigidBodyComponent final
     bool affectedByGravity = true;
 
     /// \brief Whether rigid body transform, flags, attributes, velocity or impulse
-    ///        can be edited outside of physics simulation.
+    ///        can be edited outside of physics simulation after object creation
+    /// \details Can be turned on and off at any time. Use it to dynamically enable
+    ///          observation when needed and disable when it is no longer needed.
     bool manipulatedOutsideOfSimulation = false;
-
-    /// \brief Whether rigid body should send events on physical contact during simulation.
-    bool sendContactEvents = false;
 
     Math::Vector3f linearVelocity = Math::Vector3f::ZERO;
     Math::Vector3f angularVelocity = Math::Vector3f::ZERO;
@@ -54,7 +53,6 @@ struct RigidBodyComponent final
         Emergence::StandardLayout::FieldId continuousCollisionDetection;
         Emergence::StandardLayout::FieldId affectedByGravity;
         Emergence::StandardLayout::FieldId manipulatedOutsideOfSimulation;
-        Emergence::StandardLayout::FieldId sendContactEvents;
         Emergence::StandardLayout::FieldId linearVelocity;
         Emergence::StandardLayout::FieldId angularVelocity;
         Emergence::StandardLayout::FieldId additiveLinearImpulse;

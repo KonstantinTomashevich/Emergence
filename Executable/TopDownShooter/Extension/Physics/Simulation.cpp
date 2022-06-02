@@ -78,6 +78,14 @@ static void ConstructPxShape (CollisionShapeComponent *_shape,
                               const physx::PxMaterial &_pxMaterial,
                               const Math::Vector3f &_worldScale) noexcept;
 
+static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes _attributes0,
+                                                 physx::PxFilterData _filterData0,
+                                                 physx::PxFilterObjectAttributes _attributes1,
+                                                 physx::PxFilterData _filterData1,
+                                                 physx::PxPairFlags &_pairFlags,
+                                                 const void *_constantBlock,
+                                                 physx::PxU32 /*unused*/);
+
 class WorldUpdater final : public Celerity::TaskExecutorBase<WorldUpdater>
 {
 public:
@@ -150,7 +158,7 @@ void WorldUpdater::EnsurePhysicsWorldReady (const PhysicsWorldSingleton *_physic
         physx::PxSceneDesc sceneDescriptor {pxWorld.physics->getTolerancesScale ()};
         sceneDescriptor.gravity = {_physicsWorld->gravity.x, _physicsWorld->gravity.y, _physicsWorld->gravity.z};
         sceneDescriptor.cpuDispatcher = pxWorld.dispatcher;
-        sceneDescriptor.filterShader = physx::PxDefaultSimulationFilterShader;
+        sceneDescriptor.filterShader = PhysicsFilterShader;
 
         pxWorld.scene = pxWorld.physics->createScene (sceneDescriptor);
         UpdateCollisionMask (_physicsWorld);
@@ -172,19 +180,8 @@ void WorldUpdater::UpdateConfiguration (const PhysicsWorldSingleton *_physicsWor
 
 void WorldUpdater::UpdateCollisionMask (const PhysicsWorldSingleton *_physicsWorld) noexcept
 {
-    for (uint16_t firstGroupIndex = 0u; firstGroupIndex < 32u; ++firstGroupIndex)
-    {
-        for (uint16_t secondGroupIndex = 0u; secondGroupIndex < 32u; ++secondGroupIndex)
-        {
-            const bool firstWithSecond = _physicsWorld->collisionMasks[firstGroupIndex] & (1u << secondGroupIndex);
-            const bool secondWithFirst = _physicsWorld->collisionMasks[secondGroupIndex] & (1u << firstGroupIndex);
-
-            // For simplicity, we treat `1->2 != 2->1` case as collision too.
-            // It allows user to avoid duplicating every group info.
-            const bool collides = firstWithSecond || secondWithFirst;
-            physx::PxSetGroupCollisionFlag (firstGroupIndex, secondGroupIndex, collides);
-        }
-    }
+    const auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+    pxWorld.scene->setFilterShaderData (_physicsWorld->collisionMasks.data (), sizeof (_physicsWorld->collisionMasks));
 }
 
 void WorldUpdater::UpdateRemoteDebugging (const PhysicsWorldSingleton *_physicsWorld) noexcept
@@ -1109,14 +1106,6 @@ void SimulationExecutor::onContact (const physx::PxContactPairHeader &_pairHeade
         return;
     }
 
-    const auto *firstBody = static_cast<const RigidBodyComponent *> (_pairHeader.actors[0u]->userData);
-    const auto *secondBody = static_cast<const RigidBodyComponent *> (_pairHeader.actors[1u]->userData);
-
-    if (!firstBody->sendContactEvents && !secondBody->sendContactEvents)
-    {
-        return;
-    }
-
     for (uint32_t index = 0u; index < _nbPairs; ++index)
     {
         const physx::PxContactPair &pair = _pairs[index];
@@ -1128,6 +1117,7 @@ void SimulationExecutor::onContact (const physx::PxContactPairHeader &_pairHeade
 
         const auto *firstShape = static_cast<const CollisionShapeComponent *> (pair.shapes[0u]->userData);
         const auto *secondShape = static_cast<const CollisionShapeComponent *> (pair.shapes[1u]->userData);
+        assert (firstShape->sendContactEvents || secondShape->sendContactEvents);
 
 #define FILL_EVENT                                                                                                     \
     event->firstObjectId = firstShape->objectId;                                                                       \
@@ -1403,7 +1393,8 @@ static void UpdateShapeLocalPose (const CollisionShapeComponent *_shape, const M
 static void UpdateShapeFilter (const CollisionShapeComponent *_shape) noexcept
 {
     auto *pxShape = static_cast<physx::PxShape *> (_shape->implementationHandle);
-    const physx::PxFilterData filterData {static_cast<uint32_t> (_shape->collisionGroup), 0u, 0u, 0u};
+    const physx::PxFilterData filterData {static_cast<uint32_t> (_shape->collisionGroup),
+                                          _shape->sendContactEvents ? 1u : 0u, 0u, 0u};
     pxShape->setSimulationFilterData (filterData);
     pxShape->setQueryFilterData (filterData);
 }
@@ -1452,6 +1443,43 @@ static void ConstructPxShape (CollisionShapeComponent *_shape,
 
     UpdateShapeLocalPose (_shape, _worldScale);
     UpdateShapeFilter (_shape);
+}
+
+static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes _attributes0,
+                                                 physx::PxFilterData _filterData0,
+                                                 physx::PxFilterObjectAttributes _attributes1,
+                                                 physx::PxFilterData _filterData1,
+                                                 physx::PxPairFlags &_pairFlags,
+                                                 const void *_constantBlock,
+                                                 physx::PxU32 /*unused*/)
+{
+    const auto &collisionMasks = *static_cast<const std::array<uint32_t, 32u> *> (_constantBlock);
+    const bool collision0to1 = collisionMasks[_filterData0.word0] & (1u << _filterData1.word0);
+    const bool collision1to0 = collisionMasks[_filterData1.word0] & (1u << _filterData0.word0);
+
+    if (collision0to1 || collision1to0)
+    {
+        _pairFlags = physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
+        if (physx::PxFilterObjectIsTrigger (_attributes0) || physx::PxFilterObjectIsTrigger (_attributes1))
+        {
+            // Trigger collisions are always reported.
+            _pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND | physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
+        }
+        else
+        {
+            _pairFlags |= physx::PxPairFlag::eSOLVE_CONTACT;
+            if (_filterData0.word1 || _filterData1.word1)
+            {
+                // Contact reporting enabled for first or second shape.
+                _pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND | physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS |
+                             physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
+            }
+        }
+
+        return physx::PxFilterFlag::eDEFAULT;
+    }
+
+    return physx::PxFilterFlag::eSUPPRESS;
 }
 
 const Memory::UniqueString Checkpoint::SIMULATION_STARTED {"PhysicsSimulationStarted"};

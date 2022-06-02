@@ -161,6 +161,7 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
              CollisionShapeComponent::Reflect ().enabled,
              CollisionShapeComponent::Reflect ().trigger,
              CollisionShapeComponent::Reflect ().visibleToWorldQueries,
+             CollisionShapeComponent::Reflect ().sendContactEvents,
              CollisionShapeComponent::Reflect ().collisionGroup,
          },
          {},

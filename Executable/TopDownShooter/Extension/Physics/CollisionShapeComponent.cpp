@@ -25,6 +25,7 @@ const CollisionShapeComponent::Reflection &CollisionShapeComponent::Reflect () n
         EMERGENCE_MAPPING_REGISTER_REGULAR (enabled)
         EMERGENCE_MAPPING_REGISTER_REGULAR (trigger)
         EMERGENCE_MAPPING_REGISTER_REGULAR (visibleToWorldQueries)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (sendContactEvents)
         EMERGENCE_MAPPING_REGISTER_REGULAR (collisionGroup)
         EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR (implementationHandle)
         EMERGENCE_MAPPING_REGISTRATION_END ()
