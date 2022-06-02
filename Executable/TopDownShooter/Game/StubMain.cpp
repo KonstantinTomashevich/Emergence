@@ -282,7 +282,9 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
     constexpr const uint64_t NS_PERIOD = 3000000000u;
     const uint64_t nsGlobal = Emergence::Time::NanosecondsSinceStartup ();
     const uint64_t nsLocal = nsGlobal % NS_PERIOD;
-    const float angle = M_PI * 2.0f * (static_cast<float> (nsLocal) / static_cast<float> (NS_PERIOD));
+
+    const float angle =
+        static_cast<float> (M_PI) * 2.0f * (static_cast<float> (nsLocal) / static_cast<float> (NS_PERIOD));
 
     lightNode->LookAt ({cos (angle), -1.0f, sin (angle)});
     // playerNode->SetPosition ({cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f});

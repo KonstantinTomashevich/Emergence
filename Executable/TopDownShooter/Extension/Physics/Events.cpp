@@ -145,9 +145,9 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
         {{CollisionShapeComponentGeometryChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
          CollisionShapeComponent::Reflect ().mapping,
          {
-             CollisionShapeComponent::Reflect ().geometry,
-             CollisionShapeComponent::Reflect ().translation,
              CollisionShapeComponent::Reflect ().rotation,
+             CollisionShapeComponent::Reflect ().translation,
+             CollisionShapeComponent::Reflect ().geometry,
          },
          {},
          {{CollisionShapeComponent::Reflect ().shapeId,

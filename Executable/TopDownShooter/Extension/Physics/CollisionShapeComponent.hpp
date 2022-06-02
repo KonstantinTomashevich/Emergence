@@ -22,14 +22,14 @@ struct CollisionShapeComponent final
 
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
 
-    Memory::UniqueString materialId;
+    Math::Quaternion rotation = Math::Quaternion::IDENTITY;
+
+    Math::Vector3f translation = Math::Vector3f::ONE;
 
     /// \invariant Geometry type cannot be changed after initialization!
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
 
-    Math::Vector3f translation = Math::Vector3f::ONE;
-
-    Math::Quaternion rotation = Math::Quaternion::IDENTITY;
+    Memory::UniqueString materialId;
 
     bool enabled = true;
     bool trigger = false;
@@ -47,10 +47,10 @@ struct CollisionShapeComponent final
     {
         Emergence::StandardLayout::FieldId shapeId;
         Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId materialId;
-        Emergence::StandardLayout::FieldId geometry;
-        Emergence::StandardLayout::FieldId translation;
         Emergence::StandardLayout::FieldId rotation;
+        Emergence::StandardLayout::FieldId translation;
+        Emergence::StandardLayout::FieldId geometry;
+        Emergence::StandardLayout::FieldId materialId;
         Emergence::StandardLayout::FieldId enabled;
         Emergence::StandardLayout::FieldId trigger;
         Emergence::StandardLayout::FieldId visibleToWorldQueries;

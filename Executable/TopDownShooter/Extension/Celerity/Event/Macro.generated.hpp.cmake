@@ -5,8 +5,10 @@ string (APPEND CONTENT "// Macros for declaration and implementation of Celerity
 string (APPEND CONTENT "// There could be a lot of small simple events and these macros make event addition easy.\n\n")
 
 string (APPEND CONTENT "#define EMERGENCE_CELERITY_EVENT0_DECLARATION(Class)\\\n")
-string (APPEND CONTENT "    struct alignas (sizeof (uintptr_t)) Class final\\\n")
+string (APPEND CONTENT "    struct Class final\\\n")
 string (APPEND CONTENT "    {\\\n")
+string (APPEND CONTENT "        [[maybe_unused]] uintptr_t alignmentFixer;\\\n")
+string (APPEND CONTENT "\\\n")
 string (APPEND CONTENT "        bool operator== (const Class &_other) const = default;\\\n")
 string (APPEND CONTENT "\\\n")
 string (APPEND CONTENT "        struct Reflection final\\\n")

@@ -21,8 +21,6 @@ public:
 
     using ConstIterator = typename std::array<Item, Capacity>::const_iterator;
 
-    static constexpr std::size_t MaxSize = Capacity;
-
     /// \brief Constructs empty inplace vector without initializing reserved memory.
     InplaceVector () noexcept;
 

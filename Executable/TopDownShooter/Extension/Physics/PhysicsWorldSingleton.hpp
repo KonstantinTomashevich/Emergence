@@ -16,7 +16,7 @@ struct PhysicsWorldSingleton final
     float toleranceLength = 1.0f;
     float toleranceSpeed = 10.0f;
 
-    uint8_t simulationMaxThreads = std::thread::hardware_concurrency ();
+    uint8_t simulationMaxThreads = static_cast<uint8_t>(std::thread::hardware_concurrency ());
     bool enableMemoryProfiling = false;
 
     /// \details Can be changed from fixed pipeline.

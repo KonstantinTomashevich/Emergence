@@ -932,7 +932,7 @@ void BodyMassSynchronizer::Execute ()
 
         auto *pxBody = static_cast<physx::PxRigidBody *> (body->implementationHandle);
         shapes.resize (pxBody->getNbShapes ());
-        pxBody->getShapes (shapes.data (), shapes.size ());
+        pxBody->getShapes (shapes.data (), static_cast<physx::PxU32> (shapes.size ()));
 
         for (auto iterator = shapes.begin (); iterator != shapes.end ();)
         {
@@ -982,7 +982,8 @@ void BodyMassSynchronizer::Execute ()
 
         if (shapesFound == shapes.size ())
         {
-            physx::PxRigidBodyExt::updateMassAndInertia (*pxBody, densities.data (), densities.size ());
+            physx::PxRigidBodyExt::updateMassAndInertia (*pxBody, densities.data (),
+                                                         static_cast<physx::PxU32> (densities.size ()));
         }
         else
         {

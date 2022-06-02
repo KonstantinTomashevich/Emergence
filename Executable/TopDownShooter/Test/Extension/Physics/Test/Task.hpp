@@ -1,5 +1,11 @@
 #pragma once
 
+#if defined(_MSC_VER) && !defined(__clang__)
+#    pragma warning(push)
+// We do not care about excessive padding in test tasks. Also, we need to do it before variant declaration.
+#    pragma warning(disable : 4324)
+#endif
+
 #include <variant>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -190,3 +196,7 @@ constexpr float TEST_FIXED_FRAME_S = 1.0f / 60.0f;
 void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
                       Container::Vector<ValidatorFrame> _validatorFrames);
 } // namespace Emergence::Physics::Test
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#    pragma warning(pop)
+#endif
