@@ -1,8 +1,5 @@
 #include <Physics/CollisionShapeComponent.hpp>
 
-#include <PxRigidActor.h>
-#include <PxShape.h>
-
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Physics

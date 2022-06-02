@@ -14,6 +14,7 @@
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
 
+BEGIN_MUTING_WARNINGS
 #include <PxFoundation.h>
 #include <PxPhysics.h>
 #include <PxPhysicsVersion.h>
@@ -29,6 +30,7 @@
 #include <extensions/PxSimpleFactory.h>
 #include <pvd/PxPvd.h>
 #include <pvd/PxPvdTransport.h>
+END_MUTING_WARNINGS
 
 #include <Shared/CelerityUtils.hpp>
 

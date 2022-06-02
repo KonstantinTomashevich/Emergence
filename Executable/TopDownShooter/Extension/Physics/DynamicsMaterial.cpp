@@ -1,7 +1,5 @@
 #include <Physics/DynamicsMaterial.hpp>
 
-#include <PxMaterial.h>
-
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Physics

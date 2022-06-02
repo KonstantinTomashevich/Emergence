@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
@@ -17,6 +19,7 @@
 #include <Physics/RigidBodyComponent.hpp>
 #include <Physics/Simulation.hpp>
 
+BEGIN_MUTING_WARNINGS
 #include <PxMaterial.h>
 #include <PxPhysicsVersion.h>
 #include <PxRigidBody.h>
@@ -27,6 +30,7 @@
 #include <extensions/PxDefaultSimulationFilterShader.h>
 #include <extensions/PxRigidBodyExt.h>
 #include <pvd/PxPvdTransport.h>
+END_MUTING_WARNINGS
 
 #include <SyntaxSugar/BlockCast.hpp>
 

@@ -2,10 +2,13 @@
 
 #include <variant>
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <API/Common/Shortcuts.hpp>
 
 #include <Memory/Heap.hpp>
 
+BEGIN_MUTING_WARNINGS
 #include <PxFoundation.h>
 #include <PxPhysics.h>
 #include <PxScene.h>
@@ -13,6 +16,7 @@
 #include <extensions/PxDefaultCpuDispatcher.h>
 #include <extensions/PxDefaultErrorCallback.h>
 #include <pvd/PxPvd.h>
+END_MUTING_WARNINGS
 
 namespace Emergence::Physics
 {

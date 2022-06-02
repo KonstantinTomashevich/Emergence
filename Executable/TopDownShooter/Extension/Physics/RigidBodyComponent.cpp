@@ -1,7 +1,5 @@
 #include <Physics/RigidBodyComponent.hpp>
 
-#include <PxRigidBody.h>
-
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Physics
