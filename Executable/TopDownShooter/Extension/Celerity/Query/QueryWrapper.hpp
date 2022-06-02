@@ -205,6 +205,7 @@
     }
 
 #define EMERGENCE_CELERITY_WRITE_CURSOR_EDITABLE_READ_IMPLEMENTATION(QueryClass)                                       \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
     void *QueryClass::Cursor::operator* () noexcept                                                                    \
     {                                                                                                                  \
         return *source;                                                                                                \
