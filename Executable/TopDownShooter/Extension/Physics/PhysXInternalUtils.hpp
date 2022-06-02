@@ -1,7 +1,11 @@
 #pragma once
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_WARNINGS
 #include <foundation/PxQuat.h>
 #include <foundation/PxVec3.h>
+END_MUTING_WARNINGS
 
 #include <Math/Quaternion.hpp>
 #include <Math/Transform3d.hpp>
