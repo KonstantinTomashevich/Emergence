@@ -803,17 +803,6 @@ void BodyInitializer::Execute ()
 
             pxBody->setLinearVelocity (ToPhysX (body->linearVelocity));
             pxBody->setAngularVelocity (ToPhysX ({body->angularVelocity}));
-
-            if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
-            {
-                pxBody->addForce (ToPhysX (body->additiveLinearImpulse), physx::PxForceMode::eIMPULSE);
-            }
-
-            if (!Math::NearlyEqual (body->additiveAngularImpulse, Math::Vector3f::ZERO))
-            {
-                pxBody->addTorque (ToPhysX (body->additiveAngularImpulse), physx::PxForceMode::eIMPULSE);
-            }
-
             break;
         }
         }
@@ -829,6 +818,19 @@ void BodyInitializer::Execute ()
         }
 
         pxWorld.scene->addActor (*pxActor);
+        if (body->type == RigidBodyType::DYNAMIC)
+        {
+            auto *pxBody = static_cast<physx::PxRigidDynamic *> (pxActor);
+            if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
+            {
+                pxBody->addForce (ToPhysX (body->additiveLinearImpulse), physx::PxForceMode::eIMPULSE);
+            }
+
+            if (!Math::NearlyEqual (body->additiveAngularImpulse, Math::Vector3f::ZERO))
+            {
+                pxBody->addTorque (ToPhysX (body->additiveAngularImpulse), physx::PxForceMode::eIMPULSE);
+            }
+        }
 
         // We can calculate body mass more effectively here, but there is no
         // sense to add complexity, because body addition is not common event.
@@ -1205,6 +1207,8 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
          auto *body = static_cast<RigidBodyComponent *> (*bodyCursor); ++bodyCursor)
     {
         auto *pxActor = static_cast<physx::PxRigidActor *> (body->implementationHandle);
+        pxActor->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, !body->affectedByGravity);
+
         auto transformCursor = fetchTransformByObjectId.Execute (&body->objectId);
         const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
 
@@ -1472,7 +1476,7 @@ static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes
             {
                 // Contact reporting enabled for first or second shape.
                 _pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND | physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS |
-                             physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
+                              physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
             }
         }
 

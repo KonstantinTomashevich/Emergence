@@ -12,6 +12,7 @@
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Physics/CollisionGeometry.hpp>
+#include <Physics/Events.hpp>
 #include <Physics/RigidBodyComponent.hpp>
 
 namespace Emergence::Physics::Test
@@ -65,16 +66,18 @@ struct RigidBodyData
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
     RigidBodyType type = RigidBodyType::STATIC;
 
+    Math::Vector3f linearVelocity = Math::Vector3f::ZERO;
+    Math::Vector3f angularVelocity = Math::Vector3f::ZERO;
+
     float linearDamping = 0.0f;
     float angularDamping = 0.05f;
 
     bool continuousCollisionDetection = false;
     bool affectedByGravity = true;
     bool manipulatedOutsideOfSimulation = false;
-    bool sendContactEvents = false;
 
-    Math::Vector3f linearVelocity = Math::Vector3f::ZERO;
-    Math::Vector3f angularVelocity = Math::Vector3f::ZERO;
+    Math::Vector3f additiveLinearImpulse = Math::Vector3f::ZERO;
+    Math::Vector3f additiveAngularImpulse = Math::Vector3f::ZERO;
 };
 
 struct AddRigidBody final : public RigidBodyData
@@ -90,18 +93,20 @@ struct RemoveRigidBody final
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
 };
 
-struct CollisionShapeData {
+struct CollisionShapeData
+{
     Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
     Memory::UniqueString materialId;
 
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
-    Math::Vector3f translation = Math::Vector3f::ONE;
+    Math::Vector3f translation = Math::Vector3f::ZERO;
     Math::Quaternion rotation = Math::Quaternion::IDENTITY;
 
     bool enabled = true;
     bool trigger = false;
     bool visibleToWorldQueries = true;
+    bool sendContactEvents = false;
     uint8_t collisionGroup = 0u;
 };
 
@@ -119,7 +124,8 @@ struct RemoveCollisionShape final
 };
 } // namespace ConfiguratorTasks
 
-using ConfiguratorTask = std::variant<ConfiguratorTasks::AddDynamicsMaterial,ConfiguratorTasks::UpdateDynamicsMaterial,
+using ConfiguratorTask = std::variant<ConfiguratorTasks::AddDynamicsMaterial,
+                                      ConfiguratorTasks::UpdateDynamicsMaterial,
                                       ConfiguratorTasks::RemoveDynamicsMaterial,
                                       ConfiguratorTasks::AddTransform,
                                       ConfiguratorTasks::UpdateTransform,
@@ -150,10 +156,28 @@ struct CheckCollisionShapeExistence final
     Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
     bool shouldExist = false;
 };
+
+struct CheckObjectTransform final
+{
+    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    Math::Transform3d transform {Math::Vector3f::ZERO, Math::Quaternion::IDENTITY, Math::Vector3f::ONE};
+};
+
+struct CheckEvents final
+{
+    Container::Vector<ContactFoundEvent> contactFound;
+    Container::Vector<ContactPersistsEvent> contactPersists;
+    Container::Vector<ContactLostEvent> contactLost;
+
+    Container::Vector<TriggerEnteredEvent> triggerEntered;
+    Container::Vector<TriggerExitedEvent> triggerExited;
+};
 } // namespace ValidatorTasks
 
-using ValidatorTask =
-    std::variant<ValidatorTasks::CheckRigidBodyExistence, ValidatorTasks::CheckCollisionShapeExistence>;
+using ValidatorTask = std::variant<ValidatorTasks::CheckRigidBodyExistence,
+                                   ValidatorTasks::CheckCollisionShapeExistence,
+                                   ValidatorTasks::CheckObjectTransform,
+                                   ValidatorTasks::CheckEvents>;
 
 struct ValidatorFrame final
 {

@@ -9,6 +9,7 @@
 #include <Physics/CollisionShapeComponent.hpp>
 #include <Physics/DynamicsMaterial.hpp>
 #include <Physics/Events.hpp>
+#include <Physics/PhysicsWorldSingleton.hpp>
 #include <Physics/Simulation.hpp>
 #include <Physics/Test/Task.hpp>
 
@@ -16,6 +17,7 @@
 
 #include <Transform/Events.hpp>
 #include <Transform/Transform3dComponent.hpp>
+#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Emergence::Physics::Test
 {
@@ -30,6 +32,8 @@ private:
     uint64_t currentFrameIndex = 0u;
     Container::Vector<ConfiguratorFrame> frames;
     Container::Vector<ConfiguratorFrame>::const_iterator framesIterator;
+
+    Celerity::ModifySingletonQuery modifyPhysicsWorld;
 
     Celerity::InsertLongTermQuery insertMaterial;
     Celerity::ModifyValueQuery modifyMaterialById;
@@ -49,6 +53,8 @@ Configurator::Configurator (Celerity::TaskConstructor &_constructor,
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
+      modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+
       insertMaterial (_constructor.MInsertLongTerm (DynamicsMaterial)),
       modifyMaterialById (_constructor.MModifyValue1F (DynamicsMaterial, id)),
 
@@ -66,7 +72,19 @@ Configurator::Configurator (Celerity::TaskConstructor &_constructor,
 
 void Configurator::Execute ()
 {
-    if (framesIterator == frames.end () || framesIterator->frameIndex < currentFrameIndex)
+    if (currentFrameIndex == 0u)
+    {
+        // Fill test collision mask during first frame. For simplicity, group X collides only with group X objects.
+        auto worldCursor = modifyPhysicsWorld.Execute ();
+        auto *physicsWorld = static_cast<PhysicsWorldSingleton *> (*worldCursor);
+
+        for (std::size_t group = 0u; group < physicsWorld->collisionMasks.size (); ++group)
+        {
+            physicsWorld->collisionMasks[group] = 1u << group;
+        }
+    }
+
+    if (framesIterator == frames.end () || framesIterator->frameIndex > currentFrameIndex)
     {
         ++currentFrameIndex;
         return;
@@ -148,9 +166,10 @@ void Configurator::Execute ()
     body->continuousCollisionDetection = _task.continuousCollisionDetection;                                           \
     body->affectedByGravity = _task.affectedByGravity;                                                                 \
     body->manipulatedOutsideOfSimulation = _task.manipulatedOutsideOfSimulation;                                       \
-    body->sendContactEvents = _task.sendContactEvents;                                                                 \
     body->linearVelocity = _task.linearVelocity;                                                                       \
-    body->angularVelocity = _task.angularVelocity
+    body->angularVelocity = _task.angularVelocity;                                                                     \
+    body->additiveLinearImpulse = _task.additiveLinearImpulse;                                                         \
+    body->additiveAngularImpulse = _task.additiveAngularImpulse
 
                     FILL_BODY;
                 }
@@ -189,6 +208,7 @@ void Configurator::Execute ()
     shape->enabled = _task.enabled;                                                                                    \
     shape->trigger = _task.trigger;                                                                                    \
     shape->visibleToWorldQueries = _task.visibleToWorldQueries;                                                        \
+    shape->sendContactEvents = _task.sendContactEvents;                                                                \
     shape->collisionGroup = _task.collisionGroup
 
                     FILL_SHAPE;
@@ -235,6 +255,9 @@ private:
     Celerity::FetchValueQuery fetchBodyById;
     Celerity::FetchValueQuery fetchShapeByShapeId;
 
+    Celerity::FetchValueQuery fetchTransformById;
+    Transform::Transform3dWorldAccessor transformWorldAccessor;
+
     Celerity::FetchSequenceQuery fetchContactFoundEvents;
     Celerity::FetchSequenceQuery fetchContactPersistsEvents;
     Celerity::FetchSequenceQuery fetchContactLostEvents;
@@ -250,6 +273,9 @@ Validator::Validator (Celerity::TaskConstructor &_constructor, Container::Vector
       fetchBodyById (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
       fetchShapeByShapeId (_constructor.MFetchValue1F (CollisionShapeComponent, shapeId)),
 
+      fetchTransformById (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
+      transformWorldAccessor (_constructor),
+
       fetchContactFoundEvents (_constructor.MFetchSequence (ContactFoundEvent)),
       fetchContactPersistsEvents (_constructor.MFetchSequence (ContactPersistsEvent)),
       fetchContactLostEvents (_constructor.MFetchSequence (ContactLostEvent)),
@@ -262,7 +288,7 @@ Validator::Validator (Celerity::TaskConstructor &_constructor, Container::Vector
 
 void Validator::Execute () noexcept
 {
-    if (framesIterator == frames.end () || framesIterator->frameIndex < currentFrameIndex)
+    if (framesIterator == frames.end () || framesIterator->frameIndex > currentFrameIndex)
     {
         ++currentFrameIndex;
         return;
@@ -292,6 +318,83 @@ void Validator::Execute () noexcept
                     auto cursor = fetchShapeByShapeId.Execute (&_task.shapeId);
                     const bool exists = *cursor;
                     CHECK_EQUAL (exists, _task.shouldExist);
+                }
+                else if constexpr (std::is_same_v<Type, ValidatorTasks::CheckObjectTransform>)
+                {
+                    LOG ("Checking that transform of an object ", _task.objectId, " is equal to {{",
+                         _task.transform.translation.x, ", ", _task.transform.translation.y, ", ",
+                         _task.transform.translation.z, "}, {", _task.transform.rotation.x, ", ",
+                         _task.transform.rotation.y, ", ", _task.transform.rotation.z, ", ", _task.transform.rotation.w,
+                         "}, {", _task.transform.scale.x, ", ", _task.transform.scale.y, ", ", _task.transform.scale.z,
+                         "}.");
+
+                    auto cursor = fetchTransformById.Execute (&_task.objectId);
+                    const auto *transform = static_cast<const Transform::Transform3dComponent *> (*cursor);
+                    REQUIRE (transform);
+
+                    const Math::Transform3d &worldTransform =
+                        transform->GetLogicalWorldTransform (transformWorldAccessor);
+
+                    // We use custom equality check, because we need very high custom epsilon.
+                    // This epsilon is needed because it is difficult to receive integer results with 60 FPS delta.
+                    auto nearlyEqual = [] (float _x, float _y, float _epsilon)
+                    {
+                        const float difference = _x - _y;
+                        return difference > -_epsilon && difference < _epsilon;
+                    };
+
+                    LOG (worldTransform.translation.y);
+
+                    CHECK (nearlyEqual (worldTransform.translation.x, _task.transform.translation.x, 0.05f));
+                    CHECK (nearlyEqual (worldTransform.translation.y, _task.transform.translation.y, 0.05f));
+                    CHECK (nearlyEqual (worldTransform.translation.z, _task.transform.translation.z, 0.05f));
+
+                    CHECK (nearlyEqual (worldTransform.rotation.x, _task.transform.rotation.x, 0.001f));
+                    CHECK (nearlyEqual (worldTransform.rotation.y, _task.transform.rotation.y, 0.001f));
+                    CHECK (nearlyEqual (worldTransform.rotation.z, _task.transform.rotation.z, 0.001f));
+                    CHECK (nearlyEqual (worldTransform.rotation.w, _task.transform.rotation.w, 0.001f));
+
+                    CHECK (nearlyEqual (worldTransform.scale.x, _task.transform.scale.x, 0.00001f));
+                    CHECK (nearlyEqual (worldTransform.scale.y, _task.transform.scale.y, 0.00001f));
+                    CHECK (nearlyEqual (worldTransform.scale.z, _task.transform.scale.z, 0.00001f));
+                }
+                else if constexpr (std::is_same_v<Type, ValidatorTasks::CheckEvents>)
+                {
+                    auto checkEvents = [] (Celerity::FetchSequenceQuery &_query, const auto &_expected)
+                    {
+                        using VectorType = std::decay_t<decltype (_expected)>;
+                        using ValueType = typename VectorType::value_type;
+                        VectorType found;
+
+                        for (auto cursor = _query.Execute ();
+                             const auto *event = static_cast<const ValueType *> (*cursor); ++cursor)
+                        {
+                            found.emplace_back (*event);
+                        }
+
+                        // For simplicity, we assume that every event is unique.
+                        CHECK_EQUAL (found.size (), _expected.size ());
+
+                        for (const ValueType &event : _expected)
+                        {
+                            CHECK (std::find (found.begin (), found.end (), event) != found.end ());
+                        }
+                    };
+
+                    LOG ("Checking contact found events...");
+                    checkEvents (fetchContactFoundEvents, _task.contactFound);
+
+                    LOG ("Checking contact persists events...");
+                    checkEvents (fetchContactPersistsEvents, _task.contactPersists);
+
+                    LOG ("Checking contact lost events...");
+                    checkEvents (fetchContactLostEvents, _task.contactLost);
+
+                    LOG ("Checking trigger entered events...");
+                    checkEvents (fetchTriggerEnteredEvents, _task.triggerEntered);
+
+                    LOG ("Checking trigger exited events...");
+                    checkEvents (fetchTriggerExitedEvents, _task.triggerExited);
                 }
             },
             task);
