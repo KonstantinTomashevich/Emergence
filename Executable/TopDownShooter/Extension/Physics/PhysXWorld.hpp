@@ -35,7 +35,7 @@ struct PhysXWorld final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (PhysXWorld);
 
-    std::variant <physx::PxDefaultAllocator, ProfiledAllocator> allocator;
+    std::variant<physx::PxDefaultAllocator, ProfiledAllocator> allocator;
     physx::PxDefaultErrorCallback errorCallback;
 
     physx::PxFoundation *foundation = nullptr;

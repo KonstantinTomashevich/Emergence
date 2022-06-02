@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Celerity/Query/ModifyQueryWrapper.hpp>
+#include <Celerity/Query/QueryWrapper.hpp>
 
 #include <Warehouse/ModifyValueQuery.hpp>
 
