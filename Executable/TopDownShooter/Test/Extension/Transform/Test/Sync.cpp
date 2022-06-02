@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <thread>
 
 #include <Math/Constants.hpp>
