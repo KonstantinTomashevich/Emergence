@@ -148,7 +148,7 @@ TEST_CASE (IncorrectlyChangeShapeMaterial)
                                                      AddRigidBody {{0u}},
                                                      AddCollisionShape {{0u, 0u, "Test"_us}},
                                                  }},
-                                                {1u, {UpdateCollisionShape {{0u, 0u, "Shit"_us}}}}},
+                                                {1u, {UpdateCollisionShape {{0u, 0u, "Unknown"_us}}}}},
                                                {{0u,
                                                  {
                                                      CheckCollisionShapeExistence {0u, true},

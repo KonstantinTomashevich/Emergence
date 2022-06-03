@@ -41,14 +41,16 @@ struct PhysicsWorldSingleton final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId gravity;
         Emergence::StandardLayout::FieldId toleranceLength;
         Emergence::StandardLayout::FieldId toleranceSpeed;
+        Emergence::StandardLayout::FieldId simulationMaxThreads;
+        Emergence::StandardLayout::FieldId enableMemoryProfiling;
+        Emergence::StandardLayout::FieldId gravity;
+        Emergence::StandardLayout::FieldId collisionMaskBlock;
+        std::array<Emergence::StandardLayout::FieldId, 32u> collisionMasks;
         Emergence::StandardLayout::FieldId enableRemoteDebugger;
         Emergence::StandardLayout::FieldId remoteDebuggerUrl;
         Emergence::StandardLayout::FieldId remoteDebuggerPort;
-        Emergence::StandardLayout::FieldId collisionMaskBlock;
-        std::array<Emergence::StandardLayout::FieldId, 32u> collisionMasks;
         Emergence::StandardLayout::Mapping mapping;
     };
 

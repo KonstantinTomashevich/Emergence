@@ -14,9 +14,7 @@ if (DEFINED PHYSX_HOME)
         endif ()
     endfunction ()
 
-    # TODO: Support different architectures, not only x64.
-    set (PHYSX_ARCH "64")
-
+    set (PHYSX_ARCH "64" CACHE STRING "Architecture-specific suffix of PhysX libraries.")
     set (PHYSX_MAIN_RUNTIME PhysX)
     set (PHYSX_MAIN_STATIC PhysX)
     set (PHYSX_COMMON_RUNTIME PhysXCommon)

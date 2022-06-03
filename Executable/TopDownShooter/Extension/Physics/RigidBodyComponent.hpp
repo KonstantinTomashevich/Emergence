@@ -31,7 +31,7 @@ struct RigidBodyComponent final
     bool affectedByGravity = true;
 
     /// \brief Whether rigid body transform, flags, attributes, velocity or impulse
-    ///        can be edited outside of physics simulation after object creation
+    ///        can be edited outside of physics simulation after object creation.
     /// \details Can be turned on and off at any time. Use it to dynamically enable
     ///          observation when needed and disable when it is no longer needed.
     bool manipulatedOutsideOfSimulation = false;

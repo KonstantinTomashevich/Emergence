@@ -238,7 +238,7 @@ TEST_CASE (Trigger)
                                   true,
                                   true,
                                   true,
-                                  true}},
+                                  false}},
           }}},
         {
             {79u,
@@ -476,20 +476,43 @@ TEST_CASE (OutsideManipulationEnabled)
 {
     const auto segmentDuration = static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S));
     Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u}},
-              AddRigidBody {
-                  {0u, RigidBodyType::DYNAMIC, Vector3f::ZERO, Vector3f::ZERO, 0.0f, 0.05f, false, true, true}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
-          }},
-         {segmentDuration + 1u,
-          {
-              UpdateTransform {{0u}},
-              UpdateRigidBody {
-                  {0u, RigidBodyType::DYNAMIC, {1.0f, 2.0f, -0.5f}, Vector3f::ZERO, 0.0f, 0.05f, false, false, true}},
-          }}},
+        {
+            {0u,
+             {
+                 AddDynamicsMaterial {{"Test"_us}},
+                 AddTransform {{0u}},
+                 AddRigidBody {
+                     {0u, RigidBodyType::DYNAMIC, Vector3f::ZERO, Vector3f::ZERO, 0.0f, 0.05f, false, true, true}},
+                 AddCollisionShape {{0u, 0u, "Test"_us}},
+             }},
+            {segmentDuration + 1u,
+             {
+                 UpdateTransform {{0u}},
+                 UpdateRigidBody {{0u,
+                                   RigidBodyType::DYNAMIC,
+                                   {1.0f, 2.0f, -0.5f},
+                                   Vector3f::ZERO,
+                                   0.0f,
+                                   0.05f,
+                                   false,
+                                   false,
+                                   true}},
+             }},
+            {segmentDuration * 2u + 1u,
+             {
+                 // We are checking that updating transform on unobserved body does nothing.
+                 UpdateRigidBody {{0u,
+                                   RigidBodyType::DYNAMIC,
+                                   {1.0f, 2.0f, -0.5f},
+                                   Vector3f::ZERO,
+                                   0.0f,
+                                   0.05f,
+                                   false,
+                                   false,
+                                   false}},
+                 UpdateTransform {{0u}},
+             }},
+        },
         {
             {segmentDuration,
              {
@@ -499,35 +522,9 @@ TEST_CASE (OutsideManipulationEnabled)
              {
                  CheckObjectTransform {0u, {{2.0f, 4.0f, -1.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
              }},
-        });
-}
-
-TEST_CASE (OutsideManipulationDisabled)
-{
-    const auto segmentDuration = static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S));
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u}},
-              AddRigidBody {
-                  {0u, RigidBodyType::DYNAMIC, Vector3f::ZERO, Vector3f::ZERO, 0.0f, 0.05f, false, true, false}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
-          }},
-         {segmentDuration + 1u,
-          {
-              UpdateTransform {{0u}},
-              UpdateRigidBody {
-                  {0u, RigidBodyType::DYNAMIC, {1.0f, 2.0f, -0.5f}, Vector3f::ZERO, 0.0f, 0.05f, false, false, false}},
-          }}},
-        {
-            {segmentDuration,
+            {segmentDuration * 3u,
              {
-                 CheckObjectTransform {0u, {{0.0f, -20.1f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
-             }},
-            {segmentDuration * 2u,
-             {
-                 CheckObjectTransform {0u, {{0.0f, -79.46f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
+                 CheckObjectTransform {0u, {{4.0f, 8.0f, -2.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
              }},
         });
 }

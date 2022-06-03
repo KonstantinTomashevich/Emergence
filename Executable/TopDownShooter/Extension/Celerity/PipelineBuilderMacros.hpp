@@ -6,6 +6,7 @@
 
 // This file contains macros, that shorten TaskConstructor query creation calls.
 // These macros provide no additional logic and work as syntax sugar, that makes calls less verbose.
+// They do no follow macro naming guidelines, because they mimic functions.
 
 #define MFetchSingleton(Type) FetchSingleton (Type::Reflect ().mapping)   // NOLINT(readability-identifier-naming)
 #define MModifySingleton(Type) ModifySingleton (Type::Reflect ().mapping) // NOLINT(readability-identifier-naming)
@@ -75,3 +76,4 @@
 
 // It's impossible to fit all data for shape and ray intersection
 // queries in one line anyway, therefore there is no macros for them.
+// But these macros might be added later.

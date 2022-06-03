@@ -343,8 +343,6 @@ void Validator::Execute () noexcept
                         return difference > -_epsilon && difference < _epsilon;
                     };
 
-                    LOG (worldTransform.translation.y);
-
                     CHECK (nearlyEqual (worldTransform.translation.x, _task.transform.translation.x, 0.05f));
                     CHECK (nearlyEqual (worldTransform.translation.y, _task.transform.translation.y, 0.05f));
                     CHECK (nearlyEqual (worldTransform.translation.z, _task.transform.translation.z, 0.05f));

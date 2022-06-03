@@ -20,8 +20,6 @@ END_MUTING_WARNINGS
 
 namespace Emergence::Physics
 {
-// TODO: This header should be private -- it is implementation specific.
-
 class ProfiledAllocator final : public physx::PxAllocatorCallback
 {
 public:
