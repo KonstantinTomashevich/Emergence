@@ -2,6 +2,7 @@
 #include <variant>
 
 #include <Celerity/InputAccumulator.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Container/Vector.hpp>
 
@@ -34,12 +35,12 @@ namespace Steps
 {
 struct CreateListener
 {
-    std::uintptr_t id = INVALID_OBJECT_ID;
+    UniqueId id = INVALID_UNIQUE_ID;
 };
 
 struct DeleteListener
 {
-    std::uintptr_t id = INVALID_OBJECT_ID;
+    UniqueId id = INVALID_UNIQUE_ID;
 };
 
 struct AddSubscription
@@ -50,7 +51,7 @@ struct AddSubscription
 
 struct UnsubscribeListener
 {
-    std::uintptr_t id = INVALID_OBJECT_ID;
+    UniqueId id = INVALID_UNIQUE_ID;
     bool normal = true;
 };
 
@@ -108,7 +109,7 @@ private:
 
     InputAccumulator *eventOutput;
     Emergence::Celerity::InsertLongTermQuery createListener;
-    Emergence::Celerity::ModifyValueQuery modifyListenerById;
+    Emergence::Celerity::RemoveValueQuery removeListenerById;
     Emergence::Celerity::ModifySingletonQuery modifyInput;
 };
 
@@ -121,10 +122,9 @@ Configurator::Configurator (TaskConstructor &_constructor,
       keyStateTriggers (std::move (_keyStateTriggers)),
       keyStateChangedTriggers (std::move (_keyStateChangedTriggers)),
       eventOutput (_eventOutput),
-      createListener (_constructor.InsertLongTerm (InputListenerComponent::Reflect ().mapping)),
-      modifyListenerById (_constructor.ModifyValue (InputListenerComponent::Reflect ().mapping,
-                                                    {InputListenerComponent::Reflect ().objectId})),
-      modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping))
+      createListener (_constructor.MInsertLongTerm (InputListenerComponent)),
+      removeListenerById (_constructor.MRemoveValue1F (InputListenerComponent, objectId)),
+      modifyInput (_constructor.MModifySingleton (InputSingleton))
 {
     REQUIRE (eventOutput);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
@@ -173,10 +173,10 @@ void Configurator::Execute ()
                 else if constexpr (std::is_same_v<Type, Steps::DeleteListener>)
                 {
                     EMERGENCE_LOG (INFO, "[Configurator] Delete listener ", _step.id, ".");
-                    auto cursor = modifyListenerById.Execute (&_step.id);
-                    REQUIRE (*cursor);
+                    auto cursor = removeListenerById.Execute (&_step.id);
+                    REQUIRE (cursor.ReadConst ());
                     ~cursor;
-                    REQUIRE (!*cursor);
+                    REQUIRE (!cursor.ReadConst ());
                 }
                 else if constexpr (std::is_same_v<Type, Steps::AddSubscription>)
                 {
@@ -283,8 +283,7 @@ private:
 
 Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
-      fetchListenerById (_constructor.FetchValue (InputListenerComponent::Reflect ().mapping,
-                                                  {InputListenerComponent::Reflect ().objectId}))
+      fetchListenerById (_constructor.MFetchValue1F (InputListenerComponent, objectId))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
 }

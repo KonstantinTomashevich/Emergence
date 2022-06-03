@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Celerity/Standard/ObjectId.hpp>
+#include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Transform3d.hpp>
 
@@ -25,13 +25,13 @@ class Transform3dComponent final
 public:
     Transform3dComponent () noexcept = default;
 
-    Celerity::ObjectId GetObjectId () const noexcept;
+    Celerity::UniqueId GetObjectId () const noexcept;
 
-    void SetObjectId (Celerity::ObjectId _objectId) noexcept;
+    void SetObjectId (Celerity::UniqueId _objectId) noexcept;
 
-    Celerity::ObjectId GetParentObjectId () const noexcept;
+    Celerity::UniqueId GetParentObjectId () const noexcept;
 
-    void SetParentObjectId (Celerity::ObjectId _parentObjectId) noexcept;
+    void SetParentObjectId (Celerity::UniqueId _parentObjectId) noexcept;
 
     const Math::Transform3d &GetLogicalLocalTransform () const noexcept;
 
@@ -49,7 +49,7 @@ private:
     friend class Transform3dVisualSynchronizer;
 
     /// \brief Used to inform transform caching logic that parent transform was never observed yet.
-    static constexpr std::size_t UNKNOWN_REVISION = std::numeric_limits<Celerity::ObjectId>::max ();
+    static constexpr std::size_t UNKNOWN_REVISION = std::numeric_limits<Celerity::UniqueId>::max ();
 
     /// \return Whether cache was actually changed.
     bool UpdateLogicalWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept;
@@ -57,8 +57,8 @@ private:
     /// \return Whether cache was actually changed.
     bool UpdateVisualWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept;
 
-    Celerity::ObjectId objectId = Celerity::INVALID_OBJECT_ID;
-    Celerity::ObjectId parentObjectId = Celerity::INVALID_OBJECT_ID;
+    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    Celerity::UniqueId parentObjectId = Celerity::INVALID_UNIQUE_ID;
 
     Math::Transform3d logicalLocalTransform;
     uint64_t logicalLocalTransformRevision = 0u;

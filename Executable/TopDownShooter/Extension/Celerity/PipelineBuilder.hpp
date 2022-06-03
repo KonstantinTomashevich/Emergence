@@ -1,6 +1,12 @@
 #pragma once
 
 #include <Celerity/Pipeline.hpp>
+#include <Celerity/Query/EditAscendingRangeQuery.hpp>
+#include <Celerity/Query/EditDescendingRangeQuery.hpp>
+#include <Celerity/Query/EditRayIntersectionQuery.hpp>
+#include <Celerity/Query/EditShapeIntersectionQuery.hpp>
+#include <Celerity/Query/EditSignalQuery.hpp>
+#include <Celerity/Query/EditValueQuery.hpp>
 #include <Celerity/Query/FetchAscendingRangeQuery.hpp>
 #include <Celerity/Query/FetchDescendingRangeQuery.hpp>
 #include <Celerity/Query/FetchRayIntersectionQuery.hpp>
@@ -19,6 +25,12 @@
 #include <Celerity/Query/ModifySignalQuery.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
 #include <Celerity/Query/ModifyValueQuery.hpp>
+#include <Celerity/Query/RemoveAscendingRangeQuery.hpp>
+#include <Celerity/Query/RemoveDescendingRangeQuery.hpp>
+#include <Celerity/Query/RemoveRayIntersectionQuery.hpp>
+#include <Celerity/Query/RemoveShapeIntersectionQuery.hpp>
+#include <Celerity/Query/RemoveSignalQuery.hpp>
+#include <Celerity/Query/RemoveValueQuery.hpp>
 #include <Celerity/World.hpp>
 
 #include <Container/HashSet.hpp>
@@ -64,10 +76,22 @@ public:
     [[nodiscard]] ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                                 const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    [[nodiscard]] EditValueQuery EditValue (const StandardLayout::Mapping &_typeMapping,
+                                            const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+
+    [[nodiscard]] RemoveValueQuery RemoveValue (const StandardLayout::Mapping &_typeMapping,
+                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+
     [[nodiscard]] FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                 StandardLayout::FieldId _keyField) noexcept;
 
     [[nodiscard]] ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                  StandardLayout::FieldId _keyField) noexcept;
+
+    [[nodiscard]] EditAscendingRangeQuery EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                              StandardLayout::FieldId _keyField) noexcept;
+
+    [[nodiscard]] RemoveAscendingRangeQuery RemoveAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                   StandardLayout::FieldId _keyField) noexcept;
 
     [[nodiscard]] FetchDescendingRangeQuery FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -76,11 +100,26 @@ public:
     [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                     StandardLayout::FieldId _keyField) noexcept;
 
+    [[nodiscard]] EditDescendingRangeQuery EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                StandardLayout::FieldId _keyField) noexcept;
+
+    [[nodiscard]] RemoveDescendingRangeQuery RemoveDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                    StandardLayout::FieldId _keyField) noexcept;
+
     [[nodiscard]] FetchSignalQuery FetchSignal (const StandardLayout::Mapping &_typeMapping,
                                                 StandardLayout::FieldId _keyField,
                                                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
     [[nodiscard]] ModifySignalQuery ModifySignal (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
+    [[nodiscard]] EditSignalQuery EditSignal (const StandardLayout::Mapping &_typeMapping,
+                                              StandardLayout::FieldId _keyField,
+                                              const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
+    [[nodiscard]] RemoveSignalQuery RemoveSignal (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
         const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
@@ -93,11 +132,27 @@ public:
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    [[nodiscard]] EditShapeIntersectionQuery EditShapeIntersection (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+
+    [[nodiscard]] RemoveShapeIntersectionQuery RemoveShapeIntersection (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+
     [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
     [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+
+    [[nodiscard]] EditRayIntersectionQuery EditRayIntersection (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+
+    [[nodiscard]] RemoveRayIntersectionQuery RemoveRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 

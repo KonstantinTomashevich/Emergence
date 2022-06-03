@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Celerity/Query/ModifyQueryWrapper.hpp>
+#include <Celerity/Query/QueryWrapper.hpp>
 
 #include <Warehouse/ModifyValueQuery.hpp>
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_DECLARATION (ModifyValueQuery, Warehouse::ValueSequence _values);
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_DECLARATION (ValueQuery, Warehouse::ValueSequence _values);
 } // namespace Emergence::Celerity

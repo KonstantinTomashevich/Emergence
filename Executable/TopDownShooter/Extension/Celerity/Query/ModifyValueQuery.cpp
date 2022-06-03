@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ModifyValueQuery)
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ValueQuery)
 
 ModifyValueQuery::Cursor ModifyValueQuery::Execute (Warehouse::ValueSequence _values) noexcept
 {

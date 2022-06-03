@@ -40,7 +40,7 @@ void HierarchyTest (bool _logical, bool _useModifyQuery)
     const Transform3d expectedTransform5 {{15.0f, -38.0f, 33.0f}, {{PI * 0.5f, 0.0f, 0.0f}}, {3.0f, 3.0f, 3.0f}};
 
     OperationsTest ({
-        CreateTransform {0u, Emergence::Celerity::INVALID_OBJECT_ID},
+        CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
         SetLocalTransform {0u, _logical, false, {{2.0f, 4.0f, 1.0f}, Quaternion::IDENTITY}},
 
         CreateTransform {1u, 0u},
@@ -52,7 +52,7 @@ void HierarchyTest (bool _logical, bool _useModifyQuery)
         CreateTransform {3u, 2u},
         SetLocalTransform {3u, _logical, false, {{0.0f, -5.0f, -3.0f}, Quaternion::IDENTITY, {1.0f, 1.0f, 2.0f}}},
 
-        CreateTransform {4u, Emergence::Celerity::INVALID_OBJECT_ID},
+        CreateTransform {4u, Emergence::Celerity::INVALID_UNIQUE_ID},
         SetLocalTransform {4u, _logical, false, {{12.0f, -5.0f, 3.0f}, {{PI * 0.5f, 0.0f, 0.0f}}, {3.0f, 3.0f, 3.0f}}},
 
         CreateTransform {5u, 4u},
@@ -90,7 +90,7 @@ TEST_CASE (SetAndCheck)
         {-11.33f, 15.127f, 23.34f}, {{0.69f, 0.51f, 1.33f}}, {2.0f, 1.0f, 4.2f}};
 
     OperationsTest ({
-        CreateTransform {0u, Emergence::Celerity::INVALID_OBJECT_ID},
+        CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
         SetLocalTransform {0u, true, false, logicalTransform},
         SetLocalTransform {0u, false, false, visualTransform},
         CheckTransform {0u, true, true, false, logicalTransform},

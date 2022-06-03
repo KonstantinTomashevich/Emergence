@@ -35,6 +35,7 @@ target_link_libraries ("${GAME_NAME}ExtensionTestLauncher" PUBLIC "${LIBRARY_TAR
 set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Extension")
 set_target_properties ("${GAME_NAME}ExtensionTestLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
+copy_required_shared_libraries ("${GAME_NAME}ExtensionTestLauncher")
 
 add_test (NAME "Test${GAME_NAME}ExtensionRunner" COMMAND "${GAME_NAME}ExtensionTestLauncher"
         WORKING_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")

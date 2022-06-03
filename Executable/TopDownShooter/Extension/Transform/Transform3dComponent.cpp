@@ -5,22 +5,22 @@
 
 namespace Emergence::Transform
 {
-Celerity::ObjectId Transform3dComponent::GetObjectId () const noexcept
+Celerity::UniqueId Transform3dComponent::GetObjectId () const noexcept
 {
     return objectId;
 }
 
-void Transform3dComponent::SetObjectId (Celerity::ObjectId _objectId) noexcept
+void Transform3dComponent::SetObjectId (Celerity::UniqueId _objectId) noexcept
 {
     objectId = _objectId;
 }
 
-Celerity::ObjectId Transform3dComponent::GetParentObjectId () const noexcept
+Celerity::UniqueId Transform3dComponent::GetParentObjectId () const noexcept
 {
     return parentObjectId;
 }
 
-void Transform3dComponent::SetParentObjectId (Celerity::ObjectId _parentObjectId) noexcept
+void Transform3dComponent::SetParentObjectId (Celerity::UniqueId _parentObjectId) noexcept
 {
     parentObjectId = _parentObjectId;
     logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;

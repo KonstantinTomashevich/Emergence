@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ModifyDescendingRangeQuery)
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (DescendingRangeQuery)
 
 ModifyDescendingRangeQuery::Cursor ModifyDescendingRangeQuery::Execute (Warehouse::Bound _min,
                                                                         Warehouse::Bound _max) noexcept

@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ModifySignalQuery)
+EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (SignalQuery)
 
 ModifySignalQuery::Cursor ModifySignalQuery::Execute () noexcept
 {

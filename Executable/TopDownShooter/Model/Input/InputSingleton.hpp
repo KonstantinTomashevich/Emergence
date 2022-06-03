@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Celerity/InputAccumulator.hpp>
-#include <Celerity/Standard/ObjectId.hpp>
+#include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/InplaceVector.hpp>
 
@@ -55,7 +55,7 @@ struct KeyStateChangedTrigger final
 struct InputSubscription final
 {
     Emergence::Memory::UniqueString group;
-    Emergence::Celerity::ObjectId listenerId = Emergence::Celerity::INVALID_OBJECT_ID;
+    Emergence::Celerity::UniqueId listenerId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
     struct Reflection final
     {

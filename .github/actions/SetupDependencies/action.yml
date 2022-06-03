@@ -14,10 +14,13 @@ runs:
       uses: actions/cache@v2
       with:
         path: ./Dependency
-        key: ${{inputs.platform}}-${{inputs.build_type}}-dependencies
+        # We use "-version-[0-9]+" suffix to drop cache when we are updating dependencies.
+        # Unfortunately, there is no better way to drop old cache from GitHub Actions right now.
+        key: ${{inputs.platform}}-${{inputs.build_type}}-dependencies-version-0
 
     - name: Setup dependencies
       shell: pwsh
       run: |
-        .\Script\Dependency\Urho3D.ps1 ${{inputs.platform}} ${{inputs.build_type}}
+        .\Script\Dependency\Download.ps1 ${{inputs.platform}} ${{inputs.build_type}}
         echo "URHO3D_DIR=${{github.workspace}}\Dependency\Urho3D\${{inputs.platform}}\${{inputs.build_type}}" >> $Env:GITHUB_ENV
+        echo "PHYSX_DIR=${{github.workspace}}\Dependency\PhysX\${{inputs.platform}}\${{inputs.build_type}}" >> $Env:GITHUB_ENV

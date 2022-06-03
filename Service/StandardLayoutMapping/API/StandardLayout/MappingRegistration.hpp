@@ -60,6 +60,13 @@
                             std::underlying_type_t<decltype (Type::_field)>>::Register) (                              \
         Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field)),
 
+/// \brief Helper for mapping static registration. Registers pointer field as field with FieldArchetype::UINT.
+/// \invariant Class must contain `_field` field.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
+#define EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR(_field)                                                          \
+    ._field = (builder.*Emergence::StandardLayout::Registration::RegularFieldRegistrar<uintptr_t>::Register) (         \
+        Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field)),
+
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
 /// \invariant Class must contain `_field` field of any std::array-based type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.

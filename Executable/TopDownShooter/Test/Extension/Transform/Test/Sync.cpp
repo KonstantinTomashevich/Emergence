@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <thread>
 
 #include <Math/Constants.hpp>
@@ -70,7 +71,7 @@ TEST_CASE (TrivialInterpolation)
         },
         {
             {
-                CreateTransform {0u, Emergence::Celerity::INVALID_OBJECT_ID},
+                CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
                 SetLocalTransform {0u, true, false, initialTransform},
             },
             {SetLocalTransform {0u, true, false, targetTransform}},
@@ -110,7 +111,7 @@ TEST_CASE (InterpolationSkip)
         },
         {
             {
-                CreateTransform {0u, Emergence::Celerity::INVALID_OBJECT_ID},
+                CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
                 SetLocalTransform {0u, true, false, initialTransform},
             },
             {SetLocalTransform {0u, true, true, targetTransform}},
@@ -142,7 +143,7 @@ TEST_CASE (InterpolationAndWorldTransform)
         },
         {{
              {
-                 CreateTransform {0u, Emergence::Celerity::INVALID_OBJECT_ID},
+                 CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
                  SetLocalTransform {0u, true, false, parentInitialTransform},
                  CreateTransform {1u, 0u},
                  SetLocalTransform {1u, true, false, childInitialTransform},
@@ -177,7 +178,7 @@ TEST_CASE (NoInterpolationFromOriginAfterInitialSet)
         },
         {
             {
-                CreateTransform {0u, Emergence::Celerity::INVALID_OBJECT_ID},
+                CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
                 SetLocalTransform {0u, true, false, initialTransform},
             },
         },

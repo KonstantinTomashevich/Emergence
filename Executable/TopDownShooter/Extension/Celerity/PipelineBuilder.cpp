@@ -140,6 +140,22 @@ ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_t
                              BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
 
+EditValueQuery TaskConstructor::EditValue (const StandardLayout::Mapping &_typeMapping,
+                                           const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return EditValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields), nullptr,
+                           BindChangeTracker (_typeMapping)};
+}
+
+RemoveValueQuery TaskConstructor::RemoveValue (const StandardLayout::Mapping &_typeMapping,
+                                               const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return RemoveValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields),
+                             BindEventsOnRemove (_typeMapping), nullptr};
+}
+
 FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                StandardLayout::FieldId _keyField) noexcept
 {
@@ -155,6 +171,22 @@ ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardL
                                       BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
 
+EditAscendingRangeQuery TaskConstructor::EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                             StandardLayout::FieldId _keyField) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return EditAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField), nullptr,
+                                    BindChangeTracker (_typeMapping)};
+}
+
+RemoveAscendingRangeQuery TaskConstructor::RemoveAscendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                 StandardLayout::FieldId _keyField) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return RemoveAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField),
+                                      BindEventsOnRemove (_typeMapping), nullptr};
+}
+
 FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
@@ -168,6 +200,22 @@ ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const Standar
     RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField),
                                        BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+}
+
+EditDescendingRangeQuery TaskConstructor::EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                               StandardLayout::FieldId _keyField) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return EditDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField), nullptr,
+                                     BindChangeTracker (_typeMapping)};
+}
+
+RemoveDescendingRangeQuery TaskConstructor::RemoveDescendingRange (const StandardLayout::Mapping &_typeMapping,
+                                                                   StandardLayout::FieldId _keyField) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return RemoveDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField),
+                                       BindEventsOnRemove (_typeMapping), nullptr};
 }
 
 FetchSignalQuery TaskConstructor::FetchSignal (const StandardLayout::Mapping &_typeMapping,
@@ -187,6 +235,24 @@ ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &
                               BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
 
+EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typeMapping,
+                                             StandardLayout::FieldId _keyField,
+                                             const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return EditSignalQuery {parent->world->registry.ModifySignal (_typeMapping, _keyField, _signaledValue), nullptr,
+                            BindChangeTracker (_typeMapping)};
+}
+
+RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &_typeMapping,
+                                                 StandardLayout::FieldId _keyField,
+                                                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return RemoveSignalQuery {parent->world->registry.ModifySignal (_typeMapping, _keyField, _signaledValue),
+                              BindEventsOnRemove (_typeMapping), nullptr};
+}
+
 FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
@@ -202,6 +268,22 @@ ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
                                          BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
 }
 
+EditShapeIntersectionQuery TaskConstructor::EditShapeIntersection (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return EditShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
+                                       nullptr, BindChangeTracker (_typeMapping)};
+}
+
+RemoveShapeIntersectionQuery TaskConstructor::RemoveShapeIntersection (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return RemoveShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
+                                         BindEventsOnRemove (_typeMapping), nullptr};
+}
+
 FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
@@ -215,6 +297,22 @@ ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
     RegisterWriteAccess (_typeMapping.GetName ());
     return ModifyRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions),
                                        BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+}
+
+EditRayIntersectionQuery TaskConstructor::EditRayIntersection (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return EditRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions), nullptr,
+                                     BindChangeTracker (_typeMapping)};
+}
+
+RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
+    const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
+{
+    RegisterWriteAccess (_typeMapping.GetName ());
+    return RemoveRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions),
+                                       BindEventsOnRemove (_typeMapping), nullptr};
 }
 
 void TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
@@ -565,6 +663,12 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
         {
             EMERGENCE_LOG (ERROR, "Events of type \"", eventType.GetName (), "\" are produced, but never consumed.");
             anyErrorsDetected = true;
+            continue;
+        }
+
+        if (producers.empty ())
+        {
+            EMERGENCE_LOG (WARNING, "Events of type \"", eventType.GetName (), "\" are consumed, but never produced.");
             continue;
         }
 
