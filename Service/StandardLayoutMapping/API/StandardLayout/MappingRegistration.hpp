@@ -125,6 +125,19 @@
                                                  ItemType::Reflect ().mapping);                                        \
         }),
 
+/// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::UNIQUE_STRING elements.
+/// \invariant Class must contain `_field` field of type `std::array`.
+/// \invariant Class reflection structure name must contain `_field` field,
+///            in which registered field id for each array element will be stored.
+#define EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING_ARRAY(_field)                                                         \
+    ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
+        #_field,                                                                                                       \
+        [&builder] (std::size_t _index, Emergence::Memory::UniqueString _itemName)                                     \
+        {                                                                                                              \
+            using ItemType = decltype (Type::_field)::value_type;                                                      \
+            return builder.RegisterUniqueString (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType));     \
+        }),
+
 namespace Emergence::StandardLayout::Registration
 {
 /// \brief Templated default constructor for objects that need it. See MappingBuilder::SetConstructor.
