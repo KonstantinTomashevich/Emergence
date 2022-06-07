@@ -18,9 +18,10 @@ struct LightComponent final
     EMERGENCE_STATIONARY_DATA_TYPE (LightComponent);
 
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
+    Emergence::Celerity::UniqueId lightId = Emergence::Celerity::INVALID_UNIQUE_ID;
+
     LightType lightType = LightType::DIRECTIONAL;
     bool enabled = true;
-    bool movable = true;
 
     Color color;
     float range = 1.0f;
@@ -32,9 +33,9 @@ struct LightComponent final
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
+        Emergence::StandardLayout::FieldId lightId;
         Emergence::StandardLayout::FieldId lightType;
         Emergence::StandardLayout::FieldId enabled;
-        Emergence::StandardLayout::FieldId movable;
         Emergence::StandardLayout::FieldId color;
         Emergence::StandardLayout::FieldId range;
         Emergence::StandardLayout::FieldId spotFieldOfViewRad;

@@ -8,11 +8,19 @@
 
 struct RenderSceneSingleton final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (RenderSceneSingleton);
-
     Emergence::Celerity::UniqueId cameraObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    void *implementationHandle = nullptr;
+    /// \invariant Do not access directly, use ::GenerateLightUID.
+    std::atomic_unsigned_lock_free lightUIDCounter = 0u;
+
+    /// \invariant Do not access directly, use ::GenerateModelUID.
+    std::atomic_unsigned_lock_free modelUIDCounter = 0u;
+
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    uintptr_t GenerateLightUID () const noexcept;
+
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    uintptr_t GenerateModelUID () const noexcept;
 
     struct Reflection final
     {

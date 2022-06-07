@@ -15,8 +15,11 @@ struct StaticModelComponent final
     EMERGENCE_STATIONARY_DATA_TYPE (StaticModelComponent);
 
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
-    Emergence::Memory::UniqueString modelId;
-    std::array<Emergence::Memory::UniqueString, MAXIMUM_MATERIAL_SLOTS> materialIds;
+    Emergence::Celerity::UniqueId modelId = Emergence::Celerity::INVALID_UNIQUE_ID;
+
+    Emergence::Memory::UniqueString modelName;
+    // TODO: Use inplace vector?
+    std::array<Emergence::Memory::UniqueString, MAXIMUM_MATERIAL_SLOTS> materialNames;
 
     void *implementationHandle = nullptr;
 
@@ -24,7 +27,8 @@ struct StaticModelComponent final
     {
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId modelId;
-        std::array<Emergence::StandardLayout::FieldId, MAXIMUM_MATERIAL_SLOTS> materialIds;
+        Emergence::StandardLayout::FieldId modelName;
+        std::array<Emergence::StandardLayout::FieldId, MAXIMUM_MATERIAL_SLOTS> materialNames;
         Emergence::StandardLayout::FieldId implementationHandle;
         Emergence::StandardLayout::Mapping mapping;
     };

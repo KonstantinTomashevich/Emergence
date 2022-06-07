@@ -20,4 +20,7 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString INPUT_DISPATCH_STARTED;
     static const Emergence::Memory::UniqueString INPUT_LISTENERS_PUSH_ALLOWED;
     static const Emergence::Memory::UniqueString INPUT_LISTENERS_READ_ALLOWED;
+
+    static const  Emergence::Memory::UniqueString RENDER_UPDATE_STARTED;
+    static const  Emergence::Memory::UniqueString RENDER_UPDATE_FINISHED;
 };

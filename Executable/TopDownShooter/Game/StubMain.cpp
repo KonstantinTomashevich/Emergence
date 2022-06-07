@@ -3,6 +3,7 @@
 #include <fstream>
 #include <thread>
 
+#include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/World.hpp>
@@ -31,6 +32,9 @@ BEGIN_MUTING_WARNINGS
 #include <pvd/PxPvd.h>
 #include <pvd/PxPvdTransport.h>
 END_MUTING_WARNINGS
+
+#include <Render/Events.hpp>
+#include <Render/Urho3DUpdate.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 
@@ -166,9 +170,15 @@ void GameApplication::Start ()
     input->SetMouseVisible (true);
     input->SetMouseMode (Urho3D::MM_FREE);
 
+    {
+        Emergence::Celerity::EventRegistrar registrar {&world};
+        RegisterRenderEvents (registrar);
+    }
+
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
+    Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
 
     // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?

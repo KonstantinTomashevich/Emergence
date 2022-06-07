@@ -2,9 +2,17 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-RenderSceneSingleton::RenderSceneSingleton () noexcept = default;
+uintptr_t RenderSceneSingleton::GenerateLightUID () const noexcept
+{
+    assert (lightUIDCounter != std::numeric_limits<decltype (lightUIDCounter)>::max ());
+    return const_cast<RenderSceneSingleton*> (this)->lightUIDCounter++;
+}
 
-RenderSceneSingleton::~RenderSceneSingleton () noexcept = default;
+uintptr_t RenderSceneSingleton::GenerateModelUID () const noexcept
+{
+    assert (modelUIDCounter != std::numeric_limits<decltype (modelUIDCounter)>::max ());
+    return const_cast<RenderSceneSingleton*> (this)->modelUIDCounter++;
+}
 
 const RenderSceneSingleton::Reflection &RenderSceneSingleton::Reflect () noexcept
 {
