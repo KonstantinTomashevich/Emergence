@@ -46,19 +46,19 @@ struct RigidBodyComponent final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId type;
-        Emergence::StandardLayout::FieldId linearDamping;
-        Emergence::StandardLayout::FieldId angularDamping;
-        Emergence::StandardLayout::FieldId continuousCollisionDetection;
-        Emergence::StandardLayout::FieldId affectedByGravity;
-        Emergence::StandardLayout::FieldId manipulatedOutsideOfSimulation;
-        Emergence::StandardLayout::FieldId linearVelocity;
-        Emergence::StandardLayout::FieldId angularVelocity;
-        Emergence::StandardLayout::FieldId additiveLinearImpulse;
-        Emergence::StandardLayout::FieldId additiveAngularImpulse;
-        Emergence::StandardLayout::FieldId implementationHandle;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId objectId;
+        StandardLayout::FieldId type;
+        StandardLayout::FieldId linearDamping;
+        StandardLayout::FieldId angularDamping;
+        StandardLayout::FieldId continuousCollisionDetection;
+        StandardLayout::FieldId affectedByGravity;
+        StandardLayout::FieldId manipulatedOutsideOfSimulation;
+        StandardLayout::FieldId linearVelocity;
+        StandardLayout::FieldId angularVelocity;
+        StandardLayout::FieldId additiveLinearImpulse;
+        StandardLayout::FieldId additiveAngularImpulse;
+        StandardLayout::FieldId implementationHandle;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

@@ -23,8 +23,8 @@ public:
     struct Reflection final
     {
         // There is no need to expose internal calculation buffer to reflection. Therefore, we expose only result.
-        Emergence::StandardLayout::FieldId average;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId average;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

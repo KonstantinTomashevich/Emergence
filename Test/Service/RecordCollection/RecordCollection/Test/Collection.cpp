@@ -105,6 +105,7 @@ struct alignas (16u) Align16 final
 
     struct Reflection final
     {
+        Emergence::StandardLayout::FieldId simdDataBlock;
         std::array<Emergence::StandardLayout::FieldId, 4u> simdData;
         Emergence::StandardLayout::Mapping mapping;
     };

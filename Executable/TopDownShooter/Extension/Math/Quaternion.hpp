@@ -66,11 +66,11 @@ struct alignas (sizeof (float) * 4u) Quaternion final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId x;
-        Emergence::StandardLayout::FieldId y;
-        Emergence::StandardLayout::FieldId z;
-        Emergence::StandardLayout::FieldId w;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId x;
+        StandardLayout::FieldId y;
+        StandardLayout::FieldId z;
+        StandardLayout::FieldId w;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

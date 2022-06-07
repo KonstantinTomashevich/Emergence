@@ -32,16 +32,12 @@ const PhysicsWorldSingleton::Reflection &PhysicsWorldSingleton::Reflect () noexc
         EMERGENCE_MAPPING_REGISTER_REGULAR (toleranceSpeed)
         EMERGENCE_MAPPING_REGISTER_REGULAR (simulationMaxThreads)
         EMERGENCE_MAPPING_REGISTER_REGULAR (enableMemoryProfiling)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (gravity) // clang-format off
-        .collisionMaskBlock = builder.RegisterBlock (Memory::UniqueString {"collisionMaskBlock"},
-                                                     offsetof (PhysicsWorldSingleton, collisionMasks),
-                                                     sizeof (PhysicsWorldSingleton::collisionMasks)),
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (gravity)
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (collisionMasks)
         EMERGENCE_MAPPING_REGISTER_REGULAR (enableRemoteDebugger)
         EMERGENCE_MAPPING_REGISTER_STRING (remoteDebuggerUrl)
         EMERGENCE_MAPPING_REGISTER_REGULAR (remoteDebuggerPort)
         EMERGENCE_MAPPING_REGISTRATION_END ()
-        // clang-format on
     }();
 
     return reflection;

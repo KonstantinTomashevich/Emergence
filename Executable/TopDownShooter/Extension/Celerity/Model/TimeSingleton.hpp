@@ -55,6 +55,7 @@ struct TimeSingleton final
         StandardLayout::FieldId normalDurationS;
         StandardLayout::FieldId realNormalDurationS;
         StandardLayout::FieldId fixedDurationS;
+        StandardLayout::FieldId targetFixedFrameDurationsSBlock;
         std::array<StandardLayout::FieldId, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
         StandardLayout::FieldId timeSpeed;

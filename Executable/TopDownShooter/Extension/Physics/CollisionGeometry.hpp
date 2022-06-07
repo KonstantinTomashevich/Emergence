@@ -34,12 +34,12 @@ struct CollisionGeometry final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId type;
-        Emergence::StandardLayout::FieldId boxHalfExtents;
-        Emergence::StandardLayout::FieldId sphereRadius;
-        Emergence::StandardLayout::FieldId capsuleRadius;
-        Emergence::StandardLayout::FieldId capsuleHalfHeight;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId type;
+        StandardLayout::FieldId boxHalfExtents;
+        StandardLayout::FieldId sphereRadius;
+        StandardLayout::FieldId capsuleRadius;
+        StandardLayout::FieldId capsuleHalfHeight;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

@@ -30,14 +30,14 @@ struct DynamicsMaterial final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId id;
-        Emergence::StandardLayout::FieldId dynamicFriction;
-        Emergence::StandardLayout::FieldId staticFriction;
-        Emergence::StandardLayout::FieldId enableFriction;
-        Emergence::StandardLayout::FieldId restitution;
-        Emergence::StandardLayout::FieldId density;
-        Emergence::StandardLayout::FieldId implementationHandle;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId id;
+        StandardLayout::FieldId dynamicFriction;
+        StandardLayout::FieldId staticFriction;
+        StandardLayout::FieldId enableFriction;
+        StandardLayout::FieldId restitution;
+        StandardLayout::FieldId density;
+        StandardLayout::FieldId implementationHandle;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

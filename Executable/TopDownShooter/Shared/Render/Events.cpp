@@ -94,20 +94,10 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
          StaticModelComponent::Reflect ().mapping,
          {
              StaticModelComponent::Reflect ().modelName,
-             // TODO: Better way to register this?
-             StaticModelComponent::Reflect ().materialNames[0u],
-             StaticModelComponent::Reflect ().materialNames[1u],
-             StaticModelComponent::Reflect ().materialNames[2u],
-             StaticModelComponent::Reflect ().materialNames[3u],
-             StaticModelComponent::Reflect ().materialNames[4u],
-             StaticModelComponent::Reflect ().materialNames[5u],
-             StaticModelComponent::Reflect ().materialNames[6u],
-             StaticModelComponent::Reflect ().materialNames[7u],
+             StaticModelComponent::Reflect ().materialNamesBlock,
          },
          {},
          {{StaticModelComponent::Reflect ().modelId, StaticModelComponentAddedEvent::Reflect ().modelId}}});
-
-    assert (StaticModelComponent::Reflect ().materialNames.size () == 8u);
 
     _registrar.OnRemoveEvent (
         {{StaticModelComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},

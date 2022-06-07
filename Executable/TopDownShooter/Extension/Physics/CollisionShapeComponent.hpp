@@ -45,19 +45,19 @@ struct CollisionShapeComponent final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId shapeId;
-        Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId rotation;
-        Emergence::StandardLayout::FieldId translation;
-        Emergence::StandardLayout::FieldId geometry;
-        Emergence::StandardLayout::FieldId materialId;
-        Emergence::StandardLayout::FieldId enabled;
-        Emergence::StandardLayout::FieldId trigger;
-        Emergence::StandardLayout::FieldId visibleToWorldQueries;
-        Emergence::StandardLayout::FieldId sendContactEvents;
-        Emergence::StandardLayout::FieldId collisionGroup;
-        Emergence::StandardLayout::FieldId implementationHandle;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId shapeId;
+        StandardLayout::FieldId objectId;
+        StandardLayout::FieldId rotation;
+        StandardLayout::FieldId translation;
+        StandardLayout::FieldId geometry;
+        StandardLayout::FieldId materialId;
+        StandardLayout::FieldId enabled;
+        StandardLayout::FieldId trigger;
+        StandardLayout::FieldId visibleToWorldQueries;
+        StandardLayout::FieldId sendContactEvents;
+        StandardLayout::FieldId collisionGroup;
+        StandardLayout::FieldId implementationHandle;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;
