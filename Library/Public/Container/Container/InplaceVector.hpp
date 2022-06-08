@@ -69,9 +69,8 @@ public:
     /// \return Reference to constructed item.
     /// \invariant ::GetCount is less that ::Capacity.
     template <typename... Args>
-    Item &EmplaceAt (Iterator _at, Args &&..._constructorArgs) noexcept
-        requires std::is_nothrow_move_assignable_v<Item>
-    ;
+    Item &EmplaceAt (Iterator _at,
+                     Args &&..._constructorArgs) noexcept requires std::is_nothrow_move_assignable_v<Item>;
 
     /// \brief Resets vector to empty state.
     void Clear () noexcept;
@@ -79,9 +78,8 @@ public:
     /// \brief Move assigns last value to position of given iterator and decrements ::count.
     /// \return New ::End iterator.
     /// \invariant _iterator < ::End.
-    Iterator EraseExchangingWithLast (const Iterator &_iterator) noexcept
-        requires std::is_nothrow_move_assignable_v<Item>
-    ;
+    Iterator EraseExchangingWithLast (
+        const Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>;
 
     /// \brief Erase first `_amount` elements **without** preserving element order (for performance).
     /// \invariant _amount <= ::GetCount.
@@ -117,9 +115,7 @@ public:
     /// \brief Shortcut for std::find on this vector.
     [[nodiscard]] ConstIterator Find (const Item &_item) const noexcept;
 
-    bool operator== (const InplaceVector &_other) const noexcept
-        requires std::equality_comparable<Item>
-    ;
+    bool operator== (const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>;
 
     bool operator!= (const InplaceVector &_other) const noexcept;
 
@@ -253,8 +249,8 @@ bool InplaceVector<Item, Capacity>::TryEmplaceBack (Args &&..._constructorArgs) 
 
 template <typename Item, std::size_t Capacity>
 template <typename... Args>
-Item &InplaceVector<Item, Capacity>::EmplaceAt (InplaceVector::Iterator _at, Args &&..._constructorArgs) noexcept
-    requires std::is_nothrow_move_assignable_v<Item>
+Item &InplaceVector<Item, Capacity>::EmplaceAt (
+    InplaceVector::Iterator _at, Args &&..._constructorArgs) noexcept requires std::is_nothrow_move_assignable_v<Item>
 {
     assert (count < Capacity);
     if (_at == End ())
@@ -293,8 +289,7 @@ void InplaceVector<Item, Capacity>::Clear () noexcept
 
 template <typename Item, std::size_t Capacity>
 typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::EraseExchangingWithLast (
-    const InplaceVector::Iterator &_iterator) noexcept
-    requires std::is_nothrow_move_assignable_v<Item>
+    const InplaceVector::Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>
 {
     assert (_iterator < End ());
     auto last = --End ();
@@ -416,8 +411,8 @@ typename InplaceVector<Item, Capacity>::ConstIterator InplaceVector<Item, Capaci
 }
 
 template <typename Item, std::size_t Capacity>
-bool InplaceVector<Item, Capacity>::operator== (const InplaceVector &_other) const noexcept
-    requires std::equality_comparable<Item>
+bool InplaceVector<Item, Capacity>::operator== (
+    const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>
 {
     if (count != _other.count)
     {
