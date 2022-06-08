@@ -693,11 +693,12 @@ static void SyncStaticModel (const StaticModelComponent *_staticModel, Urho3D::S
         if (*_staticModel->materialNames[index])
         {
             _urho3DStaticModel->SetMaterial (
-                index, cache->GetResource<Urho3D::Material> (*_staticModel->materialNames[index]));
+                static_cast<unsigned int> (index),
+                cache->GetResource<Urho3D::Material> (*_staticModel->materialNames[index]));
         }
         else
         {
-            _urho3DStaticModel->SetMaterial (index, nullptr);
+            _urho3DStaticModel->SetMaterial (static_cast<unsigned int> (index), nullptr);
         }
     }
 }
