@@ -8,11 +8,11 @@ if ($args.Count -ne 1)
 
 $IntermediatePath = "Assets/Intermediate"
 $ConvertedPath = "Assets/Converted"
-$ObjectsPath = "$ConvertedPath/Objects"
+$ModelsPath = "$ConvertedPath/Models"
 
-if (-Not(Test-Path $ObjectsPath -PathType Container))
+if (-Not(Test-Path $ModelsPath -PathType Container))
 {
-    New-Item -ItemType "directory" -Path $ObjectsPath
+    New-Item -ItemType "directory" -Path $ModelsPath
 }
 
 $SDKPath = $args[0]
@@ -24,6 +24,6 @@ foreach ($Object in $Objects)
     $Name = $Object.Basename
     $Input = $Object.FullName
 
-    $OutputFile = "$ObjectsPath\$Name.xml"
-    & $ConverterPath node $Input $OutputFile -p $ConvertedPath
+    $OutputFile = "$ModelsPath\$Name.mdl"
+    & $ConverterPath model $Input $OutputFile -p $ConvertedPath
 }
