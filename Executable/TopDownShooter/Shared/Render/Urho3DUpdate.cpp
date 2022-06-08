@@ -17,8 +17,8 @@
 
 #include <Transform/Events.hpp>
 #include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 #include <Transform/Transform3dVisualSync.hpp>
+#include <Transform/Transform3dWorldAccessor.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <Urho3D/Graphics/Camera.h>
