@@ -40,6 +40,18 @@ float Lerp (float _begin, float _end, float _t) noexcept
     return _begin * (1.0f - _t) + _end * _t;
 }
 
+float Truncate (float _value) noexcept
+{
+    return truncf (_value);
+}
+
+float ToDegrees (float _radians) noexcept
+{
+    float result = _radians * 180.0f / PI;
+    result = result - Truncate (result / 360.0f) * 360.0f;
+    return result;
+}
+
 bool NearlyEqual (float _first, float _second) noexcept
 {
     const float difference = _first - _second;

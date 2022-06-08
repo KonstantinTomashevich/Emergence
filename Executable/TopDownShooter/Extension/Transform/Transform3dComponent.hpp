@@ -84,16 +84,16 @@ private:
 public:
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId parentObjectId;
-        Emergence::StandardLayout::FieldId logicalLocalTransform;
-        Emergence::StandardLayout::FieldId visualLocalTransform;
-        Emergence::StandardLayout::FieldId visualTransformSyncNeeded;
-        Emergence::StandardLayout::FieldId interpolationSkipRequested;
-        Emergence::StandardLayout::FieldId lastObservedLogicalTransformRevision;
-        Emergence::StandardLayout::FieldId logicalTransformLastObservationTimeNs;
-        Emergence::StandardLayout::FieldId visualTransformLastSyncTimeNs;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId objectId;
+        StandardLayout::FieldId parentObjectId;
+        StandardLayout::FieldId logicalLocalTransform;
+        StandardLayout::FieldId visualLocalTransform;
+        StandardLayout::FieldId visualTransformSyncNeeded;
+        StandardLayout::FieldId interpolationSkipRequested;
+        StandardLayout::FieldId lastObservedLogicalTransformRevision;
+        StandardLayout::FieldId logicalTransformLastObservationTimeNs;
+        StandardLayout::FieldId visualTransformLastSyncTimeNs;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

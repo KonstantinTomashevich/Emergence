@@ -21,6 +21,9 @@ public:
 
     using ConstIterator = typename std::array<Item, Capacity>::const_iterator;
 
+    /// \details We can not use offsetof here, because not all compilers support it on partially defined classes.
+    static constexpr std::size_t FIRST_ITEM_OFFSET = sizeof (std::uintptr_t);
+
     /// \brief Constructs empty inplace vector without initializing reserved memory.
     InplaceVector () noexcept;
 
@@ -139,6 +142,7 @@ template <typename Item, std::size_t Capacity>
 // NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::values initialization.
 InplaceVector<Item, Capacity>::InplaceVector () noexcept
 {
+    static_assert (FIRST_ITEM_OFFSET == offsetof (InplaceVector, values));
 }
 
 template <typename Item, std::size_t Capacity>

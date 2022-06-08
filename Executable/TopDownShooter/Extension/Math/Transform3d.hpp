@@ -33,10 +33,10 @@ struct alignas (sizeof (float) * 4u) Transform3d final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId rotation;
-        Emergence::StandardLayout::FieldId translation;
-        Emergence::StandardLayout::FieldId scale;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId rotation;
+        StandardLayout::FieldId translation;
+        StandardLayout::FieldId scale;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

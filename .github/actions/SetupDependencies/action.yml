@@ -16,7 +16,7 @@ runs:
         path: ./Dependency
         # We use "-version-[0-9]+" suffix to drop cache when we are updating dependencies.
         # Unfortunately, there is no better way to drop old cache from GitHub Actions right now.
-        key: ${{inputs.platform}}-${{inputs.build_type}}-dependencies-version-0
+        key: ${{inputs.platform}}-${{inputs.build_type}}-dependencies-version-1
 
     - name: Setup dependencies
       shell: pwsh

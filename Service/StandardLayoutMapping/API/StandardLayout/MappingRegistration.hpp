@@ -14,7 +14,7 @@
 #define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
     Emergence::StandardLayout::MappingBuilder builder;                                                                 \
     builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class), alignof (Class));                         \
-    using Type = Class;                                                                                                \
+    using Type [[maybe_unused]] = Class;                                                                               \
                                                                                                                        \
     if constexpr (std::is_default_constructible_v<Class> && !std::is_trivially_default_constructible_v<Class>)         \
     {                                                                                                                  \
@@ -98,31 +98,49 @@
 /// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::INT,
 ///        FieldArchetype::UINT or FieldArchetype::FLOAT elements.
 /// \invariant Class must contain `_field` field of type `std::array`.
-/// \invariant Class reflection structure name must contain `_field` field,
-///            in which registered field id for each array element will be stored.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id for each array
+///            element will be stored, and `_field`Block field, in which full array data block as field will be stored.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY(_field)                                                               \
+    ._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),        \
+                                            sizeof (Type::_field)),                                                    \
     ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
         #_field,                                                                                                       \
-        [&builder] (std::size_t _index, Emergence::Memory::UniqueString _itemName)                                     \
+        [&builder] (std::size_t _offset, Emergence::Memory::UniqueString _itemName)                                    \
         {                                                                                                              \
             using ItemType = decltype (Type::_field)::value_type;                                                      \
             using Registrar = Emergence::StandardLayout::Registration::RegularFieldRegistrar<ItemType>;                \
-            return (builder.*Registrar::Register) (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType));   \
+            return (builder.*Registrar::Register) (_itemName, offsetof (Type, _field) + _offset);                      \
         }),
 
 /// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::NESTED_OBJECT elements.
 /// \invariant Class must contain `_field` field of type `std::array`. Element type should have static Reflect method
 ///            that returns reflection structure for that type.
-/// \invariant Class reflection structure name must contain `_field` field,
-///            in which registered field id for each array element will be stored.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id for each array
+///            element will be stored, and `_field`Block field, in which full array data block as field will be stored.
 #define EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY(_field)                                                         \
+    ._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),        \
+                                            sizeof (Type::_field)),                                                    \
     ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
         #_field,                                                                                                       \
-        [&builder] (std::size_t _index, Emergence::Memory::UniqueString _itemName)                                     \
+        [&builder] (std::size_t _offset, Emergence::Memory::UniqueString _itemName)                                    \
         {                                                                                                              \
             using ItemType = decltype (Type::_field)::value_type;                                                      \
-            return builder.RegisterNestedObject (_itemName, offsetof (Type, _field) + _index * sizeof (ItemType),      \
+            return builder.RegisterNestedObject (_itemName, offsetof (Type, _field) + _offset,                         \
                                                  ItemType::Reflect ().mapping);                                        \
+        }),
+
+/// \brief Helper for mapping static registration. Registers array fields with FieldArchetype::UNIQUE_STRING elements.
+/// \invariant Class must contain `_field` field of type `std::array`.
+/// \invariant Class reflection structure name must contain `_field` field, in which registered field id for each array
+///            element will be stored, and `_field`Block field, in which full array data block as field will be stored.
+#define EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING_ARRAY(_field)                                                         \
+    ._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),        \
+                                            sizeof (Type::_field)),                                                    \
+    ._field = Emergence::StandardLayout::Registration::RegisterArray<decltype (Type::_field)> (                        \
+        #_field,                                                                                                       \
+        [&builder] (std::size_t _offset, Emergence::Memory::UniqueString _itemName)                                    \
+        {                                                                                                              \
+            return builder.RegisterUniqueString (_itemName, offsetof (Type, _field) + _offset);                        \
         }),
 
 namespace Emergence::StandardLayout::Registration
@@ -189,14 +207,32 @@ struct ExtractArraySize<Container::InplaceVector<Type, Capacity>>
     static constexpr std::size_t VALUE = Capacity;
 };
 
+template <typename>
+struct ExtractArrayFirstElementOffset;
+
+template <typename Type, std::size_t Size>
+struct ExtractArrayFirstElementOffset<std::array<Type, Size>>
+{
+    static constexpr std::size_t VALUE = 0u;
+};
+
+template <typename Type, std::size_t Capacity>
+struct ExtractArrayFirstElementOffset<Container::InplaceVector<Type, Capacity>>
+{
+    static constexpr std::size_t VALUE = Container::InplaceVector<Type, Capacity>::FIRST_ITEM_OFFSET;
+};
+
 template <typename ArrayType, typename ElementRegistrar>
 auto RegisterArray (const char *_fieldName, const ElementRegistrar &_elementRegistrar)
 {
     std::array<StandardLayout::FieldId, ExtractArraySize<ArrayType>::VALUE> result;
+    const std::size_t firstElementOffset = ExtractArrayFirstElementOffset<ArrayType>::VALUE;
+
     for (std::size_t index = 0u; index < result.size (); ++index)
     {
-        result[index] = _elementRegistrar (
-            index, Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (_fieldName, "[", index, "]")});
+        result[index] =
+            _elementRegistrar (firstElementOffset + sizeof (typename ArrayType::value_type) * index,
+                               Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (_fieldName, "[", index, "]")});
     }
 
     return result;

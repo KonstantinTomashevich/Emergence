@@ -376,15 +376,4 @@ TEST_CASE (ConsumerIsBetweenProducers)
     CHECK_EQUAL (builder.End (std::thread::hardware_concurrency ()), nullptr);
 }
 
-TEST_CASE (NoConsumers)
-{
-    World world {"TestWorld"_us};
-    RegisterTestEvent (&world, EventRoute::FIXED);
-    PipelineBuilder builder {&world};
-    builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
-
-    AddTestTask<EventProducer> (builder, "EventProducer"_us, {});
-    CHECK_EQUAL (builder.End (std::thread::hardware_concurrency ()), nullptr);
-}
-
 END_SUITE

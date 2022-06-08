@@ -79,10 +79,10 @@ struct alignas (float) Vector3f final
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId x;
-        Emergence::StandardLayout::FieldId y;
-        Emergence::StandardLayout::FieldId z;
-        Emergence::StandardLayout::Mapping mapping;
+        StandardLayout::FieldId x;
+        StandardLayout::FieldId y;
+        StandardLayout::FieldId z;
+        StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;

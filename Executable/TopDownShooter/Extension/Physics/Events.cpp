@@ -95,7 +95,7 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
                                PhysicsWorldSingleton::Reflect ().mapping,
                                {
                                    PhysicsWorldSingleton::Reflect ().gravity,
-                                   PhysicsWorldSingleton::Reflect ().collisionMaskBlock,
+                                   PhysicsWorldSingleton::Reflect ().collisionMasksBlock,
                                },
                                {},
                                {}});

@@ -8,13 +8,8 @@ PhysXAccessSingleton::Reflection &PhysXAccessSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        Emergence::StandardLayout::MappingBuilder builder;
-        builder.Begin (Emergence::Memory::UniqueString {"PhysXAccessSingleton"}, sizeof (PhysXAccessSingleton),
-                       alignof (PhysXAccessSingleton));
-
-        return PhysXAccessSingleton::Reflection {
-            .mapping = builder.End (),
-        };
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PhysXAccessSingleton)
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;

@@ -20,6 +20,7 @@ struct InputListenerComponent final
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
+        Emergence::StandardLayout::FieldId actionsBlock;
         std::array<Emergence::StandardLayout::FieldId, MAX_ACTIONS_PER_CYCLE> actions;
         Emergence::StandardLayout::Mapping mapping;
     };
