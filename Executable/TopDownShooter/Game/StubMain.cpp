@@ -115,14 +115,14 @@ void NormalSceneSeeder::Execute ()
 
     auto *light = static_cast<LightComponent *> (++lightCursor);
     light->objectId = LIGHT_OBJECT_ID;
-    light->lightType = LightType::DIRECTIONAL;
+    light->type = LightType::DIRECTIONAL;
     light->color = {1.0f, 1.0f, 1.0f, 1.0f};
 
     auto *playerModel = static_cast<StaticModelComponent *> (++modelCursor);
     playerModel->objectId = PLAYER_OBJECT_ID;
     playerModel->modelId = PLAYER_OBJECT_ID;
     playerModel->modelName = "Models/Player.mdl"_us;
-    playerModel->materialNames[0u] = "Materials/Player.xml"_us;
+    playerModel->materialNames.EmplaceBack ("Materials/Player.xml"_us);
 
     for (std::size_t x = 0u; x < 9u; ++x)
     {
@@ -137,14 +137,14 @@ void NormalSceneSeeder::Execute ()
             if (x == 0u || z == 0u || x == 8u || z == 8u)
             {
                 model->modelName = "Models/Wall.mdl"_us;
-                model->materialNames[0u] = "Materials/WallTileBorder.xml"_us;
-                model->materialNames[1u] = "Materials/WallTileCenter.xml"_us;
+                model->materialNames.EmplaceBack ("Materials/WallTileBorder.xml"_us);
+                model->materialNames.EmplaceBack ("Materials/WallTileCenter.xml"_us);
             }
             else
             {
                 model->modelName = "Models/FloorTile.mdl"_us;
-                model->materialNames[0u] = "Materials/FloorTileCenter.xml"_us;
-                model->materialNames[1u] = "Materials/FloorTileBorder.xml"_us;
+                model->materialNames.EmplaceBack ("Materials/FloorTileCenter.xml"_us);
+                model->materialNames.EmplaceBack ("Materials/FloorTileBorder.xml"_us);
             }
         }
     }

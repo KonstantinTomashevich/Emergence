@@ -20,7 +20,7 @@ struct LightComponent final
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
     Emergence::Celerity::UniqueId lightId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    LightType lightType = LightType::DIRECTIONAL;
+    LightType type = LightType::DIRECTIONAL;
     bool enabled = true;
 
     Color color;
@@ -34,7 +34,7 @@ struct LightComponent final
     {
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId lightId;
-        Emergence::StandardLayout::FieldId lightType;
+        Emergence::StandardLayout::FieldId type;
         Emergence::StandardLayout::FieldId enabled;
         Emergence::StandardLayout::FieldId color;
         Emergence::StandardLayout::FieldId range;

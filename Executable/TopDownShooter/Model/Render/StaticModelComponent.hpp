@@ -4,6 +4,8 @@
 
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Container/InplaceVector.hpp>
+
 #include <Memory/UniqueString.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -18,8 +20,7 @@ struct StaticModelComponent final
     Emergence::Celerity::UniqueId modelId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
     Emergence::Memory::UniqueString modelName;
-    // TODO: Use inplace vector?
-    std::array<Emergence::Memory::UniqueString, MAXIMUM_MATERIAL_SLOTS> materialNames;
+    Emergence::Container::InplaceVector<Emergence::Memory::UniqueString, MAXIMUM_MATERIAL_SLOTS> materialNames;
 
     void *implementationHandle = nullptr;
 

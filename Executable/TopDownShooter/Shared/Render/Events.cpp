@@ -65,7 +65,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
         {{LightComponentChangedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
          LightComponent::Reflect ().mapping,
          {
-             LightComponent::Reflect ().lightType,
+             LightComponent::Reflect ().type,
              LightComponent::Reflect ().enabled,
              LightComponent::Reflect ().color,
              LightComponent::Reflect ().range,

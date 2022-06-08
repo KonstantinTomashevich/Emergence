@@ -118,11 +118,9 @@ Urho3D::Node *Urho3DNodeAccessor::CreateNode (Emergence::Celerity::UniqueId _obj
 
     auto cursor = insertNode.Execute ();
     auto *component = static_cast<Urho3DNodeComponent *> (++cursor);
+
     component->objectId = _objectId;
-
-    // TODO: We do not apply transform parent->child hierarchy to Urho3D. Can it cause problems?
     component->node = singleton->scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
-
     component->usages = _usages;
     return component->node;
 }
@@ -653,7 +651,7 @@ static void SyncCamera (const CameraComponent *_camera, Urho3D::Camera *_urho3DC
 
 static void SyncLight (const LightComponent *_light, Urho3D::Light *_urho3DLight) noexcept
 {
-    switch (_light->lightType)
+    switch (_light->type)
     {
     case LightType::DIRECTIONAL:
         _urho3DLight->SetLightType (Urho3D::LIGHT_DIRECTIONAL);
@@ -685,8 +683,8 @@ static void SyncStaticModel (const StaticModelComponent *_staticModel, Urho3D::S
         _urho3DStaticModel->SetModel (nullptr);
     }
 
-    const std::size_t materialCount =
-        std::min (_staticModel->materialNames.size (), static_cast<size_t> (_urho3DStaticModel->GetBatches ().Size ()));
+    const std::size_t materialCount = std::min (_staticModel->materialNames.GetCount (),
+                                                static_cast<size_t> (_urho3DStaticModel->GetBatches ().Size ()));
 
     for (std::size_t index = 0u; index < materialCount; ++index)
     {

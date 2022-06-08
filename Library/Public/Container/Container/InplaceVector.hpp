@@ -21,7 +21,7 @@ public:
 
     using ConstIterator = typename std::array<Item, Capacity>::const_iterator;
 
-    /// \details We can not use offsetof here, because not all compilers support it on not partially defined classes.
+    /// \details We can not use offsetof here, because not all compilers support it on partially defined classes.
     static constexpr std::size_t FIRST_ITEM_OFFSET = sizeof (std::uintptr_t);
 
     /// \brief Constructs empty inplace vector without initializing reserved memory.

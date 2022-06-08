@@ -17,7 +17,6 @@ struct Urho3DNodeComponent final
     EMERGENCE_STATIONARY_DATA_TYPE (Urho3DNodeComponent);
 
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
-
     Urho3D::Node *node = nullptr;
     std::size_t usages = 0u;
 
