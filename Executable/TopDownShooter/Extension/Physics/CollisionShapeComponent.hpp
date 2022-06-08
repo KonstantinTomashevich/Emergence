@@ -24,7 +24,7 @@ struct CollisionShapeComponent final
 
     Math::Quaternion rotation = Math::Quaternion::IDENTITY;
 
-    Math::Vector3f translation = Math::Vector3f::ONE;
+    Math::Vector3f translation = Math::Vector3f::ZERO;
 
     /// \invariant Geometry type cannot be changed after initialization!
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};

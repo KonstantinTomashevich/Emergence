@@ -18,6 +18,7 @@
 #include <Transform/Events.hpp>
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
+#include <Transform/Transform3dVisualSync.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <Urho3D/Graphics/Camera.h>
@@ -568,6 +569,7 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchRenderSceneChangedEvents (_constructor.MFetchSequence (RenderSceneChangedEvent)),
       fetchCameraByObjectId (_constructor.MFetchValue1F (CameraComponent, objectId))
 {
+    _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);
     _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_FINISHED);
 }
@@ -683,7 +685,10 @@ static void SyncStaticModel (const StaticModelComponent *_staticModel, Urho3D::S
         _urho3DStaticModel->SetModel (nullptr);
     }
 
-    for (std::size_t index = 0u; index < _staticModel->materialNames.size (); ++index)
+    const std::size_t materialCount =
+        std::min (_staticModel->materialNames.size (), static_cast<size_t> (_urho3DStaticModel->GetBatches ().Size ()));
+
+    for (std::size_t index = 0u; index < materialCount; ++index)
     {
         if (*_staticModel->materialNames[index])
         {

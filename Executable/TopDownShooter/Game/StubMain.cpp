@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <fstream>
@@ -6,60 +8,258 @@
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/World.hpp>
 
 #include <Input/Input.hpp>
 
-#include <Log/Log.hpp>
+#include <Math/Constants.hpp>
 
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
 
+#include <Physics/CollisionShapeComponent.hpp>
+#include <Physics/DynamicsMaterial.hpp>
 #include <Physics/Events.hpp>
+#include <Physics/PhysicsWorldSingleton.hpp>
+#include <Physics/RigidBodyComponent.hpp>
 #include <Physics/Simulation.hpp>
 
-BEGIN_MUTING_WARNINGS
-#include <PxFoundation.h>
-#include <PxPhysics.h>
-#include <PxPhysicsVersion.h>
-#include <PxRigidDynamic.h>
-#include <PxRigidStatic.h>
-#include <PxScene.h>
-#include <common/PxTolerancesScale.h>
-#include <extensions/PxDefaultAllocator.h>
-#include <extensions/PxDefaultCpuDispatcher.h>
-#include <extensions/PxDefaultErrorCallback.h>
-#include <extensions/PxDefaultSimulationFilterShader.h>
-#include <extensions/PxRigidBodyExt.h>
-#include <extensions/PxSimpleFactory.h>
-#include <pvd/PxPvd.h>
-#include <pvd/PxPvdTransport.h>
-END_MUTING_WARNINGS
-
+#include <Render/CameraComponent.hpp>
 #include <Render/Events.hpp>
+#include <Render/LightComponent.hpp>
+#include <Render/RenderSceneSingleton.hpp>
+#include <Render/StaticModelComponent.hpp>
 #include <Render/Urho3DUpdate.hpp>
 
 #include <Shared/CelerityUtils.hpp>
+#include <Shared/Checkpoint.hpp>
 
-#include <SyntaxSugar/Time.hpp>
+#include <Transform/Transform3dComponent.hpp>
+#include <Transform/Transform3dVisualSync.hpp>
 
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
 #include <Urho3D/Engine/EngineDefs.h>
-#include <Urho3D/Graphics/Camera.h>
-#include <Urho3D/Graphics/Light.h>
-#include <Urho3D/Graphics/Octree.h>
-#include <Urho3D/Graphics/Renderer.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Input/InputEvents.h>
-#include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/Resource/XMLFile.h>
-#include <Urho3D/Scene/Node.h>
-#include <Urho3D/Scene/Scene.h>
 #undef ERROR
 
 using namespace Emergence::Memory::Literals;
+
+static constexpr Emergence::Celerity::UniqueId CAMERA_OBJECT_ID = 0u;
+static constexpr Emergence::Celerity::UniqueId LIGHT_OBJECT_ID = 1u;
+static constexpr Emergence::Celerity::UniqueId PLAYER_OBJECT_ID = 2u;
+static constexpr Emergence::Celerity::UniqueId OTHER_OBJECTS_START_ID = 10u;
+
+class NormalSceneSeeder final : public Emergence::Celerity::TaskExecutorBase<NormalSceneSeeder>
+{
+public:
+    NormalSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+
+    void Execute ();
+
+private:
+    Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
+    Emergence::Celerity::InsertLongTermQuery insertTransform;
+    Emergence::Celerity::InsertLongTermQuery insertCamera;
+    Emergence::Celerity::InsertLongTermQuery insertLight;
+    Emergence::Celerity::InsertLongTermQuery insertStaticModel;
+
+    bool seedingDone = false;
+};
+
+NormalSceneSeeder::NormalSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
+    : modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
+      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
+      insertCamera (_constructor.MInsertLongTerm (CameraComponent)),
+      insertLight (_constructor.MInsertLongTerm (LightComponent)),
+      insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent))
+{
+    _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);
+}
+
+void NormalSceneSeeder::Execute ()
+{
+    if (seedingDone)
+    {
+        return;
+    }
+
+    seedingDone = true;
+
+    auto transformCursor = insertTransform.Execute ();
+    auto cameraCursor = insertCamera.Execute ();
+    auto lightCursor = insertLight.Execute ();
+    auto modelCursor = insertStaticModel.Execute ();
+
+    auto *cameraTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    cameraTransform->SetObjectId (CAMERA_OBJECT_ID);
+    cameraTransform->SetVisualLocalTransform (
+        {{4.0f, 7.0f, -1.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, 0.0f}}, {1.0f, 1.0f, 1.0f}});
+
+    auto *camera = static_cast<CameraComponent *> (++cameraCursor);
+    camera->objectId = CAMERA_OBJECT_ID;
+    camera->fieldOfViewRad = Emergence::Math::PI * 0.5f;
+
+    auto renderSceneCursor = modifyRenderScene.Execute ();
+    auto *renderScene = static_cast<RenderSceneSingleton *> (*renderSceneCursor);
+    renderScene->cameraObjectId = CAMERA_OBJECT_ID;
+
+    auto *lightTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    lightTransform->SetObjectId (LIGHT_OBJECT_ID);
+    lightTransform->SetVisualLocalTransform (
+        {{0.0f, 5.0f, 0.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, Emergence::Math::PI / 3.0f}}, {1.0f, 1.0f, 1.0f}});
+
+    auto *light = static_cast<LightComponent *> (++lightCursor);
+    light->objectId = LIGHT_OBJECT_ID;
+    light->lightType = LightType::DIRECTIONAL;
+    light->color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    auto *playerModel = static_cast<StaticModelComponent *> (++modelCursor);
+    playerModel->objectId = PLAYER_OBJECT_ID;
+    playerModel->modelId = PLAYER_OBJECT_ID;
+    playerModel->modelName = "Models/Player.mdl"_us;
+    playerModel->materialNames[0u] = "Materials/Player.xml"_us;
+
+    for (std::size_t x = 0u; x < 9u; ++x)
+    {
+        for (std::size_t z = 0u; z < 9u; ++z)
+        {
+            const Emergence::Celerity::UniqueId objectId = OTHER_OBJECTS_START_ID + x * 9u + z;
+
+            auto *model = static_cast<StaticModelComponent *> (++modelCursor);
+            model->objectId = objectId;
+            model->modelId = objectId;
+
+            if (x == 0u || z == 0u || x == 8u || z == 8u)
+            {
+                model->modelName = "Models/Wall.mdl"_us;
+                model->materialNames[0u] = "Materials/WallTileBorder.xml"_us;
+                model->materialNames[1u] = "Materials/WallTileCenter.xml"_us;
+            }
+            else
+            {
+                model->modelName = "Models/FloorTile.mdl"_us;
+                model->materialNames[0u] = "Materials/FloorTileCenter.xml"_us;
+                model->materialNames[1u] = "Materials/FloorTileBorder.xml"_us;
+            }
+        }
+    }
+}
+
+class FixedSceneSeeder final : public Emergence::Celerity::TaskExecutorBase<FixedSceneSeeder>
+{
+public:
+    FixedSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+
+    void Execute () noexcept;
+
+private:
+    Emergence::Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
+    Emergence::Celerity::InsertLongTermQuery insertTransform;
+    Emergence::Celerity::InsertLongTermQuery insertRigidBody;
+    Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
+
+    bool seedingDone = false;
+};
+
+FixedSceneSeeder::FixedSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
+    : modifyPhysicsWorld (_constructor.MModifySingleton (Emergence::Physics::PhysicsWorldSingleton)),
+      insertDynamicsMaterial (_constructor.MInsertLongTerm (Emergence::Physics::DynamicsMaterial)),
+      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
+      insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
+      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent))
+{
+    _constructor.MakeDependencyOf (Emergence::Physics::Simulation::Checkpoint::SIMULATION_STARTED);
+}
+
+void FixedSceneSeeder::Execute () noexcept
+{
+    if (seedingDone)
+    {
+        return;
+    }
+
+    seedingDone = true;
+    auto worldCursor = modifyPhysicsWorld.Execute ();
+    auto *world = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*worldCursor);
+
+    world->enableRemoteDebugger = true;
+    strcpy (world->remoteDebuggerUrl.data (), "localhost");
+    world->remoteDebuggerPort = 5425;
+
+    world->collisionMasks[0u] = ~0u;
+
+    auto materialCursor = insertDynamicsMaterial.Execute ();
+    auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);
+
+    material->id = "Default"_us;
+    material->staticFriction = 0.4f;
+    material->dynamicFriction = 0.4f;
+    material->enableFriction = true;
+    material->restitution = 0.5f;
+    material->density = 400.0f;
+
+    auto transformCursor = insertTransform.Execute ();
+    auto bodyCursor = insertRigidBody.Execute ();
+    auto shapeCursor = insertCollisionShape.Execute ();
+
+    for (std::size_t x = 0u; x < 9u; ++x)
+    {
+        for (std::size_t z = 0u; z < 9u; ++z)
+        {
+            const Emergence::Celerity::UniqueId objectId = OTHER_OBJECTS_START_ID + x * 9u + z;
+
+            auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+            transform->SetObjectId (objectId);
+            transform->SetLogicalLocalTransform ({{static_cast<float> (x), 0.0f, static_cast<float> (z)},
+                                                  Emergence::Math::Quaternion::IDENTITY,
+                                                  Emergence::Math::Vector3f::ONE},
+                                                 true);
+
+            auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+            body->objectId = objectId;
+            body->type = Emergence::Physics::RigidBodyType::STATIC;
+
+            auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+            shape->objectId = objectId;
+            shape->shapeId = objectId;
+            shape->materialId = "Default"_us;
+
+            if (x == 0u || z == 0u || x == 8u || z == 8u)
+            {
+                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                                   .boxHalfExtents = {0.5f, 1.5f, 0.5f}};
+                shape->translation.y = 1.5f;
+            }
+            else
+            {
+                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                                   .boxHalfExtents = {0.5f, 0.01f, 0.5f}};
+            }
+        }
+    }
+
+    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    transform->SetObjectId (PLAYER_OBJECT_ID);
+    transform->SetLogicalLocalTransform (
+        {{4.0f, 7.0f, 4.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
+
+    auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+    body->objectId = PLAYER_OBJECT_ID;
+    body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
+    body->linearVelocity = {2.0f, 0.0f, 2.0f};
+
+    auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+    shape->objectId = PLAYER_OBJECT_ID;
+    shape->shapeId = PLAYER_OBJECT_ID;
+    shape->materialId = "Default"_us;
+    shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
+}
 
 static Emergence::Memory::Profiler::EventObserver StartRecording (
     Emergence::Memory::Recording::StreamSerializer &_serializer, std::ostream &_output)
@@ -80,7 +280,7 @@ public:
 
     GameApplication (GameApplication &&_other) = delete;
 
-    ~GameApplication () override;
+    ~GameApplication () override = default;
 
     void Setup () override;
 
@@ -93,7 +293,7 @@ public:
     GameApplication &operator= (GameApplication &&_other) = delete;
 
 private:
-    void HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept;
+    void HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap & /*unused*/) noexcept;
 
     void HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept;
 
@@ -105,25 +305,6 @@ private:
 
     Emergence::Celerity::InputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us};
-
-    Urho3D::SharedPtr<Urho3D::Scene> scene;
-    Urho3D::SharedPtr<Urho3D::Node> playerNode;
-    Urho3D::SharedPtr<Urho3D::Node> lightNode;
-
-    physx::PxDefaultAllocator gAllocator;
-    physx::PxDefaultErrorCallback gErrorCallback;
-
-    physx::PxFoundation *gFoundation = nullptr;
-    physx::PxPhysics *gPhysics = nullptr;
-
-    physx::PxDefaultCpuDispatcher *gDispatcher = nullptr;
-    physx::PxScene *gScene = nullptr;
-
-    physx::PxMaterial *gMaterial = nullptr;
-
-    physx::PxPvd *gPvd = nullptr;
-
-    physx::PxRigidDynamic *boxBody = nullptr;
 };
 
 GameApplication::GameApplication (Urho3D::Context *_context)
@@ -134,34 +315,13 @@ GameApplication::GameApplication (Urho3D::Context *_context)
     SubscribeToEvent (Urho3D::E_UPDATE, URHO3D_HANDLER (GameApplication, HandleUpdate));
     SubscribeToEvent (Urho3D::E_KEYDOWN, URHO3D_HANDLER (GameApplication, HandleKeyDown));
     SubscribeToEvent (Urho3D::E_KEYUP, URHO3D_HANDLER (GameApplication, HandleKeyUp));
-
-    gFoundation = PxCreateFoundation (PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-    gPvd = physx::PxCreatePvd (*gFoundation);
-    physx::PxPvdTransport *transport = physx::PxDefaultPvdSocketTransportCreate ("127.0.0.1", 5425, 10);
-    gPvd->connect (*transport, physx::PxPvdInstrumentationFlag::eALL);
-    gPhysics = PxCreatePhysics (PX_PHYSICS_VERSION, *gFoundation, physx::PxTolerancesScale (), true, gPvd);
-}
-
-GameApplication::~GameApplication ()
-{
-    gScene->release ();
-    gDispatcher->release ();
-    gPhysics->release ();
-
-    if (gPvd)
-    {
-        physx::PxPvdTransport *transport = gPvd->getTransport ();
-        gPvd->release ();
-        transport->release ();
-    }
-
-    gFoundation->release ();
 }
 
 void GameApplication::Setup ()
 {
     Application::Setup ();
     engineParameters_[Urho3D::EP_FULL_SCREEN] = false;
+    engineParameters_[Urho3D::EP_WINDOW_RESIZABLE] = true;
     engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreAssets;GameAssets";
     engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "..";
 }
@@ -183,102 +343,18 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
+    Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
+    pipelineBuilder.AddTask ("NormalSceneSeeder"_us).SetExecutor<NormalSceneSeeder> ();
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-
     // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
+    pipelineBuilder.AddTask ("FixedSceneSeeder"_us).SetExecutor<FixedSceneSeeder> ();
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
-
-    scene = new Urho3D::Scene {GetContext ()};
-    scene->SetUpdateEnabled (false);
-    scene->CreateComponent<Urho3D::Octree> ();
-    auto *cache = GetSubsystem<Urho3D::ResourceCache> ();
-
-    auto *floorTileXml = cache->GetResource<Urho3D::XMLFile> ("Objects/FloorTile.xml");
-    if (!floorTileXml)
-    {
-        EMERGENCE_LOG (ERROR, "Unable to load floor tile prefab!");
-    }
-
-    auto *playerXml = cache->GetResource<Urho3D::XMLFile> ("Objects/Player.xml");
-    if (!playerXml)
-    {
-        EMERGENCE_LOG (ERROR, "Unable to load player prefab!");
-    }
-
-    auto *wallXml = cache->GetResource<Urho3D::XMLFile> ("Objects/Wall.xml");
-    if (!wallXml)
-    {
-        EMERGENCE_LOG (ERROR, "Unable to load wall prefab!");
-    }
-
-    for (int x = -4; x <= 4; ++x)
-    {
-        for (int z = -4; z <= 4; ++z)
-        {
-            const bool placeWall = x == -4 || x == 4 || z == -4 || z == 4;
-            Urho3D::XMLFile *prefabXml = placeWall ? wallXml : floorTileXml;
-
-            if (prefabXml)
-            {
-                Urho3D::Node *node = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
-                node->LoadXML (prefabXml->GetRoot ());
-                node->SetPosition ({static_cast<float> (x), 0.0f, static_cast<float> (z)});
-            }
-        }
-    }
-
-    if (playerXml)
-    {
-        playerNode = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
-        playerNode->LoadXML (playerXml->GetRoot ());
-        playerNode->SetPosition ({});
-    }
-
-    lightNode = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
-    auto *light = lightNode->CreateComponent<Urho3D::Light> (Urho3D::LOCAL);
-    light->SetLightType (Urho3D::LIGHT_DIRECTIONAL);
-    lightNode->SetRotation ({30.0f, 0.0f, 0.0f});
-
-    Urho3D::Node *cameraNode = scene->CreateChild (Urho3D::String::EMPTY, Urho3D::LOCAL);
-    auto *camera = cameraNode->CreateComponent<Urho3D::Camera> ();
-    cameraNode->SetPosition ({0.0f, 10.0f, -5.0f});
-    cameraNode->SetRotation ({60.0f, 0.0f, 0.0f});
-
-    auto *renderer = GetSubsystem<Urho3D::Renderer> ();
-    renderer->SetViewport (0, new Urho3D::Viewport {GetContext (), scene, camera});
-
-    physx::PxSceneDesc sceneDesc (gPhysics->getTolerancesScale ());
-    sceneDesc.gravity = physx::PxVec3 (0.0f, -9.81f, 0.0f);
-    gDispatcher = physx::PxDefaultCpuDispatcherCreate (2);
-    sceneDesc.cpuDispatcher = gDispatcher;
-    sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-    gScene = gPhysics->createScene (sceneDesc);
-
-    physx::PxPvdSceneClient *pvdClient = gScene->getScenePvdClient ();
-    if (pvdClient)
-    {
-        pvdClient->setScenePvdFlag (physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-        pvdClient->setScenePvdFlag (physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-        pvdClient->setScenePvdFlag (physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-    }
-
-    gMaterial = gPhysics->createMaterial (0.5f, 0.5f, 0.6f);
-    physx::PxRigidStatic *groundPlane =
-        physx::PxCreatePlane (*gPhysics, physx::PxPlane (0.0f, 1.0f, 0.0f, 0.0f), *gMaterial);
-    gScene->addActor (*groundPlane);
-
-    boxBody = gPhysics->createRigidDynamic (physx::PxTransform (0.0f, 10.0f, 0.0f));
-    physx::PxShape *boxShape = gPhysics->createShape (physx::PxBoxGeometry (0.5f, 0.5f, 0.5f), *gMaterial);
-    boxBody->attachShape (*boxShape);
-    physx::PxRigidBodyExt::updateMassAndInertia (*boxBody, 1000.0f);
-    gScene->addActor (*boxBody);
-    boxShape->release ();
 }
 
 void GameApplication::Stop ()
@@ -286,27 +362,9 @@ void GameApplication::Stop ()
     Application::Stop ();
 }
 
-void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
+void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap & /*unused*/) noexcept
 {
     world.Update ();
-
-    gScene->simulate (_eventData[Urho3D::Update::P_TIMESTEP].GetFloat ());
-    gScene->fetchResults (true);
-    const physx::PxTransform boxTransform = boxBody->getGlobalPose ();
-
-    constexpr const uint64_t NS_PERIOD = 3000000000u;
-    const uint64_t nsGlobal = Emergence::Time::NanosecondsSinceStartup ();
-    const uint64_t nsLocal = nsGlobal % NS_PERIOD;
-
-    const float angle =
-        static_cast<float> (M_PI) * 2.0f * (static_cast<float> (nsLocal) / static_cast<float> (NS_PERIOD));
-
-    lightNode->LookAt ({cos (angle), -1.0f, sin (angle)});
-    // playerNode->SetPosition ({cos (angle) * 2.0f, 0.0f, sin (angle) * 2.0f});
-    playerNode->SetPosition ({boxTransform.p.x, boxTransform.p.y, boxTransform.p.z});
-    playerNode->SetRotation ({boxTransform.q.w, boxTransform.q.x, boxTransform.q.y, boxTransform.q.z});
-
-    scene->Update (_eventData[Urho3D::Update::P_TIMESTEP].GetFloat ());
     inputAccumulator.Clear ();
 
     while (const Emergence::Memory::Profiler::Event *event = memoryEventObserver.NextEvent ())
