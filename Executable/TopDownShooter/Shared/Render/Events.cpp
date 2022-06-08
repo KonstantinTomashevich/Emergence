@@ -14,12 +14,12 @@ EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedEvent, REGULAR, lightId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentChangedEvent, REGULAR, lightId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    LightComponentRemovedEvent, REGULAR, lightId, POINTER_AS_REGULAR, implementationHandle)
+    LightComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedEvent, REGULAR, modelId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentChangedEvent, REGULAR, modelId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    StaticModelComponentRemovedEvent, REGULAR, modelId, POINTER_AS_REGULAR, implementationHandle)
+    StaticModelComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
 
 void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept
 {
@@ -78,7 +78,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
     _registrar.OnRemoveEvent (
         {{LightComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
          LightComponent::Reflect ().mapping,
-         {{LightComponent::Reflect ().lightId, LightComponentRemovedEvent::Reflect ().lightId},
+         {{LightComponent::Reflect ().objectId, LightComponentRemovedEvent::Reflect ().objectId},
           {LightComponent::Reflect ().implementationHandle,
            LightComponentRemovedEvent::Reflect ().implementationHandle}}});
 
@@ -102,7 +102,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
     _registrar.OnRemoveEvent (
         {{StaticModelComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
          StaticModelComponent::Reflect ().mapping,
-         {{StaticModelComponent::Reflect ().modelId, StaticModelComponentRemovedEvent::Reflect ().modelId},
+         {{StaticModelComponent::Reflect ().objectId, StaticModelComponentRemovedEvent::Reflect ().objectId},
           {StaticModelComponent::Reflect ().implementationHandle,
            StaticModelComponentRemovedEvent::Reflect ().implementationHandle}}});
 }

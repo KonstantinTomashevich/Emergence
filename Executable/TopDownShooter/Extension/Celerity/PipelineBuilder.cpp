@@ -661,8 +661,7 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
         auto consumptionIterator = _consumption.find (eventType);
         if (consumptionIterator == _consumption.end () || consumptionIterator->second.empty ())
         {
-            EMERGENCE_LOG (ERROR, "Events of type \"", eventType.GetName (), "\" are produced, but never consumed.");
-            anyErrorsDetected = true;
+            EMERGENCE_LOG (WARNING, "Events of type \"", eventType.GetName (), "\" are produced, but never consumed.");
             continue;
         }
 

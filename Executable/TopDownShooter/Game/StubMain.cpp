@@ -15,6 +15,9 @@
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
 
+#include <Physics/Events.hpp>
+#include <Physics/Simulation.hpp>
+
 BEGIN_MUTING_WARNINGS
 #include <PxFoundation.h>
 #include <PxPhysics.h>
@@ -173,6 +176,7 @@ void GameApplication::Start ()
     {
         Emergence::Celerity::EventRegistrar registrar {&world};
         RegisterRenderEvents (registrar);
+        Emergence::Physics::RegisterEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
@@ -186,6 +190,7 @@ void GameApplication::Start ()
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Input::AddToFixedUpdate (pipelineBuilder);
+    Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
