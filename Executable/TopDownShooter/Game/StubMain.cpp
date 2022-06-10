@@ -11,6 +11,9 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/World.hpp>
 
+#include <Gameplay/Events.hpp>
+#include <Gameplay/Mortality.hpp>
+
 #include <Input/Input.hpp>
 
 #include <Math/Constants.hpp>
@@ -35,6 +38,7 @@
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
 
+#include <Transform/Events.hpp>
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dVisualSync.hpp>
 
@@ -273,8 +277,10 @@ void GameApplication::Start ()
 
     {
         Emergence::Celerity::EventRegistrar registrar {&world};
+        RegisterGameplayEvents (registrar);
         RegisterRenderEvents (registrar);
         Emergence::Physics::RegisterEvents (registrar);
+        Emergence::Transform::RegisterEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
@@ -293,6 +299,7 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
+    Mortality::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
