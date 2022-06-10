@@ -8,7 +8,7 @@ namespace Emergence::Celerity
 {
 uintptr_t WorldSingleton::GenerateUID () const noexcept
 {
-    assert (uidCounter != std::numeric_limits<decltype (uidCounter)>::max ());
+    assert (uidCounter != std::numeric_limits<decltype (uidCounter)::value_type>::max ());
     return const_cast<WorldSingleton *> (this)->uidCounter++;
 }
 

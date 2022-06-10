@@ -4,13 +4,13 @@
 
 uintptr_t RenderSceneSingleton::GenerateLightUID () const noexcept
 {
-    assert (lightUIDCounter != std::numeric_limits<decltype (lightUIDCounter)>::max ());
+    assert (lightUIDCounter != std::numeric_limits<decltype (lightUIDCounter)::value_type>::max ());
     return const_cast<RenderSceneSingleton *> (this)->lightUIDCounter++;
 }
 
 uintptr_t RenderSceneSingleton::GenerateModelUID () const noexcept
 {
-    assert (modelUIDCounter != std::numeric_limits<decltype (modelUIDCounter)>::max ());
+    assert (modelUIDCounter != std::numeric_limits<decltype (modelUIDCounter)::value_type>::max ());
     return const_cast<RenderSceneSingleton *> (this)->modelUIDCounter++;
 }
 

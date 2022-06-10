@@ -6,6 +6,9 @@ struct Checkpoint final
 {
     Checkpoint () = delete;
 
+    static const Emergence::Memory::UniqueString ASSEMBLY_STARTED;
+    static const Emergence::Memory::UniqueString ASSEMBLY_FINISHED;
+
     // NOTE: Expected input routine:
     //       - External event registration allowed (UI, replays).
     //       - INPUT_DISPATCH_STARTED.

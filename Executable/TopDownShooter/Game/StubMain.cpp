@@ -6,13 +6,17 @@
 #include <thread>
 
 #include <Celerity/Event/EventRegistrar.hpp>
+#include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/World.hpp>
 
+#include <Gameplay/Assembly.hpp>
 #include <Gameplay/Events.hpp>
+#include <Gameplay/HardcodedUnitTypes.hpp>
 #include <Gameplay/Mortality.hpp>
+#include <Gameplay/UnitComponent.hpp>
 
 #include <Input/Input.hpp>
 
@@ -52,11 +56,6 @@
 
 using namespace Emergence::Memory::Literals;
 
-static constexpr Emergence::Celerity::UniqueId CAMERA_OBJECT_ID = 0u;
-static constexpr Emergence::Celerity::UniqueId LIGHT_OBJECT_ID = 1u;
-static constexpr Emergence::Celerity::UniqueId PLAYER_OBJECT_ID = 2u;
-static constexpr Emergence::Celerity::UniqueId OTHER_OBJECTS_START_ID = 10u;
-
 class SceneSeeder final : public Emergence::Celerity::TaskExecutorBase<SceneSeeder>
 {
 public:
@@ -65,7 +64,10 @@ public:
     void Execute ();
 
 private:
+    Emergence::Celerity::ModifySingletonQuery fetchWorld;
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
+    Emergence::Celerity::ModifySingletonQuery modifyPhysicsWorld;
+
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
@@ -74,10 +76,13 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertLight;
     Emergence::Celerity::InsertLongTermQuery insertStaticModel;
+    Emergence::Celerity::InsertLongTermQuery insertUnit;
 };
 
 SceneSeeder::SceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
+    : fetchWorld (_constructor.MModifySingleton (Emergence::Celerity::WorldSingleton)),
+      modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
+      modifyPhysicsWorld (_constructor.MModifySingleton (Emergence::Physics::PhysicsWorldSingleton)),
 
       insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
       insertDynamicsMaterial (_constructor.MInsertLongTerm (Emergence::Physics::DynamicsMaterial)),
@@ -86,12 +91,16 @@ SceneSeeder::SceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) no
 
       insertCamera (_constructor.MInsertLongTerm (CameraComponent)),
       insertLight (_constructor.MInsertLongTerm (LightComponent)),
-      insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent))
+      insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent)),
+      insertUnit (_constructor.MInsertLongTerm (UnitComponent))
 {
 }
 
 void SceneSeeder::Execute ()
 {
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
     auto transformCursor = insertTransform.Execute ();
     auto materialCursor = insertDynamicsMaterial.Execute ();
     auto bodyCursor = insertRigidBody.Execute ();
@@ -100,6 +109,7 @@ void SceneSeeder::Execute ()
     auto cameraCursor = insertCamera.Execute ();
     auto lightCursor = insertLight.Execute ();
     auto modelCursor = insertStaticModel.Execute ();
+    auto unitCursor = insertUnit.Execute ();
 
     auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);
     material->id = "Default"_us;
@@ -109,57 +119,53 @@ void SceneSeeder::Execute ()
     material->restitution = 0.5f;
     material->density = 400.0f;
 
+    const Emergence::Celerity::UniqueId cameraObjectId = world->GenerateUID ();
+
     auto *cameraTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
-    cameraTransform->SetObjectId (CAMERA_OBJECT_ID);
+    cameraTransform->SetObjectId (cameraObjectId);
     cameraTransform->SetVisualLocalTransform (
         {{4.0f, 7.0f, -1.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, 0.0f}}, {1.0f, 1.0f, 1.0f}});
 
     auto *camera = static_cast<CameraComponent *> (++cameraCursor);
-    camera->objectId = CAMERA_OBJECT_ID;
+    camera->objectId = cameraObjectId;
     camera->fieldOfViewRad = Emergence::Math::PI * 0.5f;
 
     auto renderSceneCursor = modifyRenderScene.Execute ();
     auto *renderScene = static_cast<RenderSceneSingleton *> (*renderSceneCursor);
-    renderScene->cameraObjectId = CAMERA_OBJECT_ID;
+    renderScene->cameraObjectId = cameraObjectId;
+
+    const Emergence::Celerity::UniqueId lightObjectId = world->GenerateUID ();
 
     auto *lightTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
-    lightTransform->SetObjectId (LIGHT_OBJECT_ID);
+    lightTransform->SetObjectId (lightObjectId);
     lightTransform->SetVisualLocalTransform (
-        {{0.0f, 5.0f, 0.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, Emergence::Math::PI / 3.0f}}, {1.0f, 1.0f, 1.0f}});
+        {{0.0f, 5.0f, 0.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, 0.0f}}, {1.0f, 1.0f, 1.0f}});
 
     auto *light = static_cast<LightComponent *> (++lightCursor);
-    light->objectId = LIGHT_OBJECT_ID;
+    light->objectId = lightObjectId;
+    light->lightId = renderScene->GenerateLightUID ();
     light->type = LightType::DIRECTIONAL;
     light->color = {1.0f, 1.0f, 1.0f, 1.0f};
 
+    const Emergence::Celerity::UniqueId playerObjectId = world->GenerateUID ();
+
     auto *playerTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
-    playerTransform->SetObjectId (PLAYER_OBJECT_ID);
+    playerTransform->SetObjectId (playerObjectId);
     playerTransform->SetLogicalLocalTransform (
         {{4.0f, 7.0f, 4.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
 
-    auto *playerBody = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
-    playerBody->objectId = PLAYER_OBJECT_ID;
-    playerBody->type = Emergence::Physics::RigidBodyType::DYNAMIC;
-    playerBody->linearVelocity = {2.0f, 0.0f, 2.0f};
+    auto *playerUnit = static_cast<UnitComponent *> (++unitCursor);
+    playerUnit->objectId = playerObjectId;
+    playerUnit->type = HardcodedUnitTypes::WARRIOR_CUBE;
 
-    auto *playerShape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
-    playerShape->objectId = PLAYER_OBJECT_ID;
-    playerShape->shapeId = PLAYER_OBJECT_ID;
-    playerShape->materialId = material->id;
-    playerShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
-                             .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
-
-    auto *playerModel = static_cast<StaticModelComponent *> (++modelCursor);
-    playerModel->objectId = PLAYER_OBJECT_ID;
-    playerModel->modelId = PLAYER_OBJECT_ID;
-    playerModel->modelName = "Models/Player.mdl"_us;
-    playerModel->materialNames.EmplaceBack ("Materials/Player.xml"_us);
+    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
+    auto *physicsWorld = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     for (std::size_t x = 0u; x < 9u; ++x)
     {
         for (std::size_t z = 0u; z < 9u; ++z)
         {
-            const Emergence::Celerity::UniqueId objectId = OTHER_OBJECTS_START_ID + x * 9u + z;
+            const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
 
             auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
             transform->SetObjectId (objectId);
@@ -168,33 +174,30 @@ void SceneSeeder::Execute ()
                                                   Emergence::Math::Vector3f::ONE},
                                                  true);
 
-            auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
-            body->objectId = objectId;
-            body->type = Emergence::Physics::RigidBodyType::STATIC;
-
-            auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
-            shape->objectId = objectId;
-            shape->shapeId = objectId;
-            shape->materialId = material->id;
-
-            auto *model = static_cast<StaticModelComponent *> (++modelCursor);
-            model->objectId = objectId;
-            model->modelId = objectId;
-
             if (x == 0u || z == 0u || x == 8u || z == 8u)
             {
-                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
-                                   .boxHalfExtents = {0.5f, 1.5f, 0.5f}};
-                shape->translation.y = 1.5f;
-
-                model->modelName = "Models/Wall.mdl"_us;
-                model->materialNames.EmplaceBack ("Materials/WallTileBorder.xml"_us);
-                model->materialNames.EmplaceBack ("Materials/WallTileCenter.xml"_us);
+                auto *unit = static_cast<UnitComponent *> (++unitCursor);
+                unit->objectId = objectId;
+                unit->type = HardcodedUnitTypes::OBSTACLE;
             }
             else
             {
+                auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+                body->objectId = objectId;
+                body->type = Emergence::Physics::RigidBodyType::STATIC;
+
+                auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                shape->objectId = objectId;
+                shape->shapeId = physicsWorld->GenerateShapeUID ();
+                shape->materialId = material->id;
+
                 shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 0.01f, 0.5f}};
+
+                auto *model = static_cast<StaticModelComponent *> (++modelCursor);
+                model->objectId = objectId;
+                model->modelId = renderScene->GenerateModelUID ();
+
                 model->modelName = "Models/FloorTile.mdl"_us;
                 model->materialNames.EmplaceBack ("Materials/FloorTileCenter.xml"_us);
                 model->materialNames.EmplaceBack ("Materials/FloorTileBorder.xml"_us);
@@ -289,18 +292,20 @@ void GameApplication::Start ()
     Emergence::Celerity::Pipeline *seeder = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
+    Assembly::AddToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+    Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
-    Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
-    Input::AddToFixedUpdate (pipelineBuilder);
-    Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
-    Mortality::AddToFixedUpdate (pipelineBuilder);
+    Assembly::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+    Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
+    Input::AddToFixedUpdate (pipelineBuilder);
+    Mortality::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     seeder->Execute ();

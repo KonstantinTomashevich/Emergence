@@ -19,7 +19,7 @@ PhysicsWorldSingleton::~PhysicsWorldSingleton () noexcept
 
 uintptr_t PhysicsWorldSingleton::GenerateShapeUID () const noexcept
 {
-    assert (shapeUIDCounter != std::numeric_limits<decltype (shapeUIDCounter)>::max ());
+    assert (shapeUIDCounter != std::numeric_limits<decltype (shapeUIDCounter)::value_type>::max ());
     return const_cast<PhysicsWorldSingleton *> (this)->shapeUIDCounter++;
 }
 
