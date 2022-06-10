@@ -262,13 +262,16 @@ private:
     Urho3DNodeAccessor nodeAccessor;
 
     Emergence::Celerity::EditValueQuery editCameraByObjectId;
-    Emergence::Celerity::FetchSequenceQuery fetchCameraAddedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchCameraAddedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchCameraAddedCustomEvents;
 
     Emergence::Celerity::EditValueQuery editLightByLightId;
-    Emergence::Celerity::FetchSequenceQuery fetchLightAddedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchLightAddedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchLightAddedCustomEvents;
 
     Emergence::Celerity::EditValueQuery editStaticModelByModelId;
-    Emergence::Celerity::FetchSequenceQuery fetchStaticModelAddedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchStaticModelAddedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchStaticModelAddedCustomEvents;
 };
 
 ComponentInitializer::ComponentInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -276,13 +279,16 @@ ComponentInitializer::ComponentInitializer (Emergence::Celerity::TaskConstructor
       nodeAccessor (_constructor),
 
       editCameraByObjectId (_constructor.MEditValue1F (CameraComponent, objectId)),
-      fetchCameraAddedEvents (_constructor.MFetchSequence (CameraComponentAddedEvent)),
+      fetchCameraAddedNormalEvents (_constructor.MFetchSequence (CameraComponentAddedNormalEvent)),
+      fetchCameraAddedCustomEvents (_constructor.MFetchSequence (CameraComponentAddedCustomToNormalEvent)),
 
       editLightByLightId (_constructor.MEditValue1F (LightComponent, lightId)),
-      fetchLightAddedEvents (_constructor.MFetchSequence (LightComponentAddedEvent)),
+      fetchLightAddedNormalEvents (_constructor.MFetchSequence (LightComponentAddedNormalEvent)),
+      fetchLightAddedCustomEvents (_constructor.MFetchSequence (LightComponentAddedCustomToNormalEvent)),
 
       editStaticModelByModelId (_constructor.MEditValue1F (StaticModelComponent, modelId)),
-      fetchStaticModelAddedEvents (_constructor.MFetchSequence (StaticModelComponentAddedEvent))
+      fetchStaticModelAddedNormalEvents (_constructor.MFetchSequence (StaticModelComponentAddedNormalEvent)),
+      fetchStaticModelAddedCustomEvents (_constructor.MFetchSequence (StaticModelComponentAddedCustomToNormalEvent))
 {
     _constructor.DependOn (TaskNames::CLEANUP_AFTER_TRANSFORM_REMOVAL);
 }
@@ -294,53 +300,89 @@ void ComponentInitializer::Execute ()
     InitializeModels ();
 }
 
+#define INITIALIZE_URHO3D_OBJECT(Source, Type)                                                                         \
+    [this, Source] ()                                                                                                  \
+    {                                                                                                                  \
+        Urho3D::Node *node = nodeAccessor.StartUsingNode ((Source)->objectId);                                         \
+        auto *object = node->CreateComponent<Urho3D::Type> ();                                                         \
+        Sync##Type (Source, object);                                                                                   \
+        return object;                                                                                                 \
+    }()
+
 void ComponentInitializer::InitializeCameras () noexcept
 {
-    for (auto eventCursor = fetchCameraAddedEvents.Execute ();
-         const auto *event = static_cast<const CameraComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    auto initialize = [this] (Emergence::Celerity::UniqueId _objectId)
     {
-        auto cameraCursor = editCameraByObjectId.Execute (&event->objectId);
+        auto cameraCursor = editCameraByObjectId.Execute (&_objectId);
         if (auto *camera = static_cast<CameraComponent *> (*cameraCursor))
         {
-            Urho3D::Node *node = nodeAccessor.StartUsingNode (camera->objectId);
-            auto *urho3DCamera = node->CreateComponent<Urho3D::Camera> ();
-            SyncCamera (camera, urho3DCamera);
-            camera->implementationHandle = urho3DCamera;
+            camera->implementationHandle = INITIALIZE_URHO3D_OBJECT (camera, Camera);
         }
+    };
+
+    for (auto eventCursor = fetchCameraAddedNormalEvents.Execute ();
+         const auto *event = static_cast<const CameraComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->objectId);
+    }
+
+    for (auto eventCursor = fetchCameraAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const CameraComponentAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->objectId);
     }
 }
 
 void ComponentInitializer::InitializeLights () noexcept
 {
-    for (auto eventCursor = fetchLightAddedEvents.Execute ();
-         const auto *event = static_cast<const LightComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    auto initialize = [this] (Emergence::Celerity::UniqueId _lightId)
     {
-        auto lightCursor = editLightByLightId.Execute (&event->lightId);
+        auto lightCursor = editLightByLightId.Execute (&_lightId);
         if (auto *light = static_cast<LightComponent *> (*lightCursor))
         {
-            Urho3D::Node *node = nodeAccessor.StartUsingNode (light->objectId);
-            auto *urho3DLight = node->CreateComponent<Urho3D::Light> ();
-            SyncLight (light, urho3DLight);
-            light->implementationHandle = urho3DLight;
+            light->implementationHandle = INITIALIZE_URHO3D_OBJECT (light, Light);
         }
+    };
+
+    for (auto eventCursor = fetchLightAddedNormalEvents.Execute ();
+         const auto *event = static_cast<const LightComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->lightId);
+    }
+
+    for (auto eventCursor = fetchLightAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const LightComponentAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->lightId);
     }
 }
 
 void ComponentInitializer::InitializeModels () noexcept
 {
-    for (auto eventCursor = fetchStaticModelAddedEvents.Execute ();
-         const auto *event = static_cast<const StaticModelComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    auto initialize = [this] (Emergence::Celerity::UniqueId _modelId)
     {
-        auto modelCursor = editStaticModelByModelId.Execute (&event->modelId);
+        auto modelCursor = editStaticModelByModelId.Execute (&_modelId);
         if (auto *staticModel = static_cast<StaticModelComponent *> (*modelCursor))
         {
-            Urho3D::Node *node = nodeAccessor.StartUsingNode (staticModel->objectId);
-            auto *urho3DStaticModel = node->CreateComponent<Urho3D::StaticModel> ();
-            SyncStaticModel (staticModel, urho3DStaticModel);
-            staticModel->implementationHandle = urho3DStaticModel;
+            staticModel->implementationHandle = INITIALIZE_URHO3D_OBJECT (staticModel, StaticModel);
         }
+    };
+
+    for (auto eventCursor = fetchStaticModelAddedNormalEvents.Execute ();
+         const auto *event = static_cast<const StaticModelComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->modelId);
+    }
+
+    for (auto eventCursor = fetchStaticModelAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const StaticModelComponentAddedCustomToNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        initialize (event->modelId);
     }
 }
+
+#undef INITIALIZE_URHO3D_OBJECT
 
 class ComponentSynchronizer : public Emergence::Celerity::TaskExecutorBase<ComponentSynchronizer>
 {
@@ -550,7 +592,8 @@ private:
     Emergence::Celerity::FetchValueQuery fetchTransformByObjectId;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
 
-    Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedCustomEvents;
     Emergence::Celerity::FetchValueQuery fetchCameraByObjectId;
 };
 
@@ -564,7 +607,8 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchTransformByObjectId (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchRenderSceneChangedEvents (_constructor.MFetchSequence (RenderSceneChangedEvent)),
+      fetchRenderSceneChangedNormalEvents (_constructor.MFetchSequence (RenderSceneChangedNormalEvent)),
+      fetchRenderSceneChangedCustomEvents (_constructor.MFetchSequence (RenderSceneChangedCustomToNormalEvent)),
       fetchCameraByObjectId (_constructor.MFetchValue1F (CameraComponent, objectId))
 {
     _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
@@ -607,8 +651,10 @@ void SceneUpdater::UpdateTransforms () noexcept
 
 void SceneUpdater::ApplyRenderSceneChanges () noexcept
 {
-    auto eventCursor = fetchRenderSceneChangedEvents.Execute ();
-    if (!*eventCursor)
+    auto normalEventCursor = fetchRenderSceneChangedNormalEvents.Execute ();
+    auto customEventCursor = fetchRenderSceneChangedCustomEvents.Execute ();
+
+    if (!*normalEventCursor && !*customEventCursor)
     {
         return;
     }

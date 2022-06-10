@@ -33,6 +33,14 @@ enum class EventRoute
     /// \brief Can be created and accessed inside any custom pipeline. Cleared in the end of custom pipelines.
     CUSTOM,
 
+    /// \brief Can be created during any custom pipeline execution and can be accessed only during fixed update.
+    /// \details Cleared in the end of fixed update.
+    FROM_CUSTOM_TO_FIXED,
+
+    /// \brief Can be created during any custom pipeline execution and can be accessed only during normal update.
+    /// \details Cleared in the end of normal update.
+    FROM_CUSTOM_TO_NORMAL,
+
     COUNT,
 };
 

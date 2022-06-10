@@ -99,6 +99,8 @@ PipelineType GetEventProducingPipeline (EventRoute _route) noexcept
         return PipelineType::NORMAL;
 
     case EventRoute::CUSTOM:
+    case EventRoute::FROM_CUSTOM_TO_FIXED:
+    case EventRoute::FROM_CUSTOM_TO_NORMAL:
         return PipelineType::CUSTOM;
 
     case EventRoute::COUNT:
@@ -115,10 +117,12 @@ PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept
     switch (_route)
     {
     case EventRoute::FIXED:
+    case EventRoute::FROM_CUSTOM_TO_FIXED:
         return PipelineType::FIXED;
 
     case EventRoute::NORMAL:
     case EventRoute::FROM_FIXED_TO_NORMAL:
+    case EventRoute::FROM_CUSTOM_TO_NORMAL:
         return PipelineType::NORMAL;
 
     case EventRoute::CUSTOM:

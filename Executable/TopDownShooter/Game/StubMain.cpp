@@ -53,47 +53,57 @@ static constexpr Emergence::Celerity::UniqueId LIGHT_OBJECT_ID = 1u;
 static constexpr Emergence::Celerity::UniqueId PLAYER_OBJECT_ID = 2u;
 static constexpr Emergence::Celerity::UniqueId OTHER_OBJECTS_START_ID = 10u;
 
-class NormalSceneSeeder final : public Emergence::Celerity::TaskExecutorBase<NormalSceneSeeder>
+class SceneSeeder final : public Emergence::Celerity::TaskExecutorBase<SceneSeeder>
 {
 public:
-    NormalSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+    SceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
 private:
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
     Emergence::Celerity::InsertLongTermQuery insertTransform;
+    Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
+    Emergence::Celerity::InsertLongTermQuery insertRigidBody;
+    Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
+
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertLight;
     Emergence::Celerity::InsertLongTermQuery insertStaticModel;
-
-    bool seedingDone = false;
 };
 
-NormalSceneSeeder::NormalSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
+SceneSeeder::SceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
+
       insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
+      insertDynamicsMaterial (_constructor.MInsertLongTerm (Emergence::Physics::DynamicsMaterial)),
+      insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
+      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
+
       insertCamera (_constructor.MInsertLongTerm (CameraComponent)),
       insertLight (_constructor.MInsertLongTerm (LightComponent)),
       insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent))
 {
-    _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);
 }
 
-void NormalSceneSeeder::Execute ()
+void SceneSeeder::Execute ()
 {
-    if (seedingDone)
-    {
-        return;
-    }
-
-    seedingDone = true;
-
     auto transformCursor = insertTransform.Execute ();
+    auto materialCursor = insertDynamicsMaterial.Execute ();
+    auto bodyCursor = insertRigidBody.Execute ();
+    auto shapeCursor = insertCollisionShape.Execute ();
+
     auto cameraCursor = insertCamera.Execute ();
     auto lightCursor = insertLight.Execute ();
     auto modelCursor = insertStaticModel.Execute ();
+
+    auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);
+    material->id = "Default"_us;
+    material->staticFriction = 0.4f;
+    material->dynamicFriction = 0.4f;
+    material->enableFriction = true;
+    material->restitution = 0.5f;
+    material->density = 400.0f;
 
     auto *cameraTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
     cameraTransform->SetObjectId (CAMERA_OBJECT_ID);
@@ -118,95 +128,28 @@ void NormalSceneSeeder::Execute ()
     light->type = LightType::DIRECTIONAL;
     light->color = {1.0f, 1.0f, 1.0f, 1.0f};
 
+    auto *playerTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    playerTransform->SetObjectId (PLAYER_OBJECT_ID);
+    playerTransform->SetLogicalLocalTransform (
+        {{4.0f, 7.0f, 4.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
+
+    auto *playerBody = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+    playerBody->objectId = PLAYER_OBJECT_ID;
+    playerBody->type = Emergence::Physics::RigidBodyType::DYNAMIC;
+    playerBody->linearVelocity = {2.0f, 0.0f, 2.0f};
+
+    auto *playerShape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+    playerShape->objectId = PLAYER_OBJECT_ID;
+    playerShape->shapeId = PLAYER_OBJECT_ID;
+    playerShape->materialId = material->id;
+    playerShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                             .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
+
     auto *playerModel = static_cast<StaticModelComponent *> (++modelCursor);
     playerModel->objectId = PLAYER_OBJECT_ID;
     playerModel->modelId = PLAYER_OBJECT_ID;
     playerModel->modelName = "Models/Player.mdl"_us;
     playerModel->materialNames.EmplaceBack ("Materials/Player.xml"_us);
-
-    for (std::size_t x = 0u; x < 9u; ++x)
-    {
-        for (std::size_t z = 0u; z < 9u; ++z)
-        {
-            const Emergence::Celerity::UniqueId objectId = OTHER_OBJECTS_START_ID + x * 9u + z;
-
-            auto *model = static_cast<StaticModelComponent *> (++modelCursor);
-            model->objectId = objectId;
-            model->modelId = objectId;
-
-            if (x == 0u || z == 0u || x == 8u || z == 8u)
-            {
-                model->modelName = "Models/Wall.mdl"_us;
-                model->materialNames.EmplaceBack ("Materials/WallTileBorder.xml"_us);
-                model->materialNames.EmplaceBack ("Materials/WallTileCenter.xml"_us);
-            }
-            else
-            {
-                model->modelName = "Models/FloorTile.mdl"_us;
-                model->materialNames.EmplaceBack ("Materials/FloorTileCenter.xml"_us);
-                model->materialNames.EmplaceBack ("Materials/FloorTileBorder.xml"_us);
-            }
-        }
-    }
-}
-
-class FixedSceneSeeder final : public Emergence::Celerity::TaskExecutorBase<FixedSceneSeeder>
-{
-public:
-    FixedSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    Emergence::Celerity::ModifySingletonQuery modifyPhysicsWorld;
-    Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
-    Emergence::Celerity::InsertLongTermQuery insertTransform;
-    Emergence::Celerity::InsertLongTermQuery insertRigidBody;
-    Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
-
-    bool seedingDone = false;
-};
-
-FixedSceneSeeder::FixedSceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (Emergence::Physics::PhysicsWorldSingleton)),
-      insertDynamicsMaterial (_constructor.MInsertLongTerm (Emergence::Physics::DynamicsMaterial)),
-      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
-      insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
-      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent))
-{
-    _constructor.MakeDependencyOf (Emergence::Physics::Simulation::Checkpoint::SIMULATION_STARTED);
-}
-
-void FixedSceneSeeder::Execute () noexcept
-{
-    if (seedingDone)
-    {
-        return;
-    }
-
-    seedingDone = true;
-    auto worldCursor = modifyPhysicsWorld.Execute ();
-    auto *world = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*worldCursor);
-
-    world->enableRemoteDebugger = true;
-    strcpy (world->remoteDebuggerUrl.data (), "localhost");
-    world->remoteDebuggerPort = 5425;
-
-    world->collisionMasks[0u] = ~0u;
-
-    auto materialCursor = insertDynamicsMaterial.Execute ();
-    auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);
-
-    material->id = "Default"_us;
-    material->staticFriction = 0.4f;
-    material->dynamicFriction = 0.4f;
-    material->enableFriction = true;
-    material->restitution = 0.5f;
-    material->density = 400.0f;
-
-    auto transformCursor = insertTransform.Execute ();
-    auto bodyCursor = insertRigidBody.Execute ();
-    auto shapeCursor = insertCollisionShape.Execute ();
 
     for (std::size_t x = 0u; x < 9u; ++x)
     {
@@ -228,37 +171,32 @@ void FixedSceneSeeder::Execute () noexcept
             auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
             shape->objectId = objectId;
             shape->shapeId = objectId;
-            shape->materialId = "Default"_us;
+            shape->materialId = material->id;
+
+            auto *model = static_cast<StaticModelComponent *> (++modelCursor);
+            model->objectId = objectId;
+            model->modelId = objectId;
 
             if (x == 0u || z == 0u || x == 8u || z == 8u)
             {
                 shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 1.5f, 0.5f}};
                 shape->translation.y = 1.5f;
+
+                model->modelName = "Models/Wall.mdl"_us;
+                model->materialNames.EmplaceBack ("Materials/WallTileBorder.xml"_us);
+                model->materialNames.EmplaceBack ("Materials/WallTileCenter.xml"_us);
             }
             else
             {
                 shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 0.01f, 0.5f}};
+                model->modelName = "Models/FloorTile.mdl"_us;
+                model->materialNames.EmplaceBack ("Materials/FloorTileCenter.xml"_us);
+                model->materialNames.EmplaceBack ("Materials/FloorTileBorder.xml"_us);
             }
         }
     }
-
-    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
-    transform->SetObjectId (PLAYER_OBJECT_ID);
-    transform->SetLogicalLocalTransform (
-        {{4.0f, 7.0f, 4.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
-
-    auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
-    body->objectId = PLAYER_OBJECT_ID;
-    body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
-    body->linearVelocity = {2.0f, 0.0f, 2.0f};
-
-    auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
-    shape->objectId = PLAYER_OBJECT_ID;
-    shape->shapeId = PLAYER_OBJECT_ID;
-    shape->materialId = "Default"_us;
-    shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
 }
 
 static Emergence::Memory::Profiler::EventObserver StartRecording (
@@ -304,7 +242,7 @@ private:
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
     Emergence::Celerity::InputAccumulator inputAccumulator;
-    Emergence::Celerity::World world {"TestWorld"_us};
+    Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
 };
 
 GameApplication::GameApplication (Urho3D::Context *_context)
@@ -340,11 +278,14 @@ void GameApplication::Start ()
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+    pipelineBuilder.Begin ("Seeding"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    pipelineBuilder.AddTask ("SceneSeeder"_us).SetExecutor<SceneSeeder> ();
+    Emergence::Celerity::Pipeline *seeder = pipelineBuilder.End (std::thread::hardware_concurrency ());
+
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
-    pipelineBuilder.AddTask ("NormalSceneSeeder"_us).SetExecutor<NormalSceneSeeder> ();
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?
     pipelineBuilder.End (std::thread::hardware_concurrency ());
@@ -352,9 +293,11 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
-    pipelineBuilder.AddTask ("FixedSceneSeeder"_us).SetExecutor<FixedSceneSeeder> ();
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
+
+    seeder->Execute ();
+    world.RemovePipeline (seeder);
 }
 
 void GameApplication::Stop ()

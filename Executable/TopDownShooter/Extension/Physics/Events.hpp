@@ -10,14 +10,18 @@ namespace Emergence::Physics
 {
 EMERGENCE_CELERITY_EVENT0_DECLARATION (PhysicsWorldConfigurationChanged);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialAddedEvent, Memory::UniqueString, id);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialAddedFixedEvent, Memory::UniqueString, id);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialAddedCustomToFixedEvent, Memory::UniqueString, id);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialChangedEvent, Memory::UniqueString, id);
 
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
     DynamicsMaterialRemovedEvent, Memory::UniqueString, id, void *, implementationHandle);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedEvent, Celerity::UniqueId, shapeId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedFixedEvent, Celerity::UniqueId, shapeId);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedCustomToFixedEvent, Celerity::UniqueId, shapeId);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentMaterialChangedEvent, Celerity::UniqueId, shapeId);
 
@@ -28,7 +32,9 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAttributesChangedE
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
     CollisionShapeComponentRemovedEvent, Celerity::UniqueId, objectId, void *, implementationHandle);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedEvent, Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedFixedEvent, Celerity::UniqueId, objectId);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedCustomToFixedEvent, Celerity::UniqueId, objectId);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentMassInvalidatedEvent, Celerity::UniqueId, objectId);
 

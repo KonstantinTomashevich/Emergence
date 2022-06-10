@@ -8,14 +8,18 @@ namespace Emergence::Physics
 {
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (PhysicsWorldConfigurationChanged)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedEvent, UNIQUE_STRING, id)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedFixedEvent, UNIQUE_STRING, id)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedCustomToFixedEvent, UNIQUE_STRING, id)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialChangedEvent, UNIQUE_STRING, id)
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     DynamicsMaterialRemovedEvent, UNIQUE_STRING, id, POINTER_AS_REGULAR, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedEvent, REGULAR, shapeId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedFixedEvent, REGULAR, shapeId)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedCustomToFixedEvent, REGULAR, shapeId)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentMaterialChangedEvent, REGULAR, shapeId)
 
@@ -26,7 +30,9 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAttributesChang
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     CollisionShapeComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedEvent, REGULAR, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedFixedEvent, REGULAR, objectId)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedCustomToFixedEvent, REGULAR, objectId)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentMassInvalidatedEvent, REGULAR, objectId);
 
@@ -102,9 +108,14 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
 
     // DynamicsMaterial
 
-    _registrar.OnAddEvent ({{DynamicsMaterialAddedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+    _registrar.OnAddEvent ({{DynamicsMaterialAddedFixedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
                             DynamicsMaterial::Reflect ().mapping,
-                            {{DynamicsMaterial::Reflect ().id, DynamicsMaterialAddedEvent::Reflect ().id}}});
+                            {{DynamicsMaterial::Reflect ().id, DynamicsMaterialAddedFixedEvent::Reflect ().id}}});
+
+    _registrar.OnAddEvent (
+        {{DynamicsMaterialAddedCustomToFixedEvent::Reflect ().mapping, Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
+         DynamicsMaterial::Reflect ().mapping,
+         {{DynamicsMaterial::Reflect ().id, DynamicsMaterialAddedCustomToFixedEvent::Reflect ().id}}});
 
     _registrar.OnChangeEvent ({{DynamicsMaterialChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
                                DynamicsMaterial::Reflect ().mapping,
@@ -116,7 +127,7 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
                                    DynamicsMaterial::Reflect ().density,
                                },
                                {},
-                               {{DynamicsMaterial::Reflect ().id, DynamicsMaterialAddedEvent::Reflect ().id}}});
+                               {{DynamicsMaterial::Reflect ().id, DynamicsMaterialAddedFixedEvent::Reflect ().id}}});
 
     _registrar.OnRemoveEvent ({{DynamicsMaterialRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
                                DynamicsMaterial::Reflect ().mapping,
@@ -129,9 +140,14 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
     // CollisionShapeComponent
 
     _registrar.OnAddEvent (
-        {{CollisionShapeComponentAddedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+        {{CollisionShapeComponentAddedFixedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
          CollisionShapeComponent::Reflect ().mapping,
-         {{CollisionShapeComponent::Reflect ().shapeId, CollisionShapeComponentAddedEvent::Reflect ().shapeId}}});
+         {{CollisionShapeComponent::Reflect ().shapeId, CollisionShapeComponentAddedFixedEvent::Reflect ().shapeId}}});
+
+    _registrar.OnAddEvent (
+    {{CollisionShapeComponentAddedCustomToFixedEvent::Reflect ().mapping, Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
+     CollisionShapeComponent::Reflect ().mapping,
+     {{CollisionShapeComponent::Reflect ().shapeId, CollisionShapeComponentAddedCustomToFixedEvent::Reflect ().shapeId}}});
 
     _registrar.OnChangeEvent (
         {{CollisionShapeComponentMaterialChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
@@ -180,9 +196,14 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
     // RigidBodyComponent
 
     _registrar.OnAddEvent (
-        {{RigidBodyComponentAddedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+        {{RigidBodyComponentAddedFixedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
          RigidBodyComponent::Reflect ().mapping,
-         {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAddedEvent::Reflect ().objectId}}});
+         {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAddedFixedEvent::Reflect ().objectId}}});
+
+    _registrar.OnAddEvent (
+        {{RigidBodyComponentAddedCustomToFixedEvent::Reflect ().mapping, Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
+         RigidBodyComponent::Reflect ().mapping,
+         {{RigidBodyComponent::Reflect ().objectId, RigidBodyComponentAddedCustomToFixedEvent::Reflect ().objectId}}});
 
     _registrar.CustomEvent ({RigidBodyComponentMassInvalidatedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
 

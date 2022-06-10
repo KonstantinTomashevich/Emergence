@@ -288,14 +288,17 @@ private:
     Celerity::ModifySingletonQuery modifyPhysX;
     Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Celerity::ModifyValueQuery modifyMaterialById;
-    Celerity::FetchSequenceQuery fetchMaterialAddedEvents;
+
+    Celerity::FetchSequenceQuery fetchMaterialAddedFixedEvents;
+    Celerity::FetchSequenceQuery fetchMaterialAddedCustomEvents;
 };
 
 MaterialInitializer::MaterialInitializer (Celerity::TaskConstructor &_constructor) noexcept
     : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
       fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
       modifyMaterialById (_constructor.MModifyValue1F (DynamicsMaterial, id)),
-      fetchMaterialAddedEvents (_constructor.MFetchSequence (DynamicsMaterialAddedEvent))
+      fetchMaterialAddedFixedEvents (_constructor.MFetchSequence (DynamicsMaterialAddedFixedEvent)),
+      fetchMaterialAddedCustomEvents (_constructor.MFetchSequence (DynamicsMaterialAddedCustomToFixedEvent))
 {
     _constructor.DependOn (TaskNames::PROCESS_TRANSFORM_EVENTS);
 }
@@ -306,10 +309,9 @@ void MaterialInitializer::Execute () noexcept
     const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
     const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
-    for (auto eventCursor = fetchMaterialAddedEvents.Execute ();
-         const auto *event = static_cast<const DynamicsMaterialAddedEvent *> (*eventCursor); ++eventCursor)
+    auto initialize = [this, &pxWorld] (Memory::UniqueString _id)
     {
-        auto materialCursor = modifyMaterialById.Execute (&event->id);
+        auto materialCursor = modifyMaterialById.Execute (&_id);
         if (auto *material = static_cast<DynamicsMaterial *> (*materialCursor))
         {
             assert (!material->implementationHandle);
@@ -323,6 +325,18 @@ void MaterialInitializer::Execute () noexcept
         {
             // Material is already removed, event was outdated.
         }
+    };
+
+    for (auto eventCursor = fetchMaterialAddedFixedEvents.Execute ();
+         const auto *event = static_cast<const DynamicsMaterialAddedFixedEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->id);
+    }
+
+    for (auto eventCursor = fetchMaterialAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const DynamicsMaterialAddedCustomToFixedEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->id);
     }
 }
 
@@ -437,7 +451,8 @@ private:
     Celerity::FetchValueQuery fetchTransformByObjectId;
     Transform::Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::FetchSequenceQuery fetchShapeAddedEvents;
+    Celerity::FetchSequenceQuery fetchShapeAddedFixedEvents;
+    Celerity::FetchSequenceQuery fetchShapeAddedCustomEvents;
     Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
@@ -452,7 +467,8 @@ ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noe
       fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchShapeAddedEvents (_constructor.MFetchSequence (CollisionShapeComponentAddedEvent)),
+      fetchShapeAddedFixedEvents (_constructor.MFetchSequence (CollisionShapeComponentAddedFixedEvent)),
+      fetchShapeAddedCustomEvents (_constructor.MFetchSequence (CollisionShapeComponentAddedCustomToFixedEvent)),
       insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_MATERIAL_DELETION);
@@ -464,16 +480,15 @@ void ShapeInitializer::Execute ()
     const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
     const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
-    for (auto eventCursor = fetchShapeAddedEvents.Execute ();
-         const auto *event = static_cast<const CollisionShapeComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    auto initialize = [this, &pxWorld] (Celerity::UniqueId _shapeId)
     {
-        auto shapeCursor = modifyShapeByShapeId.Execute (&event->shapeId);
+        auto shapeCursor = modifyShapeByShapeId.Execute (&_shapeId);
         auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor);
 
         if (!shape)
         {
             // Shape is already removed.
-            continue;
+            return;
         }
 
         auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
@@ -485,7 +500,7 @@ void ShapeInitializer::Execute ()
                            "! Shape, that attempts to use this material, will be deleted.");
 
             ~shapeCursor;
-            continue;
+            return;
         }
 
         const auto *pxMaterial = static_cast<const physx::PxMaterial *> (material->implementationHandle);
@@ -498,7 +513,7 @@ void ShapeInitializer::Execute ()
                            ", because it has no Transform3dComponent!");
 
             ~shapeCursor;
-            continue;
+            return;
         }
 
         const Math::Vector3f worldScale = transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
@@ -518,6 +533,19 @@ void ShapeInitializer::Execute ()
                 // Body is not initialized yet. Shape will be added during initialization.
             }
         }
+    };
+
+    for (auto eventCursor = fetchShapeAddedFixedEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentAddedFixedEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->shapeId);
+    }
+
+    for (auto eventCursor = fetchShapeAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const CollisionShapeComponentAddedCustomToFixedEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        initialize (event->shapeId);
     }
 }
 
@@ -726,7 +754,8 @@ private:
     Celerity::FetchValueQuery fetchTransformByObjectId;
     Transform::Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::FetchSequenceQuery fetchBodyAddedEvents;
+    Celerity::FetchSequenceQuery fetchBodyAddedFixedEvents;
+    Celerity::FetchSequenceQuery fetchBodyAddedCustomEvents;
     Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
@@ -739,7 +768,8 @@ BodyInitializer::BodyInitializer (Celerity::TaskConstructor &_constructor) noexc
       fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchBodyAddedEvents (_constructor.MFetchSequence (RigidBodyComponentAddedEvent)),
+      fetchBodyAddedFixedEvents (_constructor.MFetchSequence (RigidBodyComponentAddedFixedEvent)),
+      fetchBodyAddedCustomEvents (_constructor.MFetchSequence (RigidBodyComponentAddedCustomToFixedEvent)),
       insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_SHAPE_DELETION);
@@ -751,19 +781,18 @@ void BodyInitializer::Execute ()
     const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
     const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
-    for (auto eventCursor = fetchBodyAddedEvents.Execute ();
-         const auto *event = static_cast<const RigidBodyComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    auto initialize = [this, &pxWorld] (Celerity::UniqueId _objectId)
     {
-        auto bodyCursor = modifyBodyByObjectId.Execute (&event->objectId);
+        auto bodyCursor = modifyBodyByObjectId.Execute (&_objectId);
         auto *body = static_cast<RigidBodyComponent *> (*bodyCursor);
 
         if (!body)
         {
             // Body is already removed.
-            continue;
+            return;
         }
 
-        auto transformCursor = fetchTransformByObjectId.Execute (&event->objectId);
+        auto transformCursor = fetchTransformByObjectId.Execute (&_objectId);
         const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
@@ -772,7 +801,7 @@ void BodyInitializer::Execute ()
                            ", because it has no Transform3dComponent!");
 
             ~bodyCursor;
-            continue;
+            return;
         }
 
         const Math::Transform3d &logicalTransform = transform->GetLogicalWorldTransform (transformWorldAccessor);
@@ -840,6 +869,19 @@ void BodyInitializer::Execute ()
         // sense to add complexity, because body addition is not common event.
         auto cursor = insertBodyMassInvalidatedEvents.Execute ();
         static_cast<RigidBodyComponentMassInvalidatedEvent *> (++cursor)->objectId = body->objectId;
+    };
+
+    for (auto eventCursor = fetchBodyAddedFixedEvents.Execute ();
+         const auto *event = static_cast<const RigidBodyComponentAddedFixedEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->objectId);
+    }
+
+    for (auto eventCursor = fetchBodyAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const RigidBodyComponentAddedCustomToFixedEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        initialize (event->objectId);
     }
 }
 

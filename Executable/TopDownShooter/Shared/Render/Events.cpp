@@ -4,19 +4,23 @@
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
 
-EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedEvent);
+EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedNormalEvent);
+EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedCustomToNormalEvent);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedEvent, REGULAR, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedNormalEvent, REGULAR, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedCustomToNormalEvent, REGULAR, objectId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentChangedEvent, REGULAR, objectId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     CameraComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedEvent, REGULAR, lightId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedNormalEvent, REGULAR, lightId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedCustomToNormalEvent, REGULAR, lightId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentChangedEvent, REGULAR, lightId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     LightComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedEvent, REGULAR, modelId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedNormalEvent, REGULAR, modelId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedCustomToNormalEvent, REGULAR, modelId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentChangedEvent, REGULAR, modelId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     StaticModelComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
@@ -25,7 +29,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
 {
     // RenderSceneSingleton
 
-    _registrar.OnChangeEvent ({{RenderSceneChangedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+    _registrar.OnChangeEvent ({{RenderSceneChangedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
                                RenderSceneSingleton::Reflect ().mapping,
                                {
                                    RenderSceneSingleton::Reflect ().cameraObjectId,
@@ -33,11 +37,27 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
                                {},
                                {}});
 
+    _registrar.OnChangeEvent (
+        {{RenderSceneChangedCustomToNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+         RenderSceneSingleton::Reflect ().mapping,
+         {
+             RenderSceneSingleton::Reflect ().cameraObjectId,
+         },
+         {},
+         {}});
+
     // CameraComponent
 
-    _registrar.OnAddEvent ({{CameraComponentAddedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
-                            CameraComponent::Reflect ().mapping,
-                            {{CameraComponent::Reflect ().objectId, CameraComponentAddedEvent::Reflect ().objectId}}});
+    _registrar.OnAddEvent (
+        {{CameraComponentAddedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+         CameraComponent::Reflect ().mapping,
+         {{CameraComponent::Reflect ().objectId, CameraComponentAddedNormalEvent::Reflect ().objectId}}});
+
+    _registrar.OnAddEvent (
+        {{CameraComponentAddedCustomToNormalEvent::Reflect ().mapping,
+          Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+         CameraComponent::Reflect ().mapping,
+         {{CameraComponent::Reflect ().objectId, CameraComponentAddedCustomToNormalEvent::Reflect ().objectId}}});
 
     _registrar.OnChangeEvent (
         {{CameraComponentChangedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
@@ -46,7 +66,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
              CameraComponent::Reflect ().fieldOfViewRad,
          },
          {},
-         {{CameraComponent::Reflect ().objectId, CameraComponentAddedEvent::Reflect ().objectId}}});
+         {{CameraComponent::Reflect ().objectId, CameraComponentAddedNormalEvent::Reflect ().objectId}}});
 
     _registrar.OnRemoveEvent (
         {{CameraComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
@@ -57,9 +77,16 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
 
     // LightComponent
 
-    _registrar.OnAddEvent ({{LightComponentAddedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
-                            LightComponent::Reflect ().mapping,
-                            {{LightComponent::Reflect ().lightId, LightComponentAddedEvent::Reflect ().lightId}}});
+    _registrar.OnAddEvent (
+        {{LightComponentAddedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+         LightComponent::Reflect ().mapping,
+         {{LightComponent::Reflect ().lightId, LightComponentAddedNormalEvent::Reflect ().lightId}}});
+
+    _registrar.OnAddEvent (
+        {{LightComponentAddedCustomToNormalEvent::Reflect ().mapping,
+          Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+         LightComponent::Reflect ().mapping,
+         {{LightComponent::Reflect ().lightId, LightComponentAddedCustomToNormalEvent::Reflect ().lightId}}});
 
     _registrar.OnChangeEvent (
         {{LightComponentChangedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
@@ -73,7 +100,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
              LightComponent::Reflect ().spotAspectRatio,
          },
          {},
-         {{LightComponent::Reflect ().lightId, LightComponentAddedEvent::Reflect ().lightId}}});
+         {{LightComponent::Reflect ().lightId, LightComponentAddedNormalEvent::Reflect ().lightId}}});
 
     _registrar.OnRemoveEvent (
         {{LightComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
@@ -85,9 +112,15 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
     // StaticModelComponent
 
     _registrar.OnAddEvent (
-        {{StaticModelComponentAddedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+        {{StaticModelComponentAddedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
          StaticModelComponent::Reflect ().mapping,
-         {{StaticModelComponent::Reflect ().modelId, StaticModelComponentAddedEvent::Reflect ().modelId}}});
+         {{StaticModelComponent::Reflect ().modelId, StaticModelComponentAddedNormalEvent::Reflect ().modelId}}});
+
+    _registrar.OnAddEvent ({{StaticModelComponentAddedCustomToNormalEvent::Reflect ().mapping,
+                             Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+                            StaticModelComponent::Reflect ().mapping,
+                            {{StaticModelComponent::Reflect ().modelId,
+                              StaticModelComponentAddedCustomToNormalEvent::Reflect ().modelId}}});
 
     _registrar.OnChangeEvent (
         {{StaticModelComponentChangedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
@@ -97,7 +130,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
              StaticModelComponent::Reflect ().materialNamesBlock,
          },
          {},
-         {{StaticModelComponent::Reflect ().modelId, StaticModelComponentAddedEvent::Reflect ().modelId}}});
+         {{StaticModelComponent::Reflect ().modelId, StaticModelComponentAddedNormalEvent::Reflect ().modelId}}});
 
     _registrar.OnRemoveEvent (
         {{StaticModelComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
