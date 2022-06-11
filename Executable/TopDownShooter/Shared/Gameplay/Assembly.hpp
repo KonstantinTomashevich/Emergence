@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Assembly
@@ -5,4 +7,4 @@ namespace Assembly
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
-} // namespace Mortality
+} // namespace Assembly

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Mortality

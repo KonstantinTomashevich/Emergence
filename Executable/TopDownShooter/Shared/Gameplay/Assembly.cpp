@@ -3,6 +3,7 @@
 #include <Gameplay/Assembly.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedUnitTypes.hpp>
+#include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/UnitComponent.hpp>
 
 #include <Physics/CollisionShapeComponent.hpp>
@@ -81,6 +82,7 @@ void FixedAssembler::Execute ()
 
                 shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
+                shape->collisionGroup = PhysicsConstant::WARRIOR_COLLISION_GROUP;
             }
             else if (unit->type == HardcodedUnitTypes::OBSTACLE)
             {
@@ -96,6 +98,7 @@ void FixedAssembler::Execute ()
                 shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 1.5f, 0.5f}};
                 shape->translation.y = 1.5f;
+                shape->collisionGroup = PhysicsConstant::OBSTACLE_COLLISION_GROUP;
             }
         }
     };

@@ -17,6 +17,9 @@
 #include <Gameplay/HardcodedUnitTypes.hpp>
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/UnitComponent.hpp>
+#include <Gameplay/PhysicsConstant.hpp>
+
+#include <Initialization/PhysicsInitialization.hpp>
 
 #include <Input/Input.hpp>
 
@@ -66,10 +69,9 @@ public:
 private:
     Emergence::Celerity::ModifySingletonQuery fetchWorld;
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
-    Emergence::Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
-    Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
 
@@ -82,10 +84,9 @@ private:
 SceneSeeder::SceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchWorld (_constructor.MModifySingleton (Emergence::Celerity::WorldSingleton)),
       modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
-      modifyPhysicsWorld (_constructor.MModifySingleton (Emergence::Physics::PhysicsWorldSingleton)),
+      fetchPhysicsWorld (_constructor.MFetchSingleton (Emergence::Physics::PhysicsWorldSingleton)),
 
       insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
-      insertDynamicsMaterial (_constructor.MInsertLongTerm (Emergence::Physics::DynamicsMaterial)),
       insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
 
@@ -94,6 +95,7 @@ SceneSeeder::SceneSeeder (Emergence::Celerity::TaskConstructor &_constructor) no
       insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent)),
       insertUnit (_constructor.MInsertLongTerm (UnitComponent))
 {
+    _constructor.DependOn (PhysicsInitialization::Checkpoint::PHYSICS_INITIALIZED);
 }
 
 void SceneSeeder::Execute ()
@@ -102,7 +104,6 @@ void SceneSeeder::Execute ()
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     auto transformCursor = insertTransform.Execute ();
-    auto materialCursor = insertDynamicsMaterial.Execute ();
     auto bodyCursor = insertRigidBody.Execute ();
     auto shapeCursor = insertCollisionShape.Execute ();
 
@@ -110,14 +111,6 @@ void SceneSeeder::Execute ()
     auto lightCursor = insertLight.Execute ();
     auto modelCursor = insertStaticModel.Execute ();
     auto unitCursor = insertUnit.Execute ();
-
-    auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);
-    material->id = "Default"_us;
-    material->staticFriction = 0.4f;
-    material->dynamicFriction = 0.4f;
-    material->enableFriction = true;
-    material->restitution = 0.5f;
-    material->density = 400.0f;
 
     const Emergence::Celerity::UniqueId cameraObjectId = world->GenerateUID ();
 
@@ -158,8 +151,8 @@ void SceneSeeder::Execute ()
     playerUnit->objectId = playerObjectId;
     playerUnit->type = HardcodedUnitTypes::WARRIOR_CUBE;
 
-    auto physicsWorldCursor = modifyPhysicsWorld.Execute ();
-    auto *physicsWorld = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     for (std::size_t x = 0u; x < 9u; ++x)
     {
@@ -189,10 +182,11 @@ void SceneSeeder::Execute ()
                 auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
                 shape->objectId = objectId;
                 shape->shapeId = physicsWorld->GenerateShapeUID ();
-                shape->materialId = material->id;
+                shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
 
                 shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 0.01f, 0.5f}};
+                shape->collisionGroup = PhysicsConstant::GROUND_COLLISION_GROUP;
 
                 auto *model = static_cast<StaticModelComponent *> (++modelCursor);
                 model->objectId = objectId;
@@ -287,9 +281,10 @@ void GameApplication::Start ()
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
-    pipelineBuilder.Begin ("Seeding"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
     pipelineBuilder.AddTask ("SceneSeeder"_us).SetExecutor<SceneSeeder> ();
-    Emergence::Celerity::Pipeline *seeder = pipelineBuilder.End (std::thread::hardware_concurrency ());
+    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Assembly::AddToNormalUpdate (pipelineBuilder);
@@ -308,8 +303,8 @@ void GameApplication::Start ()
     Mortality::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
-    seeder->Execute ();
-    world.RemovePipeline (seeder);
+    initializer->Execute ();
+    world.RemovePipeline (initializer);
 }
 
 void GameApplication::Stop ()
