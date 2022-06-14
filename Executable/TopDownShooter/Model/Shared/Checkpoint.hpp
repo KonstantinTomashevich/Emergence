@@ -9,6 +9,9 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString ASSEMBLY_STARTED;
     static const Emergence::Memory::UniqueString ASSEMBLY_FINISHED;
 
+    static const Emergence::Memory::UniqueString CAMERA_UPDATE_STARTED;
+    static const Emergence::Memory::UniqueString CAMERA_UPDATE_FINISHED;
+
     // NOTE: Expected input routine:
     //       - External event registration allowed (UI, replays).
     //       - INPUT_DISPATCH_STARTED.

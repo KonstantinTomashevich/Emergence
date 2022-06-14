@@ -165,6 +165,8 @@ void MovementUpdater::Execute () noexcept
                                                 movement->maxAngularSpeed, movement->angularVelocityMask);
         ++movementCursor;
     }
+
+    // TODO: Delete movement from corpses.
 }
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

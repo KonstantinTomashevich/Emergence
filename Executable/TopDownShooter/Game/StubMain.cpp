@@ -13,6 +13,7 @@
 #include <Gameplay/Assembly.hpp>
 #include <Gameplay/Control.hpp>
 #include <Gameplay/Events.hpp>
+#include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
 
@@ -138,6 +139,7 @@ void GameApplication::Start ()
     Assembly::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
+    FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?

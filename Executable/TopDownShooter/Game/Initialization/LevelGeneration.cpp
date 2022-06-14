@@ -109,7 +109,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
 
     for (std::int32_t x = -_halfWidth; x < _halfWidth; ++x)
     {
-        for (std::int32_t z = -_halfHeight; z < _halfWidth; ++z)
+        for (std::int32_t z = -_halfHeight; z < _halfHeight; ++z)
         {
             const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
 
