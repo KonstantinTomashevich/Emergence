@@ -2,11 +2,12 @@
 
 #include <Memory/UniqueString.hpp>
 
-class HardcodedUnitTypes final
+class HardcodedPrototypes final
 {
 public:
-    HardcodedUnitTypes () = delete;
+    HardcodedPrototypes () = delete;
 
     static const Emergence::Memory::UniqueString WARRIOR_CUBE;
     static const Emergence::Memory::UniqueString OBSTACLE;
+    static const Emergence::Memory::UniqueString FLOOR_TILE;
 };

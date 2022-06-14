@@ -1,17 +1,17 @@
 #include <Gameplay/Events.hpp>
-#include <Gameplay/UnitComponent.hpp>
+#include <Gameplay/PrototypeComponent.hpp>
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DamageEvent, REGULAR, objectId, REGULAR, amount);
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DeathEvent, REGULAR, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (UnitComponentAddedFixedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedEvent, REGULAR, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (UnitComponentAddedFixedToNormalEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedToNormalEvent, REGULAR, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (UnitComponentAddedCustomToFixedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToFixedEvent, REGULAR, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (UnitComponentAddedCustomToNormalEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalEvent, REGULAR, objectId);
 
 void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept
 {
@@ -20,25 +20,26 @@ void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) no
 
     // UnitComponent
 
-    _registrar.OnAddEvent ({{UnitComponentAddedFixedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED},
-                            UnitComponent::Reflect ().mapping,
-                            {{UnitComponent::Reflect ().objectId, UnitComponentAddedFixedEvent::Reflect ().objectId}}});
+    _registrar.OnAddEvent (
+        {{PrototypeComponentAddedFixedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED},
+         PrototypeComponent::Reflect ().mapping,
+         {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedFixedEvent::Reflect ().objectId}}});
 
     _registrar.OnAddEvent (
-        {{UnitComponentAddedFixedToNormalEvent::Reflect ().mapping,
+        {{PrototypeComponentAddedFixedToNormalEvent::Reflect ().mapping,
           Emergence::Celerity::EventRoute::FROM_FIXED_TO_NORMAL},
-         UnitComponent::Reflect ().mapping,
-         {{UnitComponent::Reflect ().objectId, UnitComponentAddedFixedToNormalEvent::Reflect ().objectId}}});
+         PrototypeComponent::Reflect ().mapping,
+         {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedFixedToNormalEvent::Reflect ().objectId}}});
 
     _registrar.OnAddEvent (
-        {{UnitComponentAddedCustomToFixedEvent::Reflect ().mapping,
+        {{PrototypeComponentAddedCustomToFixedEvent::Reflect ().mapping,
           Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
-         UnitComponent::Reflect ().mapping,
-         {{UnitComponent::Reflect ().objectId, UnitComponentAddedCustomToFixedEvent::Reflect ().objectId}}});
+         PrototypeComponent::Reflect ().mapping,
+         {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedCustomToFixedEvent::Reflect ().objectId}}});
 
     _registrar.OnAddEvent (
-        {{UnitComponentAddedCustomToNormalEvent::Reflect ().mapping,
+        {{PrototypeComponentAddedCustomToNormalEvent::Reflect ().mapping,
           Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
-         UnitComponent::Reflect ().mapping,
-         {{UnitComponent::Reflect ().objectId, UnitComponentAddedCustomToNormalEvent::Reflect ().objectId}}});
+         PrototypeComponent::Reflect ().mapping,
+         {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedCustomToNormalEvent::Reflect ().objectId}}});
 }

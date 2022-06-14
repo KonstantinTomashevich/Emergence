@@ -8,12 +8,12 @@ EMERGENCE_CELERITY_EVENT2_DECLARATION (DamageEvent, Emergence::Celerity::UniqueI
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (DeathEvent, Emergence::Celerity::UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (UnitComponentAddedFixedEvent, Emergence::Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedFixedEvent, Emergence::Celerity::UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (UnitComponentAddedFixedToNormalEvent, Emergence::Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedFixedToNormalEvent, Emergence::Celerity::UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (UnitComponentAddedCustomToFixedEvent, Emergence::Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedCustomToFixedEvent, Emergence::Celerity::UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (UnitComponentAddedCustomToNormalEvent, Emergence::Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedCustomToNormalEvent, Emergence::Celerity::UniqueId, objectId);
 
 void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept;

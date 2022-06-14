@@ -8,8 +8,6 @@ struct UnitComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    Emergence::Memory::UniqueString type;
-
     float health = 1.0f;
 
     float maxHealth = 1.0f;
@@ -29,7 +27,6 @@ struct UnitComponent final
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId type;
         Emergence::StandardLayout::FieldId health;
         Emergence::StandardLayout::FieldId maxHealth;
         Emergence::StandardLayout::FieldId removeAfterNs;

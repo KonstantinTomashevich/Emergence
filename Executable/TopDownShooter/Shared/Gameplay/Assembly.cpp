@@ -2,9 +2,10 @@
 
 #include <Gameplay/Assembly.hpp>
 #include <Gameplay/Events.hpp>
-#include <Gameplay/HardcodedUnitTypes.hpp>
+#include <Gameplay/HardcodedPrototypes.hpp>
 #include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
+#include <Gameplay/PrototypeComponent.hpp>
 #include <Gameplay/UnitComponent.hpp>
 
 #include <Input/InputListenerComponent.hpp>
@@ -36,27 +37,29 @@ public:
     void Execute ();
 
 private:
-    Emergence::Celerity::FetchSequenceQuery fetchUnitAddedFixedEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchUnitAddedCustomToFixedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedFixedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToFixedEvents;
 
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
-    Emergence::Celerity::FetchValueQuery fetchUnitById;
+    Emergence::Celerity::FetchValueQuery fetchPrototypeById;
 
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
+    Emergence::Celerity::InsertLongTermQuery insertUnit;
     Emergence::Celerity::InsertLongTermQuery insertInputListener;
     Emergence::Celerity::InsertLongTermQuery insertMovement;
 };
 
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchUnitAddedFixedEvents (_constructor.MFetchSequence (UnitComponentAddedFixedEvent)),
-      fetchUnitAddedCustomToFixedEvents (_constructor.MFetchSequence (UnitComponentAddedCustomToFixedEvent)),
+    : fetchPrototypeAddedFixedEvents (_constructor.MFetchSequence (PrototypeComponentAddedFixedEvent)),
+      fetchPrototypeAddedCustomToFixedEvents (_constructor.MFetchSequence (PrototypeComponentAddedCustomToFixedEvent)),
 
       fetchPhysicsWorld (_constructor.MFetchSingleton (Emergence::Physics::PhysicsWorldSingleton)),
-      fetchUnitById (_constructor.MFetchValue1F (UnitComponent, objectId)),
+      fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
 
       insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
+      insertUnit (_constructor.MInsertLongTerm (UnitComponent)),
       insertInputListener (_constructor.MInsertLongTerm (InputListenerComponent)),
       insertMovement (_constructor.MInsertLongTerm (MovementComponent))
 {
@@ -72,16 +75,21 @@ void FixedAssembler::Execute ()
 
     auto assembly = [this, physicsWorld] (Emergence::Celerity::UniqueId _objectId)
     {
-        auto unitCursor = fetchUnitById.Execute (&_objectId);
-        if (const auto *unit = static_cast<const UnitComponent *> (*unitCursor))
+        auto prototypeCursor = fetchPrototypeById.Execute (&_objectId);
+        if (const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor))
         {
+            auto unitCursor = insertUnit.Execute ();
             auto bodyCursor = insertRigidBody.Execute ();
             auto shapeCursor = insertCollisionShape.Execute ();
 
-            if (unit->type == HardcodedUnitTypes::WARRIOR_CUBE)
+            if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
             {
                 auto inputListenerCursor = insertInputListener.Execute ();
                 auto movementCursor = insertMovement.Execute ();
+
+                auto *unit = static_cast<UnitComponent *> (++unitCursor);
+                unit->objectId = _objectId;
+                unit->canBeControlledByPlayer = true;
 
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
@@ -130,8 +138,12 @@ void FixedAssembler::Execute ()
                 movement->linearVelocityMask = 0b00000101u;  // Only forward and to the sides.
                 movement->angularVelocityMask = 0b00000010u; // Only around Y axis.
             }
-            else if (unit->type == HardcodedUnitTypes::OBSTACLE)
+            else if (prototype->prototype == HardcodedPrototypes::OBSTACLE)
             {
+                auto *unit = static_cast<UnitComponent *> (++unitCursor);
+                unit->objectId = _objectId;
+                unit->canBeControlledByPlayer = false;
+
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
                 body->type = Emergence::Physics::RigidBodyType::STATIC;
@@ -149,14 +161,15 @@ void FixedAssembler::Execute ()
         }
     };
 
-    for (auto eventCursor = fetchUnitAddedFixedEvents.Execute ();
-         const auto *event = static_cast<const UnitComponentAddedFixedEvent *> (*eventCursor); ++eventCursor)
+    for (auto eventCursor = fetchPrototypeAddedFixedEvents.Execute ();
+         const auto *event = static_cast<const PrototypeComponentAddedFixedEvent *> (*eventCursor); ++eventCursor)
     {
         assembly (event->objectId);
     }
 
-    for (auto eventCursor = fetchUnitAddedCustomToFixedEvents.Execute ();
-         const auto *event = static_cast<const UnitComponentAddedCustomToFixedEvent *> (*eventCursor); ++eventCursor)
+    for (auto eventCursor = fetchPrototypeAddedCustomToFixedEvents.Execute ();
+         const auto *event = static_cast<const PrototypeComponentAddedCustomToFixedEvent *> (*eventCursor);
+         ++eventCursor)
     {
         assembly (event->objectId);
     }
@@ -170,20 +183,21 @@ public:
     void Execute ();
 
 private:
-    Emergence::Celerity::FetchSequenceQuery fetchUnitAddedFixedToNormalEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchUnitAddedCustomToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedFixedToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToNormalEvents;
 
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
-    Emergence::Celerity::FetchValueQuery fetchUnitById;
+    Emergence::Celerity::FetchValueQuery fetchPrototypeById;
     Emergence::Celerity::InsertLongTermQuery insertStaticModel;
 };
 
 NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchUnitAddedFixedToNormalEvents (_constructor.MFetchSequence (UnitComponentAddedFixedToNormalEvent)),
-      fetchUnitAddedCustomToNormalEvents (_constructor.MFetchSequence (UnitComponentAddedCustomToNormalEvent)),
+    : fetchPrototypeAddedFixedToNormalEvents (_constructor.MFetchSequence (PrototypeComponentAddedFixedToNormalEvent)),
+      fetchPrototypeAddedCustomToNormalEvents (
+          _constructor.MFetchSequence (PrototypeComponentAddedCustomToNormalEvent)),
 
       fetchRenderScene (_constructor.MFetchSingleton (RenderSceneSingleton)),
-      fetchUnitById (_constructor.MFetchValue1F (UnitComponent, objectId)),
+      fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
       insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
@@ -198,40 +212,44 @@ void NormalAssembler::Execute ()
 
     auto assembly = [this, renderScene] (Emergence::Celerity::UniqueId _objectId)
     {
-        auto unitCursor = fetchUnitById.Execute (&_objectId);
-        if (const auto *unit = static_cast<const UnitComponent *> (*unitCursor))
+        auto prototypeCursor = fetchPrototypeById.Execute (&_objectId);
+        if (const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor))
         {
             auto modelCursor = insertStaticModel.Execute ();
-            if (unit->type == HardcodedUnitTypes::WARRIOR_CUBE)
-            {
-                auto *model = static_cast<StaticModelComponent *> (++modelCursor);
-                model->objectId = _objectId;
-                model->modelId = renderScene->GenerateModelUID ();
+            auto *model = static_cast<StaticModelComponent *> (++modelCursor);
+            model->objectId = _objectId;
+            model->modelId = renderScene->GenerateModelUID ();
 
+            if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
+            {
                 model->modelName = "Models/Player.mdl"_us;
                 model->materialNames.EmplaceBack ("Materials/Player.xml"_us);
             }
-            else if (unit->type == HardcodedUnitTypes::OBSTACLE)
+            else if (prototype->prototype == HardcodedPrototypes::OBSTACLE)
             {
-                auto *model = static_cast<StaticModelComponent *> (++modelCursor);
-                model->objectId = _objectId;
-                model->modelId = renderScene->GenerateModelUID ();
-
                 model->modelName = "Models/Wall.mdl"_us;
                 model->materialNames.EmplaceBack ("Materials/WallTileBorder.xml"_us);
                 model->materialNames.EmplaceBack ("Materials/WallTileCenter.xml"_us);
             }
+            else if (prototype->prototype == HardcodedPrototypes::FLOOR_TILE)
+            {
+                model->modelName = "Models/FloorTile.mdl"_us;
+                model->materialNames.EmplaceBack ("Materials/FloorTileCenter.xml"_us);
+                model->materialNames.EmplaceBack ("Materials/FloorTileBorder.xml"_us);
+            }
         }
     };
 
-    for (auto eventCursor = fetchUnitAddedFixedToNormalEvents.Execute ();
-         const auto *event = static_cast<const UnitComponentAddedFixedToNormalEvent *> (*eventCursor); ++eventCursor)
+    for (auto eventCursor = fetchPrototypeAddedFixedToNormalEvents.Execute ();
+         const auto *event = static_cast<const PrototypeComponentAddedFixedToNormalEvent *> (*eventCursor);
+         ++eventCursor)
     {
         assembly (event->objectId);
     }
 
-    for (auto eventCursor = fetchUnitAddedCustomToNormalEvents.Execute ();
-         const auto *event = static_cast<const UnitComponentAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
+    for (auto eventCursor = fetchPrototypeAddedCustomToNormalEvents.Execute ();
+         const auto *event = static_cast<const PrototypeComponentAddedCustomToNormalEvent *> (*eventCursor);
+         ++eventCursor)
     {
         assembly (event->objectId);
     }
