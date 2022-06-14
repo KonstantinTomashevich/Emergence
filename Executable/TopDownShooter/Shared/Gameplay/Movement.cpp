@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
