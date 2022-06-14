@@ -84,7 +84,7 @@ void LevelGenerator::Execute ()
         }
     }
 
-    PlacePrototype (0.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE);
+    PlacePrototype (-2.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE);
 }
 
 void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept
@@ -97,7 +97,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
                             HardcodedPrototypes::FLOOR_TILE);
         }
     }
-    
+
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 

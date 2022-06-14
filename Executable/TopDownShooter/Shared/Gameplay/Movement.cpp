@@ -17,6 +17,7 @@
 
 #include <Shared/Checkpoint.hpp>
 
+#include <Transform/Events.hpp>
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
 
@@ -42,6 +43,7 @@ private:
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::FetchSequenceQuery fetchDeathEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -54,7 +56,9 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
       fetchTransformById (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchDeathEvents (_constructor.MFetchSequence (DeathEvent))
+      fetchDeathEvents (_constructor.MFetchSequence (DeathEvent)),
+      fetchTransformRemovedEvents (
+          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
@@ -67,19 +71,44 @@ void MovementUpdater::Execute () noexcept
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
 
-    for (auto eventCursor = fetchDeathEvents.Execute ();
-         const auto *event = static_cast<const DeathEvent *> (*eventCursor); ++eventCursor)
+    auto removeMovement = [this] (Emergence::Celerity::UniqueId _objectId)
     {
-        auto movementCursor = removeMovementById.Execute (&event->objectId);
+        auto movementCursor = removeMovementById.Execute (&_objectId);
         if (movementCursor.ReadConst ())
         {
             ~movementCursor;
         }
+    };
+
+    for (auto eventCursor = fetchDeathEvents.Execute ();
+         const auto *event = static_cast<const DeathEvent *> (*eventCursor); ++eventCursor)
+    {
+        removeMovement (event->objectId);
+    }
+
+    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        removeMovement (event->objectId);
     }
 
     for (auto movementCursor = removeMovementByAscendingId.Execute (nullptr, nullptr);
          const auto *movement = static_cast<const MovementComponent *> (movementCursor.ReadConst ());)
     {
+        auto transformCursor = fetchTransformById.Execute (&movement->objectId);
+        const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            EMERGENCE_LOG (ERROR, "Movement: Unable to attach movement feature to object (id ", movement->objectId,
+                           ") without input Transform3dComponent!");
+
+            ~movementCursor;
+            continue;
+        }
+
         auto inputListenerCursor = fetchInputListenerById.Execute (&movement->objectId);
         const auto *inputListener = static_cast<const InputListenerComponent *> (*inputListenerCursor);
 
@@ -99,18 +128,6 @@ void MovementUpdater::Execute () noexcept
         {
             EMERGENCE_LOG (ERROR, "Movement: Unable to attach movement feature to object (id ", movement->objectId,
                            ") without RigidBodyComponent!");
-
-            ~movementCursor;
-            continue;
-        }
-
-        auto transformCursor = fetchTransformById.Execute (&movement->objectId);
-        const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
-
-        if (!transform)
-        {
-            EMERGENCE_LOG (ERROR, "Movement: Unable to attach movement feature to object (id ", movement->objectId,
-                           ") without input Transform3dComponent!");
 
             ~movementCursor;
             continue;

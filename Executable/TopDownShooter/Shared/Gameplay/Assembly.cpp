@@ -22,6 +22,8 @@
 
 #include <Shared/Checkpoint.hpp>
 
+#include <Transform/Events.hpp>
+
 namespace Assembly
 {
 // TODO: Normally assembly pattern uses special configs to assemble entities,
@@ -39,9 +41,11 @@ public:
 private:
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedFixedEvents;
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToFixedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
+    Emergence::Celerity::RemoveValueQuery removePrototypeById;
 
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
@@ -53,9 +57,12 @@ private:
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchPrototypeAddedFixedEvents (_constructor.MFetchSequence (PrototypeComponentAddedFixedEvent)),
       fetchPrototypeAddedCustomToFixedEvents (_constructor.MFetchSequence (PrototypeComponentAddedCustomToFixedEvent)),
+      fetchTransformRemovedEvents (
+          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
 
       fetchPhysicsWorld (_constructor.MFetchSingleton (Emergence::Physics::PhysicsWorldSingleton)),
       fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
+      removePrototypeById (_constructor.MRemoveValue1F (PrototypeComponent, objectId)),
 
       insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
@@ -173,6 +180,18 @@ void FixedAssembler::Execute ()
     {
         assembly (event->objectId);
     }
+
+    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        auto prototypeCursor = removePrototypeById.Execute (&event->objectId);
+        if (prototypeCursor.ReadConst ())
+        {
+            ~prototypeCursor;
+        }
+    }
 }
 
 class NormalAssembler final : public Emergence::Celerity::TaskExecutorBase<NormalAssembler>
@@ -185,9 +204,11 @@ public:
 private:
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedFixedToNormalEvents;
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
+    Emergence::Celerity::RemoveValueQuery removePrototypeById;
     Emergence::Celerity::InsertLongTermQuery insertStaticModel;
 };
 
@@ -195,9 +216,12 @@ NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constru
     : fetchPrototypeAddedFixedToNormalEvents (_constructor.MFetchSequence (PrototypeComponentAddedFixedToNormalEvent)),
       fetchPrototypeAddedCustomToNormalEvents (
           _constructor.MFetchSequence (PrototypeComponentAddedCustomToNormalEvent)),
+      fetchTransformRemovedEvents (
+          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
 
       fetchRenderScene (_constructor.MFetchSingleton (RenderSceneSingleton)),
       fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
+      removePrototypeById (_constructor.MRemoveValue1F (PrototypeComponent, objectId)),
       insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
@@ -252,6 +276,18 @@ void NormalAssembler::Execute ()
          ++eventCursor)
     {
         assembly (event->objectId);
+    }
+
+    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Transform::Transform3dComponentRemovedNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        auto prototypeCursor = removePrototypeById.Execute (&event->objectId);
+        if (prototypeCursor.ReadConst ())
+        {
+            ~prototypeCursor;
+        }
     }
 }
 
