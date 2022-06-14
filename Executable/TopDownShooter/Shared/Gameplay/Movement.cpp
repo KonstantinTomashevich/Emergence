@@ -34,21 +34,27 @@ public:
 private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::RemoveAscendingRangeQuery removeMovementByAscendingId;
+    Emergence::Celerity::RemoveValueQuery removeMovementById;
     Emergence::Celerity::FetchValueQuery fetchInputListenerById;
     Emergence::Celerity::EditValueQuery editRigidBodyById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+
+    Emergence::Celerity::FetchSequenceQuery fetchDeathEvents;
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (_constructor.MFetchSingleton (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (_constructor.MRemoveAscendingRange (MovementComponent, objectId)),
+      removeMovementById (_constructor.MRemoveValue1F (MovementComponent, objectId)),
       fetchInputListenerById (_constructor.MFetchValue1F (InputListenerComponent, objectId)),
       editRigidBodyById (_constructor.MEditValue1F (Emergence::Physics::RigidBodyComponent, objectId)),
 
       fetchTransformById (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
-      transformWorldAccessor (_constructor)
+      transformWorldAccessor (_constructor),
+
+      fetchDeathEvents (_constructor.MFetchSequence (DeathEvent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
@@ -60,6 +66,16 @@ void MovementUpdater::Execute () noexcept
 {
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
+
+    for (auto eventCursor = fetchDeathEvents.Execute ();
+         const auto *event = static_cast<const DeathEvent *> (*eventCursor); ++eventCursor)
+    {
+        auto movementCursor = removeMovementById.Execute (&event->objectId);
+        if (movementCursor.ReadConst ())
+        {
+            ~movementCursor;
+        }
+    }
 
     for (auto movementCursor = removeMovementByAscendingId.Execute (nullptr, nullptr);
          const auto *movement = static_cast<const MovementComponent *> (movementCursor.ReadConst ());)
@@ -165,8 +181,6 @@ void MovementUpdater::Execute () noexcept
                                                 movement->maxAngularSpeed, movement->angularVelocityMask);
         ++movementCursor;
     }
-
-    // TODO: Delete movement from corpses.
 }
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
