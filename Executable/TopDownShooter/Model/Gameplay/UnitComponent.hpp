@@ -17,6 +17,10 @@ struct UnitComponent final
     /// \details Timer for transform removal after death.
     uint64_t removeAfterNs = std::numeric_limits<uint64_t>::max ();
 
+    bool canBeControlledByPlayer = false;
+
+    bool controlledByPlayer = false;
+
     [[nodiscard]] inline bool IsCorpse () const
     {
         return removeAfterNs != std::numeric_limits<uint64_t>::max ();
@@ -29,6 +33,8 @@ struct UnitComponent final
         Emergence::StandardLayout::FieldId health;
         Emergence::StandardLayout::FieldId maxHealth;
         Emergence::StandardLayout::FieldId removeAfterNs;
+        Emergence::StandardLayout::FieldId canBeControlledByPlayer;
+        Emergence::StandardLayout::FieldId controlledByPlayer;
         Emergence::StandardLayout::Mapping mapping;
     };
 

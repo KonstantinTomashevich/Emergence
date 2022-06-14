@@ -12,4 +12,5 @@ struct PhysicsConstant final
     static constexpr std::uint32_t OBSTACLE_COLLISION_GROUP = 1u;
     static constexpr std::uint32_t WARRIOR_COLLISION_GROUP = 2u;
     static constexpr std::uint32_t BULLET_COLLISION_GROUP = 3u;
+    static constexpr std::uint32_t HIT_BOX_COLLISION_GROUP = 4u;
 };

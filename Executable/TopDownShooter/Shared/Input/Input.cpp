@@ -57,7 +57,7 @@ void InputDispatcherBase::DispatchActions (InputSingleton::SubscriptionVector &_
         return;
     }
 
-    for (auto iterator = _subscribers.Begin (); iterator != _subscribers.End (); ++iterator)
+    for (auto iterator = _subscribers.Begin (); iterator != _subscribers.End ();)
     {
         const InputSubscription &subscription = *iterator;
         auto listenerCursor = editListenerById.Execute (&subscription.listenerId);
@@ -76,6 +76,8 @@ void InputDispatcherBase::DispatchActions (InputSingleton::SubscriptionVector &_
                 listener->actions.EmplaceBack (action);
             }
         }
+
+        ++iterator;
     }
 }
 

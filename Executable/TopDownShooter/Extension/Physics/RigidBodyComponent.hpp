@@ -17,6 +17,14 @@ enum class RigidBodyType
 
 struct RigidBodyComponent final
 {
+    constexpr static uint8_t LOCK_LINEAR_X = 1u << 0u;
+    constexpr static uint8_t LOCK_LINEAR_Y = 1u << 1u;
+    constexpr static uint8_t LOCK_LINEAR_Z = 1u << 2u;
+
+    constexpr static uint8_t LOCK_ANGULAR_X = 1u << 3u;
+    constexpr static uint8_t LOCK_ANGULAR_Y = 1u << 4u;
+    constexpr static uint8_t LOCK_ANGULAR_Z = 1u << 5u;
+
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBodyComponent);
 
     Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
@@ -36,6 +44,8 @@ struct RigidBodyComponent final
     ///          observation when needed and disable when it is no longer needed.
     bool manipulatedOutsideOfSimulation = false;
 
+    uint8_t lockFlags = 0u;
+
     Math::Vector3f linearVelocity = Math::Vector3f::ZERO;
     Math::Vector3f angularVelocity = Math::Vector3f::ZERO;
 
@@ -53,6 +63,7 @@ struct RigidBodyComponent final
         StandardLayout::FieldId continuousCollisionDetection;
         StandardLayout::FieldId affectedByGravity;
         StandardLayout::FieldId manipulatedOutsideOfSimulation;
+        StandardLayout::FieldId lockFlags;
         StandardLayout::FieldId linearVelocity;
         StandardLayout::FieldId angularVelocity;
         StandardLayout::FieldId additiveLinearImpulse;

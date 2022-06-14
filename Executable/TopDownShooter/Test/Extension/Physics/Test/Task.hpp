@@ -84,6 +84,7 @@ struct RigidBodyData
 
     Math::Vector3f additiveLinearImpulse = Math::Vector3f::ZERO;
     Math::Vector3f additiveAngularImpulse = Math::Vector3f::ZERO;
+    uint8_t lockFlags = 0u;
 };
 
 struct AddRigidBody final : public RigidBodyData

@@ -94,6 +94,33 @@ TEST_CASE (DynamicImpulseNoGravity)
           }}});
 }
 
+TEST_CASE (DynamicImpulseNoGravityWithLocking)
+{
+    Emergence::Physics::Test::ExecuteScenario (
+        {{0u,
+          {
+              AddDynamicsMaterial {{"Test"_us}},
+              AddTransform {{0u}},
+              AddRigidBody {{0u,
+                             RigidBodyType::DYNAMIC,
+                             Vector3f::ZERO,
+                             Vector3f::ZERO,
+                             0.0f,
+                             0.05f,
+                             false,
+                             false,
+                             false,
+                             {-10.0f, 10.0f, 10.0f},
+                             {0.0f, 0.0f, 0.0f},
+                             RigidBodyComponent::LOCK_LINEAR_Z}},
+              AddCollisionShape {{0u, 0u, "Test"_us}},
+          }}},
+        {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+          {
+              CheckObjectTransform {0u, {{-20.15f, 20.15f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
+          }}});
+}
+
 TEST_CASE (Gravity)
 {
     Emergence::Physics::Test::ExecuteScenario (

@@ -836,6 +836,7 @@ void BodyInitializer::Execute ()
 
             pxBody->setLinearVelocity (ToPhysX (body->linearVelocity));
             pxBody->setAngularVelocity (ToPhysX ({body->angularVelocity}));
+            pxBody->setRigidDynamicLockFlags (physx::PxRigidDynamicLockFlags {body->lockFlags});
             break;
         }
         }
@@ -1271,13 +1272,14 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
 
         if (body->type == RigidBodyType::DYNAMIC)
         {
-            auto *pxBody = static_cast<physx::PxRigidBody *> (pxActor);
+            auto *pxBody = static_cast<physx::PxRigidDynamic *> (pxActor);
             pxBody->setLinearDamping (body->linearDamping);
             pxBody->setAngularDamping (body->angularDamping);
             pxBody->setRigidBodyFlag (physx::PxRigidBodyFlag::eENABLE_CCD, body->continuousCollisionDetection);
 
             pxBody->setLinearVelocity (ToPhysX (body->linearVelocity));
             pxBody->setAngularVelocity (ToPhysX (body->angularVelocity));
+            pxBody->setRigidDynamicLockFlags (physx::PxRigidDynamicLockFlags {body->lockFlags});
 
             if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
             {

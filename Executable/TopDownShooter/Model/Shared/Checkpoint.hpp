@@ -27,6 +27,9 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString MORTALITY_STARTED;
     static const Emergence::Memory::UniqueString MORTALITY_FINISHED;
 
+    static const Emergence::Memory::UniqueString MOVEMENT_STARTED;
+    static const Emergence::Memory::UniqueString MOVEMENT_FINISHED;
+
     static const Emergence::Memory::UniqueString RENDER_UPDATE_STARTED;
     static const Emergence::Memory::UniqueString RENDER_UPDATE_FINISHED;
 };

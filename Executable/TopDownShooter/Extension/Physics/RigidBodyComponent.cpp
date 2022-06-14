@@ -20,6 +20,7 @@ const RigidBodyComponent::Reflection &RigidBodyComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (continuousCollisionDetection)
         EMERGENCE_MAPPING_REGISTER_REGULAR (affectedByGravity)
         EMERGENCE_MAPPING_REGISTER_REGULAR (manipulatedOutsideOfSimulation)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (lockFlags)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (linearVelocity)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (angularVelocity)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (additiveLinearImpulse)

@@ -169,7 +169,8 @@ void Configurator::Execute ()
     body->linearVelocity = _task.linearVelocity;                                                                       \
     body->angularVelocity = _task.angularVelocity;                                                                     \
     body->additiveLinearImpulse = _task.additiveLinearImpulse;                                                         \
-    body->additiveAngularImpulse = _task.additiveAngularImpulse
+    body->additiveAngularImpulse = _task.additiveAngularImpulse;                                                       \
+    body->lockFlags = _task.lockFlags
 
                     FILL_BODY;
                 }

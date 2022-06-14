@@ -11,9 +11,12 @@
 #include <Celerity/World.hpp>
 
 #include <Gameplay/Assembly.hpp>
+#include <Gameplay/Control.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/Mortality.hpp>
+#include <Gameplay/Movement.hpp>
 
+#include <Initialization/InputInitialization.hpp>
 #include <Initialization/LevelGeneration.hpp>
 #include <Initialization/PhysicsInitialization.hpp>
 
@@ -126,6 +129,7 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    InputInitialization::AddToInitializationPipeline (pipelineBuilder);
     LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
     PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
     Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End (std::thread::hardware_concurrency ());
@@ -141,10 +145,12 @@ void GameApplication::Start ()
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Assembly::AddToFixedUpdate (pipelineBuilder);
+    Control::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
+    Movement::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     initializer->Execute ();

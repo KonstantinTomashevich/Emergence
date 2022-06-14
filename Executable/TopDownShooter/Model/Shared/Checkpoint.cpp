@@ -10,5 +10,8 @@ const Emergence::Memory::UniqueString Checkpoint::INPUT_LISTENERS_READ_ALLOWED {
 const Emergence::Memory::UniqueString Checkpoint::MORTALITY_STARTED {"MortalityStarted"};
 const Emergence::Memory::UniqueString Checkpoint::MORTALITY_FINISHED {"MortalityFinished"};
 
+const Emergence::Memory::UniqueString Checkpoint::MOVEMENT_STARTED {"MovementStarted"};
+const Emergence::Memory::UniqueString Checkpoint::MOVEMENT_FINISHED {"MovementFinished"};
+
 const Emergence::Memory::UniqueString Checkpoint::RENDER_UPDATE_STARTED {"RenderUpdateStarted"};
 const Emergence::Memory::UniqueString Checkpoint::RENDER_UPDATE_FINISHED {"RenderUpdateFinished"};

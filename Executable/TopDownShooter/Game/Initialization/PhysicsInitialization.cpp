@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/PhysicsConstant.hpp>
@@ -35,14 +37,25 @@ void PhysicsInitializer::Execute () noexcept
     auto worldCursor = modifyPhysicsWorld.Execute ();
     auto *world = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*worldCursor);
 
-    constexpr std::uint32_t COLLIDE_WITH_ANYTHING =
+    world->enableRemoteDebugger = false;
+    strcpy(world->remoteDebuggerUrl.data(), "localhost");
+    world->remoteDebuggerPort = 5425u;
+
+    world->collisionMasks[PhysicsConstant::GROUND_COLLISION_GROUP] =
         (1u << PhysicsConstant::GROUND_COLLISION_GROUP) | (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) |
         (1u << PhysicsConstant::WARRIOR_COLLISION_GROUP) | (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
 
-    world->collisionMasks[PhysicsConstant::GROUND_COLLISION_GROUP] = COLLIDE_WITH_ANYTHING;
-    world->collisionMasks[PhysicsConstant::OBSTACLE_COLLISION_GROUP] = COLLIDE_WITH_ANYTHING;
-    world->collisionMasks[PhysicsConstant::WARRIOR_COLLISION_GROUP] = COLLIDE_WITH_ANYTHING;
-    world->collisionMasks[PhysicsConstant::BULLET_COLLISION_GROUP] = COLLIDE_WITH_ANYTHING;
+    world->collisionMasks[PhysicsConstant::OBSTACLE_COLLISION_GROUP] =
+        (1u << PhysicsConstant::WARRIOR_COLLISION_GROUP) | (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
+
+    world->collisionMasks[PhysicsConstant::WARRIOR_COLLISION_GROUP] =
+        (1u << PhysicsConstant::GROUND_COLLISION_GROUP) | (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) |
+        (1u << PhysicsConstant::WARRIOR_COLLISION_GROUP);
+
+    world->collisionMasks[PhysicsConstant::BULLET_COLLISION_GROUP] =
+        (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) | (1u << PhysicsConstant::HIT_BOX_COLLISION_GROUP);
+
+    world->collisionMasks[PhysicsConstant::HIT_BOX_COLLISION_GROUP] = (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
 
     auto materialCursor = insertDynamicsMaterial.Execute ();
     auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);

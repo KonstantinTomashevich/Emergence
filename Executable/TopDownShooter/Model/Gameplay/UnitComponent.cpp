@@ -12,6 +12,8 @@ const UnitComponent::Reflection &UnitComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (health)
         EMERGENCE_MAPPING_REGISTER_REGULAR (maxHealth)
         EMERGENCE_MAPPING_REGISTER_REGULAR (removeAfterNs)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (canBeControlledByPlayer)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (controlledByPlayer)
         EMERGENCE_MAPPING_REGISTRATION_END()
     }();
 

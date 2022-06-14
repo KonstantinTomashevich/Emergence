@@ -19,6 +19,9 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddCheckpoint (Checkpoint::MORTALITY_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::MORTALITY_FINISHED);
 
+    _pipelineBuilder.AddCheckpoint (Checkpoint::MOVEMENT_STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::MOVEMENT_FINISHED);
+
     _pipelineBuilder.AddCheckpoint (Checkpoint::RENDER_UPDATE_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::RENDER_UPDATE_FINISHED);
 

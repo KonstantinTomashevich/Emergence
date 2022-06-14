@@ -3,8 +3,13 @@
 #include <Gameplay/Assembly.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedUnitTypes.hpp>
+#include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/UnitComponent.hpp>
+
+#include <Input/InputListenerComponent.hpp>
+
+#include <Math/Constants.hpp>
 
 #include <Physics/CollisionShapeComponent.hpp>
 #include <Physics/PhysicsWorldSingleton.hpp>
@@ -39,6 +44,8 @@ private:
 
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
+    Emergence::Celerity::InsertLongTermQuery insertInputListener;
+    Emergence::Celerity::InsertLongTermQuery insertMovement;
 };
 
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -49,7 +56,9 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       fetchUnitById (_constructor.MFetchValue1F (UnitComponent, objectId)),
 
       insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
-      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent))
+      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
+      insertInputListener (_constructor.MInsertLongTerm (InputListenerComponent)),
+      insertMovement (_constructor.MInsertLongTerm (MovementComponent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
@@ -71,18 +80,55 @@ void FixedAssembler::Execute ()
 
             if (unit->type == HardcodedUnitTypes::WARRIOR_CUBE)
             {
+                auto inputListenerCursor = insertInputListener.Execute ();
+                auto movementCursor = insertMovement.Execute ();
+
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
+                body->angularDamping = 0.99f;
                 body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
+                body->manipulatedOutsideOfSimulation = true;
 
-                auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
-                shape->objectId = _objectId;
-                shape->shapeId = physicsWorld->GenerateShapeUID ();
-                shape->materialId = "Default"_us;
+                body->lockFlags = Emergence::Physics::RigidBodyComponent::LOCK_ANGULAR_X |
+                                  Emergence::Physics::RigidBodyComponent::LOCK_ANGULAR_Z;
 
-                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
-                                   .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
-                shape->collisionGroup = PhysicsConstant::WARRIOR_COLLISION_GROUP;
+                // Sphere for movement
+
+                auto *movementShape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                movementShape->objectId = _objectId;
+                movementShape->shapeId = physicsWorld->GenerateShapeUID ();
+                movementShape->materialId = "Default"_us;
+
+                movementShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::SPHERE,
+                                           .sphereRadius = 0.5f};
+                movementShape->collisionGroup = PhysicsConstant::WARRIOR_COLLISION_GROUP;
+
+                // Hitbox for bullets.
+
+                auto *hitBoxShape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                hitBoxShape->objectId = _objectId;
+                hitBoxShape->shapeId = physicsWorld->GenerateShapeUID ();
+                hitBoxShape->materialId = "Default"_us;
+
+                hitBoxShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                                         .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
+                hitBoxShape->collisionGroup = PhysicsConstant::HIT_BOX_COLLISION_GROUP;
+                hitBoxShape->trigger = true;
+
+                auto *inputListener = static_cast<InputListenerComponent *> (++inputListenerCursor);
+                inputListener->objectId = _objectId;
+
+                auto *movement = static_cast<MovementComponent *> (++movementCursor);
+                movement->objectId = _objectId;
+
+                movement->maxLinearSpeed = 5.0f;
+                movement->linearAcceleration = Emergence::Math::Vector3f::FORWARD * 5.0f;
+
+                movement->maxAngularSpeed = Emergence::Math::PI;
+                movement->angularAcceleration = {0.0f, Emergence::Math::PI, 0.0f};
+
+                movement->linearVelocityMask = 0b00000101u;  // Only forward and to the sides.
+                movement->angularVelocityMask = 0b00000010u; // Only around Y axis.
             }
             else if (unit->type == HardcodedUnitTypes::OBSTACLE)
             {

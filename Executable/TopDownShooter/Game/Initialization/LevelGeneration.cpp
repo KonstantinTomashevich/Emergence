@@ -39,7 +39,11 @@ private:
 
     void PlaceDirectionalLight () noexcept;
 
-    void PlaceUnit (std::int32_t _x, std::uint32_t _y, std::int32_t _z, Emergence::Memory::UniqueString _type) noexcept;
+    void PlaceUnit (std::int32_t _x,
+                    std::uint32_t _y,
+                    std::int32_t _z,
+                    Emergence::Memory::UniqueString _type,
+                    bool _canBeControlledByPlayer) noexcept;
 
     Emergence::Celerity::ModifySingletonQuery fetchWorld;
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
@@ -82,11 +86,11 @@ void LevelGenerator::Execute ()
     {
         for (std::int32_t z = -20; z < 20; z += 4)
         {
-            PlaceUnit (x, 0, z, HardcodedUnitTypes::OBSTACLE);
+            PlaceUnit (x, 0, z, HardcodedUnitTypes::OBSTACLE, false);
         }
     }
 
-    PlaceUnit (0, 10, 0, HardcodedUnitTypes::WARRIOR_CUBE);
+    PlaceUnit (0, 1, 0, HardcodedUnitTypes::WARRIOR_CUBE, true);
 }
 
 void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept
@@ -200,7 +204,8 @@ void LevelGenerator::PlaceDirectionalLight () noexcept
 void LevelGenerator::PlaceUnit (std::int32_t _x,
                                 std::uint32_t _y,
                                 std::int32_t _z,
-                                Emergence::Memory::UniqueString _type) noexcept
+                                Emergence::Memory::UniqueString _type,
+                                bool _canBeControlledByPlayer) noexcept
 {
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
@@ -220,6 +225,7 @@ void LevelGenerator::PlaceUnit (std::int32_t _x,
     auto *unit = static_cast<UnitComponent *> (++unitCursor);
     unit->objectId = objectId;
     unit->type = _type;
+    unit->canBeControlledByPlayer = _canBeControlledByPlayer;
 }
 
 void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
