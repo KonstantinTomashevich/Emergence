@@ -12,6 +12,7 @@
 
 #include <Gameplay/Assembly.hpp>
 #include <Gameplay/Control.hpp>
+#include <Gameplay/Damage.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/Mortality.hpp>
@@ -148,6 +149,7 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Assembly::AddToFixedUpdate (pipelineBuilder);
     Control::AddToFixedUpdate (pipelineBuilder);
+    Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);

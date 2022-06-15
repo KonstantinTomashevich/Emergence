@@ -1,6 +1,7 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
+#include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
@@ -34,6 +35,8 @@ public:
 private:
     void PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept;
 
+    void PlaceKillZ (float _halfWidth, float _halfHeight, float _z) noexcept;
+
     void PlaceCamera () noexcept;
 
     void PlaceDirectionalLight () noexcept;
@@ -51,6 +54,7 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertLight;
     Emergence::Celerity::InsertLongTermQuery insertPrototype;
+    Emergence::Celerity::InsertLongTermQuery insertDamageDealer;
 };
 
 LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -64,7 +68,8 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
 
       insertCamera (_constructor.MInsertLongTerm (CameraComponent)),
       insertLight (_constructor.MInsertLongTerm (LightComponent)),
-      insertPrototype (_constructor.MInsertLongTerm (PrototypeComponent))
+      insertPrototype (_constructor.MInsertLongTerm (PrototypeComponent)),
+      insertDamageDealer (_constructor.MInsertLongTerm (DamageDealerComponent))
 {
     _constructor.DependOn (PhysicsInitialization::Checkpoint::PHYSICS_INITIALIZED);
 }
@@ -72,6 +77,7 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
 void LevelGenerator::Execute ()
 {
     PlaceFloor (30, 20);
+    PlaceKillZ (60.0f, 40.0f, -1.0f);
     PlaceCamera ();
     PlaceDirectionalLight ();
 
@@ -125,6 +131,47 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
                        .boxHalfExtents = {static_cast<float> (_halfWidth), 0.5f, static_cast<float> (_halfHeight)}};
     shape->translation.y = -0.5f;
     shape->collisionGroup = PhysicsConstant::GROUND_COLLISION_GROUP;
+}
+
+void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) noexcept
+{
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    const auto *physicsWorld = static_cast<const Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
+
+    const Emergence::Celerity::UniqueId killZObjectId = world->GenerateUID ();
+    auto transformCursor = insertTransform.Execute ();
+    auto bodyCursor = insertRigidBody.Execute ();
+    auto shapeCursor = insertCollisionShape.Execute ();
+    auto damageDealerCursor = insertDamageDealer.Execute ();
+
+    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    transform->SetObjectId (killZObjectId);
+    transform->SetLogicalLocalTransform (
+        {{0.0f, _z, 0.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE});
+
+    auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+    body->objectId = killZObjectId;
+    body->type = Emergence::Physics::RigidBodyType::STATIC;
+
+    auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+    shape->objectId = killZObjectId;
+    shape->shapeId = physicsWorld->GenerateShapeUID ();
+    shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
+
+    shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                       .boxHalfExtents = {_halfWidth, physicsWorld->toleranceSpeed, _halfHeight}};
+
+    shape->translation.y = -physicsWorld->toleranceSpeed;
+    shape->collisionGroup = PhysicsConstant::OBSTACLE_COLLISION_GROUP;
+    shape->trigger = true;
+
+    auto *damageDealer = static_cast<DamageDealerComponent *> (++damageDealerCursor);
+    damageDealer->objectId = killZObjectId;
+    damageDealer->damage = 1000000.0f;
+    damageDealer->multiUse = true;
 }
 
 void LevelGenerator::PlaceCamera () noexcept

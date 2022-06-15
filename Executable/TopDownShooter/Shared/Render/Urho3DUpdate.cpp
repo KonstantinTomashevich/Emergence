@@ -215,13 +215,12 @@ void TransformEventProcessor::Execute () noexcept
             ~nodeCursor;
         }
 
-        for (auto lightCursor = removeLightByObjectId.Execute (&_objectId); lightCursor.ReadConst (); ++lightCursor)
+        for (auto lightCursor = removeLightByObjectId.Execute (&_objectId); lightCursor.ReadConst ();)
         {
             ~lightCursor;
         }
 
-        for (auto modelCursor = removeStaticModelByObjectId.Execute (&_objectId); modelCursor.ReadConst ();
-             ++modelCursor)
+        for (auto modelCursor = removeStaticModelByObjectId.Execute (&_objectId); modelCursor.ReadConst ();)
         {
             ~modelCursor;
         }

@@ -48,10 +48,8 @@ DamageProcessor::DamageProcessor (Emergence::Celerity::TaskConstructor &_constru
       insertDeathEvent (_constructor.MInsertShortTerm (DeathEvent)),
       fetchDamageEvents (_constructor.MFetchSequence (DamageEvent))
 {
+    _constructor.DependOn (Checkpoint::DAMAGE_FINISHED);
     _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
-
-    // TODO: Temporary. Must be replaced by dependency on damage givers later.
-    _constructor.DependOn (Emergence::Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
 }
 
 void DamageProcessor::Execute () noexcept

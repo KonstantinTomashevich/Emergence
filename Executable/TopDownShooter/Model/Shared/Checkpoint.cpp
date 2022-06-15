@@ -6,6 +6,9 @@ const Emergence::Memory::UniqueString Checkpoint::ASSEMBLY_FINISHED {"AssemblyFi
 const Emergence::Memory::UniqueString Checkpoint::CAMERA_UPDATE_STARTED {"CameraUpdateStarted"};
 const Emergence::Memory::UniqueString Checkpoint::CAMERA_UPDATE_FINISHED {"CameraUpdateFinished"};
 
+const Emergence::Memory::UniqueString Checkpoint::DAMAGE_STARTED {"DamageStarted"};
+const Emergence::Memory::UniqueString Checkpoint::DAMAGE_FINISHED {"DamageFinished"};
+
 const Emergence::Memory::UniqueString Checkpoint::INPUT_DISPATCH_STARTED {"InputDispatchStarted"};
 const Emergence::Memory::UniqueString Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED {"InputListenersPushAllowed"};
 const Emergence::Memory::UniqueString Checkpoint::INPUT_LISTENERS_READ_ALLOWED {"InputListenersReadAllowed"};
