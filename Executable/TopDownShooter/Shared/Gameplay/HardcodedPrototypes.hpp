@@ -10,4 +10,5 @@ public:
     static const Emergence::Memory::UniqueString WARRIOR_CUBE;
     static const Emergence::Memory::UniqueString OBSTACLE;
     static const Emergence::Memory::UniqueString FLOOR_TILE;
+    static const Emergence::Memory::UniqueString BULLET;
 };

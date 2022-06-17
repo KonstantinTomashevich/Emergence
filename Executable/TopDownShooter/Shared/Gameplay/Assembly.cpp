@@ -1,11 +1,14 @@
+#include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/Assembly.hpp>
+#include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
 #include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
+#include <Gameplay/ShooterComponent.hpp>
 #include <Gameplay/UnitComponent.hpp>
 
 #include <Input/InputListenerComponent.hpp>
@@ -23,6 +26,8 @@
 #include <Shared/Checkpoint.hpp>
 
 #include <Transform/Events.hpp>
+#include <Transform/Transform3dComponent.hpp>
+#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Assembly
 {
@@ -43,15 +48,22 @@ private:
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToFixedEvents;
     Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 
+    Emergence::Celerity::FetchSingletonQuery fetchWorld;
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
     Emergence::Celerity::RemoveValueQuery removePrototypeById;
 
+    Emergence::Celerity::FetchValueQuery fetchTransformById;
+    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+
+    Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
     Emergence::Celerity::InsertLongTermQuery insertUnit;
     Emergence::Celerity::InsertLongTermQuery insertInputListener;
     Emergence::Celerity::InsertLongTermQuery insertMovement;
+    Emergence::Celerity::InsertLongTermQuery insertShooter;
+    Emergence::Celerity::InsertLongTermQuery insertDamageDealer;
 };
 
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -60,15 +72,22 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       fetchTransformRemovedEvents (
           _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
 
+      fetchWorld (_constructor.MFetchSingleton (Emergence::Celerity::WorldSingleton)),
       fetchPhysicsWorld (_constructor.MFetchSingleton (Emergence::Physics::PhysicsWorldSingleton)),
       fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
       removePrototypeById (_constructor.MRemoveValue1F (PrototypeComponent, objectId)),
 
+      fetchTransformById (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      transformWorldAccessor (_constructor),
+
+      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
       insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
       insertUnit (_constructor.MInsertLongTerm (UnitComponent)),
       insertInputListener (_constructor.MInsertLongTerm (InputListenerComponent)),
-      insertMovement (_constructor.MInsertLongTerm (MovementComponent))
+      insertMovement (_constructor.MInsertLongTerm (MovementComponent)),
+      insertShooter (_constructor.MInsertLongTerm (ShooterComponent)),
+      insertDamageDealer (_constructor.MInsertLongTerm (DamageDealerComponent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
@@ -77,10 +96,13 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
 
 void FixedAssembler::Execute ()
 {
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
     const auto *physicsWorld = static_cast<const Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
-    auto assembly = [this, physicsWorld] (Emergence::Celerity::UniqueId _objectId)
+    auto assembly = [this, world, physicsWorld] (Emergence::Celerity::UniqueId _objectId)
     {
         auto prototypeCursor = fetchPrototypeById.Execute (&_objectId);
         if (const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor))
@@ -91,8 +113,10 @@ void FixedAssembler::Execute ()
 
             if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
             {
+                auto transformCursor = insertTransform.Execute ();
                 auto inputListenerCursor = insertInputListener.Execute ();
                 auto movementCursor = insertMovement.Execute ();
+                auto shooterCursor = insertShooter.Execute ();
 
                 auto *unit = static_cast<UnitComponent *> (++unitCursor);
                 unit->objectId = _objectId;
@@ -144,6 +168,22 @@ void FixedAssembler::Execute ()
 
                 movement->linearVelocityMask = 0b00000101u;  // Only forward and to the sides.
                 movement->angularVelocityMask = 0b00000010u; // Only around Y axis.
+
+                auto *shooter = static_cast<ShooterComponent *> (++shooterCursor);
+                shooter->objectId = _objectId;
+                shooter->coolDownNs = 500000000u; // 0.5s
+                shooter->bulletPrototype = HardcodedPrototypes::BULLET;
+
+                auto *shootingPointTransform =
+                    static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+
+                shootingPointTransform->SetObjectId (world->GenerateUID ());
+                shootingPointTransform->SetParentObjectId (_objectId);
+
+                shootingPointTransform->SetLogicalLocalTransform (
+                    {{0.0f, 0.0f, 1.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE});
+
+                shooter->shootingPointObjectId = shootingPointTransform->GetObjectId ();
             }
             else if (prototype->prototype == HardcodedPrototypes::OBSTACLE)
             {
@@ -164,6 +204,38 @@ void FixedAssembler::Execute ()
                                    .boxHalfExtents = {0.5f, 1.5f, 0.5f}};
                 shape->translation.y = 1.5f;
                 shape->collisionGroup = PhysicsConstant::OBSTACLE_COLLISION_GROUP;
+            }
+            else if (prototype->prototype == HardcodedPrototypes::BULLET)
+            {
+                auto damageDealerCursor = insertDamageDealer.Execute ();
+
+                Emergence::Math::Quaternion bulletRotation = Emergence::Math::Quaternion::IDENTITY;
+                auto transformCursor = fetchTransformById.Execute (&prototype->objectId);
+
+                if (const auto *transform =
+                        static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor))
+                {
+                    bulletRotation = transform->GetLogicalWorldTransform (transformWorldAccessor).rotation;
+                }
+
+                auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+                body->objectId = _objectId;
+                body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
+                body->linearVelocity = Emergence::Math::Rotate ({0.0f, 0.0f, 50.0f}, bulletRotation);
+
+                auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                shape->objectId = _objectId;
+                shape->shapeId = physicsWorld->GenerateShapeUID ();
+                shape->materialId = "Default"_us;
+                shape->sendContactEvents = true;
+
+                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::SPHERE, .sphereRadius = 0.2f};
+                shape->collisionGroup = PhysicsConstant::BULLET_COLLISION_GROUP;
+
+                auto *damageDealer = static_cast<DamageDealerComponent *> (++damageDealerCursor);
+                damageDealer->objectId = _objectId;
+                damageDealer->damage = 1.0f;
+                damageDealer->multiUse = false;
             }
         }
     };
@@ -260,6 +332,11 @@ void NormalAssembler::Execute ()
                 model->modelName = "Models/FloorTile.mdl"_us;
                 model->materialNames.EmplaceBack ("Materials/FloorTileCenter.xml"_us);
                 model->materialNames.EmplaceBack ("Materials/FloorTileBorder.xml"_us);
+            }
+            else if (prototype->prototype == HardcodedPrototypes::BULLET)
+            {
+                model->modelName = "Models/Bullet.mdl"_us;
+                model->materialNames.EmplaceBack ("Materials/Bullet.xml"_us);
             }
         }
     };

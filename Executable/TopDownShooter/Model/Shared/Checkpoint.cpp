@@ -21,3 +21,6 @@ const Emergence::Memory::UniqueString Checkpoint::MOVEMENT_FINISHED {"MovementFi
 
 const Emergence::Memory::UniqueString Checkpoint::RENDER_UPDATE_STARTED {"RenderUpdateStarted"};
 const Emergence::Memory::UniqueString Checkpoint::RENDER_UPDATE_FINISHED {"RenderUpdateFinished"};
+
+const Emergence::Memory::UniqueString Checkpoint::SHOOTING_STARTED {"ShootingStarted"};
+const Emergence::Memory::UniqueString Checkpoint::SHOOTING_FINISHED {"ShootingFinished"};

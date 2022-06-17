@@ -61,6 +61,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
           _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MOVEMENT_FINISHED);
     _constructor.MakeDependencyOf (Emergence::Physics::Simulation::Checkpoint::SIMULATION_STARTED);

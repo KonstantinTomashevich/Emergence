@@ -4,7 +4,7 @@
 
 struct MortalitySettingsSingleton final
 {
-    uint64_t corpseLifetimeNs = 3000000000u; // 3 seconds.
+    uint64_t corpseLifetimeNs = 1000000000u; // 1 second.
 
     struct Reflection
     {

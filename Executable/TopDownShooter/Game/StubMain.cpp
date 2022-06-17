@@ -17,6 +17,7 @@
 #include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
+#include <Gameplay/Shooting.hpp>
 
 #include <Initialization/InputInitialization.hpp>
 #include <Initialization/LevelGeneration.hpp>
@@ -155,6 +156,7 @@ void GameApplication::Start ()
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);
+    Shooting::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     initializer->Execute ();
