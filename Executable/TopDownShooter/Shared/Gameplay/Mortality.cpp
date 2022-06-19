@@ -42,11 +42,11 @@ private:
 };
 
 DamageProcessor::DamageProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.MFetchSingleton (Emergence::Celerity::TimeSingleton)),
-      fetchMortalitySettings (_constructor.MFetchSingleton (MortalitySettingsSingleton)),
-      editUnitById (_constructor.MEditValue1F (UnitComponent, objectId)),
-      insertDeathEvent (_constructor.MInsertShortTerm (DeathEvent)),
-      fetchDamageEvents (_constructor.MFetchSequence (DamageEvent))
+    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+      fetchMortalitySettings (FETCH_SINGLETON (MortalitySettingsSingleton)),
+      editUnitById (EDIT_VALUE_1F (UnitComponent, objectId)),
+      insertDeathEvent (INSERT_SHORT_TERM (DeathEvent)),
+      fetchDamageEvents (FETCH_SEQUENCE (DamageEvent))
 {
     _constructor.DependOn (Checkpoint::DAMAGE_FINISHED);
     _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
@@ -94,9 +94,9 @@ private:
 };
 
 CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.MFetchSingleton (Emergence::Celerity::TimeSingleton)),
-      fetchCorpsesByRemovalTimer (_constructor.MFetchAscendingRange (UnitComponent, removeAfterNs)),
-      removeTransformById (_constructor.MRemoveValue1F (Emergence::Transform::Transform3dComponent, objectId))
+    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+      fetchCorpsesByRemovalTimer (FETCH_ASCENDING_RANGE (UnitComponent, removeAfterNs)),
+      removeTransformById (REMOVE_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId))
 {
     _constructor.DependOn (TaskNames::PROCESS_DAMAGE);
 }
@@ -130,9 +130,9 @@ private:
 };
 
 TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : removeUnitById (_constructor.MRemoveValue1F (UnitComponent, objectId)),
+    : removeUnitById (REMOVE_VALUE_1F (UnitComponent, objectId)),
       fetchTransformRemovedEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
 {
     _constructor.DependOn (TaskNames::PROCESS_CORPSES);
     _constructor.MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);

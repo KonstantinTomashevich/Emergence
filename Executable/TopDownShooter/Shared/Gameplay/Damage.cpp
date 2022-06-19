@@ -41,13 +41,13 @@ private:
 };
 
 CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchContactFoundEvents (_constructor.MFetchSequence (Emergence::Physics::ContactFoundEvent)),
-      fetchTriggerEnteredEvents (_constructor.MFetchSequence (Emergence::Physics::TriggerEnteredEvent)),
+    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Physics::ContactFoundEvent)),
+      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Physics::TriggerEnteredEvent)),
 
-      editDamageDealerById (_constructor.MEditValue1F (DamageDealerComponent, objectId)),
-      removeTransformById (_constructor.MRemoveValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      editDamageDealerById (EDIT_VALUE_1F (DamageDealerComponent, objectId)),
+      removeTransformById (REMOVE_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
 
-      insertDamageEvent (_constructor.MInsertShortTerm (DamageEvent))
+      insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
     _constructor.DependOn (Emergence::Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
     _constructor.DependOn (Checkpoint::DAMAGE_STARTED);
@@ -117,8 +117,8 @@ private:
 
 TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTransformRemovedEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
-      removeDamageDealerById (_constructor.MRemoveValue1F (DamageDealerComponent, objectId))
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
+      removeDamageDealerById (REMOVE_VALUE_1F (DamageDealerComponent, objectId))
 
 {
     // Deletion is done after mortality to avoid unneeded graph complications due to event processing.

@@ -76,10 +76,10 @@ private:
 };
 
 Urho3DNodeAccessor::Urho3DNodeAccessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
-      fetchUrho3DScene (_constructor.MFetchSingleton (Urho3DSceneSingleton)),
-      editNodeByObjectId (_constructor.MEditValue1F (Urho3DNodeComponent, objectId)),
-      insertNode (_constructor.MInsertLongTerm (Urho3DNodeComponent))
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+      fetchUrho3DScene (FETCH_SINGLETON (Urho3DSceneSingleton)),
+      editNodeByObjectId (EDIT_VALUE_1F (Urho3DNodeComponent, objectId)),
+      insertNode (INSERT_LONG_TERM (Urho3DNodeComponent))
 {
 }
 
@@ -142,8 +142,8 @@ private:
 SceneInitializer::SceneInitializer (Emergence::Celerity::TaskConstructor &_constructor,
                                     Urho3D::Context *_context) noexcept
     : context (_context),
-      modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
-      modifyUrho3DScene (_constructor.MModifySingleton (Urho3DSceneSingleton))
+      modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+      modifyUrho3DScene (MODIFY_SINGLETON (Urho3DSceneSingleton))
 {
     _constructor.DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 }
@@ -180,16 +180,16 @@ private:
 };
 
 TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       fetchTransformRemovedNormalEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
       fetchTransformRemovedFixedToNormalEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent)),
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent)),
 
-      removeCameraByObjectId (_constructor.MRemoveValue1F (CameraComponent, objectId)),
-      removeLightByObjectId (_constructor.MRemoveValue1F (LightComponent, objectId)),
-      removeStaticModelByObjectId (_constructor.MRemoveValue1F (StaticModelComponent, objectId)),
-      removeNodeByObjectId (_constructor.MRemoveValue1F (Urho3DNodeComponent, objectId))
+      removeCameraByObjectId (REMOVE_VALUE_1F (CameraComponent, objectId)),
+      removeLightByObjectId (REMOVE_VALUE_1F (LightComponent, objectId)),
+      removeStaticModelByObjectId (REMOVE_VALUE_1F (StaticModelComponent, objectId)),
+      removeNodeByObjectId (REMOVE_VALUE_1F (Urho3DNodeComponent, objectId))
 {
     _constructor.DependOn (TaskNames::ENSURE_SCENE_IS_READY);
 }
@@ -274,20 +274,20 @@ private:
 };
 
 ComponentInitializer::ComponentInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       nodeAccessor (_constructor),
 
-      editCameraByObjectId (_constructor.MEditValue1F (CameraComponent, objectId)),
-      fetchCameraAddedNormalEvents (_constructor.MFetchSequence (CameraComponentAddedNormalEvent)),
-      fetchCameraAddedCustomEvents (_constructor.MFetchSequence (CameraComponentAddedCustomToNormalEvent)),
+      editCameraByObjectId (EDIT_VALUE_1F (CameraComponent, objectId)),
+      fetchCameraAddedNormalEvents (FETCH_SEQUENCE (CameraComponentAddedNormalEvent)),
+      fetchCameraAddedCustomEvents (FETCH_SEQUENCE (CameraComponentAddedCustomToNormalEvent)),
 
-      editLightByLightId (_constructor.MEditValue1F (LightComponent, lightId)),
-      fetchLightAddedNormalEvents (_constructor.MFetchSequence (LightComponentAddedNormalEvent)),
-      fetchLightAddedCustomEvents (_constructor.MFetchSequence (LightComponentAddedCustomToNormalEvent)),
+      editLightByLightId (EDIT_VALUE_1F (LightComponent, lightId)),
+      fetchLightAddedNormalEvents (FETCH_SEQUENCE (LightComponentAddedNormalEvent)),
+      fetchLightAddedCustomEvents (FETCH_SEQUENCE (LightComponentAddedCustomToNormalEvent)),
 
-      editStaticModelByModelId (_constructor.MEditValue1F (StaticModelComponent, modelId)),
-      fetchStaticModelAddedNormalEvents (_constructor.MFetchSequence (StaticModelComponentAddedNormalEvent)),
-      fetchStaticModelAddedCustomEvents (_constructor.MFetchSequence (StaticModelComponentAddedCustomToNormalEvent))
+      editStaticModelByModelId (EDIT_VALUE_1F (StaticModelComponent, modelId)),
+      fetchStaticModelAddedNormalEvents (FETCH_SEQUENCE (StaticModelComponentAddedNormalEvent)),
+      fetchStaticModelAddedCustomEvents (FETCH_SEQUENCE (StaticModelComponentAddedCustomToNormalEvent))
 {
     _constructor.DependOn (TaskNames::CLEANUP_AFTER_TRANSFORM_REMOVAL);
 }
@@ -410,16 +410,16 @@ private:
 };
 
 ComponentSynchronizer::ComponentSynchronizer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
 
-      fetchCameraByObjectId (_constructor.MFetchValue1F (CameraComponent, objectId)),
-      fetchCameraChangedEvents (_constructor.MFetchSequence (CameraComponentChangedEvent)),
+      fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId)),
+      fetchCameraChangedEvents (FETCH_SEQUENCE (CameraComponentChangedEvent)),
 
-      fetchLightByLightId (_constructor.MFetchValue1F (LightComponent, lightId)),
-      fetchLightChangedEvents (_constructor.MFetchSequence (LightComponentChangedEvent)),
+      fetchLightByLightId (FETCH_VALUE_1F (LightComponent, lightId)),
+      fetchLightChangedEvents (FETCH_SEQUENCE (LightComponentChangedEvent)),
 
-      fetchStaticModelByModelId (_constructor.MFetchValue1F (StaticModelComponent, modelId)),
-      fetchStaticModelChangedEvents (_constructor.MFetchSequence (StaticModelComponentChangedEvent))
+      fetchStaticModelByModelId (FETCH_VALUE_1F (StaticModelComponent, modelId)),
+      fetchStaticModelChangedEvents (FETCH_SEQUENCE (StaticModelComponentChangedEvent))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_NEW_COMPONENTS);
 }
@@ -488,13 +488,13 @@ private:
 };
 
 ComponentDeleter::ComponentDeleter (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
-      modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+      modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
       nodeAccessor (_constructor),
 
-      fetchCameraRemovedEvents (_constructor.MFetchSequence (CameraComponentRemovedEvent)),
-      fetchLightRemovedEvents (_constructor.MFetchSequence (LightComponentRemovedEvent)),
-      fetchStaticModelRemovedEvents (_constructor.MFetchSequence (StaticModelComponentRemovedEvent))
+      fetchCameraRemovedEvents (FETCH_SEQUENCE (CameraComponentRemovedEvent)),
+      fetchLightRemovedEvents (FETCH_SEQUENCE (LightComponentRemovedEvent)),
+      fetchStaticModelRemovedEvents (FETCH_SEQUENCE (StaticModelComponentRemovedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_COMPONENT_CHANGES);
 }
@@ -553,8 +553,8 @@ private:
 };
 
 Urho3DNodeCleaner::Urho3DNodeCleaner (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
-      removeUnusedNodes (_constructor.MRemoveSignal (Urho3DNodeComponent, usages, 0u))
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+      removeUnusedNodes (REMOVE_SIGNAL (Urho3DNodeComponent, usages, 0u))
 {
     _constructor.DependOn (TaskNames::APPLY_COMPONENT_DELETION);
 }
@@ -597,18 +597,18 @@ private:
 };
 
 SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (_constructor.MModifySingleton (Urho3DAccessSingleton)),
-      fetchTime (_constructor.MFetchSingleton (Emergence::Celerity::TimeSingleton)),
-      fetchUrho3DScene (_constructor.MFetchSingleton (Urho3DSceneSingleton)),
-      fetchRenderScene (_constructor.MFetchSingleton (RenderSceneSingleton)),
+    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+      fetchUrho3DScene (FETCH_SINGLETON (Urho3DSceneSingleton)),
+      fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
 
-      fetchUrho3DNodes (_constructor.MFetchAscendingRange (Urho3DNodeComponent, objectId)),
-      fetchTransformByObjectId (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchUrho3DNodes (FETCH_ASCENDING_RANGE (Urho3DNodeComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchRenderSceneChangedNormalEvents (_constructor.MFetchSequence (RenderSceneChangedNormalEvent)),
-      fetchRenderSceneChangedCustomEvents (_constructor.MFetchSequence (RenderSceneChangedCustomToNormalEvent)),
-      fetchCameraByObjectId (_constructor.MFetchValue1F (CameraComponent, objectId))
+      fetchRenderSceneChangedNormalEvents (FETCH_SEQUENCE (RenderSceneChangedNormalEvent)),
+      fetchRenderSceneChangedCustomEvents (FETCH_SEQUENCE (RenderSceneChangedCustomToNormalEvent)),
+      fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId))
 {
     _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);

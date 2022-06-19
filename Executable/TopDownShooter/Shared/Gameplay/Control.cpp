@@ -30,10 +30,10 @@ private:
 };
 
 ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (_constructor.MModifySingleton (InputSingleton)),
-      editUnitById (_constructor.MEditValue1F (UnitComponent, objectId)),
-      editControllableUnits (_constructor.MEditSignal (UnitComponent, canBeControlledByPlayer, true)),
-      editControlledUnits (_constructor.MEditSignal (UnitComponent, controlledByPlayer, true))
+    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
+      editUnitById (EDIT_VALUE_1F (UnitComponent, objectId)),
+      editControllableUnits (EDIT_SIGNAL (UnitComponent, canBeControlledByPlayer, true)),
+      editControlledUnits (EDIT_SIGNAL (UnitComponent, controlledByPlayer, true))
 {
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MORTALITY_STARTED);

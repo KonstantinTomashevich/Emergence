@@ -58,18 +58,18 @@ private:
 };
 
 LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchWorld (_constructor.MModifySingleton (Emergence::Celerity::WorldSingleton)),
-      modifyRenderScene (_constructor.MModifySingleton (RenderSceneSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (Emergence::Physics::PhysicsWorldSingleton)),
+    : fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
+      modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
 
-      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
-      insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
-      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
+      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
+      insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
 
-      insertCamera (_constructor.MInsertLongTerm (CameraComponent)),
-      insertLight (_constructor.MInsertLongTerm (LightComponent)),
-      insertPrototype (_constructor.MInsertLongTerm (PrototypeComponent)),
-      insertDamageDealer (_constructor.MInsertLongTerm (DamageDealerComponent))
+      insertCamera (INSERT_LONG_TERM (CameraComponent)),
+      insertLight (INSERT_LONG_TERM (LightComponent)),
+      insertPrototype (INSERT_LONG_TERM (PrototypeComponent)),
+      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent))
 {
     _constructor.DependOn (PhysicsInitialization::Checkpoint::PHYSICS_INITIALIZED);
 }

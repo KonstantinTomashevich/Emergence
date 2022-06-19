@@ -112,9 +112,9 @@ private:
 };
 
 WorldUpdater::WorldUpdater (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
-      fetchConfigurationChangedEvents (_constructor.MFetchSequence (PhysicsWorldConfigurationChanged))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
+      fetchConfigurationChangedEvents (FETCH_SEQUENCE (PhysicsWorldConfigurationChanged))
 {
     _constructor.DependOn (Checkpoint::SIMULATION_STARTED);
 }
@@ -239,11 +239,11 @@ private:
 };
 
 TransformEventProcessor::TransformEventProcessor (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      removeShapeByObjectId (_constructor.MRemoveValue1F (CollisionShapeComponent, objectId)),
-      removeBodyByObjectId (_constructor.MRemoveValue1F (RigidBodyComponent, objectId)),
-      fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
-      fetchTransformRemovedEvents (_constructor.MFetchSequence (Transform::Transform3dComponentRemovedFixedEvent))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      removeShapeByObjectId (REMOVE_VALUE_1F (CollisionShapeComponent, objectId)),
+      removeBodyByObjectId (REMOVE_VALUE_1F (RigidBodyComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformRemovedEvents (FETCH_SEQUENCE (Transform::Transform3dComponentRemovedFixedEvent))
 {
     _constructor.DependOn (TaskNames::UPDATE_WORLD);
 }
@@ -294,11 +294,11 @@ private:
 };
 
 MaterialInitializer::MaterialInitializer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
-      modifyMaterialById (_constructor.MModifyValue1F (DynamicsMaterial, id)),
-      fetchMaterialAddedFixedEvents (_constructor.MFetchSequence (DynamicsMaterialAddedFixedEvent)),
-      fetchMaterialAddedCustomEvents (_constructor.MFetchSequence (DynamicsMaterialAddedCustomToFixedEvent))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
+      modifyMaterialById (MODIFY_VALUE_1F (DynamicsMaterial, id)),
+      fetchMaterialAddedFixedEvents (FETCH_SEQUENCE (DynamicsMaterialAddedFixedEvent)),
+      fetchMaterialAddedCustomEvents (FETCH_SEQUENCE (DynamicsMaterialAddedCustomToFixedEvent))
 {
     _constructor.DependOn (TaskNames::PROCESS_TRANSFORM_EVENTS);
 }
@@ -356,11 +356,11 @@ private:
 };
 
 MaterialChangesSynchronizer::MaterialChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
-      fetchMaterialChangedEvents (_constructor.MFetchSequence (DynamicsMaterialChangedEvent)),
-      fetchShapeByMaterialId (_constructor.MFetchValue1F (CollisionShapeComponent, materialId)),
-      insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
+      fetchMaterialChangedEvents (FETCH_SEQUENCE (DynamicsMaterialChangedEvent)),
+      fetchShapeByMaterialId (FETCH_VALUE_1F (CollisionShapeComponent, materialId)),
+      insertBodyMassInvalidatedEvents (INSERT_SHORT_TERM (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_MATERIALS);
 }
@@ -407,9 +407,9 @@ private:
 };
 
 MaterialDeleter::MaterialDeleter (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchMaterialRemovedEvents (_constructor.MFetchSequence (DynamicsMaterialRemovedEvent)),
-      removeShapeByMaterialId (_constructor.MRemoveValue1F (CollisionShapeComponent, materialId))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchMaterialRemovedEvents (FETCH_SEQUENCE (DynamicsMaterialRemovedEvent)),
+      removeShapeByMaterialId (REMOVE_VALUE_1F (CollisionShapeComponent, materialId))
 {
     _constructor.DependOn (TaskNames::SYNC_MATERIAL_CHANGES);
 }
@@ -457,19 +457,19 @@ private:
 };
 
 ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
 
-      modifyShapeByShapeId (_constructor.MModifyValue1F (CollisionShapeComponent, shapeId)),
-      fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
-      fetchBodyByObjectId (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
+      modifyShapeByShapeId (MODIFY_VALUE_1F (CollisionShapeComponent, shapeId)),
+      fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
+      fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
 
-      fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchShapeAddedFixedEvents (_constructor.MFetchSequence (CollisionShapeComponentAddedFixedEvent)),
-      fetchShapeAddedCustomEvents (_constructor.MFetchSequence (CollisionShapeComponentAddedCustomToFixedEvent)),
-      insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
+      fetchShapeAddedFixedEvents (FETCH_SEQUENCE (CollisionShapeComponentAddedFixedEvent)),
+      fetchShapeAddedCustomEvents (FETCH_SEQUENCE (CollisionShapeComponentAddedCustomToFixedEvent)),
+      insertBodyMassInvalidatedEvents (INSERT_SHORT_TERM (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_MATERIAL_DELETION);
 }
@@ -580,18 +580,18 @@ private:
 };
 
 ShapeChangesSynchronizer::ShapeChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchShapeByShapeId (_constructor.MFetchValue1F (CollisionShapeComponent, shapeId)),
-      removeShapeByShapeId (_constructor.MRemoveValue1F (CollisionShapeComponent, shapeId)),
-      fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShapeComponent, shapeId)),
+      removeShapeByShapeId (REMOVE_VALUE_1F (CollisionShapeComponent, shapeId)),
+      fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
 
-      fetchTransformById (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchShapeMaterialChangedEvents (_constructor.MFetchSequence (CollisionShapeComponentMaterialChangedEvent)),
-      fetchShapeGeometryChangedEvents (_constructor.MFetchSequence (CollisionShapeComponentGeometryChangedEvent)),
-      fetchShapeAttributesChangedEvents (_constructor.MFetchSequence (CollisionShapeComponentAttributesChangedEvent)),
-      insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
+      fetchShapeMaterialChangedEvents (FETCH_SEQUENCE (CollisionShapeComponentMaterialChangedEvent)),
+      fetchShapeGeometryChangedEvents (FETCH_SEQUENCE (CollisionShapeComponentGeometryChangedEvent)),
+      fetchShapeAttributesChangedEvents (FETCH_SEQUENCE (CollisionShapeComponentAttributesChangedEvent)),
+      insertBodyMassInvalidatedEvents (INSERT_SHORT_TERM (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_SHAPES);
 }
@@ -706,10 +706,10 @@ private:
 };
 
 ShapeDeleter::ShapeDeleter (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchBodyByObjectId (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
-      fetchShapeRemovedEvents (_constructor.MFetchSequence (CollisionShapeComponentRemovedEvent)),
-      insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
+      fetchShapeRemovedEvents (FETCH_SEQUENCE (CollisionShapeComponentRemovedEvent)),
+      insertBodyMassInvalidatedEvents (INSERT_SHORT_TERM (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::SYNC_SHAPE_CHANGES);
 }
@@ -760,17 +760,17 @@ private:
 };
 
 BodyInitializer::BodyInitializer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
 
-      modifyBodyByObjectId (_constructor.MModifyValue1F (RigidBodyComponent, objectId)),
-      fetchShapeByObjectId (_constructor.MFetchValue1F (CollisionShapeComponent, objectId)),
-      fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
+      modifyBodyByObjectId (MODIFY_VALUE_1F (RigidBodyComponent, objectId)),
+      fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchBodyAddedFixedEvents (_constructor.MFetchSequence (RigidBodyComponentAddedFixedEvent)),
-      fetchBodyAddedCustomEvents (_constructor.MFetchSequence (RigidBodyComponentAddedCustomToFixedEvent)),
-      insertBodyMassInvalidatedEvents (_constructor.MInsertShortTerm (RigidBodyComponentMassInvalidatedEvent))
+      fetchBodyAddedFixedEvents (FETCH_SEQUENCE (RigidBodyComponentAddedFixedEvent)),
+      fetchBodyAddedCustomEvents (FETCH_SEQUENCE (RigidBodyComponentAddedCustomToFixedEvent)),
+      insertBodyMassInvalidatedEvents (INSERT_SHORT_TERM (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_SHAPE_DELETION);
 }
@@ -899,8 +899,8 @@ private:
 };
 
 BodyDeleter::BodyDeleter (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchBodyRemovedEvents (_constructor.MFetchSequence (RigidBodyComponentRemovedEvent))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchBodyRemovedEvents (FETCH_SEQUENCE (RigidBodyComponentRemovedEvent))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_BODIES);
 }
@@ -933,11 +933,11 @@ private:
 };
 
 BodyMassSynchronizer::BodyMassSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchBodyByObjectId (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
-      fetchShapeByObjectId (_constructor.MFetchValue1F (CollisionShapeComponent, objectId)),
-      fetchMaterialById (_constructor.MFetchValue1F (DynamicsMaterial, id)),
-      fetchBodyMassInvalidationEvents (_constructor.MFetchSequence (RigidBodyComponentMassInvalidatedEvent))
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
+      fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
+      fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
+      fetchBodyMassInvalidationEvents (FETCH_SEQUENCE (RigidBodyComponentMassInvalidatedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_BODY_DELETION);
 }
@@ -1090,26 +1090,26 @@ private:
 };
 
 SimulationExecutor::SimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (_constructor.MModifySingleton (PhysXAccessSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (PhysicsWorldSingleton)),
-      fetchTime (_constructor.MFetchSingleton (Celerity::TimeSingleton)),
+    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
+      fetchTime (FETCH_SINGLETON (Celerity::TimeSingleton)),
 
-      fetchShapeByObjectId (_constructor.MFetchValue1F (CollisionShapeComponent, objectId)),
+      fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
       editBodyWithOutsideManipulations (
-          _constructor.MEditSignal (RigidBodyComponent, manipulatedOutsideOfSimulation, true)),
-      editKinematicBody (_constructor.MEditSignal (RigidBodyComponent, type, RigidBodyType::KINEMATIC)),
-      editDynamicBody (_constructor.MEditSignal (RigidBodyComponent, type, RigidBodyType::DYNAMIC)),
+          EDIT_SIGNAL (RigidBodyComponent, manipulatedOutsideOfSimulation, true)),
+      editKinematicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::KINEMATIC)),
+      editDynamicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::DYNAMIC)),
 
-      fetchTransformByObjectId (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
-      editTransformByObjectId (_constructor.MEditValue1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      editTransformByObjectId (EDIT_VALUE_1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertContactFoundEvents (_constructor.MInsertShortTerm (ContactFoundEvent)),
-      insertContactPersistsEvents (_constructor.MInsertShortTerm (ContactPersistsEvent)),
-      insertContactLostEvents (_constructor.MInsertShortTerm (ContactLostEvent)),
+      insertContactFoundEvents (INSERT_SHORT_TERM (ContactFoundEvent)),
+      insertContactPersistsEvents (INSERT_SHORT_TERM (ContactPersistsEvent)),
+      insertContactLostEvents (INSERT_SHORT_TERM (ContactLostEvent)),
 
-      insertTriggerEnteredEvents (_constructor.MInsertShortTerm (TriggerEnteredEvent)),
-      insertTriggerExitedEvents (_constructor.MInsertShortTerm (TriggerExitedEvent))
+      insertTriggerEnteredEvents (INSERT_SHORT_TERM (TriggerEnteredEvent)),
+      insertTriggerExitedEvents (INSERT_SHORT_TERM (TriggerExitedEvent))
 {
     _constructor.DependOn (TaskNames::SYNC_BODY_MASSES);
     _constructor.MakeDependencyOf (Checkpoint::SIMULATION_FINISHED);

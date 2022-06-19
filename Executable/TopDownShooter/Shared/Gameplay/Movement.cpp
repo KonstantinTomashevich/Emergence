@@ -47,18 +47,18 @@ private:
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.MFetchSingleton (Emergence::Celerity::TimeSingleton)),
-      removeMovementByAscendingId (_constructor.MRemoveAscendingRange (MovementComponent, objectId)),
-      removeMovementById (_constructor.MRemoveValue1F (MovementComponent, objectId)),
-      fetchInputListenerById (_constructor.MFetchValue1F (InputListenerComponent, objectId)),
-      editRigidBodyById (_constructor.MEditValue1F (Emergence::Physics::RigidBodyComponent, objectId)),
+    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+      removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
+      removeMovementById (REMOVE_VALUE_1F (MovementComponent, objectId)),
+      fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
+      editRigidBodyById (EDIT_VALUE_1F (Emergence::Physics::RigidBodyComponent, objectId)),
 
-      fetchTransformById (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchDeathEvents (_constructor.MFetchSequence (DeathEvent)),
+      fetchDeathEvents (FETCH_SEQUENCE (DeathEvent)),
       fetchTransformRemovedEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);

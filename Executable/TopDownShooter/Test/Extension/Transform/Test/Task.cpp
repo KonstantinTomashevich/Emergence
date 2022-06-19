@@ -30,9 +30,9 @@ private:
 
 Executor::Executor (Celerity::TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept
     : requests (std::move (_requests)),
-      insertTransform (_constructor.MInsertLongTerm (Transform3dComponent)),
-      fetchTransform (_constructor.MFetchValue1F (Transform3dComponent, objectId)),
-      editTransform (_constructor.MEditValue1F (Transform3dComponent, objectId)),
+      insertTransform (INSERT_LONG_TERM (Transform3dComponent)),
+      fetchTransform (FETCH_VALUE_1F (Transform3dComponent, objectId)),
+      editTransform (EDIT_VALUE_1F (Transform3dComponent, objectId)),
       worldAccessor (_constructor)
 {
 }

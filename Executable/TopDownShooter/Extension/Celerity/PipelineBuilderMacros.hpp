@@ -6,73 +6,53 @@
 
 // This file contains macros, that shorten TaskConstructor query creation calls.
 // These macros provide no additional logic and work as syntax sugar, that makes calls less verbose.
-// They do no follow macro naming guidelines, because they mimic functions.
 
-#define MFetchSingleton(Type) FetchSingleton (Type::Reflect ().mapping)   // NOLINT(readability-identifier-naming)
-#define MModifySingleton(Type) ModifySingleton (Type::Reflect ().mapping) // NOLINT(readability-identifier-naming)
+#define FETCH_SINGLETON(Type) _constructor.FetchSingleton (Type::Reflect ().mapping)
+#define MODIFY_SINGLETON(Type) _constructor.ModifySingleton (Type::Reflect ().mapping)
 
-#define MInsertShortTerm(Type) InsertShortTerm (Type::Reflect ().mapping) // NOLINT(readability-identifier-naming)
-#define MFetchSequence(Type) FetchSequence (Type::Reflect ().mapping)     // NOLINT(readability-identifier-naming)
-#define MModifySequence(Type) ModifySequence (Type::Reflect ().mapping)   // NOLINT(readability-identifier-naming)
+#define INSERT_SHORT_TERM(Type) _constructor.InsertShortTerm (Type::Reflect ().mapping)
+#define FETCH_SEQUENCE(Type) _constructor.FetchSequence (Type::Reflect ().mapping)
+#define MODIFY_SEQUENCE(Type) _constructor.ModifySequence (Type::Reflect ().mapping)
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MInsertLongTerm(Type) InsertLongTerm (Type::Reflect ().mapping)
+#define INSERT_LONG_TERM(Type) _constructor.InsertLongTerm (Type::Reflect ().mapping)
+#define FETCH_VALUE_1F(Type, Field) _constructor.FetchValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define MODIFY_VALUE_1F(Type, Field) _constructor.ModifyValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define EDIT_VALUE_1F(Type, Field) _constructor.EditValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define REMOVE_VALUE_1F(Type, Field) _constructor.RemoveValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MFetchValue1F(Type, Field) FetchValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define FETCH_ASCENDING_RANGE(Type, Field)                                                                             \
+    _constructor.FetchAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define MODIFY_ASCENDING_RANGE(Type, Field)                                                                            \
+    _constructor.ModifyAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define EDIT_ASCENDING_RANGE(Type, Field)                                                                              \
+    _constructor.EditAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define REMOVE_ASCENDING_RANGE(Type, Field)                                                                            \
+    _constructor.RemoveAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MModifyValue1F(Type, Field) ModifyValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define FETCH_DESCENDING_RANGE(Type, Field)                                                                            \
+    _constructor.FetchDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define MODIFY_DESCENDING_RANGE(Type, Field)                                                                           \
+    _constructor.ModifyDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define EDIT_DESCENDING_RANGE(Type, Field)                                                                             \
+    _constructor.EditDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define REMOVE_DESCENDING_RANGE(Type, Field)                                                                           \
+    _constructor.RemoveDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MEditValue1F(Type, Field) EditValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define FETCH_SIGNAL(Type, Field, Value)                                                                               \
+    _constructor.FetchSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                        \
+                              array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MRemoveValue1F(Type, Field) RemoveValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define MODIFY_SIGNAL(Type, Field, Value)                                                                              \
+    _constructor.ModifySignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                       \
+                               array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MFetchAscendingRange(Type, Field) FetchAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
+#define EDIT_SIGNAL(Type, Field, Value)                                                                                \
+    _constructor.EditSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                         \
+                             array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
 
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MModifyAscendingRange(Type, Field) ModifyAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MEditAscendingRange(Type, Field) EditAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MRemoveAscendingRange(Type, Field) RemoveAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MFetchDescendingRange(Type, Field) FetchDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MModifyDescendingRange(Type, Field) ModifyDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MEditDescendingRange(Type, Field) EditDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MRemoveDescendingRange(Type, Field) RemoveDescendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MFetchSignal(Type, Field, Value)                                                                               \
-    FetchSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                                     \
-                 array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MModifySignal(Type, Field, Value)                                                                              \
-    ModifySignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                                    \
-                  array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MEditSignal(Type, Field, Value)                                                                                \
-    EditSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                                      \
-                array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-#define MRemoveSignal(Type, Field, Value)                                                                              \
-    RemoveSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                                    \
-                  array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
+#define REMOVE_SIGNAL(Type, Field, Value)                                                                              \
+    _constructor.RemoveSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                       \
+                               array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
 
 // It's impossible to fit all data for shape and ray intersection
 // queries in one line anyway, therefore there is no macros for them.

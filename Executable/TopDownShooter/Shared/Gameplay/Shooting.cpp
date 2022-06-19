@@ -51,21 +51,20 @@ private:
 };
 
 ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.MFetchSingleton (Emergence::Celerity::TimeSingleton)),
-      fetchWorld (_constructor.MFetchSingleton (Emergence::Celerity::WorldSingleton)),
+    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
-      fetchDeathEvents (_constructor.MFetchSequence (DeathEvent)),
-      fetchTransformRemovedEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
+      fetchDeathEvents (FETCH_SEQUENCE (DeathEvent)),
+      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
 
-      modifyShootersByCoolingDownUntil (_constructor.MModifyAscendingRange (ShooterComponent, coolingDownUntilNs)),
-      removeShooterById (_constructor.MRemoveValue1F (ShooterComponent, objectId)),
-      fetchInputListenerById (_constructor.MFetchValue1F (InputListenerComponent, objectId)),
-      fetchTransformById (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      modifyShootersByCoolingDownUntil (MODIFY_ASCENDING_RANGE (ShooterComponent, coolingDownUntilNs)),
+      removeShooterById (REMOVE_VALUE_1F (ShooterComponent, objectId)),
+      fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
-      insertPrototype (_constructor.MInsertLongTerm (PrototypeComponent))
+      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertPrototype (INSERT_LONG_TERM (PrototypeComponent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::SHOOTING_STARTED);

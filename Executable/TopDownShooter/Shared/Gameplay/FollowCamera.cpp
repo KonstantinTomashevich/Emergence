@@ -36,11 +36,11 @@ private:
 };
 
 CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchRenderScene (_constructor.MFetchSingleton (RenderSceneSingleton)),
-      fetchFollowCameraSettings (_constructor.MFetchSingleton (FollowCameraSettingsSingleton)),
+    : fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
+      fetchFollowCameraSettings (FETCH_SINGLETON (FollowCameraSettingsSingleton)),
 
-      fetchControlledUnit (_constructor.MFetchSignal (UnitComponent, controlledByPlayer, true)),
-      editTransformById (_constructor.MEditValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchControlledUnit (FETCH_SIGNAL (UnitComponent, controlledByPlayer, true)),
+      editTransformById (EDIT_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
     _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);

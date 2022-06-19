@@ -6,7 +6,7 @@
 namespace Emergence::Transform
 {
 Transform3dWorldAccessor::Transform3dWorldAccessor (Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTransform3dByObjectId (_constructor.MFetchValue1F (Transform3dComponent, objectId))
+    : fetchTransform3dByObjectId (FETCH_VALUE_1F (Transform3dComponent, objectId))
 {
 }
 } // namespace Emergence::Transform

@@ -47,7 +47,7 @@ private:
 
 Emergence::Celerity::Test::EventProducer::EventProducer (TaskConstructor &_constructor,
                                                          EventPlan _productionPlan) noexcept
-    : insertEvents (_constructor.MInsertShortTerm (TestEvent)),
+    : insertEvents (INSERT_SHORT_TERM (TestEvent)),
       productionPlan (std::move (_productionPlan))
 {
 }
@@ -81,7 +81,7 @@ private:
 
 Emergence::Celerity::Test::EventConsumer::EventConsumer (TaskConstructor &_constructor,
                                                          EventPlan _consumptionPlan) noexcept
-    : fetchEvents (_constructor.MFetchSequence (TestEvent)),
+    : fetchEvents (FETCH_SEQUENCE (TestEvent)),
       consumptionPlan (std::move (_consumptionPlan))
 {
     for (auto &framePlan : consumptionPlan)

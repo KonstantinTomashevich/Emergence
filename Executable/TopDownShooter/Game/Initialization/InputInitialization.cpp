@@ -27,7 +27,7 @@ private:
 };
 
 InputInitializer::InputInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (_constructor.MModifySingleton (InputSingleton))
+    : modifyInput (MODIFY_SINGLETON (InputSingleton))
 {
 }
 

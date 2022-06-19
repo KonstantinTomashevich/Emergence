@@ -28,9 +28,9 @@ protected:
 };
 
 InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (_constructor.ModifySingleton (InputSingleton::Reflect ().mapping)),
-      editListenerById (_constructor.MEditValue1F (InputListenerComponent, objectId)),
-      editListeners (_constructor.MEditAscendingRange (InputListenerComponent, objectId))
+    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
+      editListenerById (EDIT_VALUE_1F (InputListenerComponent, objectId)),
+      editListeners (EDIT_ASCENDING_RANGE (InputListenerComponent, objectId))
 {
     _constructor.DependOn (Checkpoint::INPUT_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);

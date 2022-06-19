@@ -26,8 +26,8 @@ private:
 };
 
 PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (_constructor.MModifySingleton (Emergence::Physics::PhysicsWorldSingleton)),
-      insertDynamicsMaterial (_constructor.MInsertLongTerm (Emergence::Physics::DynamicsMaterial))
+    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
+      insertDynamicsMaterial (INSERT_LONG_TERM (Emergence::Physics::DynamicsMaterial))
 {
     _constructor.MakeDependencyOf (Checkpoint::PHYSICS_INITIALIZED);
 }

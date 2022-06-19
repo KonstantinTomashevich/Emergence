@@ -23,8 +23,8 @@ private:
 };
 
 Transform3dVisualSynchronizer::Transform3dVisualSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (_constructor.MFetchSingleton (Celerity::TimeSingleton)),
-      editTransformsWithUpdateFlag (_constructor.MEditSignal (Transform3dComponent, visualTransformSyncNeeded, true))
+    : fetchTime (FETCH_SINGLETON (Celerity::TimeSingleton)),
+      editTransformsWithUpdateFlag (EDIT_SIGNAL (Transform3dComponent, visualTransformSyncNeeded, true))
 {
     _constructor.MakeDependencyOf (VisualSync::Checkpoint::SYNC_FINISHED);
 }

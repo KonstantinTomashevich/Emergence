@@ -122,9 +122,9 @@ Configurator::Configurator (TaskConstructor &_constructor,
       keyStateTriggers (std::move (_keyStateTriggers)),
       keyStateChangedTriggers (std::move (_keyStateChangedTriggers)),
       eventOutput (_eventOutput),
-      createListener (_constructor.MInsertLongTerm (InputListenerComponent)),
-      removeListenerById (_constructor.MRemoveValue1F (InputListenerComponent, objectId)),
-      modifyInput (_constructor.MModifySingleton (InputSingleton))
+      createListener (INSERT_LONG_TERM (InputListenerComponent)),
+      removeListenerById (REMOVE_VALUE_1F (InputListenerComponent, objectId)),
+      modifyInput (MODIFY_SINGLETON (InputSingleton))
 {
     REQUIRE (eventOutput);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
@@ -283,7 +283,7 @@ private:
 
 Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _expectations) noexcept
     : expectations (std::move (_expectations)),
-      fetchListenerById (_constructor.MFetchValue1F (InputListenerComponent, objectId))
+      fetchListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
 }

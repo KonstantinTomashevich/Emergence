@@ -67,27 +67,27 @@ private:
 };
 
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchPrototypeAddedFixedEvents (_constructor.MFetchSequence (PrototypeComponentAddedFixedEvent)),
-      fetchPrototypeAddedCustomToFixedEvents (_constructor.MFetchSequence (PrototypeComponentAddedCustomToFixedEvent)),
+    : fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
+      fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent)),
       fetchTransformRemovedEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
 
-      fetchWorld (_constructor.MFetchSingleton (Emergence::Celerity::WorldSingleton)),
-      fetchPhysicsWorld (_constructor.MFetchSingleton (Emergence::Physics::PhysicsWorldSingleton)),
-      fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
-      removePrototypeById (_constructor.MRemoveValue1F (PrototypeComponent, objectId)),
+      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
+      fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
+      removePrototypeById (REMOVE_VALUE_1F (PrototypeComponent, objectId)),
 
-      fetchTransformById (_constructor.MFetchValue1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertTransform (_constructor.MInsertLongTerm (Emergence::Transform::Transform3dComponent)),
-      insertRigidBody (_constructor.MInsertLongTerm (Emergence::Physics::RigidBodyComponent)),
-      insertCollisionShape (_constructor.MInsertLongTerm (Emergence::Physics::CollisionShapeComponent)),
-      insertUnit (_constructor.MInsertLongTerm (UnitComponent)),
-      insertInputListener (_constructor.MInsertLongTerm (InputListenerComponent)),
-      insertMovement (_constructor.MInsertLongTerm (MovementComponent)),
-      insertShooter (_constructor.MInsertLongTerm (ShooterComponent)),
-      insertDamageDealer (_constructor.MInsertLongTerm (DamageDealerComponent))
+      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
+      insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
+      insertUnit (INSERT_LONG_TERM (UnitComponent)),
+      insertInputListener (INSERT_LONG_TERM (InputListenerComponent)),
+      insertMovement (INSERT_LONG_TERM (MovementComponent)),
+      insertShooter (INSERT_LONG_TERM (ShooterComponent)),
+      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
@@ -285,16 +285,16 @@ private:
 };
 
 NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchPrototypeAddedFixedToNormalEvents (_constructor.MFetchSequence (PrototypeComponentAddedFixedToNormalEvent)),
+    : fetchPrototypeAddedFixedToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedToNormalEvent)),
       fetchPrototypeAddedCustomToNormalEvents (
-          _constructor.MFetchSequence (PrototypeComponentAddedCustomToNormalEvent)),
+          FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent)),
       fetchTransformRemovedEvents (
-          _constructor.MFetchSequence (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
+          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
 
-      fetchRenderScene (_constructor.MFetchSingleton (RenderSceneSingleton)),
-      fetchPrototypeById (_constructor.MFetchValue1F (PrototypeComponent, objectId)),
-      removePrototypeById (_constructor.MRemoveValue1F (PrototypeComponent, objectId)),
-      insertStaticModel (_constructor.MInsertLongTerm (StaticModelComponent))
+      fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
+      fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
+      removePrototypeById (REMOVE_VALUE_1F (PrototypeComponent, objectId)),
+      insertStaticModel (INSERT_LONG_TERM (StaticModelComponent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);

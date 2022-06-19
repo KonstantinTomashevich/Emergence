@@ -53,19 +53,19 @@ Configurator::Configurator (Celerity::TaskConstructor &_constructor,
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
-      modifyPhysicsWorld (_constructor.MModifySingleton (PhysicsWorldSingleton)),
+      modifyPhysicsWorld (MODIFY_SINGLETON (PhysicsWorldSingleton)),
 
-      insertMaterial (_constructor.MInsertLongTerm (DynamicsMaterial)),
-      modifyMaterialById (_constructor.MModifyValue1F (DynamicsMaterial, id)),
+      insertMaterial (INSERT_LONG_TERM (DynamicsMaterial)),
+      modifyMaterialById (MODIFY_VALUE_1F (DynamicsMaterial, id)),
 
-      insertTransform (_constructor.MInsertLongTerm (Transform::Transform3dComponent)),
-      modifyTransformById (_constructor.MModifyValue1F (Transform::Transform3dComponent, objectId)),
+      insertTransform (INSERT_LONG_TERM (Transform::Transform3dComponent)),
+      modifyTransformById (MODIFY_VALUE_1F (Transform::Transform3dComponent, objectId)),
 
-      insertBody (_constructor.MInsertLongTerm (RigidBodyComponent)),
-      modifyBodyById (_constructor.MModifyValue1F (RigidBodyComponent, objectId)),
+      insertBody (INSERT_LONG_TERM (RigidBodyComponent)),
+      modifyBodyById (MODIFY_VALUE_1F (RigidBodyComponent, objectId)),
 
-      insertShape (_constructor.MInsertLongTerm (CollisionShapeComponent)),
-      modifyShapeByShapeId (_constructor.MModifyValue1F (CollisionShapeComponent, shapeId))
+      insertShape (INSERT_LONG_TERM (CollisionShapeComponent)),
+      modifyShapeByShapeId (MODIFY_VALUE_1F (CollisionShapeComponent, shapeId))
 {
     _constructor.MakeDependencyOf (Simulation::Checkpoint::SIMULATION_STARTED);
 }
@@ -271,18 +271,18 @@ Validator::Validator (Celerity::TaskConstructor &_constructor, Container::Vector
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
-      fetchBodyById (_constructor.MFetchValue1F (RigidBodyComponent, objectId)),
-      fetchShapeByShapeId (_constructor.MFetchValue1F (CollisionShapeComponent, shapeId)),
+      fetchBodyById (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
+      fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShapeComponent, shapeId)),
 
-      fetchTransformById (_constructor.MFetchValue1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchContactFoundEvents (_constructor.MFetchSequence (ContactFoundEvent)),
-      fetchContactPersistsEvents (_constructor.MFetchSequence (ContactPersistsEvent)),
-      fetchContactLostEvents (_constructor.MFetchSequence (ContactLostEvent)),
+      fetchContactFoundEvents (FETCH_SEQUENCE (ContactFoundEvent)),
+      fetchContactPersistsEvents (FETCH_SEQUENCE (ContactPersistsEvent)),
+      fetchContactLostEvents (FETCH_SEQUENCE (ContactLostEvent)),
 
-      fetchTriggerEnteredEvents (_constructor.MFetchSequence (TriggerEnteredEvent)),
-      fetchTriggerExitedEvents (_constructor.MFetchSequence (TriggerExitedEvent))
+      fetchTriggerEnteredEvents (FETCH_SEQUENCE (TriggerEnteredEvent)),
+      fetchTriggerExitedEvents (FETCH_SEQUENCE (TriggerExitedEvent))
 {
     _constructor.DependOn (Simulation::Checkpoint::SIMULATION_FINISHED);
 }
