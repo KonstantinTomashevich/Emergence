@@ -1,15 +1,15 @@
-#include <cassert>
-
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/Control.hpp>
+#include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
-#include <Gameplay/UnitComponent.hpp>
 
 #include <Input/InputSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
+
+#include <Transform/Events.hpp>
 
 namespace Control
 {
@@ -23,17 +23,22 @@ public:
     void Execute () noexcept;
 
 private:
+    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
     Emergence::Celerity::ModifySingletonQuery modifyInput;
-    Emergence::Celerity::EditValueQuery editUnitById;
-    Emergence::Celerity::EditSignalQuery editControllableUnits;
-    Emergence::Celerity::EditSignalQuery editControlledUnits;
+
+    Emergence::Celerity::RemoveValueQuery removeControllableById;
+    Emergence::Celerity::EditAscendingRangeQuery editControllable;
+    Emergence::Celerity::EditSignalQuery editControlled;
 };
 
 ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
-      editUnitById (EDIT_VALUE_1F (UnitComponent, objectId)),
-      editControllableUnits (EDIT_SIGNAL (UnitComponent, canBeControlledByPlayer, true)),
-      editControlledUnits (EDIT_SIGNAL (UnitComponent, controlledByPlayer, true))
+    : fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
+      modifyInput (MODIFY_SINGLETON (InputSingleton)),
+
+      removeControllableById (REMOVE_VALUE_1F (ControllableComponent, objectId)),
+      editControllable (EDIT_ASCENDING_RANGE (ControllableComponent, objectId)),
+      editControlled (EDIT_SIGNAL (ControllableComponent, controlledByPlayer, true))
+
 {
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MORTALITY_STARTED);
@@ -49,31 +54,32 @@ void ControlSwitcher::Execute () noexcept
     auto inputCursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*inputCursor);
 
-    const bool playerControlsAnyUnit = [this, input] ()
+    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
+         ++eventCursor)
     {
-        auto unitCursor = editControlledUnits.Execute ();
-        if (auto *unit = static_cast<UnitComponent *> (*unitCursor))
+        auto controllableCursor = removeControllableById.Execute (&event->objectId);
+        if (controllableCursor.ReadConst ())
         {
-            if (unit->canBeControlledByPlayer)
-            {
-                return true;
-            }
-
-            unit->controlledByPlayer = false;
-            input->UnsubscribeFixed (unit->objectId);
+            ~controllableCursor;
         }
+    }
 
-        return false;
+    const bool playerControlsAnyUnit = [this] ()
+    {
+        auto controllableCursor = editControlled.Execute ();
+        return *controllableCursor;
     }();
 
     if (!playerControlsAnyUnit)
     {
-        auto unitCursor = editControllableUnits.Execute ();
-        if (auto *unit = static_cast<UnitComponent *> (*unitCursor))
+        auto controllableCursor = editControllable.Execute (nullptr, nullptr);
+        if (auto *controllable = static_cast<ControllableComponent *> (*controllableCursor))
         {
-            unit->controlledByPlayer = true;
-            input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP, unit->objectId};
-            input->fixedSubscriptions.EmplaceBack () = {InputConstant::FIGHT_ACTION_GROUP, unit->objectId};
+            controllable->controlledByPlayer = true;
+            input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP, controllable->objectId};
+            input->fixedSubscriptions.EmplaceBack () = {InputConstant::FIGHT_ACTION_GROUP, controllable->objectId};
         }
     }
 }

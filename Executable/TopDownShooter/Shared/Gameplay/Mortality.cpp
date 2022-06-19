@@ -3,13 +3,9 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/Events.hpp>
+#include <Gameplay/MortalComponent.hpp>
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/MortalitySettingsSingleton.hpp>
-#include <Gameplay/UnitComponent.hpp>
-
-#include <Math/Scalar.hpp>
-
-#include <Physics/Simulation.hpp>
 
 #include <Shared/Checkpoint.hpp>
 
@@ -22,8 +18,8 @@ namespace TaskNames
 {
 static const Emergence::Memory::UniqueString PROCESS_DAMAGE ("Mortality::ProcessDamage");
 static const Emergence::Memory::UniqueString PROCESS_CORPSES ("Mortality::ProcessCorpses");
-static const Emergence::Memory::UniqueString CLEANUP_UNITS_AFTER_TRANSFORM_REMOVAL (
-    "Mortality::CleanupUnitsAfterTransformRemoval");
+static const Emergence::Memory::UniqueString CLEANUP_MORTALS_AFTER_TRANSFORM_REMOVAL (
+    "Mortality::CleanupMortalsAfterTransformRemoval");
 } // namespace TaskNames
 
 class DamageProcessor final : public Emergence::Celerity::TaskExecutorBase<DamageProcessor>
@@ -36,7 +32,7 @@ public:
 private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::FetchSingletonQuery fetchMortalitySettings;
-    Emergence::Celerity::EditValueQuery editUnitById;
+    Emergence::Celerity::EditValueQuery editMortalById;
     Emergence::Celerity::InsertShortTermQuery insertDeathEvent;
     Emergence::Celerity::FetchSequenceQuery fetchDamageEvents;
 };
@@ -44,7 +40,7 @@ private:
 DamageProcessor::DamageProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchMortalitySettings (FETCH_SINGLETON (MortalitySettingsSingleton)),
-      editUnitById (EDIT_VALUE_1F (UnitComponent, objectId)),
+      editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
       insertDeathEvent (INSERT_SHORT_TERM (DeathEvent)),
       fetchDamageEvents (FETCH_SEQUENCE (DamageEvent))
 {
@@ -65,16 +61,16 @@ void DamageProcessor::Execute () noexcept
          const auto *event = static_cast<const DamageEvent *> (*eventCursor); ++eventCursor)
     {
         assert (event->amount >= 0.0f);
-        auto unitCursor = editUnitById.Execute (&event->objectId);
+        auto mortalCursor = editMortalById.Execute (&event->objectId);
 
-        if (auto *unit = static_cast<UnitComponent *> (*unitCursor); unit && !unit->IsCorpse ())
+        if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor); mortal && !mortal->IsCorpse ())
         {
-            unit->health -= event->amount;
-            if (unit->health <= 0.0f)
+            mortal->health -= event->amount;
+            if (mortal->health <= 0.0f)
             {
-                unit->removeAfterNs = time->fixedTimeNs + mortalitySettings->corpseLifetimeNs;
+                mortal->removeAfterNs = time->fixedTimeNs + mortalitySettings->corpseLifetimeNs;
                 auto *deathEvent = static_cast<DeathEvent *> (++deathEventCursor);
-                deathEvent->objectId = unit->objectId;
+                deathEvent->objectId = mortal->objectId;
             }
         }
     }
@@ -95,7 +91,7 @@ private:
 
 CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
-      fetchCorpsesByRemovalTimer (FETCH_ASCENDING_RANGE (UnitComponent, removeAfterNs)),
+      fetchCorpsesByRemovalTimer (FETCH_ASCENDING_RANGE (MortalComponent, removeAfterNs)),
       removeTransformById (REMOVE_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId))
 {
     _constructor.DependOn (TaskNames::PROCESS_DAMAGE);
@@ -107,9 +103,9 @@ void CorpseProcessor::Execute () noexcept
     const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
 
     for (auto corpseCursor = fetchCorpsesByRemovalTimer.Execute (nullptr, &time->fixedTimeNs);
-         const auto *unit = static_cast<const UnitComponent *> (*corpseCursor); ++corpseCursor)
+         const auto *mortal = static_cast<const MortalComponent *> (*corpseCursor); ++corpseCursor)
     {
-        auto transformCursor = removeTransformById.Execute (&unit->objectId);
+        auto transformCursor = removeTransformById.Execute (&mortal->objectId);
         if (transformCursor.ReadConst ())
         {
             ~transformCursor;
@@ -125,14 +121,13 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::RemoveValueQuery removeUnitById;
+    Emergence::Celerity::RemoveValueQuery removeMortalById;
     Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 };
 
 TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : removeUnitById (REMOVE_VALUE_1F (UnitComponent, objectId)),
-      fetchTransformRemovedEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
+    : removeMortalById (REMOVE_VALUE_1F (MortalComponent, objectId)),
+      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
 {
     _constructor.DependOn (TaskNames::PROCESS_CORPSES);
     _constructor.MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
@@ -145,10 +140,10 @@ void TransformEventProcessor::Execute () noexcept
              static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
          ++eventCursor)
     {
-        auto unitCursor = removeUnitById.Execute (&event->objectId);
-        if (unitCursor.ReadConst ())
+        auto mortalCursor = removeMortalById.Execute (&event->objectId);
+        if (mortalCursor.ReadConst ())
         {
-            ~unitCursor;
+            ~mortalCursor;
         }
     }
 }
@@ -157,6 +152,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 {
     _pipelineBuilder.AddTask (TaskNames::PROCESS_DAMAGE).SetExecutor<DamageProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_CORPSES).SetExecutor<CorpseProcessor> ();
-    _pipelineBuilder.AddTask (TaskNames::CLEANUP_UNITS_AFTER_TRANSFORM_REMOVAL).SetExecutor<TransformEventProcessor> ();
+    _pipelineBuilder.AddTask (TaskNames::CLEANUP_MORTALS_AFTER_TRANSFORM_REMOVAL)
+        .SetExecutor<TransformEventProcessor> ();
 }
 } // namespace Mortality

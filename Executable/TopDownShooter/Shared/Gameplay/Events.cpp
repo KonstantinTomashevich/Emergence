@@ -18,7 +18,7 @@ void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) no
     _registrar.CustomEvent ({DamageEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED});
     _registrar.CustomEvent ({DeathEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED});
 
-    // UnitComponent
+    // PrototypeComponent
 
     _registrar.OnAddEvent (
         {{PrototypeComponentAddedFixedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED},

@@ -5,11 +5,12 @@
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
+#include <Gameplay/MortalComponent.hpp>
 #include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
+#include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/ShooterComponent.hpp>
-#include <Gameplay/UnitComponent.hpp>
 
 #include <Input/InputListenerComponent.hpp>
 
@@ -59,7 +60,8 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
-    Emergence::Celerity::InsertLongTermQuery insertUnit;
+    Emergence::Celerity::InsertLongTermQuery insertMortal;
+    Emergence::Celerity::InsertLongTermQuery insertControllable;
     Emergence::Celerity::InsertLongTermQuery insertInputListener;
     Emergence::Celerity::InsertLongTermQuery insertMovement;
     Emergence::Celerity::InsertLongTermQuery insertShooter;
@@ -69,8 +71,7 @@ private:
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
       fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent)),
-      fetchTransformRemovedEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
+      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
 
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
@@ -83,7 +84,8 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
       insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
-      insertUnit (INSERT_LONG_TERM (UnitComponent)),
+      insertMortal (INSERT_LONG_TERM (MortalComponent)),
+      insertControllable (INSERT_LONG_TERM (ControllableComponent)),
       insertInputListener (INSERT_LONG_TERM (InputListenerComponent)),
       insertMovement (INSERT_LONG_TERM (MovementComponent)),
       insertShooter (INSERT_LONG_TERM (ShooterComponent)),
@@ -107,20 +109,23 @@ void FixedAssembler::Execute ()
         auto prototypeCursor = fetchPrototypeById.Execute (&_objectId);
         if (const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor))
         {
-            auto unitCursor = insertUnit.Execute ();
+            auto mortalCursor = insertMortal.Execute ();
             auto bodyCursor = insertRigidBody.Execute ();
             auto shapeCursor = insertCollisionShape.Execute ();
 
             if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
             {
+                auto controllableCursor = insertControllable.Execute();
                 auto transformCursor = insertTransform.Execute ();
                 auto inputListenerCursor = insertInputListener.Execute ();
                 auto movementCursor = insertMovement.Execute ();
                 auto shooterCursor = insertShooter.Execute ();
 
-                auto *unit = static_cast<UnitComponent *> (++unitCursor);
-                unit->objectId = _objectId;
-                unit->canBeControlledByPlayer = true;
+                auto *mortal = static_cast<MortalComponent *> (++mortalCursor);
+                mortal->objectId = _objectId;
+
+                auto *controllable = static_cast<ControllableComponent*>(++controllableCursor);
+                controllable->objectId = _objectId;
 
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
@@ -187,9 +192,8 @@ void FixedAssembler::Execute ()
             }
             else if (prototype->prototype == HardcodedPrototypes::OBSTACLE)
             {
-                auto *unit = static_cast<UnitComponent *> (++unitCursor);
-                unit->objectId = _objectId;
-                unit->canBeControlledByPlayer = false;
+                auto *mortal = static_cast<MortalComponent *> (++mortalCursor);
+                mortal->objectId = _objectId;
 
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
@@ -286,10 +290,8 @@ private:
 
 NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchPrototypeAddedFixedToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedToNormalEvent)),
-      fetchPrototypeAddedCustomToNormalEvents (
-          FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent)),
-      fetchTransformRemovedEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
+      fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent)),
+      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
 
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),

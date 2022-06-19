@@ -3,7 +3,7 @@
 #include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/FollowCameraSettingsSingleton.hpp>
 
-#include <Gameplay/UnitComponent.hpp>
+#include <Gameplay/ControllableComponent.hpp>
 
 #include <Render/RenderSceneSingleton.hpp>
 
@@ -30,7 +30,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
     Emergence::Celerity::FetchSingletonQuery fetchFollowCameraSettings;
 
-    Emergence::Celerity::FetchSignalQuery fetchControlledUnit;
+    Emergence::Celerity::FetchSignalQuery fetchControlledObject;
     Emergence::Celerity::EditValueQuery editTransformById;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
 };
@@ -39,7 +39,7 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
     : fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchFollowCameraSettings (FETCH_SINGLETON (FollowCameraSettingsSingleton)),
 
-      fetchControlledUnit (FETCH_SIGNAL (UnitComponent, controlledByPlayer, true)),
+      fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByPlayer, true)),
       editTransformById (EDIT_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
@@ -73,10 +73,10 @@ void CameraUpdater::Execute () noexcept
 
 bool CameraUpdater::FetchControlledUnitTransform (Emergence::Math::Transform3d &_output) noexcept
 {
-    auto unitCursor = fetchControlledUnit.Execute ();
-    if (const auto *unit = static_cast<const UnitComponent *> (*unitCursor))
+    auto controllableCursor = fetchControlledObject.Execute ();
+    if (const auto *controllable = static_cast<const ControllableComponent *> (*controllableCursor))
     {
-        auto transformCursor = editTransformById.Execute (&unit->objectId);
+        auto transformCursor = editTransformById.Execute (&controllable->objectId);
         if (const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor))
         {
             auto token = editTransformById.AllowUnsafeFetchAccess ();
