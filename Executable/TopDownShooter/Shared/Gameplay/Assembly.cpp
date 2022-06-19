@@ -1,7 +1,9 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
+#include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Assembly.hpp>
+#include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
@@ -9,7 +11,6 @@
 #include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
-#include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 
 #include <Input/InputListenerComponent.hpp>
@@ -53,6 +54,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
     Emergence::Celerity::RemoveValueQuery removePrototypeById;
+    Emergence::Celerity::RemoveValueQuery removeAlignmentById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
@@ -77,6 +79,7 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
       removePrototypeById (REMOVE_VALUE_1F (PrototypeComponent, objectId)),
+      removeAlignmentById (REMOVE_VALUE_1F (AlignmentComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -115,7 +118,7 @@ void FixedAssembler::Execute ()
 
             if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
             {
-                auto controllableCursor = insertControllable.Execute();
+                auto controllableCursor = insertControllable.Execute ();
                 auto transformCursor = insertTransform.Execute ();
                 auto inputListenerCursor = insertInputListener.Execute ();
                 auto movementCursor = insertMovement.Execute ();
@@ -124,7 +127,7 @@ void FixedAssembler::Execute ()
                 auto *mortal = static_cast<MortalComponent *> (++mortalCursor);
                 mortal->objectId = _objectId;
 
-                auto *controllable = static_cast<ControllableComponent*>(++controllableCursor);
+                auto *controllable = static_cast<ControllableComponent *> (++controllableCursor);
                 controllable->objectId = _objectId;
 
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
@@ -266,6 +269,14 @@ void FixedAssembler::Execute ()
         if (prototypeCursor.ReadConst ())
         {
             ~prototypeCursor;
+        }
+
+        // TODO: Currently we are clearing non-mechanic-specific components here.
+
+        auto alignmentCursor = removeAlignmentById.Execute (&event->objectId);
+        if (alignmentCursor.ReadConst ())
+        {
+            ~alignmentCursor;
         }
     }
 }

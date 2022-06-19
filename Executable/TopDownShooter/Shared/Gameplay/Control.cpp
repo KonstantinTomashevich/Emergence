@@ -1,9 +1,11 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 
+#include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Control.hpp>
 #include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
+#include <Gameplay/PlayerInfoSingleton.hpp>
 
 #include <Input/InputSingleton.hpp>
 
@@ -25,8 +27,11 @@ public:
 private:
     Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
     Emergence::Celerity::ModifySingletonQuery modifyInput;
+    Emergence::Celerity::FetchSingletonQuery fetchPlayerInfo;
 
+    Emergence::Celerity::FetchValueQuery fetchAlignmentById;
     Emergence::Celerity::RemoveValueQuery removeControllableById;
+
     Emergence::Celerity::EditAscendingRangeQuery editControllable;
     Emergence::Celerity::EditSignalQuery editControlled;
 };
@@ -34,10 +39,13 @@ private:
 ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
       modifyInput (MODIFY_SINGLETON (InputSingleton)),
+      fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
 
+      fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
       removeControllableById (REMOVE_VALUE_1F (ControllableComponent, objectId)),
+
       editControllable (EDIT_ASCENDING_RANGE (ControllableComponent, objectId)),
-      editControlled (EDIT_SIGNAL (ControllableComponent, controlledByPlayer, true))
+      editControlled (EDIT_SIGNAL (ControllableComponent, controlledByLocalPlayer, true))
 
 {
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
@@ -54,6 +62,9 @@ void ControlSwitcher::Execute () noexcept
     auto inputCursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*inputCursor);
 
+    auto playerInfoCursor = fetchPlayerInfo.Execute ();
+    const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
+
     for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
          const auto *event =
              static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
@@ -66,20 +77,46 @@ void ControlSwitcher::Execute () noexcept
         }
     }
 
-    const bool playerControlsAnyUnit = [this] ()
+    const bool playerControlsAnyUnit = [this, input, playerInfo] ()
     {
         auto controllableCursor = editControlled.Execute ();
-        return *controllableCursor;
+        if (auto *controllable = static_cast<ControllableComponent *> (*controllableCursor))
+        {
+            auto alignmentCursor = fetchAlignmentById.Execute (&controllable->objectId);
+            if (const auto *alignment = static_cast<const AlignmentComponent *> (*alignmentCursor))
+            {
+                if (alignment->playerId == playerInfo->localPlayerUid)
+                {
+                    return true;
+                }
+
+                input->UnsubscribeFixed (controllable->objectId);
+                controllable->controlledByLocalPlayer = false;
+            }
+        }
+
+        return false;
     }();
 
     if (!playerControlsAnyUnit)
     {
-        auto controllableCursor = editControllable.Execute (nullptr, nullptr);
-        if (auto *controllable = static_cast<ControllableComponent *> (*controllableCursor))
+        for (auto controllableCursor = editControllable.Execute (nullptr, nullptr);
+             auto *controllable = static_cast<ControllableComponent *> (*controllableCursor); ++controllableCursor)
         {
-            controllable->controlledByPlayer = true;
-            input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP, controllable->objectId};
-            input->fixedSubscriptions.EmplaceBack () = {InputConstant::FIGHT_ACTION_GROUP, controllable->objectId};
+            auto alignmentCursor = fetchAlignmentById.Execute (&controllable->objectId);
+            if (const auto *alignment = static_cast<const AlignmentComponent *> (*alignmentCursor))
+            {
+                if (alignment->playerId == playerInfo->localPlayerUid)
+                {
+                    controllable->controlledByLocalPlayer = true;
+                    input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP,
+                                                                controllable->objectId};
+                    input->fixedSubscriptions.EmplaceBack () = {InputConstant::FIGHT_ACTION_GROUP,
+                                                                controllable->objectId};
+
+                    break;
+                }
+            }
         }
     }
 }

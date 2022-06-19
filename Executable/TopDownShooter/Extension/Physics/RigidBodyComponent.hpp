@@ -46,6 +46,7 @@ struct RigidBodyComponent final
 
     uint8_t lockFlags = 0u;
 
+    // TODO: Currently velocities and impulses are in world coordinates. Is it suitable enough?
     Math::Vector3f linearVelocity = Math::Vector3f::ZERO;
     Math::Vector3f angularVelocity = Math::Vector3f::ZERO;
 

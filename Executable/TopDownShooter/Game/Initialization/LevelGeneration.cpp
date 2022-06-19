@@ -1,9 +1,13 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
+#include <Container/Optional.hpp>
+
+#include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
 #include <Gameplay/PhysicsConstant.hpp>
+#include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
 
 #include <Initialization/LevelGeneration.hpp>
@@ -41,13 +45,20 @@ private:
 
     void PlaceDirectionalLight () noexcept;
 
-    void PlacePrototype (float _x, float _y, float _z, Emergence::Memory::UniqueString _prototype) noexcept;
+    void PlacePrototype (
+        float _x,
+        float _y,
+        float _z,
+        Emergence::Memory::UniqueString _prototype,
+        Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId = std::nullopt) noexcept;
 
     Emergence::Celerity::ModifySingletonQuery fetchWorld;
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
+    Emergence::Celerity::FetchSingletonQuery fetchPlayerInfo;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
+    Emergence::Celerity::InsertLongTermQuery insertAlignment;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
 
@@ -61,8 +72,10 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
     : fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
+      fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertAlignment (INSERT_LONG_TERM (AlignmentComponent)),
       insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
 
@@ -76,6 +89,9 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
 
 void LevelGenerator::Execute ()
 {
+    auto playerInfoCursor = fetchPlayerInfo.Execute ();
+    const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
+
     PlaceFloor (30, 20);
     PlaceKillZ (60.0f, 40.0f, -1.0f);
     PlaceCamera ();
@@ -90,7 +106,7 @@ void LevelGenerator::Execute ()
         }
     }
 
-    PlacePrototype (-2.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE);
+    PlacePrototype (-2.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid);
 }
 
 void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept
@@ -223,7 +239,11 @@ void LevelGenerator::PlaceDirectionalLight () noexcept
     light->color = {1.0f, 1.0f, 1.0f, 1.0f};
 }
 
-void LevelGenerator::PlacePrototype (float _x, float _y, float _z, Emergence::Memory::UniqueString _prototype) noexcept
+void LevelGenerator::PlacePrototype (float _x,
+                                     float _y,
+                                     float _z,
+                                     Emergence::Memory::UniqueString _prototype,
+                                     Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept
 {
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
@@ -238,9 +258,17 @@ void LevelGenerator::PlacePrototype (float _x, float _y, float _z, Emergence::Me
     transform->SetLogicalLocalTransform (
         {{_x, _y, _z}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
 
-    auto *unit = static_cast<PrototypeComponent *> (++prototypeCursor);
-    unit->objectId = objectId;
-    unit->prototype = _prototype;
+    auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);
+    prototype->objectId = objectId;
+    prototype->prototype = _prototype;
+
+    if (_playerId)
+    {
+        auto alignmentCursor = insertAlignment.Execute ();
+        auto *alignment = static_cast<AlignmentComponent *> (++alignmentCursor);
+        alignment->objectId = objectId;
+        alignment->playerId = _playerId.value ();
+    }
 }
 
 void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

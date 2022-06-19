@@ -39,7 +39,7 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
     : fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchFollowCameraSettings (FETCH_SINGLETON (FollowCameraSettingsSingleton)),
 
-      fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByPlayer, true)),
+      fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByLocalPlayer, true)),
       editTransformById (EDIT_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {

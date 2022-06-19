@@ -4,16 +4,16 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-struct ControllableComponent final
+struct AlignmentComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    bool controlledByLocalPlayer = false;
+    Emergence::Celerity::UniqueId playerId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId controlledByLocalPlayer;
+        Emergence::StandardLayout::FieldId playerId;
         Emergence::StandardLayout::Mapping mapping;
     };
 
