@@ -9,6 +9,7 @@
 #include <Gameplay/PhysicsConstant.hpp>
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
+#include <Gameplay/SpawnComponent.hpp>
 
 #include <Initialization/LevelGeneration.hpp>
 #include <Initialization/PhysicsInitialization.hpp>
@@ -43,7 +44,20 @@ private:
 
     void PlaceCamera () noexcept;
 
+    void PlaceTransformWithAlignment (
+        float _x,
+        float _y,
+        float _z,
+        Emergence::Celerity::UniqueId _objectId,
+        Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId = std::nullopt) noexcept;
+
     void PlaceDirectionalLight () noexcept;
+
+    void PlaceSpawn (float _x,
+                     float _y,
+                     float _z,
+                     Emergence::Memory::UniqueString _prototype,
+                     Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept;
 
     void PlacePrototype (
         float _x,
@@ -61,6 +75,7 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertAlignment;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
     Emergence::Celerity::InsertLongTermQuery insertCollisionShape;
+    Emergence::Celerity::InsertLongTermQuery insertSpawn;
 
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertLight;
@@ -78,6 +93,7 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent)),
       insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
+      insertSpawn (INSERT_LONG_TERM (SpawnComponent)),
 
       insertCamera (INSERT_LONG_TERM (CameraComponent)),
       insertLight (INSERT_LONG_TERM (LightComponent)),
@@ -106,7 +122,17 @@ void LevelGenerator::Execute ()
         }
     }
 
-    PlacePrototype (-2.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid);
+    PlaceSpawn (-2.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid);
+    const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerUID ();
+
+    for (std::int32_t x = -27; x < 30; x += 18)
+    {
+        for (std::int32_t z = -17; z < 20; z += 18)
+        {
+            PlaceSpawn (static_cast<float> (x) + 0.5f, 0.5f, static_cast<float> (z) + 0.5f,
+                        HardcodedPrototypes::WARRIOR_CUBE, aiPlayerId);
+        }
+    }
 }
 
 void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept
@@ -239,6 +265,29 @@ void LevelGenerator::PlaceDirectionalLight () noexcept
     light->color = {1.0f, 1.0f, 1.0f, 1.0f};
 }
 
+void LevelGenerator::PlaceTransformWithAlignment (
+    float _x,
+    float _y,
+    float _z,
+    Emergence::Celerity::UniqueId _objectId,
+    Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept
+{
+    auto transformCursor = insertTransform.Execute ();
+    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    transform->SetObjectId (_objectId);
+
+    transform->SetLogicalLocalTransform (
+        {{_x, _y, _z}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
+
+    if (_playerId)
+    {
+        auto alignmentCursor = insertAlignment.Execute ();
+        auto *alignment = static_cast<AlignmentComponent *> (++alignmentCursor);
+        alignment->objectId = _objectId;
+        alignment->playerId = _playerId.value ();
+    }
+}
+
 void LevelGenerator::PlacePrototype (float _x,
                                      float _y,
                                      float _z,
@@ -248,27 +297,31 @@ void LevelGenerator::PlacePrototype (float _x,
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
-    auto transformCursor = insertTransform.Execute ();
-    auto prototypeCursor = insertPrototype.Execute ();
-
     const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
-    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
-    transform->SetObjectId (objectId);
+    PlaceTransformWithAlignment (_x, _y, _z, objectId, _playerId);
 
-    transform->SetLogicalLocalTransform (
-        {{_x, _y, _z}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
-
+    auto prototypeCursor = insertPrototype.Execute ();
     auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);
     prototype->objectId = objectId;
     prototype->prototype = _prototype;
+}
 
-    if (_playerId)
-    {
-        auto alignmentCursor = insertAlignment.Execute ();
-        auto *alignment = static_cast<AlignmentComponent *> (++alignmentCursor);
-        alignment->objectId = objectId;
-        alignment->playerId = _playerId.value ();
-    }
+void LevelGenerator::PlaceSpawn (float _x,
+                                 float _y,
+                                 float _z,
+                                 Emergence::Memory::UniqueString _prototype,
+                                 Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept
+{
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
+    const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
+    PlaceTransformWithAlignment (_x, _y, _z, objectId, _playerId);
+
+    auto spawnCursor = insertSpawn.Execute ();
+    auto *spawn = static_cast<SpawnComponent *> (++spawnCursor);
+    spawn->objectId = objectId;
+    spawn->spawnPrototype = _prototype;
 }
 
 void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

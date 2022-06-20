@@ -68,8 +68,12 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::SHOOTING_STARTED);
+
     _constructor.MakeDependencyOf (Checkpoint::SHOOTING_FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_STARTED);
+
+    // To resolve race condition.
+    _constructor.MakeDependencyOf (Checkpoint::SPAWN_STARTED);
 }
 
 void ShootingProcessor::Execute () noexcept

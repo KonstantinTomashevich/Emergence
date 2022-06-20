@@ -18,6 +18,7 @@
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
 #include <Gameplay/Shooting.hpp>
+#include <Gameplay/Spawn.hpp>
 
 #include <Initialization/InputInitialization.hpp>
 #include <Initialization/LevelGeneration.hpp>
@@ -157,6 +158,7 @@ void GameApplication::Start ()
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);
     Shooting::AddToFixedUpdate (pipelineBuilder);
+    Spawn::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 
     initializer->Execute ();

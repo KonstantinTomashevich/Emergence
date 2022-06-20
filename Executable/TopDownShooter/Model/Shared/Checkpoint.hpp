@@ -41,4 +41,7 @@ struct Checkpoint final
 
     static const Emergence::Memory::UniqueString SHOOTING_STARTED;
     static const Emergence::Memory::UniqueString SHOOTING_FINISHED;
+
+    static const Emergence::Memory::UniqueString SPAWN_STARTED;
+    static const Emergence::Memory::UniqueString SPAWN_FINISHED;
 };

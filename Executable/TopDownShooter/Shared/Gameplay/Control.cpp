@@ -49,12 +49,11 @@ ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constru
 
 {
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::MORTALITY_STARTED);
 
     // We are consciously adding one-frame delay from object spawn to control takeover.
     // Because otherwise we would need to add delay to all other actions, triggered by
     // input, like shooting a bullet.
-    _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::SPAWN_STARTED);
 }
 
 void ControlSwitcher::Execute () noexcept

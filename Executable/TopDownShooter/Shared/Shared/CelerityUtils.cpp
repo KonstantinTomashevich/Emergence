@@ -34,6 +34,9 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddCheckpoint (Checkpoint::SHOOTING_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::SHOOTING_FINISHED);
 
+    _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_FINISHED);
+
     _pipelineBuilder.AddCheckpoint (Physics::Simulation::Checkpoint::SIMULATION_STARTED);
     _pipelineBuilder.AddCheckpoint (Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
     _pipelineBuilder.AddCheckpoint (Transform::VisualSync::Checkpoint::SYNC_FINISHED);
