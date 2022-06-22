@@ -1,4 +1,5 @@
 #include <cassert>
+#include <numeric>
 
 #include <Handling/HandleableBase.hpp>
 
@@ -6,13 +7,13 @@ namespace Emergence::Handling
 {
 void HandleableBase::RegisterReference () noexcept
 {
-    assert (references + 1u > references);
+    assert (references != std::numeric_limits<decltype(references)::value_type>::max());
     ++references;
 }
 
 void HandleableBase::UnregisterReference () noexcept
 {
-    assert (references - 1u < references);
+    assert (references > 0u);
     --references;
 }
 
