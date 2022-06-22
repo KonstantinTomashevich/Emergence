@@ -47,7 +47,6 @@ namespace TaskNames
 //       shapes and materials. Is there any way to make it better?
 
 static const Memory::UniqueString UPDATE_WORLD {"Physics::UpdateWorld"};
-static const Memory::UniqueString PROCESS_TRANSFORM_EVENTS {"Physics::ProcessTransformEvents"};
 
 static const Memory::UniqueString INITIALIZE_MATERIALS {"Physics::InitializeMaterials"};
 static const Memory::UniqueString SYNC_MATERIAL_CHANGES {"Physics::SyncMaterialChanges"};
@@ -223,60 +222,6 @@ void WorldUpdater::UpdateRemoteDebugging (const PhysicsWorldSingleton *_physicsW
     }
 }
 
-class TransformEventProcessor final : public Celerity::TaskExecutorBase<TransformEventProcessor>
-{
-public:
-    TransformEventProcessor (Celerity::TaskConstructor &_constructor) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::RemoveValueQuery removeShapeByObjectId;
-    Celerity::RemoveValueQuery removeBodyByObjectId;
-    Celerity::FetchValueQuery fetchTransformByObjectId;
-    Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
-};
-
-TransformEventProcessor::TransformEventProcessor (Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
-      removeShapeByObjectId (REMOVE_VALUE_1F (CollisionShapeComponent, objectId)),
-      removeBodyByObjectId (REMOVE_VALUE_1F (RigidBodyComponent, objectId)),
-      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Transform::Transform3dComponentRemovedFixedEvent))
-{
-    _constructor.DependOn (TaskNames::UPDATE_WORLD);
-}
-
-void TransformEventProcessor::Execute () noexcept
-{
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event = static_cast<const Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto transformCursor = fetchTransformByObjectId.Execute (&event->objectId);
-        if (*transformCursor)
-        {
-            // Another transform component was added.
-            continue;
-        }
-
-        // Delete shapes from objects without transform.
-        for (auto shapeCursor = removeShapeByObjectId.Execute (&event->objectId); shapeCursor.ReadConst ();)
-        {
-            ~shapeCursor;
-        }
-
-        // Delete body from object without transform.
-        auto bodyCursor = removeBodyByObjectId.Execute (&event->objectId);
-
-        if (bodyCursor.ReadConst ())
-        {
-            ~bodyCursor;
-        }
-    }
-}
-
 class MaterialInitializer final : public Celerity::TaskExecutorBase<MaterialInitializer>
 {
 public:
@@ -300,7 +245,7 @@ MaterialInitializer::MaterialInitializer (Celerity::TaskConstructor &_constructo
       fetchMaterialAddedFixedEvents (FETCH_SEQUENCE (DynamicsMaterialAddedFixedEvent)),
       fetchMaterialAddedCustomEvents (FETCH_SEQUENCE (DynamicsMaterialAddedCustomToFixedEvent))
 {
-    _constructor.DependOn (TaskNames::PROCESS_TRANSFORM_EVENTS);
+    _constructor.DependOn (TaskNames::UPDATE_WORLD);
 }
 
 void MaterialInitializer::Execute () noexcept
@@ -1095,8 +1040,7 @@ SimulationExecutor::SimulationExecutor (Celerity::TaskConstructor &_constructor)
       fetchTime (FETCH_SINGLETON (Celerity::TimeSingleton)),
 
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
-      editBodyWithOutsideManipulations (
-          EDIT_SIGNAL (RigidBodyComponent, manipulatedOutsideOfSimulation, true)),
+      editBodyWithOutsideManipulations (EDIT_SIGNAL (RigidBodyComponent, manipulatedOutsideOfSimulation, true)),
       editKinematicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::KINEMATIC)),
       editDynamicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::DYNAMIC)),
 
@@ -1540,8 +1484,19 @@ const Memory::UniqueString Checkpoint::SIMULATION_FINISHED {"PhysicsSimulationFi
 
 void AddToFixedUpdate (Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    using namespace Memory::Literals;
+
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
-    _pipelineBuilder.AddTask (TaskNames::PROCESS_TRANSFORM_EVENTS).SetExecutor<TransformEventProcessor> ();
+
+    _pipelineBuilder.AddTask ("Physics::RemoveBodies"_us)
+        .AS_CASCADE_REMOVER_1F (Transform::Transform3dComponentRemovedFixedEvent, RigidBodyComponent, objectId)
+        .DependOn (Checkpoint::SIMULATION_STARTED)
+        .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
+
+    _pipelineBuilder.AddTask ("Physics::RemoveShapes"_us)
+        .AS_CASCADE_REMOVER_1F (Transform::Transform3dComponentRemovedFixedEvent, CollisionShapeComponent, objectId)
+        .DependOn (Checkpoint::SIMULATION_STARTED)
+        .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
     _pipelineBuilder.AddTask (TaskNames::INITIALIZE_MATERIALS).SetExecutor<MaterialInitializer> ();
     _pipelineBuilder.AddTask (TaskNames::SYNC_MATERIAL_CHANGES).SetExecutor<MaterialChangesSynchronizer> ();

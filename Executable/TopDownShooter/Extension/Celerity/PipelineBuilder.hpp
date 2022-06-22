@@ -54,9 +54,9 @@ public:
 
     ~TaskConstructor () noexcept;
 
-    void DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept;
+    TaskConstructor &DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
-    void MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept;
+    TaskConstructor &MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
     [[nodiscard]] FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
 
@@ -156,10 +156,10 @@ public:
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
-    void SetExecutor (std::function<void ()> _executor) noexcept;
+    TaskConstructor &SetExecutor (std::function<void ()> _executor) noexcept;
 
     template <typename Executor, typename... Args>
-    void SetExecutor (Args... _args) noexcept;
+    TaskConstructor &SetExecutor (Args... _args) noexcept;
 
     [[nodiscard]] World *GetWorld () const noexcept;
 
@@ -306,14 +306,14 @@ protected:
 };
 
 template <typename Executor, typename... Args>
-void TaskConstructor::SetExecutor (Args... _args) noexcept
+TaskConstructor &TaskConstructor::SetExecutor (Args... _args) noexcept
 {
     static_assert (std::is_base_of_v<TaskExecutorBase<Executor>, Executor>);
     auto placeholder = heap.GetAllocationGroup ().PlaceOnTop ();
     Handling::Handle<Executor> handle {new (heap.Acquire (sizeof (Executor), alignof (Executor)))
                                            Executor {*this, std::forward<Args> (_args)...}};
 
-    SetExecutor (
+    return SetExecutor (
         [handle] ()
         {
             handle->Execute ();

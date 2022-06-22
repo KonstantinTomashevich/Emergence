@@ -13,8 +13,6 @@
 
 #include <Log/Log.hpp>
 
-#include <Math/Constants.hpp>
-
 #include <Shared/Checkpoint.hpp>
 
 #include <Transform/Events.hpp>
@@ -79,10 +77,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::ModifySingletonQuery modifyRandom;
 
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
-
     Emergence::Celerity::ModifyAscendingRangeQuery modifyRandomAiByIdAscending;
-    Emergence::Celerity::RemoveValueQuery removeRandomAiById;
     Emergence::Celerity::EditValueQuery editInputListenerById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
@@ -93,10 +88,7 @@ InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_construct
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       modifyRandom (MODIFY_SINGLETON (RandomSingleton)),
 
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
-
       modifyRandomAiByIdAscending (MODIFY_ASCENDING_RANGE (RandomAiComponent, objectId)),
-      removeRandomAiById (REMOVE_VALUE_1F (RandomAiComponent, objectId)),
       editInputListenerById (EDIT_VALUE_1F (InputListenerComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
@@ -113,18 +105,6 @@ void InputGenerator::Execute () noexcept
 
     auto randomCursor = modifyRandom.Execute ();
     auto *random = static_cast<RandomSingleton *> (*randomCursor);
-
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto randomAiCursor = removeRandomAiById.Execute (&event->objectId);
-        if (randomAiCursor.ReadConst ())
-        {
-            ~randomAiCursor;
-        }
-    }
 
     for (auto randomAiCursor = modifyRandomAiByIdAscending.Execute (nullptr, nullptr);
          auto *randomAi = static_cast<RandomAiComponent *> (*randomAiCursor);)
@@ -197,6 +177,12 @@ void InputGenerator::Execute () noexcept
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("RandomAi::AttachmentCreator"_us).SetExecutor<AttachmentCreator> ();
+
+    _pipelineBuilder.AddTask ("RandomAi::RemoveAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, RandomAiComponent,
+                                objectId)
+        .MakeDependencyOf ("RandomAi::InputGenerator"_us);
+
     _pipelineBuilder.AddTask ("RandomAi::InputGenerator"_us).SetExecutor<InputGenerator> ();
 }
 } // namespace RandomAi

@@ -48,13 +48,10 @@ public:
 private:
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedFixedEvents;
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToFixedEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
-    Emergence::Celerity::RemoveValueQuery removePrototypeById;
-    Emergence::Celerity::RemoveValueQuery removeAlignmentById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
@@ -75,13 +72,10 @@ private:
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
       fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent)),
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
 
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
-      removePrototypeById (REMOVE_VALUE_1F (PrototypeComponent, objectId)),
-      removeAlignmentById (REMOVE_VALUE_1F (AlignmentComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -268,26 +262,6 @@ void FixedAssembler::Execute ()
     {
         assembly (event->objectId);
     }
-
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto prototypeCursor = removePrototypeById.Execute (&event->objectId);
-        if (prototypeCursor.ReadConst ())
-        {
-            ~prototypeCursor;
-        }
-
-        // TODO: Currently we are clearing non-mechanic-specific components here.
-
-        auto alignmentCursor = removeAlignmentById.Execute (&event->objectId);
-        if (alignmentCursor.ReadConst ())
-        {
-            ~alignmentCursor;
-        }
-    }
 }
 
 class NormalAssembler final : public Emergence::Celerity::TaskExecutorBase<NormalAssembler>
@@ -300,7 +274,6 @@ public:
 private:
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedFixedToNormalEvents;
     Emergence::Celerity::FetchSequenceQuery fetchPrototypeAddedCustomToNormalEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
@@ -313,7 +286,6 @@ private:
 NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchPrototypeAddedFixedToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedToNormalEvent)),
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent)),
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
 
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
@@ -384,27 +356,31 @@ void NormalAssembler::Execute ()
     {
         assembly (event->objectId);
     }
-
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedNormalEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto prototypeCursor = removePrototypeById.Execute (&event->objectId);
-        if (prototypeCursor.ReadConst ())
-        {
-            ~prototypeCursor;
-        }
-    }
 }
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, PrototypeComponent, objectId)
+        .DependOn (Checkpoint::ASSEMBLY_STARTED)
+        .MakeDependencyOf ("Assembly::FixedUpdate"_us);
+
+    // TODO: Currently we are clearing non-mechanic-specific components here.
+    _pipelineBuilder.AddTask ("Assembly::RemoveAlignments"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, AlignmentComponent, objectId)
+        .DependOn (Checkpoint::ASSEMBLY_STARTED)
+        .MakeDependencyOf ("Assembly::FixedUpdate"_us);
+
     _pipelineBuilder.AddTask ("Assembly::FixedUpdate"_us).SetExecutor<FixedAssembler> ();
 }
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, PrototypeComponent, objectId)
+        .DependOn (Checkpoint::ASSEMBLY_STARTED)
+        .MakeDependencyOf ("Assembly::NormalUpdate"_us);
+
     _pipelineBuilder.AddTask ("Assembly::NormalUpdate"_us).SetExecutor<NormalAssembler> ();
 }
 } // namespace Assembly

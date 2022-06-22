@@ -25,7 +25,6 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
     Emergence::Celerity::ModifySingletonQuery modifyInput;
     Emergence::Celerity::FetchSingletonQuery fetchPlayerInfo;
 
@@ -37,8 +36,7 @@ private:
 };
 
 ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
-      modifyInput (MODIFY_SINGLETON (InputSingleton)),
+    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
       fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
 
       fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
@@ -63,18 +61,6 @@ void ControlSwitcher::Execute () noexcept
 
     auto playerInfoCursor = fetchPlayerInfo.Execute ();
     const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
-
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto controllableCursor = removeControllableById.Execute (&event->objectId);
-        if (controllableCursor.ReadConst ())
-        {
-            ~controllableCursor;
-        }
-    }
 
     const bool playerControlsAnyUnit = [this, input, playerInfo] ()
     {
@@ -107,6 +93,7 @@ void ControlSwitcher::Execute () noexcept
             {
                 if (alignment->playerId == playerInfo->localPlayerUid)
                 {
+                    // TODO: Crashes, because InputListenerComponent is not removed after transform.
                     controllable->controlledByLocalPlayer = true;
                     input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP,
                                                                 controllable->objectId};
@@ -122,6 +109,11 @@ void ControlSwitcher::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Control::RemoveControllable"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, ControllableComponent,
+                                objectId)
+        .MakeDependencyOf ("Control::Switch"_us);
+
     _pipelineBuilder.AddTask ("Control::Switch"_us).SetExecutor<ControlSwitcher> ();
 }
 } // namespace Control

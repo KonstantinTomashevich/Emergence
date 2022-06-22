@@ -37,11 +37,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
 
-    Emergence::Celerity::FetchSequenceQuery fetchDeathEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
-
     Emergence::Celerity::ModifyAscendingRangeQuery modifyShootersByCoolingDownUntil;
-    Emergence::Celerity::RemoveValueQuery removeShooterById;
     Emergence::Celerity::FetchValueQuery fetchInputListenerById;
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
@@ -54,11 +50,7 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
-      fetchDeathEvents (FETCH_SEQUENCE (DeathEvent)),
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
-
       modifyShootersByCoolingDownUntil (MODIFY_ASCENDING_RANGE (ShooterComponent, coolingDownUntilNs)),
-      removeShooterById (REMOVE_VALUE_1F (ShooterComponent, objectId)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
       fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -83,29 +75,6 @@ void ShootingProcessor::Execute () noexcept
 
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
-
-    auto cleanup = [this] (Emergence::Celerity::UniqueId _objectId)
-    {
-        auto shooterCursor = removeShooterById.Execute (&_objectId);
-        if (shooterCursor.ReadConst ())
-        {
-            ~shooterCursor;
-        }
-    };
-
-    for (auto eventCursor = fetchDeathEvents.Execute ();
-         const auto *event = static_cast<const DeathEvent *> (*eventCursor); ++eventCursor)
-    {
-        cleanup (event->objectId);
-    }
-
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        cleanup (event->objectId);
-    }
 
     for (auto shooterCursor = modifyShootersByCoolingDownUntil.Execute (nullptr, &time->fixedTimeNs);
          auto *shooter = static_cast<ShooterComponent *> (*shooterCursor);)
@@ -167,6 +136,16 @@ bool ShootingProcessor::TryFetchBulletTransform (Emergence::Celerity::UniqueId _
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Shooting::RemoveAfterDeath"_us)
+        .AS_CASCADE_REMOVER_1F (DeathEvent, ShooterComponent, objectId)
+        .DependOn (Checkpoint::SHOOTING_STARTED);
+
+    _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, ShooterComponent,
+                                objectId)
+        .DependOn ("Shooting::RemoveAfterDeath"_us)
+        .MakeDependencyOf ("Shooting::Processor"_us);
+
     _pipelineBuilder.AddTask ("Shooting::Processor"_us).SetExecutor<ShootingProcessor> ();
 }
 } // namespace Shooting

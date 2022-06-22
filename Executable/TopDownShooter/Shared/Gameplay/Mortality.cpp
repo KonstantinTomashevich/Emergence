@@ -18,8 +18,6 @@ namespace TaskNames
 {
 static const Emergence::Memory::UniqueString PROCESS_DAMAGE ("Mortality::ProcessDamage");
 static const Emergence::Memory::UniqueString PROCESS_CORPSES ("Mortality::ProcessCorpses");
-static const Emergence::Memory::UniqueString CLEANUP_MORTALS_AFTER_TRANSFORM_REMOVAL (
-    "Mortality::CleanupMortalsAfterTransformRemoval");
 } // namespace TaskNames
 
 class DamageProcessor final : public Emergence::Celerity::TaskExecutorBase<DamageProcessor>
@@ -113,46 +111,14 @@ void CorpseProcessor::Execute () noexcept
     }
 }
 
-class TransformEventProcessor final : public Emergence::Celerity::TaskExecutorBase<TransformEventProcessor>
-{
-public:
-    TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    Emergence::Celerity::RemoveValueQuery removeMortalById;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
-};
-
-TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : removeMortalById (REMOVE_VALUE_1F (MortalComponent, objectId)),
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
-{
-    _constructor.DependOn (TaskNames::PROCESS_CORPSES);
-    _constructor.MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
-}
-
-void TransformEventProcessor::Execute () noexcept
-{
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto mortalCursor = removeMortalById.Execute (&event->objectId);
-        if (mortalCursor.ReadConst ())
-        {
-            ~mortalCursor;
-        }
-    }
-}
-
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask (TaskNames::PROCESS_DAMAGE).SetExecutor<DamageProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_CORPSES).SetExecutor<CorpseProcessor> ();
-    _pipelineBuilder.AddTask (TaskNames::CLEANUP_MORTALS_AFTER_TRANSFORM_REMOVAL)
-        .SetExecutor<TransformEventProcessor> ();
+
+    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"Mortality::RemoveMortals"})
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, MortalComponent, objectId)
+        .DependOn (TaskNames::PROCESS_CORPSES)
+        .MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
 }
 } // namespace Mortality

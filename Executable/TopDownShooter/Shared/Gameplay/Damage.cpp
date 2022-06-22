@@ -13,13 +13,6 @@
 
 namespace Damage
 {
-namespace TaskNames
-{
-static const Emergence::Memory::UniqueString APPLY_DAMAGE_FROM_COLLISION ("Damage::ApplyFromCollision");
-static const Emergence::Memory::UniqueString CLEANUP_UNITS_AFTER_TRANSFORM_REMOVAL (
-    "Damage::CleanupAfterTransformRemoval");
-} // namespace TaskNames
-
 class CollisionEventProcessor : public Emergence::Celerity::TaskExecutorBase<CollisionEventProcessor>
 {
 public:
@@ -103,46 +96,16 @@ void CollisionEventProcessor::ProcessCollision (Emergence::Celerity::UniqueId _p
     }
 }
 
-class TransformEventProcessor : public Emergence::Celerity::TaskExecutorBase<TransformEventProcessor>
-{
-public:
-    TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
-    Emergence::Celerity::RemoveValueQuery removeDamageDealerById;
-};
-
-TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTransformRemovedEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
-      removeDamageDealerById (REMOVE_VALUE_1F (DamageDealerComponent, objectId))
-
-{
-    // Deletion is done after mortality to avoid unneeded graph complications due to event processing.
-    _constructor.DependOn (Checkpoint::MORTALITY_FINISHED);
-}
-
-void TransformEventProcessor::Execute () noexcept
-{
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        auto damageDealerCursor = removeDamageDealerById.Execute (&event->objectId);
-        if (damageDealerCursor.ReadConst ())
-        {
-            ~damageDealerCursor;
-        }
-    }
-}
-
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddTask (TaskNames::CLEANUP_UNITS_AFTER_TRANSFORM_REMOVAL).SetExecutor<TransformEventProcessor> ();
-    _pipelineBuilder.AddTask (TaskNames::APPLY_DAMAGE_FROM_COLLISION).SetExecutor<CollisionEventProcessor> ();
+    using namespace Emergence::Memory::Literals;
+
+    _pipelineBuilder.AddTask ("Damage::RemoveDamageDealers"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
+                                objectId)
+        // Deletion is done after mortality to avoid unneeded graph complications due to event processing.
+        .DependOn (Checkpoint::MORTALITY_FINISHED);
+
+    _pipelineBuilder.AddTask ("Damage::ApplyFromCollision"_us).SetExecutor<CollisionEventProcessor> ();
 }
 } // namespace Damage

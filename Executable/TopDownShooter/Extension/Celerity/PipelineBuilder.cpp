@@ -52,14 +52,16 @@ TaskConstructor::~TaskConstructor () noexcept
     }
 }
 
-void TaskConstructor::DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept
+TaskConstructor &TaskConstructor::DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept
 {
     task.dependsOn.emplace (_taskOrCheckpoint);
+    return *this;
 }
 
-void TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept
+TaskConstructor &TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept
 {
     task.dependencyOf.emplace (_taskOrCheckpoint);
+    return *this;
 }
 
 FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping)
@@ -315,9 +317,10 @@ RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
                                        BindEventsOnRemove (_typeMapping), nullptr};
 }
 
-void TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
+TaskConstructor &TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
 {
     task.executor = std::move (_executor);
+    return *this;
 }
 
 World *TaskConstructor::GetWorld () const noexcept

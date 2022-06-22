@@ -98,14 +98,6 @@ void SpawnProcessor::Execute () noexcept
                 }
             }
         }
-
-        // If deleted transform contained spawn, remove this spawn.
-        auto spawnCursor = removeSpawnById.Execute (&event->objectId);
-
-        if (spawnCursor.ReadConst ())
-        {
-            ~spawnCursor;
-        }
     }
 
     for (auto spawnCursor = modifySpawnByCoolingDownUntil.Execute (nullptr, &time->fixedTimeNs);
@@ -170,6 +162,11 @@ void SpawnProcessor::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Spawn::RemoveSpawns"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, SpawnComponent, objectId)
+        .DependOn (Checkpoint::SPAWN_STARTED)
+        .MakeDependencyOf ("Spawn::Process"_us);
+
     _pipelineBuilder.AddTask ("Spawn::Process"_us).SetExecutor<SpawnProcessor> ();
 }
 } // namespace Spawn

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Celerity/Event/CascadeRemover.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
@@ -57,3 +58,10 @@
 // It's impossible to fit all data for shape and ray intersection
 // queries in one line anyway, therefore there is no macros for them.
 // But these macros might be added later.
+
+/// Cascade removers are widely used, therefore we add macro for them too.
+
+#define AS_CASCADE_REMOVER_1F(EventType, ObjectType, Field)                                                            \
+    SetExecutor<Emergence::Celerity::CascadeRemover> (                                                                 \
+        EventType::Reflect ().mapping, ObjectType::Reflect ().mapping,                                                 \
+        Emergence::Container::Vector<Emergence::StandardLayout::FieldId> {ObjectType::Reflect ().Field})

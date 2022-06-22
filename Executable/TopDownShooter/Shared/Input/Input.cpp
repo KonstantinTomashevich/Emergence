@@ -7,6 +7,8 @@
 
 #include <Shared/Checkpoint.hpp>
 
+#include <Transform/Events.hpp>
+
 namespace Input
 {
 /// \brief Contains common logic and common queries for input dispatchers.
@@ -222,14 +224,22 @@ using namespace Emergence::Memory::Literals;
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("FixedInputDispatcher"_us);
-    constructor.SetExecutor<FixedInputDispatcher> ();
+    _pipelineBuilder.AddTask ("Input::RemoveFixedListeners"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
+                                objectId)
+        .MakeDependencyOf ("Input::FixedDispatcher"_us);
+
+    _pipelineBuilder.AddTask ("Input::FixedDispatcher"_us).SetExecutor<FixedInputDispatcher> ();
 }
 
 void AddToNormalUpdate (Emergence::Celerity::InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor = _pipelineBuilder.AddTask ("NormalInputDispatcher"_us);
-    constructor.SetExecutor<NormalInputDispatcher> (_inputAccumulator);
+    _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
+                                objectId)
+        .MakeDependencyOf ("Input::NormalDispatcher"_us);
+
+    _pipelineBuilder.AddTask ("Input::NormalDispatcher"_us).SetExecutor<NormalInputDispatcher> (_inputAccumulator);
 }
 } // namespace Input

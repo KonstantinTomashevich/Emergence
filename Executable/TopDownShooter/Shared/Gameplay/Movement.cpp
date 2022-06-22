@@ -35,30 +35,21 @@ public:
 private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::RemoveAscendingRangeQuery removeMovementByAscendingId;
-    Emergence::Celerity::RemoveValueQuery removeMovementById;
     Emergence::Celerity::FetchValueQuery fetchInputListenerById;
     Emergence::Celerity::EditValueQuery editRigidBodyById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
-
-    Emergence::Celerity::FetchSequenceQuery fetchDeathEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
-      removeMovementById (REMOVE_VALUE_1F (MovementComponent, objectId)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
       editRigidBodyById (EDIT_VALUE_1F (Emergence::Physics::RigidBodyComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
-      transformWorldAccessor (_constructor),
-
-      fetchDeathEvents (FETCH_SEQUENCE (DeathEvent)),
-      fetchTransformRemovedEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent))
+      transformWorldAccessor (_constructor)
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
@@ -71,29 +62,6 @@ void MovementUpdater::Execute () noexcept
 {
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
-
-    auto removeMovement = [this] (Emergence::Celerity::UniqueId _objectId)
-    {
-        auto movementCursor = removeMovementById.Execute (&_objectId);
-        if (movementCursor.ReadConst ())
-        {
-            ~movementCursor;
-        }
-    };
-
-    for (auto eventCursor = fetchDeathEvents.Execute ();
-         const auto *event = static_cast<const DeathEvent *> (*eventCursor); ++eventCursor)
-    {
-        removeMovement (event->objectId);
-    }
-
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        removeMovement (event->objectId);
-    }
 
     for (auto movementCursor = removeMovementByAscendingId.Execute (nullptr, nullptr);
          const auto *movement = static_cast<const MovementComponent *> (movementCursor.ReadConst ());)
@@ -203,6 +171,17 @@ void MovementUpdater::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
+        .AS_CASCADE_REMOVER_1F (DeathEvent, MovementComponent, objectId)
+        .DependOn (Checkpoint::ASSEMBLY_FINISHED)
+        .DependOn (Checkpoint::MOVEMENT_STARTED);
+
+    _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, MovementComponent,
+                                objectId)
+        .DependOn ("Movement::RemoveAfterDeath"_us)
+        .MakeDependencyOf ("Movement::Update"_us);
+
     _pipelineBuilder.AddTask ("Movement::Update"_us).SetExecutor<MovementUpdater> ();
 }
 } // namespace Movement
