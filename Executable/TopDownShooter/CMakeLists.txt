@@ -3,6 +3,8 @@ if (NOT TARGET Urho3D)
     return ()
 endif ()
 
+# TODO: It's not really a topdown shooter anymore. Rename demo.
+
 set (GAME_NAME "TopDownShooter")
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
 set (GAME_RENDER_SYSTEM Direct3D11)

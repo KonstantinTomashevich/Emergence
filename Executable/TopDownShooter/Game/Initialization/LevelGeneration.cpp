@@ -57,7 +57,9 @@ private:
                      float _y,
                      float _z,
                      Emergence::Memory::UniqueString _prototype,
-                     Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept;
+                     Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId,
+                     uint8_t _maxSpawnedObjects,
+                     uint8_t _spawnCoolDownS) noexcept;
 
     void PlacePrototype (
         float _x,
@@ -117,12 +119,12 @@ void LevelGenerator::Execute ()
     {
         for (std::int32_t z = -20; z < 20; z += 6)
         {
-            PlacePrototype (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f,
-                            HardcodedPrototypes::OBSTACLE);
+            PlaceSpawn (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f,
+                        HardcodedPrototypes::OBSTACLE, std::nullopt, 1u, 15u);
         }
     }
 
-    PlaceSpawn (-2.0f, 2.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid);
+    PlaceSpawn (-2.0f, 2.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid, 1u, 5u);
     const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerUID ();
 
     for (std::int32_t x = -27; x < 30; x += 18)
@@ -130,7 +132,7 @@ void LevelGenerator::Execute ()
         for (std::int32_t z = -17; z < 20; z += 18)
         {
             PlaceSpawn (static_cast<float> (x) + 0.5f, 2.5f, static_cast<float> (z) + 0.5f,
-                        HardcodedPrototypes::WARRIOR_CUBE, aiPlayerId);
+                        HardcodedPrototypes::WARRIOR_CUBE, aiPlayerId, 2u, 5u);
         }
     }
 }
@@ -310,7 +312,9 @@ void LevelGenerator::PlaceSpawn (float _x,
                                  float _y,
                                  float _z,
                                  Emergence::Memory::UniqueString _prototype,
-                                 Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept
+                                 Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId,
+                                 uint8_t _maxSpawnedObjects,
+                                 uint8_t _spawnCoolDownS) noexcept
 {
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
@@ -322,6 +326,8 @@ void LevelGenerator::PlaceSpawn (float _x,
     auto *spawn = static_cast<SpawnComponent *> (++spawnCursor);
     spawn->objectId = objectId;
     spawn->spawnPrototype = _prototype;
+    spawn->maxSpawnedObjects = _maxSpawnedObjects;
+    spawn->spawnCoolDownNs = static_cast<uint64_t> (_spawnCoolDownS) * 1000000000u;
 }
 
 void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
