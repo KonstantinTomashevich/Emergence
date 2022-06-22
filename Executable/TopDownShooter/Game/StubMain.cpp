@@ -17,6 +17,7 @@
 #include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
+#include <Gameplay/RandomAi.hpp>
 #include <Gameplay/Shooting.hpp>
 #include <Gameplay/Spawn.hpp>
 
@@ -157,6 +158,7 @@ void GameApplication::Start ()
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);
+    RandomAi::AddToFixedUpdate (pipelineBuilder);
     Shooting::AddToFixedUpdate (pipelineBuilder);
     Spawn::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());

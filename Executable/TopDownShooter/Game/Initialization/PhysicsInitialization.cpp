@@ -64,7 +64,7 @@ void PhysicsInitializer::Execute () noexcept
     material->staticFriction = 0.4f;
     material->dynamicFriction = 0.4f;
     material->enableFriction = true;
-    material->restitution = 0.5f;
+    material->restitution = 0.3f;
     material->density = 400.0f;
 }
 

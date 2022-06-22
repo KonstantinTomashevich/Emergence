@@ -68,6 +68,8 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertMovement;
     Emergence::Celerity::InsertLongTermQuery insertShooter;
     Emergence::Celerity::InsertLongTermQuery insertDamageDealer;
+
+    Emergence::Celerity::InsertShortTermQuery insertPrototypeAssembledEvent;
 };
 
 FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -92,7 +94,9 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       insertInputListener (INSERT_LONG_TERM (InputListenerComponent)),
       insertMovement (INSERT_LONG_TERM (MovementComponent)),
       insertShooter (INSERT_LONG_TERM (ShooterComponent)),
-      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent))
+      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent)),
+
+      insertPrototypeAssembledEvent (INSERT_SHORT_TERM (PrototypeAssembledFixedEvent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
@@ -244,6 +248,10 @@ void FixedAssembler::Execute ()
                 damageDealer->damage = 1.0f;
                 damageDealer->multiUse = false;
             }
+
+            auto eventCursor = insertPrototypeAssembledEvent.Execute ();
+            auto *event = static_cast<PrototypeAssembledFixedEvent *> (++eventCursor);
+            event->objectId = prototype->objectId;
         }
     };
 
@@ -297,6 +305,8 @@ private:
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
     Emergence::Celerity::RemoveValueQuery removePrototypeById;
     Emergence::Celerity::InsertLongTermQuery insertStaticModel;
+
+    Emergence::Celerity::InsertShortTermQuery insertPrototypeAssembledEvent;
 };
 
 NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -307,7 +317,9 @@ NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constru
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
       removePrototypeById (REMOVE_VALUE_1F (PrototypeComponent, objectId)),
-      insertStaticModel (INSERT_LONG_TERM (StaticModelComponent))
+      insertStaticModel (INSERT_LONG_TERM (StaticModelComponent)),
+
+      insertPrototypeAssembledEvent (INSERT_SHORT_TERM (PrototypeAssembledNormalEvent))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
@@ -351,6 +363,10 @@ void NormalAssembler::Execute ()
                 model->modelName = "Models/Bullet.mdl"_us;
                 model->materialNames.EmplaceBack ("Materials/Bullet.xml"_us);
             }
+
+            auto eventCursor = insertPrototypeAssembledEvent.Execute ();
+            auto *event = static_cast<PrototypeAssembledNormalEvent *> (++eventCursor);
+            event->objectId = prototype->objectId;
         }
     };
 

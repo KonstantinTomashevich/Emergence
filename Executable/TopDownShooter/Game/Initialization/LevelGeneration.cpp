@@ -122,14 +122,14 @@ void LevelGenerator::Execute ()
         }
     }
 
-    PlaceSpawn (-2.0f, 0.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid);
+    PlaceSpawn (-2.0f, 2.5f, 0.0f, HardcodedPrototypes::WARRIOR_CUBE, playerInfo->localPlayerUid);
     const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerUID ();
 
     for (std::int32_t x = -27; x < 30; x += 18)
     {
         for (std::int32_t z = -17; z < 20; z += 18)
         {
-            PlaceSpawn (static_cast<float> (x) + 0.5f, 0.5f, static_cast<float> (z) + 0.5f,
+            PlaceSpawn (static_cast<float> (x) + 0.5f, 2.5f, static_cast<float> (z) + 0.5f,
                         HardcodedPrototypes::WARRIOR_CUBE, aiPlayerId);
         }
     }

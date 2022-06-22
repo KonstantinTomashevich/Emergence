@@ -13,6 +13,10 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToFixedEv
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalEvent, REGULAR, objectId);
 
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeAssembledFixedEvent, REGULAR, objectId);
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeAssembledNormalEvent, REGULAR, objectId);
+
 void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept
 {
     _registrar.CustomEvent ({DamageEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED});
@@ -42,4 +46,8 @@ void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) no
           Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedCustomToNormalEvent::Reflect ().objectId}}});
+
+    _registrar.CustomEvent ({PrototypeAssembledFixedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent (
+        {PrototypeAssembledNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL});
 }
