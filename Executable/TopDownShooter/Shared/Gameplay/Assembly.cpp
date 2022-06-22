@@ -114,7 +114,7 @@ void FixedAssembler::Execute ()
             auto bodyCursor = insertRigidBody.Execute ();
             auto shapeCursor = insertCollisionShape.Execute ();
 
-            if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
+            if (prototype->prototype == HardcodedPrototypes::FIGHTER)
             {
                 auto controllableCursor = insertControllable.Execute ();
                 auto transformCursor = insertTransform.Execute ();
@@ -314,7 +314,7 @@ void NormalAssembler::Execute ()
             model->objectId = _objectId;
             model->modelId = renderScene->GenerateModelUID ();
 
-            if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
+            if (prototype->prototype == HardcodedPrototypes::FIGHTER)
             {
                 model->modelName = "Models/Player.mdl"_us;
                 model->materialNames.EmplaceBack ("Materials/PlayerVehicle.xml"_us);
