@@ -232,7 +232,8 @@ void FixedAssembler::Execute ()
                 auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
                 body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
-                body->linearVelocity = Emergence::Math::Rotate ({0.0f, 0.0f, 50.0f}, bulletRotation);
+                body->affectedByGravity = false;
+                body->linearVelocity = Emergence::Math::Rotate ({0.0f, 0.0f, 25.0f}, bulletRotation);
 
                 auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
                 shape->objectId = _objectId;
@@ -344,7 +345,7 @@ void NormalAssembler::Execute ()
             if (prototype->prototype == HardcodedPrototypes::WARRIOR_CUBE)
             {
                 model->modelName = "Models/Player.mdl"_us;
-                model->materialNames.EmplaceBack ("Materials/Player.xml"_us);
+                model->materialNames.EmplaceBack ("Materials/PlayerVehicle.xml"_us);
             }
             else if (prototype->prototype == HardcodedPrototypes::OBSTACLE)
             {
