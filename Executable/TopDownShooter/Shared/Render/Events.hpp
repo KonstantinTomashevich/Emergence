@@ -21,6 +21,16 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (LightComponentChangedEvent, Emergence::Ce
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
     LightComponentRemovedEvent, Emergence::Celerity::UniqueId, objectId, void *, implementationHandle);
 
+EMERGENCE_CELERITY_EVENT1_DECLARATION (ParticleEffectComponentAddedNormalEvent,
+                                       Emergence::Celerity::UniqueId,
+                                       effectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (ParticleEffectComponentAddedCustomToNormalEvent,
+                                       Emergence::Celerity::UniqueId,
+                                       effectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (ParticleEffectComponentChangedEvent, Emergence::Celerity::UniqueId, effectId);
+EMERGENCE_CELERITY_EVENT2_DECLARATION (
+    ParticleEffectComponentRemovedEvent, Emergence::Celerity::UniqueId, objectId, void *, implementationHandle);
+
 EMERGENCE_CELERITY_EVENT1_DECLARATION (StaticModelComponentAddedNormalEvent, Emergence::Celerity::UniqueId, modelId);
 EMERGENCE_CELERITY_EVENT1_DECLARATION (StaticModelComponentAddedCustomToNormalEvent,
                                        Emergence::Celerity::UniqueId,

@@ -172,7 +172,7 @@ void MovementUpdater::Execute () noexcept
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
-        .AS_CASCADE_REMOVER_1F (DeathEvent, MovementComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (DeathFixedEvent, MovementComponent, objectId)
         .DependOn (Checkpoint::ASSEMBLY_FINISHED)
         .DependOn (Checkpoint::MOVEMENT_STARTED);
 

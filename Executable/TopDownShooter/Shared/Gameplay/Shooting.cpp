@@ -137,7 +137,7 @@ bool ShootingProcessor::TryFetchBulletTransform (Emergence::Celerity::UniqueId _
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Shooting::RemoveAfterDeath"_us)
-        .AS_CASCADE_REMOVER_1F (DeathEvent, ShooterComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (DeathFixedEvent, ShooterComponent, objectId)
         .DependOn (Checkpoint::SHOOTING_STARTED);
 
     _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)

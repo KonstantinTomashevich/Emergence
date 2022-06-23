@@ -6,7 +6,9 @@
 
 EMERGENCE_CELERITY_EVENT2_DECLARATION (DamageEvent, Emergence::Celerity::UniqueId, objectId, float, amount);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (DeathEvent, Emergence::Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (DeathFixedEvent, Emergence::Celerity::UniqueId, objectId);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (DeathFixedToNormalEvent, Emergence::Celerity::UniqueId, objectId);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedFixedEvent, Emergence::Celerity::UniqueId, objectId);
 

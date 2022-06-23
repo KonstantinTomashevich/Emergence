@@ -13,6 +13,9 @@ struct RenderSceneSingleton final
     /// \invariant Do not access directly, use ::GenerateLightUID.
     std::atomic_unsigned_lock_free lightUIDCounter = 0u;
 
+    /// \invariant Do not access directly, use ::GenerateEffectUID.
+    std::atomic_unsigned_lock_free effectUIDCounter = 0u;
+
     /// \invariant Do not access directly, use ::GenerateModelUID.
     std::atomic_unsigned_lock_free modelUIDCounter = 0u;
 
@@ -21,6 +24,9 @@ struct RenderSceneSingleton final
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     uintptr_t GenerateModelUID () const noexcept;
+
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    uintptr_t GenerateEffectUID () const noexcept;
 
     struct Reflection final
     {

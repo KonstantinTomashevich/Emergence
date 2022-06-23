@@ -145,6 +145,7 @@ void GameApplication::Start ()
     Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
+    Mortality::AddToNormalUpdate (pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?
     pipelineBuilder.End (std::thread::hardware_concurrency ());

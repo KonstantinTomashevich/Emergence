@@ -14,6 +14,12 @@ uintptr_t RenderSceneSingleton::GenerateModelUID () const noexcept
     return const_cast<RenderSceneSingleton *> (this)->modelUIDCounter++;
 }
 
+uintptr_t RenderSceneSingleton::GenerateEffectUID () const noexcept
+{
+    assert (effectUIDCounter != std::numeric_limits<decltype (effectUIDCounter)::value_type>::max ());
+    return const_cast<RenderSceneSingleton *> (this)->effectUIDCounter++;
+}
+
 const RenderSceneSingleton::Reflection &RenderSceneSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()

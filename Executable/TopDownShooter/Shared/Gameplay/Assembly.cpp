@@ -5,6 +5,7 @@
 #include <Gameplay/Assembly.hpp>
 #include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
+#include <Gameplay/EffectConstant.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
 #include <Gameplay/MortalComponent.hpp>
@@ -22,6 +23,7 @@
 #include <Physics/RigidBodyComponent.hpp>
 #include <Physics/Simulation.hpp>
 
+#include <Render/ParticleEffectComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
 
@@ -277,7 +279,8 @@ private:
 
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
-    Emergence::Celerity::RemoveValueQuery removePrototypeById;
+
+    Emergence::Celerity::InsertLongTermQuery insertParticleEffect;
     Emergence::Celerity::InsertLongTermQuery insertStaticModel;
 
     Emergence::Celerity::InsertShortTermQuery insertPrototypeAssembledEvent;
@@ -289,7 +292,8 @@ NormalAssembler::NormalAssembler (Emergence::Celerity::TaskConstructor &_constru
 
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
-      removePrototypeById (REMOVE_VALUE_1F (PrototypeComponent, objectId)),
+
+      insertParticleEffect (INSERT_LONG_TERM (ParticleEffectComponent)),
       insertStaticModel (INSERT_LONG_TERM (StaticModelComponent)),
 
       insertPrototypeAssembledEvent (INSERT_SHORT_TERM (PrototypeAssembledNormalEvent))
@@ -337,6 +341,17 @@ void NormalAssembler::Execute ()
                 model->materialNames.EmplaceBack ("Materials/Bullet.xml"_us);
             }
 
+            if (prototype->prototype == HardcodedPrototypes::FIGHTER ||
+                prototype->prototype == HardcodedPrototypes::OBSTACLE)
+            {
+                auto effectCursor = insertParticleEffect.Execute ();
+                auto *deathParticle = static_cast<ParticleEffectComponent *> (++effectCursor);
+                deathParticle->objectId = _objectId;
+                deathParticle->effectId = renderScene->GenerateEffectUID ();
+                deathParticle->effectName = "Particles/Destruction.xml"_us;
+                deathParticle->effectTag = EffectConstant::DEATH_TAG;
+            }
+
             auto eventCursor = insertPrototypeAssembledEvent.Execute ();
             auto *event = static_cast<PrototypeAssembledNormalEvent *> (++eventCursor);
             event->objectId = prototype->objectId;
@@ -361,13 +376,15 @@ void NormalAssembler::Execute ()
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, PrototypeComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, PrototypeComponent,
+                                objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::FixedUpdate"_us);
 
     // TODO: Currently we are clearing non-mechanic-specific components here.
     _pipelineBuilder.AddTask ("Assembly::RemoveAlignments"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, AlignmentComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, AlignmentComponent,
+                                objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::FixedUpdate"_us);
 
@@ -377,7 +394,8 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, PrototypeComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, PrototypeComponent,
+                                objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::NormalUpdate"_us);
 

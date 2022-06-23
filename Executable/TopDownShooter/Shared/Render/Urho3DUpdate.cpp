@@ -6,6 +6,7 @@
 #include <Render/CameraComponent.hpp>
 #include <Render/Events.hpp>
 #include <Render/LightComponent.hpp>
+#include <Render/ParticleEffectComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
 #include <Render/Urho3DAccessSingleton.hpp>
@@ -26,6 +27,8 @@ BEGIN_MUTING_WARNINGS
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/ParticleEffect.h>
+#include <Urho3D/Graphics/ParticleEmitter.h>
 #include <Urho3D/Graphics/Renderer.h>
 #include <Urho3D/Graphics/StaticModel.h>
 #include <Urho3D/Resource/ResourceCache.h>
@@ -48,6 +51,9 @@ static const Emergence::Memory::UniqueString UPDATE_SCENE {"Urho3DUpdate::Update
 static void SyncCamera (const CameraComponent *_camera, Urho3D::Camera *_urho3DCamera) noexcept;
 
 static void SyncLight (const LightComponent *_light, Urho3D::Light *_urho3DLight) noexcept;
+
+static void SyncParticleEffect (const ParticleEffectComponent *_effect,
+                                Urho3D::ParticleEmitter *_urho3DEffect) noexcept;
 
 static void SyncStaticModel (const StaticModelComponent *_staticModel,
                              Urho3D::StaticModel *_urho3DStaticModel) noexcept;
@@ -170,6 +176,8 @@ private:
 
     void InitializeLights () noexcept;
 
+    void InitializeEffects () noexcept;
+
     void InitializeModels () noexcept;
 
     Emergence::Celerity::ModifySingletonQuery modifyUrho3D;
@@ -182,6 +190,10 @@ private:
     Emergence::Celerity::EditValueQuery editLightByLightId;
     Emergence::Celerity::FetchSequenceQuery fetchLightAddedNormalEvents;
     Emergence::Celerity::FetchSequenceQuery fetchLightAddedCustomEvents;
+
+    Emergence::Celerity::EditValueQuery editParticleEffectByEffectId;
+    Emergence::Celerity::FetchSequenceQuery fetchParticleEffectAddedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchParticleEffectAddedCustomEvents;
 
     Emergence::Celerity::EditValueQuery editStaticModelByModelId;
     Emergence::Celerity::FetchSequenceQuery fetchStaticModelAddedNormalEvents;
@@ -200,6 +212,10 @@ ComponentInitializer::ComponentInitializer (Emergence::Celerity::TaskConstructor
       fetchLightAddedNormalEvents (FETCH_SEQUENCE (LightComponentAddedNormalEvent)),
       fetchLightAddedCustomEvents (FETCH_SEQUENCE (LightComponentAddedCustomToNormalEvent)),
 
+      editParticleEffectByEffectId (EDIT_VALUE_1F (ParticleEffectComponent, effectId)),
+      fetchParticleEffectAddedNormalEvents (FETCH_SEQUENCE (ParticleEffectComponentAddedNormalEvent)),
+      fetchParticleEffectAddedCustomEvents (FETCH_SEQUENCE (ParticleEffectComponentAddedCustomToNormalEvent)),
+
       editStaticModelByModelId (EDIT_VALUE_1F (StaticModelComponent, modelId)),
       fetchStaticModelAddedNormalEvents (FETCH_SEQUENCE (StaticModelComponentAddedNormalEvent)),
       fetchStaticModelAddedCustomEvents (FETCH_SEQUENCE (StaticModelComponentAddedCustomToNormalEvent))
@@ -211,6 +227,7 @@ void ComponentInitializer::Execute ()
 {
     InitializeCameras ();
     InitializeLights ();
+    InitializeEffects ();
     InitializeModels ();
 }
 
@@ -271,6 +288,34 @@ void ComponentInitializer::InitializeLights () noexcept
     }
 }
 
+void ComponentInitializer::InitializeEffects () noexcept
+{
+    auto initialize = [this] (Emergence::Celerity::UniqueId _modelId)
+    {
+        auto effectCursor = editParticleEffectByEffectId.Execute (&_modelId);
+        if (auto *effect = static_cast<ParticleEffectComponent *> (*effectCursor))
+        {
+            Urho3D::Node *node = nodeAccessor.StartUsingNode (effect->objectId);
+            auto *object = node->CreateComponent<Urho3D::ParticleEmitter> ();
+            SyncParticleEffect (effect, object);
+            effect->implementationHandle = object;
+        }
+    };
+
+    for (auto eventCursor = fetchParticleEffectAddedNormalEvents.Execute ();
+         const auto *event = static_cast<const ParticleEffectComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        initialize (event->effectId);
+    }
+
+    for (auto eventCursor = fetchParticleEffectAddedCustomEvents.Execute ();
+         const auto *event = static_cast<const ParticleEffectComponentAddedCustomToNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        initialize (event->effectId);
+    }
+}
+
 void ComponentInitializer::InitializeModels () noexcept
 {
     auto initialize = [this] (Emergence::Celerity::UniqueId _modelId)
@@ -310,6 +355,8 @@ private:
 
     void SyncLights () noexcept;
 
+    void SyncEffects () noexcept;
+
     void SyncModels () noexcept;
 
     Emergence::Celerity::ModifySingletonQuery modifyUrho3D;
@@ -319,6 +366,9 @@ private:
 
     Emergence::Celerity::FetchValueQuery fetchLightByLightId;
     Emergence::Celerity::FetchSequenceQuery fetchLightChangedEvents;
+
+    Emergence::Celerity::FetchValueQuery fetchParticleEffectByEffectId;
+    Emergence::Celerity::FetchSequenceQuery fetchParticleEffectChangedEvents;
 
     Emergence::Celerity::FetchValueQuery fetchStaticModelByModelId;
     Emergence::Celerity::FetchSequenceQuery fetchStaticModelChangedEvents;
@@ -333,6 +383,9 @@ ComponentSynchronizer::ComponentSynchronizer (Emergence::Celerity::TaskConstruct
       fetchLightByLightId (FETCH_VALUE_1F (LightComponent, lightId)),
       fetchLightChangedEvents (FETCH_SEQUENCE (LightComponentChangedEvent)),
 
+      fetchParticleEffectByEffectId (FETCH_VALUE_1F (ParticleEffectComponent, effectId)),
+      fetchParticleEffectChangedEvents (FETCH_SEQUENCE (ParticleEffectComponentChangedEvent)),
+
       fetchStaticModelByModelId (FETCH_VALUE_1F (StaticModelComponent, modelId)),
       fetchStaticModelChangedEvents (FETCH_SEQUENCE (StaticModelComponentChangedEvent))
 {
@@ -343,6 +396,7 @@ void ComponentSynchronizer::Execute ()
 {
     SyncCameras ();
     SyncLights ();
+    SyncEffects ();
     SyncModels ();
 }
 
@@ -368,6 +422,20 @@ void ComponentSynchronizer::SyncLights () noexcept
         if (const auto *light = static_cast<const LightComponent *> (*lightCursor))
         {
             SyncLight (light, static_cast<Urho3D::Light *> (light->implementationHandle));
+        }
+    }
+}
+
+void ComponentSynchronizer::SyncEffects () noexcept
+{
+    for (auto eventCursor = fetchParticleEffectChangedEvents.Execute ();
+         const auto *event = static_cast<const ParticleEffectComponentChangedEvent *> (*eventCursor); ++eventCursor)
+    {
+        auto particleEffectCursor = fetchParticleEffectByEffectId.Execute (&event->effectId);
+        if (const auto *particleEffect = static_cast<const ParticleEffectComponent *> (*particleEffectCursor))
+        {
+            SyncParticleEffect (particleEffect,
+                                static_cast<Urho3D::ParticleEmitter *> (particleEffect->implementationHandle));
         }
     }
 }
@@ -399,6 +467,7 @@ private:
 
     Emergence::Celerity::FetchSequenceQuery fetchCameraRemovedEvents;
     Emergence::Celerity::FetchSequenceQuery fetchLightRemovedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchParticleEffectRemovedEvents;
     Emergence::Celerity::FetchSequenceQuery fetchStaticModelRemovedEvents;
 };
 
@@ -409,6 +478,7 @@ ComponentDeleter::ComponentDeleter (Emergence::Celerity::TaskConstructor &_const
 
       fetchCameraRemovedEvents (FETCH_SEQUENCE (CameraComponentRemovedEvent)),
       fetchLightRemovedEvents (FETCH_SEQUENCE (LightComponentRemovedEvent)),
+      fetchParticleEffectRemovedEvents (FETCH_SEQUENCE (ParticleEffectComponentRemovedEvent)),
       fetchStaticModelRemovedEvents (FETCH_SEQUENCE (StaticModelComponentRemovedEvent))
 {
     _constructor.DependOn (TaskNames::APPLY_COMPONENT_CHANGES);
@@ -441,6 +511,16 @@ void ComponentDeleter::Execute ()
         if (node && event->implementationHandle)
         {
             node->RemoveComponent (static_cast<Urho3D::Light *> (event->implementationHandle));
+        }
+    }
+
+    for (auto eventCursor = fetchParticleEffectRemovedEvents.Execute ();
+         const auto *event = static_cast<const ParticleEffectComponentRemovedEvent *> (*eventCursor); ++eventCursor)
+    {
+        Urho3D::Node *node = nodeAccessor.UnlinkNode (event->objectId);
+        if (node && event->implementationHandle)
+        {
+            node->RemoveComponent (static_cast<Urho3D::ParticleEmitter *> (event->implementationHandle));
         }
     }
 
@@ -631,6 +711,21 @@ static void SyncLight (const LightComponent *_light, Urho3D::Light *_urho3DLight
     _urho3DLight->SetAspectRatio (_light->spotAspectRatio);
 }
 
+static void SyncParticleEffect (const ParticleEffectComponent *_effect, Urho3D::ParticleEmitter *_urho3DEffect) noexcept
+{
+    auto *cache = _urho3DEffect->GetContext ()->GetSubsystem<Urho3D::ResourceCache> ();
+    if (*_effect->effectName)
+    {
+        _urho3DEffect->SetEffect (cache->GetResource<Urho3D::ParticleEffect> (*_effect->effectName));
+    }
+    else
+    {
+        _urho3DEffect->SetEffect (nullptr);
+    }
+
+    _urho3DEffect->SetEmitting (_effect->playing);
+}
+
 static void SyncStaticModel (const StaticModelComponent *_staticModel, Urho3D::StaticModel *_urho3DStaticModel) noexcept
 {
     auto *cache = _urho3DStaticModel->GetContext ()->GetSubsystem<Urho3D::ResourceCache> ();
@@ -685,10 +780,20 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
                                 objectId)
         .DependOn ("Render::RemoveNormalLights"_us);
 
+    _pipelineBuilder.AddTask ("Render::RemoveNormalEffects"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, ParticleEffectComponent,
+                                objectId)
+        .DependOn ("Render::RemoveFixedLights"_us);
+
+    _pipelineBuilder.AddTask ("Render::RemoveFixedEffects"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,
+                                ParticleEffectComponent, objectId)
+        .DependOn ("Render::RemoveNormalEffects"_us);
+
     _pipelineBuilder.AddTask ("Render::RemoveNormalModels"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
                                 objectId)
-        .DependOn ("Render::RemoveFixedLights"_us);
+        .DependOn ("Render::RemoveFixedEffects"_us);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedModels"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,

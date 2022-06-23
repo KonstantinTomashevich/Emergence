@@ -1,6 +1,7 @@
 #include <Render/CameraComponent.hpp>
 #include <Render/Events.hpp>
 #include <Render/LightComponent.hpp>
+#include <Render/ParticleEffectComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
 
@@ -19,6 +20,12 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentChangedEvent, REGULAR, l
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
     LightComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
 
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentAddedNormalEvent, REGULAR, effectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentAddedCustomToNormalEvent, REGULAR, effectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentChangedEvent, REGULAR, effectId);
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
+    ParticleEffectComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle);
+
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedNormalEvent, REGULAR, modelId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedCustomToNormalEvent, REGULAR, modelId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentChangedEvent, REGULAR, modelId)
@@ -29,22 +36,23 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
 {
     // RenderSceneSingleton
 
-    _registrar.OnChangeEvent ({{RenderSceneChangedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
-                               RenderSceneSingleton::Reflect ().mapping,
-                               {
-                                   RenderSceneSingleton::Reflect ().cameraObjectId,
-                               },
-                               {},
-                               {}});
-
     _registrar.OnChangeEvent (
-        {{RenderSceneChangedCustomToNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+        {{RenderSceneChangedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
          RenderSceneSingleton::Reflect ().mapping,
          {
              RenderSceneSingleton::Reflect ().cameraObjectId,
          },
          {},
          {}});
+
+    _registrar.OnChangeEvent ({{RenderSceneChangedCustomToNormalEvent::Reflect ().mapping,
+                                Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+                               RenderSceneSingleton::Reflect ().mapping,
+                               {
+                                   RenderSceneSingleton::Reflect ().cameraObjectId,
+                               },
+                               {},
+                               {}});
 
     // CameraComponent
 
@@ -108,6 +116,38 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
          {{LightComponent::Reflect ().objectId, LightComponentRemovedEvent::Reflect ().objectId},
           {LightComponent::Reflect ().implementationHandle,
            LightComponentRemovedEvent::Reflect ().implementationHandle}}});
+
+    // ParticleEffectComponent
+
+    _registrar.OnAddEvent (
+        {{ParticleEffectComponentAddedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+         ParticleEffectComponent::Reflect ().mapping,
+         {{ParticleEffectComponent::Reflect ().effectId,
+           ParticleEffectComponentAddedNormalEvent::Reflect ().effectId}}});
+
+    _registrar.OnAddEvent ({{ParticleEffectComponentAddedCustomToNormalEvent::Reflect ().mapping,
+                             Emergence::Celerity::EventRoute::FROM_CUSTOM_TO_NORMAL},
+                            ParticleEffectComponent::Reflect ().mapping,
+                            {{ParticleEffectComponent::Reflect ().effectId,
+                              ParticleEffectComponentAddedCustomToNormalEvent::Reflect ().effectId}}});
+
+    _registrar.OnChangeEvent (
+        {{ParticleEffectComponentChangedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+         ParticleEffectComponent::Reflect ().mapping,
+         {
+             ParticleEffectComponent::Reflect ().effectName,
+             ParticleEffectComponent::Reflect ().playing,
+         },
+         {},
+         {{ParticleEffectComponent::Reflect ().effectId,
+           ParticleEffectComponentAddedNormalEvent::Reflect ().effectId}}});
+
+    _registrar.OnRemoveEvent (
+        {{ParticleEffectComponentRemovedEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+         ParticleEffectComponent::Reflect ().mapping,
+         {{ParticleEffectComponent::Reflect ().objectId, ParticleEffectComponentRemovedEvent::Reflect ().objectId},
+          {ParticleEffectComponent::Reflect ().implementationHandle,
+           ParticleEffectComponentRemovedEvent::Reflect ().implementationHandle}}});
 
     // StaticModelComponent
 
