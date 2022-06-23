@@ -282,17 +282,20 @@ void SignalIndex::OnRecordChanged (const void *_record, const void *_recordBacku
 {
     const bool signaledNow = IsSignaled (_record);
     const bool wasSignaled = IsSignaled (_recordBackup);
-    assert (signaledNow != wasSignaled);
 
     if (signaledNow && !wasSignaled)
     {
         signaledRecords.emplace_back (_record);
     }
-    else
+    else if (!signaledNow && wasSignaled)
     {
         auto iterator = std::find (signaledRecords.begin (), signaledRecords.end (), _record);
         assert (iterator != signaledRecords.end ());
         Container::EraseExchangingWithLast (signaledRecords, iterator);
+    }
+    else
+    {
+        assert (!signaledNow && !wasSignaled);
     }
 }
 
