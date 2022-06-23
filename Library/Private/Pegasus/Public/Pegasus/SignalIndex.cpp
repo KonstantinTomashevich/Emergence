@@ -273,8 +273,9 @@ void SignalIndex::OnRecordDeleted (const void *_record, const void *_recordBacku
 
 void SignalIndex::DeleteRecordMyself (const Container::Vector<const void *>::iterator &_position) noexcept
 {
+    void *record = const_cast<void *> (*_position);
     Container::EraseExchangingWithLast (signaledRecords, _position);
-    storage->DeleteRecord (const_cast<void *> (*_position), this);
+    storage->DeleteRecord (record, this);
 }
 
 void SignalIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
