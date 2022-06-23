@@ -95,6 +95,14 @@ void SpawnProcessor::Execute () noexcept
                 if (queryIndex < spawn->spawnedObjects.GetCount ())
                 {
                     spawn->spawnedObjects.EraseExchangingWithLast (spawn->spawnedObjects.Begin () + queryIndex);
+
+                    // If spawn is not on cool down already, restart cool down to avoid respawning objects right away.
+                    // Also, if it was maximum count of units before, restart the cool down to avoid synced spawn.
+                    if (spawn->spawnCoolingDownUntilNs < time->fixedTimeNs ||
+                        spawn->spawnedObjects.GetCount () == spawn->maxSpawnedObjects - 1u)
+                    {
+                        spawn->spawnCoolingDownUntilNs = time->fixedTimeNs + spawn->spawnCoolDownNs;
+                    }
                 }
             }
         }
