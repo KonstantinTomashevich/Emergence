@@ -124,7 +124,7 @@ void LevelGenerator::Execute ()
         }
     }
 
-    PlaceSpawn (-2.0f, 2.5f, 0.0f, HardcodedPrototypes::FIGHTER, playerInfo->localPlayerUid, 1u, 3u);
+    PlaceSpawn (-2.0f, 2.5f, 0.0f, HardcodedPrototypes::FIGHTER, playerInfo->localPlayerUid, 1u, 2u);
     const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerUID ();
 
     for (std::int32_t x = -27; x < 30; x += 18)

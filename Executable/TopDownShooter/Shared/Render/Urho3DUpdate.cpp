@@ -38,9 +38,6 @@ namespace Urho3DUpdate
 namespace TaskNames
 {
 static const Emergence::Memory::UniqueString ENSURE_SCENE_IS_READY {"Urho3DUpdate::EnsureSceneIsReady"};
-static const Emergence::Memory::UniqueString CLEANUP_AFTER_TRANSFORM_REMOVAL {
-    "Urho3DUpdate::CleanupAfterTransformRemoval"};
-
 static const Emergence::Memory::UniqueString INITIALIZE_NEW_COMPONENTS {"Urho3DUpdate::InitializeNewComponents"};
 static const Emergence::Memory::UniqueString APPLY_COMPONENT_CHANGES {"Urho3DUpdate::ApplyComponentChanges"};
 static const Emergence::Memory::UniqueString APPLY_COMPONENT_DELETION {"Urho3DUpdate::ApplyComponentDeletion"};
@@ -161,88 +158,6 @@ void SceneInitializer::Execute () noexcept
     }
 }
 
-class TransformEventProcessor final : public Emergence::Celerity::TaskExecutorBase<TransformEventProcessor>
-{
-public:
-    TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    Emergence::Celerity::ModifySingletonQuery modifyUrho3D;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedNormalEvents;
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedFixedToNormalEvents;
-
-    Emergence::Celerity::RemoveValueQuery removeCameraByObjectId;
-    Emergence::Celerity::RemoveValueQuery removeLightByObjectId;
-    Emergence::Celerity::RemoveValueQuery removeStaticModelByObjectId;
-    Emergence::Celerity::RemoveValueQuery removeNodeByObjectId;
-};
-
-TransformEventProcessor::TransformEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
-      fetchTransformRemovedNormalEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedNormalEvent)),
-      fetchTransformRemovedFixedToNormalEvents (
-          FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent)),
-
-      removeCameraByObjectId (REMOVE_VALUE_1F (CameraComponent, objectId)),
-      removeLightByObjectId (REMOVE_VALUE_1F (LightComponent, objectId)),
-      removeStaticModelByObjectId (REMOVE_VALUE_1F (StaticModelComponent, objectId)),
-      removeNodeByObjectId (REMOVE_VALUE_1F (Urho3DNodeComponent, objectId))
-{
-    _constructor.DependOn (TaskNames::ENSURE_SCENE_IS_READY);
-}
-
-void TransformEventProcessor::Execute () noexcept
-{
-    auto cleanup = [this] (Emergence::Celerity::UniqueId _objectId)
-    {
-        auto cameraCursor = removeCameraByObjectId.Execute (&_objectId);
-        if (cameraCursor.ReadConst ())
-        {
-            ~cameraCursor;
-        }
-
-        auto nodeCursor = removeNodeByObjectId.Execute (&_objectId);
-        if (const auto *node = static_cast<const Urho3DNodeComponent *> (nodeCursor.ReadConst ()))
-        {
-            if (node->node)
-            {
-                node->node->Remove ();
-            }
-
-            ~nodeCursor;
-        }
-
-        for (auto lightCursor = removeLightByObjectId.Execute (&_objectId); lightCursor.ReadConst ();)
-        {
-            ~lightCursor;
-        }
-
-        for (auto modelCursor = removeStaticModelByObjectId.Execute (&_objectId); modelCursor.ReadConst ();)
-        {
-            ~modelCursor;
-        }
-    };
-
-    for (auto eventCursor = fetchTransformRemovedNormalEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedNormalEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        cleanup (event->objectId);
-    }
-
-    for (auto eventCursor = fetchTransformRemovedFixedToNormalEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        cleanup (event->objectId);
-    }
-}
-
 class ComponentInitializer : public Emergence::Celerity::TaskExecutorBase<ComponentInitializer>
 {
 public:
@@ -289,7 +204,7 @@ ComponentInitializer::ComponentInitializer (Emergence::Celerity::TaskConstructor
       fetchStaticModelAddedNormalEvents (FETCH_SEQUENCE (StaticModelComponentAddedNormalEvent)),
       fetchStaticModelAddedCustomEvents (FETCH_SEQUENCE (StaticModelComponentAddedCustomToNormalEvent))
 {
-    _constructor.DependOn (TaskNames::CLEANUP_AFTER_TRANSFORM_REMOVAL);
+    _constructor.DependOn (TaskNames::ENSURE_SCENE_IS_READY);
 }
 
 void ComponentInitializer::Execute ()
@@ -748,8 +663,39 @@ static void SyncStaticModel (const StaticModelComponent *_staticModel, Urho3D::S
 
 void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    using namespace Emergence::Memory::Literals;
+
     _pipelineBuilder.AddTask (TaskNames::ENSURE_SCENE_IS_READY).SetExecutor<SceneInitializer> (_context);
-    _pipelineBuilder.AddTask (TaskNames::CLEANUP_AFTER_TRANSFORM_REMOVAL).SetExecutor<TransformEventProcessor> ();
+
+    _pipelineBuilder.AddTask ("Render::RemoveNormalCameras"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, CameraComponent, objectId)
+        .DependOn (TaskNames::ENSURE_SCENE_IS_READY);
+
+    _pipelineBuilder.AddTask ("Render::RemoveFixedCameras"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent, CameraComponent,
+                                objectId)
+        .DependOn ("Render::RemoveNormalCameras"_us);
+
+    _pipelineBuilder.AddTask ("Render::RemoveNormalLights"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, LightComponent, objectId)
+        .DependOn ("Render::RemoveFixedCameras"_us);
+
+    _pipelineBuilder.AddTask ("Render::RemoveFixedLights"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent, LightComponent,
+                                objectId)
+        .DependOn ("Render::RemoveNormalLights"_us);
+
+    _pipelineBuilder.AddTask ("Render::RemoveNormalModels"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
+                                objectId)
+        .DependOn ("Render::RemoveFixedLights"_us);
+
+    _pipelineBuilder.AddTask ("Render::RemoveFixedModels"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,
+                                StaticModelComponent, objectId)
+        .DependOn ("Render::RemoveNormalModels"_us)
+        .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
+
     _pipelineBuilder.AddTask (TaskNames::INITIALIZE_NEW_COMPONENTS).SetExecutor<ComponentInitializer> ();
     _pipelineBuilder.AddTask (TaskNames::APPLY_COMPONENT_CHANGES).SetExecutor<ComponentSynchronizer> ();
     _pipelineBuilder.AddTask (TaskNames::APPLY_COMPONENT_DELETION).SetExecutor<ComponentDeleter> ();

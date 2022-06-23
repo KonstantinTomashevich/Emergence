@@ -227,6 +227,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask ("Input::RemoveFixedListeners"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
                                 objectId)
+        .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
         .MakeDependencyOf ("Input::FixedDispatcher"_us);
 
     _pipelineBuilder.AddTask ("Input::FixedDispatcher"_us).SetExecutor<FixedInputDispatcher> ();
@@ -238,6 +239,7 @@ void AddToNormalUpdate (Emergence::Celerity::InputAccumulator *_inputAccumulator
     _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
                                 objectId)
+        .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
         .MakeDependencyOf ("Input::NormalDispatcher"_us);
 
     _pipelineBuilder.AddTask ("Input::NormalDispatcher"_us).SetExecutor<NormalInputDispatcher> (_inputAccumulator);
