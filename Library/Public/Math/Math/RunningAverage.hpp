@@ -6,12 +6,16 @@
 
 namespace Emergence::Math
 {
+/// \brief Implements updatable running average.
+/// \tparam SampleSize Maximum count of samples.
 template <std::size_t SampleSize>
 class RunningAverage final
 {
 public:
+    /// \brief Add new sample to the average. If there is no space, removes oldest sample.
     void Push (float _sample) noexcept;
 
+    /// \return Current running average.
     [[nodiscard]] float Get () const noexcept;
 
 private:

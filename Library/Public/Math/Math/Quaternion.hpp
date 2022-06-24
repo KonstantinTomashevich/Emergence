@@ -27,10 +27,13 @@ struct alignas (sizeof (float) * 4u) Quaternion final
 
     Quaternion &Normalize () noexcept;
 
+    /// \return Quaternion with negated imaginary part.
     [[nodiscard]] Quaternion CalculateConjugate () const noexcept;
 
+    /// \details Quaternion * InverseQuaternion = Identity
     [[nodiscard]] Quaternion CalculateInverse () const noexcept;
 
+    /// \return Rotation of this quaternion, represented using euler angles.
     [[nodiscard]] Vector3f CalculateEuler () const noexcept;
 
     Quaternion operator+ (const Quaternion &_other) const noexcept;

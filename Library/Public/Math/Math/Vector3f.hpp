@@ -26,6 +26,7 @@ struct alignas (float) Vector3f final
 
     Vector3f (float _x, float _y, float _z) noexcept;
 
+    /// \warning If you need length just for comparison, consider using ::LengthSquared to avoid costly sqrt call.
     [[nodiscard]] float Length () const noexcept;
 
     [[nodiscard]] float LengthSquared () const noexcept;

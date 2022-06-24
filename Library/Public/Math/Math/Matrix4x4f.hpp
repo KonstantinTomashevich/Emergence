@@ -26,10 +26,13 @@ struct alignas (sizeof (float) * 4u) Matrix4x4f final
 
     ~Matrix4x4f () noexcept = default;
 
+    /// \details Transposition "rotates" matrix by makings its rows columns.
     Matrix4x4f &Transpose () noexcept;
 
+    /// \details Matrix * InverseMatrix = Identity (if inverse exists)
     [[nodiscard]] Matrix4x4f CalculateInverse () const noexcept;
 
+    /// \return Sum of diagonal elements.
     [[nodiscard]] float CalculateTrace () const noexcept;
 
     [[nodiscard]] float CalculateDeterminant () const noexcept;
