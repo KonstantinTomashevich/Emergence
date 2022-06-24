@@ -6,7 +6,6 @@
 #include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Test/EventRouting.hpp>
 #include <Celerity/World.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
