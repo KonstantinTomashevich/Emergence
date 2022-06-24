@@ -94,7 +94,8 @@ void SpawnProcessor::Execute () noexcept
                 // We can accidentally index garbage, therefore we need to check index.
                 if (queryIndex < spawn->spawnedObjects.GetCount ())
                 {
-                    spawn->spawnedObjects.EraseExchangingWithLast (spawn->spawnedObjects.Begin () + queryIndex);
+                    const auto position = spawn->spawnedObjects.Begin () + static_cast<ptrdiff_t> (queryIndex);
+                    spawn->spawnedObjects.EraseExchangingWithLast (position);
 
                     // If spawn is not on cool down already, restart cool down to avoid respawning objects right away.
                     // Also, if it was maximum count of units before, restart the cool down to avoid synced spawn.

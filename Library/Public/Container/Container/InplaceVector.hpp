@@ -299,7 +299,11 @@ typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::
         *_iterator = std::move (*last);
     }
 
-    last->~Item ();
+    if constexpr (!std::is_trivially_destructible_v<Item>)
+    {
+        last->~Item ();
+    }
+
     --count;
     return _iterator;
 }
