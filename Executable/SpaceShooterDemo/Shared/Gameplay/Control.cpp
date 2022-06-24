@@ -93,7 +93,6 @@ void ControlSwitcher::Execute () noexcept
             {
                 if (alignment->playerId == playerInfo->localPlayerUid)
                 {
-                    // TODO: Crashes, because InputListenerComponent is not removed after transform.
                     controllable->controlledByLocalPlayer = true;
                     input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP,
                                                                 controllable->objectId};

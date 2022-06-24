@@ -148,7 +148,7 @@ void FixedAssembler::Execute ()
 
                 movementShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::SPHERE,
                                            .sphereRadius = 0.5f};
-                movementShape->collisionGroup = PhysicsConstant::WARRIOR_COLLISION_GROUP;
+                movementShape->collisionGroup = PhysicsConstant::FIGHTER_COLLISION_GROUP;
 
                 // Hitbox for bullets.
 
@@ -169,10 +169,10 @@ void FixedAssembler::Execute ()
                 movement->objectId = _objectId;
 
                 movement->maxLinearSpeed = 5.0f;
-                movement->linearAcceleration = Emergence::Math::Vector3f::FORWARD * 5.0f;
+                movement->linearAcceleration = Emergence::Math::Vector3f::FORWARD * 20.0f;
 
                 movement->maxAngularSpeed = Emergence::Math::PI;
-                movement->angularAcceleration = {0.0f, Emergence::Math::PI, 0.0f};
+                movement->angularAcceleration = {0.0f, Emergence::Math::PI * 2.0f, 0.0f};
 
                 movement->linearVelocityMask = 0b00000101u;  // Only forward and to the sides.
                 movement->angularVelocityMask = 0b00000010u; // Only around Y axis.

@@ -43,14 +43,14 @@ void PhysicsInitializer::Execute () noexcept
 
     world->collisionMasks[PhysicsConstant::GROUND_COLLISION_GROUP] =
         (1u << PhysicsConstant::GROUND_COLLISION_GROUP) | (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) |
-        (1u << PhysicsConstant::WARRIOR_COLLISION_GROUP) | (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
+        (1u << PhysicsConstant::FIGHTER_COLLISION_GROUP) | (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
 
     world->collisionMasks[PhysicsConstant::OBSTACLE_COLLISION_GROUP] =
-        (1u << PhysicsConstant::WARRIOR_COLLISION_GROUP) | (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
+        (1u << PhysicsConstant::FIGHTER_COLLISION_GROUP) | (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
 
-    world->collisionMasks[PhysicsConstant::WARRIOR_COLLISION_GROUP] =
+    world->collisionMasks[PhysicsConstant::FIGHTER_COLLISION_GROUP] =
         (1u << PhysicsConstant::GROUND_COLLISION_GROUP) | (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) |
-        (1u << PhysicsConstant::WARRIOR_COLLISION_GROUP);
+        (1u << PhysicsConstant::FIGHTER_COLLISION_GROUP);
 
     world->collisionMasks[PhysicsConstant::BULLET_COLLISION_GROUP] =
         (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) | (1u << PhysicsConstant::HIT_BOX_COLLISION_GROUP);

@@ -57,5 +57,3 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   and [TaskExecutor](./Service/TaskExecutor/README.md) into framework for gameplay world logic implementation.
 
 ### Executables
-
-- **SpaceShooterDemo**: small sample games, that illustrates **Emergence** features.

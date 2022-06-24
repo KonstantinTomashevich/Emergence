@@ -764,36 +764,39 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalCameras"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, CameraComponent, objectId)
-        .DependOn (TaskNames::ENSURE_SCENE_IS_READY);
+        .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedCameras"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent, CameraComponent,
                                 objectId)
-        .DependOn ("Render::RemoveNormalCameras"_us);
+        .DependOn ("Render::RemoveNormalCameras"_us)
+        .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalLights"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, LightComponent, objectId)
-        .DependOn ("Render::RemoveFixedCameras"_us);
+        .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedLights"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent, LightComponent,
                                 objectId)
-        .DependOn ("Render::RemoveNormalLights"_us);
+        .DependOn ("Render::RemoveNormalLights"_us)
+        .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalEffects"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, ParticleEffectComponent,
                                 objectId)
-        .DependOn ("Render::RemoveFixedLights"_us);
+        .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedEffects"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,
                                 ParticleEffectComponent, objectId)
-        .DependOn ("Render::RemoveNormalEffects"_us);
+        .DependOn ("Render::RemoveNormalEffects"_us)
+        .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalModels"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
                                 objectId)
-        .DependOn ("Render::RemoveFixedEffects"_us);
+        .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedModels"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,

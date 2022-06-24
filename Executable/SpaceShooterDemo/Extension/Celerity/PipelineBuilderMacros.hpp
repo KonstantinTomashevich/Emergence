@@ -7,6 +7,7 @@
 
 // This file contains macros, that shorten TaskConstructor query creation calls.
 // These macros provide no additional logic and work as syntax sugar, that makes calls less verbose.
+// All these macros expect that there is TaskConstructor variable name `_constructor` in the scope.
 
 #define FETCH_SINGLETON(Type) _constructor.FetchSingleton (Type::Reflect ().mapping)
 #define MODIFY_SINGLETON(Type) _constructor.ModifySingleton (Type::Reflect ().mapping)

@@ -14,7 +14,6 @@ END_MUTING_WARNINGS
 
 namespace InputInitialization
 {
-
 class InputInitializer final : public Emergence::Celerity::TaskExecutorBase<InputInitializer>
 {
 public:
@@ -68,10 +67,8 @@ void InputInitializer::Execute () noexcept
         {InputConstant::FIGHT_ACTION_GROUP, InputConstant::FIRE_ACTION}, SDL_SCANCODE_Q, true, false};
 }
 
-using namespace Emergence::Memory::Literals;
-
 void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddTask ("InputInitializer"_us).SetExecutor<InputInitializer> ();
+    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"InputInitializer"}).SetExecutor<InputInitializer> ();
 }
 } // namespace InputInitialization

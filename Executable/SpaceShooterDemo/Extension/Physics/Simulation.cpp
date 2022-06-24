@@ -1282,7 +1282,8 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
             const physx::PxTransform &pxTransform = pxBody->getGlobalPose ();
             const Math::Vector3f &scale = transform->GetLogicalLocalTransform ().scale;
 
-            // TODO: Currently, we assume that non-static bodies are attached to transform root elements only.
+            // Currently, we assume that non-static bodies are attached to transform root elements only.
+            assert (transform->GetParentObjectId () == Celerity::INVALID_UNIQUE_ID);
             transform->SetLogicalLocalTransform ({FromPhysX (pxTransform.p), FromPhysX (pxTransform.q), scale});
         }
     };
