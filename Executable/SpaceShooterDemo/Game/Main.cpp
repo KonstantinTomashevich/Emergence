@@ -113,6 +113,7 @@ void GameApplication::Setup ()
     Application::Setup ();
     engineParameters_[Urho3D::EP_FULL_SCREEN] = false;
     engineParameters_[Urho3D::EP_WINDOW_RESIZABLE] = true;
+    engineParameters_[Urho3D::EP_WINDOW_TITLE] = "Emergence Space Shooter Demo";
     engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreAssets;GameAssets";
     engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "..";
 }

@@ -1,11 +1,9 @@
 if (NOT TARGET Urho3D)
-    message (WARNING "Urho3D not found, therefore TopDownShooter is excluded from project.")
+    message (WARNING "Urho3D not found, therefore SpaceShooterDemo is excluded from project.")
     return ()
 endif ()
 
-# TODO: It's not really a topdown shooter anymore. Rename demo.
-
-set (GAME_NAME "TopDownShooter")
+set (GAME_NAME "SpaceShooterDemo")
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
 set (GAME_RENDER_SYSTEM Direct3D11)
 set (GAME_ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Converted")
@@ -23,11 +21,10 @@ if (WIN32)
     set (GAME_EXECUTABLE_FLAG "WIN32")
 endif ()
 
-add_custom_target (TopDownShooterConvertIntermediateAssets
+add_custom_target (SpaceShooterDemoConvertIntermediateAssets
         powershell ".\\Scripts\\ConvertAssets.ps1" "${URHO3D_HOME}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory (Editor)
 add_subdirectory (Extension)
 add_subdirectory (Game)
 add_subdirectory (Model)

@@ -1,4 +1,4 @@
-# Simple script for converting intermediate assets. Should be run from TopDownShooter directory.
+# Simple script for converting intermediate assets. Should be run from SpaceShooterDemo directory.
 
 if ($args.Count -ne 1)
 {
