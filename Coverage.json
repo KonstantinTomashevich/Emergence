@@ -13,7 +13,7 @@
       "Reason": "There is no sense to scan dependency coverage."
     },
     {
-      "Prefix": "./Executable/TopDownShooter",
+      "Prefix": "./Executable/SpaceShooterDemo",
       "Action": "Exclude",
       "Reason": "Still in early experimental stages of development."
     },

@@ -273,25 +273,29 @@ void SignalIndex::OnRecordDeleted (const void *_record, const void *_recordBacku
 
 void SignalIndex::DeleteRecordMyself (const Container::Vector<const void *>::iterator &_position) noexcept
 {
+    void *record = const_cast<void *> (*_position);
     Container::EraseExchangingWithLast (signaledRecords, _position);
-    storage->DeleteRecord (const_cast<void *> (*_position), this);
+    storage->DeleteRecord (record, this);
 }
 
 void SignalIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
     const bool signaledNow = IsSignaled (_record);
     const bool wasSignaled = IsSignaled (_recordBackup);
-    assert (signaledNow != wasSignaled);
 
     if (signaledNow && !wasSignaled)
     {
         signaledRecords.emplace_back (_record);
     }
-    else
+    else if (!signaledNow && wasSignaled)
     {
         auto iterator = std::find (signaledRecords.begin (), signaledRecords.end (), _record);
         assert (iterator != signaledRecords.end ());
         Container::EraseExchangingWithLast (signaledRecords, iterator);
+    }
+    else
+    {
+        assert (!signaledNow && !wasSignaled);
     }
 }
 

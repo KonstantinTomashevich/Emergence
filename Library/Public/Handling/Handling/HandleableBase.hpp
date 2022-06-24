@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <atomic>
 
 namespace Emergence::Handling
 {
@@ -41,6 +41,6 @@ protected:
 
 private:
     /// \brief Internal reference counter.
-    uintptr_t references {0u};
+    std::atomic_unsigned_lock_free references {0u};
 };
 } // namespace Emergence::Handling

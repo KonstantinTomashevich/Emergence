@@ -44,6 +44,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 - [MemoryRecordingClient](./Executable/MemoryRecordingClient/README.md):
   tool for viewing [MemoryRecording](./Library/Public/MemoryRecording/README.md) serialized tracks.
+- [SpaceShooterDemo](./Executable/SpaceShooterDemo/README.md): simple shooter game, that illustrates usage of
+  **Emergence** features.
 
 ## Planed modules
 
@@ -55,5 +57,3 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   and [TaskExecutor](./Service/TaskExecutor/README.md) into framework for gameplay world logic implementation.
 
 ### Executables
-
-- **TopDownShooter**: small sample games, that illustrates **Emergence** features.
