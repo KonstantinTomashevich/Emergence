@@ -6,7 +6,7 @@ namespace PhysicsInitialization
 {
 struct Checkpoint final
 {
-    Checkpoint() = delete;
+    Checkpoint () = delete;
 
     static const Emergence::Memory::UniqueString PHYSICS_INITIALIZED;
 };

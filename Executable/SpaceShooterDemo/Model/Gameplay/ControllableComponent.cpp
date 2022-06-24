@@ -9,7 +9,7 @@ const ControllableComponent::Reflection &ControllableComponent::Reflect () noexc
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ControllableComponent)
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId)
         EMERGENCE_MAPPING_REGISTER_REGULAR (controlledByLocalPlayer)
-        EMERGENCE_MAPPING_REGISTRATION_END()
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;

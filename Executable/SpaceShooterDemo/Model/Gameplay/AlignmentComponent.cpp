@@ -9,7 +9,7 @@ const AlignmentComponent::Reflection &AlignmentComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (AlignmentComponent)
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId)
         EMERGENCE_MAPPING_REGISTER_REGULAR (playerId)
-        EMERGENCE_MAPPING_REGISTRATION_END()
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;

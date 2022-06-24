@@ -38,7 +38,7 @@ void PhysicsInitializer::Execute () noexcept
     auto *world = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*worldCursor);
 
     world->enableRemoteDebugger = false;
-    strcpy(world->remoteDebuggerUrl.data(), "localhost");
+    strcpy (world->remoteDebuggerUrl.data (), "localhost");
     world->remoteDebuggerPort = 5425u;
 
     world->collisionMasks[PhysicsConstant::GROUND_COLLISION_GROUP] =

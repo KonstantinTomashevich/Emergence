@@ -11,7 +11,7 @@ const MortalComponent::Reflection &MortalComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (health)
         EMERGENCE_MAPPING_REGISTER_REGULAR (maxHealth)
         EMERGENCE_MAPPING_REGISTER_REGULAR (removeAfterNs)
-        EMERGENCE_MAPPING_REGISTRATION_END()
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;

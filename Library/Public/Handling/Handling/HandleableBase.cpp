@@ -7,7 +7,7 @@ namespace Emergence::Handling
 {
 void HandleableBase::RegisterReference () noexcept
 {
-    assert (references != std::numeric_limits<decltype(references)::value_type>::max());
+    assert (references != std::numeric_limits<decltype (references)::value_type>::max ());
     ++references;
 }
 

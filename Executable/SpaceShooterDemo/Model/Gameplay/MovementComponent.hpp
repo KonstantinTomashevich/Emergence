@@ -10,7 +10,7 @@ struct MovementComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    float maxLinearSpeed= 0.0f;
+    float maxLinearSpeed = 0.0f;
     Emergence::Math::Vector3f linearAcceleration = Emergence::Math::Vector3f::ZERO;
 
     float maxAngularSpeed = 0.0f;

@@ -8,7 +8,7 @@ const FollowCameraSettingsSingleton::Reflection &FollowCameraSettingsSingleton::
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (FollowCameraSettingsSingleton)
         EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (cameraLocalTransform)
-        EMERGENCE_MAPPING_REGISTRATION_END()
+        EMERGENCE_MAPPING_REGISTRATION_END ()
     }();
 
     return reflection;

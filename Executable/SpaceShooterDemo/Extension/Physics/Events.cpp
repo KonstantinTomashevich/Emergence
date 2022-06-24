@@ -144,10 +144,11 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
          CollisionShapeComponent::Reflect ().mapping,
          {{CollisionShapeComponent::Reflect ().shapeId, CollisionShapeComponentAddedFixedEvent::Reflect ().shapeId}}});
 
-    _registrar.OnAddEvent (
-    {{CollisionShapeComponentAddedCustomToFixedEvent::Reflect ().mapping, Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
-     CollisionShapeComponent::Reflect ().mapping,
-     {{CollisionShapeComponent::Reflect ().shapeId, CollisionShapeComponentAddedCustomToFixedEvent::Reflect ().shapeId}}});
+    _registrar.OnAddEvent ({{CollisionShapeComponentAddedCustomToFixedEvent::Reflect ().mapping,
+                             Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
+                            CollisionShapeComponent::Reflect ().mapping,
+                            {{CollisionShapeComponent::Reflect ().shapeId,
+                              CollisionShapeComponentAddedCustomToFixedEvent::Reflect ().shapeId}}});
 
     _registrar.OnChangeEvent (
         {{CollisionShapeComponentMaterialChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},

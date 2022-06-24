@@ -141,8 +141,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .DependOn (Checkpoint::SHOOTING_STARTED);
 
     _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, ShooterComponent,
-                                objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, ShooterComponent, objectId)
         .DependOn ("Shooting::RemoveAfterDeath"_us)
         .MakeDependencyOf ("Shooting::Processor"_us);
 
