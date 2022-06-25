@@ -3,6 +3,7 @@
 #include <Container/InplaceVector.hpp>
 #include <Container/Vector.hpp>
 
+#include <Celerity/Event/Constants.hpp>
 #include <Celerity/Pipeline.hpp>
 
 #include <Memory/Heap.hpp>
@@ -69,12 +70,6 @@ struct CopyOutBlock final
     std::size_t length = 0u;
 };
 
-/// \brief Maximum amount of CopyOutBlock's per event.
-/// \details For performance reasons, CopyOutBlock's are stored in inplace vectors, therefore maximum amount of
-///          these blocks per event is fixed. This value can be increased, but it will increase memory usage as well.
-/// TODO: Move such constants to constant sub library, like Pegasus?
-constexpr std::size_t MAX_COPY_OUT_BLOCKS_PER_EVENT = 4u;
-
 /// \brief Contains common data for all event triggers.
 class EventTriggerBase
 {
@@ -117,8 +112,6 @@ private:
 using TrivialEventTriggerRow =
     Container::InplaceVector<TrivialEventTrigger, static_cast<std::size_t> (EventRoute::COUNT)>;
 
-constexpr std::size_t MAX_TRACKED_ZONES_PER_EVENT = 4u;
-
 /// \brief Trigger for OnChange automated events.
 class OnChangeEventTrigger final : public EventTriggerBase
 {
@@ -150,11 +143,7 @@ private:
     Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOutOfChanged;
 };
 
-/// \brief Maximum count of OnChange events per type.
-/// \details For performance reasons, ChangeTracker stores info about OnChange events in inplace vector,
-///          therefore maximum count of events is fixed. This value can be increased, but it will increase
-///          memory usage as well.
-constexpr std::size_t MAX_ON_CHANGE_EVENTS_PER_TYPE = 4u;
+
 
 class ChangeTracker final
 {
@@ -183,12 +172,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (ChangeTracker);
 
 private:
-    /// \details Fixed for performance. This value can be increased, but it will increase memory usage as well.
-    static constexpr std::size_t MAX_TRACKED_ZONES = 4u;
-
-    /// \details Fixed for performance. This value can be increased, but it will increase memory usage as well.
-    static constexpr std::size_t MAX_TRACKING_BUFFER_SIZE = 256u;
-
     struct TrackedZone final
     {
         std::size_t sourceOffset = 0u;
@@ -201,7 +184,7 @@ private:
         OnChangeEventTrigger *event = nullptr;
         uint8_t zoneMask = 0u;
 
-        static_assert (sizeof (zoneMask) * 8u >= MAX_TRACKED_ZONES);
+        static_assert (sizeof (zoneMask) * 8u >= CHANGE_TRACKER_MAX_TRACKED_ZONES);
     };
 
     void BakeTrackedZones (const EventVector &_events) noexcept;
@@ -209,9 +192,9 @@ private:
     void BakeBindings (const EventVector &_events) noexcept;
 
     StandardLayout::Mapping trackedType;
-    Container::InplaceVector<TrackedZone, MAX_TRACKED_ZONES> trackedZones;
+    Container::InplaceVector<TrackedZone, CHANGE_TRACKER_MAX_TRACKED_ZONES> trackedZones;
     Container::InplaceVector<EventBinding, MAX_ON_CHANGE_EVENTS_PER_TYPE> bindings;
-    std::array<uint8_t, MAX_TRACKING_BUFFER_SIZE> buffer;
+    std::array<uint8_t, CHANGE_TRACKER_MAX_TRACKING_BUFFER_SIZE> buffer;
 };
 } // namespace Emergence::Celerity
 
