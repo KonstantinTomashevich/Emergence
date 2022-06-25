@@ -19,6 +19,7 @@
 #include <Gameplay/Movement.hpp>
 #include <Gameplay/RandomAi.hpp>
 #include <Gameplay/Shooting.hpp>
+#include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
 #include <Initialization/InputInitialization.hpp>
@@ -162,6 +163,7 @@ void GameApplication::Start ()
     Movement::AddToFixedUpdate (pipelineBuilder);
     RandomAi::AddToFixedUpdate (pipelineBuilder);
     Shooting::AddToFixedUpdate (pipelineBuilder);
+    Slowdown::AddToFixedUpdate (pipelineBuilder);
     Spawn::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End (std::thread::hardware_concurrency ());
 

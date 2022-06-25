@@ -65,6 +65,9 @@ void InputInitializer::Execute () noexcept
 
     input->keyStateChangedTriggers.EmplaceBack () = {
         {InputConstant::FIGHT_ACTION_GROUP, InputConstant::FIRE_ACTION}, SDL_SCANCODE_Q, true, false};
+
+    input->keyStateChangedTriggers.EmplaceBack () = {
+        {InputConstant::FIGHT_ACTION_GROUP, InputConstant::SLOWDOWN_ACTION}, SDL_SCANCODE_E, true, false};
 }
 
 void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
