@@ -38,6 +38,8 @@ struct OnChangeAutomatedEventSeed : public ClearableEventSeed
     Container::Vector<CopyOutField> copyOutOfChanged;
 };
 
+/// \brief Interface for adding events into World.
+/// \invariant All events for the single world must be registered though single registrar!
 class EventRegistrar final
 {
 public:
@@ -49,14 +51,23 @@ public:
 
     ~EventRegistrar () noexcept;
 
+    /// \brief Registers event with custom firing logic.
+    /// \invariant Same struct can not be used to register several events!
     void CustomEvent (const ClearableEventSeed &_seed) noexcept;
 
+    /// \brief Registers event that is fired after object creation.
+    /// \invariant Same struct can not be used to register several events!
     void OnAddEvent (const TrivialAutomatedEventSeed &_seed) noexcept;
 
+    /// \brief Registers event that is fired after object removal.
+    /// \invariant Same struct can not be used to register several events!
     void OnRemoveEvent (const TrivialAutomatedEventSeed &_seed) noexcept;
 
+    /// \brief Registers event that is fired after specified fields of an object are changed.
+    /// \invariant Same struct can not be used to register several events!
     void OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noexcept;
 
+    /// There is no need to move assign event registrars.
     EMERGENCE_DELETE_ASSIGNMENT (EventRegistrar);
 
 private:

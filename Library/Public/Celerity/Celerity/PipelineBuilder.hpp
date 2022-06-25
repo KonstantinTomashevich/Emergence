@@ -45,6 +45,12 @@
 
 namespace Emergence::Celerity
 {
+/// \brief RAII-style constructor for Pipeline tasks.
+/// \note We have 4 access types for long term objects because of automated event triggering logic. If task has
+///       edit access, it is registered as OnChange event producer, because it is able to change objects. If task
+///       has remove access, it is registered as OnRemove event producer for the same reason. This makes it difficult
+///       to correctly organize event pipelines as we have a lot of potential producers. To reduce this side effect
+///       we allow users to request edit access without remove and remove without edit.
 class TaskConstructor final
 {
 public:
@@ -54,119 +60,178 @@ public:
 
     ~TaskConstructor () noexcept;
 
+    /// \brief Registers dependency on another task or checkpoint with given name.
+    /// \details There is no registration order requirement: given task or checkpoint is allowed to be registered later.
     TaskConstructor &DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
+    /// \brief Registers this task as dependency of another task or checkpoint with given name.
+    /// \details There is no registration order requirement: given task or checkpoint is allowed to be registered later.
     TaskConstructor &MakeDependencyOf (Memory::UniqueString _taskOrCheckpoint) noexcept;
 
-    [[nodiscard]] FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping);
+    /// \brief Grants read-only access to singleton, described by given mapping.
+    [[nodiscard]] FetchSingletonQuery FetchSingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants read-write access to singleton, described by given mapping.
     [[nodiscard]] ModifySingletonQuery ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants insertion access to short term objects storage, described by given mapping.
     [[nodiscard]] InsertShortTermQuery InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants read-only access to short term objects storage, described by given mapping.
     [[nodiscard]] FetchSequenceQuery FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants read-write access to short term objects storage, described by given mapping.
     [[nodiscard]] ModifySequenceQuery ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants insertion access to long term objects storage, described by given mapping.
     [[nodiscard]] InsertLongTermQuery InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants read-only access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with any selected values in given fields.
     [[nodiscard]] FetchValueQuery FetchValue (const StandardLayout::Mapping &_typeMapping,
                                               const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with any selected values in given fields.
     [[nodiscard]] ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                                 const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with any selected values in given fields.
     [[nodiscard]] EditValueQuery EditValue (const StandardLayout::Mapping &_typeMapping,
                                             const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with any selected values in given fields.
     [[nodiscard]] RemoveValueQuery RemoveValue (const StandardLayout::Mapping &_typeMapping,
                                                 const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    /// \brief Grants read-only access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] FetchAscendingRangeQuery FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                 StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                   StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] EditAscendingRangeQuery EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                               StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] RemoveAscendingRangeQuery RemoveAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                   StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants read-only access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] FetchDescendingRangeQuery FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                   StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                     StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] EditDescendingRangeQuery EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                 StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] RemoveDescendingRangeQuery RemoveDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                     StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants read-only access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with given value in given field.
     [[nodiscard]] FetchSignalQuery FetchSignal (const StandardLayout::Mapping &_typeMapping,
                                                 StandardLayout::FieldId _keyField,
                                                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with given value in given field.
     [[nodiscard]] ModifySignalQuery ModifySignal (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
         const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with given value in given field.
     [[nodiscard]] EditSignalQuery EditSignal (const StandardLayout::Mapping &_typeMapping,
                                               StandardLayout::FieldId _keyField,
                                               const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
+    /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with given value in given field.
     [[nodiscard]] RemoveSignalQuery RemoveSignal (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
         const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
+    /// \brief Grants read-only access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected shape.
     [[nodiscard]] FetchShapeIntersectionQuery FetchShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected shape.
     [[nodiscard]] ModifyShapeIntersectionQuery ModifyShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected shape.
     [[nodiscard]] EditShapeIntersectionQuery EditShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected shape.
     [[nodiscard]] RemoveShapeIntersectionQuery RemoveShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants read-only access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected ray.
     [[nodiscard]] FetchRayIntersectionQuery FetchRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected ray.
     [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected ray.
     [[nodiscard]] EditRayIntersectionQuery EditRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected ray.
     [[nodiscard]] RemoveRayIntersectionQuery RemoveRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Make given lambda task executor.
     TaskConstructor &SetExecutor (std::function<void ()> _executor) noexcept;
 
+    /// \brief Make instance of given class, that inherits TaskExecutorBase, task executor.
+    /// \details Technically it is just more convenient way to set executor that lambda variant.
+    ///          Under the hood it still calls constructor and creates lambda, while also taking care
+    ///          memory usage profiler grouping.
+    /// \invariant Constructor of `Executor` has `Executor (TaskConstructor&, Args...) noexcept` signature.
     template <typename Executor, typename... Args>
     TaskConstructor &SetExecutor (Args... _args) noexcept;
 
-    [[nodiscard]] World *GetWorld () const noexcept;
-
-    TaskConstructor &operator= (const TaskConstructor &_other) = delete;
-
-    /// Move-assignment is allowed, because it makes construction of several tasks from one function easier.
-    TaskConstructor &operator= (TaskConstructor &&_other) noexcept;
+    EMERGENCE_DELETE_ASSIGNMENT (TaskConstructor);
 
 private:
     friend class PipelineBuilder;
@@ -195,6 +260,7 @@ private:
     Memory::Heap heap;
 };
 
+/// \brief Provides API for building World Pipeline's.
 class PipelineBuilder final
 {
 public:
@@ -206,12 +272,22 @@ public:
 
     ~PipelineBuilder () = default;
 
+    /// \brief Begin building new Pipeline for associated world.
+    /// \return Whether building routine was successfully started. Building routine fails when user tries to create
+    ///         second normal or second fixed pipeline.
     bool Begin (Memory::UniqueString _id, PipelineType _type) noexcept;
 
+    /// \brief Starts construction routine for new task.
+    /// \invariant Task name is unique.
+    /// \invariant It's forbidden to construct several tasks simultaneously.
     [[nodiscard]] TaskConstructor AddTask (Memory::UniqueString _name) noexcept;
 
+    /// \brief Registers new checkpoint.
+    /// \invariant Checkpoint name is unique.
     void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
+    /// \brief Finishes active pipeline routine.
+    /// \return New pipeline or `nullptr` if pipeline creation fails due to errors.
     Pipeline *End (std::size_t _maximumChildThreads) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PipelineBuilder);
@@ -278,6 +354,7 @@ private:
     std::array<EventUsageMap, static_cast<std::size_t> (PipelineType::COUNT)> eventConsumption;
 };
 
+/// \brief Helper class for task executor creation, that takes care of memory usage logging.
 template <typename Successor>
 class TaskExecutorBase : public Handling::HandleableBase
 {

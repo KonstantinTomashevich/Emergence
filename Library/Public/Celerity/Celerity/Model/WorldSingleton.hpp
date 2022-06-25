@@ -25,7 +25,6 @@ struct WorldSingleton final
     struct Reflection final
     {
         StandardLayout::FieldId fixedUpdateHappened;
-        // uidCounter is a special internal field with synchronization, therefore it is not reflected.
         StandardLayout::Mapping mapping;
     };
 

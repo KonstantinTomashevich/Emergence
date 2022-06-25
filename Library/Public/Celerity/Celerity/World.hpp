@@ -27,12 +27,17 @@ struct WorldSingleton;
 //       performance without losing Celerity features, but it has one significant downside: we can no longer separate
 //       game source and engine source, otherwise Chameleon will not be able to generate code for all use cases.
 
+/// \brief Contains basic configuration for WorldSingleton and TimeSingleton.
+/// \details These values can be set through initialization pipeline, therefore
+///          this structure is only a more convenient wa to do this task.
 struct WorldConfiguration final
 {
+    /// \see TimeSingleton::targetFixedFrameDurationsS
     Container::InplaceVector<float, TimeSingleton::MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
         1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
 };
 
+/// \brief Represents whole game level (or world itself), works as conduit for data, events and pipelines.
 class World final
 {
 public:
@@ -45,8 +50,13 @@ public:
     ~World ();
 
     /// \brief Executes normal update and fixed update if needed.
+    /// \details Calculates time deltas and updates time, then executes normal pipeline and decides whether it is
+    ///          needed to execute fixed pipeline.
+    /// \invariant Should be called every frame if gameplay world is active. Correctly processes long absence of calls.
     void Update () noexcept;
 
+    /// \brief Removes given pipeline from the world and frees used memory.
+    /// \invariant Pipeline belongs to this world.
     void RemovePipeline (Pipeline *_pipeline) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (World);
@@ -95,6 +105,7 @@ private:
     std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
 };
 
+/// \brief Contains useful functions for tests.
 class WorldTestingUtility final
 {
 public:

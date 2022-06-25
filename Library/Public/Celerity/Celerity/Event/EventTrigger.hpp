@@ -60,6 +60,8 @@ struct CopyOutField final
     StandardLayout::FieldId eventField;
 };
 
+/// \brief Result of CopyOutFieldProcessing, that is more performance-friendly.
+/// \details Commands to copy one or more fields, that are positioned next to each other.
 struct CopyOutBlock final
 {
     std::size_t sourceOffset = 0u;
@@ -67,8 +69,13 @@ struct CopyOutBlock final
     std::size_t length = 0u;
 };
 
+/// \brief Maximum amount of CopyOutBlock's per event.
+/// \details For performance reasons, CopyOutBlock's are stored in inplace vectors, therefore maximum amount of
+///          these blocks per event is fixed. This value can be increased, but it will increase memory usage as well.
+/// TODO: Move such constants to constant sub library, like Pegasus?
 constexpr std::size_t MAX_COPY_OUT_BLOCKS_PER_EVENT = 4u;
 
+/// \brief Contains common data for all event triggers.
 class EventTriggerBase
 {
 public:
@@ -88,6 +95,7 @@ protected:
     EventRoute route;
 };
 
+/// \brief Trigger for trivial automated events like OnAdd/OnRemove.
 class TrivialEventTrigger final : public EventTriggerBase
 {
 public:
@@ -96,6 +104,7 @@ public:
                          EventRoute _route,
                          const Container::Vector<CopyOutField> &_copyOuts) noexcept;
 
+    /// \brief Trigger event for given record.
     void Trigger (const void *_record) noexcept;
 
 private:
@@ -110,6 +119,7 @@ using TrivialEventTriggerRow =
 
 constexpr std::size_t MAX_TRACKED_ZONES_PER_EVENT = 4u;
 
+/// \brief Trigger for OnChange automated events.
 class OnChangeEventTrigger final : public EventTriggerBase
 {
 public:
@@ -120,6 +130,7 @@ public:
                           const Container::Vector<CopyOutField> &_copyOutOfInitial,
                           const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept;
 
+    /// \brief Trigger event for given changed record with its tracking buffer (see ChangeTracker).
     void Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept;
 
 private:
@@ -139,6 +150,10 @@ private:
     Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOutOfChanged;
 };
 
+/// \brief Maximum count of OnChange events per type.
+/// \details For performance reasons, ChangeTracker stores info about OnChange events in inplace vector,
+///          therefore maximum count of events is fixed. This value can be increased, but it will increase
+///          memory usage as well.
 constexpr std::size_t MAX_ON_CHANGE_EVENTS_PER_TYPE = 4u;
 
 class ChangeTracker final
@@ -154,8 +169,11 @@ public:
 
     ~ChangeTracker () = default;
 
+    /// \brief Inform tracker that user started editing given record.
     void BeginEdition (const void *_record) noexcept;
 
+    /// \brief Inform tracker that user finished editing given record.
+    /// \details OnChange events are triggered there if any relevant changes are detected.
     void EndEdition (const void *_record) noexcept;
 
     [[nodiscard]] StandardLayout::Mapping GetTrackedType () const noexcept;
@@ -165,8 +183,10 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (ChangeTracker);
 
 private:
+    /// \details Fixed for performance. This value can be increased, but it will increase memory usage as well.
     static constexpr std::size_t MAX_TRACKED_ZONES = 4u;
 
+    /// \details Fixed for performance. This value can be increased, but it will increase memory usage as well.
     static constexpr std::size_t MAX_TRACKING_BUFFER_SIZE = 256u;
 
     struct TrackedZone final

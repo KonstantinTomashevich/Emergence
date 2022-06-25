@@ -8,6 +8,7 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Provides information about time to tasks.
 /// \note For small periods of time floats are the most suitable format, therefore we them use for frame durations.
 ///       But for long periods of time (more than several hours) they may become a bit unstable, therefore we
 ///       use 64-bit nanosecond counters.
@@ -27,6 +28,7 @@ struct TimeSingleton final
     /// \details Is not constrained to Time::NanosecondsSinceStartup.
     uint64_t fixedTimeNs = 0u;
 
+    /// \brief Time elapsed from previous normal update.
     float normalDurationS = 0.0f;
 
     /// \brief ::normalDurationS, but unaffected by ::timeSpeed.
@@ -36,6 +38,8 @@ struct TimeSingleton final
     /// \brief Will be selected automatically from ::targetFixedFrameDurationsS.
     float fixedDurationS = 0.0f;
 
+    /// \brief Provides min-to-max sorted list of possible fixed frame rates to the framework.
+    /// \details Celerity selects smallest fixed frame rate duration that does not lead to death spiralling.
     Container::InplaceVector<float, MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS;
 
     /// \brief Allows gameplay mechanics to slowdown or speedup time.

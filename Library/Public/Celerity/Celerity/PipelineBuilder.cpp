@@ -64,7 +64,7 @@ TaskConstructor &TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOr
     return *this;
 }
 
-FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping)
+FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
     return parent->world->registry.FetchSingleton (_typeMapping);
@@ -320,22 +320,6 @@ RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
 TaskConstructor &TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
 {
     task.executor = std::move (_executor);
-    return *this;
-}
-
-World *TaskConstructor::GetWorld () const noexcept
-{
-    return parent->world;
-}
-
-TaskConstructor &TaskConstructor::operator= (TaskConstructor &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~TaskConstructor ();
-        new (this) TaskConstructor (std::move (_other));
-    }
-
     return *this;
 }
 
