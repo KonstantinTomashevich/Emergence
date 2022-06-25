@@ -1,7 +1,6 @@
 #include <thread>
 #include <variant>
 
-#include <Celerity/InputAccumulator.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Container/Vector.hpp>

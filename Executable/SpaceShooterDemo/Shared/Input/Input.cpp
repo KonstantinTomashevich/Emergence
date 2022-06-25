@@ -118,7 +118,7 @@ class NormalInputDispatcher final : public Emergence::Celerity::TaskExecutorBase
 {
 public:
     NormalInputDispatcher (Emergence::Celerity::TaskConstructor &_constructor,
-                           Emergence::Celerity::InputAccumulator *_inputAccumulator) noexcept;
+                           InputAccumulator *_inputAccumulator) noexcept;
 
     void Execute () noexcept;
 
@@ -128,11 +128,11 @@ private:
     void UpdateActionBuffers (InputSingleton *_input) noexcept;
 
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
-    Emergence::Celerity::InputAccumulator *inputAccumulator = nullptr;
+    InputAccumulator *inputAccumulator = nullptr;
 };
 
 NormalInputDispatcher::NormalInputDispatcher (Emergence::Celerity::TaskConstructor &_constructor,
-                                              Emergence::Celerity::InputAccumulator *_inputAccumulator) noexcept
+                                              InputAccumulator *_inputAccumulator) noexcept
     : InputDispatcherBase (_constructor),
       fetchWorld (_constructor.FetchSingleton (Emergence::Celerity::WorldSingleton::Reflect ().mapping)),
       inputAccumulator (_inputAccumulator)
@@ -186,9 +186,9 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
         // Can not be triggered more than once per frame.
         bool canBeTriggered = true;
 
-        for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
+        for (const InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.scan == event.keyboard.scan)
+            if (event.type == InputType::KEYBOARD && trigger.scan == event.keyboard.scan)
             {
                 trigger.isDownNow = event.keyboard.down;
                 if (canBeTriggered && trigger.isDownNow == trigger.down)
@@ -207,9 +207,9 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
 
     for (KeyStateChangedTrigger &trigger : _input->keyStateChangedTriggers)
     {
-        for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
+        for (const InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.scan == event.keyboard.scan &&
+            if (event.type == InputType::KEYBOARD && trigger.scan == event.keyboard.scan &&
                 event.keyboard.down == trigger.pressed && event.keyboard.qualifiers == trigger.qualifiers)
             {
                 SendAction (_input, trigger.action, true);
@@ -233,7 +233,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask ("Input::FixedDispatcher"_us).SetExecutor<FixedInputDispatcher> ();
 }
 
-void AddToNormalUpdate (Emergence::Celerity::InputAccumulator *_inputAccumulator,
+void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)

@@ -1,8 +1,6 @@
-#include <Celerity/InputAccumulator.hpp>
+#include <Input/InputAccumulator.hpp>
 
-namespace Emergence::Celerity
-{
-const Container::Vector<InputEvent> &InputAccumulator::GetAccumulatedEvents () const noexcept
+const Emergence::Container::Vector<InputEvent> &InputAccumulator::GetAccumulatedEvents () const noexcept
 {
     return accumulatedEvents;
 }
@@ -16,4 +14,3 @@ void InputAccumulator::Clear () noexcept
 {
     accumulatedEvents.clear ();
 }
-} // namespace Emergence::Celerity

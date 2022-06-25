@@ -1,18 +1,26 @@
 #pragma once
 
-#include <Celerity/InputAccumulator.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/InplaceVector.hpp>
 
 #include <Input/InputAction.hpp>
 
+/// \brief Code of the key, localized to user keyboard layout.
+using KeyCode = std::int32_t;
+
+/// \brief Physical layout-independent code of the key.
+using ScanCode = std::int32_t;
+
+/// \brief Represents which qualifier keys are active.
+using QualifiersMask = std::uint32_t;
+
 /// \brief Produces persistent actions when key is down/up.
 /// \details Keys are identified by scan codes for layout independence.
 struct KeyStateTrigger final
 {
     InputAction action;
-    Emergence::Celerity::ScanCode scan;
+    ScanCode scan;
     bool down;
 
     bool isDownNow = false;
@@ -34,9 +42,9 @@ struct KeyStateTrigger final
 struct KeyStateChangedTrigger final
 {
     InputAction action;
-    Emergence::Celerity::ScanCode scan;
+    ScanCode scan;
     bool pressed;
-    Emergence::Celerity::QualifiersMask qualifiers;
+    QualifiersMask qualifiers;
 
     struct Reflection final
     {

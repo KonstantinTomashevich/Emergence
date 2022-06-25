@@ -105,7 +105,7 @@ void ShootingProcessor::Execute () noexcept
                     auto transformCursor = insertTransform.Execute ();
                     auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
                     transform->SetObjectId (bulletObjectId);
-                    transform->SetLogicalLocalTransform (bulletTransform);
+                    transform->SetLogicalLocalTransform (bulletTransform, true);
 
                     auto prototypeCursor = insertPrototype.Execute ();
                     auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);

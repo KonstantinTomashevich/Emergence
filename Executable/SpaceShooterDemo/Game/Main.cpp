@@ -94,7 +94,7 @@ private:
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
-    Emergence::Celerity::InputAccumulator inputAccumulator;
+    InputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
 };
 
@@ -192,13 +192,13 @@ void GameApplication::HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::Vari
         return;
     }
 
-    Emergence::Celerity::InputEvent event;
-    event.type = Emergence::Celerity::InputType::KEYBOARD;
+    InputEvent event;
+    event.type = InputType::KEYBOARD;
     event.keyboard = {
-        static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
-        static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
+        static_cast<ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
+        static_cast<KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
         true,
-        static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
+        static_cast<QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
     };
 
     inputAccumulator.PostEvent (event);
@@ -206,13 +206,13 @@ void GameApplication::HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::Vari
 
 void GameApplication::HandleKeyUp (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
 {
-    Emergence::Celerity::InputEvent event;
-    event.type = Emergence::Celerity::InputType::KEYBOARD;
+    InputEvent event;
+    event.type = InputType::KEYBOARD;
     event.keyboard = {
-        static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyUp::P_SCANCODE].GetInt ()),
-        static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyUp::P_KEY].GetInt ()),
+        static_cast<ScanCode> (_eventData[Urho3D::KeyUp::P_SCANCODE].GetInt ()),
+        static_cast<KeyCode> (_eventData[Urho3D::KeyUp::P_KEY].GetInt ()),
         false,
-        static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyUp::P_QUALIFIERS].GetInt ()),
+        static_cast<QualifiersMask> (_eventData[Urho3D::KeyUp::P_QUALIFIERS].GetInt ()),
     };
 
     inputAccumulator.PostEvent (event);

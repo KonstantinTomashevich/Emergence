@@ -194,7 +194,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
     transform->SetObjectId (killZObjectId);
     transform->SetLogicalLocalTransform (
-        {{0.0f, _z, 0.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE});
+        {{0.0f, _z, 0.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
 
     auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
     body->objectId = killZObjectId;

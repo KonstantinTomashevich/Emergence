@@ -147,7 +147,7 @@ void SpawnProcessor::Execute () noexcept
 
             auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
             transform->SetObjectId (objectId);
-            transform->SetLogicalLocalTransform (spawnTransform);
+            transform->SetLogicalLocalTransform (spawnTransform, true);
 
             auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);
             prototype->objectId = objectId;

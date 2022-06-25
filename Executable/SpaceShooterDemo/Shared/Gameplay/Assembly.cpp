@@ -189,7 +189,7 @@ void FixedAssembler::Execute ()
                 shootingPointTransform->SetParentObjectId (_objectId);
 
                 shootingPointTransform->SetLogicalLocalTransform (
-                    {{0.0f, 0.0f, 1.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE});
+                    {{0.0f, 0.0f, 1.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
 
                 shooter->shootingPointObjectId = shootingPointTransform->GetObjectId ();
             }
