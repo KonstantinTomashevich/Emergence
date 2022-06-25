@@ -74,9 +74,6 @@ private:
 
     bool visualTransformSyncNeeded = false;
 
-    /// \details We need to skip interpolation for transform initialization.
-    bool interpolationSkipRequested = true;
-
     uint64_t lastObservedLogicalTransformRevision = 0u;
     uint64_t logicalTransformLastObservationTimeNs = 0u;
     uint64_t visualTransformLastSyncTimeNs = 0u;
@@ -89,7 +86,6 @@ public:
         StandardLayout::FieldId logicalLocalTransform;
         StandardLayout::FieldId visualLocalTransform;
         StandardLayout::FieldId visualTransformSyncNeeded;
-        StandardLayout::FieldId interpolationSkipRequested;
         StandardLayout::FieldId lastObservedLogicalTransformRevision;
         StandardLayout::FieldId logicalTransformLastObservationTimeNs;
         StandardLayout::FieldId visualTransformLastSyncTimeNs;
