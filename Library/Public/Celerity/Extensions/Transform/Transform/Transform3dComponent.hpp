@@ -10,6 +10,7 @@ namespace Emergence::Celerity
 {
 class Transform3dWorldAccessor;
 
+/// \brief Represents transform hierarchy node attached to an object.
 /// \details There are two types of object transform:
 ///          - Logical, used for deterministic simulation in fixed update pipeline.
 ///          - Visual, used for object rendering in normal update pipeline.
@@ -25,24 +26,35 @@ class Transform3dComponent final
 public:
     Transform3dComponent () noexcept = default;
 
+    /// \return Id of an object to which component is attached.
     UniqueId GetObjectId () const noexcept;
 
+    /// \brief Set id of an object to which component is attached.
     void SetObjectId (UniqueId _objectId) noexcept;
 
+    /// \return Id of the parent object in transform hierarchy.
     UniqueId GetParentObjectId () const noexcept;
 
+    /// \brief Set id of the parent object in transform hierarchy.
     void SetParentObjectId (UniqueId _parentObjectId) noexcept;
 
+    /// \return Local logical (see class details) transform.
     const Math::Transform3d &GetLogicalLocalTransform () const noexcept;
 
+    /// \brief Set local logical (see class details) transform.
+    /// \param _skipInterpolation If true, visual position will be set right away instead of being interpolated.
     void SetLogicalLocalTransform (const Math::Transform3d &_transform, bool _skipInterpolation = false) noexcept;
 
+    /// \return Global logical (see class details) transform.
     const Math::Transform3d &GetLogicalWorldTransform (Transform3dWorldAccessor &_accessor) const noexcept;
 
+    /// \return Local visual (see class details) transform.
     const Math::Transform3d &GetVisualLocalTransform () const noexcept;
 
+    /// \brief Set local visual (see class details) transform.
     void SetVisualLocalTransform (const Math::Transform3d &_transform) noexcept;
 
+    /// \return Global visual (see class details) transform.
     const Math::Transform3d &GetVisualWorldTransform (Transform3dWorldAccessor &_accessor) const noexcept;
 
 private:

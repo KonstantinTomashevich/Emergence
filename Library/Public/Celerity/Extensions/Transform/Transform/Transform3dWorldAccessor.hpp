@@ -4,7 +4,7 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Holds query, required for Transform3dComponent world transform access.
+/// \brief Encapsulates query, required for Transform3dComponent world transform access.
 class Transform3dWorldAccessor final
 {
 public:
