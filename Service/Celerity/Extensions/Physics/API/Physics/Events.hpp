@@ -6,7 +6,7 @@
 
 #include <Memory/UniqueString.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 EMERGENCE_CELERITY_EVENT0_DECLARATION (PhysicsWorldConfigurationChanged);
 
@@ -19,81 +19,81 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterialChangedEvent, Memory::Uni
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
     DynamicsMaterialRemovedEvent, Memory::UniqueString, id, void *, implementationHandle);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedFixedEvent, Celerity::UniqueId, shapeId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedFixedEvent, UniqueId, shapeId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedCustomToFixedEvent, Celerity::UniqueId, shapeId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAddedCustomToFixedEvent, UniqueId, shapeId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentMaterialChangedEvent, Celerity::UniqueId, shapeId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentMaterialChangedEvent, UniqueId, shapeId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentGeometryChangedEvent, Celerity::UniqueId, shapeId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentGeometryChangedEvent, UniqueId, shapeId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAttributesChangedEvent, Celerity::UniqueId, shapeId);
-
-EMERGENCE_CELERITY_EVENT2_DECLARATION (
-    CollisionShapeComponentRemovedEvent, Celerity::UniqueId, objectId, void *, implementationHandle);
-
-EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedFixedEvent, Celerity::UniqueId, objectId);
-
-EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedCustomToFixedEvent, Celerity::UniqueId, objectId);
-
-EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentMassInvalidatedEvent, Celerity::UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShapeComponentAttributesChangedEvent, UniqueId, shapeId);
 
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
-    RigidBodyComponentRemovedEvent, Celerity::UniqueId, objectId, void *, implementationHandle);
+    CollisionShapeComponentRemovedEvent, UniqueId, objectId, void *, implementationHandle);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedFixedEvent, UniqueId, objectId);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentAddedCustomToFixedEvent, UniqueId, objectId);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBodyComponentMassInvalidatedEvent, UniqueId, objectId);
+
+EMERGENCE_CELERITY_EVENT2_DECLARATION (
+    RigidBodyComponentRemovedEvent, UniqueId, objectId, void *, implementationHandle);
 
 EMERGENCE_CELERITY_EVENT5_DECLARATION (ContactFoundEvent,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        firstObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        firstShapeId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        secondObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        secondShapeId,
                                        bool,
                                        initialContact);
 
 EMERGENCE_CELERITY_EVENT4_DECLARATION (ContactPersistsEvent,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        firstObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        firstShapeId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        secondObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        secondShapeId);
 
 EMERGENCE_CELERITY_EVENT5_DECLARATION (ContactLostEvent,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        firstObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        firstShapeId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        secondObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        secondShapeId,
                                        bool,
                                        lastContact);
 
 EMERGENCE_CELERITY_EVENT4_DECLARATION (TriggerEnteredEvent,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        triggerObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        triggerShapeId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        intruderObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        intruderShapeId);
 
 EMERGENCE_CELERITY_EVENT4_DECLARATION (TriggerExitedEvent,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        triggerObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        triggerShapeId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        intruderObjectId,
-                                       Celerity::UniqueId,
+                                       UniqueId,
                                        intruderShapeId);
 
-void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept;
-} // namespace Emergence::Physics
+void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept;
+} // namespace Emergence::Celerity

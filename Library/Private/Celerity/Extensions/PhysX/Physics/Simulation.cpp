@@ -38,7 +38,7 @@ END_MUTING_WARNINGS
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
 
-namespace Emergence::Physics::Simulation
+namespace Emergence::Celerity::Simulation
 {
 namespace TaskNames
 {
@@ -89,10 +89,10 @@ static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes
                                                  const void *_constantBlock,
                                                  physx::PxU32 /*unused*/);
 
-class WorldUpdater final : public Celerity::TaskExecutorBase<WorldUpdater>
+class WorldUpdater final : public TaskExecutorBase<WorldUpdater>
 {
 public:
-    WorldUpdater (Celerity::TaskConstructor &_constructor) noexcept;
+    WorldUpdater (TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
@@ -105,12 +105,12 @@ private:
 
     static void UpdateRemoteDebugging (const PhysicsWorldSingleton *_physicsWorld) noexcept;
 
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSingletonQuery fetchPhysicsWorld;
-    Celerity::FetchSequenceQuery fetchConfigurationChangedEvents;
+    ModifySingletonQuery modifyPhysX;
+    FetchSingletonQuery fetchPhysicsWorld;
+    FetchSequenceQuery fetchConfigurationChangedEvents;
 };
 
-WorldUpdater::WorldUpdater (Celerity::TaskConstructor &_constructor) noexcept
+WorldUpdater::WorldUpdater (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
       fetchConfigurationChangedEvents (FETCH_SEQUENCE (PhysicsWorldConfigurationChanged))
@@ -222,23 +222,23 @@ void WorldUpdater::UpdateRemoteDebugging (const PhysicsWorldSingleton *_physicsW
     }
 }
 
-class MaterialInitializer final : public Celerity::TaskExecutorBase<MaterialInitializer>
+class MaterialInitializer final : public TaskExecutorBase<MaterialInitializer>
 {
 public:
-    MaterialInitializer (Celerity::TaskConstructor &_constructor) noexcept;
+    MaterialInitializer (TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSingletonQuery fetchPhysicsWorld;
-    Celerity::ModifyValueQuery modifyMaterialById;
+    ModifySingletonQuery modifyPhysX;
+    FetchSingletonQuery fetchPhysicsWorld;
+    ModifyValueQuery modifyMaterialById;
 
-    Celerity::FetchSequenceQuery fetchMaterialAddedFixedEvents;
-    Celerity::FetchSequenceQuery fetchMaterialAddedCustomEvents;
+    FetchSequenceQuery fetchMaterialAddedFixedEvents;
+    FetchSequenceQuery fetchMaterialAddedCustomEvents;
 };
 
-MaterialInitializer::MaterialInitializer (Celerity::TaskConstructor &_constructor) noexcept
+MaterialInitializer::MaterialInitializer (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
       modifyMaterialById (MODIFY_VALUE_1F (DynamicsMaterial, id)),
@@ -285,22 +285,22 @@ void MaterialInitializer::Execute () noexcept
     }
 }
 
-class MaterialChangesSynchronizer final : public Celerity::TaskExecutorBase<MaterialChangesSynchronizer>
+class MaterialChangesSynchronizer final : public TaskExecutorBase<MaterialChangesSynchronizer>
 {
 public:
-    MaterialChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept;
+    MaterialChangesSynchronizer (TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchValueQuery fetchMaterialById;
-    Celerity::FetchSequenceQuery fetchMaterialChangedEvents;
-    Celerity::FetchValueQuery fetchShapeByMaterialId;
-    Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
+    ModifySingletonQuery modifyPhysX;
+    FetchValueQuery fetchMaterialById;
+    FetchSequenceQuery fetchMaterialChangedEvents;
+    FetchValueQuery fetchShapeByMaterialId;
+    InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
-MaterialChangesSynchronizer::MaterialChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
+MaterialChangesSynchronizer::MaterialChangesSynchronizer (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
       fetchMaterialChangedEvents (FETCH_SEQUENCE (DynamicsMaterialChangedEvent)),
@@ -338,20 +338,20 @@ void MaterialChangesSynchronizer::Execute () noexcept
     }
 }
 
-class MaterialDeleter final : public Celerity::TaskExecutorBase<MaterialDeleter>
+class MaterialDeleter final : public TaskExecutorBase<MaterialDeleter>
 {
 public:
-    MaterialDeleter (Celerity::TaskConstructor &_constructor) noexcept;
+    MaterialDeleter (TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSequenceQuery fetchMaterialRemovedEvents;
-    Celerity::RemoveValueQuery removeShapeByMaterialId;
+    ModifySingletonQuery modifyPhysX;
+    FetchSequenceQuery fetchMaterialRemovedEvents;
+    RemoveValueQuery removeShapeByMaterialId;
 };
 
-MaterialDeleter::MaterialDeleter (Celerity::TaskConstructor &_constructor) noexcept
+MaterialDeleter::MaterialDeleter (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchMaterialRemovedEvents (FETCH_SEQUENCE (DynamicsMaterialRemovedEvent)),
       removeShapeByMaterialId (REMOVE_VALUE_1F (CollisionShapeComponent, materialId))
@@ -378,30 +378,30 @@ void MaterialDeleter::Execute () noexcept
     }
 }
 
-class ShapeInitializer final : public Celerity::TaskExecutorBase<ShapeInitializer>
+class ShapeInitializer final : public TaskExecutorBase<ShapeInitializer>
 {
 public:
-    ShapeInitializer (Celerity::TaskConstructor &_constructor) noexcept;
+    ShapeInitializer (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSingletonQuery fetchPhysicsWorld;
+    ModifySingletonQuery modifyPhysX;
+    FetchSingletonQuery fetchPhysicsWorld;
 
-    Celerity::ModifyValueQuery modifyShapeByShapeId;
-    Celerity::FetchValueQuery fetchMaterialById;
-    Celerity::FetchValueQuery fetchBodyByObjectId;
+    ModifyValueQuery modifyShapeByShapeId;
+    FetchValueQuery fetchMaterialById;
+    FetchValueQuery fetchBodyByObjectId;
 
-    Celerity::FetchValueQuery fetchTransformByObjectId;
-    Celerity::Transform3dWorldAccessor transformWorldAccessor;
+    FetchValueQuery fetchTransformByObjectId;
+    Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::FetchSequenceQuery fetchShapeAddedFixedEvents;
-    Celerity::FetchSequenceQuery fetchShapeAddedCustomEvents;
-    Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
+    FetchSequenceQuery fetchShapeAddedFixedEvents;
+    FetchSequenceQuery fetchShapeAddedCustomEvents;
+    InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
-ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noexcept
+ShapeInitializer::ShapeInitializer (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
 
@@ -409,7 +409,7 @@ ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noe
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
 
-      fetchTransformByObjectId (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchShapeAddedFixedEvents (FETCH_SEQUENCE (CollisionShapeComponentAddedFixedEvent)),
@@ -425,7 +425,7 @@ void ShapeInitializer::Execute ()
     const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
     const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
-    auto initialize = [this, &pxWorld] (Celerity::UniqueId _shapeId)
+    auto initialize = [this, &pxWorld] (UniqueId _shapeId)
     {
         auto shapeCursor = modifyShapeByShapeId.Execute (&_shapeId);
         auto *shape = static_cast<CollisionShapeComponent *> (*shapeCursor);
@@ -450,7 +450,7 @@ void ShapeInitializer::Execute ()
 
         const auto *pxMaterial = static_cast<const physx::PxMaterial *> (material->implementationHandle);
         auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
-        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -494,10 +494,10 @@ void ShapeInitializer::Execute ()
     }
 }
 
-class ShapeChangesSynchronizer final : public Celerity::TaskExecutorBase<ShapeChangesSynchronizer>
+class ShapeChangesSynchronizer final : public TaskExecutorBase<ShapeChangesSynchronizer>
 {
 public:
-    ShapeChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept;
+    ShapeChangesSynchronizer (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
@@ -508,29 +508,29 @@ private:
 
     void ApplyShapeAttributesChanges () noexcept;
 
-    Celerity::ModifySingletonQuery modifyPhysX;
+    ModifySingletonQuery modifyPhysX;
 
-    Celerity::FetchValueQuery fetchShapeByShapeId;
-    Celerity::RemoveValueQuery removeShapeByShapeId;
-    Celerity::FetchValueQuery fetchMaterialById;
+    FetchValueQuery fetchShapeByShapeId;
+    RemoveValueQuery removeShapeByShapeId;
+    FetchValueQuery fetchMaterialById;
 
-    Celerity::FetchValueQuery fetchTransformById;
-    Celerity::Transform3dWorldAccessor transformWorldAccessor;
+    FetchValueQuery fetchTransformById;
+    Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::FetchSequenceQuery fetchShapeMaterialChangedEvents;
-    Celerity::FetchSequenceQuery fetchShapeGeometryChangedEvents;
-    Celerity::FetchSequenceQuery fetchShapeAttributesChangedEvents;
+    FetchSequenceQuery fetchShapeMaterialChangedEvents;
+    FetchSequenceQuery fetchShapeGeometryChangedEvents;
+    FetchSequenceQuery fetchShapeAttributesChangedEvents;
 
-    Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
+    InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
-ShapeChangesSynchronizer::ShapeChangesSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
+ShapeChangesSynchronizer::ShapeChangesSynchronizer (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShapeComponent, shapeId)),
       removeShapeByShapeId (REMOVE_VALUE_1F (CollisionShapeComponent, shapeId)),
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
 
-      fetchTransformById (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchShapeMaterialChangedEvents (FETCH_SEQUENCE (CollisionShapeComponentMaterialChangedEvent)),
@@ -595,7 +595,7 @@ void ShapeChangesSynchronizer::ApplyShapeGeometryChanges () noexcept
         auto cursor = insertBodyMassInvalidatedEvents.Execute ();
         static_cast<RigidBodyComponentMassInvalidatedEvent *> (++cursor)->objectId = shape->objectId;
         auto transformCursor = fetchTransformById.Execute (&shape->objectId);
-        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -636,21 +636,21 @@ void ShapeChangesSynchronizer::ApplyShapeAttributesChanges () noexcept
     }
 }
 
-class ShapeDeleter final : public Celerity::TaskExecutorBase<ShapeDeleter>
+class ShapeDeleter final : public TaskExecutorBase<ShapeDeleter>
 {
 public:
-    ShapeDeleter (Celerity::TaskConstructor &_constructor) noexcept;
+    ShapeDeleter (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchValueQuery fetchBodyByObjectId;
-    Celerity::FetchSequenceQuery fetchShapeRemovedEvents;
-    Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
+    ModifySingletonQuery modifyPhysX;
+    FetchValueQuery fetchBodyByObjectId;
+    FetchSequenceQuery fetchShapeRemovedEvents;
+    InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
-ShapeDeleter::ShapeDeleter (Celerity::TaskConstructor &_constructor) noexcept
+ShapeDeleter::ShapeDeleter (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
       fetchShapeRemovedEvents (FETCH_SEQUENCE (CollisionShapeComponentRemovedEvent)),
@@ -683,34 +683,34 @@ void ShapeDeleter::Execute ()
     }
 }
 
-class BodyInitializer final : public Celerity::TaskExecutorBase<BodyInitializer>
+class BodyInitializer final : public TaskExecutorBase<BodyInitializer>
 {
 public:
-    BodyInitializer (Celerity::TaskConstructor &_constructor) noexcept;
+    BodyInitializer (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSingletonQuery fetchPhysicsWorld;
+    ModifySingletonQuery modifyPhysX;
+    FetchSingletonQuery fetchPhysicsWorld;
 
-    Celerity::ModifyValueQuery modifyBodyByObjectId;
-    Celerity::FetchValueQuery fetchShapeByObjectId;
-    Celerity::FetchValueQuery fetchTransformByObjectId;
-    Celerity::Transform3dWorldAccessor transformWorldAccessor;
+    ModifyValueQuery modifyBodyByObjectId;
+    FetchValueQuery fetchShapeByObjectId;
+    FetchValueQuery fetchTransformByObjectId;
+    Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::FetchSequenceQuery fetchBodyAddedFixedEvents;
-    Celerity::FetchSequenceQuery fetchBodyAddedCustomEvents;
-    Celerity::InsertShortTermQuery insertBodyMassInvalidatedEvents;
+    FetchSequenceQuery fetchBodyAddedFixedEvents;
+    FetchSequenceQuery fetchBodyAddedCustomEvents;
+    InsertShortTermQuery insertBodyMassInvalidatedEvents;
 };
 
-BodyInitializer::BodyInitializer (Celerity::TaskConstructor &_constructor) noexcept
+BodyInitializer::BodyInitializer (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
 
       modifyBodyByObjectId (MODIFY_VALUE_1F (RigidBodyComponent, objectId)),
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
-      fetchTransformByObjectId (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchBodyAddedFixedEvents (FETCH_SEQUENCE (RigidBodyComponentAddedFixedEvent)),
@@ -726,7 +726,7 @@ void BodyInitializer::Execute ()
     const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
     const auto &pxWorld = block_cast<PhysXWorld> (physicsWorld->implementationBlock);
 
-    auto initialize = [this, &pxWorld] (Celerity::UniqueId _objectId)
+    auto initialize = [this, &pxWorld] (UniqueId _objectId)
     {
         auto bodyCursor = modifyBodyByObjectId.Execute (&_objectId);
         auto *body = static_cast<RigidBodyComponent *> (*bodyCursor);
@@ -738,7 +738,7 @@ void BodyInitializer::Execute ()
         }
 
         auto transformCursor = fetchTransformByObjectId.Execute (&_objectId);
-        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -831,19 +831,19 @@ void BodyInitializer::Execute ()
     }
 }
 
-class BodyDeleter final : public Celerity::TaskExecutorBase<BodyDeleter>
+class BodyDeleter final : public TaskExecutorBase<BodyDeleter>
 {
 public:
-    BodyDeleter (Celerity::TaskConstructor &_constructor) noexcept;
+    BodyDeleter (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSequenceQuery fetchBodyRemovedEvents;
+    ModifySingletonQuery modifyPhysX;
+    FetchSequenceQuery fetchBodyRemovedEvents;
 };
 
-BodyDeleter::BodyDeleter (Celerity::TaskConstructor &_constructor) noexcept
+BodyDeleter::BodyDeleter (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchBodyRemovedEvents (FETCH_SEQUENCE (RigidBodyComponentRemovedEvent))
 {
@@ -862,22 +862,22 @@ void BodyDeleter::Execute ()
     }
 }
 
-class BodyMassSynchronizer final : public Celerity::TaskExecutorBase<BodyMassSynchronizer>
+class BodyMassSynchronizer final : public TaskExecutorBase<BodyMassSynchronizer>
 {
 public:
-    BodyMassSynchronizer (Celerity::TaskConstructor &_constructor) noexcept;
+    BodyMassSynchronizer (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
 private:
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchValueQuery fetchBodyByObjectId;
-    Celerity::FetchValueQuery fetchShapeByObjectId;
-    Celerity::FetchValueQuery fetchMaterialById;
-    Celerity::FetchSequenceQuery fetchBodyMassInvalidationEvents;
+    ModifySingletonQuery modifyPhysX;
+    FetchValueQuery fetchBodyByObjectId;
+    FetchValueQuery fetchShapeByObjectId;
+    FetchValueQuery fetchMaterialById;
+    FetchSequenceQuery fetchBodyMassInvalidationEvents;
 };
 
-BodyMassSynchronizer::BodyMassSynchronizer (Celerity::TaskConstructor &_constructor) noexcept
+BodyMassSynchronizer::BodyMassSynchronizer (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
@@ -892,7 +892,7 @@ void BodyMassSynchronizer::Execute ()
     // Body mass recalculation is a rare task, therefore we can afford to allocate memory dynamically.
     Container::Vector<physx::PxShape *> shapes {heap.GetAllocationGroup ()};
     Container::Vector<float> densities {heap.GetAllocationGroup ()};
-    Container::Vector<Celerity::UniqueId> bodyIds {heap.GetAllocationGroup ()};
+    Container::Vector<UniqueId> bodyIds {heap.GetAllocationGroup ()};
 
     // Filter out duplicates to avoid excessive mass recalculations (there're quite expensive).
     for (auto eventCursor = fetchBodyMassInvalidationEvents.Execute ();
@@ -901,7 +901,7 @@ void BodyMassSynchronizer::Execute ()
         Container::AddUnique (bodyIds, event->objectId);
     }
 
-    for (Celerity::UniqueId objectId : bodyIds)
+    for (UniqueId objectId : bodyIds)
     {
         auto bodyCursor = fetchBodyByObjectId.Execute (&objectId);
         const auto *body = static_cast<const RigidBodyComponent *> (*bodyCursor);
@@ -980,11 +980,10 @@ void BodyMassSynchronizer::Execute ()
     }
 }
 
-class SimulationExecutor final : public Celerity::TaskExecutorBase<SimulationExecutor>,
-                                 public physx::PxSimulationEventCallback
+class SimulationExecutor final : public TaskExecutorBase<SimulationExecutor>, public physx::PxSimulationEventCallback
 {
 public:
-    SimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept;
+    SimulationExecutor (TaskConstructor &_constructor) noexcept;
 
     void Execute ();
 
@@ -1013,39 +1012,39 @@ private:
 
     void SyncKinematicAndDynamicBodies () noexcept;
 
-    Celerity::ModifySingletonQuery modifyPhysX;
-    Celerity::FetchSingletonQuery fetchPhysicsWorld;
-    Celerity::FetchSingletonQuery fetchTime;
+    ModifySingletonQuery modifyPhysX;
+    FetchSingletonQuery fetchPhysicsWorld;
+    FetchSingletonQuery fetchTime;
 
-    Celerity::FetchValueQuery fetchShapeByObjectId;
-    Celerity::EditSignalQuery editBodyWithOutsideManipulations;
-    Celerity::EditSignalQuery editKinematicBody;
-    Celerity::EditSignalQuery editDynamicBody;
+    FetchValueQuery fetchShapeByObjectId;
+    EditSignalQuery editBodyWithOutsideManipulations;
+    EditSignalQuery editKinematicBody;
+    EditSignalQuery editDynamicBody;
 
-    Celerity::FetchValueQuery fetchTransformByObjectId;
-    Celerity::EditValueQuery editTransformByObjectId;
-    Celerity::Transform3dWorldAccessor transformWorldAccessor;
+    FetchValueQuery fetchTransformByObjectId;
+    EditValueQuery editTransformByObjectId;
+    Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::InsertShortTermQuery insertContactFoundEvents;
-    Celerity::InsertShortTermQuery insertContactPersistsEvents;
-    Celerity::InsertShortTermQuery insertContactLostEvents;
+    InsertShortTermQuery insertContactFoundEvents;
+    InsertShortTermQuery insertContactPersistsEvents;
+    InsertShortTermQuery insertContactLostEvents;
 
-    Celerity::InsertShortTermQuery insertTriggerEnteredEvents;
-    Celerity::InsertShortTermQuery insertTriggerExitedEvents;
+    InsertShortTermQuery insertTriggerEnteredEvents;
+    InsertShortTermQuery insertTriggerExitedEvents;
 };
 
-SimulationExecutor::SimulationExecutor (Celerity::TaskConstructor &_constructor) noexcept
+SimulationExecutor::SimulationExecutor (TaskConstructor &_constructor) noexcept
     : modifyPhysX (MODIFY_SINGLETON (PhysXAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
-      fetchTime (FETCH_SINGLETON (Celerity::TimeSingleton)),
+      fetchTime (FETCH_SINGLETON (TimeSingleton)),
 
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
       editBodyWithOutsideManipulations (EDIT_SIGNAL (RigidBodyComponent, manipulatedOutsideOfSimulation, true)),
       editKinematicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::KINEMATIC)),
       editDynamicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::DYNAMIC)),
 
-      fetchTransformByObjectId (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
-      editTransformByObjectId (EDIT_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Transform3dComponent, objectId)),
+      editTransformByObjectId (EDIT_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       insertContactFoundEvents (INSERT_SHORT_TERM (ContactFoundEvent)),
@@ -1065,7 +1064,7 @@ void SimulationExecutor::Execute ()
     const auto *physicsWorld = static_cast<const PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     auto timeCursor = fetchTime.Execute ();
-    const auto *time = static_cast<const Celerity::TimeSingleton *> (*timeCursor);
+    const auto *time = static_cast<const TimeSingleton *> (*timeCursor);
 
     SyncBodiesWithOutsideManipulations ();
     UpdateKinematicTargets (time->fixedDurationS);
@@ -1202,7 +1201,7 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
         pxActor->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, !body->affectedByGravity);
 
         auto transformCursor = fetchTransformByObjectId.Execute (&body->objectId);
-        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -1277,13 +1276,13 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
         auto *pxBody = static_cast<physx::PxRigidBody *> (_body->implementationHandle);
         auto transformCursor = editTransformByObjectId.Execute (&_body->objectId);
 
-        if (auto *transform = static_cast<Celerity::Transform3dComponent *> (*transformCursor))
+        if (auto *transform = static_cast<Transform3dComponent *> (*transformCursor))
         {
             const physx::PxTransform &pxTransform = pxBody->getGlobalPose ();
             const Math::Vector3f &scale = transform->GetLogicalLocalTransform ().scale;
 
             // Currently, we assume that non-static bodies are attached to transform root elements only.
-            assert (transform->GetParentObjectId () == Celerity::INVALID_UNIQUE_ID);
+            assert (transform->GetParentObjectId () == INVALID_UNIQUE_ID);
             transform->SetLogicalLocalTransform ({FromPhysX (pxTransform.p), FromPhysX (pxTransform.q), scale});
         }
     };
@@ -1483,19 +1482,19 @@ static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes
 const Memory::UniqueString Checkpoint::SIMULATION_STARTED {"PhysicsSimulationStarted"};
 const Memory::UniqueString Checkpoint::SIMULATION_FINISHED {"PhysicsSimulationFinished"};
 
-void AddToFixedUpdate (Celerity::PipelineBuilder &_pipelineBuilder) noexcept
+void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     using namespace Memory::Literals;
 
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
 
     _pipelineBuilder.AddTask ("Physics::RemoveBodies"_us)
-        .AS_CASCADE_REMOVER_1F (Celerity::Transform3dComponentRemovedFixedEvent, RigidBodyComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, RigidBodyComponent, objectId)
         .DependOn (Checkpoint::SIMULATION_STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
     _pipelineBuilder.AddTask ("Physics::RemoveShapes"_us)
-        .AS_CASCADE_REMOVER_1F (Celerity::Transform3dComponentRemovedFixedEvent, CollisionShapeComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, CollisionShapeComponent, objectId)
         .DependOn (Checkpoint::SIMULATION_STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
@@ -1513,4 +1512,4 @@ void AddToFixedUpdate (Celerity::PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddTask (TaskNames::SYNC_BODY_MASSES).SetExecutor<BodyMassSynchronizer> ();
     _pipelineBuilder.AddTask (TaskNames::EXECUTE_SIMULATION).SetExecutor<SimulationExecutor> ();
 }
-} // namespace Emergence::Physics::Simulation
+} // namespace Emergence::Celerity::Simulation

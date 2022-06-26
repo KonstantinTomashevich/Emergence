@@ -7,7 +7,7 @@
 
 #include <Math/Vector3f.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 struct PhysicsWorldSingleton final
 {
@@ -56,4 +56,4 @@ struct PhysicsWorldSingleton final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

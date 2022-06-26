@@ -5,7 +5,7 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 PhysicsWorldSingleton::PhysicsWorldSingleton () noexcept
 {
@@ -42,4 +42,4 @@ const PhysicsWorldSingleton::Reflection &PhysicsWorldSingleton::Reflect () noexc
 
     return reflection;
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

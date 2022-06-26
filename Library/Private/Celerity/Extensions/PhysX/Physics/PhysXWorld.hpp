@@ -18,7 +18,7 @@ BEGIN_MUTING_WARNINGS
 #include <pvd/PxPvd.h>
 END_MUTING_WARNINGS
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 class ProfiledAllocator final : public physx::PxAllocatorCallback
 {
@@ -51,4 +51,4 @@ struct PhysXWorld final
 
     Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::UniqueString {"PhysX Heap"}}};
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 PhysXAccessSingleton::Reflection &PhysXAccessSingleton::Reflect () noexcept
 {
@@ -14,4 +14,4 @@ PhysXAccessSingleton::Reflection &PhysXAccessSingleton::Reflect () noexcept
 
     return reflection;
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

@@ -88,13 +88,13 @@ private:
 LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
-      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton)),
       fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent)),
-      insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
-      insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
+      insertRigidBody (INSERT_LONG_TERM (Emergence::Celerity::RigidBodyComponent)),
+      insertCollisionShape (INSERT_LONG_TERM (Emergence::Celerity::CollisionShapeComponent)),
       insertSpawn (INSERT_LONG_TERM (SpawnComponent)),
 
       insertCamera (INSERT_LONG_TERM (CameraComponent)),
@@ -152,7 +152,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
-    const auto *physicsWorld = static_cast<const Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
+    const auto *physicsWorld = static_cast<const Emergence::Celerity::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     const Emergence::Celerity::UniqueId groundShapeObjectId = world->GenerateUID ();
     auto transformCursor = insertTransform.Execute ();
@@ -162,16 +162,16 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
     auto bodyCursor = insertRigidBody.Execute ();
     auto shapeCursor = insertCollisionShape.Execute ();
 
-    auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+    auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (++bodyCursor);
     body->objectId = groundShapeObjectId;
-    body->type = Emergence::Physics::RigidBodyType::STATIC;
+    body->type = Emergence::Celerity::RigidBodyType::STATIC;
 
-    auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+    auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
     shape->objectId = groundShapeObjectId;
     shape->shapeId = physicsWorld->GenerateShapeUID ();
     shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
 
-    shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+    shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
                        .boxHalfExtents = {static_cast<float> (_halfWidth), 0.5f, static_cast<float> (_halfHeight)}};
     shape->translation.y = -0.5f;
     shape->collisionGroup = PhysicsConstant::GROUND_COLLISION_GROUP;
@@ -183,7 +183,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
-    const auto *physicsWorld = static_cast<const Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
+    const auto *physicsWorld = static_cast<const Emergence::Celerity::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     const Emergence::Celerity::UniqueId killZObjectId = world->GenerateUID ();
     auto transformCursor = insertTransform.Execute ();
@@ -196,16 +196,16 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     transform->SetLogicalLocalTransform (
         {{0.0f, _z, 0.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
 
-    auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+    auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (++bodyCursor);
     body->objectId = killZObjectId;
-    body->type = Emergence::Physics::RigidBodyType::STATIC;
+    body->type = Emergence::Celerity::RigidBodyType::STATIC;
 
-    auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+    auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
     shape->objectId = killZObjectId;
     shape->shapeId = physicsWorld->GenerateShapeUID ();
     shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
 
-    shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+    shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
                        .boxHalfExtents = {_halfWidth, physicsWorld->toleranceSpeed, _halfHeight}};
 
     shape->translation.y = -physicsWorld->toleranceSpeed;

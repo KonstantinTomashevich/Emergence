@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 RigidBodyComponent::RigidBodyComponent () noexcept = default;
 
@@ -31,4 +31,4 @@ const RigidBodyComponent::Reflection &RigidBodyComponent::Reflect () noexcept
 
     return reflection;
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

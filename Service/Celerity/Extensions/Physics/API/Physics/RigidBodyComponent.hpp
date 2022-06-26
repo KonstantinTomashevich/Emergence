@@ -6,7 +6,7 @@
 
 #include <Math/Vector3f.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 enum class RigidBodyType
 {
@@ -27,7 +27,7 @@ struct RigidBodyComponent final
 
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBodyComponent);
 
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
 
     /// \invariant Can not be changed after body creation.
     RigidBodyType type = RigidBodyType::STATIC;
@@ -75,4 +75,4 @@ struct RigidBodyComponent final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

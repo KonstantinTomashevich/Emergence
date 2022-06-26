@@ -11,16 +11,16 @@
 
 #include <Physics/CollisionGeometry.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 struct CollisionShapeComponent final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (CollisionShapeComponent);
 
     /// \details Must be assigned using PhysicsWorldSingleton::GenerateShapeUID.
-    Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId shapeId = INVALID_UNIQUE_ID;
 
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
 
     Math::Quaternion rotation = Math::Quaternion::IDENTITY;
 
@@ -62,4 +62,4 @@ struct CollisionShapeComponent final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

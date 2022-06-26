@@ -4,7 +4,7 @@
 
 #include <pvd/PxPvdTransport.h>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 ProfiledAllocator::ProfiledAllocator (Memory::Profiler::AllocationGroup _group) : heap (std::move (_group))
 {
@@ -52,4 +52,4 @@ PhysXWorld::~PhysXWorld () noexcept
         foundation->release ();
     }
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

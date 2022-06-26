@@ -34,15 +34,15 @@ private:
 };
 
 CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Physics::ContactFoundEvent)),
-      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Physics::TriggerEnteredEvent)),
+    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Celerity::ContactFoundEvent)),
+      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Celerity::TriggerEnteredEvent)),
 
       editDamageDealerById (EDIT_VALUE_1F (DamageDealerComponent, objectId)),
       removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
 
       insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
-    _constructor.DependOn (Emergence::Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_FINISHED);
     _constructor.DependOn (Checkpoint::DAMAGE_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DAMAGE_FINISHED);
 }
@@ -50,7 +50,7 @@ CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConst
 void CollisionEventProcessor::Execute () noexcept
 {
     for (auto eventCursor = fetchContactFoundEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Physics::ContactFoundEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const Emergence::Celerity::ContactFoundEvent *> (*eventCursor); ++eventCursor)
     {
         if (event->initialContact)
         {
@@ -60,7 +60,7 @@ void CollisionEventProcessor::Execute () noexcept
     }
 
     for (auto eventCursor = fetchTriggerEnteredEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Physics::TriggerEnteredEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const Emergence::Celerity::TriggerEnteredEvent *> (*eventCursor); ++eventCursor)
     {
         ProcessCollision (event->triggerObjectId, event->intruderObjectId);
         ProcessCollision (event->intruderObjectId, event->triggerObjectId);

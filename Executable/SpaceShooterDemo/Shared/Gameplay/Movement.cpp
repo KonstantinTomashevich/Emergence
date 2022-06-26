@@ -46,7 +46,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
-      editRigidBodyById (EDIT_VALUE_1F (Emergence::Physics::RigidBodyComponent, objectId)),
+      editRigidBodyById (EDIT_VALUE_1F (Emergence::Celerity::RigidBodyComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
@@ -55,7 +55,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
     _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MOVEMENT_FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Physics::Simulation::Checkpoint::SIMULATION_STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_STARTED);
 }
 
 void MovementUpdater::Execute () noexcept
@@ -91,7 +91,7 @@ void MovementUpdater::Execute () noexcept
         }
 
         auto bodyCursor = editRigidBodyById.Execute (&movement->objectId);
-        auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (*bodyCursor);
+        auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (*bodyCursor);
 
         if (!body)
         {

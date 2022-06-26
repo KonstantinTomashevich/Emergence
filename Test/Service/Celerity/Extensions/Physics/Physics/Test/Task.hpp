@@ -21,7 +21,7 @@
 #include <Physics/Events.hpp>
 #include <Physics/RigidBodyComponent.hpp>
 
-namespace Emergence::Physics::Test
+namespace Emergence::Celerity::Test
 {
 namespace ConfiguratorTasks
 {
@@ -50,7 +50,7 @@ struct RemoveDynamicsMaterial final
 
 struct TransformData
 {
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
     Math::Transform3d transform {Math::Vector3f::ZERO, Math::Quaternion::IDENTITY, Math::Vector3f::ONE};
 };
 
@@ -64,12 +64,12 @@ struct UpdateTransform final : public TransformData
 
 struct RemoveTransform final
 {
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
 };
 
 struct RigidBodyData
 {
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
     RigidBodyType type = RigidBodyType::STATIC;
 
     Math::Vector3f linearVelocity = Math::Vector3f::ZERO;
@@ -97,13 +97,13 @@ struct UpdateRigidBody final : public RigidBodyData
 
 struct RemoveRigidBody final
 {
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
 };
 
 struct CollisionShapeData
 {
-    Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId shapeId = INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
     Memory::UniqueString materialId;
 
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
@@ -127,7 +127,7 @@ struct UpdateCollisionShape final : public CollisionShapeData
 
 struct RemoveCollisionShape final
 {
-    Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId shapeId = INVALID_UNIQUE_ID;
 };
 } // namespace ConfiguratorTasks
 
@@ -154,19 +154,19 @@ namespace ValidatorTasks
 {
 struct CheckRigidBodyExistence final
 {
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
     bool shouldExist = false;
 };
 
 struct CheckCollisionShapeExistence final
 {
-    Celerity::UniqueId shapeId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId shapeId = INVALID_UNIQUE_ID;
     bool shouldExist = false;
 };
 
 struct CheckObjectTransform final
 {
-    Celerity::UniqueId objectId = Celerity::INVALID_UNIQUE_ID;
+    UniqueId objectId = INVALID_UNIQUE_ID;
     Math::Transform3d transform {Math::Vector3f::ZERO, Math::Quaternion::IDENTITY, Math::Vector3f::ONE};
 };
 
@@ -196,7 +196,7 @@ constexpr float TEST_FIXED_FRAME_S = 1.0f / 60.0f;
 
 void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
                       Container::Vector<ValidatorFrame> _validatorFrames);
-} // namespace Emergence::Physics::Test
+} // namespace Emergence::Celerity::Test
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #    pragma warning(pop)

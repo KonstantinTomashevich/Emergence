@@ -3,41 +3,40 @@
 
 #include <Testing/Testing.hpp>
 
-namespace Emergence::Physics::Test
+namespace Emergence::Celerity::Test
 {
 bool SimulationTestIncludeMarker () noexcept
 {
     return true;
 }
-} // namespace Emergence::Physics::Test
+} // namespace Emergence::Celerity::Test
 
 using namespace Emergence::Memory::Literals;
-using namespace Emergence::Physics;
+using namespace Emergence::Celerity;
 using namespace Emergence::Math;
-using namespace Emergence::Physics::Test::ConfiguratorTasks;
-using namespace Emergence::Physics::Test::ValidatorTasks;
+using namespace Emergence::Celerity::Test::ConfiguratorTasks;
+using namespace Emergence::Celerity::Test::ValidatorTasks;
 
 BEGIN_SUITE (PhysicsSimulation)
 
 TEST_CASE (KinematicFixedVelocityMovement)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u}},
-              AddRigidBody {{0u, RigidBodyType::KINEMATIC, {1.0f, 2.0f, -0.5f}}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
-          }}},
-        {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
-          {
-              CheckObjectTransform {0u, {{2.0f, 4.0f, -1.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
-          }}});
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u}},
+                                 AddRigidBody {{0u, RigidBodyType::KINEMATIC, {1.0f, 2.0f, -0.5f}}},
+                                 AddCollisionShape {{0u, 0u, "Test"_us}},
+                             }}},
+                           {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+                             {
+                                 CheckObjectTransform {0u, {{2.0f, 4.0f, -1.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
+                             }}});
 }
 
 TEST_CASE (DynamicFixedVelocityMovementNoGravity)
 {
-    Emergence::Physics::Test::ExecuteScenario (
+    Test::ExecuteScenario (
         {{0u,
           {
               AddDynamicsMaterial {{"Test"_us}},
@@ -54,7 +53,7 @@ TEST_CASE (DynamicFixedVelocityMovementNoGravity)
 
 TEST_CASE (DynamicFixedVelocityRotationNoGravity)
 {
-    Emergence::Physics::Test::ExecuteScenario (
+    Test::ExecuteScenario (
         {{0u,
           {
               AddDynamicsMaterial {{"Test"_us}},
@@ -71,7 +70,7 @@ TEST_CASE (DynamicFixedVelocityRotationNoGravity)
 
 TEST_CASE (DynamicImpulseNoGravity)
 {
-    Emergence::Physics::Test::ExecuteScenario (
+    Test::ExecuteScenario (
         {{0u,
           {
               AddDynamicsMaterial {{"Test"_us}},
@@ -96,7 +95,7 @@ TEST_CASE (DynamicImpulseNoGravity)
 
 TEST_CASE (DynamicImpulseNoGravityWithLocking)
 {
-    Emergence::Physics::Test::ExecuteScenario (
+    Test::ExecuteScenario (
         {{0u,
           {
               AddDynamicsMaterial {{"Test"_us}},
@@ -123,70 +122,68 @@ TEST_CASE (DynamicImpulseNoGravityWithLocking)
 
 TEST_CASE (Gravity)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
-          }}},
-        {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
-          {
-              CheckObjectTransform {0u, {{0.0f, -20.1f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
-          }}});
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u, 0u, "Test"_us}},
+                             }}},
+                           {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+                             {
+                                 CheckObjectTransform {0u, {{0.0f, -20.1f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}},
+                             }}});
 }
 
 TEST_CASE (DynamicAndStaticContact)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u,
-                                  0u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  true,
-                                  false,
-                                  true,
-                                  true}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     true,
+                                                     false,
+                                                     true,
+                                                     true}},
 
-              AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u, 1u, "Test"_us}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{{0u, 0u, 1u, 1u, true}}, {}, {}, {}, {}},
-             }},
-            {80u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
-             }},
-            {81u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
-             }},
-            {82u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
-             }},
-            {83u,
-             {
-                 CheckEvents {{}, {}, {{0u, 0u, 1u, 1u, true}}, {}, {}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u, 1u, "Test"_us}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{{0u, 0u, 1u, 1u, true}}, {}, {}, {}, {}},
+                                }},
+                               {80u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
+                                }},
+                               {81u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
+                                }},
+                               {82u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
+                                }},
+                               {83u,
+                                {
+                                    CheckEvents {{}, {}, {{0u, 0u, 1u, 1u, true}}, {}, {}},
+                                }},
+                           });
 }
 
 TEST_CASE (DynamicAndDynamicContact)
 {
-    Emergence::Physics::Test::ExecuteScenario (
+    Test::ExecuteScenario (
         {{0u,
           {
               AddDynamicsMaterial {{"Test"_us}},
@@ -246,263 +243,257 @@ TEST_CASE (DynamicAndDynamicContact)
 
 TEST_CASE (Trigger)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u, 0u, "Test"_us}},
 
-              AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u,
-                                  1u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  true,
-                                  true,
-                                  true,
-                                  false}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{}, {}, {}, {{1u, 1u, 0u, 0u}}, {}},
-             }},
-            {92u,
-             {
-                 CheckEvents {{}, {}, {}, {}, {{1u, 1u, 0u, 0u}}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u,
+                                                     1u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     true,
+                                                     true,
+                                                     true,
+                                                     false}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{}, {}, {}, {{1u, 1u, 0u, 0u}}, {}},
+                                }},
+                               {92u,
+                                {
+                                    CheckEvents {{}, {}, {}, {}, {{1u, 1u, 0u, 0u}}},
+                                }},
+                           });
 }
 
 TEST_CASE (ShapeDisabled)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u, 0u, "Test"_us}},
 
-              AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u,
-                                  1u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  false,
-                                  true,
-                                  true,
-                                  true}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{}, {}, {}, {}, {}},
-             }},
-            {92u,
-             {
-                 CheckEvents {{}, {}, {}, {}, {}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u,
+                                                     1u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     false,
+                                                     true,
+                                                     true,
+                                                     true}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{}, {}, {}, {}, {}},
+                                }},
+                               {92u,
+                                {
+                                    CheckEvents {{}, {}, {}, {}, {}},
+                                }},
+                           });
 }
 
 TEST_CASE (MultishapeContact)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u,
-                                  0u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  true,
-                                  false,
-                                  true,
-                                  true}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     true,
+                                                     false,
+                                                     true,
+                                                     true}},
 
-              AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u,
-                                  1u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  {-2.0f, 0.0f, 0.0f}}},
-              AddCollisionShape {{2u, 1u, "Test"_us}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{{0u, 0u, 1u, 2u, true}}, {}, {}, {}, {}},
-             }},
-            {80u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 2u}}, {}, {}, {}},
-             }},
-            {81u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 2u}}, {}, {}, {}},
-             }},
-            {82u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 2u}}, {}, {}, {}},
-             }},
-            {83u,
-             {
-                 CheckEvents {{}, {}, {{0u, 0u, 1u, 2u, true}}, {}, {}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u,
+                                                     1u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     {-2.0f, 0.0f, 0.0f}}},
+                                 AddCollisionShape {{2u, 1u, "Test"_us}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{{0u, 0u, 1u, 2u, true}}, {}, {}, {}, {}},
+                                }},
+                               {80u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 2u}}, {}, {}, {}},
+                                }},
+                               {81u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 2u}}, {}, {}, {}},
+                                }},
+                               {82u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 2u}}, {}, {}, {}},
+                                }},
+                               {83u,
+                                {
+                                    CheckEvents {{}, {}, {{0u, 0u, 1u, 2u, true}}, {}, {}},
+                                }},
+                           });
 }
 
 TEST_CASE (CollisionMaskMismatch)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u, 0u, "Test"_us}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u, 0u, "Test"_us}},
 
-              AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u,
-                                  1u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  true,
-                                  true,
-                                  true,
-                                  true,
-                                  1u}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{}, {}, {}, {}, {}},
-             }},
-            {92u,
-             {
-                 CheckEvents {{}, {}, {}, {}, {}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.9f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u,
+                                                     1u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     true,
+                                                     true,
+                                                     true,
+                                                     true,
+                                                     1u}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{}, {}, {}, {}, {}},
+                                }},
+                               {92u,
+                                {
+                                    CheckEvents {{}, {}, {}, {}, {}},
+                                }},
+                           });
 }
 
 TEST_CASE (MaterialUpdate)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u,
-                                  0u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  true,
-                                  false,
-                                  true,
-                                  true}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     true,
+                                                     false,
+                                                     true,
+                                                     true}},
 
-              AddTransform {{1u, {{-0.5f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u, 1u, "Test"_us}},
-          }},
-         {25u,
-          {
-              UpdateDynamicsMaterial {{"Test"_us, 0.0f, 0.0f, false, 0.75f, 1.0f}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{{0u, 0u, 1u, 1u, true}}, {}, {}, {}, {}},
-             }},
-            {80u,
-             {
-                 CheckEvents {{}, {}, {{0u, 0u, 1u, 1u, true}}, {}, {}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.5f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u, 1u, "Test"_us}},
+                             }},
+                            {25u,
+                             {
+                                 UpdateDynamicsMaterial {{"Test"_us, 0.0f, 0.0f, false, 0.75f, 1.0f}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{{0u, 0u, 1u, 1u, true}}, {}, {}, {}, {}},
+                                }},
+                               {80u,
+                                {
+                                    CheckEvents {{}, {}, {{0u, 0u, 1u, 1u, true}}, {}, {}},
+                                }},
+                           });
 }
 
 TEST_CASE (MaterialReplaced)
 {
-    Emergence::Physics::Test::ExecuteScenario (
-        {{0u,
-          {
-              AddDynamicsMaterial {{"Test"_us}},
-              AddDynamicsMaterial {{"TestChanged"_us, 0.0f, 0.0f, false, 0.5f, 1.0f}},
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddDynamicsMaterial {{"TestChanged"_us, 0.0f, 0.0f, false, 0.5f, 1.0f}},
 
-              AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
-              AddCollisionShape {{0u,
-                                  0u,
-                                  "Test"_us,
-                                  {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                  Vector3f::ZERO,
-                                  Quaternion::IDENTITY,
-                                  true,
-                                  false,
-                                  true,
-                                  true}},
+                                 AddTransform {{0u, {{0.0f, 10.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{0u, RigidBodyType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                     Vector3f::ZERO,
+                                                     Quaternion::IDENTITY,
+                                                     true,
+                                                     false,
+                                                     true,
+                                                     true}},
 
-              AddTransform {{1u, {{-0.5f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
-              AddRigidBody {{1u, RigidBodyType::STATIC}},
-              AddCollisionShape {{1u, 1u, "Test"_us}},
-          }},
-         {25u,
-          {
-              UpdateCollisionShape {{0u,
-                                     0u,
-                                     "TestChanged"_us,
-                                     {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
-                                     Vector3f::ZERO,
-                                     Quaternion::IDENTITY,
-                                     true,
-                                     false,
-                                     true,
-                                     true}},
-          }}},
-        {
-            {79u,
-             {
-                 CheckEvents {{{0u, 0u, 1u, 1u, true}}, {}, {}, {}, {}},
-             }},
-            {80u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
-             }},
-            {81u,
-             {
-                 CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
-             }},
-            {82u,
-             {
-                 CheckEvents {{}, {}, {{0u, 0u, 1u, 1u, true}}, {}, {}},
-             }},
-        });
+                                 AddTransform {{1u, {{-0.5f, 0.0f, 0.0f}, Quaternion::IDENTITY, Vector3f::ONE}}},
+                                 AddRigidBody {{1u, RigidBodyType::STATIC}},
+                                 AddCollisionShape {{1u, 1u, "Test"_us}},
+                             }},
+                            {25u,
+                             {
+                                 UpdateCollisionShape {{0u,
+                                                        0u,
+                                                        "TestChanged"_us,
+                                                        {.type = CollisionGeometryType::SPHERE, .sphereRadius = 1.0f},
+                                                        Vector3f::ZERO,
+                                                        Quaternion::IDENTITY,
+                                                        true,
+                                                        false,
+                                                        true,
+                                                        true}},
+                             }}},
+                           {
+                               {79u,
+                                {
+                                    CheckEvents {{{0u, 0u, 1u, 1u, true}}, {}, {}, {}, {}},
+                                }},
+                               {80u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
+                                }},
+                               {81u,
+                                {
+                                    CheckEvents {{}, {{0u, 0u, 1u, 1u}}, {}, {}, {}},
+                                }},
+                               {82u,
+                                {
+                                    CheckEvents {{}, {}, {{0u, 0u, 1u, 1u, true}}, {}, {}},
+                                }},
+                           });
 }
 
 TEST_CASE (OutsideManipulationEnabled)
 {
     const auto segmentDuration = static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S));
-    Emergence::Physics::Test::ExecuteScenario (
+    Test::ExecuteScenario (
         {
             {0u,
              {

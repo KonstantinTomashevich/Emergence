@@ -19,12 +19,12 @@
 #include <Transform/Transform3dComponent.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
 
-namespace Emergence::Physics::Test
+namespace Emergence::Celerity::Test
 {
-class Configurator final : public Celerity::TaskExecutorBase<Configurator>
+class Configurator final : public TaskExecutorBase<Configurator>
 {
 public:
-    Configurator (Celerity::TaskConstructor &_constructor, Container::Vector<ConfiguratorFrame> _frames) noexcept;
+    Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorFrame> _frames) noexcept;
 
     void Execute ();
 
@@ -33,23 +33,22 @@ private:
     Container::Vector<ConfiguratorFrame> frames;
     Container::Vector<ConfiguratorFrame>::const_iterator framesIterator;
 
-    Celerity::ModifySingletonQuery modifyPhysicsWorld;
+    ModifySingletonQuery modifyPhysicsWorld;
 
-    Celerity::InsertLongTermQuery insertMaterial;
-    Celerity::ModifyValueQuery modifyMaterialById;
+    InsertLongTermQuery insertMaterial;
+    ModifyValueQuery modifyMaterialById;
 
-    Celerity::InsertLongTermQuery insertTransform;
-    Celerity::ModifyValueQuery modifyTransformById;
+    InsertLongTermQuery insertTransform;
+    ModifyValueQuery modifyTransformById;
 
-    Celerity::InsertLongTermQuery insertBody;
-    Celerity::ModifyValueQuery modifyBodyById;
+    InsertLongTermQuery insertBody;
+    ModifyValueQuery modifyBodyById;
 
-    Celerity::InsertLongTermQuery insertShape;
-    Celerity::ModifyValueQuery modifyShapeByShapeId;
+    InsertLongTermQuery insertShape;
+    ModifyValueQuery modifyShapeByShapeId;
 };
 
-Configurator::Configurator (Celerity::TaskConstructor &_constructor,
-                            Container::Vector<ConfiguratorFrame> _frames) noexcept
+Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorFrame> _frames) noexcept
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
@@ -58,8 +57,8 @@ Configurator::Configurator (Celerity::TaskConstructor &_constructor,
       insertMaterial (INSERT_LONG_TERM (DynamicsMaterial)),
       modifyMaterialById (MODIFY_VALUE_1F (DynamicsMaterial, id)),
 
-      insertTransform (INSERT_LONG_TERM (Celerity::Transform3dComponent)),
-      modifyTransformById (MODIFY_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      insertTransform (INSERT_LONG_TERM (Transform3dComponent)),
+      modifyTransformById (MODIFY_VALUE_1F (Transform3dComponent, objectId)),
 
       insertBody (INSERT_LONG_TERM (RigidBodyComponent)),
       modifyBodyById (MODIFY_VALUE_1F (RigidBodyComponent, objectId)),
@@ -132,7 +131,7 @@ void Configurator::Execute ()
                 {
                     LOG ("Adding Transform3dComponent to object with id ", _task.objectId, ".");
                     auto cursor = insertTransform.Execute ();
-                    auto *transform = static_cast<Celerity::Transform3dComponent *> (++cursor);
+                    auto *transform = static_cast<Transform3dComponent *> (++cursor);
                     transform->SetObjectId (_task.objectId);
                     transform->SetLogicalLocalTransform (_task.transform);
                 }
@@ -140,7 +139,7 @@ void Configurator::Execute ()
                 {
                     LOG ("Updating Transform3dComponent on object with id ", _task.objectId, ".");
                     auto cursor = modifyTransformById.Execute (&_task.objectId);
-                    auto *transform = static_cast<Celerity::Transform3dComponent *> (*cursor);
+                    auto *transform = static_cast<Transform3dComponent *> (*cursor);
                     REQUIRE (transform);
                     transform->SetLogicalLocalTransform (_task.transform);
                 }
@@ -241,10 +240,10 @@ void Configurator::Execute ()
     ++framesIterator;
 }
 
-class Validator : public Celerity::TaskExecutorBase<Validator>
+class Validator : public TaskExecutorBase<Validator>
 {
 public:
-    Validator (Celerity::TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept;
+    Validator (TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept;
 
     void Execute () noexcept;
 
@@ -253,28 +252,28 @@ private:
     Container::Vector<ValidatorFrame> frames;
     Container::Vector<ValidatorFrame>::const_iterator framesIterator;
 
-    Celerity::FetchValueQuery fetchBodyById;
-    Celerity::FetchValueQuery fetchShapeByShapeId;
+    FetchValueQuery fetchBodyById;
+    FetchValueQuery fetchShapeByShapeId;
 
-    Celerity::FetchValueQuery fetchTransformById;
-    Celerity::Transform3dWorldAccessor transformWorldAccessor;
+    FetchValueQuery fetchTransformById;
+    Transform3dWorldAccessor transformWorldAccessor;
 
-    Celerity::FetchSequenceQuery fetchContactFoundEvents;
-    Celerity::FetchSequenceQuery fetchContactPersistsEvents;
-    Celerity::FetchSequenceQuery fetchContactLostEvents;
+    FetchSequenceQuery fetchContactFoundEvents;
+    FetchSequenceQuery fetchContactPersistsEvents;
+    FetchSequenceQuery fetchContactLostEvents;
 
-    Celerity::FetchSequenceQuery fetchTriggerEnteredEvents;
-    Celerity::FetchSequenceQuery fetchTriggerExitedEvents;
+    FetchSequenceQuery fetchTriggerEnteredEvents;
+    FetchSequenceQuery fetchTriggerExitedEvents;
 };
 
-Validator::Validator (Celerity::TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept
+Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept
     : frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
       fetchBodyById (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
       fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShapeComponent, shapeId)),
 
-      fetchTransformById (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchContactFoundEvents (FETCH_SEQUENCE (ContactFoundEvent)),
@@ -330,7 +329,7 @@ void Validator::Execute () noexcept
                          "}.");
 
                     auto cursor = fetchTransformById.Execute (&_task.objectId);
-                    const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*cursor);
+                    const auto *transform = static_cast<const Transform3dComponent *> (*cursor);
                     REQUIRE (transform);
 
                     const Math::Transform3d &worldTransform =
@@ -359,7 +358,7 @@ void Validator::Execute () noexcept
                 }
                 else if constexpr (std::is_same_v<Type, ValidatorTasks::CheckEvents>)
                 {
-                    auto checkEvents = [] (Celerity::FetchSequenceQuery &_query, const auto &_expected)
+                    auto checkEvents = [] (FetchSequenceQuery &_query, const auto &_expected)
                     {
                         using VectorType = std::decay_t<decltype (_expected)>;
                         using ValueType = typename VectorType::value_type;
@@ -409,16 +408,16 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
     using namespace Memory::Literals;
 
     const std::uint64_t frames = std::max (_configuratorFrames.back ().frameIndex, _validatorFrames.back ().frameIndex);
-    Celerity::World world {"TestWorld"_us, Celerity::WorldConfiguration {{TEST_FIXED_FRAME_S}}};
+    World world {"TestWorld"_us, WorldConfiguration {{TEST_FIXED_FRAME_S}}};
 
     {
-        Celerity::EventRegistrar registrar {&world};
-        RegisterEvents (registrar);
+        EventRegistrar registrar {&world};
+        RegisterPhysicsEvents (registrar);
         RegisterTransformEvents (registrar);
     }
 
-    Celerity::PipelineBuilder builder {&world};
-    builder.Begin ("FixedUpdate"_us, Celerity::PipelineType::FIXED);
+    PipelineBuilder builder {&world};
+    builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
 
     builder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_STARTED);
     builder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_FINISHED);
@@ -430,7 +429,7 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
 
     for (std::uint64_t frameIndex = 0u; frameIndex <= frames; ++frameIndex)
     {
-        Celerity::WorldTestingUtility::RunFixedUpdateOnce (world);
+        WorldTestingUtility::RunFixedUpdateOnce (world);
     }
 }
-} // namespace Emergence::Physics::Test
+} // namespace Emergence::Celerity::Test

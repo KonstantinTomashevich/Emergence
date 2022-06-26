@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 const CollisionGeometry::Reflection &CollisionGeometry::Reflect () noexcept
 {
@@ -19,4 +19,4 @@ const CollisionGeometry::Reflection &CollisionGeometry::Reflect () noexcept
 
     return reflection;
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

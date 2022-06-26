@@ -11,7 +11,7 @@ END_MUTING_WARNINGS
 #include <Math/Transform3d.hpp>
 #include <Math/Vector3f.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 inline physx::PxVec3 ToPhysX (const Math::Vector3f &_vector) noexcept
 {
@@ -32,4 +32,4 @@ inline Math::Quaternion FromPhysX (const physx::PxQuat &_quaternion) noexcept
 {
     return {_quaternion.x, _quaternion.y, _quaternion.z, _quaternion.w};
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

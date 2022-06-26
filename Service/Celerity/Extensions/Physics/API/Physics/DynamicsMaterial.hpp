@@ -6,7 +6,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 /// \warning Dynamics material removal causes removal of all associated shapes,
 ///          because shapes can not exist without material.
@@ -42,4 +42,4 @@ struct DynamicsMaterial final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

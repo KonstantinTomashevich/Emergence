@@ -2,7 +2,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 /// \brief Internal singleton, used to register fetch and modify access to PhysX engine objects.
 struct PhysXAccessSingleton final
@@ -14,4 +14,4 @@ struct PhysXAccessSingleton final
 
     static Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

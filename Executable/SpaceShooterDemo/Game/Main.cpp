@@ -128,8 +128,8 @@ void GameApplication::Start ()
 
     {
         Emergence::Celerity::EventRegistrar registrar {&world};
+        Emergence::Celerity::RegisterPhysicsEvents (registrar);
         Emergence::Celerity::RegisterTransformEvents (registrar);
-        Emergence::Physics::RegisterEvents (registrar);
         RegisterGameplayEvents (registrar);
         RegisterRenderEvents (registrar);
     }
@@ -157,7 +157,7 @@ void GameApplication::Start ()
     Control::AddToFixedUpdate (pipelineBuilder);
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-    Emergence::Physics::Simulation::AddToFixedUpdate (pipelineBuilder);
+    Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);

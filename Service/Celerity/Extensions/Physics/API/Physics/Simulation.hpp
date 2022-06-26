@@ -2,7 +2,7 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace Emergence::Physics::Simulation
+namespace Emergence::Celerity::Simulation
 {
 struct Checkpoint final
 {
@@ -12,5 +12,5 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString SIMULATION_FINISHED;
 };
 
-void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
-} // namespace Emergence::Physics::Simulation
+void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+} // namespace Emergence::Celerity::Simulation

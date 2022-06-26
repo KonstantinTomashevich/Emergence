@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Emergence::Physics::Test
+namespace Emergence::Celerity::Test
 {
 bool SimulationTestIncludeMarker () noexcept;
-} // namespace Emergence::Physics::Test
+} // namespace Emergence::Celerity::Test

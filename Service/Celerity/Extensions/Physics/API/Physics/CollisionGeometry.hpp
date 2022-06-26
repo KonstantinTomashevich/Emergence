@@ -4,7 +4,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 enum class CollisionGeometryType
 {
@@ -44,4 +44,4 @@ struct CollisionGeometry final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

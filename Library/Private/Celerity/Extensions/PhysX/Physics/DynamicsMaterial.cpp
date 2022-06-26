@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 DynamicsMaterial::DynamicsMaterial () noexcept = default;
 
@@ -25,4 +25,4 @@ const DynamicsMaterial::Reflection &DynamicsMaterial::Reflect () noexcept
 
     return reflection;
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

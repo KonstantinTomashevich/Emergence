@@ -76,15 +76,15 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent)),
 
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
-      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
-      insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
-      insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
+      insertRigidBody (INSERT_LONG_TERM (Emergence::Celerity::RigidBodyComponent)),
+      insertCollisionShape (INSERT_LONG_TERM (Emergence::Celerity::CollisionShapeComponent)),
       insertMortal (INSERT_LONG_TERM (MortalComponent)),
       insertControllable (INSERT_LONG_TERM (ControllableComponent)),
       insertInputListener (INSERT_LONG_TERM (InputListenerComponent)),
@@ -96,7 +96,7 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Physics::Simulation::Checkpoint::SIMULATION_STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_STARTED);
 }
 
 void FixedAssembler::Execute ()
@@ -105,7 +105,7 @@ void FixedAssembler::Execute ()
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
-    const auto *physicsWorld = static_cast<const Emergence::Physics::PhysicsWorldSingleton *> (*physicsWorldCursor);
+    const auto *physicsWorld = static_cast<const Emergence::Celerity::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
     auto assembly = [this, world, physicsWorld] (Emergence::Celerity::UniqueId _objectId)
     {
@@ -130,34 +130,34 @@ void FixedAssembler::Execute ()
                 auto *controllable = static_cast<ControllableComponent *> (++controllableCursor);
                 controllable->objectId = _objectId;
 
-                auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+                auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
                 body->angularDamping = 0.99f;
-                body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
+                body->type = Emergence::Celerity::RigidBodyType::DYNAMIC;
                 body->manipulatedOutsideOfSimulation = true;
 
-                body->lockFlags = Emergence::Physics::RigidBodyComponent::LOCK_ANGULAR_X |
-                                  Emergence::Physics::RigidBodyComponent::LOCK_ANGULAR_Z;
+                body->lockFlags = Emergence::Celerity::RigidBodyComponent::LOCK_ANGULAR_X |
+                                  Emergence::Celerity::RigidBodyComponent::LOCK_ANGULAR_Z;
 
                 // Sphere for movement
 
-                auto *movementShape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                auto *movementShape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 movementShape->objectId = _objectId;
                 movementShape->shapeId = physicsWorld->GenerateShapeUID ();
                 movementShape->materialId = "Default"_us;
 
-                movementShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::SPHERE,
+                movementShape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::SPHERE,
                                            .sphereRadius = 0.5f};
                 movementShape->collisionGroup = PhysicsConstant::FIGHTER_COLLISION_GROUP;
 
                 // Hitbox for bullets.
 
-                auto *hitBoxShape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                auto *hitBoxShape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 hitBoxShape->objectId = _objectId;
                 hitBoxShape->shapeId = physicsWorld->GenerateShapeUID ();
                 hitBoxShape->materialId = "Default"_us;
 
-                hitBoxShape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                hitBoxShape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
                                          .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
                 hitBoxShape->collisionGroup = PhysicsConstant::HIT_BOX_COLLISION_GROUP;
                 hitBoxShape->trigger = true;
@@ -198,16 +198,16 @@ void FixedAssembler::Execute ()
                 auto *mortal = static_cast<MortalComponent *> (++mortalCursor);
                 mortal->objectId = _objectId;
 
-                auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+                auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
-                body->type = Emergence::Physics::RigidBodyType::STATIC;
+                body->type = Emergence::Celerity::RigidBodyType::STATIC;
 
-                auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 shape->objectId = _objectId;
                 shape->shapeId = physicsWorld->GenerateShapeUID ();
                 shape->materialId = "Default"_us;
 
-                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::BOX,
+                shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
                                    .boxHalfExtents = {0.5f, 1.5f, 0.5f}};
                 shape->translation.y = 1.5f;
                 shape->collisionGroup = PhysicsConstant::OBSTACLE_COLLISION_GROUP;
@@ -225,19 +225,19 @@ void FixedAssembler::Execute ()
                     bulletRotation = transform->GetLogicalWorldTransform (transformWorldAccessor).rotation;
                 }
 
-                auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (++bodyCursor);
+                auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (++bodyCursor);
                 body->objectId = _objectId;
-                body->type = Emergence::Physics::RigidBodyType::DYNAMIC;
+                body->type = Emergence::Celerity::RigidBodyType::DYNAMIC;
                 body->affectedByGravity = false;
                 body->linearVelocity = Emergence::Math::Rotate ({0.0f, 0.0f, 25.0f}, bulletRotation);
 
-                auto *shape = static_cast<Emergence::Physics::CollisionShapeComponent *> (++shapeCursor);
+                auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 shape->objectId = _objectId;
                 shape->shapeId = physicsWorld->GenerateShapeUID ();
                 shape->materialId = "Default"_us;
                 shape->sendContactEvents = true;
 
-                shape->geometry = {.type = Emergence::Physics::CollisionGeometryType::SPHERE, .sphereRadius = 0.2f};
+                shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::SPHERE, .sphereRadius = 0.2f};
                 shape->collisionGroup = PhysicsConstant::BULLET_COLLISION_GROUP;
 
                 auto *damageDealer = static_cast<DamageDealerComponent *> (++damageDealerCursor);

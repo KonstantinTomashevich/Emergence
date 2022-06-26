@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 CollisionShapeComponent::CollisionShapeComponent () noexcept = default;
 
@@ -30,4 +30,4 @@ const CollisionShapeComponent::Reflection &CollisionShapeComponent::Reflect () n
 
     return reflection;
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity

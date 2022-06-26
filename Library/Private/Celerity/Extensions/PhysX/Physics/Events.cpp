@@ -4,7 +4,7 @@
 #include <Physics/PhysicsWorldSingleton.hpp>
 #include <Physics/RigidBodyComponent.hpp>
 
-namespace Emergence::Physics
+namespace Emergence::Celerity
 {
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (PhysicsWorldConfigurationChanged)
 
@@ -93,7 +93,7 @@ EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TriggerExitedEvent,
                                           REGULAR,
                                           intruderShapeId)
 
-void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
+void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
 {
     // PhysicsWorldSingleton
 
@@ -225,4 +225,4 @@ void RegisterEvents (Celerity::EventRegistrar &_registrar) noexcept
     _registrar.CustomEvent ({TriggerEnteredEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
     _registrar.CustomEvent ({TriggerExitedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
 }
-} // namespace Emergence::Physics
+} // namespace Emergence::Celerity
