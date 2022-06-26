@@ -1,9 +1,8 @@
-#include <Physics/Simulation.hpp>
+#include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Transform3dVisualSync.hpp>
 
 namespace Emergence::Celerity
 {
@@ -37,8 +36,8 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_FINISHED);
 
-    _pipelineBuilder.AddCheckpoint (Physics::Simulation::Checkpoint::SIMULATION_STARTED);
-    _pipelineBuilder.AddCheckpoint (Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
-    _pipelineBuilder.AddCheckpoint (Transform::VisualSync::Checkpoint::SYNC_FINISHED);
+    _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_STARTED);
+    _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_FINISHED);
+    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
 }
 } // namespace Emergence::Celerity

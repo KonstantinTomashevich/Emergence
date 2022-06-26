@@ -11,11 +11,17 @@ sober_library_begin (Galleon STATIC)
     sober_library_use_service (EXPECTED PUBLIC MemoryProfiler)
     sober_library_use_service (EXPECTED PUBLIC RecordCollection)
 
+    sober_naming_service_target (Warehouse WAREHOUSE_API_TARGET)
     sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
-    sober_library_link_library (PUBLIC ${CONTAINER_LIBRARY_TARGET})
-
     sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
+    sober_naming_variant_target (RecordCollectionVisualization Original COLLECTION_VISUALIZATION_LIBRARY_TARGET)
+    sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
+
+    sober_library_link_library (PRIVATE ${COLLECTION_VISUALIZATION_LIBRARY_TARGET})
+    sober_library_link_library (PRIVATE ${WAREHOUSE_API_TARGET})
+    sober_library_link_library (PUBLIC ${CONTAINER_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${HANDLING_LIBRARY_TARGET})
+    sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
     sober_variant_begin (Original)
     sober_variant_end ()

@@ -1,13 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <Celerity/Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/PhysicsConstant.hpp>
 
 #include <Initialization/PhysicsInitialization.hpp>
-
-#include <Physics/DynamicsMaterial.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
 
 namespace PhysicsInitialization
 {
@@ -26,8 +25,8 @@ private:
 };
 
 PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
-      insertDynamicsMaterial (INSERT_LONG_TERM (Emergence::Physics::DynamicsMaterial))
+    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton)),
+      insertDynamicsMaterial (INSERT_LONG_TERM (Emergence::Celerity::DynamicsMaterial))
 {
     _constructor.MakeDependencyOf (Checkpoint::PHYSICS_INITIALIZED);
 }
@@ -35,7 +34,7 @@ PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_c
 void PhysicsInitializer::Execute () noexcept
 {
     auto worldCursor = modifyPhysicsWorld.Execute ();
-    auto *world = static_cast<Emergence::Physics::PhysicsWorldSingleton *> (*worldCursor);
+    auto *world = static_cast<Emergence::Celerity::PhysicsWorldSingleton *> (*worldCursor);
 
     world->enableRemoteDebugger = false;
     strcpy (world->remoteDebuggerUrl.data (), "localhost");
@@ -58,7 +57,7 @@ void PhysicsInitializer::Execute () noexcept
     world->collisionMasks[PhysicsConstant::HIT_BOX_COLLISION_GROUP] = (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
 
     auto materialCursor = insertDynamicsMaterial.Execute ();
-    auto *material = static_cast<Emergence::Physics::DynamicsMaterial *> (++materialCursor);
+    auto *material = static_cast<Emergence::Celerity::DynamicsMaterial *> (++materialCursor);
 
     material->id = PhysicsConstant::DEFAULT_MATERIAL_ID;
     material->staticFriction = 0.4f;

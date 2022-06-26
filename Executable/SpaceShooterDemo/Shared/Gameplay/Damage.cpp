@@ -1,15 +1,14 @@
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
 
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
 
-#include <Physics/Events.hpp>
-#include <Physics/Simulation.hpp>
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
 
 namespace Damage
 {
@@ -34,15 +33,15 @@ private:
 };
 
 CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Physics::ContactFoundEvent)),
-      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Physics::TriggerEnteredEvent)),
+    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Celerity::ContactFoundEvent)),
+      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Celerity::TriggerEnteredEvent)),
 
       editDamageDealerById (EDIT_VALUE_1F (DamageDealerComponent, objectId)),
-      removeTransformById (REMOVE_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
 
       insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
-    _constructor.DependOn (Emergence::Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_FINISHED);
     _constructor.DependOn (Checkpoint::DAMAGE_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DAMAGE_FINISHED);
 }
@@ -50,7 +49,7 @@ CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConst
 void CollisionEventProcessor::Execute () noexcept
 {
     for (auto eventCursor = fetchContactFoundEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Physics::ContactFoundEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const Emergence::Celerity::ContactFoundEvent *> (*eventCursor); ++eventCursor)
     {
         if (event->initialContact)
         {
@@ -60,7 +59,8 @@ void CollisionEventProcessor::Execute () noexcept
     }
 
     for (auto eventCursor = fetchTriggerEnteredEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Physics::TriggerEnteredEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const Emergence::Celerity::TriggerEnteredEvent *> (*eventCursor);
+         ++eventCursor)
     {
         ProcessCollision (event->triggerObjectId, event->intruderObjectId);
         ProcessCollision (event->intruderObjectId, event->triggerObjectId);
@@ -101,7 +101,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     using namespace Emergence::Memory::Literals;
 
     _pipelineBuilder.AddTask ("Damage::RemoveDamageDealers"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
                                 objectId)
         // Deletion is done after mortality to avoid unneeded graph complications due to event processing.
         .DependOn (Checkpoint::MORTALITY_FINISHED);

@@ -1,6 +1,9 @@
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/HardcodedPrototypes.hpp>
@@ -14,10 +17,6 @@
 #include <Log/Log.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Shooting
 {
@@ -40,7 +39,7 @@ private:
     Emergence::Celerity::ModifyAscendingRangeQuery modifyShootersByCoolingDownUntil;
     Emergence::Celerity::FetchValueQuery fetchInputListenerById;
     Emergence::Celerity::FetchValueQuery fetchTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertPrototype;
@@ -52,10 +51,10 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
 
       modifyShootersByCoolingDownUntil (MODIFY_ASCENDING_RANGE (ShooterComponent, coolingDownUntilNs)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
-      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
       insertPrototype (INSERT_LONG_TERM (PrototypeComponent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
@@ -100,12 +99,12 @@ void ShootingProcessor::Execute () noexcept
 
                 if (TryFetchBulletTransform (shooter->shootingPointObjectId, bulletTransform))
                 {
-                    const Emergence::Celerity::UniqueId bulletObjectId = world->GenerateUID ();
+                    const Emergence::Celerity::UniqueId bulletObjectId = world->GenerateId ();
 
                     auto transformCursor = insertTransform.Execute ();
-                    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+                    auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
                     transform->SetObjectId (bulletObjectId);
-                    transform->SetLogicalLocalTransform (bulletTransform);
+                    transform->SetLogicalLocalTransform (bulletTransform, true);
 
                     auto prototypeCursor = insertPrototype.Execute ();
                     auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);
@@ -125,7 +124,7 @@ bool ShootingProcessor::TryFetchBulletTransform (Emergence::Celerity::UniqueId _
                                                  Emergence::Math::Transform3d &_output) noexcept
 {
     auto transformCursor = fetchTransformById.Execute (&_shootingPointId);
-    if (const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor))
+    if (const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor))
     {
         _output = transform->GetLogicalWorldTransform (transformWorldAccessor);
         return true;
@@ -141,7 +140,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .DependOn (Checkpoint::SHOOTING_STARTED);
 
     _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, ShooterComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, ShooterComponent, objectId)
         .DependOn ("Shooting::RemoveAfterDeath"_us)
         .MakeDependencyOf ("Shooting::Processor"_us);
 

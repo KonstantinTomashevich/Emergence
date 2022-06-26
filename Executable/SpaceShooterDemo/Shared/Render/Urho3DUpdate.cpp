@@ -1,5 +1,9 @@
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Math/Scalar.hpp>
 
@@ -15,11 +19,6 @@
 #include <Render/Urho3DUpdate.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <Urho3D/Graphics/Camera.h>
@@ -584,7 +583,7 @@ private:
 
     Emergence::Celerity::FetchAscendingRangeQuery fetchUrho3DNodes;
     Emergence::Celerity::FetchValueQuery fetchTransformByObjectId;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedNormalEvents;
     Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedCustomEvents;
@@ -598,14 +597,14 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
 
       fetchUrho3DNodes (FETCH_ASCENDING_RANGE (Urho3DNodeComponent, objectId)),
-      fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchRenderSceneChangedNormalEvents (FETCH_SEQUENCE (RenderSceneChangedNormalEvent)),
       fetchRenderSceneChangedCustomEvents (FETCH_SEQUENCE (RenderSceneChangedCustomToNormalEvent)),
       fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId))
 {
-    _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);
     _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_FINISHED);
 }
@@ -625,7 +624,7 @@ void SceneUpdater::UpdateTransforms () noexcept
          const auto *node = static_cast<const Urho3DNodeComponent *> (*nodeCursor); ++nodeCursor)
     {
         auto transformCursor = fetchTransformByObjectId.Execute (&node->objectId);
-        const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -763,43 +762,43 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
     _pipelineBuilder.AddTask (TaskNames::ENSURE_SCENE_IS_READY).SetExecutor<SceneInitializer> (_context);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalCameras"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, CameraComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, CameraComponent, objectId)
         .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedCameras"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent, CameraComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent, CameraComponent,
                                 objectId)
         .DependOn ("Render::RemoveNormalCameras"_us)
         .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalLights"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, LightComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, LightComponent, objectId)
         .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedLights"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent, LightComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent, LightComponent,
                                 objectId)
         .DependOn ("Render::RemoveNormalLights"_us)
         .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalEffects"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, ParticleEffectComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, ParticleEffectComponent,
                                 objectId)
         .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedEffects"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent,
                                 ParticleEffectComponent, objectId)
         .DependOn ("Render::RemoveNormalEffects"_us)
         .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalModels"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
                                 objectId)
         .DependOn (Checkpoint::RENDER_UPDATE_STARTED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedModels"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedToNormalEvent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent,
                                 StaticModelComponent, objectId)
         .DependOn ("Render::RemoveNormalModels"_us)
         .MakeDependencyOf (TaskNames::INITIALIZE_NEW_COMPONENTS);

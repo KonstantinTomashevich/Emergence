@@ -2,22 +2,22 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-uintptr_t RenderSceneSingleton::GenerateLightUID () const noexcept
+uintptr_t RenderSceneSingleton::GenerateLightId () const noexcept
 {
-    assert (lightUIDCounter != std::numeric_limits<decltype (lightUIDCounter)::value_type>::max ());
-    return const_cast<RenderSceneSingleton *> (this)->lightUIDCounter++;
+    assert (lightIdCounter != std::numeric_limits<decltype (lightIdCounter)::value_type>::max ());
+    return const_cast<RenderSceneSingleton *> (this)->lightIdCounter++;
 }
 
-uintptr_t RenderSceneSingleton::GenerateModelUID () const noexcept
+uintptr_t RenderSceneSingleton::GenerateModelId () const noexcept
 {
-    assert (modelUIDCounter != std::numeric_limits<decltype (modelUIDCounter)::value_type>::max ());
-    return const_cast<RenderSceneSingleton *> (this)->modelUIDCounter++;
+    assert (modelIdCounter != std::numeric_limits<decltype (modelIdCounter)::value_type>::max ());
+    return const_cast<RenderSceneSingleton *> (this)->modelIdCounter++;
 }
 
-uintptr_t RenderSceneSingleton::GenerateEffectUID () const noexcept
+uintptr_t RenderSceneSingleton::GenerateEffectId () const noexcept
 {
-    assert (effectUIDCounter != std::numeric_limits<decltype (effectUIDCounter)::value_type>::max ());
-    return const_cast<RenderSceneSingleton *> (this)->effectUIDCounter++;
+    assert (effectIdCounter != std::numeric_limits<decltype (effectIdCounter)::value_type>::max ());
+    return const_cast<RenderSceneSingleton *> (this)->effectIdCounter++;
 }
 
 const RenderSceneSingleton::Reflection &RenderSceneSingleton::Reflect () noexcept

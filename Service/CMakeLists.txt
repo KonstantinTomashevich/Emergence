@@ -1,4 +1,5 @@
 add_common_compile_options ()
+add_subdirectory (Celerity)
 add_subdirectory (ExportGraph)
 add_subdirectory (Hashing)
 add_subdirectory (Log)

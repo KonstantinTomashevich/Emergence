@@ -1,13 +1,12 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
 #include <Input/InputSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
 
 namespace Input
 {
@@ -118,7 +117,7 @@ class NormalInputDispatcher final : public Emergence::Celerity::TaskExecutorBase
 {
 public:
     NormalInputDispatcher (Emergence::Celerity::TaskConstructor &_constructor,
-                           Emergence::Celerity::InputAccumulator *_inputAccumulator) noexcept;
+                           InputAccumulator *_inputAccumulator) noexcept;
 
     void Execute () noexcept;
 
@@ -128,11 +127,11 @@ private:
     void UpdateActionBuffers (InputSingleton *_input) noexcept;
 
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
-    Emergence::Celerity::InputAccumulator *inputAccumulator = nullptr;
+    InputAccumulator *inputAccumulator = nullptr;
 };
 
 NormalInputDispatcher::NormalInputDispatcher (Emergence::Celerity::TaskConstructor &_constructor,
-                                              Emergence::Celerity::InputAccumulator *_inputAccumulator) noexcept
+                                              InputAccumulator *_inputAccumulator) noexcept
     : InputDispatcherBase (_constructor),
       fetchWorld (_constructor.FetchSingleton (Emergence::Celerity::WorldSingleton::Reflect ().mapping)),
       inputAccumulator (_inputAccumulator)
@@ -186,9 +185,9 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
         // Can not be triggered more than once per frame.
         bool canBeTriggered = true;
 
-        for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
+        for (const InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.scan == event.keyboard.scan)
+            if (event.type == InputType::KEYBOARD && trigger.scan == event.keyboard.scan)
             {
                 trigger.isDownNow = event.keyboard.down;
                 if (canBeTriggered && trigger.isDownNow == trigger.down)
@@ -207,9 +206,9 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
 
     for (KeyStateChangedTrigger &trigger : _input->keyStateChangedTriggers)
     {
-        for (const Emergence::Celerity::InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
+        for (const InputEvent &event : inputAccumulator->GetAccumulatedEvents ())
         {
-            if (event.type == Emergence::Celerity::InputType::KEYBOARD && trigger.scan == event.keyboard.scan &&
+            if (event.type == InputType::KEYBOARD && trigger.scan == event.keyboard.scan &&
                 event.keyboard.down == trigger.pressed && event.keyboard.qualifiers == trigger.qualifiers)
             {
                 SendAction (_input, trigger.action, true);
@@ -225,7 +224,7 @@ using namespace Emergence::Memory::Literals;
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Input::RemoveFixedListeners"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
                                 objectId)
         .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
         .MakeDependencyOf ("Input::FixedDispatcher"_us);
@@ -233,11 +232,11 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask ("Input::FixedDispatcher"_us).SetExecutor<FixedInputDispatcher> ();
 }
 
-void AddToNormalUpdate (Emergence::Celerity::InputAccumulator *_inputAccumulator,
+void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
                                 objectId)
         .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
         .MakeDependencyOf ("Input::NormalDispatcher"_us);

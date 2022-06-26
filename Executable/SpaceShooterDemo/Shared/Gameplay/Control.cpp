@@ -1,4 +1,5 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Control.hpp>
@@ -10,8 +11,6 @@
 #include <Input/InputSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
 
 namespace Control
 {
@@ -109,7 +108,7 @@ void ControlSwitcher::Execute () noexcept
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Control::RemoveControllable"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, ControllableComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, ControllableComponent,
                                 objectId)
         .MakeDependencyOf ("Control::Switch"_us);
 

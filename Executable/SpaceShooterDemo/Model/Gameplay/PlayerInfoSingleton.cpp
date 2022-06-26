@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-uintptr_t PlayerInfoSingleton::GeneratePlayerUID () const noexcept
+uintptr_t PlayerInfoSingleton::GeneratePlayerId () const noexcept
 {
     assert (playerUidCounter != std::numeric_limits<decltype (playerUidCounter)::value_type>::max ());
     return const_cast<PlayerInfoSingleton *> (this)->playerUidCounter++;

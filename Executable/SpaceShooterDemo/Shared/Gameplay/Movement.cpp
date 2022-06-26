@@ -1,5 +1,10 @@
 #include <Celerity/Model/TimeSingleton.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
@@ -12,14 +17,7 @@
 
 #include <Math/Scalar.hpp>
 
-#include <Physics/RigidBodyComponent.hpp>
-#include <Physics/Simulation.hpp>
-
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Movement
 {
@@ -39,23 +37,23 @@ private:
     Emergence::Celerity::EditValueQuery editRigidBodyById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
-      editRigidBodyById (EDIT_VALUE_1F (Emergence::Physics::RigidBodyComponent, objectId)),
+      editRigidBodyById (EDIT_VALUE_1F (Emergence::Celerity::RigidBodyComponent, objectId)),
 
-      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MOVEMENT_FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Physics::Simulation::Checkpoint::SIMULATION_STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_STARTED);
 }
 
 void MovementUpdater::Execute () noexcept
@@ -67,7 +65,7 @@ void MovementUpdater::Execute () noexcept
          const auto *movement = static_cast<const MovementComponent *> (movementCursor.ReadConst ());)
     {
         auto transformCursor = fetchTransformById.Execute (&movement->objectId);
-        const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -91,7 +89,7 @@ void MovementUpdater::Execute () noexcept
         }
 
         auto bodyCursor = editRigidBodyById.Execute (&movement->objectId);
-        auto *body = static_cast<Emergence::Physics::RigidBodyComponent *> (*bodyCursor);
+        auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (*bodyCursor);
 
         if (!body)
         {
@@ -177,8 +175,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .DependOn (Checkpoint::MOVEMENT_STARTED);
 
     _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, MovementComponent,
-                                objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent, objectId)
         .DependOn ("Movement::RemoveAfterDeath"_us)
         .MakeDependencyOf ("Movement::Update"_us);
 
