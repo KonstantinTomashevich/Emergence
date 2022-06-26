@@ -29,6 +29,9 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Libraries
 
+- [Celerity](./Library/Public/Celerity/README.md): combines [Warehouse](./Service/Warehouse/README.md),
+  [Flow](./Library/Public/Flow/README.md) and [TaskExecutor](./Service/TaskExecutor/README.md) into framework
+  for gameplay world logic implementation.
 - [Container](./Library/Public/Container/README.md): template container proxies and implementations.
 - [Flow](./Library/Public/Flow/README.md): compact user-friendly task registration library. It verifies that there is no
   circular dependencies, no missing dependencies and no data races between registered tasks.
@@ -47,14 +50,3 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   tool for viewing [MemoryRecording](./Library/Public/MemoryRecording/README.md) serialized tracks.
 - [SpaceShooterDemo](./Executable/SpaceShooterDemo/README.md): simple shooter game, that illustrates usage of
   **Emergence** features.
-
-## Planed modules
-
-### Services
-
-### Libraries
-
-- **Celerity**: combines [Warehouse](./Service/Warehouse/README.md), [Flow](./Library/Public/Flow/README.md)
-  and [TaskExecutor](./Service/TaskExecutor/README.md) into framework for gameplay world logic implementation.
-
-### Executables
