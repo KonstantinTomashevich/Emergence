@@ -12,34 +12,53 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Represents collision shape, attached to an object.
+/// \details There could be multiple shapes, attached to the same object.
 struct CollisionShapeComponent final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (CollisionShapeComponent);
 
-    /// \details Must be assigned using PhysicsWorldSingleton::GenerateShapeUID.
+    /// \brief Unique id of this shape component.
+    /// \details Because there could be multiple shapes per object, we need another unique identification system.
+    /// \invariant Must be assigned using PhysicsWorldSingleton::GenerateShapeUID.
     UniqueId shapeId = INVALID_UNIQUE_ID;
 
+    /// \brief Id of an object to which this shape is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
 
+    /// \brief Shape additional rotation, local to object rotation.
     Math::Quaternion rotation = Math::Quaternion::IDENTITY;
 
+    /// \brief Shape additional translation, local to object rotation.
     Math::Vector3f translation = Math::Vector3f::ZERO;
 
+    /// \brief Shape geometry. Can be resized any time.
     /// \invariant Geometry type cannot be changed after initialization!
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
 
+    /// \brief Shape physical material id.
+    /// \see DynamicsMaterial
     Memory::UniqueString materialId;
 
+    /// \brief Whether this shape is enabled.
     bool enabled = true;
+
+    /// \brief Whether this shape is a trigger shape.
+    /// \details Trigger shapes do not collide, but special send enter/exit events.
     bool trigger = false;
+
+    /// \brief Whether this shape is visible to world queries.
     bool visibleToWorldQueries = true;
 
     /// \brief Whether collision shape should send events on physical contact during simulation.
+    /// \details Ignored if ::trigger.
     bool sendContactEvents = false;
 
+    /// \brief Shape collision groups are used to filter out unneeded collisions.
     /// \invariant < 32u
     uint8_t collisionGroup = 0u;
 
+    /// \brief Pointer to implementation-specific object.
     void *implementationHandle = nullptr;
 
     struct Reflection final

@@ -6,6 +6,7 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Represents supported types of collision geometry.
 enum class CollisionGeometryType
 {
     BOX = 0u,
@@ -14,16 +15,21 @@ enum class CollisionGeometryType
     // TODO: Add convex, triangle soup and height field. Maybe shared?
 };
 
+/// \brief Stores collision geometry data along with its type.
 struct CollisionGeometry final
 {
+    /// \brief This geometry type.
     CollisionGeometryType type;
 
     union
     {
+        /// \details Used if ::type is CollisionGeometryType::BOX.
         Math::Vector3f boxHalfExtents;
 
+        /// \details Used if ::type is CollisionGeometryType::SPHERE.
         float sphereRadius;
 
+        /// \details Used if ::type is CollisionGeometryType::CAPSULE.
         struct
         {
             float capsuleRadius;
