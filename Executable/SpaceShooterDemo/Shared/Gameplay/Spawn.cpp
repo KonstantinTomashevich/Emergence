@@ -39,7 +39,7 @@ private:
 
     Emergence::Celerity::FetchValueQuery fetchAlignmentById;
     Emergence::Celerity::FetchValueQuery fetchTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertPrototype;
@@ -50,7 +50,7 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Transform::Transform3dComponentRemovedFixedEvent)),
+      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentRemovedFixedEvent)),
 
       removeSpawnById (REMOVE_VALUE_1F (SpawnComponent, objectId)),
       modifySpawnByCoolingDownUntil (MODIFY_ASCENDING_RANGE (SpawnComponent, spawnCoolingDownUntilNs)),
@@ -60,10 +60,10 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
 #undef INDEXED_QUERY
 
       fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
-      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
       insertPrototype (INSERT_LONG_TERM (PrototypeComponent)),
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent))
 {
@@ -82,7 +82,7 @@ void SpawnProcessor::Execute () noexcept
 
     for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
          const auto *event =
-             static_cast<const Emergence::Transform::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
+             static_cast<const Emergence::Celerity::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
          ++eventCursor)
     {
         // If deleted transform was spawned, clear it from owner spawn.
@@ -119,7 +119,7 @@ void SpawnProcessor::Execute () noexcept
             {
                 auto transformCursor = fetchTransformById.Execute (&spawn->objectId);
                 const auto *transform =
-                    static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
+                    static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
 
                 if (!transform)
                 {
@@ -145,7 +145,7 @@ void SpawnProcessor::Execute () noexcept
             auto transformCursor = insertTransform.Execute ();
             auto prototypeCursor = insertPrototype.Execute ();
 
-            auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+            auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
             transform->SetObjectId (objectId);
             transform->SetLogicalLocalTransform (spawnTransform, true);
 
@@ -172,7 +172,7 @@ void SpawnProcessor::Execute () noexcept
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Spawn::RemoveSpawns"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, SpawnComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, SpawnComponent, objectId)
         .DependOn (Checkpoint::SPAWN_STARTED)
         .MakeDependencyOf ("Spawn::Process"_us);
 

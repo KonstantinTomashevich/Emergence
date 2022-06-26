@@ -128,10 +128,10 @@ void GameApplication::Start ()
 
     {
         Emergence::Celerity::EventRegistrar registrar {&world};
+        Emergence::Celerity::RegisterTransformEvents (registrar);
+        Emergence::Physics::RegisterEvents (registrar);
         RegisterGameplayEvents (registrar);
         RegisterRenderEvents (registrar);
-        Emergence::Physics::RegisterEvents (registrar);
-        Emergence::Transform::RegisterEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
@@ -144,7 +144,7 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Assembly::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-    Emergence::Transform::VisualSync::AddToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::VisualTransformSync::AddToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);

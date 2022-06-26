@@ -39,7 +39,7 @@ private:
     Emergence::Celerity::EditValueQuery editRigidBodyById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -48,7 +48,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
       editRigidBodyById (EDIT_VALUE_1F (Emergence::Physics::RigidBodyComponent, objectId)),
 
-      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
@@ -67,7 +67,7 @@ void MovementUpdater::Execute () noexcept
          const auto *movement = static_cast<const MovementComponent *> (movementCursor.ReadConst ());)
     {
         auto transformCursor = fetchTransformById.Execute (&movement->objectId);
-        const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -177,7 +177,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .DependOn (Checkpoint::MOVEMENT_STARTED);
 
     _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, MovementComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent,
                                 objectId)
         .DependOn ("Movement::RemoveAfterDeath"_us)
         .MakeDependencyOf ("Movement::Update"_us);

@@ -38,7 +38,7 @@ CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConst
       fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Physics::TriggerEnteredEvent)),
 
       editDamageDealerById (EDIT_VALUE_1F (DamageDealerComponent, objectId)),
-      removeTransformById (REMOVE_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
 
       insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
@@ -101,7 +101,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     using namespace Emergence::Memory::Literals;
 
     _pipelineBuilder.AddTask ("Damage::RemoveDamageDealers"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
                                 objectId)
         // Deletion is done after mortality to avoid unneeded graph complications due to event processing.
         .DependOn (Checkpoint::MORTALITY_FINISHED);

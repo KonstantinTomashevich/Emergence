@@ -15,7 +15,7 @@
 
 #include <Math/Transform3d.hpp>
 
-namespace Emergence::Transform::Test
+namespace Emergence::Celerity::Test
 {
 namespace Requests
 {
@@ -68,7 +68,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                         Container::Vector<RequestPacket> _requests) noexcept;
 } // namespace RequestExecutor
-} // namespace Emergence::Transform::Test
+} // namespace Emergence::Celerity::Test
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #    pragma warning(pop)

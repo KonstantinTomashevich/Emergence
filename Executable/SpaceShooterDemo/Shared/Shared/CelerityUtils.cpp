@@ -39,6 +39,6 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
 
     _pipelineBuilder.AddCheckpoint (Physics::Simulation::Checkpoint::SIMULATION_STARTED);
     _pipelineBuilder.AddCheckpoint (Physics::Simulation::Checkpoint::SIMULATION_FINISHED);
-    _pipelineBuilder.AddCheckpoint (Transform::VisualSync::Checkpoint::SYNC_FINISHED);
+    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
 }
 } // namespace Emergence::Celerity

@@ -8,30 +8,25 @@
 
 #include <Transform/Test/Task.hpp>
 
-namespace Emergence::Transform::Test
+namespace Emergence::Celerity::Test
 {
 using namespace Memory::Literals;
 
-bool OperationsTestIncludeMarker () noexcept
-{
-    return true;
-}
-
 void OperationsTest (RequestExecutor::RequestPacket _scenario)
 {
-    Celerity::World world {"TestWorld"_us};
-    Celerity::PipelineBuilder builder {&world};
+    World world {"TestWorld"_us};
+    PipelineBuilder builder {&world};
 
-    builder.Begin ("FixedUpdate"_us, Celerity::PipelineType::FIXED);
+    builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     RequestExecutor::AddToFixedUpdate (builder, {std::move (_scenario)});
     REQUIRE (builder.End (std::thread::hardware_concurrency ()));
-    Celerity::WorldTestingUtility::RunFixedUpdateOnce (world);
+    WorldTestingUtility::RunFixedUpdateOnce (world);
 }
 
 void HierarchyTest (bool _logical, bool _useModifyQuery)
 {
-    using namespace Emergence::Math;
-    using namespace Emergence::Transform::Test::Requests;
+    using namespace Math;
+    using namespace Requests;
 
     const Transform3d expectedTransform3 {{9.0f, -4.0f, -2.0f}, Quaternion::IDENTITY, {2.0f, 6.0f, 4.0f}};
     const Transform3d expectedTransform3Changed {{3.0f, -6.0f, -6.0f}, Quaternion::IDENTITY, {2.0f, 2.0f, 4.0f}};
@@ -40,7 +35,7 @@ void HierarchyTest (bool _logical, bool _useModifyQuery)
     const Transform3d expectedTransform5 {{15.0f, -38.0f, 33.0f}, {{PI * 0.5f, 0.0f, 0.0f}}, {3.0f, 3.0f, 3.0f}};
 
     OperationsTest ({
-        CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
+        CreateTransform {0u, INVALID_UNIQUE_ID},
         SetLocalTransform {0u, _logical, false, {{2.0f, 4.0f, 1.0f}, Quaternion::IDENTITY}},
 
         CreateTransform {1u, 0u},
@@ -52,7 +47,7 @@ void HierarchyTest (bool _logical, bool _useModifyQuery)
         CreateTransform {3u, 2u},
         SetLocalTransform {3u, _logical, false, {{0.0f, -5.0f, -3.0f}, Quaternion::IDENTITY, {1.0f, 1.0f, 2.0f}}},
 
-        CreateTransform {4u, Emergence::Celerity::INVALID_UNIQUE_ID},
+        CreateTransform {4u, INVALID_UNIQUE_ID},
         SetLocalTransform {4u, _logical, false, {{12.0f, -5.0f, 3.0f}, {{PI * 0.5f, 0.0f, 0.0f}}, {3.0f, 3.0f, 3.0f}}},
 
         CreateTransform {5u, 4u},
@@ -75,10 +70,10 @@ void HierarchyTest (bool _logical, bool _useModifyQuery)
         CheckTransform {3u, _logical, false, _useModifyQuery, expectedTransform3OtherParent},
     });
 }
-} // namespace Emergence::Transform::Test
+} // namespace Emergence::Celerity::Test
 
-using namespace Emergence::Transform::Test::Requests;
-using namespace Emergence::Transform::Test;
+using namespace Emergence::Celerity::Test::Requests;
+using namespace Emergence::Celerity::Test;
 
 BEGIN_SUITE (TransformOperations)
 

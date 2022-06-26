@@ -394,7 +394,7 @@ private:
     Celerity::FetchValueQuery fetchBodyByObjectId;
 
     Celerity::FetchValueQuery fetchTransformByObjectId;
-    Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Celerity::FetchSequenceQuery fetchShapeAddedFixedEvents;
     Celerity::FetchSequenceQuery fetchShapeAddedCustomEvents;
@@ -409,7 +409,7 @@ ShapeInitializer::ShapeInitializer (Celerity::TaskConstructor &_constructor) noe
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
 
-      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchShapeAddedFixedEvents (FETCH_SEQUENCE (CollisionShapeComponentAddedFixedEvent)),
@@ -450,7 +450,7 @@ void ShapeInitializer::Execute ()
 
         const auto *pxMaterial = static_cast<const physx::PxMaterial *> (material->implementationHandle);
         auto transformCursor = fetchTransformByObjectId.Execute (&shape->objectId);
-        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -515,7 +515,7 @@ private:
     Celerity::FetchValueQuery fetchMaterialById;
 
     Celerity::FetchValueQuery fetchTransformById;
-    Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Celerity::FetchSequenceQuery fetchShapeMaterialChangedEvents;
     Celerity::FetchSequenceQuery fetchShapeGeometryChangedEvents;
@@ -530,7 +530,7 @@ ShapeChangesSynchronizer::ShapeChangesSynchronizer (Celerity::TaskConstructor &_
       removeShapeByShapeId (REMOVE_VALUE_1F (CollisionShapeComponent, shapeId)),
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial, id)),
 
-      fetchTransformById (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchShapeMaterialChangedEvents (FETCH_SEQUENCE (CollisionShapeComponentMaterialChangedEvent)),
@@ -595,7 +595,7 @@ void ShapeChangesSynchronizer::ApplyShapeGeometryChanges () noexcept
         auto cursor = insertBodyMassInvalidatedEvents.Execute ();
         static_cast<RigidBodyComponentMassInvalidatedEvent *> (++cursor)->objectId = shape->objectId;
         auto transformCursor = fetchTransformById.Execute (&shape->objectId);
-        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -697,7 +697,7 @@ private:
     Celerity::ModifyValueQuery modifyBodyByObjectId;
     Celerity::FetchValueQuery fetchShapeByObjectId;
     Celerity::FetchValueQuery fetchTransformByObjectId;
-    Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Celerity::FetchSequenceQuery fetchBodyAddedFixedEvents;
     Celerity::FetchSequenceQuery fetchBodyAddedCustomEvents;
@@ -710,7 +710,7 @@ BodyInitializer::BodyInitializer (Celerity::TaskConstructor &_constructor) noexc
 
       modifyBodyByObjectId (MODIFY_VALUE_1F (RigidBodyComponent, objectId)),
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShapeComponent, objectId)),
-      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchBodyAddedFixedEvents (FETCH_SEQUENCE (RigidBodyComponentAddedFixedEvent)),
@@ -738,7 +738,7 @@ void BodyInitializer::Execute ()
         }
 
         auto transformCursor = fetchTransformByObjectId.Execute (&_objectId);
-        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -1024,7 +1024,7 @@ private:
 
     Celerity::FetchValueQuery fetchTransformByObjectId;
     Celerity::EditValueQuery editTransformByObjectId;
-    Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Celerity::InsertShortTermQuery insertContactFoundEvents;
     Celerity::InsertShortTermQuery insertContactPersistsEvents;
@@ -1044,8 +1044,8 @@ SimulationExecutor::SimulationExecutor (Celerity::TaskConstructor &_constructor)
       editKinematicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::KINEMATIC)),
       editDynamicBody (EDIT_SIGNAL (RigidBodyComponent, type, RigidBodyType::DYNAMIC)),
 
-      fetchTransformByObjectId (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
-      editTransformByObjectId (EDIT_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformByObjectId (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
+      editTransformByObjectId (EDIT_VALUE_1F (Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       insertContactFoundEvents (INSERT_SHORT_TERM (ContactFoundEvent)),
@@ -1202,7 +1202,7 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
         pxActor->setActorFlag (physx::PxActorFlag::eDISABLE_GRAVITY, !body->affectedByGravity);
 
         auto transformCursor = fetchTransformByObjectId.Execute (&body->objectId);
-        const auto *transform = static_cast<const Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -1277,7 +1277,7 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
         auto *pxBody = static_cast<physx::PxRigidBody *> (_body->implementationHandle);
         auto transformCursor = editTransformByObjectId.Execute (&_body->objectId);
 
-        if (auto *transform = static_cast<Transform::Transform3dComponent *> (*transformCursor))
+        if (auto *transform = static_cast<Celerity::Transform3dComponent *> (*transformCursor))
         {
             const physx::PxTransform &pxTransform = pxBody->getGlobalPose ();
             const Math::Vector3f &scale = transform->GetLogicalLocalTransform ().scale;
@@ -1490,12 +1490,12 @@ void AddToFixedUpdate (Celerity::PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
 
     _pipelineBuilder.AddTask ("Physics::RemoveBodies"_us)
-        .AS_CASCADE_REMOVER_1F (Transform::Transform3dComponentRemovedFixedEvent, RigidBodyComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Celerity::Transform3dComponentRemovedFixedEvent, RigidBodyComponent, objectId)
         .DependOn (Checkpoint::SIMULATION_STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
     _pipelineBuilder.AddTask ("Physics::RemoveShapes"_us)
-        .AS_CASCADE_REMOVER_1F (Transform::Transform3dComponentRemovedFixedEvent, CollisionShapeComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Celerity::Transform3dComponentRemovedFixedEvent, CollisionShapeComponent, objectId)
         .DependOn (Checkpoint::SIMULATION_STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 

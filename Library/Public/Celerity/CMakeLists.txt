@@ -1,3 +1,5 @@
+call_code_generation (${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory (Constants)
 
 sober_library_begin (Celerity STATIC)
@@ -28,3 +30,5 @@ sober_library_begin (Celerity STATIC)
     sober_variant_begin (Original)
     sober_variant_end ()
 sober_library_end ()
+
+add_subdirectory (Extensions)

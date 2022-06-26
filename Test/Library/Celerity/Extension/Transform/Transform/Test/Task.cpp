@@ -9,12 +9,12 @@
 #include <Transform/Transform3dVisualSync.hpp>
 #include <Transform/Transform3dWorldAccessor.hpp>
 
-namespace Emergence::Transform::Test::RequestExecutor
+namespace Emergence::Celerity::Test::RequestExecutor
 {
-class Executor final : public Celerity::TaskExecutorBase<Executor>
+class Executor final : public TaskExecutorBase<Executor>
 {
 public:
-    Executor (Celerity::TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept;
+    Executor (TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept;
 
     void Execute () noexcept;
 
@@ -22,13 +22,13 @@ private:
     Container::Vector<RequestPacket> requests;
     std::size_t executionIndex = 0u;
 
-    Celerity::InsertLongTermQuery insertTransform;
-    Celerity::FetchValueQuery fetchTransform;
-    Celerity::EditValueQuery editTransform;
+    InsertLongTermQuery insertTransform;
+    FetchValueQuery fetchTransform;
+    EditValueQuery editTransform;
     Transform3dWorldAccessor worldAccessor;
 };
 
-Executor::Executor (Celerity::TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept
+Executor::Executor (TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept
     : requests (std::move (_requests)),
       insertTransform (INSERT_LONG_TERM (Transform3dComponent)),
       fetchTransform (FETCH_VALUE_1F (Transform3dComponent, objectId)),
@@ -154,20 +154,16 @@ void Executor::Execute () noexcept
     ++executionIndex;
 }
 
-void AddToFixedUpdate (Celerity::PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
+void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor =
-        _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
+    TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
     constructor.SetExecutor<Executor> (std::move (_requests));
 }
 
-void AddToNormalUpdate (Celerity::PipelineBuilder &_pipelineBuilder,
-                        Container::Vector<RequestPacket> _requests) noexcept
+void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
-    Emergence::Celerity::TaskConstructor constructor =
-        _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-
-    constructor.DependOn (VisualSync::Checkpoint::SYNC_FINISHED);
+    TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
+    constructor.DependOn (VisualTransformSync::Checkpoint::SYNC_FINISHED);
     constructor.SetExecutor<Executor> (std::move (_requests));
 }
-} // namespace Emergence::Transform::Test::RequestExecutor
+} // namespace Emergence::Celerity::Test::RequestExecutor

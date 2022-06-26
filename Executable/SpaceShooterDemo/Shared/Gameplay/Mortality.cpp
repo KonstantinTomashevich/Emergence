@@ -106,7 +106,7 @@ private:
 CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchCorpsesByRemovalTimer (FETCH_ASCENDING_RANGE (MortalComponent, removeAfterNs)),
-      removeTransformById (REMOVE_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId))
+      removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId))
 {
     _constructor.DependOn (TaskNames::PROCESS_DAMAGE);
 }
@@ -133,7 +133,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask (TaskNames::PROCESS_CORPSES).SetExecutor<CorpseProcessor> ();
 
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"Mortality::RemoveMortals"})
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, MortalComponent, objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MortalComponent, objectId)
         .DependOn (TaskNames::PROCESS_CORPSES)
         .MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
 }

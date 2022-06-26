@@ -225,7 +225,7 @@ using namespace Emergence::Memory::Literals;
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Input::RemoveFixedListeners"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
                                 objectId)
         .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
         .MakeDependencyOf ("Input::FixedDispatcher"_us);
@@ -237,7 +237,7 @@ void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
                                 objectId)
         .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
         .MakeDependencyOf ("Input::NormalDispatcher"_us);

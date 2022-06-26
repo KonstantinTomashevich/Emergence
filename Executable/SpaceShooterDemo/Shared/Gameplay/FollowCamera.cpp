@@ -32,7 +32,7 @@ private:
 
     Emergence::Celerity::FetchSignalQuery fetchControlledObject;
     Emergence::Celerity::EditValueQuery editTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 };
 
 CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -40,10 +40,10 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
       fetchFollowCameraSettings (FETCH_SINGLETON (FollowCameraSettingsSingleton)),
 
       fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByLocalPlayer, true)),
-      editTransformById (EDIT_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      editTransformById (EDIT_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
-    _constructor.DependOn (Emergence::Transform::VisualSync::Checkpoint::SYNC_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (Checkpoint::CAMERA_UPDATE_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::CAMERA_UPDATE_FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);
@@ -62,7 +62,7 @@ void CameraUpdater::Execute () noexcept
             static_cast<const FollowCameraSettingsSingleton *> (*followCameraSettingsCursor);
 
         auto cameraTransformCursor = editTransformById.Execute (&renderScene->cameraObjectId);
-        if (auto *cameraTransform = static_cast<Emergence::Transform::Transform3dComponent *> (*cameraTransformCursor))
+        if (auto *cameraTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (*cameraTransformCursor))
         {
             // We assume that camera is always a top level citizen.
             assert (cameraTransform->GetParentObjectId () == Emergence::Celerity::INVALID_UNIQUE_ID);
@@ -77,7 +77,7 @@ bool CameraUpdater::FetchControlledUnitTransform (Emergence::Math::Transform3d &
     if (const auto *controllable = static_cast<const ControllableComponent *> (*controllableCursor))
     {
         auto transformCursor = editTransformById.Execute (&controllable->objectId);
-        if (const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor))
+        if (const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor))
         {
             auto token = editTransformById.AllowUnsafeFetchAccess ();
             _output = transform->GetVisualWorldTransform (transformWorldAccessor);

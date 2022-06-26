@@ -91,7 +91,7 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
       fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
 
-      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent)),
       insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
@@ -156,7 +156,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
 
     const Emergence::Celerity::UniqueId groundShapeObjectId = world->GenerateUID ();
     auto transformCursor = insertTransform.Execute ();
-    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     transform->SetObjectId (groundShapeObjectId);
 
     auto bodyCursor = insertRigidBody.Execute ();
@@ -191,7 +191,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     auto shapeCursor = insertCollisionShape.Execute ();
     auto damageDealerCursor = insertDamageDealer.Execute ();
 
-    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     transform->SetObjectId (killZObjectId);
     transform->SetLogicalLocalTransform (
         {{0.0f, _z, 0.0f}, Emergence::Math::Quaternion::IDENTITY, Emergence::Math::Vector3f::ONE}, true);
@@ -228,7 +228,7 @@ void LevelGenerator::PlaceCamera () noexcept
 
     const Emergence::Celerity::UniqueId cameraObjectId = world->GenerateUID ();
 
-    auto *cameraTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    auto *cameraTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     cameraTransform->SetObjectId (cameraObjectId);
     cameraTransform->SetVisualLocalTransform (
         {{0.0f, 7.0f, -1.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, 0.0f}}, {1.0f, 1.0f, 1.0f}});
@@ -255,7 +255,7 @@ void LevelGenerator::PlaceDirectionalLight () noexcept
 
     const Emergence::Celerity::UniqueId lightObjectId = world->GenerateUID ();
 
-    auto *lightTransform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    auto *lightTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     lightTransform->SetObjectId (lightObjectId);
     lightTransform->SetVisualLocalTransform (
         {{0.0f, 5.0f, 0.0f}, {{Emergence::Math::PI / 3.0f, 0.0f, 0.0f}}, {1.0f, 1.0f, 1.0f}});
@@ -275,7 +275,7 @@ void LevelGenerator::PlaceTransformWithAlignment (
     Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId) noexcept
 {
     auto transformCursor = insertTransform.Execute ();
-    auto *transform = static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+    auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     transform->SetObjectId (_objectId);
 
     transform->SetLogicalLocalTransform (

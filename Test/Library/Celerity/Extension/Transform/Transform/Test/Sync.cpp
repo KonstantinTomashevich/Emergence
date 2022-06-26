@@ -12,14 +12,9 @@
 #include <Transform/Test/Task.hpp>
 #include <Transform/Transform3dVisualSync.hpp>
 
-namespace Emergence::Transform::Test
+namespace Emergence::Celerity::Test
 {
 using namespace Memory::Literals;
-
-bool SyncTestIncludeMarker () noexcept
-{
-    return true;
-}
 
 // Use 1 us fixed frames to make test time points more readable.
 constexpr float TEST_FIXED_FRAME_TIME_S = 0.000001f;
@@ -28,16 +23,16 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
                Container::Vector<RequestExecutor::RequestPacket> _fixedRequests,
                Container::Vector<RequestExecutor::RequestPacket> _normalRequests)
 {
-    Celerity::World world {"TestWorld"_us, Celerity::WorldConfiguration {{TEST_FIXED_FRAME_TIME_S}}};
-    Celerity::PipelineBuilder builder {&world};
+    World world {"TestWorld"_us, WorldConfiguration {{TEST_FIXED_FRAME_TIME_S}}};
+    PipelineBuilder builder {&world};
 
-    builder.Begin ("FixedUpdate"_us, Celerity::PipelineType::FIXED);
+    builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     RequestExecutor::AddToFixedUpdate (builder, std::move (_fixedRequests));
     REQUIRE (builder.End (std::thread::hardware_concurrency ()));
 
-    builder.Begin ("NormalUpdate"_us, Celerity::PipelineType::NORMAL);
-    builder.AddCheckpoint (VisualSync::Checkpoint::SYNC_FINISHED);
-    VisualSync::AddToNormalUpdate (builder);
+    builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
+    builder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
+    VisualTransformSync::AddToNormalUpdate (builder);
     RequestExecutor::AddToNormalUpdate (builder, std::move (_normalRequests));
     REQUIRE (builder.End (std::thread::hardware_concurrency ()));
 
@@ -48,11 +43,11 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
         world.Update ();
     }
 }
-} // namespace Emergence::Transform::Test
+} // namespace Emergence::Celerity::Test
 
 using namespace Emergence::Math;
-using namespace Emergence::Transform::Test::Requests;
-using namespace Emergence::Transform::Test;
+using namespace Emergence::Celerity::Test::Requests;
+using namespace Emergence::Celerity::Test;
 
 BEGIN_SUITE (TransformVisualSync)
 
@@ -72,7 +67,7 @@ TEST_CASE (TrivialInterpolation)
         {
             {
                 CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                SetLocalTransform {0u, true, false, initialTransform},
+                SetLocalTransform {0u, true, true, initialTransform},
             },
             {SetLocalTransform {0u, true, false, targetTransform}},
         },
@@ -112,7 +107,7 @@ TEST_CASE (InterpolationSkip)
         {
             {
                 CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                SetLocalTransform {0u, true, false, initialTransform},
+                SetLocalTransform {0u, true, true, initialTransform},
             },
             {SetLocalTransform {0u, true, true, targetTransform}},
         },
@@ -144,9 +139,9 @@ TEST_CASE (InterpolationAndWorldTransform)
         {{
              {
                  CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                 SetLocalTransform {0u, true, false, parentInitialTransform},
+                 SetLocalTransform {0u, true, true, parentInitialTransform},
                  CreateTransform {1u, 0u},
-                 SetLocalTransform {1u, true, false, childInitialTransform},
+                 SetLocalTransform {1u, true, true, childInitialTransform},
              },
          },
          {
@@ -161,33 +156,6 @@ TEST_CASE (InterpolationAndWorldTransform)
             {{CheckTransform {1u, false, false, false,
                               Transform3d {{1.6f, 0.0f, 1.6f}} * Transform3d {{0.6f, 0.0f, 0.0f}}}}},
             {{CheckTransform {1u, false, false, false, parentTargetTransform * childTargetTransform}}},
-        });
-}
-
-TEST_CASE (NoInterpolationFromOriginAfterInitialSet)
-{
-    const Transform3d initialTransform {{1.0f, 3.0f, 5.0f}};
-
-    SyncTest (
-        {
-            0u,
-            300u,
-            700u,
-            1000u,
-            1250u,
-        },
-        {
-            {
-                CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                SetLocalTransform {0u, true, false, initialTransform},
-            },
-        },
-        {
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
         });
 }
 

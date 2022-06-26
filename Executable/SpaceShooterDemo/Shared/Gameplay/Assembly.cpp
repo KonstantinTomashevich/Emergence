@@ -56,7 +56,7 @@ private:
     Emergence::Celerity::FetchValueQuery fetchPrototypeById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertRigidBody;
@@ -79,10 +79,10 @@ FixedAssembler::FixedAssembler (Emergence::Celerity::TaskConstructor &_construct
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Physics::PhysicsWorldSingleton)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
 
-      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertTransform (INSERT_LONG_TERM (Emergence::Transform::Transform3dComponent)),
+      insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
       insertRigidBody (INSERT_LONG_TERM (Emergence::Physics::RigidBodyComponent)),
       insertCollisionShape (INSERT_LONG_TERM (Emergence::Physics::CollisionShapeComponent)),
       insertMortal (INSERT_LONG_TERM (MortalComponent)),
@@ -183,7 +183,7 @@ void FixedAssembler::Execute ()
                 shooter->bulletPrototype = HardcodedPrototypes::BULLET;
 
                 auto *shootingPointTransform =
-                    static_cast<Emergence::Transform::Transform3dComponent *> (++transformCursor);
+                    static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
 
                 shootingPointTransform->SetObjectId (world->GenerateUID ());
                 shootingPointTransform->SetParentObjectId (_objectId);
@@ -220,7 +220,7 @@ void FixedAssembler::Execute ()
                 auto transformCursor = fetchTransformById.Execute (&prototype->objectId);
 
                 if (const auto *transform =
-                        static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor))
+                        static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor))
                 {
                     bulletRotation = transform->GetLogicalWorldTransform (transformWorldAccessor).rotation;
                 }
@@ -376,14 +376,14 @@ void NormalAssembler::Execute ()
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, PrototypeComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, PrototypeComponent,
                                 objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::FixedUpdate"_us);
 
     // TODO: Currently we are clearing non-mechanic-specific components here.
     _pipelineBuilder.AddTask ("Assembly::RemoveAlignments"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, AlignmentComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, AlignmentComponent,
                                 objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::FixedUpdate"_us);
@@ -394,7 +394,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedNormalEvent, PrototypeComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, PrototypeComponent,
                                 objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::NormalUpdate"_us);

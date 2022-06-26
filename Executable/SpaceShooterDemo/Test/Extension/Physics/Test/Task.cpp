@@ -58,8 +58,8 @@ Configurator::Configurator (Celerity::TaskConstructor &_constructor,
       insertMaterial (INSERT_LONG_TERM (DynamicsMaterial)),
       modifyMaterialById (MODIFY_VALUE_1F (DynamicsMaterial, id)),
 
-      insertTransform (INSERT_LONG_TERM (Transform::Transform3dComponent)),
-      modifyTransformById (MODIFY_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      insertTransform (INSERT_LONG_TERM (Celerity::Transform3dComponent)),
+      modifyTransformById (MODIFY_VALUE_1F (Celerity::Transform3dComponent, objectId)),
 
       insertBody (INSERT_LONG_TERM (RigidBodyComponent)),
       modifyBodyById (MODIFY_VALUE_1F (RigidBodyComponent, objectId)),
@@ -132,7 +132,7 @@ void Configurator::Execute ()
                 {
                     LOG ("Adding Transform3dComponent to object with id ", _task.objectId, ".");
                     auto cursor = insertTransform.Execute ();
-                    auto *transform = static_cast<Transform::Transform3dComponent *> (++cursor);
+                    auto *transform = static_cast<Celerity::Transform3dComponent *> (++cursor);
                     transform->SetObjectId (_task.objectId);
                     transform->SetLogicalLocalTransform (_task.transform);
                 }
@@ -140,7 +140,7 @@ void Configurator::Execute ()
                 {
                     LOG ("Updating Transform3dComponent on object with id ", _task.objectId, ".");
                     auto cursor = modifyTransformById.Execute (&_task.objectId);
-                    auto *transform = static_cast<Transform::Transform3dComponent *> (*cursor);
+                    auto *transform = static_cast<Celerity::Transform3dComponent *> (*cursor);
                     REQUIRE (transform);
                     transform->SetLogicalLocalTransform (_task.transform);
                 }
@@ -257,7 +257,7 @@ private:
     Celerity::FetchValueQuery fetchShapeByShapeId;
 
     Celerity::FetchValueQuery fetchTransformById;
-    Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Celerity::FetchSequenceQuery fetchContactFoundEvents;
     Celerity::FetchSequenceQuery fetchContactPersistsEvents;
@@ -274,7 +274,7 @@ Validator::Validator (Celerity::TaskConstructor &_constructor, Container::Vector
       fetchBodyById (FETCH_VALUE_1F (RigidBodyComponent, objectId)),
       fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShapeComponent, shapeId)),
 
-      fetchTransformById (FETCH_VALUE_1F (Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchContactFoundEvents (FETCH_SEQUENCE (ContactFoundEvent)),
@@ -330,7 +330,7 @@ void Validator::Execute () noexcept
                          "}.");
 
                     auto cursor = fetchTransformById.Execute (&_task.objectId);
-                    const auto *transform = static_cast<const Transform::Transform3dComponent *> (*cursor);
+                    const auto *transform = static_cast<const Celerity::Transform3dComponent *> (*cursor);
                     REQUIRE (transform);
 
                     const Math::Transform3d &worldTransform =
@@ -414,7 +414,7 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
     {
         Celerity::EventRegistrar registrar {&world};
         RegisterEvents (registrar);
-        Transform::RegisterEvents (registrar);
+        RegisterTransformEvents (registrar);
     }
 
     Celerity::PipelineBuilder builder {&world};

@@ -81,7 +81,7 @@ private:
     Emergence::Celerity::EditValueQuery editInputListenerById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
-    Emergence::Transform::Transform3dWorldAccessor transformWorldAccessor;
+    Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 };
 
 InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -91,7 +91,7 @@ InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_construct
       modifyRandomAiByIdAscending (MODIFY_ASCENDING_RANGE (RandomAiComponent, objectId)),
       editInputListenerById (EDIT_VALUE_1F (InputListenerComponent, objectId)),
 
-      fetchTransformById (FETCH_VALUE_1F (Emergence::Transform::Transform3dComponent, objectId)),
+      fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);
@@ -110,7 +110,7 @@ void InputGenerator::Execute () noexcept
          auto *randomAi = static_cast<RandomAiComponent *> (*randomAiCursor);)
     {
         auto transformCursor = fetchTransformById.Execute (&randomAi->objectId);
-        const auto *transform = static_cast<const Emergence::Transform::Transform3dComponent *> (*transformCursor);
+        const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
 
         if (!transform)
         {
@@ -179,7 +179,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask ("RandomAi::AttachmentCreator"_us).SetExecutor<AttachmentCreator> ();
 
     _pipelineBuilder.AddTask ("RandomAi::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Transform::Transform3dComponentRemovedFixedEvent, RandomAiComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, RandomAiComponent,
                                 objectId)
         .MakeDependencyOf ("RandomAi::InputGenerator"_us);
 
