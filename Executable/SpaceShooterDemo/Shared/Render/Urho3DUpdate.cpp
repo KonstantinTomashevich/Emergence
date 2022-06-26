@@ -1,5 +1,9 @@
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Math/Scalar.hpp>
 
@@ -15,11 +19,6 @@
 #include <Render/Urho3DUpdate.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <Urho3D/Graphics/Camera.h>

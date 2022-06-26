@@ -1,12 +1,12 @@
 #include <thread>
 
+#include <Celerity/Transform/Test/Task.hpp>
+
 #include <Math/Constants.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
-
-#include <Transform/Test/Task.hpp>
 
 namespace Emergence::Celerity::Test
 {

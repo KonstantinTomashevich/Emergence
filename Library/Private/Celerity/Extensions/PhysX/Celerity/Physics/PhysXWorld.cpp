@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include <Physics/PhysXWorld.hpp>
+#include <Celerity/Physics/PhysXWorld.hpp>
 
 #include <pvd/PxPvdTransport.h>
 

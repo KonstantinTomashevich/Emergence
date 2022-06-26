@@ -2,14 +2,13 @@
 
 #include <API/Common/Shortcuts.hpp>
 
+#include <Celerity/Physics/CollisionGeometry.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Quaternion.hpp>
 #include <Math/Vector3f.hpp>
 
 #include <Memory/UniqueString.hpp>
-
-#include <Physics/CollisionGeometry.hpp>
 
 namespace Emergence::Celerity
 {

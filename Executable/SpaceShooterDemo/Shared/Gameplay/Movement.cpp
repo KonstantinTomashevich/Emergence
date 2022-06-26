@@ -1,5 +1,10 @@
 #include <Celerity/Model/TimeSingleton.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
@@ -12,14 +17,7 @@
 
 #include <Math/Scalar.hpp>
 
-#include <Physics/RigidBodyComponent.hpp>
-#include <Physics/Simulation.hpp>
-
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Movement
 {
@@ -177,8 +175,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .DependOn (Checkpoint::MOVEMENT_STARTED);
 
     _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent,
-                                objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent, objectId)
         .DependOn ("Movement::RemoveAfterDeath"_us)
         .MakeDependencyOf ("Movement::Update"_us);
 

@@ -1,6 +1,8 @@
 #include <cassert>
 
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
 
 #include <Gameplay/EffectConstant.hpp>
 #include <Gameplay/Events.hpp>
@@ -11,9 +13,6 @@
 #include <Render/ParticleEffectComponent.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
 
 namespace Mortality
 {

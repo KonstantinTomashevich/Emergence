@@ -1,5 +1,12 @@
 #include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/Physics/CollisionShapeComponent.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Assembly.hpp>
@@ -18,20 +25,11 @@
 
 #include <Math/Constants.hpp>
 
-#include <Physics/CollisionShapeComponent.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
-#include <Physics/RigidBodyComponent.hpp>
-#include <Physics/Simulation.hpp>
-
 #include <Render/ParticleEffectComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Assembly
 {

@@ -1,5 +1,5 @@
-#include <Physics/Test/Simulation.hpp>
-#include <Physics/Test/Task.hpp>
+#include <Celerity/Physics/Test/Simulation.hpp>
+#include <Celerity/Physics/Test/Task.hpp>
 
 #include <Testing/Testing.hpp>
 

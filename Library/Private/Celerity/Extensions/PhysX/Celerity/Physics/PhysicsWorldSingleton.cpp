@@ -1,5 +1,5 @@
-#include <Physics/PhysXWorld.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics/PhysXWorld.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

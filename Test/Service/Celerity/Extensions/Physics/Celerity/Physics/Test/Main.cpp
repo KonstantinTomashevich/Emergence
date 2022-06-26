@@ -1,5 +1,5 @@
-#include <Physics/Test/Lifetime.hpp>
-#include <Physics/Test/Simulation.hpp>
+#include <Celerity/Physics/Test/Lifetime.hpp>
+#include <Celerity/Physics/Test/Simulation.hpp>
 
 #include <Testing/SetupMain.hpp>
 

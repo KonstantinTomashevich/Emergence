@@ -1,8 +1,8 @@
-#include <Physics/CollisionShapeComponent.hpp>
-#include <Physics/DynamicsMaterial.hpp>
-#include <Physics/Events.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
-#include <Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics/CollisionShapeComponent.hpp>
+#include <Celerity/Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
 
 namespace Emergence::Celerity
 {

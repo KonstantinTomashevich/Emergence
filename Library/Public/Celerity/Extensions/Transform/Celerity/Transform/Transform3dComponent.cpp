@@ -1,7 +1,7 @@
-#include <StandardLayout/MappingRegistration.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
+#include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {

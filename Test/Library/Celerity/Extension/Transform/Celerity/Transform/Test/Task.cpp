@@ -1,13 +1,12 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Test/Task.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
-
-#include <Transform/Test/Task.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Emergence::Celerity::Test::RequestExecutor
 {

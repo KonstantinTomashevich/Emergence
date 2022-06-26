@@ -1,13 +1,12 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
 #include <Input/InputSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
 
 namespace Input
 {

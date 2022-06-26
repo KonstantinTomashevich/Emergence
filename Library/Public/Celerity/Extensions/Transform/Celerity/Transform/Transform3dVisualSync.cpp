@@ -1,12 +1,11 @@
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
 
 #include <Math/Scalar.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
-
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
 
 namespace Emergence::Celerity
 {

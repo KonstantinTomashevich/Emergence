@@ -1,5 +1,5 @@
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
 
 namespace Emergence::Celerity
 {

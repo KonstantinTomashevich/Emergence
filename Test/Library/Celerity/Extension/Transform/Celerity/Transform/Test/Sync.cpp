@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <thread>
 
+#include <Celerity/Transform/Test/Task.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
+
 #include <Math/Constants.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -8,9 +11,6 @@
 #include <SyntaxSugar/Time.hpp>
 
 #include <Testing/Testing.hpp>
-
-#include <Transform/Test/Task.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
 
 namespace Emergence::Celerity::Test
 {

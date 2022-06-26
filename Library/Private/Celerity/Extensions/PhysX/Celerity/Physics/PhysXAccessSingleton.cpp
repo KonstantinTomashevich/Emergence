@@ -1,4 +1,4 @@
-#include <Physics/PhysXAccessSingleton.hpp>
+#include <Celerity/Physics/PhysXAccessSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

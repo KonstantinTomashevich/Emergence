@@ -1,4 +1,5 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Control.hpp>
@@ -10,8 +11,6 @@
 #include <Input/InputSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
 
 namespace Control
 {

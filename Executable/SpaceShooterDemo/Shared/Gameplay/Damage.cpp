@@ -1,15 +1,14 @@
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
 
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
 
-#include <Physics/Events.hpp>
-#include <Physics/Simulation.hpp>
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
 
 namespace Damage
 {

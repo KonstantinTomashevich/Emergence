@@ -1,5 +1,9 @@
 #include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/Physics/CollisionShapeComponent.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
 
 #include <Container/Optional.hpp>
 
@@ -16,15 +20,9 @@
 
 #include <Math/Constants.hpp>
 
-#include <Physics/CollisionShapeComponent.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
-#include <Physics/RigidBodyComponent.hpp>
-
 #include <Render/CameraComponent.hpp>
 #include <Render/LightComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
-
-#include <Transform/Transform3dComponent.hpp>
 
 namespace LevelGeneration
 {

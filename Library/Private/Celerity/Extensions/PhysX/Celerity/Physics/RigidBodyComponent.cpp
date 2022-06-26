@@ -1,4 +1,4 @@
-#include <Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

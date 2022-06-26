@@ -1,4 +1,4 @@
-#include <Physics/CollisionShapeComponent.hpp>
+#include <Celerity/Physics/CollisionShapeComponent.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

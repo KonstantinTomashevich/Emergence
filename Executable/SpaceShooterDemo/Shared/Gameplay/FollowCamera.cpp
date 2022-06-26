@@ -1,4 +1,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/FollowCameraSettingsSingleton.hpp>
@@ -8,10 +11,6 @@
 #include <Render/RenderSceneSingleton.hpp>
 
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace FollowCamera
 {

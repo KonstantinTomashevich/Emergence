@@ -6,18 +6,17 @@
 
 #include <SyntaxSugar/Time.hpp>
 
-#include <Physics/CollisionShapeComponent.hpp>
-#include <Physics/DynamicsMaterial.hpp>
-#include <Physics/Events.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
-#include <Physics/Simulation.hpp>
-#include <Physics/Test/Task.hpp>
+#include <Celerity/Physics/CollisionShapeComponent.hpp>
+#include <Celerity/Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Physics/Test/Task.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Testing/Testing.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Emergence::Celerity::Test
 {

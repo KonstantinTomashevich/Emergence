@@ -1,9 +1,8 @@
-#include <Physics/Simulation.hpp>
+#include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Transform3dVisualSync.hpp>
 
 namespace Emergence::Celerity
 {

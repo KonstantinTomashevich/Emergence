@@ -6,8 +6,12 @@
 #include <thread>
 
 #include <Celerity/Event/EventRegistrar.hpp>
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
 #include <Celerity/World.hpp>
 
 #include <Gameplay/Assembly.hpp>
@@ -31,17 +35,11 @@
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
 
-#include <Physics/Events.hpp>
-#include <Physics/Simulation.hpp>
-
 #include <Render/Events.hpp>
 #include <Render/Urho3DUpdate.hpp>
 
 #include <Shared/CelerityUtils.hpp>
 #include <Shared/Checkpoint.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dVisualSync.hpp>
 
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Core/CoreEvents.h>

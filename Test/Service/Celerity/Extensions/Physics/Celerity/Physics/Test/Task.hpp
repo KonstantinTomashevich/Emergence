@@ -8,6 +8,9 @@
 
 #include <variant>
 
+#include <Celerity/Physics/CollisionGeometry.hpp>
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Vector.hpp>
@@ -16,10 +19,6 @@
 #include <Math/Transform3d.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
-
-#include <Physics/CollisionGeometry.hpp>
-#include <Physics/Events.hpp>
-#include <Physics/RigidBodyComponent.hpp>
 
 namespace Emergence::Celerity::Test
 {

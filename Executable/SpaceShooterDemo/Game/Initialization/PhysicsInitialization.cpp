@@ -1,13 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <Celerity/Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/PhysicsConstant.hpp>
 
 #include <Initialization/PhysicsInitialization.hpp>
-
-#include <Physics/DynamicsMaterial.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
 
 namespace PhysicsInitialization
 {

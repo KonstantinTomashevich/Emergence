@@ -3,21 +3,23 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <Celerity/Model/TimeSingleton.hpp>
+#include <Celerity/Physics/CollisionShapeComponent.hpp>
+#include <Celerity/Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics/Events.hpp>
+#include <Celerity/Physics/PhysXAccessSingleton.hpp>
+#include <Celerity/Physics/PhysXInternalUtils.hpp>
+#include <Celerity/Physics/PhysXWorld.hpp>
+#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Log/Log.hpp>
 
 #include <Math/Scalar.hpp>
-
-#include <Physics/CollisionShapeComponent.hpp>
-#include <Physics/DynamicsMaterial.hpp>
-#include <Physics/Events.hpp>
-#include <Physics/PhysXAccessSingleton.hpp>
-#include <Physics/PhysXInternalUtils.hpp>
-#include <Physics/PhysXWorld.hpp>
-#include <Physics/PhysicsWorldSingleton.hpp>
-#include <Physics/RigidBodyComponent.hpp>
-#include <Physics/Simulation.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <PxMaterial.h>
@@ -33,10 +35,6 @@ BEGIN_MUTING_WARNINGS
 END_MUTING_WARNINGS
 
 #include <SyntaxSugar/BlockCast.hpp>
-
-#include <Transform/Events.hpp>
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
 
 namespace Emergence::Celerity::Simulation
 {

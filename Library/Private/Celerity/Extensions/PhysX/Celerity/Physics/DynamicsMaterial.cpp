@@ -1,4 +1,4 @@
-#include <Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics/DynamicsMaterial.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

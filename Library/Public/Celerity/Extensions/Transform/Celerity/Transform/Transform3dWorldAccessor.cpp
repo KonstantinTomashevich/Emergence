@@ -1,7 +1,6 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
-
-#include <Transform/Transform3dComponent.hpp>
-#include <Transform/Transform3dWorldAccessor.hpp>
+#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 namespace Emergence::Celerity
 {
