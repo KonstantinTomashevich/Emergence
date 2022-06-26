@@ -32,4 +32,4 @@ sober_library_begin (Celerity STATIC)
     sober_variant_end ()
 sober_library_end ()
 
-add_subdirectory (Extensions)
+add_subdirectory (Extension)
