@@ -83,7 +83,6 @@ void Configurator::Execute ()
         {
             physicsWorld->collisionMasks[group] = 1u << group;
         }
-
     }
 
     if (framesIterator == frames.end () || framesIterator->frameIndex > currentFrameIndex)
