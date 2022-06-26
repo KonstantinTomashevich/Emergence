@@ -12,11 +12,14 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
     sober_library_link_library (PUBLIC ${SHARED_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
 
+    sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics)
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (PER_VARIANT PRIVATE Memory)
     sober_library_use_service (PER_VARIANT PRIVATE MemoryProfiler)
     sober_library_use_service (PER_VARIANT PRIVATE RecordCollection)
     sober_library_use_service (PER_VARIANT PRIVATE StandardLayoutMapping)
+    sober_library_use_service (PER_VARIANT PRIVATE TaskExecutor)
+    sober_library_use_service (PER_VARIANT PRIVATE Warehouse)
     sober_library_use_service (SHARED PRIVATE Testing)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

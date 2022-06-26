@@ -1,3 +1,4 @@
+add_subdirectory (Celerity)
 add_subdirectory (ExportGraph)
 add_subdirectory (Hashing)
 add_subdirectory (Log)

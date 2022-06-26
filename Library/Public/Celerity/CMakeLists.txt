@@ -28,6 +28,7 @@ sober_library_begin (Celerity STATIC)
     sober_library_use_service (PER_VARIANT PUBLIC CelerityConstants)
 
     sober_variant_begin (Original)
+        sober_variant_freeze_implementation (CelerityConstants Original)
     sober_variant_end ()
 sober_library_end ()
 

@@ -25,7 +25,6 @@ add_custom_target (SpaceShooterDemoConvertIntermediateAssets
         powershell ".\\Scripts\\ConvertAssets.ps1" "${URHO3D_HOME}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory (Extension)
 add_subdirectory (Game)
 add_subdirectory (Model)
 add_subdirectory (Shared)
