@@ -59,7 +59,8 @@ void CollisionEventProcessor::Execute () noexcept
     }
 
     for (auto eventCursor = fetchTriggerEnteredEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Celerity::TriggerEnteredEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const Emergence::Celerity::TriggerEnteredEvent *> (*eventCursor);
+         ++eventCursor)
     {
         ProcessCollision (event->triggerObjectId, event->intruderObjectId);
         ProcessCollision (event->intruderObjectId, event->triggerObjectId);

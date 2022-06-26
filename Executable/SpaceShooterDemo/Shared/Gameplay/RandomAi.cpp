@@ -178,8 +178,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask ("RandomAi::AttachmentCreator"_us).SetExecutor<AttachmentCreator> ();
 
     _pipelineBuilder.AddTask ("RandomAi::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, RandomAiComponent,
-                                objectId)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, RandomAiComponent, objectId)
         .MakeDependencyOf ("RandomAi::InputGenerator"_us);
 
     _pipelineBuilder.AddTask ("RandomAi::InputGenerator"_us).SetExecutor<InputGenerator> ();

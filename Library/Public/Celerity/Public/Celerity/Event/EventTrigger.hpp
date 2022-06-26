@@ -143,8 +143,6 @@ private:
     Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOutOfChanged;
 };
 
-
-
 class ChangeTracker final
 {
 public:

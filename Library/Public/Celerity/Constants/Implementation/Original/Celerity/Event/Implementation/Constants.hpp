@@ -13,4 +13,4 @@ constexpr std::size_t MAX_ON_CHANGE_EVENTS_PER_TYPE = 4u;
 constexpr std::size_t CHANGE_TRACKER_MAX_TRACKED_ZONES = 4u;
 
 constexpr std::size_t CHANGE_TRACKER_MAX_TRACKING_BUFFER_SIZE = 256u;
-} // namespace Emergence::Celerity
+} // namespace Emergence::Celerity::Implementation
