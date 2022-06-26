@@ -56,16 +56,15 @@ struct PhysicsWorldSingleton final
     uint32_t remoteDebuggerPort = 0u;
 
     /// \brief Atomic counter for generating unique ids for collision shapes.
-    /// \invariant Do not access directly, use ::GenerateShapeUID.
-    // TODO: Call everything ids, not uids?
-    std::atomic_unsigned_lock_free shapeUIDCounter = 0u;
+    /// \invariant Do not access directly, use ::GenerateShapeId.
+    std::atomic_unsigned_lock_free shapeIdCounter = 0u;
 
     /// \brief Block with implementation-specific data.
     std::array<uint8_t, 88u> implementationBlock;
 
     /// \brief Generates new unique id for a collision shape.
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateShapeUID () const noexcept;
+    uintptr_t GenerateShapeId () const noexcept;
 
     struct Reflection final
     {

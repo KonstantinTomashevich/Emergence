@@ -141,7 +141,7 @@ void FixedAssembler::Execute ()
 
                 auto *movementShape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 movementShape->objectId = _objectId;
-                movementShape->shapeId = physicsWorld->GenerateShapeUID ();
+                movementShape->shapeId = physicsWorld->GenerateShapeId ();
                 movementShape->materialId = "Default"_us;
 
                 movementShape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::SPHERE,
@@ -152,7 +152,7 @@ void FixedAssembler::Execute ()
 
                 auto *hitBoxShape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 hitBoxShape->objectId = _objectId;
-                hitBoxShape->shapeId = physicsWorld->GenerateShapeUID ();
+                hitBoxShape->shapeId = physicsWorld->GenerateShapeId ();
                 hitBoxShape->materialId = "Default"_us;
 
                 hitBoxShape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
@@ -183,7 +183,7 @@ void FixedAssembler::Execute ()
                 auto *shootingPointTransform =
                     static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
 
-                shootingPointTransform->SetObjectId (world->GenerateUID ());
+                shootingPointTransform->SetObjectId (world->GenerateId ());
                 shootingPointTransform->SetParentObjectId (_objectId);
 
                 shootingPointTransform->SetLogicalLocalTransform (
@@ -202,7 +202,7 @@ void FixedAssembler::Execute ()
 
                 auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 shape->objectId = _objectId;
-                shape->shapeId = physicsWorld->GenerateShapeUID ();
+                shape->shapeId = physicsWorld->GenerateShapeId ();
                 shape->materialId = "Default"_us;
 
                 shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
@@ -231,7 +231,7 @@ void FixedAssembler::Execute ()
 
                 auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
                 shape->objectId = _objectId;
-                shape->shapeId = physicsWorld->GenerateShapeUID ();
+                shape->shapeId = physicsWorld->GenerateShapeId ();
                 shape->materialId = "Default"_us;
                 shape->sendContactEvents = true;
 
@@ -314,7 +314,7 @@ void NormalAssembler::Execute ()
             auto modelCursor = insertStaticModel.Execute ();
             auto *model = static_cast<StaticModelComponent *> (++modelCursor);
             model->objectId = _objectId;
-            model->modelId = renderScene->GenerateModelUID ();
+            model->modelId = renderScene->GenerateModelId ();
 
             if (prototype->prototype == HardcodedPrototypes::FIGHTER)
             {
@@ -345,7 +345,7 @@ void NormalAssembler::Execute ()
                 auto effectCursor = insertParticleEffect.Execute ();
                 auto *deathParticle = static_cast<ParticleEffectComponent *> (++effectCursor);
                 deathParticle->objectId = _objectId;
-                deathParticle->effectId = renderScene->GenerateEffectUID ();
+                deathParticle->effectId = renderScene->GenerateEffectId ();
                 deathParticle->effectName = "Particles/Destruction.xml"_us;
                 deathParticle->effectTag = EffectConstant::DEATH_TAG;
             }

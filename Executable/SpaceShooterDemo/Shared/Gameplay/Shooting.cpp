@@ -99,7 +99,7 @@ void ShootingProcessor::Execute () noexcept
 
                 if (TryFetchBulletTransform (shooter->shootingPointObjectId, bulletTransform))
                 {
-                    const Emergence::Celerity::UniqueId bulletObjectId = world->GenerateUID ();
+                    const Emergence::Celerity::UniqueId bulletObjectId = world->GenerateId ();
 
                     auto transformCursor = insertTransform.Execute ();
                     auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);

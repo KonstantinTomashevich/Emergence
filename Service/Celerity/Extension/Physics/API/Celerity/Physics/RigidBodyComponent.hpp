@@ -52,7 +52,7 @@ struct RigidBodyComponent final
 
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBodyComponent);
 
-    /// \brief Id of a body with Transform3dComponent that holds this rigid body.
+    /// \brief Id of an object with Transform3dComponent to which rigid body is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
 
     /// \brief Type of this rigid body.

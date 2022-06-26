@@ -123,7 +123,7 @@ void LevelGenerator::Execute ()
     }
 
     PlaceSpawn (-2.0f, 2.5f, 0.0f, HardcodedPrototypes::FIGHTER, playerInfo->localPlayerUid, 1u, 2u);
-    const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerUID ();
+    const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerId ();
 
     for (std::int32_t x = -27; x < 30; x += 18)
     {
@@ -152,7 +152,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
     const auto *physicsWorld = static_cast<const Emergence::Celerity::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
-    const Emergence::Celerity::UniqueId groundShapeObjectId = world->GenerateUID ();
+    const Emergence::Celerity::UniqueId groundShapeObjectId = world->GenerateId ();
     auto transformCursor = insertTransform.Execute ();
     auto *transform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     transform->SetObjectId (groundShapeObjectId);
@@ -166,7 +166,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
 
     auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
     shape->objectId = groundShapeObjectId;
-    shape->shapeId = physicsWorld->GenerateShapeUID ();
+    shape->shapeId = physicsWorld->GenerateShapeId ();
     shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
 
     shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
@@ -183,7 +183,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
     const auto *physicsWorld = static_cast<const Emergence::Celerity::PhysicsWorldSingleton *> (*physicsWorldCursor);
 
-    const Emergence::Celerity::UniqueId killZObjectId = world->GenerateUID ();
+    const Emergence::Celerity::UniqueId killZObjectId = world->GenerateId ();
     auto transformCursor = insertTransform.Execute ();
     auto bodyCursor = insertRigidBody.Execute ();
     auto shapeCursor = insertCollisionShape.Execute ();
@@ -200,7 +200,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
 
     auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
     shape->objectId = killZObjectId;
-    shape->shapeId = physicsWorld->GenerateShapeUID ();
+    shape->shapeId = physicsWorld->GenerateShapeId ();
     shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
 
     shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
@@ -224,7 +224,7 @@ void LevelGenerator::PlaceCamera () noexcept
     auto transformCursor = insertTransform.Execute ();
     auto cameraCursor = insertCamera.Execute ();
 
-    const Emergence::Celerity::UniqueId cameraObjectId = world->GenerateUID ();
+    const Emergence::Celerity::UniqueId cameraObjectId = world->GenerateId ();
 
     auto *cameraTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     cameraTransform->SetObjectId (cameraObjectId);
@@ -251,7 +251,7 @@ void LevelGenerator::PlaceDirectionalLight () noexcept
     auto transformCursor = insertTransform.Execute ();
     auto lightCursor = insertLight.Execute ();
 
-    const Emergence::Celerity::UniqueId lightObjectId = world->GenerateUID ();
+    const Emergence::Celerity::UniqueId lightObjectId = world->GenerateId ();
 
     auto *lightTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (++transformCursor);
     lightTransform->SetObjectId (lightObjectId);
@@ -260,7 +260,7 @@ void LevelGenerator::PlaceDirectionalLight () noexcept
 
     auto *light = static_cast<LightComponent *> (++lightCursor);
     light->objectId = lightObjectId;
-    light->lightId = renderScene->GenerateLightUID ();
+    light->lightId = renderScene->GenerateLightId ();
     light->type = LightType::DIRECTIONAL;
     light->color = {1.0f, 1.0f, 1.0f, 1.0f};
 }
@@ -297,7 +297,7 @@ void LevelGenerator::PlacePrototype (float _x,
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
-    const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
+    const Emergence::Celerity::UniqueId objectId = world->GenerateId ();
     PlaceTransformWithAlignment (_x, _y, _z, objectId, _playerId);
 
     auto prototypeCursor = insertPrototype.Execute ();
@@ -317,7 +317,7 @@ void LevelGenerator::PlaceSpawn (float _x,
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
-    const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
+    const Emergence::Celerity::UniqueId objectId = world->GenerateId ();
     PlaceTransformWithAlignment (_x, _y, _z, objectId, _playerId);
 
     auto spawnCursor = insertSpawn.Execute ();

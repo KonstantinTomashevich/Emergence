@@ -140,7 +140,7 @@ void SpawnProcessor::Execute () noexcept
                 }
             }
 
-            const Emergence::Celerity::UniqueId objectId = world->GenerateUID ();
+            const Emergence::Celerity::UniqueId objectId = world->GenerateId ();
             auto transformCursor = insertTransform.Execute ();
             auto prototypeCursor = insertPrototype.Execute ();
 

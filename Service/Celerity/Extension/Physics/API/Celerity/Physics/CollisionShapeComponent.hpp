@@ -20,7 +20,7 @@ struct CollisionShapeComponent final
 
     /// \brief Unique id of this shape component.
     /// \details Because there could be multiple shapes per object, we need another unique identification system.
-    /// \invariant Must be assigned using PhysicsWorldSingleton::GenerateShapeUID.
+    /// \invariant Must be assigned using PhysicsWorldSingleton::GenerateShapeId.
     UniqueId shapeId = INVALID_UNIQUE_ID;
 
     /// \brief Id of an object to which this shape is attached.

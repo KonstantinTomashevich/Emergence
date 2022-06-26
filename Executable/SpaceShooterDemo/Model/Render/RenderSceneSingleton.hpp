@@ -10,23 +10,23 @@ struct RenderSceneSingleton final
 {
     Emergence::Celerity::UniqueId cameraObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    /// \invariant Do not access directly, use ::GenerateLightUID.
-    std::atomic_unsigned_lock_free lightUIDCounter = 0u;
+    /// \invariant Do not access directly, use ::GenerateLightId.
+    std::atomic_unsigned_lock_free lightIdCounter = 0u;
 
-    /// \invariant Do not access directly, use ::GenerateEffectUID.
-    std::atomic_unsigned_lock_free effectUIDCounter = 0u;
+    /// \invariant Do not access directly, use ::GenerateEffectId.
+    std::atomic_unsigned_lock_free effectIdCounter = 0u;
 
-    /// \invariant Do not access directly, use ::GenerateModelUID.
-    std::atomic_unsigned_lock_free modelUIDCounter = 0u;
-
-    /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateLightUID () const noexcept;
+    /// \invariant Do not access directly, use ::GenerateModelId.
+    std::atomic_unsigned_lock_free modelIdCounter = 0u;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateModelUID () const noexcept;
+    uintptr_t GenerateLightId () const noexcept;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateEffectUID () const noexcept;
+    uintptr_t GenerateModelId () const noexcept;
+
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    uintptr_t GenerateEffectId () const noexcept;
 
     struct Reflection final
     {

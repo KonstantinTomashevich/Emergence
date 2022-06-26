@@ -17,10 +17,10 @@ PhysicsWorldSingleton::~PhysicsWorldSingleton () noexcept
     block_cast<PhysXWorld> (implementationBlock).~PhysXWorld ();
 }
 
-uintptr_t PhysicsWorldSingleton::GenerateShapeUID () const noexcept
+uintptr_t PhysicsWorldSingleton::GenerateShapeId () const noexcept
 {
-    assert (shapeUIDCounter != std::numeric_limits<decltype (shapeUIDCounter)::value_type>::max ());
-    return const_cast<PhysicsWorldSingleton *> (this)->shapeUIDCounter++;
+    assert (shapeIdCounter != std::numeric_limits<decltype (shapeIdCounter)::value_type>::max ());
+    return const_cast<PhysicsWorldSingleton *> (this)->shapeIdCounter++;
 }
 
 const PhysicsWorldSingleton::Reflection &PhysicsWorldSingleton::Reflect () noexcept
