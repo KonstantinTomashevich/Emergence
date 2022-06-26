@@ -797,7 +797,9 @@ void BodyInitializer::Execute ()
         pxWorld.scene->addActor (*pxActor);
         if (body->type == RigidBodyType::DYNAMIC)
         {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast): Type is known due to enum.
             auto *pxBody = static_cast<physx::PxRigidDynamic *> (pxActor);
+
             if (!Math::NearlyEqual (body->additiveLinearImpulse, Math::Vector3f::ZERO))
             {
                 pxBody->addForce (ToPhysX (body->additiveLinearImpulse), physx::PxForceMode::eIMPULSE);
@@ -1213,6 +1215,7 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
 
         if (body->type == RigidBodyType::DYNAMIC)
         {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast): Type is known due to enum.
             auto *pxBody = static_cast<physx::PxRigidDynamic *> (pxActor);
             pxBody->setLinearDamping (body->linearDamping);
             pxBody->setAngularDamping (body->angularDamping);
@@ -1441,8 +1444,10 @@ static void ConstructPxShape (CollisionShapeComponent *_shape,
 }
 
 static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes _attributes0,
+                                                 // NOLINTNEXTLINE(performance-unnecessary-value-param): PhysX API.
                                                  physx::PxFilterData _filterData0,
                                                  physx::PxFilterObjectAttributes _attributes1,
+                                                 // NOLINTNEXTLINE(performance-unnecessary-value-param): PhysX API.
                                                  physx::PxFilterData _filterData1,
                                                  physx::PxPairFlags &_pairFlags,
                                                  const void *_constantBlock,
