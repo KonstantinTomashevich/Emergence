@@ -8,7 +8,7 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Contains physical properties of the material, needed to execute dynamics simulation.
+/// \brief Contains physical properties of a material needed to execute dynamics simulation.
 /// \warning Dynamics material removal causes removal of all associated shapes,
 ///          because shapes can not exist without material.
 struct DynamicsMaterial final

@@ -31,7 +31,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 - [Celerity](./Library/Public/Celerity/README.md): combines [Warehouse](./Service/Warehouse/README.md),
   [Flow](./Library/Public/Flow/README.md) and [TaskExecutor](./Service/TaskExecutor/README.md) into framework
-  for gameplay world logic implementation.
+  for gameplay world logic implementation. Has transform hierarchy and physics engine extensions.
 - [Container](./Library/Public/Container/README.md): template container proxies and implementations.
 - [Flow](./Library/Public/Flow/README.md): compact user-friendly task registration library. It verifies that there is no
   circular dependencies, no missing dependencies and no data races between registered tasks.

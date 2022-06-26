@@ -26,13 +26,13 @@ struct CollisionShapeComponent final
     /// \brief Id of an object to which this shape is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
 
-    /// \brief Shape additional rotation, local to object rotation.
+    /// \brief Shape additional rotation, local to object transform.
     Math::Quaternion rotation = Math::Quaternion::IDENTITY;
 
-    /// \brief Shape additional translation, local to object rotation.
+    /// \brief Shape additional translation, local to object transform.
     Math::Vector3f translation = Math::Vector3f::ZERO;
 
-    /// \brief Shape geometry. Can be resized any time.
+    /// \brief Shape geometry. Can be resized any time in fixed pipeline.
     /// \invariant Geometry type cannot be changed after initialization!
     CollisionGeometry geometry {.type = CollisionGeometryType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
 
@@ -44,7 +44,7 @@ struct CollisionShapeComponent final
     bool enabled = true;
 
     /// \brief Whether this shape is a trigger shape.
-    /// \details Trigger shapes do not collide, but special send enter/exit events.
+    /// \details Trigger shapes do not collide, but send special enter/exit events.
     bool trigger = false;
 
     /// \brief Whether this shape is visible to world queries.
