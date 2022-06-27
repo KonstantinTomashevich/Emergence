@@ -37,12 +37,22 @@ void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_t
 {
     logicalLocalTransform = _transform;
     ++logicalLocalTransformRevision;
-    visualTransformSyncNeeded = true;
     logicalLocalTransformChangedSinceLastUpdate = true;
 
     if (_skipInterpolation)
     {
         SetVisualLocalTransform (logicalLocalTransform);
+        visualTransformSyncNeeded = false;
+    }
+    else
+    {
+        if (!visualTransformSyncNeeded)
+        {
+            // We're starting new interpolated movement, therefore we need to clear time stamp of the old one.
+            visualTransformLastSyncTimeNs = 0u;
+
+            visualTransformSyncNeeded = true;
+        }
     }
 }
 
