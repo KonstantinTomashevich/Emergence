@@ -42,39 +42,29 @@ void Transform3dVisualSynchronizer::Execute () noexcept
             transform->logicalTransformLastObservationTimeNs = time->fixedTimeNs;
         }
 
-        const Math::Transform3d &source = transform->GetVisualLocalTransform ();
-        const Math::Transform3d &target = transform->GetLogicalLocalTransform ();
-
-        if (Math::NearlyEqual (source, target))
+        // If we never interpolated this object before or last interpolation was
+        // interrupted,  fix last sync time stamp so elapsed time will be zero.
+        if (transform->visualTransformLastSyncTimeNs == 0u)
         {
-            // Interpolation skip detected: mark that we already see object in its final transform.
-            transform->visualTransformLastSyncTimeNs = transform->logicalTransformLastObservationTimeNs;
-        }
-        else
-        {
-            // If we never interpolated this object before, treat it as synced during last frame.
-            if (transform->visualTransformLastSyncTimeNs == 0u)
-            {
-                transform->visualTransformLastSyncTimeNs =
-                    time->normalTimeNs - static_cast<uint64_t> (time->normalDurationS * 1000000000.0f);
-            }
-
-            // Apply interpolation.
-            const uint64_t elapsed = time->normalTimeNs - transform->visualTransformLastSyncTimeNs;
-
-            const uint64_t duration =
-                transform->logicalTransformLastObservationTimeNs - transform->visualTransformLastSyncTimeNs;
-
-            const float progress =
-                Math::Clamp (static_cast<float> (elapsed) / static_cast<float> (duration), 0.0f, 1.0f);
-
-            transform->SetVisualLocalTransform ({Math::Lerp (source.translation, target.translation, progress),
-                                                 Math::SLerp (source.rotation, target.rotation, progress),
-                                                 Math::Lerp (source.scale, target.scale, progress)});
-
             transform->visualTransformLastSyncTimeNs = time->normalTimeNs;
         }
 
+        // Apply interpolation.
+        const uint64_t elapsed = time->normalTimeNs - transform->visualTransformLastSyncTimeNs;
+
+        const uint64_t duration =
+            transform->logicalTransformLastObservationTimeNs - transform->visualTransformLastSyncTimeNs;
+
+        const float progress = Math::Clamp (static_cast<float> (elapsed) / static_cast<float> (duration), 0.0f, 1.0f);
+
+        const Math::Transform3d &source = transform->GetVisualLocalTransform ();
+        const Math::Transform3d &target = transform->GetLogicalLocalTransform ();
+
+        transform->SetVisualLocalTransform ({Math::Lerp (source.translation, target.translation, progress),
+                                             Math::SLerp (source.rotation, target.rotation, progress),
+                                             Math::Lerp (source.scale, target.scale, progress)});
+
+        transform->visualTransformLastSyncTimeNs = time->normalTimeNs;
         transform->visualTransformSyncNeeded =
             transform->visualTransformLastSyncTimeNs < transform->logicalTransformLastObservationTimeNs;
         ++transformCursor;

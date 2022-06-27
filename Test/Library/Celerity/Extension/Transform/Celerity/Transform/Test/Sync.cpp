@@ -159,4 +159,43 @@ TEST_CASE (InterpolationAndWorldTransform)
         });
 }
 
+TEST_CASE (InterpolationWithPause)
+{
+    const Transform3d initialTransform {{2.0f, 4.0f, 10.0f}};
+    const Transform3d targetTransform {{30.0f, 20.0f, 30.0f}};
+
+    SyncTest (
+        {
+            0u,
+            1000u,
+            1250u,
+            1800u,
+            2200u,
+            4000u,
+            4200u,
+            4750u,
+            5200u,
+        },
+        {
+            {
+                CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
+                SetLocalTransform {0u, true, true, initialTransform},
+            },
+            {SetLocalTransform {0u, true, false, targetTransform}},
+            {},
+            {SetLocalTransform {0u, true, false, initialTransform}},
+        },
+        {
+            {{CheckTransform {0u, false, true, false, initialTransform}}},
+            {{CheckTransform {0u, false, true, false, initialTransform}}},
+            {{CheckTransform {0u, false, true, false, {{9.0f, 8.0f, 15.0f}}}}},
+            {{CheckTransform {0u, false, true, false, {{24.4f, 16.8f, 26.0f}}}}},
+            {{CheckTransform {0u, false, true, false, targetTransform}}},
+            {{CheckTransform {0u, false, true, false, targetTransform}}},
+            {{CheckTransform {0u, false, true, false, {{24.4f, 16.8f, 26.0f}}}}},
+            {{CheckTransform {0u, false, true, false, {{9.0f, 8.0f, 15.0f}}}}},
+            {{CheckTransform {0u, false, true, false, initialTransform}}},
+        });
+}
+
 END_SUITE
