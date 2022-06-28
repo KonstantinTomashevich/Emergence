@@ -23,4 +23,10 @@ public:
 private:
     std::atomic_flag &flag;
 };
+
+/// \brief Uses spinlock with yield to lock atomic flag.
+void LockAtomicFlag (std::atomic_flag &_flag) noexcept;
+
+/// \brief Unlocks atomic flag by clearing it.
+void UnlockAtomicFlag (std::atomic_flag &_flag) noexcept;
 } // namespace Emergence

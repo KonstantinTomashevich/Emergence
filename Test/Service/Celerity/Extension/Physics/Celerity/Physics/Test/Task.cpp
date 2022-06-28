@@ -427,7 +427,7 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
 
     builder.AddTask ("Configurator"_us).SetExecutor<Configurator> (std::move (_configuratorFrames));
     builder.AddTask ("Validator"_us).SetExecutor<Validator> (std::move (_validatorFrames));
-    REQUIRE (builder.End (std::thread::hardware_concurrency ()));
+    REQUIRE (builder.End ());
 
     for (std::uint64_t frameIndex = 0u; frameIndex <= frames; ++frameIndex)
     {

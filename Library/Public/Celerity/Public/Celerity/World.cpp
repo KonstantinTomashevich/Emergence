@@ -191,14 +191,13 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 
 Pipeline *World::AddPipeline (Memory::UniqueString _id,
                               PipelineType _type,
-                              const Task::Collection &_collection,
-                              std::size_t _maximumChildThreads) noexcept
+                              const Task::Collection &_collection) noexcept
 {
     assert (!normalPipeline || _type != PipelineType::NORMAL);
     assert (!fixedPipeline || _type != PipelineType::FIXED);
 
     auto placeholder = Memory::Profiler::AllocationGroup {pipelinePool.GetAllocationGroup (), _id}.PlaceOnTop ();
-    auto *pipeline = new (pipelinePool.Acquire ()) Pipeline {_id, _type, _collection, _maximumChildThreads};
+    auto *pipeline = new (pipelinePool.Acquire ()) Pipeline {_id, _type, _collection};
 
     switch (_type)
     {

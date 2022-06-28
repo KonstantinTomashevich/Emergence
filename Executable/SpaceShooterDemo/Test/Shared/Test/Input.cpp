@@ -369,13 +369,13 @@ void RunTest (Vector<KeyStateTrigger> _keyStateChangedTriggers,
 
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
-    pipelineBuilder.End (std::thread::hardware_concurrency ());
+    pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     AddValidatorTask (pipelineBuilder, std::move (fixedExpectations));
     Input::AddToFixedUpdate (pipelineBuilder);
     AddAllCheckpoints (pipelineBuilder);
-    pipelineBuilder.End (std::thread::hardware_concurrency ());
+    pipelineBuilder.End ();
 
     for (const auto &request : _updates)
     {

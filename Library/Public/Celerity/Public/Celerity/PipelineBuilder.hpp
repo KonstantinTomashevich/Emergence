@@ -288,7 +288,7 @@ public:
 
     /// \brief Finishes active pipeline routine.
     /// \return New pipeline or `nullptr` if pipeline creation fails due to errors.
-    Pipeline *End (std::size_t _maximumChildThreads) noexcept;
+    Pipeline *End () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PipelineBuilder);
 

@@ -509,7 +509,7 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
     taskRegister.RegisterCheckpoint (_name);
 }
 
-Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
+Pipeline *PipelineBuilder::End () noexcept
 {
     EventUsageMap &productionMap = eventProduction[static_cast<std::size_t> (currentPipelineType)];
     EventUsageMap &consumptionMap = eventConsumption[static_cast<std::size_t> (currentPipelineType)];
@@ -535,8 +535,7 @@ Pipeline *PipelineBuilder::End (std::size_t _maximumChildThreads) noexcept
 
     if (!anyErrorsDetected)
     {
-        newPipeline = world->AddPipeline (currentPipelineId, currentPipelineType, taskRegister.ExportCollection (),
-                                          _maximumChildThreads);
+        newPipeline = world->AddPipeline (currentPipelineId, currentPipelineType, taskRegister.ExportCollection ());
     }
 
     taskRegister.Clear ();

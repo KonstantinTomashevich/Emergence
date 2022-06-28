@@ -137,7 +137,7 @@ void GameApplication::Start ()
     InputInitialization::AddToInitializationPipeline (pipelineBuilder);
     LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
     PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
-    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End (std::thread::hardware_concurrency ());
+    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Assembly::AddToNormalUpdate (pipelineBuilder);
@@ -147,8 +147,7 @@ void GameApplication::Start ()
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
-    // TODO: Calculate rational (for example, average parallel) amount of threads in Flow or TaskCollection?
-    pipelineBuilder.End (std::thread::hardware_concurrency ());
+    pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Assembly::AddToFixedUpdate (pipelineBuilder);
@@ -163,7 +162,7 @@ void GameApplication::Start ()
     Shooting::AddToFixedUpdate (pipelineBuilder);
     Slowdown::AddToFixedUpdate (pipelineBuilder);
     Spawn::AddToFixedUpdate (pipelineBuilder);
-    pipelineBuilder.End (std::thread::hardware_concurrency ());
+    pipelineBuilder.End ();
 
     initializer->Execute ();
     world.RemovePipeline (initializer);

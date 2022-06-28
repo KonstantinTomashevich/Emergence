@@ -1,5 +1,4 @@
 #include <atomic>
-#include <barrier>
 #include <cassert>
 #include <thread>
 
@@ -12,16 +11,126 @@
 
 namespace Emergence::Task
 {
+// TODO: Make job executor separate library, so it can be used for other jobs, like PhysX CPU dispatch?
+class JobExecutor final
+{
+public:
+    using Job = std::function<void ()>;
+
+    JobExecutor () noexcept;
+
+    JobExecutor (const JobExecutor &_other) = delete;
+
+    JobExecutor (JobExecutor &&_other) = delete;
+
+    ~JobExecutor () noexcept;
+
+    void Push (Job _task) noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (JobExecutor);
+
+private:
+    Job Pop () noexcept;
+
+    std::vector<std::jthread> threads;
+
+    std::vector<Job> jobPool;
+
+    std::atomic_flag modifyingPool;
+    std::atomic_flag hasJobs;
+
+    std::atomic_flag terminating;
+};
+
+JobExecutor::JobExecutor () noexcept
+{
+    jobPool.reserve (32u);
+    for (std::size_t threadIndex = 0u; threadIndex < std::thread::hardware_concurrency (); ++threadIndex)
+    {
+        threads.emplace_back (
+            [this] ()
+            {
+                while (true)
+                {
+                    if (terminating.test (std::memory_order_acquire))
+                    {
+                        return;
+                    }
+
+                    Pop () ();
+                }
+            });
+    }
+}
+
+JobExecutor::~JobExecutor () noexcept
+{
+    terminating.test_and_set (std::memory_order_acquire);
+    hasJobs.test_and_set (std::memory_order_release);
+    hasJobs.notify_all ();
+
+    for (std::jthread &thread : threads)
+    {
+        thread.join ();
+    }
+}
+
+void JobExecutor::Push (JobExecutor::Job _task) noexcept
+{
+    while (true)
+    {
+        AtomicFlagGuard guard {modifyingPool};
+        jobPool.emplace_back (std::move (_task));
+        hasJobs.test_and_set (std::memory_order_release);
+        hasJobs.notify_one ();
+        return;
+    }
+}
+
+JobExecutor::Job JobExecutor::Pop () noexcept
+{
+    while (true)
+    {
+        hasJobs.wait (false, std::memory_order_acquire);
+        AtomicFlagGuard guard {modifyingPool};
+
+        if (terminating.test (std::memory_order_acquire))
+        {
+            // Empty task to schedule termination.
+            return [] ()
+            {
+            };
+        }
+
+        if (jobPool.empty ())
+        {
+            continue;
+        }
+
+        Job task {std::move (jobPool.back ())};
+        jobPool.pop_back ();
+
+        if (jobPool.empty ())
+        {
+            hasJobs.clear (std::memory_order_release);
+        }
+
+        return task;
+    }
+}
+
+static JobExecutor globalJobExecutor {};
+
 class ExecutorImplementation final
 {
 public:
-    explicit ExecutorImplementation (const Collection &_collection, std::size_t _workers) noexcept;
+    explicit ExecutorImplementation (const Collection &_collection) noexcept;
 
     ExecutorImplementation (const ExecutorImplementation &_other) = delete;
 
     ExecutorImplementation (ExecutorImplementation &&_other) = delete;
 
-    ~ExecutorImplementation () noexcept;
+    ~ExecutorImplementation () noexcept = default;
 
     void Execute () noexcept;
 
@@ -42,44 +151,29 @@ private:
         std::size_t dependenciesLeftThisRun = 0u;
     };
 
-    void WorkerMain () noexcept;
+    void TaskFunction (std::size_t _taskIndex) noexcept;
 
     Container::Vector<Task> tasks;
 
     /// \details We cache entry tasks to make ::taskQueue initialization in ::Execute faster.
     Container::Vector<std::size_t> entryTaskIndices;
 
-    Container::Vector<std::jthread> workers;
-
-    /// \details Task queue modification is rare and chance that different threads are fighting for modification access
+    /// \details Task modification is rare and chance that different threads are fighting for modification access
     ///          is low. Most performant mutual exclusion technique is such cases is atomic_flag-based spinlock.
-    std::atomic_flag modifyingTaskQueue;
+    std::atomic_flag modifyingTasks;
 
-    /// \details Used to pause workers, that are waiting for tasks, when there is no sense to check task queue.
-    std::atomic_flag taskQueueNotEmptyOrAllTasksFinished;
+    /// \brief Atomic flag for waiting until all tasks are executed.
+    std::atomic_flag tasksExecuting;
 
-    std::size_t tasksFinished = 0u;
-    std::size_t tasksInExecution = 0u;
-    Container::Vector<std::size_t> tasksQueue;
-
-    /// \details Workers are paused at this barrier in two cases:
-    ///          - They are waiting for new execution routine.
-    ///          - They finished executing ::WorkerMain during current routine. Waiting here is used
-    ///            to ensure that all workers will be stopped when main thread exits from ::Execute.
-    std::barrier<> workerExecutionBarrier;
-
-    /// \details Informs workers that they should exit. Used only in destructor.
-    std::atomic_flag terminating;
+    /// \brief Indicates how much unfinished tasks left during this execution.
+    std::atomic_unsigned_lock_free tasksLeftToExecute = 0u;
 };
 
 using namespace Memory::Literals;
 
-ExecutorImplementation::ExecutorImplementation (const Collection &_collection, std::size_t _workers) noexcept
+ExecutorImplementation::ExecutorImplementation (const Collection &_collection) noexcept
     : tasks (Memory::Profiler::AllocationGroup::Top ()),
-      entryTaskIndices (Memory::Profiler::AllocationGroup::Top ()),
-      workers (Memory::Profiler::AllocationGroup::Top ()),
-      tasksQueue (Memory::Profiler::AllocationGroup::Top ()),
-      workerExecutionBarrier (static_cast<ptrdiff_t> (_workers + 1u))
+      entryTaskIndices (Memory::Profiler::AllocationGroup::Top ())
 {
     auto placeholder = tasks.get_allocator ().GetAllocationGroup ().PlaceOnTop ();
     tasks.resize (_collection.tasks.size ());
@@ -110,38 +204,6 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection, s
     }
 
     assert (!entryTaskIndices.empty ());
-    workers.reserve (_workers);
-
-    for (std::size_t workerIndex = 0u; workerIndex < _workers; ++workerIndex)
-    {
-        workers.emplace_back (
-            [this] ()
-            {
-                while (true)
-                {
-                    workerExecutionBarrier.arrive_and_wait ();
-                    if (terminating.test (std::memory_order_acquire))
-                    {
-                        return;
-                    }
-
-                    WorkerMain ();
-                    workerExecutionBarrier.arrive_and_wait ();
-                }
-            });
-    }
-}
-
-ExecutorImplementation::~ExecutorImplementation () noexcept
-{
-    // Set termination flag and awake all workers.
-    terminating.test_and_set (std::memory_order_acquire);
-    workerExecutionBarrier.arrive_and_wait ();
-
-    for (std::jthread &worker : workers)
-    {
-        worker.join ();
-    }
 }
 
 void ExecutorImplementation::Execute () noexcept
@@ -152,93 +214,49 @@ void ExecutorImplementation::Execute () noexcept
         return;
     }
 
-    // Ensure that synchronization variable is in clean state.
-    assert (!modifyingTaskQueue.test ());
+    tasksExecuting.test_and_set (std::memory_order_acquire);
+    tasksLeftToExecute = tasks.size ();
 
-    tasksQueue = entryTaskIndices;
-    taskQueueNotEmptyOrAllTasksFinished.test_and_set (std::memory_order_acquire);
+    for (std::size_t taskIndex : entryTaskIndices)
+    {
+        globalJobExecutor.Push (
+            [this, taskIndex] ()
+            {
+                TaskFunction (taskIndex);
+            });
+    }
 
-    // Awake workers and switch main thread to worker mode.
-    workerExecutionBarrier.arrive_and_wait ();
-    WorkerMain ();
-    workerExecutionBarrier.arrive_and_wait ();
-
-    // Clear shared state after execution.
-    tasksFinished = 0u;
-    tasksInExecution = 0u;
+    tasksExecuting.wait (true, std::memory_order_acquire);
 }
 
-void ExecutorImplementation::WorkerMain () noexcept
+void ExecutorImplementation::TaskFunction (std::size_t _taskIndex) noexcept
 {
-    while (true)
+    Task &task = tasks[_taskIndex];
+    assert (task.dependenciesLeftThisRun == 0u);
+    task.executor ();
+    task.dependenciesLeftThisRun = task.dependencyCount;
+
+    LockAtomicFlag (modifyingTasks);
+    for (std::size_t dependantIndex : task.dependantTasksIndices)
     {
-        Task *currentTask = nullptr;
-
-        // Extracting next available task from queue.
-        while (!currentTask)
+        if (--tasks[dependantIndex].dependenciesLeftThisRun == 0u)
         {
-            taskQueueNotEmptyOrAllTasksFinished.wait (false, std::memory_order_acquire);
-            AtomicFlagGuard guard {modifyingTaskQueue};
+            UnlockAtomicFlag (modifyingTasks);
+            globalJobExecutor.Push (
+                [this, dependantIndex] ()
+                {
+                    TaskFunction (dependantIndex);
+                });
 
-            bool exit = false;
-            if (!tasksQueue.empty ())
-            {
-                assert (tasksFinished != tasks.size ());
-                currentTask = &tasks[tasksQueue.back ()];
-                tasksQueue.pop_back ();
-                ++tasksInExecution;
-            }
-            else
-            {
-                const bool allTasksFinished = tasksFinished == tasks.size ();
-
-                // There is no tasks in execution and not all tasks are finished,
-                // but task queue is empty -- looks like a classic deadlock.
-                const bool deadlockDetected = !allTasksFinished && tasksInExecution == 0u;
-
-                assert (!deadlockDetected);
-                exit = allTasksFinished || deadlockDetected;
-            }
-
-            // If there is no tasks and if we are not exiting, we should inform
-            // other workers that there is no sense to check task queue right now.
-            if (tasksQueue.empty () && !exit)
-            {
-                taskQueueNotEmptyOrAllTasksFinished.clear (std::memory_order_release);
-            }
-
-            if (exit)
-            {
-                return;
-            }
+            LockAtomicFlag (modifyingTasks);
         }
+    }
 
-        assert (currentTask->dependenciesLeftThisRun == 0u);
-        currentTask->executor ();
-        currentTask->dependenciesLeftThisRun = currentTask->dependencyCount;
-
-        // Registering successful task execution and unlocking dependant tasks.
-        AtomicFlagGuard guard {modifyingTaskQueue};
-
-        ++tasksFinished;
-        --tasksInExecution;
-
-        const bool taskQueueWasEmpty = tasksQueue.empty ();
-        for (std::size_t dependantIndex : currentTask->dependantTasksIndices)
-        {
-            if (--tasks[dependantIndex].dependenciesLeftThisRun == 0u)
-            {
-                tasksQueue.emplace_back (dependantIndex);
-            }
-        }
-
-        // If we added tasks to empty task queue or if all tasks are finished,
-        // we should resume other workers to make them able to grab tasks or exit.
-        if ((taskQueueWasEmpty && !tasksQueue.empty ()) || tasksFinished == tasks.size ())
-        {
-            taskQueueNotEmptyOrAllTasksFinished.test_and_set (std::memory_order_seq_cst);
-            taskQueueNotEmptyOrAllTasksFinished.notify_all ();
-        }
+    UnlockAtomicFlag (modifyingTasks);
+    if (--tasksLeftToExecute == 0u)
+    {
+        tasksExecuting.clear (std::memory_order_release);
+        tasksExecuting.notify_one ();
     }
 }
 
@@ -248,12 +266,12 @@ struct InternalData final
     ExecutorImplementation *executor = nullptr;
 };
 
-Executor::Executor (const Collection &_collection, std::size_t _maximumChildThreads) noexcept
+Executor::Executor (const Collection &_collection) noexcept
 {
     auto &internal = *new (&data) InternalData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
     internal.executor = new (internal.heap.Acquire (sizeof (ExecutorImplementation), alignof (ExecutorImplementation)))
-        ExecutorImplementation (_collection, _maximumChildThreads);
+        ExecutorImplementation (_collection);
 }
 
 Executor::Executor (Executor &&_other) noexcept

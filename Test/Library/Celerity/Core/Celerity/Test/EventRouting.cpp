@@ -168,7 +168,7 @@ void SimpleConsumptionTest (EventRoute _route, const EventPlan &_plan, bool _pre
     AddTestTask<EventConsumer> (builder, consumerTask, std::move (consumptionPlan),
                                 {_previousFrameMode ? ""_us : producerTask});
 
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End ();
 
     if (_previousFrameMode && _route == EventRoute::CUSTOM)
     {
@@ -246,12 +246,12 @@ TEST_CASE (FixedToNormal)
 
     builder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     AddTestTask<EventProducer> (builder, "EventProducer"_us, std::move (productionPlan));
-    Pipeline *fixedPipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *fixedPipeline = builder.End ();
     REQUIRE (fixedPipeline);
 
     builder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     AddTestTask<EventConsumer> (builder, "EventConsumer"_us, std::move (consumptionPlan));
-    Pipeline *normalPipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *normalPipeline = builder.End ();
     REQUIRE (normalPipeline);
 
     // Pipelines are executed according to scenario, written above in consumption plan.
@@ -293,7 +293,7 @@ TEST_CASE (MultipleProducers)
     AddTestTask<EventProducer> (builder, secondProducer, std::move (secondProducerPlan), {firstProducer});
     AddTestTask<EventConsumer> (builder, "EventConsumer"_us, std::move (consumerPlan), {firstProducer, secondProducer});
 
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End ();
     REQUIRE (pipeline);
 
     for (std::size_t index = 0u; index < steps; ++index)
@@ -317,7 +317,7 @@ TEST_CASE (MultipleConsumers)
     AddTestTask<EventConsumer> (builder, "FirstConsumer"_us, plan, {producer});
     AddTestTask<EventConsumer> (builder, "SecondConsumer"_us, plan, {producer});
 
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End ();
     REQUIRE (pipeline);
 
     for (std::size_t index = 0u; index < plan.size (); ++index)
@@ -339,7 +339,7 @@ TEST_CASE (ConsumerDoesNotDependOnAllProducers)
     AddTestTask<EventProducer> (builder, firstProducer, {});
     AddTestTask<EventProducer> (builder, secondProducer, {}, {firstProducer});
     AddTestTask<EventConsumer> (builder, "EventConsumer"_us, {}, {firstProducer});
-    CHECK_EQUAL (builder.End (std::thread::hardware_concurrency ()), nullptr);
+    CHECK_EQUAL (builder.End (), nullptr);
 }
 
 TEST_CASE (ConsumerIsNotDependencyOfAllProducers)
@@ -355,7 +355,7 @@ TEST_CASE (ConsumerIsNotDependencyOfAllProducers)
     AddTestTask<EventConsumer> (builder, "EventConsumer"_us, {});
     AddTestTask<EventProducer> (builder, firstProducer, {});
     AddTestTask<EventProducer> (builder, "SecondProducer"_us, {}, {firstProducer, consumer});
-    CHECK_EQUAL (builder.End (std::thread::hardware_concurrency ()), nullptr);
+    CHECK_EQUAL (builder.End (), nullptr);
 }
 
 TEST_CASE (ConsumerIsBetweenProducers)
@@ -372,7 +372,7 @@ TEST_CASE (ConsumerIsBetweenProducers)
     AddTestTask<EventProducer> (builder, firstProducer, {});
     AddTestTask<EventConsumer> (builder, consumer, {}, {firstProducer});
     AddTestTask<EventProducer> (builder, secondProducer, {}, {consumer});
-    CHECK_EQUAL (builder.End (std::thread::hardware_concurrency ()), nullptr);
+    CHECK_EQUAL (builder.End (), nullptr);
 }
 
 END_SUITE

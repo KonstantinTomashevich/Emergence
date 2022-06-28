@@ -52,10 +52,7 @@ public:
 private:
     friend class World;
 
-    explicit Pipeline (Memory::UniqueString _id,
-                       PipelineType _type,
-                       const Task::Collection &_collection,
-                       std::size_t _maximumChildThreads);
+    explicit Pipeline (Memory::UniqueString _id, PipelineType _type, const Task::Collection &_collection);
 
     Memory::UniqueString id;
     PipelineType type;
