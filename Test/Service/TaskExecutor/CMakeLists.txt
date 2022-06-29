@@ -12,6 +12,7 @@ sober_test_begin (TaskExecutor)
     sober_library_link_library (PRIVATE ${CONTAINER_LIBRARY_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
 
+    sober_library_use_service (SHARED PRIVATE JobDispatcher)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
     sober_library_use_service (SHARED PRIVATE Testing)

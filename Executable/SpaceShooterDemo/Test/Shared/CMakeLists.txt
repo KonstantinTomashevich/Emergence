@@ -13,6 +13,7 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics)
+    sober_library_use_service (PER_VARIANT PRIVATE JobDispatcher)
     sober_library_use_service (PER_VARIANT PRIVATE Log)
     sober_library_use_service (PER_VARIANT PRIVATE Memory)
     sober_library_use_service (PER_VARIANT PRIVATE MemoryProfiler)

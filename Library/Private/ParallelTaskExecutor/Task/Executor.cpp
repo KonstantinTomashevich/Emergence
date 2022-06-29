@@ -4,6 +4,8 @@
 
 #include <Container/Vector.hpp>
 
+#include <Job/Dispatcher.hpp>
+
 #include <SyntaxSugar/AtomicFlagGuard.hpp>
 #include <SyntaxSugar/BlockCast.hpp>
 
@@ -11,116 +13,6 @@
 
 namespace Emergence::Task
 {
-// TODO: Make job executor separate library, so it can be used for other jobs, like PhysX CPU dispatch?
-class JobExecutor final
-{
-public:
-    using Job = std::function<void ()>;
-
-    JobExecutor () noexcept;
-
-    JobExecutor (const JobExecutor &_other) = delete;
-
-    JobExecutor (JobExecutor &&_other) = delete;
-
-    ~JobExecutor () noexcept;
-
-    void Push (Job _task) noexcept;
-
-    EMERGENCE_DELETE_ASSIGNMENT (JobExecutor);
-
-private:
-    Job Pop () noexcept;
-
-    std::vector<std::jthread> threads;
-
-    std::vector<Job> jobPool;
-
-    std::atomic_flag modifyingPool;
-    std::atomic_flag hasJobs;
-
-    std::atomic_flag terminating;
-};
-
-JobExecutor::JobExecutor () noexcept
-{
-    jobPool.reserve (32u);
-    for (std::size_t threadIndex = 0u; threadIndex < std::thread::hardware_concurrency (); ++threadIndex)
-    {
-        threads.emplace_back (
-            [this] ()
-            {
-                while (true)
-                {
-                    if (terminating.test (std::memory_order_acquire))
-                    {
-                        return;
-                    }
-
-                    Pop () ();
-                }
-            });
-    }
-}
-
-JobExecutor::~JobExecutor () noexcept
-{
-    terminating.test_and_set (std::memory_order_acquire);
-    hasJobs.test_and_set (std::memory_order_release);
-    hasJobs.notify_all ();
-
-    for (std::jthread &thread : threads)
-    {
-        thread.join ();
-    }
-}
-
-void JobExecutor::Push (JobExecutor::Job _task) noexcept
-{
-    while (true)
-    {
-        AtomicFlagGuard guard {modifyingPool};
-        jobPool.emplace_back (std::move (_task));
-        hasJobs.test_and_set (std::memory_order_release);
-        hasJobs.notify_one ();
-        return;
-    }
-}
-
-JobExecutor::Job JobExecutor::Pop () noexcept
-{
-    while (true)
-    {
-        hasJobs.wait (false, std::memory_order_acquire);
-        AtomicFlagGuard guard {modifyingPool};
-
-        if (terminating.test (std::memory_order_acquire))
-        {
-            // Empty task to schedule termination.
-            return [] ()
-            {
-            };
-        }
-
-        if (jobPool.empty ())
-        {
-            continue;
-        }
-
-        Job task {std::move (jobPool.back ())};
-        jobPool.pop_back ();
-
-        if (jobPool.empty ())
-        {
-            hasJobs.clear (std::memory_order_release);
-        }
-
-        return task;
-    }
-}
-
-static JobExecutor globalJobExecutor {};
-
 class ExecutorImplementation final
 {
 public:
@@ -219,7 +111,7 @@ void ExecutorImplementation::Execute () noexcept
 
     for (std::size_t taskIndex : entryTaskIndices)
     {
-        globalJobExecutor.Push (
+        Job::Dispatcher::Global ().Dispatch (
             [this, taskIndex] ()
             {
                 TaskFunction (taskIndex);
@@ -242,7 +134,7 @@ void ExecutorImplementation::TaskFunction (std::size_t _taskIndex) noexcept
         if (--tasks[dependantIndex].dependenciesLeftThisRun == 0u)
         {
             UnlockAtomicFlag (modifyingTasks);
-            globalJobExecutor.Push (
+            Job::Dispatcher::Global ().Dispatch (
                 [this, dependantIndex] ()
                 {
                     TaskFunction (dependantIndex);
