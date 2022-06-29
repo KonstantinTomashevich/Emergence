@@ -51,7 +51,7 @@ struct PhysXWorld final
     physx::PxFoundation *foundation = nullptr;
     physx::PxPhysics *physics = nullptr;
 
-    PhysXJobDispatcher dispatcher {};
+    PhysXJobDispatcher dispatcher;
     physx::PxScene *scene = nullptr;
 
     bool remoteDebuggerEnabled = false;

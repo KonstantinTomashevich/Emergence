@@ -1,3 +1,5 @@
+#include <Container/Vector.hpp>
+
 #include <Job/Dispatcher.hpp>
 
 #include <SyntaxSugar/AtomicFlagGuard.hpp>
@@ -5,6 +7,8 @@
 
 namespace Emergence::Job
 {
+using namespace Memory::Literals;
+
 class DispatcherImplementation final
 {
 public:
@@ -18,16 +22,16 @@ public:
 
     void Dispatch (Dispatcher::Job _job) noexcept;
 
-    std::size_t GetAvailableThreadsCount () const noexcept;
+    [[nodiscard]] std::size_t GetAvailableThreadsCount () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (DispatcherImplementation);
 
 private:
     Dispatcher::Job Pop () noexcept;
 
-    std::vector<std::jthread> threads;
+    Container::Vector<std::jthread> threads {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
 
-    std::vector<Dispatcher::Job> jobPool;
+    Container::Vector<Dispatcher::Job> jobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
 
     std::atomic_flag modifyingPool;
     std::atomic_flag hasJobs;

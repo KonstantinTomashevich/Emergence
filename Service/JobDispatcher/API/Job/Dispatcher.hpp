@@ -10,7 +10,7 @@
 namespace Emergence::Job
 {
 // TODO: Right now there is no tests for JobDispatcher, because it is covered by other services.
-//       We should add separate tests for this service.
+//       We should add separate tests for this service later.
 
 /// \brief Dispatches received jobs between worker threads.
 /// \details Usage of shared job dispatcher allows to avoid creation of multiple private thread pools.
@@ -44,6 +44,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Dispatcher);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 9u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 11u);
 };
 } // namespace Emergence::Job
