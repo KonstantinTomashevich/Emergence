@@ -38,7 +38,7 @@ void PhysXJobDispatcher::submitTask (physx::PxBaseTask &_task)
 
 uint32_t PhysXJobDispatcher::getWorkerCount () const
 {
-    return Job::Dispatcher::Global ().GetAvailableThreadsCount ();
+    return static_cast<uint32_t> (Job::Dispatcher::Global ().GetAvailableThreadsCount ());
 }
 
 PhysXWorld::PhysXWorld () noexcept = default;
