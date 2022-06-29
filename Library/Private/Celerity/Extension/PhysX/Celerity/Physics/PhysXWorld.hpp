@@ -33,7 +33,7 @@ private:
     Memory::Heap heap;
 };
 
-class PhysXJobDispatcher final : public  physx::PxCpuDispatcher
+class PhysXJobDispatcher final : public physx::PxCpuDispatcher
 {
 public:
     void submitTask (physx::PxBaseTask &_task) override;
