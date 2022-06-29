@@ -18,6 +18,8 @@ public:
 
     void Dispatch (Dispatcher::Job _job) noexcept;
 
+    std::size_t GetAvailableThreadsCount () const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (DispatcherImplementation);
 
 private:
@@ -31,6 +33,8 @@ private:
     std::atomic_flag hasJobs;
 
     std::atomic_flag terminating;
+
+    std::atomic_unsigned_lock_free availableThreadsCount = 0u;
 };
 
 DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) noexcept
@@ -43,12 +47,15 @@ DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) no
             {
                 while (true)
                 {
+                    ++availableThreadsCount;
                     if (terminating.test (std::memory_order_acquire))
                     {
                         return;
                     }
 
-                    Pop () ();
+                    Dispatcher::Job job = Pop ();
+                    --availableThreadsCount;
+                    job ();
                 }
             });
     }
@@ -76,6 +83,11 @@ void DispatcherImplementation::Dispatch (Dispatcher::Job _job) noexcept
         hasJobs.notify_one ();
         return;
     }
+}
+
+std::size_t DispatcherImplementation::GetAvailableThreadsCount () const noexcept
+{
+    return availableThreadsCount;
 }
 
 Dispatcher::Job DispatcherImplementation::Pop () noexcept
@@ -129,5 +141,10 @@ Dispatcher::~Dispatcher () noexcept
 void Dispatcher::Dispatch (Dispatcher::Job _job) noexcept
 {
     block_cast<DispatcherImplementation> (data).Dispatch (std::move (_job));
+}
+
+std::size_t Dispatcher::GetAvailableThreadsCount () const noexcept
+{
+    return block_cast<DispatcherImplementation> (data).GetAvailableThreadsCount ();
 }
 } // namespace Emergence::Job

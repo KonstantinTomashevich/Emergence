@@ -9,6 +9,9 @@
 
 namespace Emergence::Job
 {
+// TODO: Right now there is no tests for JobDispatcher, because it is covered by other services.
+//       We should add separate tests for this service.
+
 /// \brief Dispatches received jobs between worker threads.
 /// \details Usage of shared job dispatcher allows to avoid creation of multiple private thread pools.
 class Dispatcher final
@@ -35,9 +38,12 @@ public:
     ///          Behaviour of waiting structure is implementation-dependent.
     void Dispatch (Job _job) noexcept;
 
+    /// \return Count of threads that don't have any job at the moment.
+    [[nodiscard]] std::size_t GetAvailableThreadsCount () const noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (Dispatcher);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 8u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 9u);
 };
 } // namespace Emergence::Job

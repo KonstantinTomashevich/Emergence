@@ -154,11 +154,10 @@ void WorldUpdater::EnsurePhysicsWorldReady (const PhysicsWorldSingleton *_physic
 
         pxWorld.physics =
             PxCreatePhysics (PX_PHYSICS_VERSION, *pxWorld.foundation, tolerance, false, pxWorld.remoteDebugger);
-        pxWorld.dispatcher = physx::PxDefaultCpuDispatcherCreate (_physicsWorld->simulationMaxThreads);
 
         physx::PxSceneDesc sceneDescriptor {pxWorld.physics->getTolerancesScale ()};
         sceneDescriptor.gravity = {_physicsWorld->gravity.x, _physicsWorld->gravity.y, _physicsWorld->gravity.z};
-        sceneDescriptor.cpuDispatcher = pxWorld.dispatcher;
+        sceneDescriptor.cpuDispatcher = &pxWorld.dispatcher;
         sceneDescriptor.filterShader = PhysicsFilterShader;
 
         pxWorld.scene = pxWorld.physics->createScene (sceneDescriptor);
