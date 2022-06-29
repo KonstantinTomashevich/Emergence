@@ -28,13 +28,13 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     RequestExecutor::AddToFixedUpdate (builder, std::move (_fixedRequests));
-    REQUIRE (builder.End (std::thread::hardware_concurrency ()));
+    REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     builder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
     VisualTransformSync::AddToNormalUpdate (builder);
     RequestExecutor::AddToNormalUpdate (builder, std::move (_normalRequests));
-    REQUIRE (builder.End (std::thread::hardware_concurrency ()));
+    REQUIRE (builder.End ());
 
     std::sort (_timeSamples.begin (), _timeSamples.end ());
     for (const uint64_t time : _timeSamples)

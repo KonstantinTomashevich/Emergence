@@ -90,7 +90,7 @@ struct InternalData final
     ExecutorImplementation *executor = nullptr;
 };
 
-Executor::Executor (const Collection &_collection, std::size_t /*unused*/) noexcept
+Executor::Executor (const Collection &_collection) noexcept
 {
     auto &internal = *new (&data) InternalData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();

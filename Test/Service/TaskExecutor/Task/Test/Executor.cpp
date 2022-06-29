@@ -65,7 +65,7 @@ void GrowAndTest (const Seed &_seed)
         }
     }
 
-    Executor executor {collection, 4u};
+    Executor executor {collection};
     auto executeAndTest = [&executor, &intervals, &collection] ()
     {
         executor.Execute ();

@@ -19,7 +19,7 @@ void OperationsTest (RequestExecutor::RequestPacket _scenario)
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     RequestExecutor::AddToFixedUpdate (builder, {std::move (_scenario)});
-    REQUIRE (builder.End (std::thread::hardware_concurrency ()));
+    REQUIRE (builder.End ());
     WorldTestingUtility::RunFixedUpdateOnce (world);
 }
 

@@ -1,3 +1,4 @@
 # TaskExecutor::Parallel
 
-Implementation of [TaskExecutor](../../README.md), that maintains multiple worker threads for task execution.
+Implementation of [TaskExecutor](../../README.md), that uses [JobDispatcher](../../../JobDispatcher/README.md) to
+execute tasks.

@@ -2,6 +2,8 @@
 
 #include <Celerity/Physics/PhysXWorld.hpp>
 
+#include <Job/Dispatcher.hpp>
+
 #include <pvd/PxPvdTransport.h>
 
 namespace Emergence::Celerity
@@ -24,6 +26,21 @@ void ProfiledAllocator::deallocate (void *_pointer)
     heap.Release (block - 2u, size);
 }
 
+void PhysXJobDispatcher::submitTask (physx::PxBaseTask &_task)
+{
+    Job::Dispatcher::Global ().Dispatch (
+        [&_task] ()
+        {
+            _task.run ();
+            _task.release ();
+        });
+}
+
+uint32_t PhysXJobDispatcher::getWorkerCount () const
+{
+    return static_cast<uint32_t> (Job::Dispatcher::Global ().GetAvailableThreadsCount ());
+}
+
 PhysXWorld::PhysXWorld () noexcept = default;
 
 PhysXWorld::~PhysXWorld () noexcept
@@ -31,11 +48,9 @@ PhysXWorld::~PhysXWorld () noexcept
     if (foundation)
     {
         assert (scene);
-        assert (dispatcher);
         assert (physics);
 
         scene->release ();
-        dispatcher->release ();
         physics->release ();
 
         if (remoteDebugger)

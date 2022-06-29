@@ -395,7 +395,7 @@ void SeparatedEventTest (World *_world, Container::Vector<Task> _tasks, Containe
     AddExecutorTask (builder, std::move (_tasks));
     AddValidatorTask<EventType> (builder, std::move (_expected));
 
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End ();
     REQUIRE (pipeline);
     pipeline->Execute ();
 }
@@ -468,7 +468,7 @@ void OnChangeMultipleTest (World *_world)
                      {changes[4u].initial.id, changes[4u].initial.health, changes[4u].initial.x},
                  });
 
-    Pipeline *pipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *pipeline = builder.End ();
     REQUIRE (pipeline);
     pipeline->Execute ();
 }
@@ -510,12 +510,12 @@ TEST_CASE (OnAddShared)
     builder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     AddExecutorTask (builder, {AddRecord {testRecord}});
     AddValidatorTask<TestRecordAddedEvent> (builder, {{testRecord.id}});
-    Pipeline *fixedPipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *fixedPipeline = builder.End ();
     REQUIRE (fixedPipeline);
 
     builder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     AddValidatorTask<TestRecordAddedSharedEvent> (builder, {{testRecord.id, testRecord.health}}, false);
-    Pipeline *normalPipeline = builder.End (std::thread::hardware_concurrency ());
+    Pipeline *normalPipeline = builder.End ();
     REQUIRE (normalPipeline);
 
     fixedPipeline->Execute ();

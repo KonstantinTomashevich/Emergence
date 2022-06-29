@@ -12,6 +12,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - [ExportGraph](./Service/ExportGraph/README.md): exports [VisualGraph](./Library/Public/VisualGraph/README.md)
   instances to well known formats, like DOT.
 - [Hashing](./Service/Hashing/README.md): provides byte sequence hashing.
+- [JobDispatcher](./Service/JobDispatcher/README.md): provides simple interface for scheduling job execution
+  on multiple threads.
 - [Log](./Service/Log/README.md): provides simple logging interface.
 - [Memory](./Service/Memory/README.md): set of mechanisms for rational memory usage.
 - [MemoryProfiler](./Service/MemoryProfiler/README.md): provides mechanism for memory usage registration and

@@ -88,10 +88,7 @@ private:
 
     void FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept;
 
-    Pipeline *AddPipeline (Memory::UniqueString _id,
-                           PipelineType _type,
-                           const Task::Collection &_collection,
-                           std::size_t _maximumChildThreads) noexcept;
+    Pipeline *AddPipeline (Memory::UniqueString _id, PipelineType _type, const Task::Collection &_collection) noexcept;
 
     Warehouse::Registry registry;
 

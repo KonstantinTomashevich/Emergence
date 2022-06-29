@@ -22,10 +22,10 @@ sober_library_begin (Pegasus STATIC)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
 
     sober_library_link_library (PRIVATE "${RECORD_COLLECTION_API_TARGET}")
+    sober_library_link_library (PUBLIC "${API_COMMON_LIBRARY_TARGET}")
     sober_library_link_library (PUBLIC "${CONTAINER_LIBRARY_TARGET}")
-    sober_library_link_library (PUBLIC ${API_COMMON_LIBRARY_TARGET})
-    sober_library_link_library (PUBLIC ${HANDLING_LIBRARY_TARGET})
-    sober_library_link_library (PUBLIC ${SYNTAX_SUGAR_LIBRARY_TARGET})
+    sober_library_link_library (PUBLIC "${HANDLING_LIBRARY_TARGET}")
+    sober_library_link_library (PUBLIC "${SYNTAX_SUGAR_LIBRARY_TARGET}")
 
     sober_variant_begin (Original)
         sober_variant_freeze_implementation (PegasusConstants Original)

@@ -12,10 +12,8 @@ class Executor final
 {
 public:
     /// \brief Constructs executor for given task collection.
-    /// \param _maximumChildThreads Limits count of child threads, used by implementation
-    ///                             (ignored by single threaded implementations).
     /// \invariant There is no circular dependencies in given task collection.
-    explicit Executor (const Collection &_collection, std::size_t _maximumChildThreads) noexcept;
+    explicit Executor (const Collection &_collection) noexcept;
 
     /// Copying executors is counter-intuitive.
     Executor (const Executor &_other) = delete;

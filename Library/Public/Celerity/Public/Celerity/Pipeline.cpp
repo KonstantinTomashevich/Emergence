@@ -47,15 +47,12 @@ void Pipeline::Execute () noexcept
     Memory::Profiler::AddMarker (endMarker);
 }
 
-Pipeline::Pipeline (Memory::UniqueString _id,
-                    PipelineType _type,
-                    const Task::Collection &_collection,
-                    std::size_t _maximumChildThreads)
+Pipeline::Pipeline (Memory::UniqueString _id, PipelineType _type, const Task::Collection &_collection)
     : id (_id),
       type (_type),
       beginMarker (EMERGENCE_BUILD_STRING (id, "Begin")),
       endMarker (EMERGENCE_BUILD_STRING (id, "End")),
-      executor (_collection, _maximumChildThreads)
+      executor (_collection)
 {
 }
 } // namespace Emergence::Celerity

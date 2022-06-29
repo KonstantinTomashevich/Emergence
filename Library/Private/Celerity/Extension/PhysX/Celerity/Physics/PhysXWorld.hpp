@@ -33,6 +33,14 @@ private:
     Memory::Heap heap;
 };
 
+class PhysXJobDispatcher final : public physx::PxCpuDispatcher
+{
+public:
+    void submitTask (physx::PxBaseTask &_task) override;
+
+    [[nodiscard]] uint32_t getWorkerCount () const override;
+};
+
 struct PhysXWorld final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (PhysXWorld);
@@ -43,7 +51,7 @@ struct PhysXWorld final
     physx::PxFoundation *foundation = nullptr;
     physx::PxPhysics *physics = nullptr;
 
-    physx::PxDefaultCpuDispatcher *dispatcher = nullptr;
+    PhysXJobDispatcher dispatcher;
     physx::PxScene *scene = nullptr;
 
     bool remoteDebuggerEnabled = false;
