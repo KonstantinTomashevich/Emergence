@@ -24,9 +24,9 @@ const RenderSceneSingleton::Reflection &RenderSceneSingleton::Reflect () noexcep
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (RenderSceneSingleton)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (cameraObjectId)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (RenderSceneSingleton);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (cameraObjectId);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

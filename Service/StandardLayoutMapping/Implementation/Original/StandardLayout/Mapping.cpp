@@ -20,6 +20,11 @@ Field Mapping::FieldIterator::operator* () const noexcept
     return Field (block_cast<FieldData *> (data));
 }
 
+Mapping::Mapping () noexcept
+{
+    new (&data) Handling::Handle<PlainMapping> (nullptr);
+}
+
 Mapping::Mapping (const Mapping &_other) noexcept : Mapping (_other.data)
 {
 }
@@ -79,6 +84,28 @@ bool Mapping::operator== (const Mapping &_other) const noexcept
 bool Mapping::operator!= (const Mapping &_other) const noexcept
 {
     return !(*this == _other);
+}
+
+Mapping &Mapping::operator= (const Mapping &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Mapping ();
+        new (this) Mapping (_other);
+    }
+
+    return *this;
+}
+
+Mapping &Mapping::operator= (Mapping &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Mapping ();
+        new (this) Mapping (std::move (_other));
+    }
+
+    return *this;
 }
 
 Mapping::FieldIterator Mapping::Begin () const noexcept

@@ -16,8 +16,8 @@ const RandomSingleton::Reflection &RandomSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (RandomSingleton)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (RandomSingleton);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

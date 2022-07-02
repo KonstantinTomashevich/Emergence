@@ -40,6 +40,9 @@ public:
         explicit FieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
+    /// \brief Constructs invalid mapping. Needed only to simplify registration procedure and must be reassigned.
+    Mapping () noexcept;
+
     Mapping (const Mapping &_other) noexcept;
 
     Mapping (Mapping &&_other) noexcept;
@@ -87,8 +90,9 @@ public:
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator!= (const Mapping &_other) const noexcept;
 
-    /// Assigning mappings looks counter intuitive.
-    EMERGENCE_DELETE_ASSIGNMENT (Mapping);
+    Mapping &operator=(const Mapping &_other) noexcept;
+
+    Mapping &operator=(Mapping &&_other) noexcept;
 
 private:
     /// Mapping builder constructs mappings.

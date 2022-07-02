@@ -62,9 +62,9 @@ const typename RunningAverage<SampleSize>::Reflection &RunningAverage<SampleSize
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (RunningAverage)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (average)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (RunningAverage);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (average);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

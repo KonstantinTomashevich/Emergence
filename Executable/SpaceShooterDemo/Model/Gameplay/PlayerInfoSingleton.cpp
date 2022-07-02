@@ -12,9 +12,9 @@ const PlayerInfoSingleton::Reflection &PlayerInfoSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PlayerInfoSingleton)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (localPlayerUid)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PlayerInfoSingleton);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (localPlayerUid);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

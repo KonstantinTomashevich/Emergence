@@ -6,13 +6,13 @@ ShooterComponent::Reflection &ShooterComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ShooterComponent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (shootingPointObjectId)
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (bulletPrototype)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (coolDownNs)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (coolingDownUntilNs)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ShooterComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (shootingPointObjectId);
+        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (bulletPrototype);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (coolDownNs);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (coolingDownUntilNs);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

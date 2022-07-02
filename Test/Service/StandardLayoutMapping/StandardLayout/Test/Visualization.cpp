@@ -66,13 +66,13 @@ const NoNesting::Reflection &NoNesting::Reflect ()
 {
     static Reflection reflection = [] () -> Reflection
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (NoNesting)
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (NoNesting);
 
-        EMERGENCE_MAPPING_REGISTER_REGULAR (x)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (y)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (z)
+        EMERGENCE_MAPPING_REGISTER_REGULAR (x);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (y);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (z);
 
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;
@@ -82,12 +82,12 @@ const OneNestingLevel::Reflection &OneNestingLevel::Reflect ()
 {
     static Reflection reflection = [] () -> Reflection
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (OneNestingLevel)
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (OneNestingLevel);
 
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (first)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (second)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (first);
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (second);
 
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;
@@ -97,12 +97,12 @@ const TwoNestingLevels::Reflection &TwoNestingLevels::Reflect ()
 {
     static Reflection reflection = [] () -> Reflection
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TwoNestingLevels)
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TwoNestingLevels);
 
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (first)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (second)
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (first);
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (second);
 
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

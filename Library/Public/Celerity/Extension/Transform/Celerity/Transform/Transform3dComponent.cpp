@@ -136,16 +136,16 @@ const Transform3dComponent::Reflection &Transform3dComponent::Reflect () noexcep
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3dComponent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (parentObjectId)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (logicalLocalTransform)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (visualLocalTransform)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformSyncNeeded)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (lastObservedLogicalTransformRevision)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (logicalTransformLastObservationTimeNs)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformLastSyncTimeNs)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3dComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (parentObjectId);
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (logicalLocalTransform);
+        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (visualLocalTransform);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformSyncNeeded);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (lastObservedLogicalTransformRevision);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (logicalTransformLastObservationTimeNs);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (visualTransformLastSyncTimeNs);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;
