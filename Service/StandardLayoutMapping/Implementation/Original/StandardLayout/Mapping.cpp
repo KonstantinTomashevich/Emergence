@@ -20,6 +20,18 @@ Field Mapping::FieldIterator::operator* () const noexcept
     return Field (block_cast<FieldData *> (data));
 }
 
+using ConditionalFieldIterator = Mapping::ConditionalFieldIterator;
+
+using ConditionalFieldIteratorImplementation = PlainMapping::ConditionalFieldIterator;
+
+EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (ConditionalFieldIterator,
+                                                           ConditionalFieldIteratorImplementation)
+
+Field Mapping::ConditionalFieldIterator::operator* () const noexcept
+{
+    return Field (block_cast<FieldData *> (data));
+}
+
 Mapping::Mapping () noexcept
 {
     new (&data) Handling::Handle<PlainMapping> (nullptr);
@@ -122,6 +134,22 @@ Mapping::FieldIterator Mapping::End () const noexcept
     assert (handle);
     const FieldData *iterator = handle->End ();
     return FieldIterator (array_cast (iterator));
+}
+
+ConditionalFieldIterator Mapping::BeginConditional (const void *_object) const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    assert (handle);
+    const PlainMapping::ConditionalFieldIterator iterator = handle->BeginConditional (_object);
+    return ConditionalFieldIterator (array_cast (iterator));
+}
+
+ConditionalFieldIterator Mapping::EndConditional () const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    assert (handle);
+    const PlainMapping::ConditionalFieldIterator iterator = handle->EndConditional ();
+    return ConditionalFieldIterator (array_cast (iterator));
 }
 
 FieldId Mapping::GetFieldId (const Mapping::FieldIterator &_iterator) const noexcept

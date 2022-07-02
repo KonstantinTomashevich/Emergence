@@ -178,6 +178,18 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     return objectFieldId;
 }
 
+void MappingBuilder::PushVisibilityCondition (FieldId _field,
+                                              ConditionalOperation _operation,
+                                              std::uint64_t _argument) noexcept
+{
+    block_cast<PlainMappingBuilder> (data).PushCondition (_field, _operation, _argument);
+}
+
+void MappingBuilder::PopVisibilityCondition () noexcept
+{
+    block_cast<PlainMappingBuilder> (data).PopCondition ();
+}
+
 MappingBuilder &MappingBuilder::operator= (MappingBuilder &&_other) noexcept
 {
     if (this != &_other)

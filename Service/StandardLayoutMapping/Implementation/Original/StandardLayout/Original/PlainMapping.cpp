@@ -10,6 +10,13 @@
 
 namespace Emergence::StandardLayout
 {
+static Memory::Profiler::AllocationGroup GetAllocationGroup ()
+{
+    static Memory::Profiler::AllocationGroup group {Memory::Profiler::AllocationGroup::Root (),
+                                                    Memory::UniqueString {"PlainMapping"}};
+    return group;
+}
+
 FieldArchetype FieldData::GetArchetype () const noexcept
 {
     return archetype;
@@ -93,6 +100,142 @@ FieldData::~FieldData ()
     }
 }
 
+Memory::OrderedPool &ConditionData::GetPool () noexcept
+{
+    static Memory::OrderedPool pool {GetAllocationGroup (), sizeof (ConditionData), alignof (ConditionData)};
+    return pool;
+}
+
+const FieldData *PlainMapping::ConditionalFieldIterator::operator* () const noexcept
+{
+    return currentField;
+}
+
+PlainMapping::ConditionalFieldIterator &PlainMapping::ConditionalFieldIterator::operator= (
+    const ConditionalFieldIterator &_other) noexcept = default;
+
+PlainMapping::ConditionalFieldIterator &PlainMapping::ConditionalFieldIterator::operator= (
+    ConditionalFieldIterator &&_other) noexcept = default;
+
+PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (const ConditionalFieldIterator &_other) noexcept =
+    default;
+
+PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (ConditionalFieldIterator &&_other) noexcept = default;
+
+PlainMapping::ConditionalFieldIterator::~ConditionalFieldIterator () noexcept = default;
+
+PlainMapping::ConditionalFieldIterator &PlainMapping::ConditionalFieldIterator::operator++ () noexcept
+{
+    do
+    {
+        ++currentField;
+        UpdateCondition ();
+    } while (!IsConditionSatisfied ());
+
+    return *this;
+}
+
+PlainMapping::ConditionalFieldIterator PlainMapping::ConditionalFieldIterator::operator++ (int) noexcept
+{
+    ConditionalFieldIterator other = *this;
+    ++*this;
+    return other;
+}
+
+bool PlainMapping::ConditionalFieldIterator::operator== (
+    const PlainMapping::ConditionalFieldIterator &_other) const noexcept
+{
+    return currentField == _other.currentField;
+}
+
+bool PlainMapping::ConditionalFieldIterator::operator!= (
+    const PlainMapping::ConditionalFieldIterator &_other) const noexcept
+{
+    return !(*this == _other);
+}
+
+PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (const PlainMapping *_owner,
+                                                                  const FieldData *_field,
+                                                                  const void *_object) noexcept
+    : object (_object),
+      currentField (_field),
+      nextCondition (_owner->firstCondition)
+{
+    assert (currentField == _owner->Begin () || currentField == _owner->End ());
+    if (currentField == _owner->Begin ())
+    {
+        UpdateCondition ();
+        if (!IsConditionSatisfied ())
+        {
+            ++*this;
+        }
+    }
+}
+
+void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
+{
+    while (true)
+    {
+        if (topCondition && topCondition->untilField == currentField)
+        {
+            topCondition = topCondition->popTo;
+            continue;
+        }
+
+        if (nextCondition && nextCondition->sinceField == currentField)
+        {
+            assert (nextCondition->popTo == topCondition);
+            topCondition = nextCondition;
+            nextCondition = nextCondition->next;
+            continue;
+        }
+
+        return;
+    }
+}
+
+bool PlainMapping::ConditionalFieldIterator::IsConditionSatisfied () const noexcept
+{
+    if (topCondition)
+    {
+        const auto *shifted = static_cast<const uint8_t *> (object) + topCondition->sourceField->GetOffset ();
+
+#define DO_OPERATION(Operation)                                                                                        \
+    switch (topCondition->sourceField->GetSize ())                                                                     \
+    {                                                                                                                  \
+    case 1u:                                                                                                           \
+        return static_cast<uint64_t> (*shifted) < topCondition->argument;                                              \
+                                                                                                                       \
+    case 2u:                                                                                                           \
+        return static_cast<uint64_t> (*reinterpret_cast<const uint16_t *> (shifted)) < topCondition->argument;         \
+                                                                                                                       \
+    case 4u:                                                                                                           \
+        return static_cast<uint64_t> (*reinterpret_cast<const uint32_t *> (shifted)) < topCondition->argument;         \
+                                                                                                                       \
+    case 8u:                                                                                                           \
+        return *reinterpret_cast<const uint64_t *> (shifted) < topCondition->argument;                                 \
+                                                                                                                       \
+    default:                                                                                                           \
+        assert (false);                                                                                                \
+        return true;                                                                                                   \
+    }
+
+        switch (topCondition->operation)
+        {
+        case ConditionalOperation::EQUAL:
+            DO_OPERATION (==)
+
+        case ConditionalOperation::LESS:
+            DO_OPERATION (<)
+
+        case ConditionalOperation::GREATER:
+            DO_OPERATION (>)
+        }
+    }
+
+    return true;
+}
+
 std::size_t PlainMapping::GetObjectSize () const noexcept
 {
     return objectSize;
@@ -149,6 +292,16 @@ const FieldData *PlainMapping::End () const noexcept
     return &fields[fieldCount];
 }
 
+PlainMapping::ConditionalFieldIterator PlainMapping::BeginConditional (const void *_object) const noexcept
+{
+    return {this, Begin (), _object};
+}
+
+PlainMapping::ConditionalFieldIterator PlainMapping::EndConditional () const noexcept
+{
+    return {this, End (), nullptr};
+}
+
 FieldId PlainMapping::GetFieldId (const FieldData &_field) const
 {
     assert (&_field >= Begin ());
@@ -158,8 +311,7 @@ FieldId PlainMapping::GetFieldId (const FieldData &_field) const
 
 Memory::Heap &PlainMapping::GetHeap () noexcept
 {
-    static Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup::Root (),
-                                                                 Memory::UniqueString {"PlainMapping"}}};
+    static Memory::Heap heap {GetAllocationGroup ()};
     return heap;
 }
 
@@ -181,6 +333,15 @@ PlainMapping::~PlainMapping () noexcept
     for (const FieldData &fieldData : *this)
     {
         fieldData.~FieldData ();
+    }
+
+    ConditionData *condition = firstCondition;
+    while (condition)
+    {
+        ConditionData *next = condition;
+        ConditionData::GetPool ().Release (condition);
+        condition->~ConditionData ();
+        condition = next;
     }
 }
 
@@ -267,5 +428,39 @@ std::pair<FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept
     FieldId fieldId = underConstruction->fieldCount;
     ++underConstruction->fieldCount;
     return {fieldId, &underConstruction->fields[fieldId]};
+}
+
+void PlainMappingBuilder::PushCondition (FieldId _sourceField,
+                                         ConditionalOperation _operation,
+                                         std::uint64_t _argument) noexcept
+{
+    assert (_sourceField < underConstruction->fieldCount);
+    assert (underConstruction->GetField (_sourceField)->archetype == FieldArchetype::UINT);
+
+    auto *condition = new (ConditionData::GetPool ().Acquire ()) ConditionData {};
+    condition->sinceField = underConstruction->End ();
+    condition->sourceField = underConstruction->GetField (_sourceField);
+    condition->operation = _operation;
+    condition->argument = _argument;
+
+    if (lastCondition)
+    {
+        lastCondition->next = condition;
+    }
+    else
+    {
+        underConstruction->firstCondition = condition;
+    }
+
+    lastCondition = condition;
+    condition->popTo = topCondition;
+    topCondition = condition;
+}
+
+void PlainMappingBuilder::PopCondition () noexcept
+{
+    assert (topCondition);
+    topCondition->untilField = underConstruction->End ();
+    topCondition = topCondition->popTo;
 }
 } // namespace Emergence::StandardLayout
