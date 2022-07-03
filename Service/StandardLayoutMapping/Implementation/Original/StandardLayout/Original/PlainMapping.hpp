@@ -153,12 +153,11 @@ public:
 
         void UpdateCondition () noexcept;
 
-        [[nodiscard]] bool IsConditionSatisfied () const noexcept;
-
         const void *object = nullptr;
         const FieldData *currentField = nullptr;
         ConditionData *topCondition = nullptr;
         ConditionData *nextCondition = nullptr;
+        bool topConditionSatisfied = true;
     };
 
     /// PlainMapping is not designed to be copied.

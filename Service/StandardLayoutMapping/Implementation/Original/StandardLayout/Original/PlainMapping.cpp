@@ -130,8 +130,7 @@ PlainMapping::ConditionalFieldIterator &PlainMapping::ConditionalFieldIterator::
     {
         ++currentField;
         UpdateCondition ();
-    } while (!IsConditionSatisfied ());
-
+    } while (!topConditionSatisfied);
     return *this;
 }
 
@@ -165,7 +164,7 @@ PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (const PlainMap
     if (currentField == _owner->Begin ())
     {
         UpdateCondition ();
-        if (!IsConditionSatisfied ())
+        if (!topConditionSatisfied)
         {
             ++*this;
         }
@@ -174,31 +173,45 @@ PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (const PlainMap
 
 void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
 {
+    bool topConditionChanged = false;
     while (true)
     {
         if (topCondition && topCondition->untilField == currentField)
         {
             topCondition = topCondition->popTo;
+            topConditionChanged = true;
+
+            // We've pushed popped condition onto stack, therefore previous top condition was satisfied.
+            topConditionSatisfied = true;
+
             continue;
         }
 
         if (nextCondition && nextCondition->sinceField == currentField)
         {
             assert (nextCondition->popTo == topCondition);
-            topCondition = nextCondition;
+
+            // If top condition is not satisfied, we're just moving until it is popped out.
+            if (topConditionSatisfied)
+            {
+                topCondition = nextCondition;
+                topConditionChanged = true;
+            }
+
             nextCondition = nextCondition->next;
             continue;
         }
 
-        return;
+        break;
     }
-}
 
-bool PlainMapping::ConditionalFieldIterator::IsConditionSatisfied () const noexcept
-{
-    if (topCondition)
+    if (topConditionChanged)
     {
-        const auto *shifted = static_cast<const uint8_t *> (object) + topCondition->sourceField->GetOffset ();
+        auto checker = [this] ()
+        {
+            if (topCondition)
+            {
+                const auto *shifted = static_cast<const uint8_t *> (object) + topCondition->sourceField->GetOffset ();
 
 #define DO_OPERATION(Operation)                                                                                        \
     switch (topCondition->sourceField->GetSize ())                                                                     \
@@ -220,20 +233,26 @@ bool PlainMapping::ConditionalFieldIterator::IsConditionSatisfied () const noexc
         return true;                                                                                                   \
     }
 
-        switch (topCondition->operation)
-        {
-        case ConditionalOperation::EQUAL:
-            DO_OPERATION (==)
+                switch (topCondition->operation)
+                {
+                case ConditionalOperation::EQUAL:
+                    DO_OPERATION (==)
 
-        case ConditionalOperation::LESS:
-            DO_OPERATION (<)
+                case ConditionalOperation::LESS:
+                    DO_OPERATION (<)
 
-        case ConditionalOperation::GREATER:
-            DO_OPERATION (>)
-        }
+                case ConditionalOperation::GREATER:
+                    DO_OPERATION (>)
+                }
+            }
+
+#undef DO_OPERATION
+
+            return true;
+        };
+
+        topConditionSatisfied = checker ();
     }
-
-    return true;
 }
 
 std::size_t PlainMapping::GetObjectSize () const noexcept
