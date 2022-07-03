@@ -13,9 +13,9 @@ const StaticModelComponent::Reflection &StaticModelComponent::Reflect () noexcep
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (StaticModelComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (modelId);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (modelName);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING_ARRAY (materialNames);
-        EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR (implementationHandle);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (modelName);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (materialNames);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (implementationHandle);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

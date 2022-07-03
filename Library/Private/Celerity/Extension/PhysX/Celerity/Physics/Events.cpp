@@ -8,90 +8,48 @@ namespace Emergence::Celerity
 {
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (PhysicsWorldConfigurationChanged)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedFixedEvent, UNIQUE_STRING, id)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedFixedEvent, id)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedCustomToFixedEvent, UNIQUE_STRING, id)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialAddedCustomToFixedEvent, id)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialChangedEvent, UNIQUE_STRING, id)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DynamicsMaterialChangedEvent, id)
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    DynamicsMaterialRemovedEvent, UNIQUE_STRING, id, POINTER_AS_REGULAR, implementationHandle)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DynamicsMaterialRemovedEvent, id, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedFixedEvent, REGULAR, shapeId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedFixedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedCustomToFixedEvent, REGULAR, shapeId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAddedCustomToFixedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentMaterialChangedEvent, REGULAR, shapeId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentMaterialChangedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentGeometryChangedEvent, REGULAR, shapeId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentGeometryChangedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAttributesChangedEvent, REGULAR, shapeId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShapeComponentAttributesChangedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    CollisionShapeComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (CollisionShapeComponentRemovedEvent, objectId, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedFixedEvent, REGULAR, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedFixedEvent, objectId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedCustomToFixedEvent, REGULAR, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentAddedCustomToFixedEvent, objectId)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentMassInvalidatedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBodyComponentMassInvalidatedEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    RigidBodyComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (RigidBodyComponentRemovedEvent, objectId, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (ContactFoundEvent,
-                                          REGULAR,
-                                          firstObjectId,
-                                          REGULAR,
-                                          firstShapeId,
-                                          REGULAR,
-                                          secondObjectId,
-                                          REGULAR,
-                                          secondShapeId,
-                                          REGULAR,
-                                          initialContact)
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (
+    ContactFoundEvent, firstObjectId, firstShapeId, secondObjectId, secondShapeId, initialContact)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (ContactPersistsEvent,
-                                          REGULAR,
-                                          firstObjectId,
-                                          REGULAR,
-                                          firstShapeId,
-                                          REGULAR,
-                                          secondObjectId,
-                                          REGULAR,
-                                          secondShapeId)
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
+    ContactPersistsEvent, firstObjectId, firstShapeId, secondObjectId, secondShapeId)
 
-EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (ContactLostEvent,
-                                          REGULAR,
-                                          firstObjectId,
-                                          REGULAR,
-                                          firstShapeId,
-                                          REGULAR,
-                                          secondObjectId,
-                                          REGULAR,
-                                          secondShapeId,
-                                          REGULAR,
-                                          lastContact)
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (
+    ContactLostEvent, firstObjectId, firstShapeId, secondObjectId, secondShapeId, lastContact)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TriggerEnteredEvent,
-                                          REGULAR,
-                                          triggerObjectId,
-                                          REGULAR,
-                                          triggerShapeId,
-                                          REGULAR,
-                                          intruderObjectId,
-                                          REGULAR,
-                                          intruderShapeId)
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
+    TriggerEnteredEvent, triggerObjectId, triggerShapeId, intruderObjectId, intruderShapeId)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TriggerExitedEvent,
-                                          REGULAR,
-                                          triggerObjectId,
-                                          REGULAR,
-                                          triggerShapeId,
-                                          REGULAR,
-                                          intruderObjectId,
-                                          REGULAR,
-                                          intruderShapeId)
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
+    TriggerExitedEvent, triggerObjectId, triggerShapeId, intruderObjectId, intruderShapeId)
 
 void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
 {

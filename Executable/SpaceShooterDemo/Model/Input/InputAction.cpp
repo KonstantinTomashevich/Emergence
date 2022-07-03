@@ -44,8 +44,8 @@ const InputAction::Reflection &InputAction::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputAction);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (group);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (id);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (group);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (id);
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (discrete);
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (real);
         EMERGENCE_MAPPING_REGISTRATION_END ();

@@ -13,7 +13,7 @@ const CameraComponent::Reflection &CameraComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (CameraComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fieldOfViewRad);
-        EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR (implementationHandle);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (implementationHandle);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

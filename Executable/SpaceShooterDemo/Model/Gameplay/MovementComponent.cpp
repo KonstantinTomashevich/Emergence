@@ -9,9 +9,9 @@ const MovementComponent::Reflection &MovementComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MovementComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (maxLinearSpeed);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (linearAcceleration);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (linearAcceleration);
         EMERGENCE_MAPPING_REGISTER_REGULAR (maxAngularSpeed);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (angularAcceleration);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (angularAcceleration);
         EMERGENCE_MAPPING_REGISTER_REGULAR (linearVelocityMask);
         EMERGENCE_MAPPING_REGISTER_REGULAR (angularVelocityMask);
         EMERGENCE_MAPPING_REGISTRATION_END ();

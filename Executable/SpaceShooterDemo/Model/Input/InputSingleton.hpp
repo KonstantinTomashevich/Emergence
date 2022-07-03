@@ -114,26 +114,13 @@ public:
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId keyStateTriggersBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_TRIGGERS> keyStateTriggers;
-
-        Emergence::StandardLayout::FieldId keyStateChangedTriggersBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_TRIGGERS> keyStateChangedTriggers;
-
-        Emergence::StandardLayout::FieldId normalSubscriptionsBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_SUBSCRIPTIONS> normalSubscriptions;
-
-        Emergence::StandardLayout::FieldId fixedSubscriptionsBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_SUBSCRIPTIONS> fixedSubscriptions;
-
-        Emergence::StandardLayout::FieldId normalActionsBufferBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_ACTIONS_IN_QUEUE> normalActionsBuffer;
-
-        Emergence::StandardLayout::FieldId fixedInstantActionsBufferBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_ACTIONS_IN_QUEUE> fixedInstantActionsBuffer;
-
-        Emergence::StandardLayout::FieldId fixedPersistentActionsBufferBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_ACTIONS_IN_QUEUE> fixedPersistentActionsBuffer;
+        Emergence::StandardLayout::FieldId keyStateTriggers;
+        Emergence::StandardLayout::FieldId keyStateChangedTriggers;
+        Emergence::StandardLayout::FieldId normalSubscriptions;
+        Emergence::StandardLayout::FieldId fixedSubscriptions;
+        Emergence::StandardLayout::FieldId normalActionsBuffer;
+        Emergence::StandardLayout::FieldId fixedInstantActionsBuffer;
+        Emergence::StandardLayout::FieldId fixedPersistentActionsBuffer;
 
         Emergence::StandardLayout::Mapping mapping;
     };

@@ -7,7 +7,7 @@ const KeyStateTrigger::Reflection &KeyStateTrigger::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (KeyStateTrigger);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (action);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (action);
         EMERGENCE_MAPPING_REGISTER_REGULAR (scan);
         EMERGENCE_MAPPING_REGISTER_REGULAR (down);
         EMERGENCE_MAPPING_REGISTER_REGULAR (isDownNow);
@@ -22,7 +22,7 @@ const KeyStateChangedTrigger::Reflection &KeyStateChangedTrigger::Reflect () noe
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (KeyStateChangedTrigger);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (action);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (action);
         EMERGENCE_MAPPING_REGISTER_REGULAR (scan);
         EMERGENCE_MAPPING_REGISTER_REGULAR (pressed);
         EMERGENCE_MAPPING_REGISTER_REGULAR (qualifiers);
@@ -37,7 +37,7 @@ const InputSubscription::Reflection &InputSubscription::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputSubscription);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (group);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (group);
         EMERGENCE_MAPPING_REGISTER_REGULAR (listenerId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -99,13 +99,13 @@ const InputSingleton::Reflection &InputSingleton::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputSingleton);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyStateTriggers);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (keyStateChangedTriggers);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (normalSubscriptions);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (fixedSubscriptions);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (normalActionsBuffer);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (fixedInstantActionsBuffer);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT_ARRAY (fixedPersistentActionsBuffer);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (keyStateTriggers);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (keyStateChangedTriggers);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (normalSubscriptions);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (fixedSubscriptions);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (normalActionsBuffer);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (fixedInstantActionsBuffer);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (fixedPersistentActionsBuffer);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -72,7 +72,7 @@ TestRecord::Reflection &TestRecord::Reflect () noexcept
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestRecordAddedEvent, uint64_t, id);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestRecordAddedEvent, REGULAR, id)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestRecordAddedEvent, id)
 
 void RegisterTestRecordAddedEvent (EventRegistrar &_registrar)
 {
@@ -86,7 +86,7 @@ void RegisterTestRecordAddedEvent (EventRegistrar &_registrar)
 ///          with TestRecordAddedEvent to check that this behaviour works correctly.
 EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordAddedSharedEvent, uint64_t, id, float, health);
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordAddedSharedEvent, REGULAR, id, REGULAR, health)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordAddedSharedEvent, id, health)
 
 void RegisterTestRecordAddedSharedEvent (EventRegistrar &_registrar)
 {
@@ -101,7 +101,7 @@ void RegisterTestRecordAddedSharedEvent (EventRegistrar &_registrar)
 // Intentionally copy everything except health to test copy out of separate blocks.
 EMERGENCE_CELERITY_EVENT4_DECLARATION (TestRecordRemovedEvent, uint64_t, id, float, x, float, y, float, angle);
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordRemovedEvent, REGULAR, id, REGULAR, x, REGULAR, y, REGULAR, angle)
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordRemovedEvent, id, x, y, angle)
 
 void RegisterTestRecordRemovedEvent (EventRegistrar &_registrar)
 {
@@ -117,7 +117,7 @@ void RegisterTestRecordRemovedEvent (EventRegistrar &_registrar)
 
 EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordHealthChangedEvent, uint64_t, id, float, previousHealth);
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordHealthChangedEvent, REGULAR, id, REGULAR, previousHealth)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordHealthChangedEvent, id, previousHealth)
 
 void RegisterTestRecordHealthChangedEvent (EventRegistrar &_registrar)
 {
@@ -132,8 +132,7 @@ void RegisterTestRecordHealthChangedEvent (EventRegistrar &_registrar)
 EMERGENCE_CELERITY_EVENT4_DECLARATION (
     TestRecordTransformChangedEvent, uint64_t, id, float, previousX, float, previousY, float, previousAngle);
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
-    TestRecordTransformChangedEvent, REGULAR, id, REGULAR, previousX, REGULAR, previousY, REGULAR, previousAngle)
+EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordTransformChangedEvent, id, previousX, previousY, previousAngle)
 
 void RegisterTestRecordTransformChangedEvent (EventRegistrar &_registrar)
 {
@@ -154,8 +153,7 @@ void RegisterTestRecordTransformChangedEvent (EventRegistrar &_registrar)
 EMERGENCE_CELERITY_EVENT3_DECLARATION (
     TestRecordHealthOrAngleChangedEvent, uint64_t, id, float, previousHealth, float, previousAngle);
 
-EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (
-    TestRecordHealthOrAngleChangedEvent, REGULAR, id, REGULAR, previousHealth, REGULAR, previousAngle)
+EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (TestRecordHealthOrAngleChangedEvent, id, previousHealth, previousAngle)
 
 void RegisterTestRecordHealthOrAngleChangedEvent (EventRegistrar &_registrar)
 {
@@ -174,8 +172,7 @@ void RegisterTestRecordHealthOrAngleChangedEvent (EventRegistrar &_registrar)
 EMERGENCE_CELERITY_EVENT3_DECLARATION (
     TestRecordHealthOrXChangedEvent, uint64_t, id, float, previousHealth, float, previousX);
 
-EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (
-    TestRecordHealthOrXChangedEvent, REGULAR, id, REGULAR, previousHealth, REGULAR, previousX)
+EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (TestRecordHealthOrXChangedEvent, id, previousHealth, previousX)
 
 void RegisterTestRecordHealthOrXChangedEvent (EventRegistrar &_registrar)
 {

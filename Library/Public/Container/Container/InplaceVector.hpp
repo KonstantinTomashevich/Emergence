@@ -4,6 +4,8 @@
 #include <cassert>
 #include <concepts>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 namespace Emergence::Container
 {
 // TODO: Add tests for InplaceVector? Right now it is covered by other tests, but it is not good.
@@ -20,9 +22,6 @@ public:
     using Iterator = typename std::array<Item, Capacity>::iterator;
 
     using ConstIterator = typename std::array<Item, Capacity>::const_iterator;
-
-    /// \details We can not use offsetof here, because not all compilers support it on partially defined classes.
-    static constexpr std::size_t FIRST_ITEM_OFFSET = sizeof (std::uintptr_t);
 
     /// \brief Constructs empty inplace vector without initializing reserved memory.
     InplaceVector () noexcept;
@@ -136,13 +135,23 @@ private:
     {
         std::array<Item, Capacity> values;
     };
+
+public:
+    struct Reflection final
+    {
+        StandardLayout::FieldId count;
+        StandardLayout::FieldId valuesBlock;
+        std::array<StandardLayout::FieldId, Capacity> values;
+        StandardLayout::Mapping mapping;
+    };
+
+    static Reflection &Reflect () noexcept;
 };
 
 template <typename Item, std::size_t Capacity>
 // NOLINTNEXTLINE(modernize-use-equals-default): We need non-default constructor to omit ::values initialization.
 InplaceVector<Item, Capacity>::InplaceVector () noexcept
 {
-    static_assert (FIRST_ITEM_OFFSET == offsetof (InplaceVector, values));
 }
 
 template <typename Item, std::size_t Capacity>
@@ -507,5 +516,24 @@ template <typename Item, std::size_t Capacity>
 typename InplaceVector<Item, Capacity>::ConstIterator end (const InplaceVector<Item, Capacity> &_vector) noexcept
 {
     return _vector.End ();
+}
+
+template <typename Item, std::size_t Capacity>
+typename InplaceVector<Item, Capacity>::Reflection &InplaceVector<Item, Capacity>::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (InplaceVector);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (count);
+
+        if constexpr (StandardLayout::Registration::RegularFieldType<Item>)
+        {
+            EMERGENCE_MAPPING_REGISTER_REGULAR_VECTOR (values, count);
+        }
+
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
 }
 } // namespace Emergence::Container

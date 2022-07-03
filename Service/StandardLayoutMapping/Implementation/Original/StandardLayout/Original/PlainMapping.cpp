@@ -338,7 +338,7 @@ PlainMapping::~PlainMapping () noexcept
     ConditionData *condition = firstCondition;
     while (condition)
     {
-        ConditionData *next = condition;
+        ConditionData *next = condition->next;
         ConditionData::GetPool ().Release (condition);
         condition->~ConditionData ();
         condition = next;

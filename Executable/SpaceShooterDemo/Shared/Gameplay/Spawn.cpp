@@ -54,7 +54,12 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
       removeSpawnById (REMOVE_VALUE_1F (SpawnComponent, objectId)),
       modifySpawnByCoolingDownUntil (MODIFY_ASCENDING_RANGE (SpawnComponent, spawnCoolingDownUntilNs)),
 
-#define INDEXED_QUERY(Index) EDIT_VALUE_1F (SpawnComponent, spawnedObjects[Index])
+#define INDEXED_QUERY(Index)                                                                                           \
+    _constructor.EditValue (SpawnComponent::Reflect ().mapping,                                                        \
+                            {Emergence::StandardLayout::ProjectNestedField (                                           \
+                                SpawnComponent::Reflect ().spawnedObjects,                                             \
+                                decltype (SpawnComponent::spawnedObjects)::Reflect ().values[Index])})
+
       editSpawnBySpawnedObject ({INDEXED_QUERY (0), INDEXED_QUERY (1), INDEXED_QUERY (2), INDEXED_QUERY (3)}),
 #undef INDEXED_QUERY
 

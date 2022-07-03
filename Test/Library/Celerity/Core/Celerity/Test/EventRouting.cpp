@@ -27,7 +27,7 @@ namespace
 {
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestEvent, uint64_t, data);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestEvent, REGULAR, data)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestEvent, data)
 
 using EventPlan = Container::Vector<Container::Vector<uint64_t>>;
 

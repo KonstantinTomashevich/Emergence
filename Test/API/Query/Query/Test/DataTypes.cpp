@@ -12,7 +12,7 @@ const Player::Reflection &Player::Reflect ()
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (id);
         EMERGENCE_MAPPING_REGISTER_STRING (name);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (classId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (classId);
 
         EMERGENCE_MAPPING_REGISTER_BIT (alive, status, Status::FLAG_ALIVE_OFFSET);
         EMERGENCE_MAPPING_REGISTER_BIT (stunned, status, Status::FLAG_STUNNED_OFFSET);
@@ -69,8 +69,8 @@ const PlayerWithBoundingBox::Reflection &PlayerWithBoundingBox::Reflect ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (PlayerWithBoundingBox);
 
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (player);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (boundingBox);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (player);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (boundingBox);
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -99,7 +99,7 @@ const AllFieldTypesStructure::Reflection &AllFieldTypesStructure::Reflect ()
 
         EMERGENCE_MAPPING_REGISTER_STRING (string);
         EMERGENCE_MAPPING_REGISTER_BLOCK (block);
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (uniqueString);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uniqueString);
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

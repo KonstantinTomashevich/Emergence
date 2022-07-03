@@ -84,8 +84,8 @@ const OneNestingLevel::Reflection &OneNestingLevel::Reflect ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (OneNestingLevel);
 
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (first);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (second);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (first);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (second);
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -99,8 +99,8 @@ const TwoNestingLevels::Reflection &TwoNestingLevels::Reflect ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (TwoNestingLevels);
 
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (first);
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (second);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (first);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (second);
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

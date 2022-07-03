@@ -17,11 +17,11 @@ const TimeSingleton::Reflection &TimeSingleton::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (normalDurationS);
         EMERGENCE_MAPPING_REGISTER_REGULAR (realNormalDurationS);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fixedDurationS);
-        EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (targetFixedFrameDurationsS);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (targetFixedFrameDurationsS);
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (timeSpeed);
 
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (averageFullFrameRealDurationS);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (averageFullFrameRealDurationS);
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
