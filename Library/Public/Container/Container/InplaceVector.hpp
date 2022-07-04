@@ -530,6 +530,12 @@ typename InplaceVector<Item, Capacity>::Reflection &InplaceVector<Item, Capacity
         {
             EMERGENCE_MAPPING_REGISTER_REGULAR_VECTOR (values, count);
         }
+        else
+        {
+            // Fallback for irregular content: register only values block.
+            reflectionData.valuesBlock = builder.RegisterBlock (Memory::UniqueString {"values"},
+                                                                offsetof (InplaceVector, values), sizeof (values));
+        }
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

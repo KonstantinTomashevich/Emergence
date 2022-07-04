@@ -127,10 +127,10 @@ struct ConditionData
 {
     static Memory::OrderedPool &GetPool () noexcept;
 
-    FieldId sinceField;
-    FieldId untilField;
+    FieldId sinceField = 0u;
+    FieldId untilField = 0u;
 
-    FieldId sourceField;
+    FieldId sourceField = 0u;
     ConditionalOperation operation = ConditionalOperation::EQUAL;
     std::uint64_t argument = 0u;
 

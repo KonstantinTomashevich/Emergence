@@ -186,7 +186,7 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     }
     else
     {
-        // Unfortunately, we cannot static_assert here.
+        // Unfortunately, we cannot use static_assert here.
         assert (false);
         return 0u;
     }

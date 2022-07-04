@@ -42,7 +42,7 @@ public:
 
     /// \brief Allows iteration over Mapping fields that are visible from given object.
     /// \details Object class may contain unions and inplace vectors, therefore some fields might be invisible due to
-    ///          object values. For example, if class has union field and union variant specifier is `1` then only
+    ///          field values. For example, if class has union field and union variant specifier is `1` then only
     ///          fields from variant associated with `1` are visible because other union fields just have no logical
     ///          meaning for that object.
     class ConditionalFieldIterator final
