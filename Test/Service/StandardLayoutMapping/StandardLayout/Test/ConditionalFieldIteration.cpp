@@ -45,7 +45,10 @@ const InplaceVectorTest::Reflection &InplaceVectorTest::Reflect () noexcept
 
 struct UnionTest final
 {
-    std::uint8_t type = 0u;
+    UnionTest () noexcept = default;
+
+    std::uint8_t type;
+
     union
     {
         uint32_t first;
@@ -199,26 +202,32 @@ TEST_CASE (FullInplaceVector)
 
 TEST_CASE (UnionFirstVariant)
 {
-    TestConditionalFieldIteration (UnionTest {.type = 0u}, {UnionTest::Reflect ().type, UnionTest::Reflect ().first});
+    UnionTest test;
+    test.type = 0u;
+    TestConditionalFieldIteration (test, {UnionTest::Reflect ().type, UnionTest::Reflect ().first});
 }
 
 TEST_CASE (UnionSecondVariant)
 {
-    TestConditionalFieldIteration (UnionTest {.type = 1u}, {UnionTest::Reflect ().type, UnionTest::Reflect ().secondA,
-                                                            UnionTest::Reflect ().secondB});
+    UnionTest test;
+    test.type = 1u;
+    TestConditionalFieldIteration (
+        test, {UnionTest::Reflect ().type, UnionTest::Reflect ().secondA, UnionTest::Reflect ().secondB});
 }
 
 TEST_CASE (UnionThirdVariant)
 {
-    TestConditionalFieldIteration (UnionTest {.type = 2u}, {UnionTest::Reflect ().type, UnionTest::Reflect ().third});
+    UnionTest test;
+    test.type = 2u;
+    TestConditionalFieldIteration (test, {UnionTest::Reflect ().type, UnionTest::Reflect ().third});
 }
 
 TEST_CASE (Combined)
 {
     CombinedTest test;
-    test.vector.EmplaceBack (UnionTest {.type = 1u});
-    test.vector.EmplaceBack (UnionTest {.type = 0u});
-    test.vector.EmplaceBack (UnionTest {.type = 2u});
+    test.vector.EmplaceBack ().type = 1u;
+    test.vector.EmplaceBack ().type = 0u;
+    test.vector.EmplaceBack ().type = 2u;
 
 #define PROJECT_HELPER_2(Field)                                                                                        \
     ProjectNestedField (CombinedTest::Reflect ().vector, decltype (CombinedTest::vector)::Reflect ().Field)

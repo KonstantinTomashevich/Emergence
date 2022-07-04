@@ -26,42 +26,42 @@
         builder.SetDestructor (&Emergence::StandardLayout::Registration::DefaultDestructor<Class>);                    \
     }                                                                                                                  \
                                                                                                                        \
-    Class::Reflection reflection
+    Class::Reflection reflectionData
 
 /// \brief Helper for mapping static registration. Contains ending of registration functor.
 /// \invariant Class reflection structure name must contain `mapping` field, in which resulting mapping will be stored.
 /// \see EMERGENCE_MAPPING_REGISTRATION_BEGIN
 #define EMERGENCE_MAPPING_REGISTRATION_END()                                                                           \
-    reflection.mapping = builder.End ();                                                                               \
-    return reflection
+    reflectionData.mapping = builder.End ();                                                                           \
+    return reflectionData
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::BIT.
 /// \details Registers bit with `_name` that resides in `_baseField` byte with `_bitOffset`.
 /// \invariant Class reflection structure name must contain `_name` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_BIT(_name, _baseField, _bitOffset)                                                  \
-    reflection._name =                                                                                                 \
+    reflectionData._name =                                                                                             \
         builder.RegisterBit (Emergence::Memory::UniqueString {#_name}, offsetof (Type, _baseField), _bitOffset)
 
 /// \brief Helper for mapping static registration. Registers any field which type is
 ///        Emergence::StandardLayout::Registration::RegularFieldType.
 /// \invariant Class reflection structure name must contain `_name` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR(_field)                                                                     \
-    reflection._field = Emergence::StandardLayout::Registration::RegisterRegularField<decltype (_field)> (             \
+    reflectionData._field = Emergence::StandardLayout::Registration::RegisterRegularField<decltype (_field)> (         \
         builder, #_field, offsetof (Type, _field))
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::STRING.
 /// \invariant Class must contain `_field` field of any std::array-based type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_STRING(_field)                                                                      \
-    reflection._field = builder.RegisterString (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),    \
-                                                sizeof (Type::_field))
+    reflectionData._field = builder.RegisterString (Emergence::Memory::UniqueString {#_field},                         \
+                                                    offsetof (Type, _field), sizeof (Type::_field))
 
 /// \brief Helper for mapping static registration. Registers field with FieldArchetype::BLOCK.
 /// \invariant Class must contain `_field` field of any std::array-based type.
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id will be stored.
 #define EMERGENCE_MAPPING_REGISTER_BLOCK(_field)                                                                       \
-    reflection._field = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field),     \
-                                               sizeof (Type::_field))
+    reflectionData._field = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field}, offsetof (Type, _field), \
+                                                   sizeof (Type::_field))
 
 /// \brief Helper for mapping static registration. Registers array of values where every value could be registered
 ///        using EMERGENCE_MAPPING_REGISTER_REGULAR.
@@ -69,24 +69,24 @@
 /// \invariant Class reflection structure name must contain `_field` field, in which registered field id for each array
 ///            element will be stored, and `_field`Block field, in which full array data block as field will be stored.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY(_field)                                                               \
-    reflection._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field},                       \
-                                                      offsetof (Type, _field), sizeof (Type::_field));                 \
-    reflection._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (       \
+    reflectionData._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field},                   \
+                                                          offsetof (Type, _field), sizeof (Type::_field));             \
+    reflectionData._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (   \
         builder, #_field, offsetof (Type, _field), std::nullopt)
 
 /// \brief Helper for mapping static registration. Extends EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY logic by linking
 ///        vector size field and pushing size-based conditionals to mapping.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_VECTOR(_field, _sizeField)                                                  \
-    reflection._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field},                       \
-                                                      offsetof (Type, _field), sizeof (Type::_field));                 \
-    reflection._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (       \
-        builder, #_field, offsetof (Type, _field), reflection._sizeField)
+    reflectionData._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field},                   \
+                                                          offsetof (Type, _field), sizeof (Type::_field));             \
+    reflectionData._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (   \
+        builder, #_field, offsetof (Type, _field), reflectionData._sizeField)
 
 /// \brief Helper for mapping static registration. Adds visibility condition that makes fields below visible only
 ///        if given field (that must be registered before) has given value.
 /// \invariant `_selectorField` belongs to FieldArchetype::UINT.
 #define EMERGENCE_MAPPING_UNION_VARIANT_BEGIN(_selectorField, _switchValue)                                            \
-    builder.PushVisibilityCondition (reflection._selectorField,                                                        \
+    builder.PushVisibilityCondition (reflectionData._selectorField,                                                    \
                                      Emergence::StandardLayout::ConditionalOperation::EQUAL, _switchValue)
 
 /// \brief Helper for mapping static registration. Pops condition pushed by EMERGENCE_MAPPING_UNION_VARIANT_BEGIN.
