@@ -115,9 +115,9 @@ public:
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator!= (const Mapping &_other) const noexcept;
 
-    Mapping &operator=(const Mapping &_other) noexcept;
+    Mapping &operator= (const Mapping &_other) noexcept;
 
-    Mapping &operator=(Mapping &&_other) noexcept;
+    Mapping &operator= (Mapping &&_other) noexcept;
 
 private:
     /// Mapping builder constructs mappings.
