@@ -29,8 +29,7 @@ struct SpawnComponent final
         Emergence::StandardLayout::FieldId spawnCoolDownNs;
         Emergence::StandardLayout::FieldId spawnCoolingDownUntilNs;
         Emergence::StandardLayout::FieldId maxSpawnedObjects;
-        Emergence::StandardLayout::FieldId spawnedObjectsBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAX_OBJECTS_PER_SPAWN> spawnedObjects;
+        Emergence::StandardLayout::FieldId spawnedObjects;
         Emergence::StandardLayout::Mapping mapping;
     };
 

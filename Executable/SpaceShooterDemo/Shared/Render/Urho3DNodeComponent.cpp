@@ -10,11 +10,11 @@ const Urho3DNodeComponent::Reflection &Urho3DNodeComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Urho3DNodeComponent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId)
-        EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR (node)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (usages)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Urho3DNodeComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (node);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (usages);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

@@ -10,14 +10,14 @@ const ParticleEffectComponent::Reflection &ParticleEffectComponent::Reflect () n
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ParticleEffectComponent)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (effectId)
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (effectName)
-        EMERGENCE_MAPPING_REGISTER_UNIQUE_STRING (effectTag)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (playing)
-        EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR (implementationHandle)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ParticleEffectComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (effectId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (effectName);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (effectTag);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (playing);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (implementationHandle);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

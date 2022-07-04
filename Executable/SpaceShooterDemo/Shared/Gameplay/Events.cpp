@@ -1,23 +1,23 @@
 #include <Gameplay/Events.hpp>
 #include <Gameplay/PrototypeComponent.hpp>
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DamageEvent, REGULAR, objectId, REGULAR, amount);
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DamageEvent, objectId, amount);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DeathFixedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DeathFixedEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DeathFixedToNormalEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DeathFixedToNormalEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedToNormalEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedToNormalEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToFixedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToFixedEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeAssembledFixedEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeAssembledFixedEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeAssembledNormalEvent, REGULAR, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeAssembledNormalEvent, objectId);
 
 void RegisterGameplayEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept
 {

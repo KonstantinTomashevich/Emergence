@@ -50,11 +50,11 @@ const Transform3d::Reflection &Transform3d::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3d)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (rotation)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (translation)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (scale)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3d);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (rotation);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (translation);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (scale);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

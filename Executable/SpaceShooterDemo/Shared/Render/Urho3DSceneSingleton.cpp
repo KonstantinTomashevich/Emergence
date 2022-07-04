@@ -13,9 +13,9 @@ const Urho3DSceneSingleton::Reflection &Urho3DSceneSingleton::Reflect () noexcep
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Urho3DSceneSingleton)
-        EMERGENCE_MAPPING_REGISTER_POINTER_AS_REGULAR (scene)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Urho3DSceneSingleton);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (scene);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

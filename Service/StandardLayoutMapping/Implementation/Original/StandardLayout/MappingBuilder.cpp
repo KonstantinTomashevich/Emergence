@@ -137,8 +137,33 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     assert (nestedPlainMapping);
     FieldId objectFieldId = state.AddField (FieldData::NestedObjectSeed {_name, _offset, nestedPlainMapping.Get ()});
 
+    // We need to simulate conditional iteration in order to copy conditions.
+    const ConditionData *topCondition = nullptr;
+    const ConditionData *nextCondition = nestedPlainMapping->GetFirstCondition ();
+
     for (const FieldData &field : *nestedPlainMapping.Get ())
     {
+        const FieldId fieldId = nestedPlainMapping->GetFieldId (field);
+        while (true)
+        {
+            if (topCondition && topCondition->untilField == fieldId)
+            {
+                PopVisibilityCondition ();
+                topCondition = topCondition->popTo;
+                continue;
+            }
+
+            if (nextCondition && nextCondition->sinceField == fieldId)
+            {
+                PushVisibilityCondition (ProjectNestedField (objectFieldId, nextCondition->sourceField),
+                                         nextCondition->operation, nextCondition->argument);
+                topCondition = nextCondition;
+                nextCondition = nextCondition->next;
+            }
+
+            break;
+        }
+
         const char *fullName = EMERGENCE_BUILD_STRING (_name, PROJECTION_NAME_SEPARATOR, field.GetName ());
         [[maybe_unused]] FieldId nestedFieldId = 0u;
 
@@ -172,10 +197,22 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
             break;
         }
 
-        assert (nestedFieldId == ProjectNestedField (objectFieldId, nestedPlainMapping->GetFieldId (field)));
+        assert (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
     }
 
     return objectFieldId;
+}
+
+void MappingBuilder::PushVisibilityCondition (FieldId _field,
+                                              ConditionalOperation _operation,
+                                              std::uint64_t _argument) noexcept
+{
+    block_cast<PlainMappingBuilder> (data).PushCondition (_field, _operation, _argument);
+}
+
+void MappingBuilder::PopVisibilityCondition () noexcept
+{
+    block_cast<PlainMappingBuilder> (data).PopCondition ();
 }
 
 MappingBuilder &MappingBuilder::operator= (MappingBuilder &&_other) noexcept

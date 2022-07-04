@@ -8,9 +8,9 @@ const TestSingleton::Reflection &TestSingleton::Reflect ()
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestSingleton)
-        EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (data)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestSingleton);
+        EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (data);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

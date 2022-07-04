@@ -27,17 +27,17 @@ const PhysicsWorldSingleton::Reflection &PhysicsWorldSingleton::Reflect () noexc
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PhysicsWorldSingleton)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (toleranceLength)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (toleranceSpeed)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (simulationMaxThreads)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (enableMemoryProfiling)
-        EMERGENCE_MAPPING_REGISTER_NESTED_OBJECT (gravity)
-        EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (collisionMasks)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (enableRemoteDebugger)
-        EMERGENCE_MAPPING_REGISTER_STRING (remoteDebuggerUrl)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (remoteDebuggerPort)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PhysicsWorldSingleton);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (toleranceLength);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (toleranceSpeed);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (simulationMaxThreads);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (enableMemoryProfiling);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (gravity);
+        EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (collisionMasks);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (enableRemoteDebugger);
+        EMERGENCE_MAPPING_REGISTER_STRING (remoteDebuggerUrl);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (remoteDebuggerPort);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

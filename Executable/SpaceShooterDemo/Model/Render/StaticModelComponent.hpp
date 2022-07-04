@@ -29,8 +29,7 @@ struct StaticModelComponent final
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId modelId;
         Emergence::StandardLayout::FieldId modelName;
-        Emergence::StandardLayout::FieldId materialNamesBlock;
-        std::array<Emergence::StandardLayout::FieldId, MAXIMUM_MATERIAL_SLOTS> materialNames;
+        Emergence::StandardLayout::FieldId materialNames;
         Emergence::StandardLayout::FieldId implementationHandle;
         Emergence::StandardLayout::Mapping mapping;
     };

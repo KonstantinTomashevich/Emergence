@@ -8,29 +8,25 @@
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedNormalEvent);
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedCustomToNormalEvent);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedNormalEvent, REGULAR, objectId)
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedCustomToNormalEvent, REGULAR, objectId)
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentChangedEvent, REGULAR, objectId)
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    CameraComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedNormalEvent, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentAddedCustomToNormalEvent, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CameraComponentChangedEvent, objectId)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (CameraComponentRemovedEvent, objectId, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedNormalEvent, REGULAR, lightId)
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedCustomToNormalEvent, REGULAR, lightId)
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentChangedEvent, REGULAR, lightId)
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    LightComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedNormalEvent, lightId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentAddedCustomToNormalEvent, lightId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (LightComponentChangedEvent, lightId)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (LightComponentRemovedEvent, objectId, implementationHandle)
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentAddedNormalEvent, REGULAR, effectId);
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentAddedCustomToNormalEvent, REGULAR, effectId);
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentChangedEvent, REGULAR, effectId);
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    ParticleEffectComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentAddedNormalEvent, effectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentAddedCustomToNormalEvent, effectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ParticleEffectComponentChangedEvent, effectId);
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (ParticleEffectComponentRemovedEvent, objectId, implementationHandle);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedNormalEvent, REGULAR, modelId)
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedCustomToNormalEvent, REGULAR, modelId)
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentChangedEvent, REGULAR, modelId)
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (
-    StaticModelComponentRemovedEvent, REGULAR, objectId, POINTER_AS_REGULAR, implementationHandle)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedNormalEvent, modelId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedCustomToNormalEvent, modelId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentChangedEvent, modelId)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (StaticModelComponentRemovedEvent, objectId, implementationHandle)
 
 void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept
 {
@@ -167,7 +163,7 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
          StaticModelComponent::Reflect ().mapping,
          {
              StaticModelComponent::Reflect ().modelName,
-             StaticModelComponent::Reflect ().materialNamesBlock,
+             StaticModelComponent::Reflect ().materialNames,
          },
          {},
          {{StaticModelComponent::Reflect ().modelId, StaticModelComponentAddedNormalEvent::Reflect ().modelId}}});

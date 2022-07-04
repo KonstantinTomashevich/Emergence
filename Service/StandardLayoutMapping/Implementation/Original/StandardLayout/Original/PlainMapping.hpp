@@ -11,9 +11,11 @@
 #include <Handling/HandleableBase.hpp>
 
 #include <Memory/Heap.hpp>
+#include <Memory/OrderedPool.hpp>
 #include <Memory/UniqueString.hpp>
 
 #include <StandardLayout/Field.hpp>
+#include <StandardLayout/MappingBuilder.hpp>
 
 namespace Emergence::StandardLayout
 {
@@ -121,9 +123,44 @@ private:
     };
 };
 
+struct ConditionData
+{
+    static Memory::OrderedPool &GetPool () noexcept;
+
+    FieldId sinceField = 0u;
+    FieldId untilField = 0u;
+
+    FieldId sourceField = 0u;
+    ConditionalOperation operation = ConditionalOperation::EQUAL;
+    std::uint64_t argument = 0u;
+
+    ConditionData *popTo = nullptr;
+    ConditionData *next = nullptr;
+};
+
 class PlainMapping final : public Handling::HandleableBase
 {
 public:
+    class ConditionalFieldIterator final
+    {
+    public:
+        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (ConditionalFieldIterator, const FieldData *);
+
+    private:
+        friend class PlainMapping;
+
+        ConditionalFieldIterator (const PlainMapping *_owner, const FieldData *_field, const void *_object) noexcept;
+
+        void UpdateCondition () noexcept;
+
+        const void *object = nullptr;
+        Handling::Handle<PlainMapping> owner;
+        const FieldData *currentField = nullptr;
+        ConditionData *topCondition = nullptr;
+        ConditionData *nextCondition = nullptr;
+        bool topConditionSatisfied = true;
+    };
+
     /// PlainMapping is not designed to be copied.
     PlainMapping (const PlainMapping &_other) = delete;
 
@@ -147,6 +184,12 @@ public:
     [[nodiscard]] const FieldData *Begin () const noexcept;
 
     [[nodiscard]] const FieldData *End () const noexcept;
+
+    [[nodiscard]] ConditionalFieldIterator BeginConditional (const void *_object) const noexcept;
+
+    [[nodiscard]] ConditionalFieldIterator EndConditional () const noexcept;
+
+    const ConditionData *GetFirstCondition () const noexcept;
 
     [[nodiscard]] FieldId GetFieldId (const FieldData &_field) const;
 
@@ -195,6 +238,7 @@ private:
     void (*constructor) (void *) = nullptr;
     void (*destructor) (void *) = nullptr;
 
+    ConditionData *firstCondition = nullptr;
     FieldData fields[0u];
 };
 
@@ -225,6 +269,10 @@ public:
     template <typename Seed>
     FieldId AddField (Seed _seed) noexcept;
 
+    void PushCondition (FieldId _sourceField, ConditionalOperation _operation, std::uint64_t _argument) noexcept;
+
+    void PopCondition () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (PlainMappingBuilder);
 
 private:
@@ -233,6 +281,10 @@ private:
     std::pair<FieldId, FieldData *> AllocateField () noexcept;
 
     PlainMapping *underConstruction = nullptr;
+
+    ConditionData *lastCondition = nullptr;
+
+    ConditionData *topCondition = nullptr;
 };
 
 template <typename Seed>

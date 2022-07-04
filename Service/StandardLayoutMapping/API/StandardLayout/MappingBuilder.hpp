@@ -6,6 +6,19 @@
 
 namespace Emergence::StandardLayout
 {
+/// \brief Lists supported operations for MappingBuilder::PushVisibilityCondition.
+enum class ConditionalOperation
+{
+    /// \brief True if field value is equal to argument.
+    EQUAL = 0u,
+
+    /// \brief True if field value is less than argument.
+    LESS,
+
+    /// \brief True if field value is greater than argument.
+    GREATER,
+};
+
 /// \brief Hides Mapping building logic from user to prevent usage of unfinished mappings.
 class MappingBuilder final
 {
@@ -101,11 +114,20 @@ public:
                                                 std::size_t _offset,
                                                 const Mapping &_objectMapping) noexcept;
 
+    /// \brief Pushes new condition to visibility conditions stack.
+    /// \see Mapping::ConditionalFieldIterator
+    /// \invariant `_field` is FieldArchetype::UINT.
+    void PushVisibilityCondition (FieldId _field, ConditionalOperation _operation, std::uint64_t _argument) noexcept;
+
+    /// \brief Pops current top condition from visibility condition stack.
+    /// \invariant Visibility condition stack is not empty.
+    void PopVisibilityCondition () noexcept;
+
     MappingBuilder &operator= (const MappingBuilder &_other) = delete;
 
     MappingBuilder &operator= (MappingBuilder &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 };
 } // namespace Emergence::StandardLayout

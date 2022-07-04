@@ -6,9 +6,9 @@ const MortalitySettingsSingleton::Reflection &MortalitySettingsSingleton::Reflec
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MortalitySettingsSingleton)
-        EMERGENCE_MAPPING_REGISTER_REGULAR (corpseLifetimeNs)
-        EMERGENCE_MAPPING_REGISTRATION_END ()
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MortalitySettingsSingleton);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (corpseLifetimeNs);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

@@ -1,14 +1,13 @@
-#include <ostream>
 #include <variant>
 
 #include <Container/HashSet.hpp>
 #include <Container/StringBuilder.hpp>
 #include <Container/Vector.hpp>
 
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
 #include <StandardLayout/MappingBuilder.hpp>
 #include <StandardLayout/Test/MappingBuilder.hpp>
-
-#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
 
