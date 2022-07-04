@@ -82,7 +82,15 @@
     reflection._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (       \
         builder, #_field, offsetof (Type, _field), reflection._sizeField)
 
-// TODO: Think about registering unions.
+/// \brief Helper for mapping static registration. Adds visibility condition that makes fields below visible only
+///        if given field (that must be registered before) has given value.
+/// \invariant `_selectorField` belongs to FieldArchetype::UINT.
+#define EMERGENCE_MAPPING_UNION_VARIANT_BEGIN(_selectorField, _switchValue)                                            \
+    builder.PushVisibilityCondition (reflection._selectorField,                                                        \
+                                     Emergence::StandardLayout::ConditionalOperation::EQUAL, _switchValue)
+
+/// \brief Helper for mapping static registration. Pops condition pushed by EMERGENCE_MAPPING_UNION_VARIANT_BEGIN.
+#define EMERGENCE_MAPPING_UNION_VARIANT_END() builder.PopVisibilityCondition ()
 
 namespace Emergence::StandardLayout::Registration
 {

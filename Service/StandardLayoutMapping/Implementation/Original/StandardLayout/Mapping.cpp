@@ -29,7 +29,7 @@ EMERGENCE_BIND_FORWARD_ITERATOR_OPERATIONS_IMPLEMENTATION (ConditionalFieldItera
 
 Field Mapping::ConditionalFieldIterator::operator* () const noexcept
 {
-    return Field (block_cast<FieldData *> (data));
+    return Field (const_cast <FieldData *>(*block_cast<PlainMapping::ConditionalFieldIterator> (data)));
 }
 
 Mapping::Mapping () noexcept

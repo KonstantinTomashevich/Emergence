@@ -127,10 +127,10 @@ struct ConditionData
 {
     static Memory::OrderedPool &GetPool () noexcept;
 
-    const FieldData *sinceField = nullptr;
-    const FieldData *untilField = nullptr;
+    FieldId sinceField;
+    FieldId untilField;
 
-    const FieldData *sourceField = nullptr;
+    FieldId sourceField;
     ConditionalOperation operation = ConditionalOperation::EQUAL;
     std::uint64_t argument = 0u;
 
@@ -154,6 +154,7 @@ public:
         void UpdateCondition () noexcept;
 
         const void *object = nullptr;
+        Handling::Handle<PlainMapping> owner;
         const FieldData *currentField = nullptr;
         ConditionData *topCondition = nullptr;
         ConditionData *nextCondition = nullptr;
@@ -187,6 +188,8 @@ public:
     [[nodiscard]] ConditionalFieldIterator BeginConditional (const void *_object) const noexcept;
 
     [[nodiscard]] ConditionalFieldIterator EndConditional () const noexcept;
+
+    const ConditionData *GetFirstCondition () const noexcept;
 
     [[nodiscard]] FieldId GetFieldId (const FieldData &_field) const;
 

@@ -54,7 +54,7 @@ public:
         /// Mapping constructs iterators.
         friend class Mapping;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 5u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
 
         explicit ConditionalFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
