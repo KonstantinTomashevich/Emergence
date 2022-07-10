@@ -4,7 +4,7 @@
 
 namespace Emergence::Celerity
 {
-PhysXAccessSingleton::Reflection &PhysXAccessSingleton::Reflect () noexcept
+const PhysXAccessSingleton::Reflection &PhysXAccessSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {

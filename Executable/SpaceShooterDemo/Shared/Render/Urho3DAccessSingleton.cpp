@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-Urho3DAccessSingleton::Reflection &Urho3DAccessSingleton::Reflect () noexcept
+const Urho3DAccessSingleton::Reflection &Urho3DAccessSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {

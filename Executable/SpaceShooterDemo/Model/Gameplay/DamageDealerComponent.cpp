@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-DamageDealerComponent::Reflection &DamageDealerComponent::Reflect () noexcept
+const DamageDealerComponent::Reflection &DamageDealerComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {

@@ -23,5 +23,5 @@ struct DamageDealerComponent final
         Emergence::StandardLayout::Mapping mapping;
     };
 
-    static Reflection &Reflect () noexcept;
+    static const Reflection &Reflect () noexcept;
 };

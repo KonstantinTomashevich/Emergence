@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-PrototypeComponent::Reflection &PrototypeComponent::Reflect () noexcept
+const PrototypeComponent::Reflection &PrototypeComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {

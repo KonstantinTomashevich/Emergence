@@ -12,6 +12,6 @@ struct PhysXAccessSingleton final
         StandardLayout::Mapping mapping;
     };
 
-    static Reflection &Reflect () noexcept;
+    static const Reflection &Reflect () noexcept;
 };
 } // namespace Emergence::Celerity
