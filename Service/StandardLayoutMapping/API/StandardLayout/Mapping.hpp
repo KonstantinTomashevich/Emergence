@@ -5,7 +5,6 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
-#include <API/Common/Shortcuts.hpp>
 
 #include <Memory/UniqueString.hpp>
 
