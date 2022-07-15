@@ -16,7 +16,7 @@ struct AssemblyDescriptor final
     Memory::UniqueString id;
 
     /// \brief Component data represented as patches that are applied to freshly constructed object.
-    Container::Vector<StandardLayout::Patch> components {Memory::Profiler::AllocationGroup::Top()};
+    Container::Vector<StandardLayout::Patch> components {Memory::Profiler::AllocationGroup::Top ()};
 
     struct Reflection final
     {

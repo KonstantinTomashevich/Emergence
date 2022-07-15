@@ -198,8 +198,7 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
         else
         {
             EMERGENCE_LOG (DEBUG, "Skipping assembly of unknown type \"",
-                           componentDescriptor.GetTypeMapping ().GetName (),
-                           "\"...");
+                           componentDescriptor.GetTypeMapping ().GetName (), "\"...");
         }
     }
 

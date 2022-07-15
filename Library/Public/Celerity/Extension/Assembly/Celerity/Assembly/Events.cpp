@@ -12,30 +12,29 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalE
 
 void RegisterAssemblyEvents (EventRegistrar &_registrar) noexcept
 {
-    _registrar.OnAddEvent(
+    _registrar.OnAddEvent (
         {{PrototypeComponentAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedFixedEvent::Reflect ().objectId}}});
 
-    _registrar.OnAddEvent(
+    _registrar.OnAddEvent (
         {{PrototypeComponentAddedCustomToFixedEvent::Reflect ().mapping, EventRoute::FROM_CUSTOM_TO_FIXED},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedCustomToFixedEvent::Reflect ().objectId}}});
 
-    _registrar.OnAddEvent(
+    _registrar.OnAddEvent (
         {{PrototypeComponentAddedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedNormalEvent::Reflect ().objectId}}});
 
-    _registrar.OnAddEvent(
+    _registrar.OnAddEvent (
         {{PrototypeComponentAddedFixedToNormalEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedFixedToNormalEvent::Reflect ().objectId}}});
 
-    _registrar.OnAddEvent(
+    _registrar.OnAddEvent (
         {{PrototypeComponentAddedCustomToNormalEvent::Reflect ().mapping, EventRoute::FROM_CUSTOM_TO_NORMAL},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedCustomToNormalEvent::Reflect ().objectId}}});
-
 }
 } // namespace Emergence::Celerity

@@ -83,7 +83,7 @@ public:
 
     PlainPatchBuilder (PlainPatchBuilder &&_other) noexcept;
 
-    ~PlainPatchBuilder() noexcept;
+    ~PlainPatchBuilder () noexcept;
 
     void Begin (Mapping _mapping) noexcept;
 
