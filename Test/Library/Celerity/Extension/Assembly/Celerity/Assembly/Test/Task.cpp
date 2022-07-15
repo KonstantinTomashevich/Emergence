@@ -19,7 +19,7 @@ namespace Emergence::Celerity::Test
 class Configurator final : public TaskExecutorBase<Configurator>
 {
 public:
-    Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorTask> _configuratorTasks) noexcept;
+    Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorTask> _tasks) noexcept;
 
     void Execute () noexcept;
 
@@ -111,7 +111,7 @@ void Configurator::Execute () noexcept
 class Validator final : public TaskExecutorBase<Validator>
 {
 public:
-    Validator (TaskConstructor &_constructor, Container::Vector<ValidatorTask> _configuratorTasks) noexcept;
+    Validator (TaskConstructor &_constructor, Container::Vector<ValidatorTask> _tasks) noexcept;
 
     void Execute () noexcept;
 
@@ -120,8 +120,8 @@ private:
     Container::Vector<Container::Optional<FetchValueQuery>> associatedQueries;
 };
 
-Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorTask> _configuratorTasks) noexcept
-    : tasks (std::move (_configuratorTasks))
+Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorTask> _tasks) noexcept
+    : tasks (std::move (_tasks))
 {
     _constructor.DependOn (Assembly::Checkpoint::ASSEMBLY_FINISHED);
 
