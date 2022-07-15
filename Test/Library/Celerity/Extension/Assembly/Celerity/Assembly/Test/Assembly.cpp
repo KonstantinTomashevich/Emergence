@@ -221,9 +221,9 @@ TEST_CASE (Hierarchy)
             CheckComponent {2u, Transform3dComponent::Reflect ().mapping, Transform3dComponent::Reflect ().objectId,
                             // We only check the begging of an object, because checking
                             // whole transform usually fails due to padding bytes.
-                            &STATE_FIRST_LEVEL_CHILD_ADDED, sizeof (UniqueId) * 10u},
+                            &STATE_FIRST_LEVEL_CHILD_ADDED, sizeof (UniqueId) * 5u},
             CheckComponent {3u, Transform3dComponent::Reflect ().mapping, Transform3dComponent::Reflect ().objectId,
-                            &STATE_SECOND_LEVEL_CHILD_ADDED, sizeof (UniqueId) * 10u},
+                            &STATE_SECOND_LEVEL_CHILD_ADDED, sizeof (UniqueId) * 5u},
             CheckComponent {3u, FixedComponentA::Reflect ().mapping, FixedComponentA::Reflect ().objectId,
                             &STATE_SECOND_LEVEL_A_ADDED},
         });
