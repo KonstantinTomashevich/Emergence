@@ -30,19 +30,25 @@ protected:
     bool useLogicalTransform = true;
 
 private:
+    struct InternalKeyBinding final
+    {
+        StandardLayout::Field keyField;
+        UniqueId keyIndex;
+    };
+
     struct TypeBinding final
     {
         InsertLongTermQuery insert;
-        Container::Vector<KeyBinding> keys {Memory::Profiler::AllocationGroup::Top ()};
-        Container::Vector<StandardLayout::Field> localVector3fs {Memory::Profiler::AllocationGroup::Top ()};
+        Container::Vector<InternalKeyBinding> keys {Memory::Profiler::AllocationGroup::Top ()};
+        Container::Vector<StandardLayout::Field> rotateVector3fs {Memory::Profiler::AllocationGroup::Top ()};
     };
 
     struct KeyState final
     {
-        using Method = UniqueId (*) (const void *);
+        using ProviderFunction = UniqueId (*) (const void *);
 
         FetchSingletonQuery fetchSingleton;
-        Method method;
+        ProviderFunction function;
 
         // TODO: Use flat hash map. Possibly use some inlining?
         Container::HashMap<UniqueId, UniqueId> idReplacement;
@@ -84,7 +90,7 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConf
     for (const CustomKeyDescriptor &customKey : _configuration.customKeys)
     {
         keyStates.emplace_back (
-            KeyState {_constructor.FetchSingleton (customKey.singletonProviderType), customKey.providerMethod,
+            KeyState {_constructor.FetchSingleton (customKey.singletonProviderType), customKey.providerFunction,
                       Container::HashMap<UniqueId, UniqueId> {Memory::Profiler::AllocationGroup::Top ()}});
     }
 
@@ -100,13 +106,13 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConf
 
         for (const KeyBinding &keyBinding : typeDescriptor.keys)
         {
-            binding.keys.emplace_back (keyBinding);
+            binding.keys.emplace_back () = {typeDescriptor.type.GetField (keyBinding.keyField), keyBinding.keyIndex};
         }
 
-        needRootObjectTransform |= !typeDescriptor.localVector3fs.empty ();
-        for (const StandardLayout::Field &vectorField : typeDescriptor.localVector3fs)
+        needRootObjectTransform |= !typeDescriptor.rotateVector3fs.empty ();
+        for (const StandardLayout::FieldId &vectorField : typeDescriptor.rotateVector3fs)
         {
-            binding.localVector3fs.emplace_back (vectorField);
+            binding.rotateVector3fs.emplace_back (typeDescriptor.type.GetField (vectorField));
         }
     }
 }
@@ -171,14 +177,18 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
             void *object = ++insertionCursor;
             objectDescriptor.Apply (object);
 
-            for (const KeyBinding &keyBinding : binding.keys)
+            for (const InternalKeyBinding &keyBinding : binding.keys)
             {
                 KeyState &keyState = GetKeyState (keyBinding.keyIndex);
                 auto *id = static_cast<UniqueId *> (keyBinding.keyField.GetValue (object));
-                *id = ReplaceId (keyState, *id);
+
+                if (*id != INVALID_UNIQUE_ID)
+                {
+                    *id = ReplaceId (keyState, *id);
+                }
             }
 
-            for (const StandardLayout::Field &vectorField : binding.localVector3fs)
+            for (const StandardLayout::Field &vectorField : binding.rotateVector3fs)
             {
                 assert (needRootObjectTransform);
                 auto *vector = static_cast<Math::Vector3f *> (vectorField.GetValue (object));
@@ -204,7 +214,7 @@ UniqueId AssemblerBase::ReplaceId (AssemblerBase::KeyState &_keyState, UniqueId 
     if (iterator == _keyState.idReplacement.end ())
     {
         auto singletonCursor = _keyState.fetchSingleton.Execute ();
-        UniqueId newId = _keyState.method (*singletonCursor);
+        UniqueId newId = _keyState.function (*singletonCursor);
         _keyState.idReplacement.emplace (_id, newId);
         return newId;
     }
@@ -228,7 +238,7 @@ AssemblerBase::KeyState &AssemblerBase::GetKeyState (UniqueId _index) noexcept
     return keyStates[_index];
 }
 
-class FixedAssembler final : public AssemblerBase, public TaskExecutorBase<FixedAssembler>
+class FixedAssembler final : public TaskExecutorBase<FixedAssembler>, public AssemblerBase
 {
 public:
     FixedAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept;
@@ -263,7 +273,7 @@ void FixedAssembler::Execute () noexcept
     }
 }
 
-class NormalAssembler final : public AssemblerBase, public TaskExecutorBase<NormalAssembler>
+class NormalAssembler final : public TaskExecutorBase<NormalAssembler>, public AssemblerBase
 {
 public:
     NormalAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept;

@@ -16,15 +16,15 @@ Memory::Profiler::AllocationGroup GetAssemblyConfigurationAllocationGroup () noe
 
 struct CustomKeyDescriptor final
 {
-    using ProviderMethod = UniqueId (*) (const void *);
+    using ProviderFunction = UniqueId (*) (const void *);
 
     StandardLayout::Mapping singletonProviderType;
-    ProviderMethod providerMethod;
+    ProviderFunction providerFunction;
 };
 
 struct KeyBinding final
 {
-    StandardLayout::Field keyField;
+    StandardLayout::FieldId keyField;
     UniqueId keyIndex;
 };
 
@@ -32,7 +32,7 @@ struct TypeDescriptor final
 {
     StandardLayout::Mapping type;
     Container::Vector<KeyBinding> keys {GetAssemblyConfigurationAllocationGroup ()};
-    Container::Vector<StandardLayout::Field> localVector3fs {GetAssemblyConfigurationAllocationGroup ()};
+    Container::Vector<StandardLayout::FieldId> rotateVector3fs {GetAssemblyConfigurationAllocationGroup ()};
 };
 
 struct AssemblerConfiguration final

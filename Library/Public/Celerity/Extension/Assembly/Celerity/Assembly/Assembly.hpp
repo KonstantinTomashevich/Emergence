@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Celerity/Assembly/AssemblerConfiguration.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::Assembly

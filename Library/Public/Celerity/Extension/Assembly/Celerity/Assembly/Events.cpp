@@ -10,7 +10,7 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedNormalEvent, ob
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedToNormalEvent, objectId);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalEvent, objectId);
 
-void RegisterTransformEvents (EventRegistrar &_registrar) noexcept
+void RegisterAssemblyEvents (EventRegistrar &_registrar) noexcept
 {
     _registrar.OnAddEvent(
         {{PrototypeComponentAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},

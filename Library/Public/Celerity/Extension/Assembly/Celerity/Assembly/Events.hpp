@@ -13,5 +13,5 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedNormalEvent, Uniqu
 EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedFixedToNormalEvent, UniqueId, objectId);
 EMERGENCE_CELERITY_EVENT1_DECLARATION (PrototypeComponentAddedCustomToNormalEvent, UniqueId, objectId);
 
-void RegisterTransformEvents (EventRegistrar &_registrar) noexcept;
+void RegisterAssemblyEvents (EventRegistrar &_registrar) noexcept;
 } // namespace Emergence::Celerity
