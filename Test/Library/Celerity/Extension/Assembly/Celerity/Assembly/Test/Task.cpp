@@ -75,7 +75,7 @@ void Configurator::Execute () noexcept
                         REQUIRE (buffer.size () >= source.type.GetObjectSize ());
 
                         source.type.Construct (buffer.data ());
-                        descriptor->objects.emplace_back (StandardLayout::PatchBuilder::FromDifference (
+                        descriptor->components.emplace_back (StandardLayout::PatchBuilder::FromDifference (
                             source.type, source.changedAfterCreation, buffer.data ()));
                         source.type.Destruct (buffer.data ());
                     }

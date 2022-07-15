@@ -167,20 +167,20 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
     }
 
     GetObjectIdKeyState ().idReplacement.emplace (ASSEMBLY_ROOT_OBJECT_ID, _rootObjectId);
-    for (const StandardLayout::Patch &objectDescriptor : descriptor->objects)
+    for (const StandardLayout::Patch &componentDescriptor : descriptor->components)
     {
-        auto iterator = typeBindings.find (objectDescriptor.GetTypeMapping ());
+        auto iterator = typeBindings.find (componentDescriptor.GetTypeMapping ());
         if (iterator != typeBindings.end ())
         {
             TypeBinding &binding = iterator->second;
             auto insertionCursor = binding.insert.Execute ();
-            void *object = ++insertionCursor;
-            objectDescriptor.Apply (object);
+            void *component = ++insertionCursor;
+            componentDescriptor.Apply (component);
 
             for (const InternalKeyBinding &keyBinding : binding.keys)
             {
                 KeyState &keyState = GetKeyState (keyBinding.keyIndex);
-                auto *id = static_cast<UniqueId *> (keyBinding.keyField.GetValue (object));
+                auto *id = static_cast<UniqueId *> (keyBinding.keyField.GetValue (component));
 
                 if (*id != INVALID_UNIQUE_ID)
                 {
@@ -191,13 +191,14 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
             for (const StandardLayout::Field &vectorField : binding.rotateVector3fs)
             {
                 assert (needRootObjectTransform);
-                auto *vector = static_cast<Math::Vector3f *> (vectorField.GetValue (object));
+                auto *vector = static_cast<Math::Vector3f *> (vectorField.GetValue (component));
                 *vector = Math::Rotate (*vector, rootObjectTransform.rotation);
             }
         }
         else
         {
-            EMERGENCE_LOG (DEBUG, "Skipping assembly of unknown type \"", objectDescriptor.GetTypeMapping ().GetName (),
+            EMERGENCE_LOG (DEBUG, "Skipping assembly of unknown type \"",
+                           componentDescriptor.GetTypeMapping ().GetName (),
                            "\"...");
         }
     }

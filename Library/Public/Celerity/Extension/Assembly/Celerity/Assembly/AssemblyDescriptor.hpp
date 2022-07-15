@@ -8,10 +8,15 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Contains info about components that will be attached to
+///        object or spawned as sub-objects inside assembly routine.
 struct AssemblyDescriptor final
 {
+    /// \brief Unique id of this descriptor.
     Memory::UniqueString id;
-    Container::Vector<StandardLayout::Patch> objects {Memory::Profiler::AllocationGroup::Top()};
+
+    /// \brief Component data represented as patches that are applied to freshly constructed object.
+    Container::Vector<StandardLayout::Patch> components {Memory::Profiler::AllocationGroup::Top()};
 
     struct Reflection final
     {
