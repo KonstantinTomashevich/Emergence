@@ -22,6 +22,11 @@ FieldArchetype FieldData::GetArchetype () const noexcept
     return archetype;
 }
 
+bool FieldData::IsProjected () const noexcept
+{
+    return projected;
+}
+
 size_t FieldData::GetOffset () const noexcept
 {
     return offset;
@@ -56,6 +61,7 @@ FieldData::FieldData () noexcept
 
 FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
     : archetype (_seed.archetype),
+      projected (_seed.projected),
       offset (_seed.offset),
       size (_seed.size),
       name (_seed.name)
@@ -67,6 +73,7 @@ FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
 
 FieldData::FieldData (FieldData::BitSeed _seed) noexcept
     : archetype (FieldArchetype::BIT),
+      projected (_seed.projected),
       offset (_seed.offset),
       size (1u),
       name (_seed.name),
@@ -76,6 +83,7 @@ FieldData::FieldData (FieldData::BitSeed _seed) noexcept
 
 FieldData::FieldData (FieldData::UniqueStringSeed _seed) noexcept
     : archetype (FieldArchetype::UNIQUE_STRING),
+      projected (_seed.projected),
       offset (_seed.offset),
       size (sizeof (Memory::UniqueString)),
       name (_seed.name)
@@ -84,6 +92,7 @@ FieldData::FieldData (FieldData::UniqueStringSeed _seed) noexcept
 
 FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
     : archetype (FieldArchetype::NESTED_OBJECT),
+      projected (_seed.projected),
       offset (_seed.offset),
       name (_seed.name),
       nestedObjectMapping (std::move (_seed.nestedObjectMapping))

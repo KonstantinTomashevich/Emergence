@@ -196,15 +196,19 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
 StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noexcept
 {
     Append ("{ ");
-    for (auto iterator = _reflectedObject.reflection.Begin (); iterator != _reflectedObject.reflection.End ();
-         ++iterator)
+    bool firstField = true;
+
+    for (auto iterator = _reflectedObject.reflection.BeginConditional (_reflectedObject.pointer);
+         iterator != _reflectedObject.reflection.EndConditional (); ++iterator)
     {
         StandardLayout::Field field = *iterator;
-
-        // Ignore projected fields.
-        if (!strchr (*field.GetName (), StandardLayout::PROJECTION_NAME_SEPARATOR))
+        if (!field.IsProjected ())
         {
-            if (iterator != _reflectedObject.reflection.Begin ())
+            if (firstField)
+            {
+                firstField = false;
+            }
+            else
             {
                 Append (", ");
             }

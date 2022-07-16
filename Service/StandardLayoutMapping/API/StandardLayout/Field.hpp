@@ -21,7 +21,7 @@ FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
 /// \brief Declares field archetype, that can be used to reconstruct actual field type.
 ///
 /// \details Field type reconstruction can be useful for serialization or reflection-based comparison.
-enum class FieldArchetype
+enum class FieldArchetype : uint8_t
 {
     /// \brief Single bit.
     BIT = 0u,
@@ -75,6 +75,10 @@ public:
     /// \return Field archetype, in pair with field size can be used to reconstruct actual field type.
     /// \invariant Handle must be valid.
     [[nodiscard]] FieldArchetype GetArchetype () const noexcept;
+
+    /// \return Whether this field was added to the mapping through field projection.
+    /// \invariant Handle must be valid.
+    [[nodiscard]] bool IsProjected () const noexcept;
 
     /// \return Field offset in mapped structure in bytes.
     /// \invariant Handle must be valid.
