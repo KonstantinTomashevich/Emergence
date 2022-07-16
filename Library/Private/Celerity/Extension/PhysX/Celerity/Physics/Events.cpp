@@ -55,12 +55,15 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
 {
     // PhysicsWorldSingleton
 
+    Container::Vector<StandardLayout::FieldId> physicsWorldTrackedFields {PhysicsWorldSingleton::Reflect ().gravity};
+    for (StandardLayout::FieldId collisionMask : PhysicsWorldSingleton::Reflect ().collisionMasks)
+    {
+        physicsWorldTrackedFields.emplace_back (collisionMask);
+    }
+
     _registrar.OnChangeEvent ({{PhysicsWorldConfigurationChanged::Reflect ().mapping, Celerity::EventRoute::FIXED},
                                PhysicsWorldSingleton::Reflect ().mapping,
-                               {
-                                   PhysicsWorldSingleton::Reflect ().gravity,
-                                   PhysicsWorldSingleton::Reflect ().collisionMasksBlock,
-                               },
+                               physicsWorldTrackedFields,
                                {},
                                {}});
 

@@ -140,7 +140,6 @@ public:
     struct Reflection final
     {
         StandardLayout::FieldId count;
-        StandardLayout::FieldId valuesBlock;
         std::array<StandardLayout::FieldId, Capacity> values;
         StandardLayout::Mapping mapping;
     };

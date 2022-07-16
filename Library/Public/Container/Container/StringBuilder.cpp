@@ -198,8 +198,9 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
     Append ("{ ");
     bool firstField = true;
 
-    for (auto iterator = _reflectedObject.reflection.BeginConditional (_reflectedObject.pointer);
-         iterator != _reflectedObject.reflection.EndConditional (); ++iterator)
+    for (auto iterator = _reflectedObject.reflection.BeginConditional (_reflectedObject.pointer),
+              end = _reflectedObject.reflection.EndConditional ();
+         iterator != end; ++iterator)
     {
         StandardLayout::Field field = *iterator;
         if (!field.IsProjected ())
