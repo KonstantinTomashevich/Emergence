@@ -145,7 +145,7 @@ public:
         StandardLayout::Mapping mapping;
     };
 
-    static Reflection &Reflect () noexcept;
+    static const Reflection &Reflect () noexcept;
 };
 
 template <typename Item, std::size_t Capacity>
@@ -519,7 +519,7 @@ typename InplaceVector<Item, Capacity>::ConstIterator end (const InplaceVector<I
 }
 
 template <typename Item, std::size_t Capacity>
-typename InplaceVector<Item, Capacity>::Reflection &InplaceVector<Item, Capacity>::Reflect () noexcept
+const typename InplaceVector<Item, Capacity>::Reflection &InplaceVector<Item, Capacity>::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {

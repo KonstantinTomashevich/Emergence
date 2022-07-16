@@ -37,15 +37,15 @@ public:
     void Begin (Memory::UniqueString _name, std::size_t _objectSize, std::size_t _objectAlignment) noexcept;
 
     /// \brief Finishes mapping construction routine.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] Mapping End () noexcept;
 
     /// \brief Sets default constructor for objects of constructed mapping.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     void SetConstructor (void (*_constructor) (void *)) noexcept;
 
     /// \brief Sets default destructor for objects of constructed mapping.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     void SetDestructor (void (*_destructor) (void *)) noexcept;
 
     /// \brief Registers bit flag.
@@ -55,43 +55,43 @@ public:
                                        uint_fast8_t _bitOffset) noexcept;
 
     /// \brief Registers 1 byte long integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 2 bytes long integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 4 bytes long integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 8 bytes long integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 1 byte long unsigned integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterUInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 2 bytes long unsigned integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterUInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 4 bytes long unsigned integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterUInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers 8 bytes long unsigned integer.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterUInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers `sizeof (float)` bytes long floating point number.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterFloat (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers `sizeof (double)` bytes long floating point number.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterDouble (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers zero terminated string with fixed maximum size.
@@ -101,15 +101,15 @@ public:
                                           std::size_t _maxSize) noexcept;
 
     /// \brief Registers memory block with given size.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterBlock (Memory::UniqueString _name, std::size_t _offset, std::size_t _size) noexcept;
 
     /// \brief Registers Memory::UniqueString field.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterUniqueString (Memory::UniqueString _name, std::size_t _offset) noexcept;
 
     /// \brief Registers nested object using its Mapping.
-    /// \invariant There is active mapping construction routine, that uses this builder.
+    /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterNestedObject (Memory::UniqueString _name,
                                                 std::size_t _offset,
                                                 const Mapping &_objectMapping) noexcept;

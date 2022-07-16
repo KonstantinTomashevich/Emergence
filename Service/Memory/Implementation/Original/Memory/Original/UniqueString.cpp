@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <atomic>
 #include <cassert>
 
 #include <Container/HashSet.hpp>
@@ -7,6 +8,8 @@
 #include <Memory/Original/UniqueString.hpp>
 #include <Memory/Stack.hpp>
 #include <Memory/UnorderedPool.hpp>
+
+#include <SyntaxSugar/AtomicFlagGuard.hpp>
 
 namespace Emergence::Memory::Original
 {
@@ -28,8 +31,13 @@ static const char *RegisterValue (const std::string_view &_value)
         return MEMORY_PROFILING_GROUP_ID;
     }
 
-    // Code is moved into separate block to make sure that static
-    // constructors will not be called if condition above returned.
+    // We need to make sure that register is not accessed from multiple threads
+    // simultaneously because it could result in race condition.
+    static std::atomic_flag registrationLock;
+    AtomicFlagGuard guard {registrationLock};
+
+    // Code is moved into separate block to make sure that static constructors,
+    // related to memory allocation, will not be called if condition above returned.
     {
         // In most cases 3-4 or even 1 stack would be enough, but we would like to
         // avoid creating additional pages, therefore we use this page capacity.
@@ -71,30 +79,30 @@ static const char *RegisterValue (const std::string_view &_value)
     }
 }
 
-Original::UniqueString::UniqueString (const char *_string) noexcept : UniqueString (std::string_view {_string})
+UniqueString::UniqueString (const char *_string) noexcept : UniqueString (std::string_view {_string})
 {
 }
 
-Original::UniqueString::UniqueString (const std::string_view &_string) noexcept : value (RegisterValue (_string))
+UniqueString::UniqueString (const std::string_view &_string) noexcept : value (RegisterValue (_string))
 {
 }
 
-const char *Original::UniqueString::operator* () const noexcept
+const char *UniqueString::operator* () const noexcept
 {
     return value;
 }
 
-uintptr_t Original::UniqueString::Hash () const noexcept
+uintptr_t UniqueString::Hash () const noexcept
 {
     return reinterpret_cast<uintptr_t> (value);
 }
 
-bool Original::UniqueString::operator== (const UniqueString &_other) const
+bool UniqueString::operator== (const UniqueString &_other) const
 {
     return value == _other.value;
 }
 
-bool Original::UniqueString::operator!= (const UniqueString &_other) const
+bool UniqueString::operator!= (const UniqueString &_other) const
 {
     return !(*this == _other);
 }

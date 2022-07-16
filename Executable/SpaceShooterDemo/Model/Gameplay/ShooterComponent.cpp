@@ -2,7 +2,7 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-ShooterComponent::Reflection &ShooterComponent::Reflect () noexcept
+const ShooterComponent::Reflection &ShooterComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {

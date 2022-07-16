@@ -1,5 +1,6 @@
 #include <StandardLayout/Test/ConditionalFieldIteration.hpp>
 #include <StandardLayout/Test/MappingBuilder.hpp>
+#include <StandardLayout/Test/PatchBuilder.hpp>
 #include <StandardLayout/Test/Visualization.hpp>
 
 #include <Testing/SetupMain.hpp>
@@ -10,6 +11,8 @@ static const bool CONDITIONAL_FIELD_ITERATION_TEST_INCLUDE_MARKER =
 
 static const bool MAPPING_BUILDER_TEST_INCLUDE_MARKER =
     Emergence::StandardLayout::Test::MappingBuilderTestIncludeMarker ();
+
+static const bool PATCH_BUILDER_TEST_INCLUDE_MARKER = Emergence::StandardLayout::Test::PatchBuilderTestIncludeMarker ();
 
 static const bool VISUALIZATION_TEST_INCLUDE_MARKER =
     Emergence::StandardLayout::Test::VisualizationTestIncludeMarker ();

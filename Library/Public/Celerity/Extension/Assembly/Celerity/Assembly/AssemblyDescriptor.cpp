@@ -1,14 +1,15 @@
-#include <Celerity/Physics/PhysXAccessSingleton.hpp>
+#include <Celerity/Assembly/AssemblyDescriptor.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const PhysXAccessSingleton::Reflection &PhysXAccessSingleton::Reflect () noexcept
+const AssemblyDescriptor::Reflection &AssemblyDescriptor::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PhysXAccessSingleton);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AssemblyDescriptor);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (id);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

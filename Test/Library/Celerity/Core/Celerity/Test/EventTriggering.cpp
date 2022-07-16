@@ -45,7 +45,7 @@ struct TestRecord final
         Emergence::StandardLayout::Mapping mapping;
     };
 
-    static Reflection &Reflect () noexcept;
+    static const Reflection &Reflect () noexcept;
 };
 
 Container::String Emergence::Celerity::Test::TestRecord::ToString () const noexcept
@@ -54,7 +54,7 @@ Container::String Emergence::Celerity::Test::TestRecord::ToString () const noexc
                                    " }");
 }
 
-TestRecord::Reflection &TestRecord::Reflect () noexcept
+const TestRecord::Reflection &TestRecord::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
