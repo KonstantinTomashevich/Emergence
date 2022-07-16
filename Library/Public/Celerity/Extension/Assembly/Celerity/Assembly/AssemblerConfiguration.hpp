@@ -16,10 +16,13 @@ constexpr UniqueId ASSEMBLY_ROOT_OBJECT_ID = 0u;
 constexpr UniqueId ASSEMBLY_OBJECT_ID_KEY_INDEX = std::numeric_limits<UniqueId>::max ();
 
 /// \return Allocation group used to allocate all assembly configuration structures.
-Memory::Profiler::AllocationGroup GetAssemblyConfigurationAllocationGroup () noexcept;
+Memory::Profiler::AllocationGroup GetAssemblerConfigurationAllocationGroup () noexcept;
 
 /// \brief Provides ability to register custom keys, for example instance ids for multi components
 ///        (components is called multi component when multiple instances can be attached to one object).
+/// \details Only keys with prototype-internal values (like object ids) should be registered like that.
+///          If reference is global then assembler does not recalculate its id and therefore has nothing
+///          to do with this key. Examples of global references: models, unit configs.
 struct CustomKeyDescriptor final
 {
     /// \brief Signature of a function used to get new id from id generator singleton.
@@ -49,22 +52,22 @@ struct TypeDescriptor final
     StandardLayout::Mapping type;
 
     /// \brief Lists all fields that are associated with keys.
-    Container::Vector<KeyBinding> keys {GetAssemblyConfigurationAllocationGroup ()};
+    Container::Vector<KeyBinding> keys {GetAssemblerConfigurationAllocationGroup ()};
 
     /// \brief Lists all fields of type Vector3f that should be rotated
     ///        by root object world rotation after component spawn.
     /// \details In some rare cases it is useful to apply this transformation. For example, it allows to specify
     ///          bullet velocity as rigid body velocity inside patch without any additional components.
-    Container::Vector<StandardLayout::FieldId> rotateVector3fs {GetAssemblyConfigurationAllocationGroup ()};
+    Container::Vector<StandardLayout::FieldId> rotateVector3fs {GetAssemblerConfigurationAllocationGroup ()};
 };
 
 /// \brief Configuration data needed to initialize assembly routine.
 struct AssemblerConfiguration final
 {
     /// \brief Lists all user-defined keys.
-    Container::Vector<CustomKeyDescriptor> customKeys {GetAssemblyConfigurationAllocationGroup ()};
+    Container::Vector<CustomKeyDescriptor> customKeys {GetAssemblerConfigurationAllocationGroup ()};
 
     /// \brief Lists all component types that can be spawned during assembly routine.
-    Container::Vector<TypeDescriptor> types {GetAssemblyConfigurationAllocationGroup ()};
+    Container::Vector<TypeDescriptor> types {GetAssemblerConfigurationAllocationGroup ()};
 };
 } // namespace Emergence::Celerity

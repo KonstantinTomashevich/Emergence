@@ -95,7 +95,7 @@ const NormalVisualComponent::Reflection &NormalVisualComponent::Reflect () noexc
     return reflection;
 }
 
-UniqueId GenerateInstanceIdForFixedMultiComponent (const void *_argument)
+static UniqueId GenerateInstanceIdForFixedMultiComponent (const void *_argument)
 {
     return static_cast<const FixedMultiComponentIdGeneratorSingleton *> (_argument)->GenerateInstanceId ();
 }

@@ -26,7 +26,7 @@ public:
     /// \brief Applies transformation, defined by patch, to given object.
     /// \details If object state is different from the initial state for which patch was created,
     ///          transformation result would be different too.
-    /// \invariant Object belong to ::GetTypeMapping type.
+    /// \invariant Object belongs to ::GetTypeMapping type.
     void Apply (void *_object) const noexcept;
 
     /// Assigning patches looks counter-intuitive.

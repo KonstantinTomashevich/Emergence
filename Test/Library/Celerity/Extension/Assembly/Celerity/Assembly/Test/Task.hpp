@@ -49,6 +49,10 @@ struct CheckComponent final
     StandardLayout::FieldId idField = 0u;
 
     const void *expected = nullptr;
+
+    /// \details Sometimes we can not check whole component because of garbage in paddings.
+    ///          In this case we set this value to non-zero amount of bytes which should be
+    ///          checked in the beginning of the object.
     std::size_t comparisonSliceLength = 0u;
 };
 

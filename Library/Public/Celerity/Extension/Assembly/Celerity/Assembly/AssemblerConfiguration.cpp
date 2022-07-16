@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-Memory::Profiler::AllocationGroup GetAssemblyConfigurationAllocationGroup () noexcept
+Memory::Profiler::AllocationGroup GetAssemblerConfigurationAllocationGroup () noexcept
 {
     static Memory::Profiler::AllocationGroup group {Memory::UniqueString {"AssemblerConfiguration"}};
     return group;

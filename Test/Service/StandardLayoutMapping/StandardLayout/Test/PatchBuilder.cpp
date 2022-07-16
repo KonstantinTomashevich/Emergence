@@ -212,7 +212,6 @@ TEST_CASE (FlagsDifference)
     TestStruct initial;
     TestStruct other = initial;
     other.flags = (1u << TestStruct::ALIVE_FLAG_OFFSET) | (1u << TestStruct::POISONED_FLAG_OFFSET);
-
     Patch patch = PatchBuilder::FromDifference (TestStruct::Reflect ().mapping, &other, &initial);
 
     CHECK_NOT_EQUAL (other, initial);
@@ -224,7 +223,6 @@ TEST_CASE (FlagsDifference)
     TestStruct initial;                                                                                                \
     TestStruct other = initial;                                                                                        \
     other.field = value;                                                                                               \
-                                                                                                                       \
     Patch patch = PatchBuilder::FromDifference (TestStruct::Reflect ().mapping, &other, &initial);                     \
                                                                                                                        \
     CHECK_NOT_EQUAL (other, initial);                                                                                  \
@@ -291,8 +289,8 @@ TEST_CASE (UniqueStringDifference)
 TEST_CASE (PatchMoveAndCopy)
 {
     TestStruct initial;
-    TestStruct other;
-    TestStruct target;
+    TestStruct other = initial;
+    TestStruct target = initial;
     other.flags = (1u << TestStruct::ALIVE_FLAG_OFFSET) | (1u << TestStruct::POISONED_FLAG_OFFSET);
 
     Patch patch = PatchBuilder::FromDifference (TestStruct::Reflect ().mapping, &other, &initial);

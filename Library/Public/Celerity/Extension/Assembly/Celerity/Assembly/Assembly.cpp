@@ -73,7 +73,7 @@ private:
     bool needRootObjectTransform = false;
 };
 
-static UniqueId WorldIdProvider (const void *_singleton)
+static UniqueId WorldObjectIdProvider (const void *_singleton)
 {
     return static_cast<const WorldSingleton *> (_singleton)->GenerateId ();
 }
@@ -95,7 +95,7 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConf
     }
 
     keyStates.emplace_back (
-        KeyState {FETCH_SINGLETON (WorldSingleton), WorldIdProvider,
+        KeyState {FETCH_SINGLETON (WorldSingleton), WorldObjectIdProvider,
                   Container::HashMap<UniqueId, UniqueId> {Memory::Profiler::AllocationGroup::Top ()}});
 
     for (const TypeDescriptor &typeDescriptor : _configuration.types)
@@ -119,31 +119,20 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConf
 
 void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
 {
-    Memory::UniqueString descriptorId;
+    auto prototypeCursor = fetchPrototypeById.Execute (&_rootObjectId);
+    const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor);
 
-    // Theoretically assembly routine might spawn other child prototypes in child objects,
-    // therefore we are capturing prototypes only to fetch descriptor id and not any longer.
+    if (!prototype)
     {
-        auto prototypeCursor = fetchPrototypeById.Execute (&_rootObjectId);
-        if (const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor))
-        {
-            descriptorId = prototype->descriptorId;
-        }
-        else
-        {
-            EMERGENCE_LOG (ERROR, "Assembly: Unable to assemble object with id ", _rootObjectId,
-                           ", because it has no PrototypeComponent!");
-            return;
-        }
+        EMERGENCE_LOG (ERROR, "Assembly: Unable to assemble object with id ", _rootObjectId,
+                       ", because it has no PrototypeComponent!");
+        return;
     }
 
     Math::Transform3d rootObjectTransform;
     if (needRootObjectTransform)
     {
-        // Assembly routine is allowed to spawn transforms for child objects,
-        // therefore we're capturing transforms only to fetch transform and not any longer.
         auto transformCursor = fetchTransformById.Execute (&_rootObjectId);
-
         if (const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor))
         {
             rootObjectTransform = useLogicalTransform ? transform->GetLogicalWorldTransform (transformWorldAccessor) :
@@ -157,12 +146,12 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
         }
     }
 
-    auto descriptorCursor = fetchDescriptorById.Execute (&descriptorId);
+    auto descriptorCursor = fetchDescriptorById.Execute (&prototype->descriptorId);
     const auto *descriptor = static_cast<const AssemblyDescriptor *> (*descriptorCursor);
 
     if (!descriptor)
     {
-        EMERGENCE_LOG (ERROR, "Assembly: Unable to find AssemblyDescriptor with id \"", descriptorId, "\"!");
+        EMERGENCE_LOG (ERROR, "Assembly: Unable to find AssemblyDescriptor with id \"", prototype->descriptorId, "\"!");
         return;
     }
 

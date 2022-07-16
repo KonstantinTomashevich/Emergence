@@ -155,7 +155,10 @@ void Validator::Execute () noexcept
 
                 if constexpr (std::is_same_v<Task, CheckComponent>)
                 {
+                    LOG ("Checking component \"", *_task.type.GetName (), "\" with id ", _task.id, " (in field \"",
+                         *_task.type.GetField (_task.idField).GetName (), "\").");
                     auto cursor = associatedQueries[index].value ().Execute (&_task.id);
+
                     if (_task.expected)
                     {
                         if (*cursor)
@@ -184,7 +187,11 @@ void Validator::Execute () noexcept
                 }
                 else if constexpr (std::is_same_v<Task, CheckVector3f>)
                 {
+                    LOG ("Checking vector \"", *_task.type.GetField (_task.vectorField).GetName (),
+                         "\" of component \"", *_task.type.GetName (), "\" with id ", _task.id, " (in field \"",
+                         *_task.type.GetField (_task.idField).GetName (), "\").");
                     auto cursor = associatedQueries[index].value ().Execute (&_task.id);
+
                     if (*cursor)
                     {
                         StandardLayout::Field field = _task.type.GetField (_task.vectorField);

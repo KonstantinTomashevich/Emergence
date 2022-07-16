@@ -11,7 +11,7 @@
 
 namespace Emergence::StandardLayout
 {
-constexpr std::size_t VALUE_MAX_SIZE = 8u;
+constexpr std::size_t VALUE_MAX_SIZE = sizeof (uint64_t);
 
 struct ValueSetter
 {
