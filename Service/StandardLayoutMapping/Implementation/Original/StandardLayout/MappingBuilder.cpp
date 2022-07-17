@@ -201,6 +201,13 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
         assert (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
     }
 
+    // Pop till-the-end conditions of nested mapping.
+    while (topCondition)
+    {
+        PopVisibilityCondition ();
+        topCondition = topCondition->popTo;
+    }
+
     return objectFieldId;
 }
 

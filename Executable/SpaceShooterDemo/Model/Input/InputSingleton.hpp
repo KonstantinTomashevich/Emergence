@@ -78,9 +78,9 @@ struct InputSubscription final
 struct InputSingleton final
 {
 public:
-    constexpr static const std::size_t MAX_TRIGGERS = 32u;
-    constexpr static const std::size_t MAX_SUBSCRIPTIONS = 8u;
-    constexpr static const std::size_t MAX_ACTIONS_IN_QUEUE = 32u;
+    static constexpr const std::size_t MAX_TRIGGERS = 32u;
+    static constexpr const std::size_t MAX_SUBSCRIPTIONS = 8u;
+    static constexpr const std::size_t MAX_ACTIONS_IN_QUEUE = 32u;
 
     using KeyStateChangedTriggerVector = Emergence::Container::InplaceVector<KeyStateChangedTrigger, MAX_TRIGGERS>;
     using KeyStateTriggerVector = Emergence::Container::InplaceVector<KeyStateTrigger, MAX_TRIGGERS>;

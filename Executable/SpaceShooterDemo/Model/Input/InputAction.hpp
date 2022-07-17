@@ -9,8 +9,8 @@
 
 struct InputAction final
 {
-    constexpr static const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
-    constexpr static const std::size_t MAX_REAL_PARAMETERS = 3u;
+    static constexpr const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
+    static constexpr const std::size_t MAX_REAL_PARAMETERS = 3u;
 
     InputAction () noexcept = default;
 

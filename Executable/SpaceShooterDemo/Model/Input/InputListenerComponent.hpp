@@ -12,7 +12,7 @@
 
 struct InputListenerComponent final
 {
-    constexpr static const std::size_t MAX_ACTIONS_PER_CYCLE = 16u;
+    static constexpr const std::size_t MAX_ACTIONS_PER_CYCLE = 16u;
 
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
     Emergence::Container::InplaceVector<InputAction, MAX_ACTIONS_PER_CYCLE> actions;
