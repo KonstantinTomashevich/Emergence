@@ -13,19 +13,40 @@ void Binary::SerializeObject (std::ostream &_output, const void *_object, const 
         _output.write (_string, static_cast<std::streamsize> (strlen (_string) + 1u)); // +1 for null terminator.
     };
 
+    const void *lastBitsetByteAddress = nullptr;
+    uint8_t lastBitsetByte = 0u;
+
     for (auto iterator = _mapping.BeginConditional (_object), end = _mapping.EndConditional (); iterator != end;
          ++iterator)
     {
         StandardLayout::Field field = *iterator;
         const void *address = field.GetValue (_object);
 
+        // We extract this from switch for better readability.
+        // We need to write last bitset byte if we stopped encountering bits.
+        if (lastBitsetByteAddress && field.GetArchetype() != StandardLayout::FieldArchetype::BIT)
+        {
+            _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (uint8_t));
+            lastBitsetByteAddress = nullptr;
+        }
+
         switch (field.GetArchetype ())
         {
         case StandardLayout::FieldArchetype::BIT:
         {
-            // TODO: Find more efficient generic way to serialize bit sets?
-            const uint8_t filtered = *static_cast<const uint8_t *> (address) & (1u << field.GetBitOffset ());
-            _output.write (reinterpret_cast<const char *> (&filtered), sizeof (uint8_t));
+            if (lastBitsetByteAddress != address)
+            {
+                if (lastBitsetByteAddress != address && lastBitsetByteAddress != nullptr)
+                {
+                    // We're starting new bitset byte: write older one.
+                    _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (uint8_t));
+                }
+
+                lastBitsetByteAddress = address;
+                lastBitsetByte = 0u;
+            }
+
+            lastBitsetByte |= *static_cast<const uint8_t *> (address) & (1u << field.GetBitOffset ());
             break;
         }
 
@@ -48,6 +69,12 @@ void Binary::SerializeObject (std::ostream &_output, const void *_object, const 
             // We do nothing for nested objects, because all of their fields are projected.
             break;
         }
+    }
+
+    // If bitset was last field -- write it now.
+    if (lastBitsetByteAddress != nullptr)
+    {
+        _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (uint8_t));
     }
 }
 
@@ -72,6 +99,9 @@ bool Binary::DeserializeObject (std::istream &_input, void *_object, const Stand
         }
     };
 
+    const void *lastBitsetByteAddress = nullptr;
+    char lastBitsetByte = 0u;
+
     for (auto iterator = _mapping.BeginConditional (_object), end = _mapping.EndConditional (); iterator != end;
          ++iterator)
     {
@@ -82,13 +112,16 @@ bool Binary::DeserializeObject (std::istream &_input, void *_object, const Stand
         {
         case StandardLayout::FieldArchetype::BIT:
         {
-            char byte;
-            if (!_input.get (byte))
+            if (lastBitsetByteAddress != address)
             {
-                return false;
+                lastBitsetByteAddress = address;
+                if (!_input.get (lastBitsetByte))
+                {
+                    return false;
+                }
             }
 
-            if (static_cast<uint8_t> (byte) & (1u << field.GetBitOffset ()))
+            if (static_cast<uint8_t> (lastBitsetByte) & (1u << field.GetBitOffset ()))
             {
                 *static_cast<uint8_t *> (address) |= 1u << field.GetBitOffset ();
             }

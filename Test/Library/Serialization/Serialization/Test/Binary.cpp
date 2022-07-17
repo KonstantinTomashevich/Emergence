@@ -84,9 +84,9 @@ struct SpecialCasesStruct final
     static constexpr uint8_t POISONED_OFFSET = 1u;
     static constexpr uint8_t STUNNED_OFFSET = 2u;
 
+    uint8_t flags = 0u;
     std::array<char, 32u> string {'\0'};
     Memory::UniqueString uniqueString {"Hello, world!"};
-    uint8_t flags = 0u;
 
     bool operator== (const SpecialCasesStruct &_other) const noexcept;
 
@@ -108,8 +108,8 @@ struct SpecialCasesStruct final
 bool SpecialCasesStruct::operator== (const SpecialCasesStruct &_other) const noexcept
 {
     constexpr uint8_t USED_BITS = (1u << ALIVE_OFFSET) | (1u << POISONED_OFFSET) | (1u << STUNNED_OFFSET);
-    return strcmp (string.data (), _other.string.data ()) == 0 && uniqueString == _other.uniqueString &&
-           (flags & USED_BITS) == (_other.flags & USED_BITS);
+    return (flags & USED_BITS) == (_other.flags & USED_BITS) && strcmp (string.data (), _other.string.data ()) == 0 &&
+           uniqueString == _other.uniqueString;
 }
 
 bool SpecialCasesStruct::operator!= (const SpecialCasesStruct &_other) const noexcept
@@ -122,11 +122,11 @@ const SpecialCasesStruct::Reflection &SpecialCasesStruct::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (SpecialCasesStruct);
-        EMERGENCE_MAPPING_REGISTER_STRING (string);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (uniqueString);
         EMERGENCE_MAPPING_REGISTER_BIT (alive, flags, ALIVE_OFFSET);
         EMERGENCE_MAPPING_REGISTER_BIT (poisoned, flags, POISONED_OFFSET);
         EMERGENCE_MAPPING_REGISTER_BIT (stunned, flags, STUNNED_OFFSET);
+        EMERGENCE_MAPPING_REGISTER_STRING (string);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uniqueString);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
@@ -236,10 +236,11 @@ TEST_CASE (Direct)
 
 TEST_CASE (SpecialCases)
 {
-    SerializationDeserializationTest (
-        SpecialCasesStruct {{"Let's test this code!\0"},
-                            Emergence::Memory::UniqueString {"For glory and gold!"},
-                            (1u << SpecialCasesStruct::ALIVE_OFFSET) | (1u << SpecialCasesStruct::STUNNED_OFFSET)});
+    SerializationDeserializationTest (SpecialCasesStruct {
+        (1u << SpecialCasesStruct::ALIVE_OFFSET) | (1u << SpecialCasesStruct::STUNNED_OFFSET),
+        {"Let's test this code!\0"},
+        Emergence::Memory::UniqueString {"For glory and gold!"},
+    });
 }
 
 TEST_CASE (Union)
