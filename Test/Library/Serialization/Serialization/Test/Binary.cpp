@@ -5,6 +5,7 @@
 #include <Serialization/Binary.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
+#include <StandardLayout/PatchBuilder.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -213,14 +214,30 @@ const UnionStruct::Reflection &UnionStruct::Reflect () noexcept
 }
 
 template <typename Type>
-void SerializationDeserializationTest (const Type &_value)
+void ObjectSerializationDeserializationTest (const Type &_value)
 {
     std::stringstream buffer;
     SerializeObject (buffer, &_value, Type::Reflect ().mapping);
 
     Type deserialized;
-    DeserializeObject (buffer, &deserialized, Type::Reflect ().mapping);
+    CHECK (DeserializeObject (buffer, &deserialized, Type::Reflect ().mapping));
     CHECK_EQUAL (_value, deserialized);
+}
+
+template <typename Type>
+void PatchSerializationDeserializationTest (const Type &_initial, const Type &_changed)
+{
+    std::stringstream buffer;
+    SerializePatch (buffer,
+                    StandardLayout::PatchBuilder::FromDifference (Type::Reflect ().mapping, &_changed, &_initial));
+
+    StandardLayout::PatchBuilder builder;
+    CHECK (DeserializePatch (buffer, builder, Type::Reflect ().mapping));
+
+    Type target = _initial;
+    CHECK_NOT_EQUAL (target, _changed);
+    builder.End ().Apply (&target);
+    CHECK_EQUAL (target, _changed);
 }
 } // namespace Emergence::Serialization::Binary::Test
 
@@ -230,13 +247,13 @@ BEGIN_SUITE (Binary)
 
 TEST_CASE (Direct)
 {
-    SerializationDeserializationTest (DirectlySerializableStruct {
+    ObjectSerializationDeserializationTest (DirectlySerializableStruct {
         -19, 163, -2937, 1123, 21u, 784u, 17274u, 18274u, 1.20338f, 5647.385639, {11u, 79u, 54u, 121u}});
 }
 
 TEST_CASE (SpecialCases)
 {
-    SerializationDeserializationTest (SpecialCasesStruct {
+    ObjectSerializationDeserializationTest (SpecialCasesStruct {
         (1u << SpecialCasesStruct::ALIVE_OFFSET) | (1u << SpecialCasesStruct::STUNNED_OFFSET),
         {"Let's test this code!\0"},
         Emergence::Memory::UniqueString {"For glory and gold!"},
@@ -249,13 +266,13 @@ TEST_CASE (Union)
     first.type = 0u;
     first.x = 1.647f;
     first.y = 173.129337f;
-    SerializationDeserializationTest (first);
+    ObjectSerializationDeserializationTest (first);
 
     UnionStruct second;
     second.type = 1u;
     second.m = 172947923u;
     second.n = 123838471u;
-    SerializationDeserializationTest (second);
+    ObjectSerializationDeserializationTest (second);
 }
 
 TEST_CASE (InplaceVector)
@@ -270,7 +287,46 @@ TEST_CASE (InplaceVector)
     second.type = 1u;
     second.m = 172947923u;
     second.n = 123838471u;
-    SerializationDeserializationTest (vector);
+    ObjectSerializationDeserializationTest (vector);
+}
+
+TEST_CASE (DirectPatch)
+{
+    PatchSerializationDeserializationTest<DirectlySerializableStruct> (
+        // Because array data is registered as block which is
+        // not supported by patches, we are filling it with zeros.
+        {-19, 163, -2937, 1123, 21u, 784u, 17274u, 18274u, 1.20338f, 5647.385639, {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}},
+        {-20, 164, -2936, 4512, 17u, 783u, 26172u, 18271u, 1.20339f, 5648.385639, {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}});
+}
+
+TEST_CASE (SpecialCasesPatch)
+{
+    PatchSerializationDeserializationTest<SpecialCasesStruct> (
+        {
+            (1u << SpecialCasesStruct::ALIVE_OFFSET) | (1u << SpecialCasesStruct::STUNNED_OFFSET),
+            // Strings are zeroed because they are not supported by patches.
+            {"\0"},
+            Emergence::Memory::UniqueString {"For glory and gold!"},
+        },
+        {
+            (1u << SpecialCasesStruct::ALIVE_OFFSET),
+            {"\0"},
+            Emergence::Memory::UniqueString {"Hello, world!"},
+        });
+}
+
+TEST_CASE (UnionPatch)
+{
+    UnionStruct first;
+    first.type = 0u;
+    first.x = 1.647f;
+    first.y = 173.129337f;
+
+    UnionStruct second;
+    second.type = 1u;
+    second.m = 172947923u;
+    second.n = 123838471u;
+    PatchSerializationDeserializationTest (first, second);
 }
 
 END_SUITE

@@ -8,6 +8,7 @@
 
 #include <StandardLayout/Field.hpp>
 #include <StandardLayout/Mapping.hpp>
+#include <StandardLayout/Patch.hpp>
 
 namespace Emergence::StandardLayout
 {
@@ -31,6 +32,12 @@ public:
     Mapping GetTypeMapping () const noexcept;
 
     void Apply (void *_object) const noexcept;
+
+    std::size_t GetValueCount () const noexcept;
+
+    const ValueSetter *Begin () const noexcept;
+
+    const ValueSetter *End () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PlainPatch);
 

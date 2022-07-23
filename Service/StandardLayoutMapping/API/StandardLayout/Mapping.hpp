@@ -85,10 +85,10 @@ public:
     /// \return Pointer to meta of field with given id or `nullptr` if there is no such field.
     [[nodiscard]] Field GetField (FieldId _field) const noexcept;
 
-    /// \return Iterator, that points to beginning of fields range.
+    /// \return Iterator, that points to the beginning of fields range.
     [[nodiscard]] FieldIterator Begin () const noexcept;
 
-    /// \return Iterator, that points to ending of fields range.
+    /// \return Iterator, that points to the ending of fields range.
     [[nodiscard]] FieldIterator End () const noexcept;
 
     /// \brief Like ::Begin, but with conditional visibility.

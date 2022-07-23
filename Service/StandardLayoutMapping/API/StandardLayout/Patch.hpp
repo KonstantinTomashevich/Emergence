@@ -14,6 +14,28 @@ namespace Emergence::StandardLayout
 class Patch final
 {
 public:
+    /// \brief Describes change info that can be retrieved during iteration using Iterator.
+    struct ChangeInfo
+    {
+        FieldId field;
+        const void *newValue = nullptr;
+    };
+
+    /// \brief Allows iteration over Patch transformation changelist.
+    class Iterator final
+    {
+    public:
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (Iterator, ChangeInfo);
+
+    private:
+        /// Patch constructs iterators.
+        friend class Patch;
+
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+
+        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    };
+
     Patch (const Patch &_other) noexcept;
 
     Patch (Patch &&_other) noexcept;
@@ -29,6 +51,15 @@ public:
     /// \invariant Object belongs to ::GetTypeMapping type.
     void Apply (void *_object) const noexcept;
 
+    /// \return Count of changes in transformation.
+    [[nodiscard]] std::size_t GetChangeCount () const noexcept;
+
+    /// \return Iterator, that points to the beginning of transformation changelist.
+    [[nodiscard]] Iterator Begin () const noexcept;
+
+    /// \return Iterator, that points to thee ending of transformation changelist.
+    [[nodiscard]] Iterator End () const noexcept;
+
     /// Assigning patches looks counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Patch);
 
@@ -43,4 +74,10 @@ private:
     /// \brief Moves implementation-specific values from given pointer.
     explicit Patch (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
+
+/// \brief Wraps Patch::Begin for foreach sentences.
+Patch::Iterator begin (const Patch &_patch) noexcept;
+
+/// \brief Wraps Patch::End for foreach sentences.
+Patch::Iterator end (const Patch &_patch) noexcept;
 } // namespace Emergence::StandardLayout
