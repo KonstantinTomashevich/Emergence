@@ -5,6 +5,8 @@
 #include <Container/Optional.hpp>
 #include <Container/String.hpp>
 
+#include <Log/Log.hpp>
+
 #include <Serialization/Binary.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
@@ -34,7 +36,123 @@ static Container::Optional<Container::String> ReadString (std::istream &_input)
 
         output += next;
     }
-};
+}
+
+static void SerializePatchValue (std::ostream &_output, const StandardLayout::Field &_field, const void *_value)
+{
+    switch (_field.GetArchetype ())
+    {
+    case StandardLayout::FieldArchetype::BIT:
+    case StandardLayout::FieldArchetype::INT:
+    case StandardLayout::FieldArchetype::UINT:
+    case StandardLayout::FieldArchetype::FLOAT:
+        _output.write (static_cast<const char *> (_value), static_cast<std::streamsize> (_field.GetSize ()));
+        break;
+
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
+        WriteString (_output, **static_cast<const Memory::UniqueString *> (_value));
+        break;
+
+    case StandardLayout::FieldArchetype::STRING:
+    case StandardLayout::FieldArchetype::BLOCK:
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        // Unsupported.
+        assert (false);
+        break;
+    }
+}
+
+static bool DeserializePatchValue (std::istream &_input,
+                                   const StandardLayout::Field &_field,
+                                   StandardLayout::FieldId _fieldId,
+                                   StandardLayout::PatchBuilder &_builder)
+{
+    std::array<uint8_t, 8u> buffer;
+    if (_field.GetArchetype () != StandardLayout::FieldArchetype::UNIQUE_STRING)
+    {
+        assert (buffer.size () >= _field.GetSize ());
+        if (!_input.read (reinterpret_cast<char *> (buffer.data ()), static_cast<std::streamsize> (_field.GetSize ())))
+        {
+            return false;
+        }
+    }
+
+    switch (_field.GetArchetype ())
+    {
+    case StandardLayout::FieldArchetype::BIT:
+        _builder.SetBit (_fieldId, block_cast<bool> (buffer));
+        break;
+
+    case StandardLayout::FieldArchetype::INT:
+        switch (_field.GetSize ())
+        {
+        case 1u:
+            _builder.SetInt8 (_fieldId, block_cast<int8_t> (buffer));
+            break;
+        case 2u:
+            _builder.SetInt16 (_fieldId, block_cast<int16_t> (buffer));
+            break;
+        case 4u:
+            _builder.SetInt32 (_fieldId, block_cast<int32_t> (buffer));
+            break;
+        case 8u:
+            _builder.SetInt64 (_fieldId, block_cast<int64_t> (buffer));
+            break;
+        }
+        break;
+
+    case StandardLayout::FieldArchetype::UINT:
+        switch (_field.GetSize ())
+        {
+        case 1u:
+            _builder.SetUInt8 (_fieldId, block_cast<uint8_t> (buffer));
+            break;
+        case 2u:
+            _builder.SetUInt16 (_fieldId, block_cast<uint16_t> (buffer));
+            break;
+        case 4u:
+            _builder.SetUInt32 (_fieldId, block_cast<uint32_t> (buffer));
+            break;
+        case 8u:
+            _builder.SetUInt64 (_fieldId, block_cast<uint64_t> (buffer));
+            break;
+        }
+        break;
+
+    case StandardLayout::FieldArchetype::FLOAT:
+        switch (_field.GetSize ())
+        {
+        case 4u:
+            _builder.SetFloat (_fieldId, block_cast<float> (buffer));
+            break;
+        case 8u:
+            _builder.SetDouble (_fieldId, block_cast<double> (buffer));
+            break;
+        }
+        break;
+
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
+        if (Container::Optional<Container::String> string = ReadString (_input))
+        {
+            _builder.SetUniqueString (_fieldId, Memory::UniqueString {string.value ().c_str ()});
+        }
+        else
+        {
+            return false;
+        }
+
+        break;
+
+    case StandardLayout::FieldArchetype::STRING:
+    case StandardLayout::FieldArchetype::BLOCK:
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        // Unsupported.
+        assert (false);
+        return false;
+    }
+
+    return true;
+}
 
 void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept
 {
@@ -196,28 +314,7 @@ void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch)
     {
         _output.write (reinterpret_cast<const char *> (&change.field), sizeof (change.field));
         StandardLayout::Field field = mapping.GetField (change.field);
-
-        switch (field.GetArchetype ())
-        {
-        case StandardLayout::FieldArchetype::BIT:
-        case StandardLayout::FieldArchetype::INT:
-        case StandardLayout::FieldArchetype::UINT:
-        case StandardLayout::FieldArchetype::FLOAT:
-            _output.write (static_cast<const char *> (change.newValue),
-                           static_cast<std::streamsize> (field.GetSize ()));
-            break;
-
-        case StandardLayout::FieldArchetype::UNIQUE_STRING:
-            WriteString (_output, **static_cast<const Memory::UniqueString *> (change.newValue));
-            break;
-
-        case StandardLayout::FieldArchetype::STRING:
-        case StandardLayout::FieldArchetype::BLOCK:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
-            // Unsupported.
-            assert (false);
-            break;
-        }
+        SerializePatchValue (_output, field, change.newValue);
     }
 }
 
@@ -233,7 +330,6 @@ bool DeserializePatch (std::istream &_input,
         return false;
     }
 
-    std::array<uint8_t, 8u> buffer;
     for (std::uint32_t index = 0u; index < changeCount; ++index)
     {
         StandardLayout::FieldId fieldId;
@@ -243,92 +339,70 @@ bool DeserializePatch (std::istream &_input,
         }
 
         StandardLayout::Field field = _mapping.GetField (fieldId);
-        if (!field.IsHandleValid ())
+        if (!field.IsHandleValid () || !DeserializePatchValue (_input, field, fieldId, _builder))
         {
             return false;
         }
+    }
 
-        if (field.GetArchetype () != StandardLayout::FieldArchetype::UNIQUE_STRING)
+    return true;
+}
+
+void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept
+{
+    const StandardLayout::Mapping &mapping = _patch.GetTypeMapping ();
+    const auto changeCount = static_cast<uint32_t> (_patch.GetChangeCount ());
+    _output.write (reinterpret_cast<const char *> (&changeCount), sizeof (changeCount));
+
+    for (const auto &change : _patch)
+    {
+        StandardLayout::Field field = mapping.GetField (change.field);
+        WriteString (_output, *field.GetName ());
+        SerializePatchValue (_output, field, change.newValue);
+    }
+}
+
+bool DeserializeFastPortablePatch (std::istream &_input,
+                                   StandardLayout::PatchBuilder &_builder,
+                                   const StandardLayout::Mapping &_mapping) noexcept
+{
+    FieldNameLookupCache cache {_mapping};
+    return DeserializeFastPortablePatch (_input, _builder, _mapping, cache);
+}
+
+bool DeserializeFastPortablePatch (std::istream &_input,
+                                   StandardLayout::PatchBuilder &_builder,
+                                   const StandardLayout::Mapping &_mapping,
+                                   FieldNameLookupCache &_cache) noexcept
+{
+    assert (_cache.GetTypeMapping () == _mapping);
+    _builder.Begin (_mapping);
+    std::uint32_t changeCount = 0u;
+
+    if (!_input.read (reinterpret_cast<char *> (&changeCount), sizeof (changeCount)))
+    {
+        return false;
+    }
+
+    for (std::uint32_t index = 0u; index < changeCount; ++index)
+    {
+        if (Container::Optional<Container::String> fieldName = ReadString (_input))
         {
-            assert (buffer.size () >= field.GetSize ());
-            if (!_input.read (reinterpret_cast<char *> (buffer.data ()),
-                              static_cast<std::streamsize> (field.GetSize ())))
+            StandardLayout::Field field = _cache.Lookup (Memory::UniqueString {fieldName.value ().c_str ()});
+            if (!field.IsHandleValid ())
+            {
+                EMERGENCE_LOG (ERROR, "Mapping \"", _mapping.GetName (), "\" does not contain field \"",
+                               fieldName.value (), "\"!");
+                return false;
+            }
+
+            if (!DeserializePatchValue (_input, field, _mapping.GetFieldId (field), _builder))
             {
                 return false;
             }
         }
-
-        switch (field.GetArchetype ())
+        else
         {
-        case StandardLayout::FieldArchetype::BIT:
-            _builder.SetBit (fieldId, block_cast<bool> (buffer));
-            break;
-
-        case StandardLayout::FieldArchetype::INT:
-            switch (field.GetSize ())
-            {
-            case 1u:
-                _builder.SetInt8 (fieldId, block_cast<int8_t> (buffer));
-                break;
-            case 2u:
-                _builder.SetInt16 (fieldId, block_cast<int16_t> (buffer));
-                break;
-            case 4u:
-                _builder.SetInt32 (fieldId, block_cast<int32_t> (buffer));
-                break;
-            case 8u:
-                _builder.SetInt64 (fieldId, block_cast<int64_t> (buffer));
-                break;
-            }
-            break;
-
-        case StandardLayout::FieldArchetype::UINT:
-            switch (field.GetSize ())
-            {
-            case 1u:
-                _builder.SetUInt8 (fieldId, block_cast<uint8_t> (buffer));
-                break;
-            case 2u:
-                _builder.SetUInt16 (fieldId, block_cast<uint16_t> (buffer));
-                break;
-            case 4u:
-                _builder.SetUInt32 (fieldId, block_cast<uint32_t> (buffer));
-                break;
-            case 8u:
-                _builder.SetUInt64 (fieldId, block_cast<uint64_t> (buffer));
-                break;
-            }
-            break;
-
-        case StandardLayout::FieldArchetype::FLOAT:
-            switch (field.GetSize ())
-            {
-            case 4u:
-                _builder.SetFloat (fieldId, block_cast<float> (buffer));
-                break;
-            case 8u:
-                _builder.SetDouble (fieldId, block_cast<double> (buffer));
-                break;
-            }
-            break;
-
-        case StandardLayout::FieldArchetype::UNIQUE_STRING:
-            if (Container::Optional<Container::String> string = ReadString (_input))
-            {
-                _builder.SetUniqueString (fieldId, Memory::UniqueString {string.value ().c_str ()});
-            }
-            else
-            {
-                return false;
-            }
-
-            break;
-
-        case StandardLayout::FieldArchetype::STRING:
-        case StandardLayout::FieldArchetype::BLOCK:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
-            // Unsupported.
-            assert (false);
             return false;
         }
     }

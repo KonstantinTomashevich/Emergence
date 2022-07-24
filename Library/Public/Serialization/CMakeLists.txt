@@ -9,6 +9,7 @@ sober_library_begin (Serialization STATIC)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE "${SYNTAX_SUGAR_LIBRARY_TARGET}")
 
+    sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PUBLIC StandardLayoutMapping)
 
     sober_variant_begin (Original)

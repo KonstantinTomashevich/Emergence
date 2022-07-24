@@ -224,21 +224,27 @@ void ObjectSerializationDeserializationTest (const Type &_value)
     CHECK_EQUAL (_value, deserialized);
 }
 
-template <typename Type>
-void PatchSerializationDeserializationTest (const Type &_initial, const Type &_changed)
-{
-    std::stringstream buffer;
-    SerializePatch (buffer,
-                    StandardLayout::PatchBuilder::FromDifference (Type::Reflect ().mapping, &_changed, &_initial));
+#define PATCH_TEST_ROUTINE(PatchType)                                                                                  \
+    template <typename Type>                                                                                           \
+    void PatchType##SerializationDeserializationTest (const Type &_initial, const Type &_changed)                      \
+    {                                                                                                                  \
+        std::stringstream buffer;                                                                                      \
+        Serialize##PatchType (                                                                                         \
+            buffer, StandardLayout::PatchBuilder::FromDifference (Type::Reflect ().mapping, &_changed, &_initial));    \
+                                                                                                                       \
+        StandardLayout::PatchBuilder builder;                                                                          \
+        CHECK (Deserialize##PatchType (buffer, builder, Type::Reflect ().mapping));                                    \
+                                                                                                                       \
+        Type target = _initial;                                                                                        \
+        CHECK_NOT_EQUAL (target, _changed);                                                                            \
+        builder.End ().Apply (&target);                                                                                \
+        CHECK_EQUAL (target, _changed);                                                                                \
+    }
 
-    StandardLayout::PatchBuilder builder;
-    CHECK (DeserializePatch (buffer, builder, Type::Reflect ().mapping));
+PATCH_TEST_ROUTINE (Patch)
+PATCH_TEST_ROUTINE (FastPortablePatch)
 
-    Type target = _initial;
-    CHECK_NOT_EQUAL (target, _changed);
-    builder.End ().Apply (&target);
-    CHECK_EQUAL (target, _changed);
-}
+#undef PATCH_TEST_ROUTINE
 } // namespace Emergence::Serialization::Binary::Test
 
 using namespace Emergence::Serialization::Binary::Test;
@@ -290,43 +296,72 @@ TEST_CASE (InplaceVector)
     ObjectSerializationDeserializationTest (vector);
 }
 
-TEST_CASE (DirectPatch)
-{
-    PatchSerializationDeserializationTest<DirectlySerializableStruct> (
-        // Because array data is registered as block which is
-        // not supported by patches, we are filling it with zeros.
-        {-19, 163, -2937, 1123, 21u, 784u, 17274u, 18274u, 1.20338f, 5647.385639, {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}},
-        {-20, 164, -2936, 4512, 17u, 783u, 26172u, 18271u, 1.20339f, 5648.385639, {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}});
-}
+#define PATCH_TESTS(Type)                                                                                              \
+    TEST_CASE (Direct##Type)                                                                                           \
+    {                                                                                                                  \
+        Type##SerializationDeserializationTest<DirectlySerializableStruct> (/*                                         \
+                                                                               Because array data is registered as     \
+                                                                               block which is not supported by         \
+                                                                               patches, we are filling it with zeros.  \
+                                                                             */                                        \
+                                                                            {-19,                                      \
+                                                                             163,                                      \
+                                                                             -2937,                                    \
+                                                                             1123,                                     \
+                                                                             21u,                                      \
+                                                                             784u,                                     \
+                                                                             17274u,                                   \
+                                                                             18274u,                                   \
+                                                                             1.20338f,                                 \
+                                                                             5647.385639,                              \
+                                                                             {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}},        \
+                                                                            {-20,                                      \
+                                                                             164,                                      \
+                                                                             -2936,                                    \
+                                                                             4512,                                     \
+                                                                             17u,                                      \
+                                                                             783u,                                     \
+                                                                             26172u,                                   \
+                                                                             18271u,                                   \
+                                                                             1.20339f,                                 \
+                                                                             5648.385639,                              \
+                                                                             {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}});       \
+    }                                                                                                                  \
+                                                                                                                       \
+    TEST_CASE (SpecialCases##Type)                                                                                     \
+    {                                                                                                                  \
+        Type##SerializationDeserializationTest<SpecialCasesStruct> (                                                   \
+            {                                                                                                          \
+                (1u << SpecialCasesStruct::ALIVE_OFFSET) |                                                             \
+                    (1u << SpecialCasesStruct::STUNNED_OFFSET), /* Strings are zeroed because they are not supported   \
+                                                                   by patches. */                                      \
+                {"\0"},                                                                                                \
+                Emergence::Memory::UniqueString {"For glory and gold!"},                                               \
+            },                                                                                                         \
+            {                                                                                                          \
+                (1u << SpecialCasesStruct::ALIVE_OFFSET),                                                              \
+                {"\0"},                                                                                                \
+                Emergence::Memory::UniqueString {"Hello, world!"},                                                     \
+            });                                                                                                        \
+    }                                                                                                                  \
+                                                                                                                       \
+    TEST_CASE (UnionPatch##Type)                                                                                       \
+    {                                                                                                                  \
+        UnionStruct first;                                                                                             \
+        first.type = 0u;                                                                                               \
+        first.x = 1.647f;                                                                                              \
+        first.y = 173.129337f;                                                                                         \
+                                                                                                                       \
+        UnionStruct second;                                                                                            \
+        second.type = 1u;                                                                                              \
+        second.m = 172947923u;                                                                                         \
+        second.n = 123838471u;                                                                                         \
+        Type##SerializationDeserializationTest (first, second);                                                        \
+    }
 
-TEST_CASE (SpecialCasesPatch)
-{
-    PatchSerializationDeserializationTest<SpecialCasesStruct> (
-        {
-            (1u << SpecialCasesStruct::ALIVE_OFFSET) | (1u << SpecialCasesStruct::STUNNED_OFFSET),
-            // Strings are zeroed because they are not supported by patches.
-            {"\0"},
-            Emergence::Memory::UniqueString {"For glory and gold!"},
-        },
-        {
-            (1u << SpecialCasesStruct::ALIVE_OFFSET),
-            {"\0"},
-            Emergence::Memory::UniqueString {"Hello, world!"},
-        });
-}
+PATCH_TESTS (Patch)
+PATCH_TESTS (FastPortablePatch)
 
-TEST_CASE (UnionPatch)
-{
-    UnionStruct first;
-    first.type = 0u;
-    first.x = 1.647f;
-    first.y = 173.129337f;
-
-    UnionStruct second;
-    second.type = 1u;
-    second.m = 172947923u;
-    second.n = 123838471u;
-    PatchSerializationDeserializationTest (first, second);
-}
+#undef PATCH_TESTS
 
 END_SUITE
