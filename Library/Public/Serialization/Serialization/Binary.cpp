@@ -272,6 +272,7 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
             if (Container::Optional<Container::String> string = ReadString (_input))
             {
                 strncpy (static_cast<char *> (address), string.value ().c_str (), field.GetSize () - 1u);
+                static_cast<char *>(address)[field.GetSize () - 1u] = '\0';
             }
             else
             {
@@ -389,10 +390,10 @@ bool DeserializeFastPortablePatch (std::istream &_input,
         if (Container::Optional<Container::String> fieldName = ReadString (_input))
         {
             StandardLayout::Field field = _cache.Lookup (Memory::UniqueString {fieldName.value ().c_str ()});
-            if (!field.IsHandleValid ())
+            if (!field)
             {
-                EMERGENCE_LOG (ERROR, "Mapping \"", _mapping.GetName (), "\" does not contain field \"",
-                               fieldName.value (), "\"!");
+                EMERGENCE_LOG (ERROR, "Serialization::Binary: Mapping \"", _mapping.GetName (),
+                               "\" does not contain field \"", fieldName.value (), "\"!");
                 return false;
             }
 

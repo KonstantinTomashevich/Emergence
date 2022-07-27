@@ -9,13 +9,13 @@ namespace Emergence::Container
 {
 StringBuilder::StringBuilder () noexcept
 {
-    buffer[end] = '\0';
+    buffer[count] = '\0';
 }
 
 StringBuilder &StringBuilder::Reset () noexcept
 {
-    end = 0u;
-    buffer[end] = '\0';
+    count = 0u;
+    buffer[count] = '\0';
     return *this;
 }
 
@@ -28,9 +28,9 @@ const char *StringBuilder::Get () const noexcept
     std::size_t spaceLeft = SpaceLeft ();                                                                              \
     if (spaceLeft > 0u)                                                                                                \
     {                                                                                                                  \
-        int count = snprintf (&buffer[end], spaceLeft, (Format), _value);                                              \
-        assert (count >= 0);                                                                                           \
-        end += std::min (spaceLeft, static_cast<std::size_t> (count));                                                 \
+        int symbolCount = snprintf (&buffer[count], spaceLeft, (Format), _value);                                      \
+        assert (symbolCount >= 0);                                                                                     \
+        count += std::min (spaceLeft, static_cast<std::size_t> (symbolCount));                                         \
     }                                                                                                                  \
                                                                                                                        \
     return *this
@@ -224,7 +224,7 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
 
 std::size_t StringBuilder::SpaceLeft () const noexcept
 {
-    assert (end < BUFFER_SIZE);
-    return BUFFER_SIZE - end;
+    assert (count < BUFFER_SIZE);
+    return BUFFER_SIZE - count;
 }
 } // namespace Emergence::Container

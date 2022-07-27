@@ -1,0 +1,321 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <cassert>
+
+#include <Log/Log.hpp>
+
+#include <Serialization/Yaml.hpp>
+
+// We're linking to static library, but define is not passed to us for some reason.
+// Therefore, we need to add it manually.
+#define YAML_CPP_STATIC_DEFINE
+#include <yaml-cpp/yaml.h>
+
+namespace Emergence::Serialization::Yaml
+{
+static YAML::Node SerializeLeafValueToYaml (const void *_address, const StandardLayout::Field &_field)
+{
+    YAML::Node result {YAML::NodeType::Scalar};
+    switch (_field.GetArchetype ())
+    {
+    case StandardLayout::FieldArchetype::BIT:
+
+        // We are casting to bool to signal that this value must be serialized as boolean.
+        result = static_cast<bool> (*static_cast<const uint8_t *> (_address) & (1u << _field.GetBitOffset ()));
+        break;
+
+    case StandardLayout::FieldArchetype::INT:
+        switch (_field.GetSize ())
+        {
+        case 1u:
+            // We are converting to 16-bit int to avoid char conversion.
+            result = static_cast<int16_t> (*static_cast<const int8_t *> (_address));
+            break;
+
+        case 2u:
+            result = *static_cast<const int16_t *> (_address);
+            break;
+
+        case 4u:
+            result = *static_cast<const int32_t *> (_address);
+            break;
+
+        case 8u:
+            result = *static_cast<const int64_t *> (_address);
+            break;
+        }
+        break;
+
+    case StandardLayout::FieldArchetype::UINT:
+        switch (_field.GetSize ())
+        {
+        case 1u:
+            // We are converting to 16-bit int to avoid char conversion.
+            result = static_cast<uint16_t> (*static_cast<const uint8_t *> (_address));
+            break;
+
+        case 2u:
+            result = *static_cast<const uint16_t *> (_address);
+            break;
+
+        case 4u:
+            result = *static_cast<const uint32_t *> (_address);
+            break;
+
+        case 8u:
+            result = *static_cast<const uint64_t *> (_address);
+            break;
+        }
+        break;
+
+    case StandardLayout::FieldArchetype::FLOAT:
+        switch (_field.GetSize ())
+        {
+        case 4u:
+            result = *static_cast<const float *> (_address);
+            break;
+
+        case 8u:
+            result = *static_cast<const double *> (_address);
+            break;
+        }
+        break;
+
+    case StandardLayout::FieldArchetype::STRING:
+        result = static_cast<const char *> (_address);
+        break;
+
+    case StandardLayout::FieldArchetype::BLOCK:
+        result = YAML::Binary (static_cast<const unsigned char *> (_address), _field.GetSize ());
+        break;
+
+    case StandardLayout::FieldArchetype::UNIQUE_STRING:
+        result = **static_cast<const Memory::UniqueString *> (_address);
+        break;
+
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        // Only leaf values are supported.
+        assert (false);
+        break;
+    }
+
+    return result;
+}
+
+static void SerializeObjectToYaml (YAML::Node &_output, const void *_object, const StandardLayout::Mapping &_mapping)
+{
+    for (auto iterator = _mapping.BeginConditional (_object), end = _mapping.EndConditional (); iterator != end;
+         ++iterator)
+    {
+        StandardLayout::Field field = *iterator;
+        if (field.IsProjected ())
+        {
+            continue;
+        }
+
+        if (field.GetArchetype () == StandardLayout::FieldArchetype::NESTED_OBJECT)
+        {
+            YAML::Node node {YAML::NodeType::Map};
+            SerializeObjectToYaml (node, field.GetValue (_object), field.GetNestedObjectMapping ());
+            _output[*field.GetName ()] = node;
+        }
+        else
+        {
+            _output[*field.GetName ()] = SerializeLeafValueToYaml (field.GetValue (_object), field);
+        }
+    }
+}
+
+static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_address, const StandardLayout::Field &_field)
+{
+    try
+    {
+        switch (_field.GetArchetype ())
+        {
+        case StandardLayout::FieldArchetype::BIT:
+            if (_input.as<bool> ())
+            {
+                *static_cast<uint8_t *> (_address) |= 1u << _field.GetBitOffset ();
+            }
+            else
+            {
+                *static_cast<uint8_t *> (_address) &= ~(1u << _field.GetBitOffset ());
+            }
+            break;
+
+        case StandardLayout::FieldArchetype::INT:
+            switch (_field.GetSize ())
+            {
+            case 1u:
+                *static_cast<int8_t *> (_address) = _input.as<int8_t> ();
+                break;
+            case 2u:
+                *static_cast<int16_t *> (_address) = _input.as<int16_t> ();
+                break;
+            case 4u:
+                *static_cast<int32_t *> (_address) = _input.as<int32_t> ();
+                break;
+            case 8u:
+                *static_cast<int64_t *> (_address) = _input.as<int64_t> ();
+                break;
+            }
+            break;
+
+        case StandardLayout::FieldArchetype::UINT:
+            switch (_field.GetSize ())
+            {
+            case 1u:
+                *static_cast<uint8_t *> (_address) = _input.as<uint8_t> ();
+                break;
+            case 2u:
+                *static_cast<uint16_t *> (_address) = _input.as<uint16_t> ();
+                break;
+            case 4u:
+                *static_cast<uint32_t *> (_address) = _input.as<uint32_t> ();
+                break;
+            case 8u:
+                *static_cast<uint64_t *> (_address) = _input.as<uint64_t> ();
+                break;
+            }
+            break;
+
+        case StandardLayout::FieldArchetype::FLOAT:
+            switch (_field.GetSize ())
+            {
+            case 4u:
+                *static_cast<float *> (_address) = _input.as<float> ();
+                break;
+            case 8u:
+                *static_cast<double *> (_address) = _input.as<double> ();
+                break;
+            }
+            break;
+
+        case StandardLayout::FieldArchetype::STRING:
+            strncpy (static_cast<char *> (_address), _input.Scalar ().c_str (), _field.GetSize () - 1u);
+            static_cast<char *> (_address)[_field.GetSize () - 1u] = '\0';
+            break;
+
+        case StandardLayout::FieldArchetype::BLOCK:
+        {
+            auto binary = _input.as<YAML::Binary> ();
+            assert (binary.data ());
+            memcpy (_address, binary.data (), std::min (binary.size (), _field.GetSize ()));
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::UNIQUE_STRING:
+            *static_cast<Memory::UniqueString *> (_address) = Memory::UniqueString {_input.Scalar ().c_str ()};
+            break;
+
+        case StandardLayout::FieldArchetype::NESTED_OBJECT:
+            // Only leaf values are supported.
+            assert (false);
+            break;
+        }
+    }
+    catch (YAML::Exception &_exception)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+static bool DeserializeObjectFromYaml (const YAML::Node &_input,
+                                       void *_object,
+                                       const StandardLayout::Mapping &_mapping,
+                                       const Container::String &_prefix,
+                                       FieldNameLookupCache &_cache)
+{
+    for (auto iterator = _input.begin (); iterator != _input.end (); ++iterator)
+    {
+        if (!iterator->first.IsScalar ())
+        {
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered map pair with non-scalar key!");
+            return false;
+        }
+
+        switch (iterator->second.Type ())
+        {
+        case YAML::NodeType::Undefined:
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered undefined node during iteration!");
+            return false;
+
+        case YAML::NodeType::Null:
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered null node during iteration!");
+            return false;
+
+        case YAML::NodeType::Scalar:
+        {
+            const Memory::UniqueString fieldName {_prefix + iterator->first.Scalar ().c_str ()};
+            StandardLayout::Field field = _cache.Lookup (fieldName);
+
+            if (!field)
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
+                               "\" does not contain field \"", *fieldName, "\"!");
+                return false;
+            }
+
+            if (!DeserializeLeafValueFromYaml (iterator->second, field.GetValue (_object), field))
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to deserialize value of field \"", *fieldName,
+                               "\" from mapping \"", _mapping.GetName (), "\"!");
+                return false;
+            }
+
+            break;
+        }
+
+        case YAML::NodeType::Sequence:
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered sequence node during iteration!");
+            return false;
+
+        case YAML::NodeType::Map:
+        {
+            if (!DeserializeObjectFromYaml (
+                    iterator->second, _object, _mapping,
+                    _prefix + iterator->first.Scalar ().c_str () + StandardLayout::PROJECTION_NAME_SEPARATOR, _cache))
+            {
+                return false;
+            }
+
+            break;
+        }
+        }
+    }
+
+    return true;
+}
+
+void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept
+{
+    YAML::Node node {YAML::NodeType::Map};
+    SerializeObjectToYaml (node, _object, _mapping);
+    _output << node;
+}
+
+bool DeserializeObject (std::istream &_input, void *_object, const StandardLayout::Mapping &_mapping) noexcept
+{
+    FieldNameLookupCache cache {_mapping};
+    return DeserializeObject (_input, _object, _mapping, cache);
+}
+
+bool DeserializeObject (std::istream &_input,
+                        void *_object,
+                        const StandardLayout::Mapping &_mapping,
+                        FieldNameLookupCache &_cache) noexcept
+{
+    YAML::Node node = YAML::Load (_input);
+    assert (node.IsMap ());
+
+    if (!node)
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml:  Unable to parse YAML node from given input!");
+        return false;
+    }
+
+    return DeserializeObjectFromYaml (node, _object, _mapping, "", _cache);
+}
+} // namespace Emergence::Serialization::Yaml
