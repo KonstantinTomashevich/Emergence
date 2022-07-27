@@ -296,12 +296,6 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
     _output << node;
 }
 
-bool DeserializeObject (std::istream &_input, void *_object, const StandardLayout::Mapping &_mapping) noexcept
-{
-    FieldNameLookupCache cache {_mapping};
-    return DeserializeObject (_input, _object, _mapping, cache);
-}
-
 bool DeserializeObject (std::istream &_input,
                         void *_object,
                         const StandardLayout::Mapping &_mapping,

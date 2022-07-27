@@ -16,8 +16,10 @@ void ObjectSerializationDeserializationTest (const Type &_value)
     std::stringstream buffer;
     SerializeObject (buffer, &_value, Type::Reflect ().mapping);
 
+    FieldNameLookupCache cache {Type::Reflect ().mapping};
     Type deserialized;
-    CHECK (DeserializeObject (buffer, &deserialized, Type::Reflect ().mapping));
+
+    CHECK (DeserializeObject (buffer, &deserialized, Type::Reflect ().mapping, cache));
     CHECK_EQUAL (_value, deserialized);
 }
 } // namespace Emergence::Serialization::Yaml::Test

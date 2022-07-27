@@ -365,14 +365,6 @@ void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Pa
 
 bool DeserializeFastPortablePatch (std::istream &_input,
                                    StandardLayout::PatchBuilder &_builder,
-                                   const StandardLayout::Mapping &_mapping) noexcept
-{
-    FieldNameLookupCache cache {_mapping};
-    return DeserializeFastPortablePatch (_input, _builder, _mapping, cache);
-}
-
-bool DeserializeFastPortablePatch (std::istream &_input,
-                                   StandardLayout::PatchBuilder &_builder,
                                    const StandardLayout::Mapping &_mapping,
                                    FieldNameLookupCache &_cache) noexcept
 {

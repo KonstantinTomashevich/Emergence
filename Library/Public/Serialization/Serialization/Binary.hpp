@@ -25,14 +25,6 @@ void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Pa
 
 bool DeserializeFastPortablePatch (std::istream &_input,
                                    StandardLayout::PatchBuilder &_builder,
-                                   const StandardLayout::Mapping &_mapping) noexcept;
-
-bool DeserializeFastPortablePatch (std::istream &_input,
-                                   StandardLayout::PatchBuilder &_builder,
                                    const StandardLayout::Mapping &_mapping,
                                    FieldNameLookupCache &_cache) noexcept;
-
-// TODO: Space efficient portable patches: use enter-exit commands instead of duplicating prefixes like
-//       firstLevelInnerObject.secondLevelInnerObject.firstLeafField
-//       firstLevelInnerObject.secondLevelInnerObject.secondLeafField
 } // namespace Emergence::Serialization::Binary

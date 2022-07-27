@@ -23,25 +23,38 @@ void ObjectSerializationDeserializationTest (const Type &_value)
     CHECK_EQUAL (_value, deserialized);
 }
 
-#define PATCH_TEST_ROUTINE(PatchType)                                                                                  \
-    template <typename Type>                                                                                           \
-    void PatchType##SerializationDeserializationTest (const Type &_initial, const Type &_changed)                      \
-    {                                                                                                                  \
-        std::stringstream buffer;                                                                                      \
-        Serialize##PatchType (                                                                                         \
-            buffer, StandardLayout::PatchBuilder::FromDifference (Type::Reflect ().mapping, &_changed, &_initial));    \
-                                                                                                                       \
-        StandardLayout::PatchBuilder builder;                                                                          \
-        CHECK (Deserialize##PatchType (buffer, builder, Type::Reflect ().mapping));                                    \
-                                                                                                                       \
-        Type target = _initial;                                                                                        \
-        CHECK_NOT_EQUAL (target, _changed);                                                                            \
-        builder.End ().Apply (&target);                                                                                \
-        CHECK_EQUAL (target, _changed);                                                                                \
-    }
+template <typename Type>
+void PatchSerializationDeserializationTest (const Type &_initial, const Type &_changed)
+{
+    std::stringstream buffer;
+    SerializePatch (buffer,
+                    StandardLayout::PatchBuilder::FromDifference (Type::Reflect ().mapping, &_changed, &_initial));
 
-PATCH_TEST_ROUTINE (Patch)
-PATCH_TEST_ROUTINE (FastPortablePatch)
+    StandardLayout::PatchBuilder builder;
+    CHECK (DeserializePatch (buffer, builder, Type::Reflect ().mapping));
+
+    Type target = _initial;
+    CHECK_NOT_EQUAL (target, _changed);
+    builder.End ().Apply (&target);
+    CHECK_EQUAL (target, _changed);
+}
+
+template <typename Type>
+void FastPortablePatchSerializationDeserializationTest (const Type &_initial, const Type &_changed)
+{
+    std::stringstream buffer;
+    SerializeFastPortablePatch (
+        buffer, StandardLayout::PatchBuilder::FromDifference (Type::Reflect ().mapping, &_changed, &_initial));
+
+    FieldNameLookupCache cache {Type::Reflect ().mapping};
+    StandardLayout::PatchBuilder builder;
+    CHECK (DeserializeFastPortablePatch (buffer, builder, Type::Reflect ().mapping, cache));
+
+    Type target = _initial;
+    CHECK_NOT_EQUAL (target, _changed);
+    builder.End ().Apply (&target);
+    CHECK_EQUAL (target, _changed);
+}
 
 #undef PATCH_TEST_ROUTINE
 } // namespace Emergence::Serialization::Binary::Test
@@ -57,13 +70,13 @@ END_SUITE
 
 BEGIN_SUITE (BinaryPatchSerialization)
 
-PATCH_SERIALIZATION_TESTS(PatchSerializationDeserializationTest)
+PATCH_SERIALIZATION_TESTS (PatchSerializationDeserializationTest)
 
 END_SUITE
 
 BEGIN_SUITE (BinaryFastPortablePatchSerialization)
 
-PATCH_SERIALIZATION_TESTS(FastPortablePatchSerializationDeserializationTest)
+PATCH_SERIALIZATION_TESTS (FastPortablePatchSerializationDeserializationTest)
 
 END_SUITE
 
