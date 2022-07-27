@@ -40,14 +40,6 @@ public:
     StreamDeserializer &operator= (StreamDeserializer &&_other) noexcept;
 
 private:
-    bool ReadDeclareGroupEvent (std::uint64_t _timeNs) noexcept;
-
-    bool ReadMemoryManagementEvent (EventType _eventType, std::uint64_t _timeNs) noexcept;
-
-    bool ReadMarkerEvent (std::uint64_t _timeNs) noexcept;
-
-    bool ReadUniqueString (UniqueString &_output) noexcept;
-
     std::istream *input = nullptr;
 };
 } // namespace Emergence::Memory::Recording

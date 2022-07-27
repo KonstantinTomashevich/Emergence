@@ -8,9 +8,11 @@ sober_library_begin (MemoryRecording STATIC)
 
     sober_naming_variant_target (APICommon Original API_COMMON_LIBRARY_TARGET)
     sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
+    sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 
     sober_library_link_library (PUBLIC "${API_COMMON_LIBRARY_TARGET}")
     sober_library_link_library (PUBLIC "${CONTAINER_LIBRARY_TARGET}")
+    sober_library_link_library (PRIVATE "${SERIALIZATION_LIBRARY_TARGET}")
 
     sober_library_use_service (EXPECTED PUBLIC Log)
     sober_library_use_service (EXPECTED PUBLIC Memory)

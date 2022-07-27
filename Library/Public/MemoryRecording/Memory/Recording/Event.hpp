@@ -4,6 +4,8 @@
 
 #include <Memory/UniqueString.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Memory::Recording
 {
 /// \brief Allocation group unique id inside memory usage track.
@@ -102,5 +104,27 @@ struct Event
             UniqueString markerId;
         };
     };
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId type;
+        StandardLayout::FieldId timeNs;
+
+        StandardLayout::FieldId parent;
+        StandardLayout::FieldId id;
+        StandardLayout::FieldId uid;
+        StandardLayout::FieldId reservedBytes;
+        StandardLayout::FieldId acquiredBytes;
+
+        StandardLayout::FieldId group;
+        StandardLayout::FieldId bytes;
+
+        StandardLayout::FieldId scope;
+        StandardLayout::FieldId markerId;
+
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 } // namespace Emergence::Memory::Recording

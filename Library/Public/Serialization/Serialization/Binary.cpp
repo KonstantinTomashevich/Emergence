@@ -15,7 +15,15 @@ namespace Emergence::Serialization::Binary
 {
 static void WriteString (std::ostream &_output, const char *_string)
 {
-    _output.write (_string, static_cast<std::streamsize> (strlen (_string) + 1u)); // +1 for null terminator.
+    if (_string)
+    {
+        _output.write (_string, static_cast<std::streamsize> (strlen (_string) + 1u)); // +1 for null terminator.
+    }
+    else
+    {
+        // Process null strings as empty strings.
+        _output.put ('\0');
+    }
 }
 
 static Container::Optional<Container::String> ReadString (std::istream &_input)
@@ -272,7 +280,7 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
             if (Container::Optional<Container::String> string = ReadString (_input))
             {
                 strncpy (static_cast<char *> (address), string.value ().c_str (), field.GetSize () - 1u);
-                static_cast<char *>(address)[field.GetSize () - 1u] = '\0';
+                static_cast<char *> (address)[field.GetSize () - 1u] = '\0';
             }
             else
             {

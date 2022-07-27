@@ -165,6 +165,8 @@ public:
 
         void UpdateCondition () noexcept;
 
+        void UpdateWhetherTopConditionSatisfied () noexcept;
+
         const void *object = nullptr;
         Handling::Handle<PlainMapping> owner;
         const FieldData *currentField = nullptr;

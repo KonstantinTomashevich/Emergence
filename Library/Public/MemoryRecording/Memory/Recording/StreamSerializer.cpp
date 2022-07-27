@@ -4,6 +4,8 @@
 
 #include <Memory/Recording/StreamSerializer.hpp>
 
+#include <Serialization/Binary.hpp>
+
 namespace Emergence::Memory::Recording
 {
 StreamSerializer::StreamSerializer (StreamSerializer &&_other) noexcept
@@ -27,14 +29,16 @@ void StreamSerializer::Begin (std::ostream *_output, const Profiler::CapturedAll
     uidAssigner.ImportCapture (_capturedRoot,
                                [this] (Event _event)
                                {
-                                   WriteEvent (_event);
+                                   Serialization::Binary::SerializeObject (*output, &_event, Event::Reflect ().mapping);
                                });
 
-    WriteEvent ({
+    const Event event {
         _capturedRoot.GetCaptureTimeNs (),
         uidAssigner.GetUID (Profiler::AllocationGroup::Root ()),
         Constants::CaptureInitializationFinishedMarker (),
-    });
+    };
+
+    Serialization::Binary::SerializeObject (*output, &event, Event::Reflect ().mapping);
 }
 
 void StreamSerializer::SerializeEvent (const Profiler::Event &_event) noexcept
@@ -43,10 +47,12 @@ void StreamSerializer::SerializeEvent (const Profiler::Event &_event) noexcept
                                                [this, &_event] (Event _declarationEvent)
                                                {
                                                    _declarationEvent.timeNs = _event.timeNs;
-                                                   WriteEvent (_declarationEvent);
+                                                   Serialization::Binary::SerializeObject (*output, &_declarationEvent,
+                                                                                           Event::Reflect ().mapping);
                                                });
 
-    WriteEvent (ConvertEvent (uid, _event));
+    const Event event = ConvertEvent (uid, _event);
+    Serialization::Binary::SerializeObject (*output, &event, Event::Reflect ().mapping);
 }
 
 void StreamSerializer::End () noexcept
@@ -64,54 +70,5 @@ StreamSerializer &StreamSerializer::operator= (StreamSerializer &&_other) noexce
     }
 
     return *this;
-}
-
-void StreamSerializer::WriteEvent (const Event &_event) noexcept
-{
-    assert (output);
-
-    // TODO: Implement generic serialization library, based on StandardLayoutMapping?
-
-    output->write (reinterpret_cast<const char *> (&_event.type), sizeof (_event.type));
-    output->write (reinterpret_cast<const char *> (&_event.timeNs), sizeof (_event.timeNs));
-
-    auto writeUniqueString = [this] (UniqueString _string)
-    {
-        const char *symbols = *_string;
-        if (symbols)
-        {
-            output->write (symbols, static_cast<std::streamsize> (strlen (symbols) + 1u));
-        }
-        else
-        {
-            output->put ('\0');
-        }
-    };
-
-    // TODO: We are doing a lot of small writes/reads, which could lead to performance problems. Think about it later.
-
-    switch (_event.type)
-    {
-    case EventType::DECLARE_GROUP:
-        output->write (reinterpret_cast<const char *> (&_event.parent), sizeof (_event.parent));
-        writeUniqueString (_event.id);
-        output->write (reinterpret_cast<const char *> (&_event.uid), sizeof (_event.uid));
-        output->write (reinterpret_cast<const char *> (&_event.reservedBytes), sizeof (_event.reservedBytes));
-        output->write (reinterpret_cast<const char *> (&_event.acquiredBytes), sizeof (_event.acquiredBytes));
-        break;
-
-    case EventType::ALLOCATE:
-    case EventType::ACQUIRE:
-    case EventType::RELEASE:
-    case EventType::FREE:
-        output->write (reinterpret_cast<const char *> (&_event.group), sizeof (_event.group));
-        output->write (reinterpret_cast<const char *> (&_event.bytes), sizeof (_event.bytes));
-        break;
-
-    case EventType::MARKER:
-        output->write (reinterpret_cast<const char *> (&_event.scope), sizeof (_event.scope));
-        writeUniqueString (_event.markerId);
-        break;
-    }
 }
 } // namespace Emergence::Memory::Recording
