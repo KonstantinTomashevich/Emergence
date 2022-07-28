@@ -48,7 +48,7 @@ void FastPortablePatchSerializationDeserializationTest (const Type &_initial, co
 
     FieldNameLookupCache cache {Type::Reflect ().mapping};
     StandardLayout::PatchBuilder builder;
-    CHECK (DeserializeFastPortablePatch (buffer, builder, Type::Reflect ().mapping, cache));
+    CHECK (DeserializeFastPortablePatch (buffer, builder, cache));
 
     Type target = _initial;
     CHECK_NOT_EQUAL (target, _changed);

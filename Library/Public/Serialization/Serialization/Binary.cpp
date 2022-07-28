@@ -373,11 +373,9 @@ void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Pa
 
 bool DeserializeFastPortablePatch (std::istream &_input,
                                    StandardLayout::PatchBuilder &_builder,
-                                   const StandardLayout::Mapping &_mapping,
                                    FieldNameLookupCache &_cache) noexcept
 {
-    assert (_cache.GetTypeMapping () == _mapping);
-    _builder.Begin (_mapping);
+    _builder.Begin (_cache.GetTypeMapping ());
     std::uint32_t changeCount = 0u;
 
     if (!_input.read (reinterpret_cast<char *> (&changeCount), sizeof (changeCount)))
@@ -392,12 +390,12 @@ bool DeserializeFastPortablePatch (std::istream &_input,
             StandardLayout::Field field = _cache.Lookup (Memory::UniqueString {fieldName.value ().c_str ()});
             if (!field)
             {
-                EMERGENCE_LOG (ERROR, "Serialization::Binary: Mapping \"", _mapping.GetName (),
+                EMERGENCE_LOG (ERROR, "Serialization::Binary: Mapping \"", _cache.GetTypeMapping ().GetName (),
                                "\" does not contain field \"", fieldName.value (), "\"!");
                 return false;
             }
 
-            if (!DeserializePatchValue (_input, field, _mapping.GetFieldId (field), _builder))
+            if (!DeserializePatchValue (_input, field, _cache.GetTypeMapping ().GetFieldId (field), _builder))
             {
                 return false;
             }

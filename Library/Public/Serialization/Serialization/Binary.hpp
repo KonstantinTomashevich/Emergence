@@ -25,6 +25,5 @@ void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Pa
 
 bool DeserializeFastPortablePatch (std::istream &_input,
                                    StandardLayout::PatchBuilder &_builder,
-                                   const StandardLayout::Mapping &_mapping,
                                    FieldNameLookupCache &_cache) noexcept;
 } // namespace Emergence::Serialization::Binary
