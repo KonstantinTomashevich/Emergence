@@ -21,12 +21,10 @@ public:
 
 private:
     Emergence::Celerity::ModifySingletonQuery modifyPhysicsWorld;
-    Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
 };
 
 PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton)),
-      insertDynamicsMaterial (INSERT_LONG_TERM (Emergence::Celerity::DynamicsMaterial))
+    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton))
 {
     _constructor.MakeDependencyOf (Checkpoint::PHYSICS_INITIALIZED);
 }
@@ -55,16 +53,6 @@ void PhysicsInitializer::Execute () noexcept
         (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) | (1u << PhysicsConstant::HIT_BOX_COLLISION_GROUP);
 
     world->collisionMasks[PhysicsConstant::HIT_BOX_COLLISION_GROUP] = (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
-
-    auto materialCursor = insertDynamicsMaterial.Execute ();
-    auto *material = static_cast<Emergence::Celerity::DynamicsMaterial *> (++materialCursor);
-
-    material->id = PhysicsConstant::DEFAULT_MATERIAL_ID;
-    material->staticFriction = 0.4f;
-    material->dynamicFriction = 0.4f;
-    material->enableFriction = true;
-    material->restitution = 0.3f;
-    material->density = 400.0f;
 }
 
 using namespace Emergence::Memory::Literals;

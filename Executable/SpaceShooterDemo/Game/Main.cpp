@@ -26,6 +26,7 @@
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
+#include <Initialization/DynamicsMaterialLoading.hpp>
 #include <Initialization/InputInitialization.hpp>
 #include <Initialization/LevelGeneration.hpp>
 #include <Initialization/PhysicsInitialization.hpp>
@@ -134,6 +135,7 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    DynamicsMaterialLoading::AddToInitializationPipeline (pipelineBuilder);
     InputInitialization::AddToInitializationPipeline (pipelineBuilder);
     LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
     PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);

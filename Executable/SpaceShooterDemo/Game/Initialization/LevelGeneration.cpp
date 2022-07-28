@@ -167,7 +167,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
     auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
     shape->objectId = groundShapeObjectId;
     shape->shapeId = physicsWorld->GenerateShapeId ();
-    shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
+    shape->materialId = "Default"_us;
 
     shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
                        .boxHalfExtents = {static_cast<float> (_halfWidth), 0.5f, static_cast<float> (_halfHeight)}};
@@ -201,7 +201,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     auto *shape = static_cast<Emergence::Celerity::CollisionShapeComponent *> (++shapeCursor);
     shape->objectId = killZObjectId;
     shape->shapeId = physicsWorld->GenerateShapeId ();
-    shape->materialId = PhysicsConstant::DEFAULT_MATERIAL_ID;
+    shape->materialId = "Default"_us;
 
     shape->geometry = {.type = Emergence::Celerity::CollisionGeometryType::BOX,
                        .boxHalfExtents = {_halfWidth, physicsWorld->toleranceSpeed, _halfHeight}};
