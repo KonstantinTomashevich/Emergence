@@ -48,8 +48,7 @@ void DynamicsMaterialLoader::Execute () noexcept
             }
 
             auto *material = static_cast<Emergence::Celerity::DynamicsMaterial *> (++cursor);
-            if (!Emergence::Serialization::Yaml::DeserializeObject (
-                    input, material, Emergence::Celerity::DynamicsMaterial::Reflect ().mapping, cache))
+            if (!Emergence::Serialization::Yaml::DeserializeObject (input, material, cache))
             {
                 EMERGENCE_LOG (ERROR, "DynamicsMaterialLoading: Failed to load Dynamics material from \"",
                                entry.path ().string ().c_str (), "\"!");
