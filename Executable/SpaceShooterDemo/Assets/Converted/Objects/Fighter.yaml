@@ -64,10 +64,6 @@
     logicalLocalTransform:
       translation:
         z: 1.0
-    # TODO: Bug. Unless object is logical transform changes, visual transform is never getting synced properly.
-    visualLocalTransform:
-      translation:
-        z: 1.0
 
 - type: ShooterComponent
   content:
