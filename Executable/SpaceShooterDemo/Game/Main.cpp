@@ -3,8 +3,11 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <fstream>
-#include <thread>
 
+#include <Assembly/AssemblerConfiguration.hpp>
+
+#include <Celerity/Assembly/Assembly.hpp>
+#include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/Simulation.hpp>
@@ -14,18 +17,19 @@
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
 #include <Celerity/World.hpp>
 
-#include <Gameplay/Assembly.hpp>
 #include <Gameplay/Control.hpp>
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/FollowCamera.hpp>
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
+#include <Gameplay/NonFeatureSpecificComponentCleanup.hpp>
 #include <Gameplay/RandomAi.hpp>
 #include <Gameplay/Shooting.hpp>
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
+#include <Initialization/AssemblyDescriptorLoading.hpp>
 #include <Initialization/DynamicsMaterialLoading.hpp>
 #include <Initialization/InputInitialization.hpp>
 #include <Initialization/LevelGeneration.hpp>
@@ -127,6 +131,7 @@ void GameApplication::Start ()
 
     {
         Emergence::Celerity::EventRegistrar registrar {&world};
+        Emergence::Celerity::RegisterAssemblyEvents (registrar);
         Emergence::Celerity::RegisterPhysicsEvents (registrar);
         Emergence::Celerity::RegisterTransformEvents (registrar);
         RegisterGameplayEvents (registrar);
@@ -135,6 +140,7 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    AssemblyDescriptorLoading::AddToInitializationPipeline (pipelineBuilder);
     DynamicsMaterialLoading::AddToInitializationPipeline (pipelineBuilder);
     InputInitialization::AddToInitializationPipeline (pipelineBuilder);
     LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
@@ -142,8 +148,8 @@ void GameApplication::Start ()
     Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
-    Assembly::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+    Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetNormalAssemblerConfiguration ());
     Emergence::Celerity::VisualTransformSync::AddToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
@@ -152,14 +158,15 @@ void GameApplication::Start ()
     pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
-    Assembly::AddToFixedUpdate (pipelineBuilder);
     Control::AddToFixedUpdate (pipelineBuilder);
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+    Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetFixedAssemblerConfiguration ());
     Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);
+    NonFeatureSpecificComponentCleanup::AddToFixedUpdate (pipelineBuilder);
     RandomAi::AddToFixedUpdate (pipelineBuilder);
     Shooting::AddToFixedUpdate (pipelineBuilder);
     Slowdown::AddToFixedUpdate (pipelineBuilder);

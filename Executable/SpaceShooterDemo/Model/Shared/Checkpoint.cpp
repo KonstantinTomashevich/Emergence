@@ -1,8 +1,5 @@
 #include <Shared/Checkpoint.hpp>
 
-const Emergence::Memory::UniqueString Checkpoint::ASSEMBLY_STARTED {"AssemblyStarted"};
-const Emergence::Memory::UniqueString Checkpoint::ASSEMBLY_FINISHED {"AssemblyFinished"};
-
 const Emergence::Memory::UniqueString Checkpoint::CAMERA_UPDATE_STARTED {"CameraUpdateStarted"};
 const Emergence::Memory::UniqueString Checkpoint::CAMERA_UPDATE_FINISHED {"CameraUpdateFinished"};
 
@@ -18,6 +15,11 @@ const Emergence::Memory::UniqueString Checkpoint::MORTALITY_FINISHED {"Mortality
 
 const Emergence::Memory::UniqueString Checkpoint::MOVEMENT_STARTED {"MovementStarted"};
 const Emergence::Memory::UniqueString Checkpoint::MOVEMENT_FINISHED {"MovementFinished"};
+
+const Emergence::Memory::UniqueString Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_STARTED {
+    "NonFeatureSpecificComponentCleanupStarted"};
+const Emergence::Memory::UniqueString Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED {
+    "NonFeatureSpecificComponentCleanupFinished"};
 
 const Emergence::Memory::UniqueString Checkpoint::RENDER_UPDATE_STARTED {"RenderUpdateStarted"};
 const Emergence::Memory::UniqueString Checkpoint::RENDER_UPDATE_FINISHED {"RenderUpdateFinished"};

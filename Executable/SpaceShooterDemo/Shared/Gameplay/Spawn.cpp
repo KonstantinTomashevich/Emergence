@@ -1,3 +1,5 @@
+#include <Celerity/Assembly/Assembly.hpp>
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -6,8 +8,6 @@
 #include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
-#include <Gameplay/Assembly.hpp>
-#include <Gameplay/PrototypeComponent.hpp>
 #include <Gameplay/Spawn.hpp>
 #include <Gameplay/SpawnComponent.hpp>
 
@@ -68,12 +68,13 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
       transformWorldAccessor (_constructor),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
-      insertPrototype (INSERT_LONG_TERM (PrototypeComponent)),
+      insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent)),
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent))
 {
+    _constructor.DependOn (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED);
     _constructor.DependOn (Checkpoint::SPAWN_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::SPAWN_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_STARTED);
 }
 
 void SpawnProcessor::Execute () noexcept
@@ -153,9 +154,9 @@ void SpawnProcessor::Execute () noexcept
             transform->SetObjectId (objectId);
             transform->SetLogicalLocalTransform (spawnTransform, true);
 
-            auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);
+            auto *prototype = static_cast<Emergence::Celerity::PrototypeComponent *> (++prototypeCursor);
             prototype->objectId = objectId;
-            prototype->prototype = spawn->spawnPrototype;
+            prototype->descriptorId = spawn->objectToSpawnId;
 
             if (spawnPlayerId != Emergence::Celerity::INVALID_UNIQUE_ID)
             {

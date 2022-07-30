@@ -12,7 +12,7 @@ struct SpawnComponent final
 
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    Emergence::Memory::UniqueString spawnPrototype;
+    Emergence::Memory::UniqueString objectToSpawnId;
 
     uint64_t spawnCoolDownNs = 5000000000u; // 5 seconds.
 
@@ -25,7 +25,7 @@ struct SpawnComponent final
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
-        Emergence::StandardLayout::FieldId spawnPrototype;
+        Emergence::StandardLayout::FieldId objectToSpawnId;
         Emergence::StandardLayout::FieldId spawnCoolDownNs;
         Emergence::StandardLayout::FieldId spawnCoolingDownUntilNs;
         Emergence::StandardLayout::FieldId maxSpawnedObjects;

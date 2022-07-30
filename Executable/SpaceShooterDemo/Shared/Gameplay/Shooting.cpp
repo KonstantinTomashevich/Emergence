@@ -1,3 +1,5 @@
+#include <Celerity/Assembly/Assembly.hpp>
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -6,9 +8,7 @@
 #include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/Events.hpp>
-#include <Gameplay/HardcodedPrototypes.hpp>
 #include <Gameplay/InputConstant.hpp>
-#include <Gameplay/PrototypeComponent.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 #include <Gameplay/Shooting.hpp>
 
@@ -55,13 +55,13 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
       transformWorldAccessor (_constructor),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
-      insertPrototype (INSERT_LONG_TERM (PrototypeComponent))
+      insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent))
 {
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
     _constructor.DependOn (Checkpoint::SHOOTING_STARTED);
 
     _constructor.MakeDependencyOf (Checkpoint::SHOOTING_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_STARTED);
 
     // To resolve race condition.
     _constructor.MakeDependencyOf (Checkpoint::SPAWN_STARTED);
@@ -107,9 +107,9 @@ void ShootingProcessor::Execute () noexcept
                     transform->SetLogicalLocalTransform (bulletTransform, true);
 
                     auto prototypeCursor = insertPrototype.Execute ();
-                    auto *prototype = static_cast<PrototypeComponent *> (++prototypeCursor);
+                    auto *prototype = static_cast<Emergence::Celerity::PrototypeComponent *> (++prototypeCursor);
                     prototype->objectId = bulletObjectId;
-                    prototype->prototype = HardcodedPrototypes::BULLET;
+                    prototype->descriptorId = shooter->bulletPrototype;
                 }
 
                 break;

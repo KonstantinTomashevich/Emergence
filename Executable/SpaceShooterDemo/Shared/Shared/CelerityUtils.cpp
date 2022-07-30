@@ -1,3 +1,4 @@
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
 
@@ -8,8 +9,8 @@ namespace Emergence::Celerity
 {
 void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (Checkpoint::ASSEMBLY_STARTED);
-    _pipelineBuilder.AddCheckpoint (Checkpoint::ASSEMBLY_FINISHED);
+    _pipelineBuilder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
+    _pipelineBuilder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
 
     _pipelineBuilder.AddCheckpoint (Checkpoint::CAMERA_UPDATE_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::CAMERA_UPDATE_FINISHED);
@@ -26,6 +27,9 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
 
     _pipelineBuilder.AddCheckpoint (Checkpoint::MOVEMENT_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::MOVEMENT_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED);
 
     _pipelineBuilder.AddCheckpoint (Checkpoint::RENDER_UPDATE_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::RENDER_UPDATE_FINISHED);

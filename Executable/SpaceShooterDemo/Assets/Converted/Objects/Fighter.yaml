@@ -1,0 +1,89 @@
+- type: MortalComponent
+  content:
+    objectId: 0
+
+- type: ControllableComponent
+  content:
+    objectId: 0
+
+- type: RigidBodyComponent
+  content:
+    objectId: 0
+    angularDamping: 0.99
+    type: 2 # Dynamic.
+    manipulatedOutsideOfSimulation: 1
+    lockFlags: 40 # Lock angular velocity on X and Z axis.
+
+# Sphere for movement.
+- type: CollisionShapeComponent
+  content:
+    objectId: 0
+    shapeId: 0
+    materialId: Default
+    geometry:
+      type: 1 # Sphere
+      sphereRadius: 0.5
+    collisionGroup: 2 # Fighter
+
+# Hit box for bullets.
+- type: CollisionShapeComponent
+  content:
+    objectId: 0
+    shapeId: 1
+    materialId: Default
+    geometry:
+      type: 0 # Box
+      boxHalfExtents:
+        x: 0.5
+        y: 0.5
+        z: 0.5
+    collisionGroup: 4 # Hit box
+    trigger: 1
+
+- type: InputListenerComponent
+  content:
+    objectId: 0
+
+- type: MovementComponent
+  content:
+    objectId: 0
+    maxLinearSpeed: 5.0
+    linearAcceleration:
+      z: 20.0
+    maxAngularSpeed: 3.14
+    angularAcceleration:
+      y: 6.28
+    linearVelocityMask: 5 # b101
+    angularVelocityMask: 2 # b010
+
+# Shooting point child transform.
+- type: Transform3dComponent
+  content:
+    objectId: 1
+    parentObjectId: 0
+    logicalLocalTransform:
+      translation:
+        z: 1.0
+
+- type: ShooterComponent
+  content:
+    objectId: 0
+    coolDownNs: 500000000 # 0.5s
+    bulletPrototype: Bullet
+    shootingPointObjectId: 1
+
+- type: StaticModelComponent
+  content:
+    objectId: 0
+    modelId: 0
+    modelName: Models/Player.mdl
+    materialNames:
+      count: 1
+      values[0]: Materials/PlayerVehicle.xml
+
+- type: ParticleEffectComponent
+  content:
+    objectId: 0
+    effectId: 0
+    effectName: Particles/Destruction.xml
+    effectTag: Death

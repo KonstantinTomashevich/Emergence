@@ -10,6 +10,9 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedNormalEvent, ob
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedFixedToNormalEvent, objectId);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (PrototypeComponentAddedCustomToNormalEvent, objectId);
 
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (AssemblyFinishedFixedEvent, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (AssemblyFinishedNormalEvent, objectId);
+
 void RegisterAssemblyEvents (EventRegistrar &_registrar) noexcept
 {
     _registrar.OnAddEvent (
@@ -36,5 +39,8 @@ void RegisterAssemblyEvents (EventRegistrar &_registrar) noexcept
         {{PrototypeComponentAddedCustomToNormalEvent::Reflect ().mapping, EventRoute::FROM_CUSTOM_TO_NORMAL},
          PrototypeComponent::Reflect ().mapping,
          {{PrototypeComponent::Reflect ().objectId, PrototypeComponentAddedCustomToNormalEvent::Reflect ().objectId}}});
+
+    _registrar.CustomEvent ({AssemblyFinishedFixedEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.CustomEvent ({AssemblyFinishedNormalEvent::Reflect ().mapping, EventRoute::NORMAL});
 }
 } // namespace Emergence::Celerity

@@ -2,9 +2,7 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace Assembly
+namespace NonFeatureSpecificComponentCleanup
 {
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
-
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
-} // namespace Assembly
+} // namespace NonFeatureSpecificComponentCleanup

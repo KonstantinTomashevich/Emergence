@@ -471,12 +471,14 @@ bool DeserializePatchBundle (std::istream &_input,
         if (!typeNode.IsScalar ())
         {
             EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch type node is not a scalar!");
+            return false;
         }
 
         YAML::Node contentNode = (*iterator)["content"];
         if (!contentNode.IsMap ())
         {
             EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch content node is not a map!");
+            return false;
         }
 
         FieldNameLookupCache *cache = _context.RequestCache (Memory::UniqueString {typeNode.Scalar ().c_str ()});
@@ -484,6 +486,7 @@ bool DeserializePatchBundle (std::istream &_input,
         {
             EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to find type \"", typeNode.Scalar ().c_str (),
                            "\" requested by patch bundle!");
+            return false;
         }
 
         if (DeserializePatchFromYaml (contentNode, builder, *cache))

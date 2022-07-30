@@ -8,7 +8,7 @@ const SpawnComponent::Reflection &SpawnComponent::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (SpawnComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (spawnPrototype);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectToSpawnId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (spawnCoolDownNs);
         EMERGENCE_MAPPING_REGISTER_REGULAR (spawnCoolingDownUntilNs);
         EMERGENCE_MAPPING_REGISTER_REGULAR (maxSpawnedObjects);

@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/Transform3dComponent.hpp>
@@ -153,7 +154,7 @@ DeathEffectTrigger::DeathEffectTrigger (Emergence::Celerity::TaskConstructor &_c
     : editParticleEffectByObjectId (EDIT_VALUE_1F (ParticleEffectComponent, objectId)),
       fetchDeathEvents (FETCH_SEQUENCE (DeathFixedToNormalEvent))
 {
-    _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);

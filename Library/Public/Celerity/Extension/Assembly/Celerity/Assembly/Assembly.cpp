@@ -22,7 +22,9 @@ const Emergence::Memory::UniqueString Checkpoint::ASSEMBLY_FINISHED {"AssemblyFi
 class AssemblerBase
 {
 public:
-    AssemblerBase (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept;
+    AssemblerBase (TaskConstructor &_constructor,
+                   const AssemblerConfiguration &_configuration,
+                   const StandardLayout::Mapping &_finishedEventType) noexcept;
 
 protected:
     void AssembleObject (UniqueId _rootObjectId) noexcept;
@@ -64,6 +66,7 @@ private:
     FetchValueQuery fetchPrototypeById;
     FetchValueQuery fetchTransformById;
     Transform3dWorldAccessor transformWorldAccessor;
+    InsertShortTermQuery insertFinishedEvent;
 
     // TODO: Use flat hash map.
     Container::HashMap<StandardLayout::Mapping, TypeBinding> typeBindings {Memory::Profiler::AllocationGroup::Top ()};
@@ -78,11 +81,14 @@ static UniqueId WorldObjectIdProvider (const void *_singleton)
     return static_cast<const WorldSingleton *> (_singleton)->GenerateId ();
 }
 
-AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept
+AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
+                              const AssemblerConfiguration &_configuration,
+                              const StandardLayout::Mapping &_finishedEventType) noexcept
     : fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
       fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
       fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
-      transformWorldAccessor (_constructor)
+      transformWorldAccessor (_constructor),
+      insertFinishedEvent (_constructor.InsertShortTerm (_finishedEventType))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
@@ -195,6 +201,10 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
     {
         state.idReplacement.clear ();
     }
+
+    auto eventCursor = insertFinishedEvent.Execute ();
+    void *event = ++eventCursor;
+    *static_cast<UniqueId *> (event) = _rootObjectId;
 }
 
 UniqueId AssemblerBase::ReplaceId (AssemblerBase::KeyState &_keyState, UniqueId _id) noexcept
@@ -240,7 +250,7 @@ private:
 };
 
 FixedAssembler::FixedAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept
-    : AssemblerBase (_constructor, _configuration),
+    : AssemblerBase (_constructor, _configuration, AssemblyFinishedFixedEvent::Reflect ().mapping),
       fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
       fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent))
 {
@@ -276,7 +286,7 @@ private:
 };
 
 NormalAssembler::NormalAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept
-    : AssemblerBase (_constructor, _configuration),
+    : AssemblerBase (_constructor, _configuration, AssemblyFinishedNormalEvent::Reflect ().mapping),
       fetchPrototypeAddedNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedNormalEvent)),
       fetchPrototypeAddedFixedToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedToNormalEvent)),
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
@@ -309,6 +319,9 @@ void NormalAssembler::Execute () noexcept
 }
 
 using namespace Memory::Literals;
+
+// TODO: Cross-references between fixed and normal update do not work! For example, if we're adding child transform
+//       with id 1 we can not attach model to it by specifying id 1 too.
 
 void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder, const AssemblerConfiguration &_configuration) noexcept
 {

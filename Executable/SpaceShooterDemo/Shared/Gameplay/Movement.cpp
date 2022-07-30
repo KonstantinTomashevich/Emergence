@@ -1,3 +1,4 @@
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/Physics/Simulation.hpp>
@@ -49,8 +50,8 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
-    _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MOVEMENT_FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_STARTED);
@@ -171,7 +172,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 {
     _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
         .AS_CASCADE_REMOVER_1F (DeathFixedEvent, MovementComponent, objectId)
-        .DependOn (Checkpoint::ASSEMBLY_FINISHED)
+        .DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED)
         .DependOn (Checkpoint::MOVEMENT_STARTED);
 
     _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)

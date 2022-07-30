@@ -1,3 +1,4 @@
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Transform3dComponent.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
@@ -42,6 +43,7 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
       editTransformById (EDIT_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (Checkpoint::CAMERA_UPDATE_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::CAMERA_UPDATE_FINISHED);
