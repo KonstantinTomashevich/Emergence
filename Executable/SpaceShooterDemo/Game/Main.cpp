@@ -147,21 +147,12 @@ void GameApplication::Start ()
     PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
     Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End ();
 
-    pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
-    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-    Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetNormalAssemblerConfiguration ());
-    Emergence::Celerity::VisualTransformSync::AddToNormalUpdate (pipelineBuilder);
-    FollowCamera::AddToNormalUpdate (pipelineBuilder);
-    Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
-    Mortality::AddToNormalUpdate (pipelineBuilder);
-    Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
-    pipelineBuilder.End ();
-
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Control::AddToFixedUpdate (pipelineBuilder);
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
-    Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetFixedAssemblerConfiguration ());
+    Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
+                                                     GetFixedAssemblerTypes ());
     Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
@@ -173,9 +164,22 @@ void GameApplication::Start ()
     Spawn::AddToFixedUpdate (pipelineBuilder);
     pipelineBuilder.End ();
 
+    pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
+    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
+    Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
+                                                      GetNormalAssemblerTypes ());
+    Emergence::Celerity::VisualTransformSync::AddToNormalUpdate (pipelineBuilder);
+    FollowCamera::AddToNormalUpdate (pipelineBuilder);
+    Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
+    Mortality::AddToNormalUpdate (pipelineBuilder);
+    Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
+    pipelineBuilder.End ();
+
     initializer->Execute ();
     world.RemovePipeline (initializer);
 }
+
+// TODO: We need to clean child transforms after parent transforms removal!
 
 void GameApplication::Stop ()
 {

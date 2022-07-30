@@ -61,13 +61,9 @@ struct TypeDescriptor final
     Container::Vector<StandardLayout::FieldId> rotateVector3fs {GetAssemblerConfigurationAllocationGroup ()};
 };
 
-/// \brief Configuration data needed to initialize assembly routine.
-struct AssemblerConfiguration final
-{
-    /// \brief Lists all user-defined keys.
-    Container::Vector<CustomKeyDescriptor> customKeys {GetAssemblerConfigurationAllocationGroup ()};
+/// \brief Used to list all user-defined keys.
+using CustomKeyVector = Container::Vector<CustomKeyDescriptor>;
 
-    /// \brief Lists all component types that can be spawned during assembly routine.
-    Container::Vector<TypeDescriptor> types {GetAssemblerConfigurationAllocationGroup ()};
-};
+/// \brief Used to list all component types that can be spawned during assembly routine.
+using TypeBindingVector = Container::Vector<TypeDescriptor>;
 } // namespace Emergence::Celerity

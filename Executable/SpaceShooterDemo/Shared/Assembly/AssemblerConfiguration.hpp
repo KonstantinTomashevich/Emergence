@@ -2,6 +2,8 @@
 
 #include <Celerity/Assembly/AssemblerConfiguration.hpp>
 
-Emergence::Celerity::AssemblerConfiguration GetFixedAssemblerConfiguration () noexcept;
+Emergence::Celerity::CustomKeyVector GetAssemblerCustomKeys () noexcept;
 
-Emergence::Celerity::AssemblerConfiguration GetNormalAssemblerConfiguration () noexcept;
+Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept;
+
+Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept;

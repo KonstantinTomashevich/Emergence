@@ -98,12 +98,15 @@ struct VelocityFixedComponent final
 struct NormalVisualComponent final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
+    UniqueId mainMultiComponentId = INVALID_UNIQUE_ID;
+
     Memory::UniqueString model;
     Memory::UniqueString material;
 
     struct Reflection final
     {
         StandardLayout::FieldId objectId;
+        StandardLayout::FieldId mainMultiComponentId;
         StandardLayout::FieldId model;
         StandardLayout::FieldId material;
         StandardLayout::Mapping mapping;
@@ -112,7 +115,9 @@ struct NormalVisualComponent final
     static const Reflection &Reflect () noexcept;
 };
 
-AssemblerConfiguration GetFixedAssemblerConfiguration () noexcept;
+CustomKeyVector GetAssemblerCustomKeys () noexcept;
 
-AssemblerConfiguration GetNormalAssemblerConfiguration () noexcept;
+TypeBindingVector GetFixedAssemblerTypes () noexcept;
+
+TypeBindingVector GetNormalAssemblerTypes () noexcept;
 } // namespace Emergence::Celerity::Test
