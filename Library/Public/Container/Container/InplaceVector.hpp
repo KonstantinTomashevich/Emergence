@@ -135,6 +135,8 @@ private:
     union
     {
         std::array<Item, Capacity> values;
+
+        // NOLINTNEXTLINE(bugprone-sizeof-expression): It might look suspicious for CLang when Item is pointer.
         std::array<uint8_t, sizeof (Item) * Capacity> byteRepresentation {};
     };
 

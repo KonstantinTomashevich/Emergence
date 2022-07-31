@@ -51,6 +51,7 @@
 #define PATCH_SERIALIZATION_TESTS(Executor)                                                                            \
     TEST_CASE (Trivial)                                                                                                \
     {                                                                                                                  \
+        /* NOLINTNEXTLINE(bugprone-macro-parentheses): It's impossible to use parenthesis here. */                     \
         Executor<TrivialStruct> (/*                                                                                    \
                                     Because array data is registered as block which is not                             \
                                     supported by patches, we are filling it with zeros.                                \
@@ -81,6 +82,7 @@
                                                                                                                        \
     TEST_CASE (NonTrivial)                                                                                             \
     {                                                                                                                  \
+        /* NOLINTNEXTLINE(bugprone-macro-parentheses): It's impossible to use parenthesis here. */                     \
         Executor<NonTrivialStruct> (                                                                                   \
             {                                                                                                          \
                 (1u << NonTrivialStruct::ALIVE_OFFSET) | (1u << NonTrivialStruct::STUNNED_OFFSET),                     \

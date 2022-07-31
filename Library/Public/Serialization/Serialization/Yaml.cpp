@@ -349,6 +349,7 @@ static bool DeserializeFromYaml (const YAML::Node &_input,
 
         case YAML::NodeType::Scalar:
         {
+            // NOLINTNEXTLINE(readability-redundant-string-cstr): It's not, because allocators are different.
             const Memory::UniqueString fieldName {_prefix + iterator->first.Scalar ().c_str ()};
             StandardLayout::Field field = _cache.Lookup (fieldName);
 
@@ -377,6 +378,7 @@ static bool DeserializeFromYaml (const YAML::Node &_input,
         {
             if (!DeserializeFromYaml (
                     iterator->second, _deserializer,
+                    // NOLINTNEXTLINE(readability-redundant-string-cstr): It's not, because allocators are different.
                     _prefix + iterator->first.Scalar ().c_str () + StandardLayout::PROJECTION_NAME_SEPARATOR, _cache))
             {
                 return false;
