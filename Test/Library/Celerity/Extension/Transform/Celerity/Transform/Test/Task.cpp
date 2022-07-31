@@ -1,6 +1,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Test/Task.hpp>
 #include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
 #include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
@@ -23,7 +24,7 @@ private:
 
     InsertLongTermQuery insertTransform;
     FetchValueQuery fetchTransform;
-    EditValueQuery editTransform;
+    ModifyValueQuery modifyTransform;
     Transform3dWorldAccessor worldAccessor;
 };
 
@@ -31,7 +32,7 @@ Executor::Executor (TaskConstructor &_constructor, Container::Vector<RequestPack
     : requests (std::move (_requests)),
       insertTransform (INSERT_LONG_TERM (Transform3dComponent)),
       fetchTransform (FETCH_VALUE_1F (Transform3dComponent, objectId)),
-      editTransform (EDIT_VALUE_1F (Transform3dComponent, objectId)),
+      modifyTransform (MODIFY_VALUE_1F (Transform3dComponent, objectId)),
       worldAccessor (_constructor)
 {
 }
@@ -67,8 +68,8 @@ void Executor::Execute () noexcept
                 else if constexpr (std::is_same_v<Type, Requests::ChangeParent>)
                 {
                     LOG ("Changing transform with id ", _request.id, " parent id to ", _request.newParentId, ".");
+                    auto cursor = modifyTransform.Execute (&_request.id);
 
-                    auto cursor = editTransform.Execute (&_request.id);
                     if (auto *component = static_cast<Transform3dComponent *> (*cursor))
                     {
                         component->SetParentObjectId (_request.newParentId);
@@ -84,7 +85,7 @@ void Executor::Execute () noexcept
                          _request.skipInterpolation ? " (skipping logical transform interpolation)" : "",
                          " to value: ", TRANSFORM_LOG_SEQUENCE (_request.transform));
 
-                    auto cursor = editTransform.Execute (&_request.id);
+                    auto cursor = modifyTransform.Execute (&_request.id);
                     if (auto *component = static_cast<Transform3dComponent *> (*cursor))
                     {
                         if (_request.logical)
@@ -138,12 +139,41 @@ void Executor::Execute () noexcept
 
                     if (_request.useModifyQuery)
                     {
-                        auto unsafeAccess = editTransform.AllowUnsafeFetchAccess ();
-                        executeWithQuery (editTransform);
+                        auto unsafeAccess = modifyTransform.AllowUnsafeFetchAccess ();
+                        executeWithQuery (modifyTransform);
                     }
                     else
                     {
                         executeWithQuery (fetchTransform);
+                    }
+                }
+                else if constexpr (std::is_same_v<Type, Requests::CheckTransformExists>)
+                {
+                    LOG ("Checking that transform with id ", _request.id, _request.exists ? " " : " does not ",
+                         "exists.");
+                    auto cursor = modifyTransform.Execute (&_request.id);
+
+                    if (_request.exists)
+                    {
+                        CHECK_NOT_EQUAL (*cursor, nullptr);
+                    }
+                    else
+                    {
+                        CHECK_EQUAL (*cursor, nullptr);
+                    }
+                }
+                else if constexpr (std::is_same_v<Type, Requests::RemoveTransform>)
+                {
+                    LOG ("Removing transform with id ", _request.id, ".");
+                    auto cursor = modifyTransform.Execute (&_request.id);
+
+                    if (*cursor)
+                    {
+                        ~cursor;
+                    }
+                    else
+                    {
+                        CHECK_WITH_MESSAGE (false, "Unable to find transform with required id!");
                     }
                 }
             },
@@ -155,12 +185,21 @@ void Executor::Execute () noexcept
 
 void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
+    constructor.DependOn (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    constructor.MakeDependencyOf (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
     constructor.SetExecutor<Executor> (std::move (_requests));
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
     constructor.DependOn (VisualTransformSync::Checkpoint::SYNC_FINISHED);
     constructor.SetExecutor<Executor> (std::move (_requests));

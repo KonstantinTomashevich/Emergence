@@ -1,5 +1,6 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
 
 #include <Shared/CelerityUtils.hpp>
@@ -39,6 +40,12 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
 
     _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_STARTED);
     _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_FINISHED);

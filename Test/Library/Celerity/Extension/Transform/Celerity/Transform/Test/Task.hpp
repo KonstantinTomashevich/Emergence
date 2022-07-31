@@ -53,10 +53,25 @@ struct CheckTransform final
 
     Math::Transform3d expectedTransform;
 };
+
+struct CheckTransformExists final
+{
+    Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
+    bool exists = true;
+};
+
+struct RemoveTransform final
+{
+    Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
+};
 } // namespace Requests
 
-using Request = std::
-    variant<Requests::CreateTransform, Requests::ChangeParent, Requests::SetLocalTransform, Requests::CheckTransform>;
+using Request = std::variant<Requests::CreateTransform,
+                             Requests::ChangeParent,
+                             Requests::SetLocalTransform,
+                             Requests::CheckTransform,
+                             Requests::CheckTransformExists,
+                             Requests::RemoveTransform>;
 
 namespace RequestExecutor
 {

@@ -15,6 +15,7 @@
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 #include <Celerity/World.hpp>
 
 #include <Gameplay/Control.hpp>
@@ -153,6 +154,7 @@ void GameApplication::Start ()
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes ());
+    Emergence::Celerity::HierarchyCleanup::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
@@ -168,6 +170,7 @@ void GameApplication::Start ()
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes ());
+    Emergence::Celerity::HierarchyCleanup::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::VisualTransformSync::AddToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);

@@ -41,8 +41,8 @@ CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConst
 
       insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
-    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_FINISHED);
     _constructor.DependOn (Checkpoint::DAMAGE_STARTED);
+    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::DAMAGE_FINISHED);
 }
 
