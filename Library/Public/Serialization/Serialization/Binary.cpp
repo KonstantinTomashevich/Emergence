@@ -390,9 +390,10 @@ bool DeserializeFastPortablePatch (std::istream &_input,
             StandardLayout::Field field = _cache.Lookup (Memory::UniqueString {fieldName.value ().c_str ()});
             if (!field)
             {
-                EMERGENCE_LOG (ERROR, "Serialization::Binary: Mapping \"", _cache.GetTypeMapping ().GetName (),
+                // It's not an error, because mapping is portable and therefore fields might be missing.
+                EMERGENCE_LOG (WARNING, "Serialization::Binary: Mapping \"", _cache.GetTypeMapping ().GetName (),
                                "\" does not contain field \"", fieldName.value (), "\"!");
-                return false;
+                continue;
             }
 
             if (!DeserializePatchValue (_input, field, _cache.GetTypeMapping ().GetFieldId (field), _builder))
