@@ -129,17 +129,17 @@ TEST_CASE (DifferentTypes)
         auto iterator = patches[2u].Begin ();
         REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
         CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().type);
-        CHECK_EQUAL (*static_cast<const uint64_t  *> ((*iterator).newValue), 1u);
+        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 1u);
 
         ++iterator;
         REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
         CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().m);
-        CHECK_EQUAL (*static_cast<const uint64_t  *> ((*iterator).newValue), 4u);
+        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 4u);
 
         ++iterator;
         REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
         CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().n);
-        CHECK_EQUAL (*static_cast<const uint64_t  *> ((*iterator).newValue), 17u);
+        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 17u);
 
         ++iterator;
         CHECK_EQUAL (iterator, patches[2u].End ());

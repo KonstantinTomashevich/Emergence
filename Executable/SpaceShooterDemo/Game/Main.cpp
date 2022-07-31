@@ -14,8 +14,8 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dVisualSync.hpp>
 #include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
+#include <Celerity/Transform/Transform3dVisualSync.hpp>
 #include <Celerity/World.hpp>
 
 #include <Gameplay/Control.hpp>
@@ -181,8 +181,6 @@ void GameApplication::Start ()
     initializer->Execute ();
     world.RemovePipeline (initializer);
 }
-
-// TODO: We need to clean child transforms after parent transforms removal!
 
 void GameApplication::Stop ()
 {

@@ -135,7 +135,7 @@ private:
     union
     {
         std::array<Item, Capacity> values;
-        std::array<uint8_t, sizeof(Item) * Capacity> byteRepresentation {};
+        std::array<uint8_t, sizeof (Item) * Capacity> byteRepresentation {};
     };
 
 public:
