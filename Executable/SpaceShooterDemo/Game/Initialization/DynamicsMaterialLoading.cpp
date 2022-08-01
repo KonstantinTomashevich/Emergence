@@ -45,6 +45,7 @@ void DynamicsMaterialLoader::Execute () noexcept
             {
                 EMERGENCE_LOG (ERROR, "DynamicsMaterialLoading: Unable to open file \"",
                                entry.path ().string ().c_str (), "\"!");
+                continue;
             }
 
             auto *material = static_cast<Emergence::Celerity::DynamicsMaterial *> (++cursor);

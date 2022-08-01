@@ -48,17 +48,17 @@ void AssemblyDescriptorLoader::Execute () noexcept
     auto cursor = insertAssemblyDescriptor.Execute ();
 
     Emergence::Serialization::Yaml::BundleDeserializationContext context;
+    context.RegisterType (ControllableComponent::Reflect ().mapping);
+    context.RegisterType (DamageDealerComponent::Reflect ().mapping);
     context.RegisterType (Emergence::Celerity::CollisionShapeComponent::Reflect ().mapping);
     context.RegisterType (Emergence::Celerity::RigidBodyComponent::Reflect ().mapping);
     context.RegisterType (Emergence::Celerity::Transform3dComponent::Reflect ().mapping);
-    context.RegisterType (ControllableComponent::Reflect ().mapping);
-    context.RegisterType (DamageDealerComponent::Reflect ().mapping);
+    context.RegisterType (InputListenerComponent::Reflect ().mapping);
     context.RegisterType (MortalComponent::Reflect ().mapping);
     context.RegisterType (MovementComponent::Reflect ().mapping);
-    context.RegisterType (ShooterComponent::Reflect ().mapping);
-    context.RegisterType (InputListenerComponent::Reflect ().mapping);
-    context.RegisterType (StaticModelComponent::Reflect ().mapping);
     context.RegisterType (ParticleEffectComponent::Reflect ().mapping);
+    context.RegisterType (ShooterComponent::Reflect ().mapping);
+    context.RegisterType (StaticModelComponent::Reflect ().mapping);
 
     for (const auto &entry : std::filesystem::directory_iterator (materialsPath))
     {
@@ -73,6 +73,7 @@ void AssemblyDescriptorLoader::Execute () noexcept
             {
                 EMERGENCE_LOG (ERROR, "AssemblyDescriptorLoading: Unable to open file \"",
                                entry.path ().string ().c_str (), "\"!");
+                continue;
             }
 
             auto *descriptor = static_cast<Emergence::Celerity::AssemblyDescriptor *> (++cursor);

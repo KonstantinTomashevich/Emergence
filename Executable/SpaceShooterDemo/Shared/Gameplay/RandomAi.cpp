@@ -7,7 +7,6 @@
 #include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
-#include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/RandomAi.hpp>

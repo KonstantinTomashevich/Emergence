@@ -88,4 +88,30 @@ TEST_CASE (MultipleLevels)
                            }});
 }
 
+TEST_CASE (IntermediateTransformRemoval)
+{
+    HierarchyCleanupTest ({{
+                               CreateTransform {0u, INVALID_UNIQUE_ID},
+                               CreateTransform {1u, 0u},
+                               CreateTransform {2u, 1u},
+                               CreateTransform {3u, 2u},
+                               CreateTransform {4u, INVALID_UNIQUE_ID},
+                           },
+                           {
+                               CheckTransformExists {0u, true},
+                               CheckTransformExists {1u, true},
+                               CheckTransformExists {2u, true},
+                               CheckTransformExists {3u, true},
+                               CheckTransformExists {4u, true},
+                               RemoveTransform {2u},
+                           },
+                           {
+                               CheckTransformExists {0u, true},
+                               CheckTransformExists {1u, true},
+                               CheckTransformExists {2u, false},
+                               CheckTransformExists {3u, false},
+                               CheckTransformExists {4u, true},
+                           }});
+}
+
 END_SUITE

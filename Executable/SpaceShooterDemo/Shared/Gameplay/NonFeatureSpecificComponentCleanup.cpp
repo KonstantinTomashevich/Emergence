@@ -9,9 +9,11 @@
 
 namespace NonFeatureSpecificComponentCleanup
 {
+using namespace Emergence::Memory::Literals;
+
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"NonFutureSpecificComponentCleanup::FixedUpdate"})
+    _pipelineBuilder.AddTask ("NonFutureSpecificComponentCleanup::AlignmentComponent"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, AlignmentComponent,
                                 objectId)
         .DependOn (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_STARTED)

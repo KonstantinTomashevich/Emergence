@@ -38,11 +38,11 @@ void Transform3dVisualSynchronizer::Execute () noexcept
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const TimeSingleton *> (*timeCursor);
 
-    // We need to initialize visual transforms for assembled logical-driven transforms.
-    // Assembly directly edits transforms and therefore usual sync after SetLogicalLocalTransform
+    // We need to initialize visual transforms for logical transforms that were initialized using reflection.
+    // Reflection-based loaders directly edit transforms and therefore usual sync after SetLogicalLocalTransform
     // is never scheduled. This results in outdated visual transform that is never synced unless
-    // object logical transform changes. To solve this issue we detect freshly added fixed transforms
-    // and update their visual transform manually unless sync is already requested.
+    // object logical transform changes. To solve this issue we detect transforms that were added during
+    // fixed update and set their visual transform manually unless sync is already requested.
     for (auto eventCursor = fetchTransformAddedFromFixedEvents.Execute ();
          const auto *event = static_cast<const Transform3dComponentAddedFixedToNormalEvent *> (*eventCursor);
          ++eventCursor)

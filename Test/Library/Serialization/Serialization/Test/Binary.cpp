@@ -55,8 +55,6 @@ void FastPortablePatchSerializationDeserializationTest (const Type &_initial, co
     builder.End ().Apply (&target);
     CHECK_EQUAL (target, _changed);
 }
-
-#undef PATCH_TEST_ROUTINE
 } // namespace Emergence::Serialization::Binary::Test
 
 using namespace Emergence::Serialization::Test;

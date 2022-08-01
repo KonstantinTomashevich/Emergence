@@ -365,9 +365,6 @@ void NormalAssembler::Execute () noexcept
 
 using namespace Memory::Literals;
 
-// TODO: Cross-references between fixed and normal update do not work! For example, if we're adding child transform
-//       with id 1 we can not attach model to it by specifying id 1 too.
-
 void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder,
                        const CustomKeyVector &_allCustomKeys,
                        const TypeBindingVector &_fixedUpdateTypes) noexcept
