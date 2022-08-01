@@ -1,6 +1,7 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
@@ -239,7 +240,8 @@ void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
                                 objectId)
         .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
-        .MakeDependencyOf ("Input::NormalDispatcher"_us);
+        .MakeDependencyOf ("Input::NormalDispatcher"_us)
+        .MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 
     _pipelineBuilder.AddTask ("Input::NormalDispatcher"_us).SetExecutor<NormalInputDispatcher> (_inputAccumulator);
 }

@@ -1,3 +1,5 @@
+#include <Celerity/Assembly/Assembly.hpp>
+#include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
@@ -5,7 +7,6 @@
 #include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
-#include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/RandomAi.hpp>
@@ -31,18 +32,18 @@ public:
 
 private:
     Emergence::Celerity::FetchSingletonQuery fetchPlayerInfo;
-    Emergence::Celerity::FetchSequenceQuery fetchPrototypeAssembledEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchAssemblyFinishedEvents;
     Emergence::Celerity::FetchValueQuery fetchAlignmentById;
     Emergence::Celerity::InsertLongTermQuery insertRandomAi;
 };
 
 AttachmentCreator::AttachmentCreator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
-      fetchPrototypeAssembledEvents (FETCH_SEQUENCE (PrototypeAssembledFixedEvent)),
+      fetchAssemblyFinishedEvents (FETCH_SEQUENCE (Emergence::Celerity::AssemblyFinishedFixedEvent)),
       fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
       insertRandomAi (INSERT_LONG_TERM (RandomAiComponent))
 {
-    _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
 }
 
 void AttachmentCreator::Execute () noexcept
@@ -50,8 +51,9 @@ void AttachmentCreator::Execute () noexcept
     auto playerInfoCursor = fetchPlayerInfo.Execute ();
     const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
 
-    for (auto eventCursor = fetchPrototypeAssembledEvents.Execute ();
-         const auto *event = static_cast<const PrototypeAssembledFixedEvent *> (*eventCursor); ++eventCursor)
+    for (auto eventCursor = fetchAssemblyFinishedEvents.Execute ();
+         const auto *event = static_cast<const Emergence::Celerity::AssemblyFinishedFixedEvent *> (*eventCursor);
+         ++eventCursor)
     {
         auto alignmentCursor = fetchAlignmentById.Execute (&event->objectId);
         const auto *alignment = static_cast<const AlignmentComponent *> (*alignmentCursor);

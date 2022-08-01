@@ -699,11 +699,23 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
                     Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
                         "Task \"", consumerTask, "\" consumes events of type \"", eventType.GetName (),
                         "\", but graph ensures that task is executed only after some of the producers, instead of "
-                        "all: ");
+                        "all. List of dependency producers: ");
 
                     for (const Memory::UniqueString &producerTask : producers)
                     {
-                        builder.Append ("\"", producerTask, "\" ");
+                        if (consumerDependencyIterator->second.contains (producerTask))
+                        {
+                            builder.Append ("\"", producerTask, "\" ");
+                        }
+                    }
+
+                    builder.Append (". List of dependant or unspecified producers: ");
+                    for (const Memory::UniqueString &producerTask : producers)
+                    {
+                        if (!consumerDependencyIterator->second.contains (producerTask))
+                        {
+                            builder.Append ("\"", producerTask, "\" ");
+                        }
                     }
 
                     EMERGENCE_LOG (ERROR, builder.Get ());

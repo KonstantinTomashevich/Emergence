@@ -1,5 +1,3 @@
-#include <thread>
-
 #include <Celerity/Transform/Test/Task.hpp>
 
 #include <Math/Constants.hpp>

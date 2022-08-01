@@ -25,3 +25,11 @@ set (SPDLOG_NO_EXCEPTIONS ON)
 add_subdirectory (spdlog)
 
 add_subdirectory (xxhash_cpp)
+
+set (YAML_CPP_BUILD_TOOLS OFF)
+add_subdirectory (yaml-cpp)
+
+# On MSVC CLang exceptions are disabled by default, but yaml-cpp is not compiling without them.
+if (MSVC)
+    target_compile_options (yaml-cpp PRIVATE /EHa)
+endif ()

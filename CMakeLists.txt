@@ -1,7 +1,9 @@
 cmake_minimum_required (VERSION 3.21)
-project (Emergence)
+cmake_policy (VERSION 3.21)
 
+project (Emergence)
 set (CMAKE_CXX_STANDARD 20)
+
 include ("${CMAKE_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
 include ("${CMAKE_SOURCE_DIR}/CMake/Emergence/PhysX.cmake")
 include ("${CMAKE_SOURCE_DIR}/CMake/Emergence/Urho3D.cmake")

@@ -158,7 +158,6 @@ TEST_CASE (EmptyInplaceVector)
                                                              InplaceVectorTest::Reflect ().id,
                                                              InplaceVectorTest::Reflect ().vector,
                                                              PROJECT_HELPER (count),
-                                                             PROJECT_HELPER (valuesBlock),
                                                          });
 }
 
@@ -172,7 +171,6 @@ TEST_CASE (HalfFilledInplaceVector)
                                              InplaceVectorTest::Reflect ().id,
                                              InplaceVectorTest::Reflect ().vector,
                                              PROJECT_HELPER (count),
-                                             PROJECT_HELPER (valuesBlock),
                                              PROJECT_HELPER (values[0u]),
                                              PROJECT_HELPER (values[1u]),
                                          });
@@ -190,7 +188,6 @@ TEST_CASE (FullInplaceVector)
                                              InplaceVectorTest::Reflect ().id,
                                              InplaceVectorTest::Reflect ().vector,
                                              PROJECT_HELPER (count),
-                                             PROJECT_HELPER (valuesBlock),
                                              PROJECT_HELPER (values[0u]),
                                              PROJECT_HELPER (values[1u]),
                                              PROJECT_HELPER (values[2u]),
@@ -240,7 +237,6 @@ TEST_CASE (Combined)
     TestConditionalFieldIteration (test, {
                                              CombinedTest::Reflect ().vector,
                                              PROJECT_HELPER_2 (count),
-                                             PROJECT_HELPER_2 (valuesBlock),
                                              PROJECT_HELPER_2 (values[0u]),
                                              PROJECT_HELPER_3 (0u, type),
                                              PROJECT_HELPER_3 (0u, secondA),

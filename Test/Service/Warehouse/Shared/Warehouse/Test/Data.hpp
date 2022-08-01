@@ -14,7 +14,6 @@ struct TestSingleton
 
     struct Reflection final
     {
-        Emergence::StandardLayout::FieldId dataBlock;
         std::array<StandardLayout::FieldId, DATA_ITEMS> data;
         StandardLayout::Mapping mapping;
     };

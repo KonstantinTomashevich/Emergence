@@ -1,8 +1,10 @@
 #include <cassert>
 
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 
 #include <Gameplay/EffectConstant.hpp>
 #include <Gameplay/Events.hpp>
@@ -108,6 +110,8 @@ CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constru
       removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId))
 {
     _constructor.DependOn (TaskNames::PROCESS_DAMAGE);
+    // Because mortality is de facto last mechanics in the graph, we're taking care or hierarchy cleanup here.
+    _constructor.MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
 void CorpseProcessor::Execute () noexcept
@@ -134,7 +138,10 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"Mortality::RemoveMortals"})
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MortalComponent, objectId)
         .DependOn (TaskNames::PROCESS_CORPSES)
-        .MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
+        // Because mortality is de facto last mechanics in the graph, we're taking care or hierarchy cleanup here.
+        .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
+        .MakeDependencyOf (Checkpoint::MORTALITY_FINISHED)
+        .MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
 class DeathEffectTrigger final : public Emergence::Celerity::TaskExecutorBase<DeathEffectTrigger>
@@ -153,7 +160,7 @@ DeathEffectTrigger::DeathEffectTrigger (Emergence::Celerity::TaskConstructor &_c
     : editParticleEffectByObjectId (EDIT_VALUE_1F (ParticleEffectComponent, objectId)),
       fetchDeathEvents (FETCH_SEQUENCE (DeathFixedToNormalEvent))
 {
-    _constructor.DependOn (Checkpoint::ASSEMBLY_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
     _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);

@@ -22,7 +22,10 @@ const Emergence::Memory::UniqueString Checkpoint::ASSEMBLY_FINISHED {"AssemblyFi
 class AssemblerBase
 {
 public:
-    AssemblerBase (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept;
+    AssemblerBase (TaskConstructor &_constructor,
+                   const CustomKeyVector &_customKeys,
+                   const TypeBindingVector &_types,
+                   const StandardLayout::Mapping &_finishedEventType) noexcept;
 
 protected:
     void AssembleObject (UniqueId _rootObjectId) noexcept;
@@ -60,10 +63,11 @@ private:
 
     KeyState &GetKeyState (UniqueId _index) noexcept;
 
+    EditValueQuery editPrototypeById;
     FetchValueQuery fetchDescriptorById;
-    FetchValueQuery fetchPrototypeById;
     FetchValueQuery fetchTransformById;
     Transform3dWorldAccessor transformWorldAccessor;
+    InsertShortTermQuery insertFinishedEvent;
 
     // TODO: Use flat hash map.
     Container::HashMap<StandardLayout::Mapping, TypeBinding> typeBindings {Memory::Profiler::AllocationGroup::Top ()};
@@ -78,16 +82,20 @@ static UniqueId WorldObjectIdProvider (const void *_singleton)
     return static_cast<const WorldSingleton *> (_singleton)->GenerateId ();
 }
 
-AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept
-    : fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
-      fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
+AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
+                              const CustomKeyVector &_customKeys,
+                              const TypeBindingVector &_types,
+                              const StandardLayout::Mapping &_finishedEventType) noexcept
+    : editPrototypeById (EDIT_VALUE_1F (PrototypeComponent, objectId)),
+      fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
       fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
-      transformWorldAccessor (_constructor)
+      transformWorldAccessor (_constructor),
+      insertFinishedEvent (_constructor.InsertShortTerm (_finishedEventType))
 {
     _constructor.DependOn (Checkpoint::ASSEMBLY_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSEMBLY_FINISHED);
 
-    for (const CustomKeyDescriptor &customKey : _configuration.customKeys)
+    for (const CustomKeyDescriptor &customKey : _customKeys)
     {
         keyStates.emplace_back (
             KeyState {_constructor.FetchSingleton (customKey.singletonProviderType), customKey.providerFunction,
@@ -98,7 +106,7 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConf
         KeyState {FETCH_SINGLETON (WorldSingleton), WorldObjectIdProvider,
                   Container::HashMap<UniqueId, UniqueId> {Memory::Profiler::AllocationGroup::Top ()}});
 
-    for (const TypeDescriptor &typeDescriptor : _configuration.types)
+    for (const TypeDescriptor &typeDescriptor : _types)
     {
         TypeBinding &binding =
             typeBindings.emplace (typeDescriptor.type, TypeBinding {_constructor.InsertLongTerm (typeDescriptor.type)})
@@ -119,8 +127,8 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor, const AssemblerConf
 
 void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
 {
-    auto prototypeCursor = fetchPrototypeById.Execute (&_rootObjectId);
-    const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor);
+    auto prototypeCursor = editPrototypeById.Execute (&_rootObjectId);
+    auto *prototype = static_cast<PrototypeComponent *> (*prototypeCursor);
 
     if (!prototype)
     {
@@ -153,6 +161,26 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
     {
         EMERGENCE_LOG (ERROR, "Assembly: Unable to find AssemblyDescriptor with id \"", prototype->descriptorId, "\"!");
         return;
+    }
+
+    // See PrototypeComponent::intermediateIdReplacement for details.
+    bool saveIdReplacement = true;
+
+    if (!prototype->intermediateIdReplacement.empty ())
+    {
+        // Inherit intermediate id replacement from previous pass during other routine.
+        assert (prototype->intermediateIdReplacement.size () == keyStates.size ());
+
+        for (std::size_t index = 0u; index < keyStates.size (); ++index)
+        {
+            for (const auto &[from, to] : prototype->intermediateIdReplacement[index])
+            {
+                keyStates[index].idReplacement.emplace (from, to);
+            }
+        }
+
+        saveIdReplacement = false;
+        prototype->intermediateIdReplacement.clear ();
     }
 
     GetObjectIdKeyState ().idReplacement.emplace (ASSEMBLY_ROOT_OBJECT_ID, _rootObjectId);
@@ -191,10 +219,29 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
         }
     }
 
-    for (KeyState &state : keyStates)
+    if (saveIdReplacement)
     {
-        state.idReplacement.clear ();
+        prototype->intermediateIdReplacement.resize (
+            keyStates.size (),
+            Container::HashMap<UniqueId, UniqueId> {prototype->intermediateIdReplacement.get_allocator ()});
     }
+
+    for (std::size_t index = 0u; index < keyStates.size (); ++index)
+    {
+        if (saveIdReplacement)
+        {
+            for (const auto &[from, to] : keyStates[index].idReplacement)
+            {
+                prototype->intermediateIdReplacement[index].emplace (from, to);
+            }
+        }
+
+        keyStates[index].idReplacement.clear ();
+    }
+
+    auto eventCursor = insertFinishedEvent.Execute ();
+    void *event = ++eventCursor;
+    *static_cast<UniqueId *> (event) = _rootObjectId;
 }
 
 UniqueId AssemblerBase::ReplaceId (AssemblerBase::KeyState &_keyState, UniqueId _id) noexcept
@@ -230,7 +277,9 @@ AssemblerBase::KeyState &AssemblerBase::GetKeyState (UniqueId _index) noexcept
 class FixedAssembler final : public TaskExecutorBase<FixedAssembler>, public AssemblerBase
 {
 public:
-    FixedAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept;
+    FixedAssembler (TaskConstructor &_constructor,
+                    const CustomKeyVector &_customKeys,
+                    const TypeBindingVector &_types) noexcept;
 
     void Execute () noexcept;
 
@@ -239,8 +288,10 @@ private:
     FetchSequenceQuery fetchPrototypeAddedCustomToFixedEvents;
 };
 
-FixedAssembler::FixedAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept
-    : AssemblerBase (_constructor, _configuration),
+FixedAssembler::FixedAssembler (TaskConstructor &_constructor,
+                                const CustomKeyVector &_customKeys,
+                                const TypeBindingVector &_types) noexcept
+    : AssemblerBase (_constructor, _customKeys, _types, AssemblyFinishedFixedEvent::Reflect ().mapping),
       fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
       fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent))
 {
@@ -265,7 +316,9 @@ void FixedAssembler::Execute () noexcept
 class NormalAssembler final : public TaskExecutorBase<NormalAssembler>, public AssemblerBase
 {
 public:
-    NormalAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept;
+    NormalAssembler (TaskConstructor &_constructor,
+                     const CustomKeyVector &_customKeys,
+                     const TypeBindingVector &_types) noexcept;
 
     void Execute () noexcept;
 
@@ -275,8 +328,10 @@ private:
     FetchSequenceQuery fetchPrototypeAddedCustomToNormalEvents;
 };
 
-NormalAssembler::NormalAssembler (TaskConstructor &_constructor, const AssemblerConfiguration &_configuration) noexcept
-    : AssemblerBase (_constructor, _configuration),
+NormalAssembler::NormalAssembler (TaskConstructor &_constructor,
+                                  const CustomKeyVector &_customKeys,
+                                  const TypeBindingVector &_types) noexcept
+    : AssemblerBase (_constructor, _customKeys, _types, AssemblyFinishedNormalEvent::Reflect ().mapping),
       fetchPrototypeAddedNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedNormalEvent)),
       fetchPrototypeAddedFixedToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedToNormalEvent)),
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
@@ -310,17 +365,22 @@ void NormalAssembler::Execute () noexcept
 
 using namespace Memory::Literals;
 
-void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder, const AssemblerConfiguration &_configuration) noexcept
+void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder,
+                       const CustomKeyVector &_allCustomKeys,
+                       const TypeBindingVector &_fixedUpdateTypes) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, PrototypeComponent, objectId)
         .DependOn (Checkpoint::ASSEMBLY_STARTED)
         .MakeDependencyOf ("Assembly::FixedUpdate"_us);
 
-    _pipelineBuilder.AddTask ("Assembly::FixedUpdate"_us).SetExecutor<FixedAssembler> (_configuration);
+    _pipelineBuilder.AddTask ("Assembly::FixedUpdate"_us)
+        .SetExecutor<FixedAssembler> (_allCustomKeys, _fixedUpdateTypes);
 }
 
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const AssemblerConfiguration &_configuration) noexcept
+void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
+                        const CustomKeyVector &_allCustomKeys,
+                        const TypeBindingVector &_normalUpdateTypes) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedNormalEvent, PrototypeComponent, objectId)
@@ -330,6 +390,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const AssemblerConfig
     // We don't care about fixed-to-normal transform removal events,
     // because in this case prototype will be removed through the special task in fixed update.
 
-    _pipelineBuilder.AddTask ("Assembly::NormalUpdate"_us).SetExecutor<NormalAssembler> (_configuration);
+    _pipelineBuilder.AddTask ("Assembly::NormalUpdate"_us)
+        .SetExecutor<NormalAssembler> (_allCustomKeys, _normalUpdateTypes);
 }
 } // namespace Emergence::Celerity::Assembly

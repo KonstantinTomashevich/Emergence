@@ -19,3 +19,6 @@
 [submodule "ThirdParty/cglm"]
 	path = ThirdParty/cglm
 	url = https://github.com/recp/cglm.git
+[submodule "ThirdParty/yaml-cpp"]
+	path = ThirdParty/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

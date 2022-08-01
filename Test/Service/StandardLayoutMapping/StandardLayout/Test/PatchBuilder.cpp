@@ -17,8 +17,8 @@ bool PatchBuilderTestIncludeMarker () noexcept
 
 struct TestStruct
 {
-    constexpr static uint8_t ALIVE_FLAG_OFFSET = 0u;
-    constexpr static uint8_t POISONED_FLAG_OFFSET = 1u;
+    static constexpr uint8_t ALIVE_FLAG_OFFSET = 0u;
+    static constexpr uint8_t POISONED_FLAG_OFFSET = 1u;
 
     uint8_t flags = 1u << ALIVE_FLAG_OFFSET;
 

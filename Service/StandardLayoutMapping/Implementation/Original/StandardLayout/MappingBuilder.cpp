@@ -47,84 +47,84 @@ void MappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
 
 FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept
 {
-    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::BitSeed {_name, _offset, _bitOffset});
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::BitSeed {_name, _offset, _bitOffset, false});
 }
 
 FieldId MappingBuilder::RegisterInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int8_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::INT, false, _offset, sizeof (int8_t)});
 }
 
 FieldId MappingBuilder::RegisterInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int16_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::INT, false, _offset, sizeof (int16_t)});
 }
 
 FieldId MappingBuilder::RegisterInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int32_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::INT, false, _offset, sizeof (int32_t)});
 }
 
 FieldId MappingBuilder::RegisterInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::INT, _offset, sizeof (int64_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::INT, false, _offset, sizeof (int64_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint8_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint8_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint16_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint16_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint32_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint32_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, _offset, sizeof (uint64_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint64_t)});
 }
 
 FieldId MappingBuilder::RegisterFloat (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::FLOAT, _offset, sizeof (float)});
+        FieldData::StandardSeed {_name, FieldArchetype::FLOAT, false, _offset, sizeof (float)});
 }
 
 FieldId MappingBuilder::RegisterDouble (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::FLOAT, _offset, sizeof (double)});
+        FieldData::StandardSeed {_name, FieldArchetype::FLOAT, false, _offset, sizeof (double)});
 }
 
 FieldId MappingBuilder::RegisterString (Memory::UniqueString _name, std::size_t _offset, std::size_t _maxSize) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::STRING, _offset, _maxSize});
+        FieldData::StandardSeed {_name, FieldArchetype::STRING, false, _offset, _maxSize});
 }
 
 FieldId MappingBuilder::RegisterBlock (Memory::UniqueString _name, std::size_t _offset, std::size_t _size) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::BLOCK, _offset, _size});
+        FieldData::StandardSeed {_name, FieldArchetype::BLOCK, false, _offset, _size});
 }
 
 FieldId MappingBuilder::RegisterUniqueString (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
-    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::UniqueStringSeed {_name, _offset});
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::UniqueStringSeed {_name, _offset, false});
 }
 
 FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
@@ -170,8 +170,8 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
         switch (field.GetArchetype ())
         {
         case FieldArchetype::BIT:
-            nestedFieldId = state.AddField (FieldData::BitSeed {Memory::UniqueString {fullName},
-                                                                _offset + field.GetOffset (), field.GetBitOffset ()});
+            nestedFieldId = state.AddField (FieldData::BitSeed {
+                Memory::UniqueString {fullName}, _offset + field.GetOffset (), field.GetBitOffset (), true});
             break;
 
         case FieldArchetype::INT:
@@ -180,24 +180,32 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
             nestedFieldId =
-                state.AddField (FieldData::StandardSeed {Memory::UniqueString {fullName}, field.GetArchetype (),
+                state.AddField (FieldData::StandardSeed {Memory::UniqueString {fullName}, field.GetArchetype (), true,
                                                          _offset + field.GetOffset (), field.GetSize ()});
             break;
 
         case FieldArchetype::UNIQUE_STRING:
             nestedFieldId = state.AddField (
-                FieldData::UniqueStringSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset ()});
+                FieldData::UniqueStringSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (), true});
             break;
 
         case FieldArchetype::NESTED_OBJECT:
             // We don't need to recursively add fields, because given nested mapping is finished,
             // therefore all fields of internal objects are already projected into this mapping.
-            nestedFieldId = state.AddField (FieldData::NestedObjectSeed {
-                Memory::UniqueString {fullName}, _offset + field.GetOffset (), field.GetNestedObjectMapping ().Get ()});
+            nestedFieldId = state.AddField (FieldData::NestedObjectSeed {Memory::UniqueString {fullName},
+                                                                         _offset + field.GetOffset (),
+                                                                         field.GetNestedObjectMapping ().Get (), true});
             break;
         }
 
         assert (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
+    }
+
+    // Pop till-the-end conditions of nested mapping.
+    while (topCondition)
+    {
+        PopVisibilityCondition ();
+        topCondition = topCondition->popTo;
     }
 
     return objectFieldId;

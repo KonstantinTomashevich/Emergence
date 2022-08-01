@@ -22,6 +22,11 @@ FieldArchetype FieldData::GetArchetype () const noexcept
     return archetype;
 }
 
+bool FieldData::IsProjected () const noexcept
+{
+    return projected;
+}
+
 size_t FieldData::GetOffset () const noexcept
 {
     return offset;
@@ -56,6 +61,7 @@ FieldData::FieldData () noexcept
 
 FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
     : archetype (_seed.archetype),
+      projected (_seed.projected),
       offset (_seed.offset),
       size (_seed.size),
       name (_seed.name)
@@ -67,6 +73,7 @@ FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
 
 FieldData::FieldData (FieldData::BitSeed _seed) noexcept
     : archetype (FieldArchetype::BIT),
+      projected (_seed.projected),
       offset (_seed.offset),
       size (1u),
       name (_seed.name),
@@ -76,6 +83,7 @@ FieldData::FieldData (FieldData::BitSeed _seed) noexcept
 
 FieldData::FieldData (FieldData::UniqueStringSeed _seed) noexcept
     : archetype (FieldArchetype::UNIQUE_STRING),
+      projected (_seed.projected),
       offset (_seed.offset),
       size (sizeof (Memory::UniqueString)),
       name (_seed.name)
@@ -84,6 +92,7 @@ FieldData::FieldData (FieldData::UniqueStringSeed _seed) noexcept
 
 FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
     : archetype (FieldArchetype::NESTED_OBJECT),
+      projected (_seed.projected),
       offset (_seed.offset),
       name (_seed.name),
       nestedObjectMapping (std::move (_seed.nestedObjectMapping))
@@ -174,18 +183,13 @@ PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (const PlainMap
 void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
 {
     const FieldId currentFieldId = owner->GetFieldId (*currentField);
-    bool topConditionChanged = false;
-
     while (true)
     {
         if (topCondition && topCondition->untilField == currentFieldId)
         {
             topCondition = topCondition->popTo;
-            topConditionChanged = true;
-
             // We've pushed popped condition onto stack, therefore previous top condition was satisfied.
             topConditionSatisfied = true;
-
             continue;
         }
 
@@ -197,7 +201,7 @@ void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
             if (topConditionSatisfied)
             {
                 topCondition = nextCondition;
-                topConditionChanged = true;
+                UpdateWhetherTopConditionSatisfied ();
             }
 
             nextCondition = nextCondition->next;
@@ -206,14 +210,15 @@ void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
 
         break;
     }
+}
 
-    if (topConditionChanged)
+void PlainMapping::ConditionalFieldIterator::UpdateWhetherTopConditionSatisfied () noexcept
+{
+    topConditionSatisfied = true;
+    if (topCondition)
     {
-        topConditionSatisfied = true;
-        if (topCondition)
-        {
-            const FieldData *sourceField = owner->GetField (topCondition->sourceField);
-            const auto *shifted = static_cast<const uint8_t *> (object) + sourceField->GetOffset ();
+        const FieldData *sourceField = owner->GetField (topCondition->sourceField);
+        const auto *shifted = static_cast<const uint8_t *> (object) + sourceField->GetOffset ();
 
 #define DO_OPERATION(Operation)                                                                                        \
     switch (sourceField->GetSize ())                                                                                   \
@@ -242,21 +247,20 @@ void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
     }                                                                                                                  \
     break;
 
-            switch (topCondition->operation)
-            {
-            case ConditionalOperation::EQUAL:
-                DO_OPERATION (==)
+        switch (topCondition->operation)
+        {
+        case ConditionalOperation::EQUAL:
+            DO_OPERATION (==)
 
-            case ConditionalOperation::LESS:
-                DO_OPERATION (<)
+        case ConditionalOperation::LESS:
+            DO_OPERATION (<)
 
-            case ConditionalOperation::GREATER:
-                DO_OPERATION (>)
-            }
+        case ConditionalOperation::GREATER:
+            DO_OPERATION (>)
         }
+    }
 
 #undef DO_OPERATION
-    }
 }
 
 std::size_t PlainMapping::GetObjectSize () const noexcept

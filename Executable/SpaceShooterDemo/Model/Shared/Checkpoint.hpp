@@ -6,9 +6,6 @@ struct Checkpoint final
 {
     Checkpoint () = delete;
 
-    static const Emergence::Memory::UniqueString ASSEMBLY_STARTED;
-    static const Emergence::Memory::UniqueString ASSEMBLY_FINISHED;
-
     static const Emergence::Memory::UniqueString CAMERA_UPDATE_STARTED;
     static const Emergence::Memory::UniqueString CAMERA_UPDATE_FINISHED;
 
@@ -35,6 +32,9 @@ struct Checkpoint final
 
     static const Emergence::Memory::UniqueString MOVEMENT_STARTED;
     static const Emergence::Memory::UniqueString MOVEMENT_FINISHED;
+
+    static const Emergence::Memory::UniqueString NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_STARTED;
+    static const Emergence::Memory::UniqueString NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED;
 
     static const Emergence::Memory::UniqueString RENDER_UPDATE_STARTED;
     static const Emergence::Memory::UniqueString RENDER_UPDATE_FINISHED;

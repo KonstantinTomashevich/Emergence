@@ -39,8 +39,6 @@ public:
     StreamSerializer &operator= (StreamSerializer &&_other) noexcept;
 
 private:
-    void WriteEvent (const Event &_event) noexcept;
-
     std::ostream *output = nullptr;
     GroupUIDAssigner uidAssigner;
 };

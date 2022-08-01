@@ -116,7 +116,7 @@ public:
 private:
     std::array<char, BUFFER_SIZE> buffer;
 
-    std::size_t end = 0u;
+    std::size_t count = 0u;
 };
 
 template <typename... Args>

@@ -66,19 +66,15 @@
 /// \brief Helper for mapping static registration. Registers array of values where every value could be registered
 ///        using EMERGENCE_MAPPING_REGISTER_REGULAR.
 /// \invariant Class must contain `_field` field of type `std::array`.
-/// \invariant Class reflection structure name must contain `_field` field, in which registered field id for each array
-///            element will be stored, and `_field`Block field, in which full array data block as field will be stored.
+/// \invariant Class reflection structure name must contain `_field` field,
+///            in which registered field id for each array element will be stored.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY(_field)                                                               \
-    reflectionData._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field},                   \
-                                                          offsetof (Type, _field), sizeof (Type::_field));             \
     reflectionData._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (   \
         builder, #_field, offsetof (Type, _field), std::nullopt)
 
 /// \brief Helper for mapping static registration. Extends EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY logic by linking
 ///        vector size field and pushing size-based conditionals to mapping.
 #define EMERGENCE_MAPPING_REGISTER_REGULAR_VECTOR(_field, _sizeField)                                                  \
-    reflectionData._field##Block = builder.RegisterBlock (Emergence::Memory::UniqueString {#_field},                   \
-                                                          offsetof (Type, _field), sizeof (Type::_field));             \
     reflectionData._field = Emergence::StandardLayout::Registration::RegisterRegularArray<decltype (Type::_field)> (   \
         builder, #_field, offsetof (Type, _field), reflectionData._sizeField)
 

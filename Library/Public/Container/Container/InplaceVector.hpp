@@ -129,18 +129,21 @@ public:
 private:
     std::size_t count {0u};
 
-    /// \details We don't want to initialize all data right away, therefore we
-    ///          are using union to get rid of array constructor and destructor.
+    /// \details We want to zero-fill data instead of calling Item default initialization, which might be heavy.
+    ///          To do it properly we need to use this union trick: declare additional byte-filled array inside
+    ///          union and default-initialize it.
     union
     {
         std::array<Item, Capacity> values;
+
+        // NOLINTNEXTLINE(bugprone-sizeof-expression): It might look suspicious for CLang when Item is a pointer.
+        std::array<uint8_t, sizeof (Item) * Capacity> byteRepresentation {};
     };
 
 public:
     struct Reflection final
     {
         StandardLayout::FieldId count;
-        StandardLayout::FieldId valuesBlock;
         std::array<StandardLayout::FieldId, Capacity> values;
         StandardLayout::Mapping mapping;
     };

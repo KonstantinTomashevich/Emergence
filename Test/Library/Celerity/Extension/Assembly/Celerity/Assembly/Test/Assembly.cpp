@@ -47,8 +47,12 @@ static const Transform3dComponent STATE_SECOND_LEVEL_CHILD_ADDED = CreateTransfo
 static const FixedComponentA STATE_SECOND_LEVEL_A_PROTO {2u, 12u, 0u};
 static const FixedComponentA STATE_SECOND_LEVEL_A_ADDED {3u, 12u, 0u};
 
-static const NormalVisualComponent STATE_ROOT_VISUAL_PROTO {ASSEMBLY_ROOT_OBJECT_ID, "Knight"_us, "GreyKnight"_us};
-static const NormalVisualComponent STATE_ROOT_VISUAL_ADDED {1u, "Knight"_us, "GreyKnight"_us};
+static const NormalVisualComponent STATE_ROOT_VISUAL_PROTO {ASSEMBLY_ROOT_OBJECT_ID, 10u, "Knight"_us, "GreyKnight"_us};
+static const NormalVisualComponent STATE_ROOT_VISUAL_ADDED {1u, 0u, "Knight"_us, "GreyKnight"_us};
+
+static const NormalVisualComponent STATE_ROOT_VISUAL_PROTO_NO_REF {ASSEMBLY_ROOT_OBJECT_ID, INVALID_UNIQUE_ID,
+                                                                   "Knight"_us, "GreyKnight"_us};
+static const NormalVisualComponent STATE_ROOT_VISUAL_ADDED_NO_REF {1u, INVALID_UNIQUE_ID, "Knight"_us, "GreyKnight"_us};
 
 void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
                         Container::Vector<ValidatorTask> _validatorTasks)
@@ -67,7 +71,7 @@ void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
 
     builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
     builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
-    Assembly::AddToFixedUpdate (builder, GetFixedAssemblerConfiguration ());
+    Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_configuratorTasks), std::move (_validatorTasks));
     REQUIRE (builder.End ());
 
@@ -92,7 +96,7 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
     builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
-    Assembly::AddToFixedUpdate (builder, GetFixedAssemblerConfiguration ());
+    Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_fixedConfiguratorTasks), std::move (_fixedValidatorTasks));
     REQUIRE (builder.End ());
 
@@ -100,7 +104,7 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
     builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
     builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
     builder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
-    Assembly::AddToNormalUpdate (builder, GetNormalAssemblerConfiguration ());
+    Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_normalConfiguratorTasks), std::move (_normalValidatorTasks));
     REQUIRE (builder.End ());
 
@@ -229,21 +233,39 @@ TEST_CASE (Hierarchy)
         });
 }
 
+TEST_CASE (InvalidReferenceIgnored)
+{
+    CombinedAssemblyTest (
+        {
+            AddAssemblyDescriptor {"V"_us,
+                                   {{NormalVisualComponent::Reflect ().mapping, &STATE_ROOT_VISUAL_PROTO_NO_REF}}},
+            SpawnPrototype {"V"_us},
+        },
+        {}, {},
+        {
+            CheckComponent {1u, NormalVisualComponent::Reflect ().mapping, NormalVisualComponent::Reflect ().objectId,
+                            &STATE_ROOT_VISUAL_ADDED_NO_REF},
+        });
+}
+
 TEST_CASE (FixedAndNormalCombined)
 {
     CombinedAssemblyTest (
         {
-            AddAssemblyDescriptor {"ABV"_us,
+            AddAssemblyDescriptor {"ABMV"_us,
                                    {{FixedComponentA::Reflect ().mapping, &STATE_ROOT_A_PROTO},
                                     {FixedComponentB::Reflect ().mapping, &STATE_ROOT_B_PROTO},
+                                    {FixedMultiComponent::Reflect ().mapping, &STATE_MULTI_FIRST_PROTO},
                                     {NormalVisualComponent::Reflect ().mapping, &STATE_ROOT_VISUAL_PROTO}}},
-            SpawnPrototype {"ABV"_us},
+            SpawnPrototype {"ABMV"_us},
         },
         {
             CheckComponent {1u, FixedComponentA::Reflect ().mapping, FixedComponentA::Reflect ().objectId,
                             &STATE_ROOT_A_ADDED},
             CheckComponent {1u, FixedComponentB::Reflect ().mapping, FixedComponentB::Reflect ().objectId,
                             &STATE_ROOT_B_ADDED},
+            CheckComponent {1u, FixedMultiComponent::Reflect ().mapping, FixedComponentB::Reflect ().objectId,
+                            &STATE_MULTI_FIRST_ADDED},
             CheckComponent {1u, NormalVisualComponent::Reflect ().mapping, NormalVisualComponent::Reflect ().objectId,
                             nullptr},
         },
@@ -253,6 +275,8 @@ TEST_CASE (FixedAndNormalCombined)
                             &STATE_ROOT_A_ADDED},
             CheckComponent {1u, FixedComponentB::Reflect ().mapping, FixedComponentB::Reflect ().objectId,
                             &STATE_ROOT_B_ADDED},
+            CheckComponent {1u, FixedMultiComponent::Reflect ().mapping, FixedComponentB::Reflect ().objectId,
+                            &STATE_MULTI_FIRST_ADDED},
             CheckComponent {1u, NormalVisualComponent::Reflect ().mapping, NormalVisualComponent::Reflect ().objectId,
                             &STATE_ROOT_VISUAL_ADDED},
         });

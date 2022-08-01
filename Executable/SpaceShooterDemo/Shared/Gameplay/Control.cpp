@@ -45,6 +45,7 @@ ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constru
       editControlled (EDIT_SIGNAL (ControllableComponent, controlledByLocalPlayer, true))
 
 {
+    _constructor.DependOn (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
 
     // We are consciously adding one-frame delay from object spawn to control takeover.

@@ -36,6 +36,12 @@ FieldArchetype Field::GetArchetype () const noexcept
     return static_cast<const FieldData *> (handle)->GetArchetype ();
 }
 
+bool Field::IsProjected () const noexcept
+{
+    assert (IsHandleValid ());
+    return static_cast<const FieldData *> (handle)->IsProjected ();
+}
+
 std::size_t Field::GetOffset () const noexcept
 {
     assert (IsHandleValid ());

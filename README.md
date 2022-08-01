@@ -40,6 +40,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - [Handling](./Library/Public/Handling/README.md): compact handle-based ownership implementation.
 - [Math](./Library/Public/Math/README.md): math classes and functions for game programming.
 - [MemoryRecording](./Library/Public/MemoryRecording/README.md): toolset for memory usage recording and replaying.
+- [Serialization](./Library/Public/Serialization/README.md): toolset for serializing and deserializing data from 
+  multiple formats using [StandardLayoutMapping](./Service/StandardLayoutMapping/README.md).
 - [SyntaxSugar](./Library/Public/SyntaxSugar/README.md): contains syntax sugar for other libraries and service
   implementations.
 - [VisualGraph](./Library/Public/VisualGraph/README.md): data structure for runtime state representation in a form of

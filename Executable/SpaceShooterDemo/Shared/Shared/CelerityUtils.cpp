@@ -1,4 +1,6 @@
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
 
 #include <Shared/CelerityUtils.hpp>
@@ -8,8 +10,8 @@ namespace Emergence::Celerity
 {
 void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (Checkpoint::ASSEMBLY_STARTED);
-    _pipelineBuilder.AddCheckpoint (Checkpoint::ASSEMBLY_FINISHED);
+    _pipelineBuilder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
+    _pipelineBuilder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
 
     _pipelineBuilder.AddCheckpoint (Checkpoint::CAMERA_UPDATE_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::CAMERA_UPDATE_FINISHED);
@@ -27,6 +29,9 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddCheckpoint (Checkpoint::MOVEMENT_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::MOVEMENT_FINISHED);
 
+    _pipelineBuilder.AddCheckpoint (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED);
+
     _pipelineBuilder.AddCheckpoint (Checkpoint::RENDER_UPDATE_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::RENDER_UPDATE_FINISHED);
 
@@ -35,6 +40,12 @@ void AddAllCheckpoints (PipelineBuilder &_pipelineBuilder) noexcept
 
     _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::SPAWN_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_STARTED);
     _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_FINISHED);

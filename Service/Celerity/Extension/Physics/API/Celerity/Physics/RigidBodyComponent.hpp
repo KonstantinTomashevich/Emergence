@@ -28,27 +28,27 @@ struct RigidBodyComponent final
 {
     /// \brief Forbids body to change its translation on X axis.
     /// \see ::lockFlags
-    constexpr static uint8_t LOCK_LINEAR_X = 1u << 0u;
+    static constexpr uint8_t LOCK_LINEAR_X = 1u << 0u;
 
     /// \brief Forbids body to change its translation on Y axis.
     /// \see ::lockFlags
-    constexpr static uint8_t LOCK_LINEAR_Y = 1u << 1u;
+    static constexpr uint8_t LOCK_LINEAR_Y = 1u << 1u;
 
     /// \brief Forbids body to change its translation on Z axis.
     /// \see ::lockFlags
-    constexpr static uint8_t LOCK_LINEAR_Z = 1u << 2u;
+    static constexpr uint8_t LOCK_LINEAR_Z = 1u << 2u;
 
     /// \brief Forbids body to change its rotation over X axis.
     /// \see ::lockFlags
-    constexpr static uint8_t LOCK_ANGULAR_X = 1u << 3u;
+    static constexpr uint8_t LOCK_ANGULAR_X = 1u << 3u;
 
     /// \brief Forbids body to change its rotation over Y axis.
     /// \see ::lockFlags
-    constexpr static uint8_t LOCK_ANGULAR_Y = 1u << 4u;
+    static constexpr uint8_t LOCK_ANGULAR_Y = 1u << 4u;
 
     /// \brief Forbids body to change its rotation over Z axis.
     /// \see ::lockFlags
-    constexpr static uint8_t LOCK_ANGULAR_Z = 1u << 5u;
+    static constexpr uint8_t LOCK_ANGULAR_Z = 1u << 5u;
 
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBodyComponent);
 

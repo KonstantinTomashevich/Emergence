@@ -73,7 +73,6 @@ struct PhysicsWorldSingleton final
         StandardLayout::FieldId simulationMaxThreads;
         StandardLayout::FieldId enableMemoryProfiling;
         StandardLayout::FieldId gravity;
-        StandardLayout::FieldId collisionMasksBlock;
         std::array<StandardLayout::FieldId, 32u> collisionMasks;
         StandardLayout::FieldId enableRemoteDebugger;
         StandardLayout::FieldId remoteDebuggerUrl;

@@ -101,6 +101,21 @@ void PlainPatch::Apply (void *_object) const noexcept
     }
 }
 
+std::size_t PlainPatch::GetValueCount () const noexcept
+{
+    return valueCount;
+}
+
+const ValueSetter *PlainPatch::Begin () const noexcept
+{
+    return &valueSetters[0u];
+}
+
+const ValueSetter *PlainPatch::End () const noexcept
+{
+    return &valueSetters[valueCount];
+}
+
 Memory::Heap &PlainPatch::GetHeap () noexcept
 {
     static Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::UniqueString {"PlainPatch"}}};

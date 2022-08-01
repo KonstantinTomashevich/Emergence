@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <thread>
 
 #include <Celerity/Transform/Test/Task.hpp>
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
@@ -31,7 +30,6 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
     REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    builder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
     VisualTransformSync::AddToNormalUpdate (builder);
     RequestExecutor::AddToNormalUpdate (builder, std::move (_normalRequests));
     REQUIRE (builder.End ());

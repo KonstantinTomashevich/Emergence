@@ -9,8 +9,8 @@
 
 struct InputAction final
 {
-    constexpr static const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
-    constexpr static const std::size_t MAX_REAL_PARAMETERS = 3u;
+    static constexpr const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
+    static constexpr const std::size_t MAX_REAL_PARAMETERS = 3u;
 
     InputAction () noexcept = default;
 
@@ -41,9 +41,7 @@ struct InputAction final
     {
         Emergence::StandardLayout::FieldId group;
         Emergence::StandardLayout::FieldId id;
-        Emergence::StandardLayout::FieldId discreteBlock;
         std::array<Emergence::StandardLayout::FieldId, MAX_DISCRETE_PARAMETERS> discrete;
-        Emergence::StandardLayout::FieldId realBlock;
         std::array<Emergence::StandardLayout::FieldId, MAX_REAL_PARAMETERS> real;
         Emergence::StandardLayout::Mapping mapping;
     };

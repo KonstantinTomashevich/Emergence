@@ -224,72 +224,86 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                     {
                         CHECK_EQUAL (field.GetSize (), 1u);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BIT);
+                        CHECK (!field.IsProjected ());
                         CHECK_EQUAL (field.GetBitOffset (), _seed.bitOffset);
                     }
                     else if constexpr (std::is_same_v<Seed, Int8FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (int8_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, Int16FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (int16_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, Int32FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (int32_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, Int64FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (int64_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::INT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt8FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (uint8_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt16FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (uint16_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt32FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (uint32_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt64FieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (uint64_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, FloatFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (float));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, DoubleFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (double));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::FLOAT);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, StringFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), _seed.maxSize);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::STRING);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, BlockFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), _seed.size);
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::BLOCK);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UniqueStringFieldSeed>)
                     {
                         CHECK_EQUAL (field.GetSize (), sizeof (Memory::UniqueString));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UNIQUE_STRING);
+                        CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                     {
@@ -308,6 +322,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
 
                             CHECK (projectedField.IsHandleValid ());
                             CHECK_EQUAL (nestedField.GetArchetype (), projectedField.GetArchetype ());
+                            CHECK (projectedField.IsProjected ());
                             CHECK_EQUAL (nestedField.GetSize (), projectedField.GetSize ());
                             CHECK_EQUAL (nestedField.GetOffset () + field.GetOffset (), projectedField.GetOffset ());
 

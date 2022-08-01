@@ -3,12 +3,20 @@
 
 namespace Emergence::Celerity
 {
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentAddedFixedToNormalEvent, objectId);
+
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentRemovedFixedEvent, objectId);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentRemovedNormalEvent, objectId);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentRemovedFixedToNormalEvent, objectId);
 
 void RegisterTransformEvents (EventRegistrar &_registrar) noexcept
 {
+    _registrar.OnAddEvent (
+        {{Transform3dComponentAddedFixedToNormalEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
+         Transform3dComponent::Reflect ().mapping,
+         {{Transform3dComponent::Reflect ().objectId,
+           Transform3dComponentAddedFixedToNormalEvent::Reflect ().objectId}}});
+
     _registrar.OnRemoveEvent (
         {{Transform3dComponentRemovedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
          Transform3dComponent::Reflect ().mapping,

@@ -38,6 +38,8 @@ public:
 
         FieldArchetype archetype = FieldArchetype::UINT;
 
+        bool projected = false;
+
         std::size_t offset = 0u;
 
         std::size_t size = 0u;
@@ -51,6 +53,8 @@ public:
         std::size_t offset = 0u;
 
         uint_fast8_t bitOffset = 0u;
+
+        bool projected = false;
     };
 
     /// \brief Used to register fields with FieldArchetype::UNIQUE_STRING.
@@ -59,6 +63,8 @@ public:
         Memory::UniqueString name;
 
         std::size_t offset = 0u;
+
+        bool projected = false;
     };
 
     /// \brief Used to register fields with FieldArchetype::NESTED_OBJECT.
@@ -69,6 +75,8 @@ public:
         std::size_t offset = 0u;
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
+
+        bool projected = false;
     };
 
     /// FieldData could only be moved through reallocation of PlainMapping.
@@ -77,6 +85,8 @@ public:
     FieldData (FieldData &&_other) = delete;
 
     [[nodiscard]] FieldArchetype GetArchetype () const noexcept;
+
+    [[nodiscard]] bool IsProjected () const noexcept;
 
     [[nodiscard]] size_t GetOffset () const noexcept;
 
@@ -111,6 +121,8 @@ private:
     ~FieldData ();
 
     FieldArchetype archetype {FieldArchetype::INT};
+    bool projected = false;
+
     std::size_t offset {0u};
     std::size_t size {0u};
     Memory::UniqueString name;
@@ -152,6 +164,8 @@ public:
         ConditionalFieldIterator (const PlainMapping *_owner, const FieldData *_field, const void *_object) noexcept;
 
         void UpdateCondition () noexcept;
+
+        void UpdateWhetherTopConditionSatisfied () noexcept;
 
         const void *object = nullptr;
         Handling::Handle<PlainMapping> owner;
