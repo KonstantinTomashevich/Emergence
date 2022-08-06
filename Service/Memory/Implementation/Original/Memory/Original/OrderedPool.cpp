@@ -268,7 +268,7 @@ void OrderedPool::Shrink () noexcept
 
     while (currentPage && currentFreeChunk)
     {
-        // Due to the ordering and shrink logic, this assert should always be true.
+        // Due to the ordering and shrink logic, this assertion should always be true.
         // It's left here to highlight that this case is impossible in current algorithm.
         assert (currentFreeChunk >= GetPageChunksBegin (currentPage));
 

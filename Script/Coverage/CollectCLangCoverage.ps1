@@ -148,7 +148,7 @@ foreach ($Executable in $ScanResult.Executables)
     $ExecutablesAsArguments += "-object `"$Executable`" "
 }
 
-# TODO: Expression invokations are used below, because otherwise all executable are merged into one argument.
+# Expression invokations are used below, because otherwise all executable are merged into one argument.
 
 echo "Exporting full source coverage."
 $FullSourceCoverage = Join-Path $OutputDirectory $Configuration.FullSourceCoverageFileName

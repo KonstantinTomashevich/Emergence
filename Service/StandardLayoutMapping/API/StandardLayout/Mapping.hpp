@@ -12,12 +12,6 @@
 
 namespace Emergence::StandardLayout
 {
-// TODO: We need special representation for InplaceVector's and unions for serialization.
-//       There is two possible solutions to this:
-//       - Store this data inside each field, so it will be accessible everywhere, but would eat a lot of memory.
-//       - Store markers between fields (UNION_BEGIN, UNION_SWITCH, UNION_END, etc). Uses a lot less memory,
-//         but can be extracted only through iteration.
-
 /// \brief Finished field mapping for user defined object type.
 ///
 /// \details MappingBuilder should be used to construct mappings.
