@@ -18,6 +18,8 @@
 #include <Celerity/Transform/Transform3dVisualSync.hpp>
 #include <Celerity/World.hpp>
 
+#include <Export/Graph.hpp>
+
 #include <Gameplay/Control.hpp>
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/Events.hpp>
@@ -65,6 +67,12 @@ static Emergence::Memory::Profiler::EventObserver StartRecording (
     auto [capturedRoot, observer] = Emergence::Memory::Profiler::Capture::Start ();
     _serializer.Begin (&_output, capturedRoot);
     return std::move (observer);
+}
+
+static void SaveVisualGraph (const Emergence::VisualGraph::Graph &_graph, const Emergence::Container::String &_fileName)
+{
+    std::ofstream output (_fileName.c_str());
+    Emergence::Export::Graph::Export (_graph, output);
 }
 
 class GameApplication : public Urho3D::Application
@@ -144,6 +152,8 @@ void GameApplication::Start ()
         RegisterRenderEvents (registrar);
     }
 
+    Emergence::VisualGraph::Graph pipelineVisualGraph;
+
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
     AssemblyDescriptorLoading::AddToInitializationPipeline (pipelineBuilder);
@@ -151,7 +161,9 @@ void GameApplication::Start ()
     InputInitialization::AddToInitializationPipeline (pipelineBuilder);
     LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
     PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
-    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End ();
+    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End (&pipelineVisualGraph);
+    assert (initializer);
+    SaveVisualGraph (pipelineVisualGraph, "InitializationPipeline.graph");
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Control::AddToFixedUpdate (pipelineBuilder);
@@ -169,7 +181,8 @@ void GameApplication::Start ()
     Shooting::AddToFixedUpdate (pipelineBuilder);
     Slowdown::AddToFixedUpdate (pipelineBuilder);
     Spawn::AddToFixedUpdate (pipelineBuilder);
-    pipelineBuilder.End ();
+    pipelineBuilder.End (&pipelineVisualGraph);
+    SaveVisualGraph (pipelineVisualGraph, "FixedPipeline.graph");
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
@@ -181,7 +194,8 @@ void GameApplication::Start ()
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
-    pipelineBuilder.End ();
+    pipelineBuilder.End (&pipelineVisualGraph);
+    SaveVisualGraph (pipelineVisualGraph, "NormalPipeline.graph");
 
     initializer->Execute ();
     world.RemovePipeline (initializer);
