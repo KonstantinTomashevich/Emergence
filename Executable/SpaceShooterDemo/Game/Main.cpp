@@ -71,7 +71,7 @@ static Emergence::Memory::Profiler::EventObserver StartRecording (
 
 static void SaveVisualGraph (const Emergence::VisualGraph::Graph &_graph, const Emergence::Container::String &_fileName)
 {
-    std::ofstream output (_fileName.c_str());
+    std::ofstream output (_fileName.c_str ());
     Emergence::Export::Graph::Export (_graph, output);
 }
 
