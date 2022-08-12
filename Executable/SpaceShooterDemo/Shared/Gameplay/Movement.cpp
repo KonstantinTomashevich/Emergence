@@ -173,7 +173,8 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
     _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
         .AS_CASCADE_REMOVER_1F (DeathFixedEvent, MovementComponent, objectId)
         .DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED)
-        .DependOn (Checkpoint::MOVEMENT_STARTED);
+        .DependOn (Checkpoint::MOVEMENT_STARTED)
+        .MakeDependencyOf (Checkpoint::MORTALITY_STARTED);
 
     _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent, objectId)

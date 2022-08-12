@@ -7,6 +7,12 @@
 namespace Emergence::Celerity
 {
 EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentAddedFixedToNormalEvent, UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentAddedNormalEvent, UniqueId, objectId);
+
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent,
+                                       UniqueId,
+                                       objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentLocalVisualTransformChangedNormalEvent, UniqueId, objectId);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentRemovedFixedEvent, UniqueId, objectId);
 EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentRemovedNormalEvent, UniqueId, objectId);

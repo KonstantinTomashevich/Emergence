@@ -38,6 +38,8 @@
 
 #include <Input/Input.hpp>
 
+#include <Log/Log.hpp>
+
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Recording/StreamSerializer.hpp>
 
@@ -111,6 +113,9 @@ GameApplication::GameApplication (Urho3D::Context *_context)
     SubscribeToEvent (Urho3D::E_UPDATE, URHO3D_HANDLER (GameApplication, HandleUpdate));
     SubscribeToEvent (Urho3D::E_KEYDOWN, URHO3D_HANDLER (GameApplication, HandleKeyDown));
     SubscribeToEvent (Urho3D::E_KEYUP, URHO3D_HANDLER (GameApplication, HandleKeyUp));
+
+    Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
+                                        {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
 }
 
 void GameApplication::Setup ()

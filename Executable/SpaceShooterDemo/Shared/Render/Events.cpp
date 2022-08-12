@@ -4,6 +4,7 @@
 #include <Render/ParticleEffectComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
+#include <Render/Urho3DNodeComponent.hpp>
 
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedNormalEvent);
 EMERGENCE_CELERITY_EVENT0_IMPLEMENTATION (RenderSceneChangedCustomToNormalEvent);
@@ -27,6 +28,8 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedNormalEvent, 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentAddedCustomToNormalEvent, modelId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (StaticModelComponentChangedEvent, modelId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (StaticModelComponentRemovedEvent, objectId, implementationHandle)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Urho3dNodeComponentAddedNormalEvent, objectId);
 
 void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept
 {
@@ -174,4 +177,11 @@ void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noex
          {{StaticModelComponent::Reflect ().objectId, StaticModelComponentRemovedEvent::Reflect ().objectId},
           {StaticModelComponent::Reflect ().implementationHandle,
            StaticModelComponentRemovedEvent::Reflect ().implementationHandle}}});
+
+    // Urho3dNodeComponent
+
+    _registrar.OnAddEvent (
+        {{Urho3dNodeComponentAddedNormalEvent::Reflect ().mapping, Emergence::Celerity::EventRoute::NORMAL},
+         Urho3DNodeComponent::Reflect ().mapping,
+         {{Urho3DNodeComponent::Reflect ().objectId, Urho3dNodeComponentAddedNormalEvent::Reflect ().objectId}}});
 }

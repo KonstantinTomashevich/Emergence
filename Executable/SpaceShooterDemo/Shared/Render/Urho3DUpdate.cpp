@@ -574,6 +574,14 @@ public:
 private:
     void UpdateTransforms () noexcept;
 
+    void UpdateObjectTransform (Emergence::Celerity::UniqueId _objectId) noexcept;
+
+    void UpdateObjectTransform (const Emergence::Celerity::Transform3dComponent *_transform) noexcept;
+
+    void UpdateTransformRecursively (Emergence::Celerity::UniqueId _rootObjectId) noexcept;
+
+    void UpdateTransformRecursively (const Emergence::Celerity::Transform3dComponent *_rootTransform) noexcept;
+
     void ApplyRenderSceneChanges () noexcept;
 
     void UpdateUrho3DScene () noexcept;
@@ -583,8 +591,15 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchUrho3DScene;
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
 
-    Emergence::Celerity::FetchAscendingRangeQuery fetchUrho3DNodes;
+    Emergence::Celerity::FetchSequenceQuery fetchUrho3DNodeComponentAddedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentAddedFixedToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentAddedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentChangedFixedToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentChangedNormalEvents;
+
+    Emergence::Celerity::FetchValueQuery fetchUrho3DNodeById;
     Emergence::Celerity::FetchValueQuery fetchTransformByObjectId;
+    Emergence::Celerity::FetchValueQuery fetchTransformByParentObjectId;
     Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedNormalEvents;
@@ -598,8 +613,19 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchUrho3DScene (FETCH_SINGLETON (Urho3DSceneSingleton)),
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
 
-      fetchUrho3DNodes (FETCH_ASCENDING_RANGE (Urho3DNodeComponent, objectId)),
+      fetchUrho3DNodeComponentAddedEvents (FETCH_SEQUENCE (Urho3dNodeComponentAddedNormalEvent)),
+      fetchTransform3dComponentAddedFixedToNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentAddedFixedToNormalEvent)),
+      fetchTransform3dComponentAddedNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentAddedNormalEvent)),
+      fetchTransform3dComponentChangedFixedToNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent)),
+      fetchTransform3dComponentChangedNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedNormalEvent)),
+
+      fetchUrho3DNodeById (FETCH_VALUE_1F (Urho3DNodeComponent, objectId)),
       fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
+      fetchTransformByParentObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, parentObjectId)),
       transformWorldAccessor (_constructor),
 
       fetchRenderSceneChangedNormalEvents (FETCH_SEQUENCE (RenderSceneChangedNormalEvent)),
@@ -621,27 +647,100 @@ void SceneUpdater::Execute ()
 
 void SceneUpdater::UpdateTransforms () noexcept
 {
-    // Updating transform for all nodes is not very efficient, but it is ok for the first demo.
-
-    for (auto nodeCursor = fetchUrho3DNodes.Execute (nullptr, nullptr);
-         const auto *node = static_cast<const Urho3DNodeComponent *> (*nodeCursor); ++nodeCursor)
+    for (auto eventCursor = fetchUrho3DNodeComponentAddedEvents.Execute ();
+         const auto *event = static_cast<const Urho3dNodeComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
     {
-        auto transformCursor = fetchTransformByObjectId.Execute (&node->objectId);
-        const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
+        UpdateObjectTransform (event->objectId);
+    }
 
-        if (!transform)
-        {
-            continue;
-        }
+    for (auto eventCursor = fetchTransform3dComponentAddedFixedToNormalEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Celerity::Transform3dComponentAddedFixedToNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        UpdateObjectTransform (event->objectId);
+    }
 
-        const Emergence::Math::Transform3d &worldTransform =
-            transform->GetVisualWorldTransform (transformWorldAccessor);
+    for (auto eventCursor = fetchTransform3dComponentAddedNormalEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Celerity::Transform3dComponentAddedNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        UpdateObjectTransform (event->objectId);
+    }
 
-        node->node->SetTransform (
-            {worldTransform.translation.x, worldTransform.translation.y, worldTransform.translation.z},
-            {worldTransform.rotation.w, worldTransform.rotation.x, worldTransform.rotation.y,
-             worldTransform.rotation.z},
-            {worldTransform.scale.x, worldTransform.scale.y, worldTransform.scale.z});
+    for (auto eventCursor = fetchTransform3dComponentChangedFixedToNormalEvents.Execute ();
+         const auto *event = static_cast<
+             const Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent *> (
+             *eventCursor);
+         ++eventCursor)
+    {
+        UpdateTransformRecursively (event->objectId);
+    }
+
+    for (auto eventCursor = fetchTransform3dComponentChangedNormalEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedNormalEvent *> (
+                 *eventCursor);
+         ++eventCursor)
+    {
+        UpdateTransformRecursively (event->objectId);
+    }
+}
+
+void SceneUpdater::UpdateObjectTransform (Emergence::Celerity::UniqueId _objectId) noexcept
+{
+    auto transformCursor = fetchTransformByObjectId.Execute (&_objectId);
+    const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
+
+    if (!transform)
+    {
+        return;
+    }
+
+    UpdateObjectTransform (transform);
+}
+
+void SceneUpdater::UpdateObjectTransform (const Emergence::Celerity::Transform3dComponent *_transform) noexcept
+{
+    Emergence::Celerity::UniqueId objectId = _transform->GetObjectId ();
+    auto nodeCursor = fetchUrho3DNodeById.Execute (&objectId);
+    const auto *node = static_cast<const Urho3DNodeComponent *> (*nodeCursor);
+
+    if (!node)
+    {
+        return;
+    }
+
+    const Emergence::Math::Transform3d &worldTransform = _transform->GetVisualWorldTransform (transformWorldAccessor);
+    node->node->SetTransform (
+        {worldTransform.translation.x, worldTransform.translation.y, worldTransform.translation.z},
+        {worldTransform.rotation.w, worldTransform.rotation.x, worldTransform.rotation.y, worldTransform.rotation.z},
+        {worldTransform.scale.x, worldTransform.scale.y, worldTransform.scale.z});
+}
+
+void SceneUpdater::UpdateTransformRecursively (Emergence::Celerity::UniqueId _rootObjectId) noexcept
+{
+    auto transformCursor = fetchTransformByObjectId.Execute (&_rootObjectId);
+    const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
+
+    if (!transform)
+    {
+        return;
+    }
+
+    UpdateTransformRecursively (transform);
+}
+
+void SceneUpdater::UpdateTransformRecursively (const Emergence::Celerity::Transform3dComponent *_rootTransform) noexcept
+{
+    UpdateObjectTransform (_rootTransform);
+    Emergence::Celerity::UniqueId rootObjectId = _rootTransform->GetObjectId ();
+
+    for (auto cursor = fetchTransformByParentObjectId.Execute (&rootObjectId);
+         const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*cursor); ++cursor)
+    {
+        UpdateTransformRecursively (transform);
     }
 }
 

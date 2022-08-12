@@ -1,3 +1,10 @@
+- type: MortalComponent
+  content:
+    objectId: 0
+    invincible: 1
+    maximumLifetimeS: 3.0
+    corpseLifetimeS: 0.0
+
 - type: RigidBodyComponent
   content:
     objectId: 0

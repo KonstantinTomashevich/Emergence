@@ -10,7 +10,8 @@
 #include <Gameplay/Events.hpp>
 #include <Gameplay/MortalComponent.hpp>
 #include <Gameplay/Mortality.hpp>
-#include <Gameplay/MortalitySettingsSingleton.hpp>
+
+#include <Math/Scalar.hpp>
 
 #include <Render/ParticleEffectComponent.hpp>
 
@@ -20,13 +21,100 @@ namespace Mortality
 {
 namespace TaskNames
 {
+static const Emergence::Memory::UniqueString PROCESS_LIFETIME ("Mortality::ProcessLifetime");
 static const Emergence::Memory::UniqueString PROCESS_DAMAGE ("Mortality::ProcessDamage");
 static const Emergence::Memory::UniqueString PROCESS_CORPSES ("Mortality::ProcessCorpses");
 
 static const Emergence::Memory::UniqueString TRIGGER_DEATH_EFFECT ("Mortality::TriggerDeathEffect");
 } // namespace TaskNames
 
-class DamageProcessor final : public Emergence::Celerity::TaskExecutorBase<DamageProcessor>
+class KillerBase
+{
+public:
+    KillerBase (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+
+protected:
+    void Kill (MortalComponent *_mortal) noexcept;
+
+    Emergence::Celerity::FetchSingletonQuery fetchTime;
+
+private:
+    Emergence::Celerity::InsertShortTermQuery insertDeathFixedEvent;
+    Emergence::Celerity::InsertShortTermQuery insertDeathFixedToNormalEvent;
+};
+
+KillerBase::KillerBase (Emergence::Celerity::TaskConstructor &_constructor) noexcept
+    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+
+      insertDeathFixedEvent (INSERT_SHORT_TERM (DeathFixedEvent)),
+      insertDeathFixedToNormalEvent (INSERT_SHORT_TERM (DeathFixedToNormalEvent))
+{
+}
+
+void KillerBase::Kill (MortalComponent *_mortal) noexcept
+{
+    auto timeCursor = fetchTime.Execute ();
+    const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
+
+    _mortal->removeAfterNs = time->fixedTimeNs + static_cast<const uint64_t> (_mortal->corpseLifetimeS * 1e9f);
+    auto deathFixedEventCursor = insertDeathFixedEvent.Execute ();
+    auto *deathFixedEvent = static_cast<DeathFixedEvent *> (++deathFixedEventCursor);
+    deathFixedEvent->objectId = _mortal->objectId;
+
+    auto deathFixedToNormalEventCursor = insertDeathFixedToNormalEvent.Execute ();
+    auto *deathFixedToNormalEvent = static_cast<DeathFixedToNormalEvent *> (++deathFixedToNormalEventCursor);
+    deathFixedToNormalEvent->objectId = _mortal->objectId;
+}
+
+class LifetimeProcessor final : public Emergence::Celerity::TaskExecutorBase<LifetimeProcessor>, public KillerBase
+{
+public:
+    LifetimeProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+
+    void Execute () noexcept;
+
+private:
+    Emergence::Celerity::FetchSequenceQuery fetchMortalAddedEvents;
+    Emergence::Celerity::EditValueQuery editMortalById;
+    Emergence::Celerity::EditAscendingRangeQuery editOldMortals;
+};
+
+LifetimeProcessor::LifetimeProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
+    : KillerBase (_constructor),
+      fetchMortalAddedEvents (FETCH_SEQUENCE (MortalComponentAddedEvent)),
+      editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
+      editOldMortals (EDIT_ASCENDING_RANGE (MortalComponent, dieAfterNs))
+{
+    _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
+}
+
+void LifetimeProcessor::Execute () noexcept
+{
+    auto timeCursor = fetchTime.Execute ();
+    const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
+
+    for (auto eventCursor = fetchMortalAddedEvents.Execute ();
+         const auto *event = static_cast<const MortalComponentAddedEvent *> (*eventCursor); ++eventCursor)
+    {
+        auto mortalCursor = editMortalById.Execute (&event->objectId);
+        if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor);
+            mortal && !Emergence::Math::NearlyEqual (0.0f, mortal->maximumLifetimeS))
+        {
+            mortal->dieAfterNs = time->fixedTimeNs + static_cast<uint64_t> (mortal->maximumLifetimeS * 1e9f);
+        }
+    }
+
+    for (auto mortalCursor = editOldMortals.Execute (nullptr, &time->fixedTimeNs);
+         auto *mortal = static_cast<MortalComponent *> (*mortalCursor); ++mortalCursor)
+    {
+        if (!mortal->IsCorpse ())
+        {
+            Kill (mortal);
+        }
+    }
+}
+
+class DamageProcessor final : public Emergence::Celerity::TaskExecutorBase<DamageProcessor>, public KillerBase
 {
 public:
     DamageProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
@@ -34,58 +122,34 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::FetchSingletonQuery fetchTime;
-    Emergence::Celerity::FetchSingletonQuery fetchMortalitySettings;
     Emergence::Celerity::EditValueQuery editMortalById;
-
     Emergence::Celerity::FetchSequenceQuery fetchDamageEvents;
-    Emergence::Celerity::InsertShortTermQuery insertDeathFixedEvent;
-    Emergence::Celerity::InsertShortTermQuery insertDeathFixedToNormalEvent;
 };
 
 DamageProcessor::DamageProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
-      fetchMortalitySettings (FETCH_SINGLETON (MortalitySettingsSingleton)),
+    : KillerBase (_constructor),
       editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
-
-      fetchDamageEvents (FETCH_SEQUENCE (DamageEvent)),
-      insertDeathFixedEvent (INSERT_SHORT_TERM (DeathFixedEvent)),
-      insertDeathFixedToNormalEvent (INSERT_SHORT_TERM (DeathFixedToNormalEvent))
-
+      fetchDamageEvents (FETCH_SEQUENCE (DamageEvent))
 {
     _constructor.DependOn (Checkpoint::DAMAGE_FINISHED);
-    _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
+    _constructor.DependOn (TaskNames::PROCESS_LIFETIME);
 }
 
 void DamageProcessor::Execute () noexcept
 {
-    auto timeCursor = fetchTime.Execute ();
-    const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
-
-    auto mortalitySettingsCursor = fetchMortalitySettings.Execute ();
-    const auto *mortalitySettings = static_cast<const MortalitySettingsSingleton *> (*mortalitySettingsCursor);
-
-    auto deathFixedEventCursor = insertDeathFixedEvent.Execute ();
-    auto deathFixedToNormalEventCursor = insertDeathFixedToNormalEvent.Execute ();
-
     for (auto eventCursor = fetchDamageEvents.Execute ();
          const auto *event = static_cast<const DamageEvent *> (*eventCursor); ++eventCursor)
     {
         assert (event->amount >= 0.0f);
         auto mortalCursor = editMortalById.Execute (&event->objectId);
 
-        if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor); mortal && !mortal->IsCorpse ())
+        if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor);
+            mortal && !mortal->invincible && !mortal->IsCorpse ())
         {
             mortal->health -= event->amount;
             if (mortal->health <= 0.0f)
             {
-                mortal->removeAfterNs = time->fixedTimeNs + mortalitySettings->corpseLifetimeNs;
-                auto *deathFixedEvent = static_cast<DeathFixedEvent *> (++deathFixedEventCursor);
-                deathFixedEvent->objectId = mortal->objectId;
-
-                auto *deathFixedToNormalEvent =
-                    static_cast<DeathFixedToNormalEvent *> (++deathFixedToNormalEventCursor);
-                deathFixedToNormalEvent->objectId = mortal->objectId;
+                Kill (mortal);
             }
         }
     }
@@ -132,6 +196,7 @@ void CorpseProcessor::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask (TaskNames::PROCESS_LIFETIME).SetExecutor<LifetimeProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_DAMAGE).SetExecutor<DamageProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_CORPSES).SetExecutor<CorpseProcessor> ();
 
