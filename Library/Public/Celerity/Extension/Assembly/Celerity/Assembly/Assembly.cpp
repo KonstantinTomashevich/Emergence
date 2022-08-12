@@ -63,7 +63,7 @@ private:
 
     KeyState &GetKeyState (UniqueId _index) noexcept;
 
-    EditValueQuery editPrototypeById;
+    ModifyValueQuery modifyPrototypeById;
     FetchValueQuery fetchDescriptorById;
     FetchValueQuery fetchTransformById;
     Transform3dWorldAccessor transformWorldAccessor;
@@ -86,7 +86,7 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
                               const CustomKeyVector &_customKeys,
                               const TypeBindingVector &_types,
                               const StandardLayout::Mapping &_finishedEventType) noexcept
-    : editPrototypeById (EDIT_VALUE_1F (PrototypeComponent, objectId)),
+    : modifyPrototypeById (MODIFY_VALUE_1F (PrototypeComponent, objectId)),
       fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
       fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -127,7 +127,7 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
 
 void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
 {
-    auto prototypeCursor = editPrototypeById.Execute (&_rootObjectId);
+    auto prototypeCursor = modifyPrototypeById.Execute (&_rootObjectId);
     auto *prototype = static_cast<PrototypeComponent *> (*prototypeCursor);
 
     if (!prototype)
@@ -164,7 +164,7 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
     }
 
     // See PrototypeComponent::intermediateIdReplacement for details.
-    bool saveIdReplacement = true;
+    bool idReplacementInherited = false;
 
     if (!prototype->intermediateIdReplacement.empty ())
     {
@@ -179,7 +179,7 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
             }
         }
 
-        saveIdReplacement = false;
+        idReplacementInherited = true;
         prototype->intermediateIdReplacement.clear ();
     }
 
@@ -219,24 +219,30 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
         }
     }
 
-    if (saveIdReplacement)
+    if (idReplacementInherited)
+    {
+        // If id replacement was inherited then we reached last assembly step and
+        // no longer need to keep component around after fully assembling object.
+        ~prototypeCursor;
+    }
+    else
     {
         prototype->intermediateIdReplacement.resize (
             keyStates.size (),
             Container::HashMap<UniqueId, UniqueId> {prototype->intermediateIdReplacement.get_allocator ()});
-    }
 
-    for (std::size_t index = 0u; index < keyStates.size (); ++index)
-    {
-        if (saveIdReplacement)
+        for (std::size_t index = 0u; index < keyStates.size (); ++index)
         {
             for (const auto &[from, to] : keyStates[index].idReplacement)
             {
                 prototype->intermediateIdReplacement[index].emplace (from, to);
             }
         }
+    }
 
-        keyStates[index].idReplacement.clear ();
+    for (auto &keyState : keyStates)
+    {
+        keyState.idReplacement.clear ();
     }
 
     auto eventCursor = insertFinishedEvent.Execute ();
