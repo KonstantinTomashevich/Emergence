@@ -48,9 +48,6 @@
 #include <Render/Events.hpp>
 #include <Render/Urho3DUpdate.hpp>
 
-#include <Shared/CelerityUtils.hpp>
-#include <Shared/Checkpoint.hpp>
-
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/Application.h>
@@ -168,7 +165,6 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Control::AddToFixedUpdate (pipelineBuilder);
     Damage::AddToFixedUpdate (pipelineBuilder);
-    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes ());
     Emergence::Celerity::HierarchyCleanup::AddToFixedUpdate (pipelineBuilder);
@@ -185,7 +181,6 @@ void GameApplication::Start ()
     SaveVisualGraph (pipelineVisualGraph, "FixedPipeline.graph");
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
-    Emergence::Celerity::AddAllCheckpoints (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes ());
     Emergence::Celerity::HierarchyCleanup::AddToNormalUpdate (pipelineBuilder);

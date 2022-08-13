@@ -2,6 +2,7 @@
 #include <variant>
 
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 
 #include <Container/Vector.hpp>
 
@@ -12,9 +13,6 @@
 #include <Input/InputSingleton.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
-
-#include <Shared/CelerityUtils.hpp>
-#include <Shared/Checkpoint.hpp>
 
 #include <Test/Input.hpp>
 
@@ -126,7 +124,7 @@ Configurator::Configurator (TaskConstructor &_constructor,
       modifyInput (MODIFY_SINGLETON (InputSingleton))
 {
     REQUIRE (eventOutput);
-    _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
+    _constructor.MakeDependencyOf (Input::Checkpoint::DISPATCH_STARTED);
 }
 
 void Configurator::Execute ()
@@ -284,7 +282,7 @@ Validator::Validator (TaskConstructor &_constructor, Vector<FrameExpectation> _e
     : expectations (std::move (_expectations)),
       fetchListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId))
 {
-    _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
 }
 
 void Validator::Execute () noexcept
@@ -368,13 +366,12 @@ void RunTest (Vector<KeyStateTrigger> _keyStateChangedTriggers,
     AddValidatorTask (pipelineBuilder, std::move (normalExpectations));
 
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
-    AddAllCheckpoints (pipelineBuilder);
+    pipelineBuilder.AddCheckpoint (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
     pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     AddValidatorTask (pipelineBuilder, std::move (fixedExpectations));
     Input::AddToFixedUpdate (pipelineBuilder);
-    AddAllCheckpoints (pipelineBuilder);
     pipelineBuilder.End ();
 
     for (const auto &request : _updates)

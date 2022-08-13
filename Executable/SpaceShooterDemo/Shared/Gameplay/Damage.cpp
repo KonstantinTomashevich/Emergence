@@ -7,11 +7,13 @@
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
-
-#include <Shared/Checkpoint.hpp>
+#include <Gameplay/Mortality.hpp>
 
 namespace Damage
 {
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"DamageStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"DamageFinished"};
+
 class CollisionEventProcessor : public Emergence::Celerity::TaskExecutorBase<CollisionEventProcessor>
 {
 public:
@@ -41,9 +43,9 @@ CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConst
 
       insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
-    _constructor.DependOn (Checkpoint::DAMAGE_STARTED);
-    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::DAMAGE_FINISHED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void CollisionEventProcessor::Execute () noexcept
@@ -100,11 +102,14 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 {
     using namespace Emergence::Memory::Literals;
 
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask ("Damage::RemoveDamageDealers"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
                                 objectId)
         // Deletion is done after mortality to avoid unneeded graph complications due to event processing.
-        .DependOn (Checkpoint::MORTALITY_FINISHED);
+        .DependOn (Mortality::Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("Damage::ApplyFromCollision"_us).SetExecutor<CollisionEventProcessor> ();
 }

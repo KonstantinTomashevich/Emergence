@@ -3,15 +3,15 @@
 
 #include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/InputConstant.hpp>
+#include <Gameplay/Shooting.hpp>
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/SlowdownSingleton.hpp>
 
+#include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
 
 #include <Math/Easing.hpp>
 #include <Math/Scalar.hpp>
-
-#include <Shared/Checkpoint.hpp>
 
 namespace Slowdown
 {
@@ -37,8 +37,8 @@ SlowdownProcessor::SlowdownProcessor (Emergence::Celerity::TaskConstructor &_con
       fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByLocalPlayer, true)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId))
 {
-    _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
-    _constructor.MakeDependencyOf (Checkpoint::SHOOTING_STARTED);
+    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
+    _constructor.MakeDependencyOf (Shooting::Checkpoint::STARTED);
 }
 
 void SlowdownProcessor::Execute () noexcept

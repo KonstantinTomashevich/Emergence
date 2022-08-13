@@ -8,16 +8,18 @@
 #include <Celerity/Transform/Transform3dWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
+#include <Gameplay/NonFeatureSpecificComponentCleanup.hpp>
 #include <Gameplay/Spawn.hpp>
 #include <Gameplay/SpawnComponent.hpp>
 
 #include <Log/Log.hpp>
 
-#include <Shared/Checkpoint.hpp>
-
 namespace Spawn
 {
 using namespace Emergence::Memory::Literals;
+
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"SpawnStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"SpawnFinished"};
 
 class SpawnProcessor final : public Emergence::Celerity::TaskExecutorBase<SpawnProcessor>
 {
@@ -71,10 +73,10 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
       insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent)),
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent))
 {
-    _constructor.DependOn (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED);
-    _constructor.DependOn (Checkpoint::SPAWN_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::SPAWN_FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (NonFeatureSpecificComponentCleanup::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::STARTED);
 }
 
 void SpawnProcessor::Execute () noexcept
@@ -176,9 +178,12 @@ void SpawnProcessor::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask ("Spawn::RemoveSpawns"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, SpawnComponent, objectId)
-        .DependOn (Checkpoint::SPAWN_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .MakeDependencyOf ("Spawn::Process"_us);
 
     _pipelineBuilder.AddTask ("Spawn::Process"_us).SetExecutor<SpawnProcessor> ();

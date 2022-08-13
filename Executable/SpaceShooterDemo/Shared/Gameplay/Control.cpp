@@ -4,13 +4,13 @@
 #include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Control.hpp>
 #include <Gameplay/ControllableComponent.hpp>
-#include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
+#include <Gameplay/NonFeatureSpecificComponentCleanup.hpp>
 #include <Gameplay/PlayerInfoSingleton.hpp>
+#include <Gameplay/Spawn.hpp>
 
+#include <Input/Input.hpp>
 #include <Input/InputSingleton.hpp>
-
-#include <Shared/Checkpoint.hpp>
 
 namespace Control
 {
@@ -45,13 +45,13 @@ ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constru
       editControlled (EDIT_SIGNAL (ControllableComponent, controlledByLocalPlayer, true))
 
 {
-    _constructor.DependOn (Checkpoint::NON_FEATURE_SPECIFIC_COMPONENT_CLEANUP_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::INPUT_DISPATCH_STARTED);
+    _constructor.MakeDependencyOf (Input::Checkpoint::DISPATCH_STARTED);
+    _constructor.DependOn (NonFeatureSpecificComponentCleanup::Checkpoint::FINISHED);
 
     // We are consciously adding one-frame delay from object spawn to control takeover.
     // Because otherwise we would need to add delay to all other actions, triggered by
     // input, like shooting a bullet.
-    _constructor.MakeDependencyOf (Checkpoint::SPAWN_STARTED);
+    _constructor.MakeDependencyOf (Spawn::Checkpoint::STARTED);
 }
 
 void ControlSwitcher::Execute () noexcept

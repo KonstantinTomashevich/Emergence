@@ -126,8 +126,18 @@ void DetachedTransformRemover::Execute () noexcept
     }
 }
 
+static void AddCheckpoints (PipelineBuilder &_pipelineBuilder)
+{
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
+
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+}
+
 void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
         .SetExecutor<DetachmentDetector> (Transform3dComponentRemovedFixedEvent::Reflect ().mapping);
     _pipelineBuilder.AddTask (Tasks::DETACHED_TRANSFORM_REMOVER).SetExecutor<DetachedTransformRemover> ();
@@ -135,6 +145,7 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
         .SetExecutor<DetachmentDetector> (Transform3dComponentRemovedNormalEvent::Reflect ().mapping);
     _pipelineBuilder.AddTask (Tasks::DETACHED_TRANSFORM_REMOVER).SetExecutor<DetachedTransformRemover> ();

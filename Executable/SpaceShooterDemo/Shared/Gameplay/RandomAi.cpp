@@ -13,11 +13,10 @@
 #include <Gameplay/RandomAiComponent.hpp>
 #include <Gameplay/RandomSingleton.hpp>
 
+#include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
 
 #include <Log/Log.hpp>
-
-#include <Shared/Checkpoint.hpp>
 
 namespace RandomAi
 {
@@ -43,7 +42,7 @@ AttachmentCreator::AttachmentCreator (Emergence::Celerity::TaskConstructor &_con
       fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
       insertRandomAi (INSERT_LONG_TERM (RandomAiComponent))
 {
-    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
 }
 
 void AttachmentCreator::Execute () noexcept
@@ -95,8 +94,8 @@ InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_construct
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
-    _constructor.DependOn (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);
-    _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Input::Checkpoint::LISTENERS_PUSH_ALLOWED);
+    _constructor.MakeDependencyOf (Input::Checkpoint::LISTENERS_READ_ALLOWED);
 }
 
 void InputGenerator::Execute () noexcept

@@ -11,16 +11,20 @@
 #include <Gameplay/InputConstant.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 #include <Gameplay/Shooting.hpp>
+#include <Gameplay/Spawn.hpp>
+#include <Gameplay/Mortality.hpp>
 
+#include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
 
 #include <Log/Log.hpp>
 
-#include <Shared/Checkpoint.hpp>
-
 namespace Shooting
 {
 using namespace Emergence::Memory::Literals;
+
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"ShootingStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"ShootingFinished"};
 
 class ShootingProcessor final : public Emergence::Celerity::TaskExecutorBase<ShootingProcessor>
 {
@@ -57,14 +61,14 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform3dComponent)),
       insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent))
 {
-    _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
-    _constructor.DependOn (Checkpoint::SHOOTING_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
 
-    _constructor.MakeDependencyOf (Checkpoint::SHOOTING_FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::STARTED);
 
     // To resolve race condition.
-    _constructor.MakeDependencyOf (Checkpoint::SPAWN_STARTED);
+    _constructor.MakeDependencyOf (Spawn::Checkpoint::STARTED);
 }
 
 void ShootingProcessor::Execute () noexcept
@@ -135,9 +139,14 @@ bool ShootingProcessor::TryFetchBulletTransform (Emergence::Celerity::UniqueId _
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask ("Shooting::RemoveAfterDeath"_us)
         .AS_CASCADE_REMOVER_1F (DeathFixedEvent, ShooterComponent, objectId)
-        .DependOn (Checkpoint::SHOOTING_STARTED);
+        .DependOn (Checkpoint::STARTED)
+        // We process deaths from the previous frame, because mortality is processed during the end of frame.
+        .MakeDependencyOf (Mortality::Checkpoint::STARTED);
 
     _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, ShooterComponent, objectId)

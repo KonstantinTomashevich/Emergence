@@ -10,15 +10,18 @@
 #include <Gameplay/Events.hpp>
 #include <Gameplay/MortalComponent.hpp>
 #include <Gameplay/Mortality.hpp>
+#include <Gameplay/Damage.hpp>
 
 #include <Math/Scalar.hpp>
 
 #include <Render/ParticleEffectComponent.hpp>
-
-#include <Shared/Checkpoint.hpp>
+#include <Render/Urho3DUpdate.hpp>
 
 namespace Mortality
 {
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"MortalityStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"MortalityFinished"};
+
 namespace TaskNames
 {
 static const Emergence::Memory::UniqueString PROCESS_LIFETIME ("Mortality::ProcessLifetime");
@@ -85,7 +88,7 @@ LifetimeProcessor::LifetimeProcessor (Emergence::Celerity::TaskConstructor &_con
       editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
       editOldMortals (EDIT_ASCENDING_RANGE (MortalComponent, dieAfterNs))
 {
-    _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
 }
 
 void LifetimeProcessor::Execute () noexcept
@@ -131,7 +134,7 @@ DamageProcessor::DamageProcessor (Emergence::Celerity::TaskConstructor &_constru
       editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
       fetchDamageEvents (FETCH_SEQUENCE (DamageEvent))
 {
-    _constructor.DependOn (Checkpoint::DAMAGE_FINISHED);
+    _constructor.DependOn (Damage::Checkpoint::FINISHED);
     _constructor.DependOn (TaskNames::PROCESS_LIFETIME);
 }
 
@@ -194,8 +197,15 @@ void CorpseProcessor::Execute () noexcept
     }
 }
 
+static void AddCheckpoints (Emergence::Celerity::PipelineBuilder &_pipelineBuilder)
+{
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+}
+
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (TaskNames::PROCESS_LIFETIME).SetExecutor<LifetimeProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_DAMAGE).SetExecutor<DamageProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_CORPSES).SetExecutor<CorpseProcessor> ();
@@ -205,7 +215,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .DependOn (TaskNames::PROCESS_CORPSES)
         // Because mortality is de facto last mechanics in the graph, we're taking care or hierarchy cleanup here.
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
-        .MakeDependencyOf (Checkpoint::MORTALITY_FINISHED)
+        .MakeDependencyOf (Checkpoint::FINISHED)
         .MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
@@ -225,10 +235,10 @@ DeathEffectTrigger::DeathEffectTrigger (Emergence::Celerity::TaskConstructor &_c
     : editParticleEffectByObjectId (EDIT_VALUE_1F (ParticleEffectComponent, objectId)),
       fetchDeathEvents (FETCH_SEQUENCE (DeathFixedToNormalEvent))
 {
-    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
-    _constructor.DependOn (Checkpoint::MORTALITY_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::MORTALITY_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Urho3DUpdate::Checkpoint::STARTED);
 }
 
 void DeathEffectTrigger::Execute () noexcept
@@ -249,6 +259,7 @@ void DeathEffectTrigger::Execute () noexcept
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (TaskNames::TRIGGER_DEATH_EFFECT).SetExecutor<DeathEffectTrigger> ();
 }
 } // namespace Mortality

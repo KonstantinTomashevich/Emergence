@@ -19,9 +19,8 @@
 #include <Render/Urho3DSceneSingleton.hpp>
 #include <Render/Urho3DUpdate.hpp>
 
-#include <Shared/Checkpoint.hpp>
-
 BEGIN_MUTING_WARNINGS
+#include <Urho3D/Core/Context.h>
 #include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Material.h>
@@ -38,6 +37,9 @@ END_MUTING_WARNINGS
 
 namespace Urho3DUpdate
 {
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"Urho3DUpdateStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"Urho3DUpdateFinished"};
+
 namespace TaskNames
 {
 static const Emergence::Memory::UniqueString ENSURE_SCENE_IS_READY {"Urho3DUpdate::EnsureSceneIsReady"};
@@ -148,7 +150,7 @@ SceneInitializer::SceneInitializer (Emergence::Celerity::TaskConstructor &_const
       modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       modifyUrho3DScene (MODIFY_SINGLETON (Urho3DSceneSingleton))
 {
-    _constructor.DependOn (Checkpoint::RENDER_UPDATE_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
@@ -632,9 +634,9 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchRenderSceneChangedCustomEvents (FETCH_SEQUENCE (RenderSceneChangedCustomToNormalEvent)),
       fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId))
 {
-    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::SYNC_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);
-    _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
@@ -861,11 +863,14 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
 {
     using namespace Emergence::Memory::Literals;
 
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask (TaskNames::ENSURE_SCENE_IS_READY).SetExecutor<SceneInitializer> (_context);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalCameras"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, CameraComponent, objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         // Because Urho3DUpdate is de facto last mechanics in the frame, we take care of hierarchy cleanup here.
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
@@ -877,7 +882,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalLights"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, LightComponent, objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedLights"_us)
@@ -889,7 +894,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
     _pipelineBuilder.AddTask ("Render::RemoveNormalEffects"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, ParticleEffectComponent,
                                 objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedEffects"_us)
@@ -901,7 +906,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
     _pipelineBuilder.AddTask ("Render::RemoveNormalModels"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
                                 objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedModels"_us)

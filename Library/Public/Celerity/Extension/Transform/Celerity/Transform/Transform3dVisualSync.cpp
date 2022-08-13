@@ -30,7 +30,7 @@ Transform3dVisualSynchronizer::Transform3dVisualSynchronizer (TaskConstructor &_
       editTransformById (EDIT_VALUE_1F (Transform3dComponent, objectId)),
       editTransformsWithUpdateFlag (EDIT_SIGNAL (Transform3dComponent, visualTransformSyncNeeded, true))
 {
-    _constructor.MakeDependencyOf (VisualTransformSync::Checkpoint::SYNC_FINISHED);
+    _constructor.MakeDependencyOf (VisualTransformSync::Checkpoint::FINISHED);
 }
 
 void Transform3dVisualSynchronizer::Execute () noexcept
@@ -95,10 +95,11 @@ void Transform3dVisualSynchronizer::Execute () noexcept
 
 namespace VisualTransformSync
 {
-const Memory::UniqueString Checkpoint::SYNC_FINISHED {"Transform3dVisualSyncFinished"};
+const Memory::UniqueString Checkpoint::FINISHED {"Transform3dVisualSyncFinished"};
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"})
         .SetExecutor<Transform3dVisualSynchronizer> ();
 }

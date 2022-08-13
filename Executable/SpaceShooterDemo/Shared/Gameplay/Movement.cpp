@@ -9,20 +9,23 @@
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
+#include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
 #include <Gameplay/MovementComponent.hpp>
 
+#include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
 
 #include <Log/Log.hpp>
 
 #include <Math/Scalar.hpp>
 
-#include <Shared/Checkpoint.hpp>
-
 namespace Movement
 {
 using namespace Emergence::Memory::Literals;
+
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"MovementStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"MovementFinished"};
 
 class MovementUpdater : public Emergence::Celerity::TaskExecutorBase<MovementUpdater>
 {
@@ -50,11 +53,11 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
-    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
-    _constructor.DependOn (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
-    _constructor.DependOn (Checkpoint::MOVEMENT_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::MOVEMENT_FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::SIMULATION_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
+    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::STARTED);
 }
 
 void MovementUpdater::Execute () noexcept
@@ -170,11 +173,15 @@ void MovementUpdater::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
         .AS_CASCADE_REMOVER_1F (DeathFixedEvent, MovementComponent, objectId)
-        .DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED)
-        .DependOn (Checkpoint::MOVEMENT_STARTED)
-        .MakeDependencyOf (Checkpoint::MORTALITY_STARTED);
+        .DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED)
+        .DependOn (Checkpoint::STARTED)
+        // We process deaths from the previous frame, because mortality is processed during the end of frame.
+        .MakeDependencyOf (Mortality::Checkpoint::STARTED);
 
     _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent, objectId)
