@@ -621,9 +621,9 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchTransform3dComponentAddedNormalEvents (
           FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentAddedNormalEvent)),
       fetchTransform3dComponentChangedFixedToNormalEvents (
-          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent)),
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent)),
       fetchTransform3dComponentChangedNormalEvents (
-          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedNormalEvent)),
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedNormalEvent)),
 
       fetchUrho3DNodeById (FETCH_VALUE_1F (Urho3DNodeComponent, objectId)),
       fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
@@ -673,7 +673,7 @@ void SceneUpdater::UpdateTransforms () noexcept
 
     for (auto eventCursor = fetchTransform3dComponentChangedFixedToNormalEvents.Execute ();
          const auto *event = static_cast<
-             const Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent *> (
+             const Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent *> (
              *eventCursor);
          ++eventCursor)
     {
@@ -682,7 +682,7 @@ void SceneUpdater::UpdateTransforms () noexcept
 
     for (auto eventCursor = fetchTransform3dComponentChangedNormalEvents.Execute ();
          const auto *event =
-             static_cast<const Emergence::Celerity::Transform3dComponentLocalVisualTransformChangedNormalEvent *> (
+             static_cast<const Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedNormalEvent *> (
                  *eventCursor);
          ++eventCursor)
     {

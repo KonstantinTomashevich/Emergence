@@ -6,8 +6,8 @@ namespace Emergence::Celerity
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentAddedFixedToNormalEvent, objectId);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentAddedNormalEvent, objectId);
 
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent, objectId);
-EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentLocalVisualTransformChangedNormalEvent, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent, objectId);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentVisualLocalTransformChangedNormalEvent, objectId);
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentRemovedFixedEvent, objectId);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform3dComponentRemovedNormalEvent, objectId);
@@ -27,21 +27,21 @@ void RegisterTransformEvents (EventRegistrar &_registrar) noexcept
          {{Transform3dComponent::Reflect ().objectId, Transform3dComponentAddedNormalEvent::Reflect ().objectId}}});
 
     _registrar.OnChangeEvent (
-        {{Transform3dComponentLocalVisualTransformChangedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
+        {{Transform3dComponentVisualLocalTransformChangedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
          Transform3dComponent::Reflect ().mapping,
          {Transform3dComponent::Reflect ().visualLocalTransform},
          {},
          {{Transform3dComponent::Reflect ().objectId,
-           Transform3dComponentLocalVisualTransformChangedNormalEvent::Reflect ().objectId}}});
+           Transform3dComponentVisualLocalTransformChangedNormalEvent::Reflect ().objectId}}});
 
     _registrar.OnChangeEvent (
-        {{Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent::Reflect ().mapping,
+        {{Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent::Reflect ().mapping,
           EventRoute::FROM_FIXED_TO_NORMAL},
          Transform3dComponent::Reflect ().mapping,
          {Transform3dComponent::Reflect ().visualLocalTransform},
          {},
          {{Transform3dComponent::Reflect ().objectId,
-           Transform3dComponentLocalVisualTransformChangedFixedToNormalEvent::Reflect ().objectId}}});
+           Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent::Reflect ().objectId}}});
 
     _registrar.OnRemoveEvent (
         {{Transform3dComponentRemovedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
