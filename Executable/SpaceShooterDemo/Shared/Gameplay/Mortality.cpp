@@ -6,11 +6,11 @@
 #include <Celerity/Transform/Transform3dComponent.hpp>
 #include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 
+#include <Gameplay/Damage.hpp>
 #include <Gameplay/EffectConstant.hpp>
 #include <Gameplay/Events.hpp>
 #include <Gameplay/MortalComponent.hpp>
 #include <Gameplay/Mortality.hpp>
-#include <Gameplay/Damage.hpp>
 
 #include <Math/Scalar.hpp>
 

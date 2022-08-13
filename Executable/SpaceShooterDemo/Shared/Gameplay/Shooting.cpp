@@ -9,10 +9,10 @@
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
+#include <Gameplay/Mortality.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 #include <Gameplay/Shooting.hpp>
 #include <Gameplay/Spawn.hpp>
-#include <Gameplay/Mortality.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>
