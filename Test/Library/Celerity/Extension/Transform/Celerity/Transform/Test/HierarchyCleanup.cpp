@@ -23,7 +23,7 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     HierarchyCleanup::AddToFixedUpdate (builder);
     const std::size_t stepCount = _scenario.size ();
-    RequestExecutor::AddToFixedUpdate (builder, std::move (_scenario));
+    RequestExecutor::AddToFixedUpdate (builder, std::move (_scenario), true);
     REQUIRE (builder.End ());
 
     for (std::size_t index = 0u; index < stepCount; ++index)

@@ -509,7 +509,7 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
     taskRegister.RegisterCheckpoint (_name);
 }
 
-Pipeline *PipelineBuilder::End () noexcept
+Pipeline *PipelineBuilder::End (VisualGraph::Graph *_visualGraphOutput, bool _exportResourcesToGraph) noexcept
 {
     EventUsageMap &productionMap = eventProduction[static_cast<std::size_t> (currentPipelineType)];
     EventUsageMap &consumptionMap = eventConsumption[static_cast<std::size_t> (currentPipelineType)];
@@ -535,6 +535,11 @@ Pipeline *PipelineBuilder::End () noexcept
 
     if (!anyErrorsDetected)
     {
+        if (_visualGraphOutput)
+        {
+            *_visualGraphOutput = taskRegister.ExportVisual (_exportResourcesToGraph);
+        }
+
         newPipeline = world->AddPipeline (currentPipelineId, currentPipelineType, taskRegister.ExportCollection ());
     }
 

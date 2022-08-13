@@ -113,7 +113,7 @@ WorldUpdater::WorldUpdater (TaskConstructor &_constructor) noexcept
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorldSingleton)),
       fetchConfigurationChangedEvents (FETCH_SEQUENCE (PhysicsWorldConfigurationChanged))
 {
-    _constructor.DependOn (Checkpoint::SIMULATION_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
 }
 
 void WorldUpdater::Execute () noexcept
@@ -1054,7 +1054,7 @@ SimulationExecutor::SimulationExecutor (TaskConstructor &_constructor) noexcept
       insertTriggerExitedEvents (INSERT_SHORT_TERM (TriggerExitedEvent))
 {
     _constructor.DependOn (TaskNames::SYNC_BODY_MASSES);
-    _constructor.MakeDependencyOf (Checkpoint::SIMULATION_FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void SimulationExecutor::Execute ()
@@ -1481,23 +1481,26 @@ static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes
     return physx::PxFilterFlag::eSUPPRESS;
 }
 
-const Memory::UniqueString Checkpoint::SIMULATION_STARTED {"PhysicsSimulationStarted"};
-const Memory::UniqueString Checkpoint::SIMULATION_FINISHED {"PhysicsSimulationFinished"};
+const Memory::UniqueString Checkpoint::STARTED {"PhysicsSimulationStarted"};
+const Memory::UniqueString Checkpoint::FINISHED {"PhysicsSimulationFinished"};
 
 void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     using namespace Memory::Literals;
 
+    _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
 
     _pipelineBuilder.AddTask ("Physics::RemoveBodies"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, RigidBodyComponent, objectId)
-        .DependOn (Checkpoint::SIMULATION_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
     _pipelineBuilder.AddTask ("Physics::RemoveShapes"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, CollisionShapeComponent, objectId)
-        .DependOn (Checkpoint::SIMULATION_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
     _pipelineBuilder.AddTask (TaskNames::INITIALIZE_MATERIALS).SetExecutor<MaterialInitializer> ();

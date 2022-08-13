@@ -65,7 +65,7 @@ Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<Con
       insertShape (INSERT_LONG_TERM (CollisionShapeComponent)),
       modifyShapeByShapeId (MODIFY_VALUE_1F (CollisionShapeComponent, shapeId))
 {
-    _constructor.MakeDependencyOf (Simulation::Checkpoint::SIMULATION_STARTED);
+    _constructor.MakeDependencyOf (Simulation::Checkpoint::STARTED);
 }
 
 void Configurator::Execute ()
@@ -285,7 +285,7 @@ Validator::Validator (TaskConstructor &_constructor, Container::Vector<Validator
       fetchTriggerEnteredEvents (FETCH_SEQUENCE (TriggerEnteredEvent)),
       fetchTriggerExitedEvents (FETCH_SEQUENCE (TriggerExitedEvent))
 {
-    _constructor.DependOn (Simulation::Checkpoint::SIMULATION_FINISHED);
+    _constructor.DependOn (Simulation::Checkpoint::FINISHED);
 }
 
 void Validator::Execute () noexcept
@@ -420,9 +420,6 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
 
     PipelineBuilder builder {&world};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
-
-    builder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_STARTED);
-    builder.AddCheckpoint (Simulation::Checkpoint::SIMULATION_FINISHED);
     Simulation::AddToFixedUpdate (builder);
 
     builder.AddTask ("Configurator"_us).SetExecutor<Configurator> (std::move (_configuratorFrames));

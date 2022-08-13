@@ -10,10 +10,10 @@ struct Checkpoint final
     Checkpoint () = delete;
 
     /// \brief Physics simulation execution starts after this checkpoint.
-    static const Emergence::Memory::UniqueString SIMULATION_STARTED;
+    static const Emergence::Memory::UniqueString STARTED;
 
     /// \brief Physics simulation execution finishes before this checkpoint.
-    static const Emergence::Memory::UniqueString SIMULATION_FINISHED;
+    static const Emergence::Memory::UniqueString FINISHED;
 };
 
 /// \brief Adds tasks that execute world physics simulation.

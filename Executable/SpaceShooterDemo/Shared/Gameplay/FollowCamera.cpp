@@ -10,12 +10,14 @@
 #include <Gameplay/ControllableComponent.hpp>
 
 #include <Render/RenderSceneSingleton.hpp>
-
-#include <Shared/Checkpoint.hpp>
+#include <Render/Urho3DUpdate.hpp>
 
 namespace FollowCamera
 {
 using namespace Emergence::Memory::Literals;
+
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"FollowCameraStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"FollowCameraFinished"};
 
 class CameraUpdater : public Emergence::Celerity::TaskExecutorBase<CameraUpdater>
 {
@@ -43,11 +45,11 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
       editTransformById (EDIT_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
-    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::ASSEMBLY_FINISHED);
-    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::SYNC_FINISHED);
-    _constructor.DependOn (Checkpoint::CAMERA_UPDATE_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::CAMERA_UPDATE_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Urho3DUpdate::Checkpoint::STARTED);
 }
 
 void CameraUpdater::Execute () noexcept
@@ -91,6 +93,8 @@ bool CameraUpdater::FetchControlledUnitTransform (Emergence::Math::Transform3d &
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("FollowCamera::Updater"_us).SetExecutor<CameraUpdater> ();
 }
 } // namespace FollowCamera

@@ -78,7 +78,8 @@ namespace RequestExecutor
 using RequestPacket = Container::Vector<Request>;
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                       Container::Vector<RequestPacket> _requests) noexcept;
+                       Container::Vector<RequestPacket> _requests,
+                       bool _withHierarchyCleanup = false) noexcept;
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                         Container::Vector<RequestPacket> _requests) noexcept;

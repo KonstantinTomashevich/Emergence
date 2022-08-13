@@ -39,4 +39,6 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (StaticModelComponentChangedEvent, Emergen
 EMERGENCE_CELERITY_EVENT2_DECLARATION (
     StaticModelComponentRemovedEvent, Emergence::Celerity::UniqueId, objectId, void *, implementationHandle);
 
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Urho3dNodeComponentAddedNormalEvent, Emergence::Celerity::UniqueId, objectId);
+
 void RegisterRenderEvents (Emergence::Celerity::EventRegistrar &_registrar) noexcept;

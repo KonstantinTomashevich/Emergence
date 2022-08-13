@@ -7,10 +7,12 @@
 #include <Input/InputListenerComponent.hpp>
 #include <Input/InputSingleton.hpp>
 
-#include <Shared/Checkpoint.hpp>
-
 namespace Input
 {
+const Emergence::Memory::UniqueString Checkpoint::DISPATCH_STARTED {"InputDispatchStarted"};
+const Emergence::Memory::UniqueString Checkpoint::LISTENERS_PUSH_ALLOWED {"InputListenersPushAllowed"};
+const Emergence::Memory::UniqueString Checkpoint::LISTENERS_READ_ALLOWED {"InputListenersReadAllowed"};
+
 /// \brief Contains common logic and common queries for input dispatchers.
 class InputDispatcherBase
 {
@@ -34,10 +36,10 @@ InputDispatcherBase::InputDispatcherBase (Emergence::Celerity::TaskConstructor &
       editListenerById (EDIT_VALUE_1F (InputListenerComponent, objectId)),
       editListeners (EDIT_ASCENDING_RANGE (InputListenerComponent, objectId))
 {
-    _constructor.DependOn (Checkpoint::INPUT_DISPATCH_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_PUSH_ALLOWED);
+    _constructor.DependOn (Checkpoint::DISPATCH_STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::LISTENERS_PUSH_ALLOWED);
     // Enforce checkpoint order even if there are no direct pushers.
-    _constructor.MakeDependencyOf (Checkpoint::INPUT_LISTENERS_READ_ALLOWED);
+    _constructor.MakeDependencyOf (Checkpoint::LISTENERS_READ_ALLOWED);
 }
 
 void InputDispatcherBase::ClearListeners () noexcept
@@ -222,12 +224,20 @@ void NormalInputDispatcher::UpdateActionBuffers (InputSingleton *_input) noexcep
 
 using namespace Emergence::Memory::Literals;
 
+static void AddCheckpoints (Emergence::Celerity::PipelineBuilder &_pipelineBuilder)
+{
+    _pipelineBuilder.AddCheckpoint (Checkpoint::DISPATCH_STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::LISTENERS_PUSH_ALLOWED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::LISTENERS_READ_ALLOWED);
+}
+
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Input::RemoveFixedListeners"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
                                 objectId)
-        .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
+        .DependOn (Checkpoint::DISPATCH_STARTED)
         .MakeDependencyOf ("Input::FixedDispatcher"_us);
 
     _pipelineBuilder.AddTask ("Input::FixedDispatcher"_us).SetExecutor<FixedInputDispatcher> ();
@@ -236,10 +246,11 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputListenerComponent,
                                 objectId)
-        .DependOn (Checkpoint::INPUT_DISPATCH_STARTED)
+        .DependOn (Checkpoint::DISPATCH_STARTED)
         .MakeDependencyOf ("Input::NormalDispatcher"_us)
         .MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 

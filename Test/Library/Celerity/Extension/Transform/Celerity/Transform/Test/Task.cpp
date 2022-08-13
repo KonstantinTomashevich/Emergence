@@ -183,25 +183,24 @@ void Executor::Execute () noexcept
     ++executionIndex;
 }
 
-void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
+void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder,
+                       Container::Vector<RequestPacket> _requests,
+                       bool _withHierarchyCleanup) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
-
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-    constructor.DependOn (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-    constructor.MakeDependencyOf (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    if (_withHierarchyCleanup)
+    {
+        constructor.DependOn (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+        constructor.MakeDependencyOf (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    }
+
     constructor.SetExecutor<Executor> (std::move (_requests));
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-    constructor.DependOn (VisualTransformSync::Checkpoint::SYNC_FINISHED);
+    constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor> (std::move (_requests));
 }
 } // namespace Emergence::Celerity::Test::RequestExecutor

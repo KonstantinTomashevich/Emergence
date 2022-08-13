@@ -19,9 +19,8 @@
 #include <Render/Urho3DSceneSingleton.hpp>
 #include <Render/Urho3DUpdate.hpp>
 
-#include <Shared/Checkpoint.hpp>
-
 BEGIN_MUTING_WARNINGS
+#include <Urho3D/Core/Context.h>
 #include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Material.h>
@@ -38,6 +37,9 @@ END_MUTING_WARNINGS
 
 namespace Urho3DUpdate
 {
+const Emergence::Memory::UniqueString Checkpoint::STARTED {"Urho3DUpdateStarted"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"Urho3DUpdateFinished"};
+
 namespace TaskNames
 {
 static const Emergence::Memory::UniqueString ENSURE_SCENE_IS_READY {"Urho3DUpdate::EnsureSceneIsReady"};
@@ -148,7 +150,7 @@ SceneInitializer::SceneInitializer (Emergence::Celerity::TaskConstructor &_const
       modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       modifyUrho3DScene (MODIFY_SINGLETON (Urho3DSceneSingleton))
 {
-    _constructor.DependOn (Checkpoint::RENDER_UPDATE_STARTED);
+    _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
@@ -574,6 +576,14 @@ public:
 private:
     void UpdateTransforms () noexcept;
 
+    void UpdateObjectTransform (Emergence::Celerity::UniqueId _objectId) noexcept;
+
+    void UpdateObjectTransform (const Emergence::Celerity::Transform3dComponent *_transform) noexcept;
+
+    void UpdateTransformRecursively (Emergence::Celerity::UniqueId _rootObjectId) noexcept;
+
+    void UpdateTransformRecursively (const Emergence::Celerity::Transform3dComponent *_rootTransform) noexcept;
+
     void ApplyRenderSceneChanges () noexcept;
 
     void UpdateUrho3DScene () noexcept;
@@ -583,8 +593,15 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchUrho3DScene;
     Emergence::Celerity::FetchSingletonQuery fetchRenderScene;
 
-    Emergence::Celerity::FetchAscendingRangeQuery fetchUrho3DNodes;
+    Emergence::Celerity::FetchSequenceQuery fetchUrho3DNodeComponentAddedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentAddedFixedToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentAddedNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentChangedFixedToNormalEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransform3dComponentChangedNormalEvents;
+
+    Emergence::Celerity::FetchValueQuery fetchUrho3DNodeById;
     Emergence::Celerity::FetchValueQuery fetchTransformByObjectId;
+    Emergence::Celerity::FetchValueQuery fetchTransformByParentObjectId;
     Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
     Emergence::Celerity::FetchSequenceQuery fetchRenderSceneChangedNormalEvents;
@@ -598,17 +615,28 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchUrho3DScene (FETCH_SINGLETON (Urho3DSceneSingleton)),
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
 
-      fetchUrho3DNodes (FETCH_ASCENDING_RANGE (Urho3DNodeComponent, objectId)),
+      fetchUrho3DNodeComponentAddedEvents (FETCH_SEQUENCE (Urho3dNodeComponentAddedNormalEvent)),
+      fetchTransform3dComponentAddedFixedToNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentAddedFixedToNormalEvent)),
+      fetchTransform3dComponentAddedNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentAddedNormalEvent)),
+      fetchTransform3dComponentChangedFixedToNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent)),
+      fetchTransform3dComponentChangedNormalEvents (
+          FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedNormalEvent)),
+
+      fetchUrho3DNodeById (FETCH_VALUE_1F (Urho3DNodeComponent, objectId)),
       fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
+      fetchTransformByParentObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, parentObjectId)),
       transformWorldAccessor (_constructor),
 
       fetchRenderSceneChangedNormalEvents (FETCH_SEQUENCE (RenderSceneChangedNormalEvent)),
       fetchRenderSceneChangedCustomEvents (FETCH_SEQUENCE (RenderSceneChangedCustomToNormalEvent)),
       fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId))
 {
-    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::SYNC_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);
-    _constructor.MakeDependencyOf (Checkpoint::RENDER_UPDATE_FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
@@ -621,27 +649,100 @@ void SceneUpdater::Execute ()
 
 void SceneUpdater::UpdateTransforms () noexcept
 {
-    // Updating transform for all nodes is not very efficient, but it is ok for the first demo.
-
-    for (auto nodeCursor = fetchUrho3DNodes.Execute (nullptr, nullptr);
-         const auto *node = static_cast<const Urho3DNodeComponent *> (*nodeCursor); ++nodeCursor)
+    for (auto eventCursor = fetchUrho3DNodeComponentAddedEvents.Execute ();
+         const auto *event = static_cast<const Urho3dNodeComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
     {
-        auto transformCursor = fetchTransformByObjectId.Execute (&node->objectId);
-        const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
+        UpdateObjectTransform (event->objectId);
+    }
 
-        if (!transform)
-        {
-            continue;
-        }
+    for (auto eventCursor = fetchTransform3dComponentAddedFixedToNormalEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Celerity::Transform3dComponentAddedFixedToNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        UpdateObjectTransform (event->objectId);
+    }
 
-        const Emergence::Math::Transform3d &worldTransform =
-            transform->GetVisualWorldTransform (transformWorldAccessor);
+    for (auto eventCursor = fetchTransform3dComponentAddedNormalEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Celerity::Transform3dComponentAddedNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        UpdateObjectTransform (event->objectId);
+    }
 
-        node->node->SetTransform (
-            {worldTransform.translation.x, worldTransform.translation.y, worldTransform.translation.z},
-            {worldTransform.rotation.w, worldTransform.rotation.x, worldTransform.rotation.y,
-             worldTransform.rotation.z},
-            {worldTransform.scale.x, worldTransform.scale.y, worldTransform.scale.z});
+    for (auto eventCursor = fetchTransform3dComponentChangedFixedToNormalEvents.Execute ();
+         const auto *event = static_cast<
+             const Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent *> (
+             *eventCursor);
+         ++eventCursor)
+    {
+        UpdateTransformRecursively (event->objectId);
+    }
+
+    for (auto eventCursor = fetchTransform3dComponentChangedNormalEvents.Execute ();
+         const auto *event =
+             static_cast<const Emergence::Celerity::Transform3dComponentVisualLocalTransformChangedNormalEvent *> (
+                 *eventCursor);
+         ++eventCursor)
+    {
+        UpdateTransformRecursively (event->objectId);
+    }
+}
+
+void SceneUpdater::UpdateObjectTransform (Emergence::Celerity::UniqueId _objectId) noexcept
+{
+    auto transformCursor = fetchTransformByObjectId.Execute (&_objectId);
+    const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
+
+    if (!transform)
+    {
+        return;
+    }
+
+    UpdateObjectTransform (transform);
+}
+
+void SceneUpdater::UpdateObjectTransform (const Emergence::Celerity::Transform3dComponent *_transform) noexcept
+{
+    Emergence::Celerity::UniqueId objectId = _transform->GetObjectId ();
+    auto nodeCursor = fetchUrho3DNodeById.Execute (&objectId);
+    const auto *node = static_cast<const Urho3DNodeComponent *> (*nodeCursor);
+
+    if (!node)
+    {
+        return;
+    }
+
+    const Emergence::Math::Transform3d &worldTransform = _transform->GetVisualWorldTransform (transformWorldAccessor);
+    node->node->SetTransform (
+        {worldTransform.translation.x, worldTransform.translation.y, worldTransform.translation.z},
+        {worldTransform.rotation.w, worldTransform.rotation.x, worldTransform.rotation.y, worldTransform.rotation.z},
+        {worldTransform.scale.x, worldTransform.scale.y, worldTransform.scale.z});
+}
+
+void SceneUpdater::UpdateTransformRecursively (Emergence::Celerity::UniqueId _rootObjectId) noexcept
+{
+    auto transformCursor = fetchTransformByObjectId.Execute (&_rootObjectId);
+    const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*transformCursor);
+
+    if (!transform)
+    {
+        return;
+    }
+
+    UpdateTransformRecursively (transform);
+}
+
+void SceneUpdater::UpdateTransformRecursively (const Emergence::Celerity::Transform3dComponent *_rootTransform) noexcept
+{
+    UpdateObjectTransform (_rootTransform);
+    Emergence::Celerity::UniqueId rootObjectId = _rootTransform->GetObjectId ();
+
+    for (auto cursor = fetchTransformByParentObjectId.Execute (&rootObjectId);
+         const auto *transform = static_cast<const Emergence::Celerity::Transform3dComponent *> (*cursor); ++cursor)
+    {
+        UpdateTransformRecursively (transform);
     }
 }
 
@@ -762,11 +863,14 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
 {
     using namespace Emergence::Memory::Literals;
 
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask (TaskNames::ENSURE_SCENE_IS_READY).SetExecutor<SceneInitializer> (_context);
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalCameras"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, CameraComponent, objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         // Because Urho3DUpdate is de facto last mechanics in the frame, we take care of hierarchy cleanup here.
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
@@ -778,7 +882,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
 
     _pipelineBuilder.AddTask ("Render::RemoveNormalLights"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, LightComponent, objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedLights"_us)
@@ -790,7 +894,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
     _pipelineBuilder.AddTask ("Render::RemoveNormalEffects"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, ParticleEffectComponent,
                                 objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedEffects"_us)
@@ -802,7 +906,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
     _pipelineBuilder.AddTask ("Render::RemoveNormalModels"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, StaticModelComponent,
                                 objectId)
-        .DependOn (Checkpoint::RENDER_UPDATE_STARTED)
+        .DependOn (Checkpoint::STARTED)
         .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 
     _pipelineBuilder.AddTask ("Render::RemoveFixedModels"_us)

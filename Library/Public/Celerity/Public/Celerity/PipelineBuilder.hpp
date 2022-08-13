@@ -287,8 +287,10 @@ public:
     void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
     /// \brief Finishes active pipeline routine.
+    /// \param _visualGraphOutput If pipeline can be created and this parameter is not `nullptr`,
+    ///                           pipeline visual graph will be assigned to the given address.
     /// \return New pipeline or `nullptr` if pipeline creation fails due to errors.
-    Pipeline *End () noexcept;
+    Pipeline *End (VisualGraph::Graph *_visualGraphOutput = nullptr, bool _exportResourcesToGraph = false) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PipelineBuilder);
 

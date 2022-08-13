@@ -69,8 +69,6 @@ void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
     PipelineBuilder builder {&world};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
 
-    builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
-    builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
     Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_configuratorTasks), std::move (_validatorTasks));
     REQUIRE (builder.End ());
@@ -94,16 +92,12 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
 
     PipelineBuilder builder {&world};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
-    builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
-    builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
     Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_fixedConfiguratorTasks), std::move (_fixedValidatorTasks));
     REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_STARTED);
-    builder.AddCheckpoint (Assembly::Checkpoint::ASSEMBLY_FINISHED);
-    builder.AddCheckpoint (VisualTransformSync::Checkpoint::SYNC_FINISHED);
+    builder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
     Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_normalConfiguratorTasks), std::move (_normalValidatorTasks));
     REQUIRE (builder.End ());

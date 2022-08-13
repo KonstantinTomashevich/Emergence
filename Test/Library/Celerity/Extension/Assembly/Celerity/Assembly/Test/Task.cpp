@@ -42,7 +42,7 @@ Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<Con
 
       tasks (std::move (_tasks))
 {
-    _constructor.MakeDependencyOf (Assembly::Checkpoint::ASSEMBLY_STARTED);
+    _constructor.MakeDependencyOf (Assembly::Checkpoint::STARTED);
 }
 
 void Configurator::Execute () noexcept
@@ -123,7 +123,7 @@ private:
 Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorTask> _tasks) noexcept
     : tasks (std::move (_tasks))
 {
-    _constructor.DependOn (Assembly::Checkpoint::ASSEMBLY_FINISHED);
+    _constructor.DependOn (Assembly::Checkpoint::FINISHED);
 
     for (const ValidatorTask &task : tasks)
     {
