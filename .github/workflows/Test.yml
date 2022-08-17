@@ -17,14 +17,6 @@ jobs:
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
         os: [ windows-2022 ]
         toolchain: [ CLangCL, MSVC ]
-        include:
-          # As of March 2022, there is a strange problem with llvm coverage on clang-cl 13.0 from VS 2022:
-          # llvm-profdata emits 'unsupported instrumentation profile format version' error for profraw's, emitted
-          # by programs, compiled using same clang-cl package.
-          # Therefore, we are using separate VS 2019 build to check coverage.
-          - build_type: Debug
-            os: windows-2019
-            toolchain: CLangCL
         exclude:
           # As of August 2022, GitHub Actions got an update that introduced strange linker errors, that cannot
           # be reproduced on my local machine. Therefore, I'm temporary disabling this matrix value.
@@ -59,7 +51,7 @@ jobs:
         # On Windows images there is a separate LLVM installation that is already in Env:Path.
         # We want to use CLangCL for coverage, therefore we must delete this installation from path to avoid mismatches.
       - name: Configure coverage check
-        if: matrix.build_type == 'Debug' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLangCL'
+        if: matrix.build_type == 'Debug' && matrix.os == 'windows-2022' && matrix.toolchain == 'CLangCL'
         run: |
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
