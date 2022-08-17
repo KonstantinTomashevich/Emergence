@@ -67,7 +67,7 @@ void AssemblyDescriptorLoader::Execute () noexcept
         {
             EMERGENCE_LOG (DEBUG, "AssemblyDescriptorLoading: Loading descriptor \"", path.stem ().string ().c_str (),
                            "\" from file \"", path.string ().c_str (), "\"...");
-            std::ifstream input {entry};
+            std::ifstream input {entry.path ()};
 
             if (!input)
             {

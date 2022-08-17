@@ -39,7 +39,7 @@ void DynamicsMaterialLoader::Execute () noexcept
         if (entry.is_regular_file () && entry.path ().extension ().string () == ".yaml")
         {
             EMERGENCE_LOG (DEBUG, "DynamicsMaterialLoading: Loading \"", entry.path ().string ().c_str (), "\"...");
-            std::ifstream input {entry};
+            std::ifstream input {entry.path ()};
 
             if (!input)
             {
