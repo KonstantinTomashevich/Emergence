@@ -25,7 +25,7 @@ jobs:
           - build_type: Debug
             os: windows-2019
             toolchain: CLangCL
-          # To compensate the exclusion below.
+          # To compensate for the exclusion below.
           - build_type: Release
             os: windows-2019
             toolchain: CLangCL

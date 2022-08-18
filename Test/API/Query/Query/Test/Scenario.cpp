@@ -361,7 +361,7 @@ static Container::Vector<uint8_t> LayoutVolumetricQueryParameters (
     }
 
     Container::Vector<uint8_t> sequence (sequenceSize);
-    uint8_t *output = &sequence[0u];
+    uint8_t *output = sequence.data ();
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < _valueSizes.size (); ++dimensionIndex)
     {

@@ -365,7 +365,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
-                       representation.ReadShapeIntersections (&sequence[0u]));
+                       representation.ReadShapeIntersections (sequence.data ()));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
@@ -377,7 +377,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
-                       representation.EditShapeIntersections (&sequence[0u]));
+                       representation.EditShapeIntersections (sequence.data ()));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &_task)
@@ -389,7 +389,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
-                       representation.ReadRayIntersections (&sequence[0u], _task.maxDistance));
+                       representation.ReadRayIntersections (sequence.data (), _task.maxDistance));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
@@ -401,7 +401,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
-                       representation.EditRayIntersections (&sequence[0u], _task.maxDistance));
+                       representation.EditRayIntersections (sequence.data (), _task.maxDistance));
 }
 
 std::ostream &operator<< (std::ostream &_output, const CreateLinearRepresentation &_task)

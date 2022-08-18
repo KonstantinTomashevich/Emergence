@@ -9,7 +9,7 @@
 namespace Emergence::Memory::Recording
 {
 StreamDeserializer::StreamDeserializer (StreamDeserializer &&_other) noexcept
-    : ReporterBase (std::move (_other)),
+    : ReporterBase (_other),
       input (_other.input)
 {
     _other.input = nullptr;
