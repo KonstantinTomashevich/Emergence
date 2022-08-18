@@ -25,7 +25,16 @@ jobs:
           - build_type: Debug
             os: windows-2019
             toolchain: CLangCL
-
+          # To compensate the exclusion below.
+          - build_type: Release
+            os: windows-2019
+            toolchain: CLangCL
+        exclude:
+          # As of August 2022, GitHub Actions got an update that introduced strange linker errors, that cannot
+          # be reproduced on my local machine. Therefore, I'm temporary disabling this matrix value.
+          - build_type: Release
+            os: windows-2022
+            toolchain: CLangCL
 
     defaults:
       run:
@@ -63,7 +72,11 @@ jobs:
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
 
-      - name: Select CLangCL 13.0 toolset
+      - name: Select CLangCL 12.0 toolset
+        if: matrix.build_type == 'Release' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLangCL'
+        run: echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
+
+      - name: Select CLangCL 14.0 toolset
         if: matrix.os == 'windows-2022' && matrix.toolchain == 'CLangCL'
         run: echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
 
