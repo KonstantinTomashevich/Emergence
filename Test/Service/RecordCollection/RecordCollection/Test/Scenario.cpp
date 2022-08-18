@@ -60,7 +60,8 @@ struct ExecutionContext final : public Context::Extension::ObjectStorage<Represe
     Container::Optional<Collection::Allocator> collectionAllocator;
 };
 
-ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping) : collection (_typeMapping)
+ExecutionContext::ExecutionContext (const StandardLayout::Mapping &_typeMapping)
+    : collection (_typeMapping)
 
 {
 }

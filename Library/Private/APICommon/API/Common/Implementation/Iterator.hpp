@@ -51,7 +51,8 @@
     /* NOLINTNEXTLINE(bugprone-macro-parentheses, misc-unconventional-assign-operator) */                              \
     Class &Class::operator= (Class &&_other) noexcept = default;                                                       \
                                                                                                                        \
-    Class::Class (decltype (baseIteratorField) _baseIterator) noexcept : baseIteratorField (std::move (_baseIterator)) \
+    Class::Class (decltype (baseIteratorField) _baseIterator) noexcept                                                 \
+        : baseIteratorField (std::move (_baseIterator))                                                                \
     {                                                                                                                  \
     }
 

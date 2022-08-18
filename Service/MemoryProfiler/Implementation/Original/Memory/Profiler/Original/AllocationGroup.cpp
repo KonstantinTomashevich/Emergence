@@ -48,7 +48,8 @@ bool AllocationGroup::Iterator::operator!= (const AllocationGroup::Iterator &_ot
     return *this == _other;
 }
 
-AllocationGroup::Iterator::Iterator (AllocationGroup *_current) noexcept : current (_current)
+AllocationGroup::Iterator::Iterator (AllocationGroup *_current) noexcept
+    : current (_current)
 {
 }
 
@@ -204,7 +205,9 @@ void AllocationGroup::FreeInternal (size_t _bytesCount) noexcept
     }
 }
 
-AllocationGroup::AllocationGroup (AllocationGroup *_parent, UniqueString _id) noexcept : id (_id), parent (_parent)
+AllocationGroup::AllocationGroup (AllocationGroup *_parent, UniqueString _id) noexcept
+    : id (_id),
+      parent (_parent)
 {
 }
 

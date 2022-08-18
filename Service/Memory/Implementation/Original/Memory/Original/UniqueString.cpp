@@ -79,11 +79,13 @@ static const char *RegisterValue (const std::string_view &_value)
     }
 }
 
-UniqueString::UniqueString (const char *_string) noexcept : UniqueString (std::string_view {_string})
+UniqueString::UniqueString (const char *_string) noexcept
+    : UniqueString (std::string_view {_string})
 {
 }
 
-UniqueString::UniqueString (const std::string_view &_string) noexcept : value (RegisterValue (_string))
+UniqueString::UniqueString (const std::string_view &_string) noexcept
+    : value (RegisterValue (_string))
 {
 }
 

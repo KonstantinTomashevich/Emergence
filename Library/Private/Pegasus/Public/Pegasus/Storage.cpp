@@ -10,7 +10,9 @@
 
 namespace Emergence::Pegasus
 {
-Storage::Allocator::Allocator (Storage::Allocator &&_other) noexcept : owner (_other.owner), current (_other.current)
+Storage::Allocator::Allocator (Storage::Allocator &&_other) noexcept
+    : owner (_other.owner),
+      current (_other.current)
 {
     _other.owner = nullptr;
     _other.current = nullptr;
@@ -41,7 +43,8 @@ void *Storage::Allocator::Next () noexcept
     return current;
 }
 
-Storage::Allocator::Allocator (Storage *_owner) : owner (_owner)
+Storage::Allocator::Allocator (Storage *_owner)
+    : owner (_owner)
 {
     assert (owner);
     owner->RegisterWriter ();

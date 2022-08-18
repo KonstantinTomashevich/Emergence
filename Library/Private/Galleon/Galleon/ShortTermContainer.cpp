@@ -144,7 +144,7 @@ ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor
     return *this;
 }
 
-ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor::operator~ () noexcept
+ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor::operator~() noexcept
 {
     assert (container);
     assert (currentNode);

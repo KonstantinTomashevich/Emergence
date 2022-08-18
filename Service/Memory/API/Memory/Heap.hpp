@@ -62,26 +62,31 @@ public:
 
     using is_always_equal = std::true_type;
 
-    HeapSTD () noexcept : heap (DefaultAllocationGroup<Type>::Get ())
+    HeapSTD () noexcept
+        : heap (DefaultAllocationGroup<Type>::Get ())
     {
     }
 
     /// \details Intentionally implicit to make container initialization easier.
-    HeapSTD (const Profiler::AllocationGroup &_group) noexcept : heap (_group)
+    HeapSTD (const Profiler::AllocationGroup &_group) noexcept
+        : heap (_group)
     {
     }
 
     /// \details Intentionally implicit to make container initialization easier.
-    HeapSTD (const Heap &_heap) noexcept : heap (_heap.GetAllocationGroup ())
+    HeapSTD (const Heap &_heap) noexcept
+        : heap (_heap.GetAllocationGroup ())
     {
     }
 
     template <typename Other>
-    HeapSTD ([[maybe_unused]] const HeapSTD<Other> &_other) noexcept : HeapSTD (_other.GetAllocationGroup ())
+    HeapSTD ([[maybe_unused]] const HeapSTD<Other> &_other) noexcept
+        : HeapSTD (_other.GetAllocationGroup ())
     {
     }
 
-    HeapSTD (const HeapSTD &_other) noexcept : HeapSTD (_other.GetAllocationGroup ())
+    HeapSTD (const HeapSTD &_other) noexcept
+        : HeapSTD (_other.GetAllocationGroup ())
     {
     }
 

@@ -197,7 +197,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
         return current != end ? const_cast<void *> (*current) : nullptr;                                               \
     }                                                                                                                  \
                                                                                                                        \
-    OrderedIndex::Cursor &OrderedIndex::Cursor::operator~ () noexcept                                                  \
+    OrderedIndex::Cursor &OrderedIndex::Cursor::operator~() noexcept                                                   \
     {                                                                                                                  \
         assert (index);                                                                                                \
         assert (current != end);                                                                                       \
@@ -321,7 +321,8 @@ void OrderedIndex::MassInsertionExecutor::InsertRecord (const void *_record) noe
     owner->records.emplace_back (_record);
 }
 
-OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner) noexcept : owner (_owner)
+OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner) noexcept
+    : owner (_owner)
 {
     assert (owner);
 

@@ -2,7 +2,8 @@
 
 namespace Emergence::Serialization
 {
-FieldNameLookupCache::FieldNameLookupCache (StandardLayout::Mapping _mapping) noexcept : mapping (std::move (_mapping))
+FieldNameLookupCache::FieldNameLookupCache (StandardLayout::Mapping _mapping) noexcept
+    : mapping (std::move (_mapping))
 {
 }
 

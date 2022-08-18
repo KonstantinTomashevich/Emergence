@@ -266,7 +266,8 @@ void OnChangeEventTrigger::BakeTrackedFields (const StandardLayout::Mapping &_re
     }
 }
 
-ChangeTracker::ChangeTracker (const EventVector &_events) noexcept : trackedType (_events[0u]->GetTrackedType ())
+ChangeTracker::ChangeTracker (const EventVector &_events) noexcept
+    : trackedType (_events[0u]->GetTrackedType ())
 {
     BakeTrackedZones (_events);
     BakeBindings (_events);

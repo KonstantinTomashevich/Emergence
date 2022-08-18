@@ -126,47 +126,58 @@ auto DoWithCorrectTypeOperations (const StandardLayout::Field &_field, const Cal
     return _callback (TypeOperations<float> ());
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue () noexcept : uint64 (0u)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue () noexcept
+    : uint64 (0u)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int8_t _value) noexcept : int8 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int8_t _value) noexcept
+    : int8 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int16_t _value) noexcept : int16 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int16_t _value) noexcept
+    : int16 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int32_t _value) noexcept : int32 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int32_t _value) noexcept
+    : int32 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int64_t _value) noexcept : int64 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (int64_t _value) noexcept
+    : int64 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint8_t _value) noexcept : uint8 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint8_t _value) noexcept
+    : uint8 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint16_t _value) noexcept : uint16 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint16_t _value) noexcept
+    : uint16 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint32_t _value) noexcept : uint32 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint32_t _value) noexcept
+    : uint32 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint64_t _value) noexcept : uint64 (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (uint64_t _value) noexcept
+    : uint64 (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (float _value) noexcept : floating (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (float _value) noexcept
+    : floating (_value)
 {
 }
 
-VolumetricIndex::SupportedAxisValue::SupportedAxisValue (double _value) noexcept : doubleFloating (_value)
+VolumetricIndex::SupportedAxisValue::SupportedAxisValue (double _value) noexcept
+    : doubleFloating (_value)
 {
 }
 
@@ -364,7 +375,7 @@ void *VolumetricIndex::ShapeIntersectionEditCursor::operator* () noexcept
     return const_cast<void *> (GetRecord ());
 }
 
-VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator~ () noexcept
+VolumetricIndex::ShapeIntersectionEditCursor &VolumetricIndex::ShapeIntersectionEditCursor::operator~() noexcept
 {
     assert (!IsFinished ());
     // Record can be stored in many coordinates, therefore deletion by cursor can not be optimized for owner index.
@@ -723,7 +734,7 @@ void *VolumetricIndex::RayIntersectionEditCursor::operator* () noexcept
     return const_cast<void *> (GetRecord ());
 }
 
-VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEditCursor::operator~ () noexcept
+VolumetricIndex::RayIntersectionEditCursor &VolumetricIndex::RayIntersectionEditCursor::operator~() noexcept
 {
     assert (!IsFinished ());
     // Record can be stored in many coordinates, therefore deletion by cursor can not be optimized for owner index.

@@ -21,11 +21,13 @@ Patch::ChangeInfo Patch::Iterator::operator* () const noexcept
     return {valueSetter->field, &valueSetter->value};
 }
 
-Patch::Patch (const Patch &_other) noexcept : Patch (_other.data)
+Patch::Patch (const Patch &_other) noexcept
+    : Patch (_other.data)
 {
 }
 
-Patch::Patch (Patch &&_other) noexcept : Patch (_other.data)
+Patch::Patch (Patch &&_other) noexcept
+    : Patch (_other.data)
 {
 }
 

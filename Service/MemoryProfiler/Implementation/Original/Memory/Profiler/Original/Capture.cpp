@@ -127,7 +127,8 @@ EventObserver::EventObserver (const ProfilingLock &_lock) noexcept
 {
 }
 
-EventObserver::EventObserver (EventObserver &&_other) noexcept : current (_other.current)
+EventObserver::EventObserver (EventObserver &&_other) noexcept
+    : current (_other.current)
 {
     _other.current = nullptr;
     _other.movedOut = true;

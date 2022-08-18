@@ -15,15 +15,18 @@ FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
     return _objectField + _nestedField + 1u;
 }
 
-Field::Field () noexcept : handle (nullptr)
+Field::Field () noexcept
+    : handle (nullptr)
 {
 }
 
-Field::Field (const Field &_other) noexcept : Field (_other.handle)
+Field::Field (const Field &_other) noexcept
+    : Field (_other.handle)
 {
 }
 
-Field::Field (Field &&_other) noexcept : Field (_other.handle)
+Field::Field (Field &&_other) noexcept
+    : Field (_other.handle)
 {
     _other.handle = nullptr;
 }
@@ -121,7 +124,8 @@ Field &Field::operator= (Field &&_other) noexcept
     return *this;
 }
 
-Field::Field (void *_handle) noexcept : handle (_handle)
+Field::Field (void *_handle) noexcept
+    : handle (_handle)
 {
 }
 } // namespace StandardLayout

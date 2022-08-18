@@ -60,11 +60,13 @@ AllocationGroup AllocationGroup::Top () noexcept
     return {};
 }
 
-AllocationGroup::AllocationGroup () noexcept : handle (nullptr)
+AllocationGroup::AllocationGroup () noexcept
+    : handle (nullptr)
 {
 }
 
-AllocationGroup::AllocationGroup (UniqueString /*unused*/) noexcept : handle (nullptr)
+AllocationGroup::AllocationGroup (UniqueString /*unused*/) noexcept
+    : handle (nullptr)
 {
 }
 
@@ -162,7 +164,8 @@ bool AllocationGroup::operator!= (const AllocationGroup & /*unused*/) const noex
     return false;
 }
 
-AllocationGroup::AllocationGroup (void *_handle) noexcept : handle (_handle)
+AllocationGroup::AllocationGroup (void *_handle) noexcept
+    : handle (_handle)
 {
 }
 } // namespace Emergence::Memory::Profiler

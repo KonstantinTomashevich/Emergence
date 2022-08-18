@@ -1,7 +1,7 @@
 BasedOnStyle: Chromium
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
-# TODO: CLang-Format 13.0 from VS 2022 crashes if this option is enabled AlignArrayOfStructures: Left
+# TODO: CLang-Format 14.0 from VS 2022 crashes if this option is enabled AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: None
 AlignEscapedNewlines: Right
 AlignOperands: Align
@@ -34,7 +34,7 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: true
-# TODO: CLang-Format 14.0 PackConstructorInitializers: Never
+PackConstructorInitializers: Never
 PointerAlignment: Right
 ReflowComments: true
 SortIncludes: CaseSensitive

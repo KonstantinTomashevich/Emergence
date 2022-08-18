@@ -21,7 +21,11 @@ Quaternion::Quaternion (const NoInitializationFlag & /*unused*/) noexcept
 {
 }
 
-Quaternion::Quaternion (float _x, float _y, float _z, float _w) noexcept : x (_x), y (_y), z (_z), w (_w)
+Quaternion::Quaternion (float _x, float _y, float _z, float _w) noexcept
+    : x (_x),
+      y (_y),
+      z (_z),
+      w (_w)
 {
 }
 

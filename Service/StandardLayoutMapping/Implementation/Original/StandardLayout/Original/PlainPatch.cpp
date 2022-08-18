@@ -127,7 +127,8 @@ std::size_t PlainPatch::CalculatePatchSize (std::size_t _valueCapacity) noexcept
     return sizeof (PlainPatch) + sizeof (ValueSetter) * _valueCapacity;
 }
 
-PlainPatch::PlainPatch (Mapping _mapping) noexcept : mapping (std::move (_mapping))
+PlainPatch::PlainPatch (Mapping _mapping) noexcept
+    : mapping (std::move (_mapping))
 {
 }
 

@@ -158,7 +158,8 @@ InplaceVector<Item, Capacity>::InplaceVector () noexcept
 }
 
 template <typename Item, std::size_t Capacity>
-InplaceVector<Item, Capacity>::InplaceVector (const InplaceVector &_other) noexcept : count (_other.count)
+InplaceVector<Item, Capacity>::InplaceVector (const InplaceVector &_other) noexcept
+    : count (_other.count)
 {
     for (std::size_t index = 0u; index < count; ++index)
     {
@@ -167,7 +168,8 @@ InplaceVector<Item, Capacity>::InplaceVector (const InplaceVector &_other) noexc
 }
 
 template <typename Item, std::size_t Capacity>
-InplaceVector<Item, Capacity>::InplaceVector (InplaceVector &&_other) noexcept : count (_other.count)
+InplaceVector<Item, Capacity>::InplaceVector (InplaceVector &&_other) noexcept
+    : count (_other.count)
 {
     for (std::size_t index = 0u; index < count; ++index)
     {

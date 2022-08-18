@@ -4,7 +4,8 @@
 
 namespace Emergence
 {
-AtomicFlagGuard::AtomicFlagGuard (std::atomic_flag &_flag) noexcept : flag (_flag)
+AtomicFlagGuard::AtomicFlagGuard (std::atomic_flag &_flag) noexcept
+    : flag (_flag)
 {
     LockAtomicFlag (_flag);
 }

@@ -50,7 +50,7 @@
      *                                                                                                                 \
      * \invariant Cursor should not point to ending.                                                                   \
      */                                                                                                                \
-    Class &operator~ () noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */                 \
+    Class &operator~() noexcept; /* NOLINT(bugprone-macro-parentheses): Types can not be enclosed. */                  \
                                                                                                                        \
     /*!                                                                                                                \
      * \brief Checks current item for changes. Then moves cursor to next item.                                         \
