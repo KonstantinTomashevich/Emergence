@@ -62,7 +62,13 @@ public:
 
     /// \brief Combines changes from this and given patch resolving all conflicts in favor of given patch.
     /// \invariant Both patches were build for one mapping!
+    /// \warning Not commutative!
     Patch operator+ (const Patch &_other) const noexcept;
+
+    /// \brief Creates new patch that contains changes which are listed in this patch, but not in given patch.
+    /// \details `x = y - z => y = z + x`. Keep in mind that `+` is not commutative!
+    /// \invariant Both patches were build for one mapping!
+    Patch operator- (const Patch &_other) const noexcept;
 
     /// Assigning patches looks counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Patch);

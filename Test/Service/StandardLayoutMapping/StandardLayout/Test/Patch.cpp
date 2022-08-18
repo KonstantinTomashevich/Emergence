@@ -15,16 +15,14 @@ bool PatchTestIncludeMarker () noexcept
     return true;
 }
 
-namespace
+struct Struct
 {
-struct TestStruct
-{
-    uint32_t uint32;
-    float floating;
+    uint32_t uint32 = 0u;
+    float floating = 0.0f;
 
-    bool operator== (const TestStruct &_other) const = default;
+    bool operator== (const Struct &_other) const = default;
 
-    bool operator!= (const TestStruct &_other) const = default;
+    bool operator!= (const Struct &_other) const = default;
 
     struct Reflection
     {
@@ -36,11 +34,11 @@ struct TestStruct
     static const Reflection &Reflect () noexcept;
 };
 
-const TestStruct::Reflection &TestStruct::Reflect () noexcept
+const Struct::Reflection &Struct::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TestStruct);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Struct);
         EMERGENCE_MAPPING_REGISTER_REGULAR (uint32);
         EMERGENCE_MAPPING_REGISTER_REGULAR (floating);
         EMERGENCE_MAPPING_REGISTRATION_END ();
@@ -49,19 +47,32 @@ const TestStruct::Reflection &TestStruct::Reflect () noexcept
     return reflection;
 }
 
-void DoAdditionTest (const TestStruct &_initial, const TestStruct &_firstVersion, const TestStruct &_secondVersion)
+void DoAdditionTest (const Struct &_initial, const Struct &_first, const Struct &_second)
 {
-    Patch initialToFirst = PatchBuilder::FromDifference (TestStruct::Reflect ().mapping, &_firstVersion, &_initial);
-    Patch firstToSecond =
-        PatchBuilder::FromDifference (TestStruct::Reflect ().mapping, &_secondVersion, &_firstVersion);
-    Patch combined = initialToFirst + firstToSecond;
+    Patch initialToFirst = PatchBuilder::FromDifference (Struct::Reflect ().mapping, &_first, &_initial);
+    Patch firstToSecond = PatchBuilder::FromDifference (Struct::Reflect ().mapping, &_second, &_first);
+    Patch added = initialToFirst + firstToSecond;
 
-    TestStruct target = _initial;
-    CHECK_NOT_EQUAL (target, _secondVersion);
-    combined.Apply (&target);
-    CHECK_EQUAL (target, _secondVersion);
+    Struct target = _initial;
+    CHECK_NOT_EQUAL (target, _second);
+    added.Apply (&target);
+    CHECK_EQUAL (target, _second);
 }
-} // namespace
+
+void DoSubtractionTest (const Struct &_initial,
+                        const Struct &_first,
+                        const Struct &_second,
+                        const Struct &_expectedSubtracted)
+{
+    Patch initialToFirst = PatchBuilder::FromDifference (Struct::Reflect ().mapping, &_first, &_initial);
+    Patch initialToSecond = PatchBuilder::FromDifference (Struct::Reflect ().mapping, &_second, &_initial);
+    Patch subtracted = initialToFirst - initialToSecond;
+
+    Struct target = _initial;
+    CHECK_NOT_EQUAL (target, _expectedSubtracted);
+    subtracted.Apply (&target);
+    CHECK_EQUAL (target, _expectedSubtracted);
+}
 } // namespace Emergence::StandardLayout::Test
 
 using namespace Emergence::StandardLayout;
@@ -71,24 +82,62 @@ BEGIN_SUITE (Patch)
 
 TEST_CASE (AdditionNoIntersection)
 {
-    TestStruct initial;
-    TestStruct firstVersion = initial;
-    firstVersion.uint32 = 115u;
+    Struct initial;
+    Struct first = initial;
+    first.uint32 = 115u;
 
-    TestStruct secondVersion = firstVersion;
-    secondVersion.floating = 178.5647f;
-    DoAdditionTest (initial, firstVersion, secondVersion);
+    Struct second = first;
+    second.floating = 178.5647f;
+    DoAdditionTest (initial, first, second);
 }
 
 TEST_CASE (AdditionIntersection)
 {
-    TestStruct initial;
-    TestStruct firstVersion = initial;
-    firstVersion.uint32 = 115u;
+    Struct initial;
+    Struct first = initial;
+    first.uint32 = 115u;
 
-    TestStruct secondVersion = firstVersion;
-    secondVersion.uint32 = 12345u;
-    DoAdditionTest (initial, firstVersion, secondVersion);
+    Struct second = first;
+    second.uint32 = 12345u;
+    DoAdditionTest (initial, first, second);
+}
+
+TEST_CASE (SubtractionNoIntersection)
+{
+    Struct initial;
+    Struct first = initial;
+    first.uint32 = 115u;
+
+    Struct second = initial;
+    first.floating = 12.12f;
+    DoSubtractionTest (initial, first, second, first);
+}
+
+TEST_CASE (SubtractionIntersection)
+{
+    Struct initial;
+    Struct first = initial;
+    first.uint32 = 115u;
+    first.floating = 13.15f;
+
+    Struct second = initial;
+    second.uint32 = 115u;
+
+    Struct expected = initial;
+    expected.floating = first.floating;
+    DoSubtractionTest (initial, first, second, expected);
+}
+
+TEST_CASE (SubtractionOverride)
+{
+    Struct initial;
+    Struct first = initial;
+    first.uint32 = 115u;
+    first.floating = 13.15f;
+
+    Struct second = initial;
+    second.uint32 = 114u;
+    DoSubtractionTest (initial, first, second, first);
 }
 
 END_SUITE

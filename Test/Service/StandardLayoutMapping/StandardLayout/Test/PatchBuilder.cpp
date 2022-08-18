@@ -15,8 +15,6 @@ bool PatchBuilderTestIncludeMarker () noexcept
     return true;
 }
 
-namespace
-{
 struct TestStruct
 {
     static constexpr uint8_t ALIVE_FLAG_OFFSET = 0u;
@@ -110,7 +108,6 @@ const TestStruct::Reflection &TestStruct::Reflect () noexcept
 
     return reflection;
 }
-} // namespace
 } // namespace Emergence::StandardLayout::Test
 
 using namespace Emergence::StandardLayout;
