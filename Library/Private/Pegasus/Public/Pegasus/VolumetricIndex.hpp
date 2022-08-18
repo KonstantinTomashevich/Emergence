@@ -172,7 +172,7 @@ public:
         const AxisAlignedShapeContainer shape;
 
         LeafCoordinate currentCoordinate;
-        std::size_t currentRecordIndex;
+        std::size_t currentRecordIndex = 0u;
 
         // TODO: Think about reworking ::visitedRecords mechanism.
         //       Allocating huge vector on every query call is disgusting.
@@ -253,7 +253,7 @@ public:
         std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
 
         /// Distance from ray origin to ::currentPoint border in world coordinates.
-        float distanceTraveled;
+        float distanceTraveled = 0.0f;
 
         const RayContainer ray;
 
@@ -261,7 +261,7 @@ public:
         const float maxDistance;
 
         LeafCoordinate currentCoordinate;
-        std::size_t currentRecordIndex;
+        std::size_t currentRecordIndex = 0u;
         Container::Vector<bool> visitedRecords {Memory::Profiler::AllocationGroup {"RayIntersectionVisitationMask"_us}};
     };
 
@@ -392,7 +392,7 @@ private:
     //       This approach is problematic because it significantly limits count of subdivisions.
     Container::Vector<LeafData> leaves;
     Container::Vector<std::size_t> freeRecordIds;
-    std::size_t nextRecordId;
+    std::size_t nextRecordId = 0u;
 };
 
 template <typename AxisValue>

@@ -94,11 +94,11 @@ private:
     const size_t alignment;
     const size_t pageCapacity;
 
-    AlignedPoolPage *topPage;
-    Chunk *topFreeChunk;
+    AlignedPoolPage *topPage = nullptr;
+    Chunk *topFreeChunk = nullptr;
 
     /// \brief Acquired chunk counter required to correctly log memory usage for profiling.
-    std::size_t acquiredChunkCount;
+    std::size_t acquiredChunkCount = 0u;
 
     Profiler::AllocationGroup group;
 };

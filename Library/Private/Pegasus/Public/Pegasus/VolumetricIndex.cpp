@@ -222,8 +222,7 @@ VolumetricIndex::ShapeIntersectionCursorBase::ShapeIntersectionCursorBase (
     : index (_index),
       sector (_sector),
       shape (_shape),
-      currentCoordinate (sector.min),
-      currentRecordIndex (0u)
+      currentCoordinate (sector.min)
 {
     visitedRecords.resize (index->nextRecordId, false);
 
@@ -460,10 +459,8 @@ VolumetricIndex::RayIntersectionCursorBase::RayIntersectionCursorBase (Volumetri
                                                                        const VolumetricIndex::RayContainer &_ray,
                                                                        float _maxDistance) noexcept
     : index (_index),
-      distanceTraveled (0.0f),
       ray (_ray),
-      maxDistance (_maxDistance),
-      currentRecordIndex (0u)
+      maxDistance (_maxDistance)
 {
     visitedRecords.resize (index->nextRecordId, false);
     assert (index);
@@ -847,8 +844,7 @@ using namespace Memory::Literals;
 VolumetricIndex::VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
     : IndexBase (_storage),
       leaves (Memory::Profiler::AllocationGroup {"Leaves"_us}),
-      freeRecordIds (Memory::Profiler::AllocationGroup {"FreeRecordsIds"_us}),
-      nextRecordId (0u)
+      freeRecordIds (Memory::Profiler::AllocationGroup {"FreeRecordsIds"_us})
 {
     assert (!_dimensions.empty ());
     assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
