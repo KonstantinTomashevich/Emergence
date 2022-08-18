@@ -73,6 +73,41 @@ Iterator Patch::End () const noexcept
     return Iterator (array_cast (iterator));
 }
 
+Patch Patch::operator+ (const Patch &_other) const noexcept
+{
+    assert (GetTypeMapping () == _other.GetTypeMapping ());
+    PlainPatchBuilder builder;
+    builder.Begin (GetTypeMapping ());
+
+    for (const Patch::ChangeInfo &info : *this)
+    {
+        bool overrideFound = false;
+
+        // Not the most performance-friendly logic, but patches are usually small, so this is good enough.
+        for (const Patch::ChangeInfo &overriderInfo : _other)
+        {
+            if (overriderInfo.field == info.field)
+            {
+                overrideFound = true;
+                break;
+            }
+        }
+
+        if (!overrideFound)
+        {
+            builder.Set (info.field, *static_cast<const std::array<uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
+        }
+    }
+
+    for (const Patch::ChangeInfo &info : _other)
+    {
+        builder.Set (info.field, *static_cast<const std::array<uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
+    }
+
+    Handling::Handle<PlainPatch> patch = builder.End ();
+    return Patch (array_cast (patch));
+}
+
 Patch::Patch (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Handling::Handle<PlainPatch> (block_cast<Handling::Handle<PlainPatch>> (_data));

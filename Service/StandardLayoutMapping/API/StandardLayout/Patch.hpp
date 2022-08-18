@@ -60,6 +60,10 @@ public:
     /// \return Iterator, that points to thee ending of transformation changelist.
     [[nodiscard]] Iterator End () const noexcept;
 
+    /// \brief Combines changes from this and given patch resolving all conflicts in favor of given patch.
+    /// \invariant Both patches were build for one mapping!
+    Patch operator+ (const Patch &_other) const noexcept;
+
     /// Assigning patches looks counter-intuitive.
     EMERGENCE_DELETE_ASSIGNMENT (Patch);
 

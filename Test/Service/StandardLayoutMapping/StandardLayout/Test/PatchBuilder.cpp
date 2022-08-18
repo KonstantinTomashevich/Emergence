@@ -15,6 +15,8 @@ bool PatchBuilderTestIncludeMarker () noexcept
     return true;
 }
 
+namespace
+{
 struct TestStruct
 {
     static constexpr uint8_t ALIVE_FLAG_OFFSET = 0u;
@@ -108,6 +110,7 @@ const TestStruct::Reflection &TestStruct::Reflect () noexcept
 
     return reflection;
 }
+} // namespace
 } // namespace Emergence::StandardLayout::Test
 
 using namespace Emergence::StandardLayout;
@@ -323,48 +326,6 @@ TEST_CASE (InplaceVectorDifference)
     CHECK_NOT_EQUAL (initial, changed);
     patch.Apply (&initial);
     CHECK_EQUAL (initial, changed);
-}
-
-TEST_CASE (CombinationNoIntersection)
-{
-    TestStruct initial;
-    TestStruct firstVersion = initial;
-    firstVersion.uint32 = 115u;
-
-    TestStruct secondVersion = firstVersion;
-    secondVersion.floating = 178.5647f;
-
-    Patch initialToFirst =
-        PatchBuilder::FromDifference (decltype (initial)::Reflect ().mapping, &firstVersion, &initial);
-    Patch firstToSecond =
-        PatchBuilder::FromDifference (decltype (initial)::Reflect ().mapping, &secondVersion, &firstVersion);
-    Patch combined = PatchBuilder::Combination (initialToFirst, firstToSecond);
-
-    TestStruct target = initial;
-    CHECK_NOT_EQUAL (target, secondVersion);
-    combined.Apply (&target);
-    CHECK_EQUAL (target, secondVersion);
-}
-
-TEST_CASE (CombinationIntersection)
-{
-    TestStruct initial;
-    TestStruct firstVersion = initial;
-    firstVersion.uint32 = 115u;
-
-    TestStruct secondVersion = firstVersion;
-    secondVersion.uint32 = 12345u;
-
-    Patch initialToFirst =
-        PatchBuilder::FromDifference (decltype (initial)::Reflect ().mapping, &firstVersion, &initial);
-    Patch firstToSecond =
-        PatchBuilder::FromDifference (decltype (initial)::Reflect ().mapping, &secondVersion, &firstVersion);
-    Patch combined = PatchBuilder::Combination (initialToFirst, firstToSecond);
-
-    TestStruct target = initial;
-    CHECK_NOT_EQUAL (target, secondVersion);
-    combined.Apply (&target);
-    CHECK_EQUAL (target, secondVersion);
 }
 
 END_SUITE
