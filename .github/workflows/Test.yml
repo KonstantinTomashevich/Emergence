@@ -56,7 +56,7 @@ jobs:
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
           echo "LLVM_PROFILE_FILE=%m.profraw" >> $Env:GITHUB_ENV
-          echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2022`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
+          echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
 
@@ -85,7 +85,7 @@ jobs:
         # We use CMD instead of PowerShell because of convenient && operator.
         shell: cmd
         run: >
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
           powershell .\Script\Coverage\CollectCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}} ${{matrix.build_type}} &&
           powershell .\Script\Coverage\CheckCLangCoverage.ps1 ${{env.BUILD_DIRECTORY}}
 
