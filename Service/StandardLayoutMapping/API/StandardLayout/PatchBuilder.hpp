@@ -17,6 +17,10 @@ public:
     /// \warning FieldArchetype::STRING and FieldArchetype::BLOCK are not supported!
     static Patch FromDifference (const Mapping &_typeMapping, const void *_changed, const void *_initial) noexcept;
 
+    /// \brief Combines changes from the both given patches, resolving all conflicts in favor of `_overrider`.
+    /// \invariant Both patches were build for one mapping!
+    static Patch Combination (const Patch &_base, const Patch &_overrider) noexcept;
+
     PatchBuilder () noexcept;
 
     PatchBuilder (const PatchBuilder &_other) = delete;
