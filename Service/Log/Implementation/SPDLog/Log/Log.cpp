@@ -104,7 +104,8 @@ LoggerImplementation::LoggerImplementation (Level _forceFlushOn, const Container
     }
 }
 
-LoggerImplementation::LoggerImplementation (LoggerImplementation &&_other) noexcept : logger (std::move (_other.logger))
+LoggerImplementation::LoggerImplementation (LoggerImplementation &&_other) noexcept
+    : logger (std::move (_other.logger))
 {
     // Assert that there is no active logging operation.
     assert (!_other.locked.test ());

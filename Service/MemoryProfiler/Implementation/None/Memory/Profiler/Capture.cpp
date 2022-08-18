@@ -103,7 +103,8 @@ std::uint64_t CapturedAllocationGroup::GetCaptureTimeNs () const noexcept
     return 0u;
 }
 
-CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept : handle (_handle)
+CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept
+    : handle (_handle)
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &handle;

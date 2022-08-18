@@ -57,7 +57,8 @@ bool Context::CheckIds (const VisualGraph::Graph &_graph) noexcept
     return true;
 }
 
-Context::Context (std::ostream &_output) : output (_output)
+Context::Context (std::ostream &_output)
+    : output (_output)
 {
 }
 

@@ -409,7 +409,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
     Container::Vector<uint8_t> sequence =
         Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
-    AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (&sequence[0u]));
+    AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (sequence.data ()));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit &_task)
@@ -419,7 +419,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
     Container::Vector<uint8_t> sequence =
         Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
-    AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (&sequence[0u]));
+    AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (sequence.data ()));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &_task)
@@ -430,7 +430,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
         Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (),
-                       query.Execute (&sequence[0u], _task.maxDistance));
+                       query.Execute (sequence.data (), _task.maxDistance));
 }
 
 void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &_task)
@@ -441,7 +441,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
         Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (),
-                       query.Execute (&sequence[0u], _task.maxDistance));
+                       query.Execute (sequence.data (), _task.maxDistance));
 }
 
 std::ostream &operator<< (std::ostream &_output, const PrepareFetchSingletonQuery &_task)

@@ -28,7 +28,8 @@ namespace Emergence::Handling::Test
 class HandleableResource final : public HandleableBase
 {
 public:
-    HandleableResource (bool *_aliveFlagPointer) : aliveFlagPointer (_aliveFlagPointer)
+    HandleableResource (bool *_aliveFlagPointer)
+        : aliveFlagPointer (_aliveFlagPointer)
     {
         REQUIRE (aliveFlagPointer);
         *aliveFlagPointer = true;

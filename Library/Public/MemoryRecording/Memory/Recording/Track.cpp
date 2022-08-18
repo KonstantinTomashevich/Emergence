@@ -48,7 +48,8 @@ bool RecordedAllocationGroup::Iterator::operator!= (const RecordedAllocationGrou
     return !(*this == _other);
 }
 
-RecordedAllocationGroup::Iterator::Iterator (const RecordedAllocationGroup *_current) noexcept : current (_current)
+RecordedAllocationGroup::Iterator::Iterator (const RecordedAllocationGroup *_current) noexcept
+    : current (_current)
 {
 }
 

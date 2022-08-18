@@ -6,7 +6,8 @@
 
 namespace Emergence::Memory::Profiler::Original
 {
-EventNode::EventNode (Event _event) noexcept : event (std::move (_event))
+EventNode::EventNode (Event _event) noexcept
+    : event (std::move (_event))
 {
 }
 

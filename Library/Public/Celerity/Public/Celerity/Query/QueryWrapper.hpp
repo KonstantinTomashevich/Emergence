@@ -44,7 +44,7 @@
              *                                                                                                         \
              * \invariant Cursor should not point to ending.                                                           \
              */                                                                                                        \
-            Cursor &operator~ () noexcept DeleteModifier; /* NOLINT(bugprone-macro-parentheses) */                     \
+            Cursor &operator~() noexcept DeleteModifier; /* NOLINT(bugprone-macro-parentheses) */                      \
                                                                                                                        \
             /*!                                                                                                        \
              * \brief Checks current item for changes. Then moves cursor to next item.                                 \
@@ -218,7 +218,7 @@
     }
 
 #define EMERGENCE_CELERITY_WRITE_CURSOR_REMOVE_IMPLEMENTATION(QueryClass)                                              \
-    QueryClass::Cursor &QueryClass::Cursor::operator~ () noexcept                                                      \
+    QueryClass::Cursor &QueryClass::Cursor::operator~() noexcept                                                       \
     {                                                                                                                  \
         if (eventsOnRemove)                                                                                            \
         {                                                                                                              \

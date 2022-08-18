@@ -13,7 +13,9 @@ const StandardLayout::Mapping &IndexBase::GetRecordMapping () const noexcept
     return storage->GetRecordMapping ();
 }
 
-IndexBase::IndexBase (class Storage *_storage) noexcept : storage (_storage), activeCursors (0u)
+IndexBase::IndexBase (class Storage *_storage) noexcept
+    : storage (_storage),
+      activeCursors (0u)
 {
     assert (storage);
 }

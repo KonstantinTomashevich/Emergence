@@ -23,7 +23,10 @@ Vector3f::Vector3f (const NoInitializationFlag & /*unused*/) noexcept
 {
 }
 
-Vector3f::Vector3f (float _x, float _y, float _z) noexcept : x (_x), y (_y), z (_z)
+Vector3f::Vector3f (float _x, float _y, float _z) noexcept
+    : x (_x),
+      y (_y),
+      z (_z)
 {
 }
 

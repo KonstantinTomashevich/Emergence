@@ -156,9 +156,6 @@ OrderedPool::OrderedPool (Profiler::AllocationGroup _group,
     : chunkSize (CorrectAlignedBlockSize (_alignment, _chunkSize)),
       alignment (_alignment),
       pageCapacity (_pageCapacity),
-      topPage (nullptr),
-      topFreeChunk (nullptr),
-      acquiredChunkCount (0u),
       group (std::move (_group))
 {
     assert (_pageCapacity > 0u);

@@ -159,12 +159,12 @@ TEST_CASE (VeryCloseBigRandomSequences)
     }
 
     Emergence::Hashing::ByteHasher hasher;
-    uint64_t firstResult = ExecuteScenario (hasher, {AppendMany {&sequence[0], sequence.size ()}});
+    uint64_t firstResult = ExecuteScenario (hasher, {AppendMany {sequence.data (), sequence.size ()}});
 
     --sequence[sequence.size () / 2u];
     hasher.Clear ();
 
-    uint64_t secondResult = ExecuteScenario (hasher, {AppendMany {&sequence[0], sequence.size ()}});
+    uint64_t secondResult = ExecuteScenario (hasher, {AppendMany {sequence.data (), sequence.size ()}});
     CHECK_NOT_EQUAL (firstResult, secondResult);
 }
 

@@ -59,7 +59,7 @@ public:
     [[nodiscard]] Type *Get () const noexcept;
 
     /// \return ::instance
-    Type *operator-> () const noexcept;
+    Type *operator->() const noexcept;
 
     Handle &operator= (const Handle &_other) noexcept;
 
@@ -78,7 +78,8 @@ private:
 };
 
 template <typename Type>
-Handle<Type>::Handle (Type *_instance) noexcept : instance (_instance)
+Handle<Type>::Handle (Type *_instance) noexcept
+    : instance (_instance)
 {
     static_assert (Handleable<Type>);
     if (instance)
@@ -88,12 +89,14 @@ Handle<Type>::Handle (Type *_instance) noexcept : instance (_instance)
 }
 
 template <typename Type>
-Handle<Type>::Handle (const Handle &_other) noexcept : Handle (_other.instance)
+Handle<Type>::Handle (const Handle &_other) noexcept
+    : Handle (_other.instance)
 {
 }
 
 template <typename Type>
-Handle<Type>::Handle (Handle &&_other) noexcept : instance (_other.instance)
+Handle<Type>::Handle (Handle &&_other) noexcept
+    : instance (_other.instance)
 {
     _other.instance = nullptr;
 }
@@ -131,7 +134,7 @@ Type *Handle<Type>::Get () const noexcept
 }
 
 template <typename Type>
-Type *Handle<Type>::operator-> () const noexcept
+Type *Handle<Type>::operator->() const noexcept
 {
     return Get ();
 }

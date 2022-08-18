@@ -1,10 +1,9 @@
-#include <cassert>
-
 #include <Memory/Recording/RuntimeReporter.hpp>
 
 namespace Emergence::Memory::Recording
 {
-RuntimeReporter::RuntimeReporter (RuntimeReporter &&_other) noexcept : uidAssigner (std::move (_other.uidAssigner))
+RuntimeReporter::RuntimeReporter (RuntimeReporter &&_other) noexcept
+    : uidAssigner (std::move (_other.uidAssigner))
 {
     _other.uidAssigner.Clear ();
 }

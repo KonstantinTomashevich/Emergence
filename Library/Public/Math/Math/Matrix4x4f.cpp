@@ -53,8 +53,9 @@ Matrix4x4f::Matrix4x4f (const Matrix4x4f &_other) noexcept
     glm_mat4_copy (const_cast<Column *> (_other.columns), columns);
 }
 
-// NOLINTNEXTLINE(performance-move-constructor-init): We can not move anything, therefore we just copy.
-Matrix4x4f::Matrix4x4f (Matrix4x4f &&_other) noexcept : Matrix4x4f (const_cast<const Matrix4x4f &> (_other))
+Matrix4x4f::Matrix4x4f (Matrix4x4f &&_other) noexcept
+    // NOLINTNEXTLINE(performance-move-constructor-init): We can not move anything, therefore we just copy.
+    : Matrix4x4f (const_cast<const Matrix4x4f &> (_other))
 {
 }
 

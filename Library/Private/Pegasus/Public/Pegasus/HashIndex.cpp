@@ -470,7 +470,7 @@ void *HashIndex::EditCursor::operator* () noexcept
     return current != end ? const_cast<void *> (*current) : nullptr;
 }
 
-HashIndex::EditCursor &HashIndex::EditCursor::operator~ () noexcept
+HashIndex::EditCursor &HashIndex::EditCursor::operator~() noexcept
 {
     assert (index);
     assert (current != end);

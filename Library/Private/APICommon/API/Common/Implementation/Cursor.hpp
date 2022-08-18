@@ -58,7 +58,7 @@
     }                                                                                                                  \
                                                                                                                        \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                       \
-    ServiceClass &ServiceClass::operator~ () noexcept                                                                  \
+    ServiceClass &ServiceClass::operator~() noexcept                                                                   \
     {                                                                                                                  \
         ~block_cast<ImplementationClass> (data);                                                                       \
         return *this;                                                                                                  \

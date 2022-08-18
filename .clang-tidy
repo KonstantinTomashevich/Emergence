@@ -12,6 +12,9 @@
 # We disable -readability-function-cognitive-complexity and -readability-magic-numbers,
 # because they trigger shitstorm in tests. Might be reconsidered later.
 #
+# -readability-identifier-length is disabled, because it triggers on lots of meaningful math-related names
+# like UP, _x, _t and so on.
+#
 # XXHash uses some intrinsics, that are not guaranteed to be portable. There is no way to ignore
 # portability-simd-intrinsics only in ByteHasher.cpp, therefore it is ignored everywhere.
 Checks: >
@@ -41,6 +44,7 @@ Checks: >
   -portability-simd-intrinsics,
   readability-*,
   -readability-function-cognitive-complexity,
+  -readability-identifier-length,
   -readability-implicit-bool-conversion,
   -readability-magic-numbers,
   -readability-uppercase-literal-suffix,

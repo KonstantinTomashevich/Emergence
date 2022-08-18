@@ -6,7 +6,8 @@
 
 namespace Emergence::Celerity
 {
-EventRegistrar::EventRegistrar (World *_world) noexcept : world (_world)
+EventRegistrar::EventRegistrar (World *_world) noexcept
+    : world (_world)
 {
     assert (world);
     // There should be no pipelines, because events augment pipeline building process.
@@ -23,7 +24,8 @@ EventRegistrar::EventRegistrar (World *_world) noexcept : world (_world)
     }
 }
 
-EventRegistrar::EventRegistrar (EventRegistrar &&_other) noexcept : world (_other.world)
+EventRegistrar::EventRegistrar (EventRegistrar &&_other) noexcept
+    : world (_other.world)
 {
     _other.world = nullptr;
 }

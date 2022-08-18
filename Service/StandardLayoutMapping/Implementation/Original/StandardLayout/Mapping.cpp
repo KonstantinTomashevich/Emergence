@@ -37,11 +37,13 @@ Mapping::Mapping () noexcept
     new (&data) Handling::Handle<PlainMapping> (nullptr);
 }
 
-Mapping::Mapping (const Mapping &_other) noexcept : Mapping (_other.data)
+Mapping::Mapping (const Mapping &_other) noexcept
+    : Mapping (_other.data)
 {
 }
 
-Mapping::Mapping (Mapping &&_other) noexcept : Mapping (_other.data)
+Mapping::Mapping (Mapping &&_other) noexcept
+    : Mapping (_other.data)
 {
 }
 

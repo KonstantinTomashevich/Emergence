@@ -55,7 +55,8 @@
         }                                                                                                              \
     }                                                                                                                  \
                                                                                                                        \
-    Query::UnsafeFetchAccessToken::UnsafeFetchAccessToken (void *_handle) noexcept : handle (_handle)                  \
+    Query::UnsafeFetchAccessToken::UnsafeFetchAccessToken (void *_handle) noexcept                                     \
+        : handle (_handle)                                                                                             \
     {                                                                                                                  \
         assert (handle);                                                                                               \
         /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                   \

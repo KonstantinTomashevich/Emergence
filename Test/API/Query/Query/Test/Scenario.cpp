@@ -6,43 +6,53 @@
 
 namespace Emergence::Query::Test
 {
-Sources::Volumetric::SupportedValue::SupportedValue (int8_t _value) noexcept : int8 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (int8_t _value) noexcept
+    : int8 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (int16_t _value) noexcept : int16 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (int16_t _value) noexcept
+    : int16 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (int32_t _value) noexcept : int32 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (int32_t _value) noexcept
+    : int32 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (int64_t _value) noexcept : int64 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (int64_t _value) noexcept
+    : int64 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint8_t _value) noexcept : uint8 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (uint8_t _value) noexcept
+    : uint8 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint16_t _value) noexcept : uint16 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (uint16_t _value) noexcept
+    : uint16 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint32_t _value) noexcept : uint32 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (uint32_t _value) noexcept
+    : uint32 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint64_t _value) noexcept : uint64 (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (uint64_t _value) noexcept
+    : uint64 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (float _value) noexcept : floating (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (float _value) noexcept
+    : floating (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (double _value) noexcept : doubleFloating (_value)
+Sources::Volumetric::SupportedValue::SupportedValue (double _value) noexcept
+    : doubleFloating (_value)
 {
 }
 
@@ -351,7 +361,7 @@ static Container::Vector<uint8_t> LayoutVolumetricQueryParameters (
     }
 
     Container::Vector<uint8_t> sequence (sequenceSize);
-    uint8_t *output = &sequence[0u];
+    uint8_t *output = sequence.data ();
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < _valueSizes.size (); ++dimensionIndex)
     {

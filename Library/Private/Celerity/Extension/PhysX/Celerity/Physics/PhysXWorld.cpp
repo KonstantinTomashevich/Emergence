@@ -8,7 +8,8 @@
 
 namespace Emergence::Celerity
 {
-ProfiledAllocator::ProfiledAllocator (Memory::Profiler::AllocationGroup _group) : heap (std::move (_group))
+ProfiledAllocator::ProfiledAllocator (Memory::Profiler::AllocationGroup _group)
+    : heap (std::move (_group))
 {
 }
 

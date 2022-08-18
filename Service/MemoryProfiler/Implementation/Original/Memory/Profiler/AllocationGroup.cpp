@@ -41,7 +41,8 @@ AllocationGroup AllocationGroup::Top () noexcept
     return AllocationGroup (Original::AllocationGroupStack::Get ().Top ());
 }
 
-AllocationGroup::AllocationGroup () noexcept : handle (nullptr)
+AllocationGroup::AllocationGroup () noexcept
+    : handle (nullptr)
 {
 }
 
@@ -59,7 +60,8 @@ AllocationGroup::AllocationGroup (const AllocationGroup &_parent, UniqueString _
 
 AllocationGroup::AllocationGroup (const AllocationGroup &_other) noexcept = default;
 
-AllocationGroup::AllocationGroup (AllocationGroup &&_other) noexcept : handle (_other.handle)
+AllocationGroup::AllocationGroup (AllocationGroup &&_other) noexcept
+    : handle (_other.handle)
 {
     _other.handle = nullptr;
 }
@@ -192,7 +194,8 @@ bool AllocationGroup::operator!= (const AllocationGroup &_other) const noexcept
     return !(*this == _other);
 }
 
-AllocationGroup::AllocationGroup (void *_handle) noexcept : handle (_handle)
+AllocationGroup::AllocationGroup (void *_handle) noexcept
+    : handle (_handle)
 {
 }
 } // namespace Emergence::Memory::Profiler
