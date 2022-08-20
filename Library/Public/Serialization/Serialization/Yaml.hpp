@@ -4,6 +4,7 @@
 #include <ostream>
 
 #include <Container/HashMap.hpp>
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 #include <Serialization/FieldNameLookupCache.hpp>
@@ -28,6 +29,12 @@ bool DeserializePatch (std::istream &_input,
                        StandardLayout::PatchBuilder &_builder,
                        FieldNameLookupCache &_cache) noexcept;
 
+/// \brief Internal type, used to hide YAML library details.
+using YamlRootPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 8u>;
+
+/// \brief Internal type, used to hide YAML library details.
+using YamlIteratorPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 6u>;
+
 /// \brief Deserializes a bundle of patches from given text stream with Yaml data.
 /// \details Patch bundle format allows to store several patches with different types in one file like that:
 ///          ```yaml
@@ -43,23 +50,46 @@ bool DeserializePatch (std::istream &_input,
 ///          for example CelerityAssembly AssemblyDescriptor data.
 ///
 ///          Prefer using shared `_context` to speed up deserialization of multiple bundles.
-bool DeserializePatchBundle (std::istream &_input,
-                             Container::Vector<StandardLayout::Patch> &_output,
-                             class BundleDeserializationContext &_context) noexcept;
-
-/// \brief Contains caching context for ::DeserializePatchBundle.
-/// \details Provides type list and allows to speed up deserialization of multiple patch bundles.
-class BundleDeserializationContext final
+class PatchBundleDeserializer final
 {
 public:
+    PatchBundleDeserializer () noexcept;
+
+    PatchBundleDeserializer (const PatchBundleDeserializer &_other) = delete;
+
+    PatchBundleDeserializer (PatchBundleDeserializer &&_other) = delete;
+
+    ~PatchBundleDeserializer () noexcept;
+
     /// \brief Registers given type as possible type for patches inside bundles.
     void RegisterType (const StandardLayout::Mapping &_mapping) noexcept;
 
-    /// \return Cache for given type if it was registered.
-    FieldNameLookupCache *RequestCache (Memory::UniqueString _typeName) noexcept;
+    /// \brief Starts new bundle deserialization session.
+    /// \return Whether session was started successfully.
+    bool BeginBundleDeserialization (std::istream &_input) noexcept;
+
+    /// \return Whether bundle has more unread patches.
+    [[nodiscard]] bool HasNext () const noexcept;
+
+    /// \brief Extracts next patch from bundle if possible.
+    /// \return Next patch or `nullopt` if error happened.
+    Container::Optional<StandardLayout::Patch> Next () noexcept;
+
+    /// \brief Ends current bundle deserialization session.
+    /// \details Safely processes case when there is no active deserialization session.
+    void EndBundleDeserialization () noexcept;
+
+    PatchBundleDeserializer &operator= (const PatchBundleDeserializer &_other) = delete;
+
+    PatchBundleDeserializer &operator= (PatchBundleDeserializer &&_other) = delete;
 
 private:
+    FieldNameLookupCache *RequestCache (Memory::UniqueString _typeName) noexcept;
+
+    YamlRootPlaceholder yamlRootPlaceholder;
+    YamlIteratorPlaceholder yamlIteratorPlaceholder;
+
     Container::HashMap<Memory::UniqueString, FieldNameLookupCache> cachesByTypeName {
-        Memory::Profiler::AllocationGroup {Memory::UniqueString {"BundleDeserializationContext"}}};
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"PatchBundleDeserializer"}}};
 };
 } // namespace Emergence::Serialization::Yaml

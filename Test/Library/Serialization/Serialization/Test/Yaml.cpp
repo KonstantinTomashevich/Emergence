@@ -81,13 +81,20 @@ TEST_CASE (DifferentTypes)
     std::stringstream buffer;
     buffer << yaml;
 
-    BundleDeserializationContext context;
-    context.RegisterType (TrivialStruct::Reflect ().mapping);
-    context.RegisterType (NonTrivialStruct::Reflect ().mapping);
-    context.RegisterType (UnionStruct::Reflect ().mapping);
+    PatchBundleDeserializer deserializer;
+    deserializer.RegisterType (TrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (NonTrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (UnionStruct::Reflect ().mapping);
 
+    REQUIRE (deserializer.BeginBundleDeserialization (buffer));
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> patches;
-    DeserializePatchBundle (buffer, patches, context);
+
+    while (deserializer.HasNext ())
+    {
+        Emergence::Container::Optional<Emergence::StandardLayout::Patch> result = deserializer.Next ();
+        REQUIRE (result.has_value ());
+        patches.emplace_back (result.value ());
+    }
 
     REQUIRE_EQUAL (patches.size (), 3u);
 

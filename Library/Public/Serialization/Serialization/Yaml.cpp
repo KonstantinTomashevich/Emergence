@@ -6,6 +6,8 @@
 
 #include <Serialization/Yaml.hpp>
 
+#include <SyntaxSugar/BlockCast.hpp>
+
 // We're linking to static library, but define is not passed to us for some reason.
 // Therefore, we need to add it manually.
 #define YAML_CPP_STATIC_DEFINE
@@ -455,61 +457,90 @@ bool DeserializePatch (std::istream &_input,
     return DeserializePatchFromYaml (node, _builder, _cache);
 }
 
-bool DeserializePatchBundle (std::istream &_input,
-                             Container::Vector<StandardLayout::Patch> &_output,
-                             BundleDeserializationContext &_context) noexcept
+static_assert (sizeof (YamlRootPlaceholder) == sizeof (YAML::Node));
+
+static_assert (sizeof (YamlIteratorPlaceholder) == sizeof (YAML::Node::iterator));
+
+PatchBundleDeserializer::PatchBundleDeserializer () noexcept
 {
-    YAML::Node root = YAML::Load (_input);
+    auto *node = new (yamlRootPlaceholder.data ()) YAML::Node {};
+    new (yamlIteratorPlaceholder.data ()) YAML::Node::iterator (node->begin ());
+}
+
+PatchBundleDeserializer::~PatchBundleDeserializer () noexcept
+{
+    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder).~iterator_base ();
+    block_cast<YAML::Node> (yamlRootPlaceholder).~Node ();
+}
+
+void PatchBundleDeserializer::RegisterType (const StandardLayout::Mapping &_mapping) noexcept
+{
+    cachesByTypeName.emplace (_mapping.GetName (), FieldNameLookupCache {_mapping});
+}
+
+bool PatchBundleDeserializer::BeginBundleDeserialization (std::istream &_input) noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    root = YAML::Load (_input);
+
     if (!root.IsSequence ())
     {
         EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!");
         return false;
     }
 
-    StandardLayout::PatchBuilder builder;
-    for (auto iterator = root.begin (); iterator != root.end (); ++iterator)
-    {
-        YAML::Node typeNode = (*iterator)["type"];
-        if (!typeNode.IsScalar ())
-        {
-            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch type node is not a scalar!");
-            return false;
-        }
-
-        YAML::Node contentNode = (*iterator)["content"];
-        if (!contentNode.IsMap ())
-        {
-            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch content node is not a map!");
-            return false;
-        }
-
-        FieldNameLookupCache *cache = _context.RequestCache (Memory::UniqueString {typeNode.Scalar ().c_str ()});
-        if (!cache)
-        {
-            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to find type \"", typeNode.Scalar ().c_str (),
-                           "\" requested by patch bundle!");
-            return false;
-        }
-
-        if (DeserializePatchFromYaml (contentNode, builder, *cache))
-        {
-            _output.emplace_back (builder.End ());
-        }
-        else
-        {
-            return false;
-        }
-    }
-
+    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
     return true;
 }
 
-void BundleDeserializationContext::RegisterType (const StandardLayout::Mapping &_mapping) noexcept
+bool PatchBundleDeserializer::HasNext () const noexcept
 {
-    cachesByTypeName.emplace (_mapping.GetName (), FieldNameLookupCache {_mapping});
+    return block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) !=
+           block_cast<YAML::Node> (yamlRootPlaceholder).end ();
 }
 
-FieldNameLookupCache *BundleDeserializationContext::RequestCache (Memory::UniqueString _typeName) noexcept
+Container::Optional<StandardLayout::Patch> PatchBundleDeserializer::Next () noexcept
+{
+    if (!HasNext ())
+    {
+        return std::nullopt;
+    }
+
+    auto &iterator = block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder);
+    YAML::Node typeNode = (*iterator)["type"];
+
+    if (!typeNode.IsScalar ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch type node is not a scalar!");
+        return std::nullopt;
+    }
+
+    YAML::Node contentNode = (*iterator)["content"];
+    if (!contentNode.IsMap ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch content node is not a map!");
+        return std::nullopt;
+    }
+
+    FieldNameLookupCache *cache = RequestCache (Memory::UniqueString {typeNode.Scalar ().c_str ()});
+    if (!cache)
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to find type \"", typeNode.Scalar ().c_str (),
+                       "\" requested by patch bundle!");
+        return std::nullopt;
+    }
+
+    StandardLayout::PatchBuilder builder;
+    if (DeserializePatchFromYaml (contentNode, builder, *cache))
+    {
+        ++iterator;
+        return builder.End ();
+    }
+
+    return std::nullopt;
+}
+
+FieldNameLookupCache *PatchBundleDeserializer::RequestCache (Memory::UniqueString _typeName) noexcept
 {
     if (auto iterator = cachesByTypeName.find (_typeName); iterator != cachesByTypeName.end ())
     {
@@ -517,5 +548,12 @@ FieldNameLookupCache *BundleDeserializationContext::RequestCache (Memory::Unique
     }
 
     return nullptr;
+}
+
+void PatchBundleDeserializer::EndBundleDeserialization () noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    root = YAML::Node {};
+    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
 }
 } // namespace Emergence::Serialization::Yaml
