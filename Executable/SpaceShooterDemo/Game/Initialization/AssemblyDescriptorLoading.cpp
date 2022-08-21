@@ -80,7 +80,7 @@ void AssemblyDescriptorLoader::Execute () noexcept
             descriptor->id = Emergence::Memory::UniqueString {path.stem ().string ().c_str ()};
 
             bool deserializedSuccessfully = true;
-            deserializedSuccessfully &= deserializer.BeginBundleDeserialization (input);
+            deserializedSuccessfully &= deserializer.Begin (input);
 
             while (deserializedSuccessfully && deserializer.HasNext ())
             {
@@ -95,7 +95,7 @@ void AssemblyDescriptorLoader::Execute () noexcept
                 }
             }
 
-            deserializer.EndBundleDeserialization ();
+            deserializer.End ();
             if (!deserializedSuccessfully)
             {
                 EMERGENCE_LOG (ERROR, "AssemblyDescriptorLoading: Failed to load components bundle from \"",

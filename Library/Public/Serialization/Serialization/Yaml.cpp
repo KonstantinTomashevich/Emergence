@@ -461,6 +461,37 @@ static_assert (sizeof (YamlRootPlaceholder) == sizeof (YAML::Node));
 
 static_assert (sizeof (YamlIteratorPlaceholder) == sizeof (YAML::Node::iterator));
 
+ObjectBundleSerializer::ObjectBundleSerializer (StandardLayout::Mapping _mapping) noexcept
+    : mapping (std::move (_mapping))
+{
+    new (yamlRootPlaceholder.data ()) YAML::Node {};
+}
+
+ObjectBundleSerializer::~ObjectBundleSerializer () noexcept
+{
+    block_cast<YAML::Node> (yamlRootPlaceholder).~Node ();
+}
+
+void ObjectBundleSerializer::Begin () noexcept
+{
+    block_cast<YAML::Node> (yamlRootPlaceholder) = YAML::Node {YAML::NodeType::Sequence};
+}
+
+void ObjectBundleSerializer::Next (const void *_object) noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    YAML::Node item {YAML::NodeType::Map};
+    SerializeObjectToYaml (item, _object, mapping);
+    root.push_back (item);
+}
+
+void ObjectBundleSerializer::End (std::ostream &_output) noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    _output << root;
+    root = YAML::Node {};
+}
+
 PatchBundleDeserializer::PatchBundleDeserializer () noexcept
 {
     auto *node = new (yamlRootPlaceholder.data ()) YAML::Node {};
@@ -478,7 +509,7 @@ void PatchBundleDeserializer::RegisterType (const StandardLayout::Mapping &_mapp
     cachesByTypeName.emplace (_mapping.GetName (), FieldNameLookupCache {_mapping});
 }
 
-bool PatchBundleDeserializer::BeginBundleDeserialization (std::istream &_input) noexcept
+bool PatchBundleDeserializer::Begin (std::istream &_input) noexcept
 {
     auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
     root = YAML::Load (_input);
@@ -550,7 +581,7 @@ FieldNameLookupCache *PatchBundleDeserializer::RequestCache (Memory::UniqueStrin
     return nullptr;
 }
 
-void PatchBundleDeserializer::EndBundleDeserialization () noexcept
+void PatchBundleDeserializer::End () noexcept
 {
     auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
     root = YAML::Node {};

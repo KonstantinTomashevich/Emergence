@@ -29,11 +29,43 @@ bool DeserializePatch (std::istream &_input,
                        StandardLayout::PatchBuilder &_builder,
                        FieldNameLookupCache &_cache) noexcept;
 
+// TODO: Refactor to more SAX-like parsing later?
+
 /// \brief Internal type, used to hide YAML library details.
 using YamlRootPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 8u>;
 
 /// \brief Internal type, used to hide YAML library details.
 using YamlIteratorPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 6u>;
+
+/// \brief Serializes multiple objects of the same type into YAML sequence.
+class ObjectBundleSerializer final
+{
+public:
+    ObjectBundleSerializer (StandardLayout::Mapping _mapping) noexcept;
+
+    ObjectBundleSerializer (const ObjectBundleSerializer &_other) = delete;
+
+    ObjectBundleSerializer (ObjectBundleSerializer &&_other) = delete;
+
+    ~ObjectBundleSerializer () noexcept;
+
+    /// \brief Begin serialization session.
+    void Begin () noexcept;
+
+    /// \brief Append new object to the current sequence.
+    void Next (const void *_object) noexcept;
+
+    /// \brief End serialization session and write result to the output.
+    void End (std::ostream &_output) noexcept;
+
+    ObjectBundleSerializer &operator= (const ObjectBundleSerializer &_other) = delete;
+
+    ObjectBundleSerializer &operator= (ObjectBundleSerializer &&_other) = delete;
+
+private:
+    YamlRootPlaceholder yamlRootPlaceholder;
+    StandardLayout::Mapping mapping;
+};
 
 /// \brief Deserializes a bundle of patches from given text stream with Yaml data.
 /// \details Patch bundle format allows to store several patches with different types in one file like that:
@@ -66,7 +98,7 @@ public:
 
     /// \brief Starts new bundle deserialization session.
     /// \return Whether session was started successfully.
-    bool BeginBundleDeserialization (std::istream &_input) noexcept;
+    bool Begin (std::istream &_input) noexcept;
 
     /// \return Whether bundle has more unread patches.
     [[nodiscard]] bool HasNext () const noexcept;
@@ -77,7 +109,7 @@ public:
 
     /// \brief Ends current bundle deserialization session.
     /// \details Safely processes case when there is no active deserialization session.
-    void EndBundleDeserialization () noexcept;
+    void End () noexcept;
 
     PatchBundleDeserializer &operator= (const PatchBundleDeserializer &_other) = delete;
 

@@ -59,6 +59,47 @@ PATCH_SERIALIZATION_TESTS (PatchSerializationDeserializationTest)
 
 END_SUITE
 
+BEGIN_SUITE (YamlObjectBundleSerialization)
+
+TEST_CASE (MultipleNonTrivial)
+{
+    using namespace Emergence::Memory::Literals;
+
+    NonTrivialStruct first {0b111u, {"Hello, world!"}, "For gold and glory!"_us};
+    NonTrivialStruct second {0b001u, {"Second!"}, "For the House!"_us};
+    NonTrivialStruct third {0b100u, {"Third!"}, "For the golden dragon!"_us};
+
+    std::stringstream buffer;
+    ObjectBundleSerializer serializer {NonTrivialStruct::Reflect ().mapping};
+
+    serializer.Begin ();
+    serializer.Next (&first);
+    serializer.Next (&second);
+    serializer.Next (&third);
+    serializer.End (buffer);
+
+    static const char *expectedYaml =
+        "- alive: true\n"
+        "  poisoned: true\n"
+        "  stunned: true\n"
+        "  string: Hello, world!\n"
+        "  uniqueString: For gold and glory!\n"
+        "- alive: true\n"
+        "  poisoned: false\n"
+        "  stunned: false\n"
+        "  string: Second!\n"
+        "  uniqueString: For the House!\n"
+        "- alive: false\n"
+        "  poisoned: false\n"
+        "  stunned: true\n"
+        "  string: Third!\n"
+        "  uniqueString: For the golden dragon!";
+
+    CHECK_EQUAL (buffer.str (), expectedYaml);
+}
+
+END_SUITE
+
 BEGIN_SUITE (YamlPatchBundleDeserialization)
 
 TEST_CASE (DifferentTypes)
@@ -86,7 +127,7 @@ TEST_CASE (DifferentTypes)
     deserializer.RegisterType (NonTrivialStruct::Reflect ().mapping);
     deserializer.RegisterType (UnionStruct::Reflect ().mapping);
 
-    REQUIRE (deserializer.BeginBundleDeserialization (buffer));
+    REQUIRE (deserializer.Begin (buffer));
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> patches;
 
     while (deserializer.HasNext ())
