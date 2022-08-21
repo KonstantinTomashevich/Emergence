@@ -41,6 +41,34 @@ void PatchSerializationDeserializationTest (const Type &_initial, const Type &_c
     builder.End ().Apply (&target);
     CHECK_EQUAL (target, _changed);
 }
+
+namespace ObjectBundle
+{
+using namespace Emergence::Memory::Literals;
+using namespace Emergence::Serialization::Test;
+
+static const std::array<NonTrivialStruct, 3u> ITEMS {
+    NonTrivialStruct {0b111u, {"Hello, world!"}, "For gold and glory!"_us},
+    NonTrivialStruct {0b001u, {"Second!"}, "For the House!"_us},
+    NonTrivialStruct {0b100u, {"Third!"}, "For the golden dragon!"_us}};
+
+static const char *YAML =
+    "- alive: true\n"
+    "  poisoned: true\n"
+    "  stunned: true\n"
+    "  string: Hello, world!\n"
+    "  uniqueString: For gold and glory!\n"
+    "- alive: true\n"
+    "  poisoned: false\n"
+    "  stunned: false\n"
+    "  string: Second!\n"
+    "  uniqueString: For the House!\n"
+    "- alive: false\n"
+    "  poisoned: false\n"
+    "  stunned: true\n"
+    "  string: Third!\n"
+    "  uniqueString: For the golden dragon!";
+} // namespace ObjectBundle
 } // namespace Emergence::Serialization::Yaml::Test
 
 using namespace Emergence::Serialization::Test;
@@ -61,41 +89,47 @@ END_SUITE
 
 BEGIN_SUITE (YamlObjectBundleSerialization)
 
+// TODO: Test reusability?
+
 TEST_CASE (MultipleNonTrivial)
 {
-    using namespace Emergence::Memory::Literals;
-
-    NonTrivialStruct first {0b111u, {"Hello, world!"}, "For gold and glory!"_us};
-    NonTrivialStruct second {0b001u, {"Second!"}, "For the House!"_us};
-    NonTrivialStruct third {0b100u, {"Third!"}, "For the golden dragon!"_us};
-
     std::stringstream buffer;
     ObjectBundleSerializer serializer {NonTrivialStruct::Reflect ().mapping};
 
     serializer.Begin ();
-    serializer.Next (&first);
-    serializer.Next (&second);
-    serializer.Next (&third);
+    for (const NonTrivialStruct &item : ObjectBundle::ITEMS)
+    {
+        serializer.Next (&item);
+    }
+
     serializer.End (buffer);
+    CHECK_EQUAL (buffer.str (), ObjectBundle::YAML);
+}
 
-    static const char *expectedYaml =
-        "- alive: true\n"
-        "  poisoned: true\n"
-        "  stunned: true\n"
-        "  string: Hello, world!\n"
-        "  uniqueString: For gold and glory!\n"
-        "- alive: true\n"
-        "  poisoned: false\n"
-        "  stunned: false\n"
-        "  string: Second!\n"
-        "  uniqueString: For the House!\n"
-        "- alive: false\n"
-        "  poisoned: false\n"
-        "  stunned: true\n"
-        "  string: Third!\n"
-        "  uniqueString: For the golden dragon!";
+END_SUITE
 
-    CHECK_EQUAL (buffer.str (), expectedYaml);
+BEGIN_SUITE (YamlObjectBundleDeserialization)
+
+// TODO: Test reusability?
+
+TEST_CASE (MultipleNonTrivial)
+{
+    std::stringstream buffer;
+    std::decay_t<decltype (ObjectBundle::ITEMS)> items;
+
+    buffer << ObjectBundle::YAML;
+    ObjectBundleDeserializer deserializer {NonTrivialStruct::Reflect ().mapping};
+
+    deserializer.Begin (buffer);
+    for (NonTrivialStruct &item : items)
+    {
+        REQUIRE (deserializer.HasNext ());
+        deserializer.Next (&item);
+    }
+
+    CHECK (!deserializer.HasNext ());
+    deserializer.End ();
+    CHECK_EQUAL (items, ObjectBundle::ITEMS);
 }
 
 END_SUITE

@@ -461,6 +461,46 @@ static_assert (sizeof (YamlRootPlaceholder) == sizeof (YAML::Node));
 
 static_assert (sizeof (YamlIteratorPlaceholder) == sizeof (YAML::Node::iterator));
 
+BundleDeserializerBase::BundleDeserializerBase () noexcept
+{
+    auto *node = new (yamlRootPlaceholder.data ()) YAML::Node {};
+    new (yamlIteratorPlaceholder.data ()) YAML::Node::iterator (node->begin ());
+}
+
+BundleDeserializerBase::~BundleDeserializerBase () noexcept
+{
+    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder).~iterator_base ();
+    block_cast<YAML::Node> (yamlRootPlaceholder).~Node ();
+}
+
+bool BundleDeserializerBase::Begin (std::istream &_input) noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    root = YAML::Load (_input);
+
+    if (!root.IsSequence ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!");
+        return false;
+    }
+
+    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
+    return true;
+}
+
+bool BundleDeserializerBase::HasNext () const noexcept
+{
+    return block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) !=
+           block_cast<YAML::Node> (yamlRootPlaceholder).end ();
+}
+
+void BundleDeserializerBase::End () noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    root = YAML::Node {};
+    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
+}
+
 ObjectBundleSerializer::ObjectBundleSerializer (StandardLayout::Mapping _mapping) noexcept
     : mapping (std::move (_mapping))
 {
@@ -492,42 +532,32 @@ void ObjectBundleSerializer::End (std::ostream &_output) noexcept
     root = YAML::Node {};
 }
 
-PatchBundleDeserializer::PatchBundleDeserializer () noexcept
+ObjectBundleDeserializer::ObjectBundleDeserializer (StandardLayout::Mapping _mapping) noexcept
+    : fieldNameLookupCache (std::move (_mapping))
 {
-    auto *node = new (yamlRootPlaceholder.data ()) YAML::Node {};
-    new (yamlIteratorPlaceholder.data ()) YAML::Node::iterator (node->begin ());
 }
 
-PatchBundleDeserializer::~PatchBundleDeserializer () noexcept
+bool ObjectBundleDeserializer::Next (void *_object) noexcept
 {
-    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder).~iterator_base ();
-    block_cast<YAML::Node> (yamlRootPlaceholder).~Node ();
+    if (!HasNext ())
+    {
+        return false;
+    }
+
+    auto &iterator = block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder);
+    auto leafDeserializer = [_object] (const YAML::Node &_input, const StandardLayout::Field &_field)
+    {
+        return DeserializeLeafValueFromYaml (_input, _field.GetValue (_object), _field);
+    };
+
+    const bool successful = DeserializeFromYaml (*iterator, leafDeserializer, "", fieldNameLookupCache);
+    ++iterator;
+    return successful;
 }
 
 void PatchBundleDeserializer::RegisterType (const StandardLayout::Mapping &_mapping) noexcept
 {
     cachesByTypeName.emplace (_mapping.GetName (), FieldNameLookupCache {_mapping});
-}
-
-bool PatchBundleDeserializer::Begin (std::istream &_input) noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    root = YAML::Load (_input);
-
-    if (!root.IsSequence ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!");
-        return false;
-    }
-
-    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
-    return true;
-}
-
-bool PatchBundleDeserializer::HasNext () const noexcept
-{
-    return block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) !=
-           block_cast<YAML::Node> (yamlRootPlaceholder).end ();
 }
 
 Container::Optional<StandardLayout::Patch> PatchBundleDeserializer::Next () noexcept
@@ -579,12 +609,5 @@ FieldNameLookupCache *PatchBundleDeserializer::RequestCache (Memory::UniqueStrin
     }
 
     return nullptr;
-}
-
-void PatchBundleDeserializer::End () noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    root = YAML::Node {};
-    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
 }
 } // namespace Emergence::Serialization::Yaml
