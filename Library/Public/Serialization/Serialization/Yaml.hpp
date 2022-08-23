@@ -37,6 +37,32 @@ using YamlRootPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 8u>;
 /// \brief Internal type, used to hide YAML library details.
 using YamlIteratorPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 6u>;
 
+/// \brief Base class for serializers that store multiple items, for example multiple objects or patches.
+class BundleSerializerBase
+{
+public:
+    BundleSerializerBase () noexcept;
+
+    BundleSerializerBase (const BundleSerializerBase &_other) = delete;
+
+    BundleSerializerBase (BundleSerializerBase &&_other) = delete;
+
+    ~BundleSerializerBase () noexcept;
+
+    /// \brief Begin serialization session.
+    void Begin () noexcept;
+
+    /// \brief End serialization session and write result to the output.
+    void End (std::ostream &_output) noexcept;
+
+    BundleSerializerBase &operator= (const BundleSerializerBase &_other) = delete;
+
+    BundleSerializerBase &operator= (BundleSerializerBase &&_other) = delete;
+
+protected:
+    YamlRootPlaceholder yamlRootPlaceholder;
+};
+
 /// \brief Base class for deserializers that extract multiple items, for example multiple objects or patches.
 class BundleDeserializerBase
 {
@@ -70,32 +96,15 @@ protected:
 };
 
 /// \brief Serializes multiple objects of the same type into YAML sequence.
-class ObjectBundleSerializer final
+class ObjectBundleSerializer final : public BundleSerializerBase
 {
 public:
     ObjectBundleSerializer (StandardLayout::Mapping _mapping) noexcept;
 
-    ObjectBundleSerializer (const ObjectBundleSerializer &_other) = delete;
-
-    ObjectBundleSerializer (ObjectBundleSerializer &&_other) = delete;
-
-    ~ObjectBundleSerializer () noexcept;
-
-    /// \brief Begin serialization session.
-    void Begin () noexcept;
-
     /// \brief Append new object to the current sequence.
     void Next (const void *_object) noexcept;
 
-    /// \brief End serialization session and write result to the output.
-    void End (std::ostream &_output) noexcept;
-
-    ObjectBundleSerializer &operator= (const ObjectBundleSerializer &_other) = delete;
-
-    ObjectBundleSerializer &operator= (ObjectBundleSerializer &&_other) = delete;
-
 private:
-    YamlRootPlaceholder yamlRootPlaceholder;
     StandardLayout::Mapping mapping;
 };
 
@@ -113,7 +122,7 @@ private:
     FieldNameLookupCache fieldNameLookupCache;
 };
 
-/// \brief Deserializes a bundle of patches from given text stream with Yaml data.
+/// \brief Serializes a bundle of patches to given text stream as YAML sequence.
 /// \details Patch bundle format allows to store several patches with different types in one file like that:
 ///          ```yaml
 ///          - type: Patch0Type
@@ -126,8 +135,18 @@ private:
 ///          ```
 ///          This is useful for storing logically connected patches of different types,
 ///          for example CelerityAssembly AssemblyDescriptor data.
-///
-///          Prefer using shared `_context` to speed up deserialization of multiple bundles.
+class PatchBundleSerializer final : public BundleSerializerBase
+{
+public:
+    /// \brief Append new object to the current sequence.
+    void Next (const StandardLayout::Patch &_patch) noexcept;
+
+private:
+    StandardLayout::Mapping mapping;
+};
+
+/// \brief Deserializes a bundle of patches from given text stream with Yaml data.
+/// \details See PatchBundleSerializer for details about format.
 class PatchBundleDeserializer final : public BundleDeserializerBase
 {
 public:

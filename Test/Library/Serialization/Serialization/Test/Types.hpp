@@ -6,20 +6,20 @@ namespace Emergence::Serialization::Test
 {
 struct TrivialStruct final
 {
-    int8_t int8;
-    int16_t int16;
-    int32_t int32;
-    int64_t int64;
+    int8_t int8 = 0;
+    int16_t int16 = 0;
+    int32_t int32 = 0;
+    int64_t int64 = 0;
 
-    uint8_t uint8;
-    uint16_t uint16;
-    uint32_t uint32;
-    uint64_t uint64;
+    uint8_t uint8 = 0u;
+    uint16_t uint16 = 0u;
+    uint32_t uint32 = 0u;
+    uint64_t uint64 = 0u;
 
-    float floating;
-    double doubleFloating;
+    float floating = 0.0f;
+    double doubleFloating = 0.0;
 
-    std::array<uint8_t, 8u> data;
+    std::array<uint8_t, 8u> data = {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u};
 
     bool operator== (const TrivialStruct &_other) const noexcept = default;
 

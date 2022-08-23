@@ -134,27 +134,40 @@ TEST_CASE (MultipleNonTrivial)
 
 END_SUITE
 
-BEGIN_SUITE (YamlPatchBundleDeserialization)
+BEGIN_SUITE (YamlPatchBundleSerialization)
 
 TEST_CASE (DifferentTypes)
 {
-    static const char *yaml =
-        "- type: NonTrivialStruct\n"
-        "  content:\n"
-        "    alive: true\n"
-        "    uniqueString: \"For honor!\"\n"
-        "- type: TrivialStruct\n"
-        "  content:\n"
-        "    int8: -32\n"
-        "    uint32: 1537\n"
-        "- type: UnionStruct\n"
-        "  content:\n"
-        "    type: 1\n"
-        "    m: 4\n"
-        "    n: 17\n";
+    const TrivialStruct trivialStructInitial;
+    const NonTrivialStruct nonTrivialStructInitial;
+    const UnionStruct unionStructInitial {};
+
+    TrivialStruct trivialStructChanged;
+    trivialStructChanged.int8 = -32;
+    trivialStructChanged.uint32 = 1537;
+
+    NonTrivialStruct nonTrivialStructChanged;
+    nonTrivialStructChanged.flags = 1u << NonTrivialStruct::ALIVE_OFFSET;
+    nonTrivialStructChanged.uniqueString = Emergence::Memory::UniqueString {"For honor!"};
+
+    UnionStruct unionStructChanged;
+    unionStructChanged.type = 1u;
+    unionStructChanged.m = 4u;
+    unionStructChanged.n = 17u;
 
     std::stringstream buffer;
-    buffer << yaml;
+    PatchBundleSerializer serializer;
+
+    serializer.Begin ();
+    serializer.Next (Emergence::StandardLayout::PatchBuilder::FromDifference (
+        NonTrivialStruct::Reflect ().mapping, &nonTrivialStructChanged, &nonTrivialStructInitial));
+
+    serializer.Next (Emergence::StandardLayout::PatchBuilder::FromDifference (
+        TrivialStruct::Reflect ().mapping, &trivialStructChanged, &trivialStructInitial));
+
+    serializer.Next (Emergence::StandardLayout::PatchBuilder::FromDifference (
+        UnionStruct::Reflect ().mapping, &unionStructChanged, &unionStructInitial));
+    serializer.End (buffer);
 
     PatchBundleDeserializer deserializer;
     deserializer.RegisterType (TrivialStruct::Reflect ().mapping);
@@ -172,60 +185,23 @@ TEST_CASE (DifferentTypes)
     }
 
     REQUIRE_EQUAL (patches.size (), 3u);
-
     CHECK_EQUAL (patches[0u].GetTypeMapping (), NonTrivialStruct::Reflect ().mapping);
-    {
-        auto iterator = patches[0u].Begin ();
-        REQUIRE_NOT_EQUAL (iterator, patches[0u].End ());
-        CHECK_EQUAL ((*iterator).field, NonTrivialStruct::Reflect ().alive);
-        CHECK_EQUAL (*static_cast<const bool *> ((*iterator).newValue), true);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[0u].End ());
-        CHECK_EQUAL ((*iterator).field, NonTrivialStruct::Reflect ().uniqueString);
-        CHECK_EQUAL (*static_cast<const Emergence::Memory::UniqueString *> ((*iterator).newValue),
-                     Emergence::Memory::UniqueString {"For honor!"});
-
-        ++iterator;
-        CHECK_EQUAL (iterator, patches[0u].End ());
-    }
+    NonTrivialStruct nonTrivialStructLoaded;
+    CHECK_NOT_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);
+    patches[0u].Apply (&nonTrivialStructLoaded);
+    CHECK_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);
 
     CHECK_EQUAL (patches[1u].GetTypeMapping (), TrivialStruct::Reflect ().mapping);
-    {
-        auto iterator = patches[1u].Begin ();
-        REQUIRE_NOT_EQUAL (iterator, patches[1u].End ());
-        CHECK_EQUAL ((*iterator).field, TrivialStruct::Reflect ().int8);
-        CHECK_EQUAL (*static_cast<const int8_t *> ((*iterator).newValue), -32);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[1u].End ());
-        CHECK_EQUAL ((*iterator).field, TrivialStruct::Reflect ().uint32);
-        CHECK_EQUAL (*static_cast<const uint32_t *> ((*iterator).newValue), 1537u);
-
-        ++iterator;
-        CHECK_EQUAL (iterator, patches[1u].End ());
-    }
+    TrivialStruct trivialStructLoaded;
+    CHECK_NOT_EQUAL (trivialStructLoaded, trivialStructChanged);
+    patches[1u].Apply (&trivialStructLoaded);
+    CHECK_EQUAL (trivialStructLoaded, trivialStructChanged);
 
     CHECK_EQUAL (patches[2u].GetTypeMapping (), UnionStruct::Reflect ().mapping);
-    {
-        auto iterator = patches[2u].Begin ();
-        REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
-        CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().type);
-        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 1u);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
-        CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().m);
-        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 4u);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
-        CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().n);
-        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 17u);
-
-        ++iterator;
-        CHECK_EQUAL (iterator, patches[2u].End ());
-    }
+    UnionStruct unionStructLoaded;
+    CHECK_NOT_EQUAL (unionStructLoaded, unionStructChanged);
+    patches[2u].Apply (&unionStructLoaded);
+    CHECK_EQUAL (unionStructLoaded, unionStructChanged);
 }
 
 END_SUITE
