@@ -126,3 +126,55 @@
         second.n = 123838471u;                                                                                         \
         Executor (Emergence::Container::InplaceVector<UnionStruct, 4u> {}, vector);                                    \
     }
+
+#define PATCH_BUNDLE_SERIALIZATION_TESTS(SerializeAndDeserialize)                                                      \
+    TEST_CASE (DifferentTypes)                                                                                         \
+    {                                                                                                                  \
+        const TrivialStruct trivialStructInitial;                                                                      \
+        const NonTrivialStruct nonTrivialStructInitial;                                                                \
+        const UnionStruct unionStructInitial {};                                                                       \
+                                                                                                                       \
+        TrivialStruct trivialStructChanged;                                                                            \
+        trivialStructChanged.int8 = -32;                                                                               \
+        trivialStructChanged.uint32 = 1537;                                                                            \
+                                                                                                                       \
+        NonTrivialStruct nonTrivialStructChanged;                                                                      \
+        nonTrivialStructChanged.flags = 1u << NonTrivialStruct::ALIVE_OFFSET;                                          \
+        nonTrivialStructChanged.uniqueString = Emergence::Memory::UniqueString {"For honor!"};                         \
+                                                                                                                       \
+        UnionStruct unionStructChanged;                                                                                \
+        unionStructChanged.type = 1u;                                                                                  \
+        unionStructChanged.m = 4u;                                                                                     \
+        unionStructChanged.n = 17u;                                                                                    \
+                                                                                                                       \
+        Emergence::Container::Vector<Emergence::StandardLayout::Patch> patches;                                        \
+        SerializeAndDeserialize (                                                                                      \
+            {                                                                                                          \
+                Emergence::StandardLayout::PatchBuilder::FromDifference (                                              \
+                    NonTrivialStruct::Reflect ().mapping, &nonTrivialStructChanged, &nonTrivialStructInitial),         \
+                Emergence::StandardLayout::PatchBuilder::FromDifference (                                              \
+                    TrivialStruct::Reflect ().mapping, &trivialStructChanged, &trivialStructInitial),                  \
+                Emergence::StandardLayout::PatchBuilder::FromDifference (UnionStruct::Reflect ().mapping,              \
+                                                                         &unionStructChanged, &unionStructInitial),    \
+            },                                                                                                         \
+            patches);                                                                                                  \
+                                                                                                                       \
+        REQUIRE_EQUAL (patches.size (), 3u);                                                                           \
+        CHECK_EQUAL (patches[0u].GetTypeMapping (), NonTrivialStruct::Reflect ().mapping);                             \
+        NonTrivialStruct nonTrivialStructLoaded;                                                                       \
+        CHECK_NOT_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);                                             \
+        patches[0u].Apply (&nonTrivialStructLoaded);                                                                   \
+        CHECK_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);                                                 \
+                                                                                                                       \
+        CHECK_EQUAL (patches[1u].GetTypeMapping (), TrivialStruct::Reflect ().mapping);                                \
+        TrivialStruct trivialStructLoaded;                                                                             \
+        CHECK_NOT_EQUAL (trivialStructLoaded, trivialStructChanged);                                                   \
+        patches[1u].Apply (&trivialStructLoaded);                                                                      \
+        CHECK_EQUAL (trivialStructLoaded, trivialStructChanged);                                                       \
+                                                                                                                       \
+        CHECK_EQUAL (patches[2u].GetTypeMapping (), UnionStruct::Reflect ().mapping);                                  \
+        UnionStruct unionStructLoaded;                                                                                 \
+        CHECK_NOT_EQUAL (unionStructLoaded, unionStructChanged);                                                       \
+        patches[2u].Apply (&unionStructLoaded);                                                                        \
+        CHECK_EQUAL (unionStructLoaded, unionStructChanged);                                                           \
+    }

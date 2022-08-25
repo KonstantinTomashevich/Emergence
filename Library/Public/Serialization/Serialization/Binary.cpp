@@ -409,4 +409,76 @@ bool DeserializeFastPortablePatch (std::istream &_input,
 
     return true;
 }
+
+void PatchBundleSerializer::Begin (std::ostream &_output) noexcept
+{
+    output = &_output;
+}
+
+void PatchBundleSerializer::Next (const StandardLayout::Patch &_patch) noexcept
+{
+    assert (output);
+    WriteString (*output, *_patch.GetTypeMapping ().GetName ());
+    SerializePatch (*output, _patch);
+}
+
+void PatchBundleSerializer::End () noexcept
+{
+    output = nullptr;
+}
+
+void PatchBundleDeserializer::RegisterType (const StandardLayout::Mapping &_mapping) noexcept
+{
+    typeRegister.emplace (_mapping.GetName (), _mapping);
+}
+
+void PatchBundleDeserializer::Begin (std::istream &_input) noexcept
+{
+    input = &_input;
+}
+
+bool PatchBundleDeserializer::HasNext () const noexcept
+{
+    assert (input);
+    // Peek to trigger end of stream check.
+    input->peek ();
+    return input->good ();
+}
+
+Container::Optional<StandardLayout::Patch> PatchBundleDeserializer::Next () noexcept
+{
+    assert (input);
+    if (!HasNext ())
+    {
+        return std::nullopt;
+    }
+
+    const Container::Optional<Container::String> typeNameString = ReadString (*input);
+    if (!typeNameString)
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Binary: Unable to extract next patch type name!");
+        return std::nullopt;
+    }
+
+    const Memory::UniqueString typeName {typeNameString.value ().c_str ()};
+    auto iterator = typeRegister.find (typeName);
+
+    if (iterator == typeRegister.end ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Binary: Unable to find type with name \"", typeName, "\"!");
+        return std::nullopt;
+    }
+
+    if (!DeserializePatch (*input, patchBuilder, iterator->second))
+    {
+        return std::nullopt;
+    }
+
+    return patchBuilder.End ();
+}
+
+void PatchBundleDeserializer::End () noexcept
+{
+    input = nullptr;
+}
 } // namespace Emergence::Serialization::Binary

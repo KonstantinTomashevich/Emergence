@@ -42,6 +42,37 @@ void PatchSerializationDeserializationTest (const Type &_initial, const Type &_c
     CHECK_EQUAL (target, _changed);
 }
 
+void PatchBundleSerializeAndDeserialize (const Container::Vector<StandardLayout::Patch> &_patchesToSerialize,
+                                         Container::Vector<StandardLayout::Patch> &_deserializationOutput)
+{
+    using namespace Emergence::Serialization::Test;
+    std::stringstream buffer;
+    PatchBundleSerializer serializer;
+
+    serializer.Begin ();
+    for (const StandardLayout::Patch &patch : _patchesToSerialize)
+    {
+        serializer.Next (patch);
+    }
+
+    serializer.End (buffer);
+
+    PatchBundleDeserializer deserializer;
+    deserializer.RegisterType (TrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (NonTrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (UnionStruct::Reflect ().mapping);
+
+    REQUIRE (deserializer.Begin (buffer));
+    while (deserializer.HasNext ())
+    {
+        Emergence::Container::Optional<Emergence::StandardLayout::Patch> result = deserializer.Next ();
+        REQUIRE (result.has_value ());
+        _deserializationOutput.emplace_back (result.value ());
+    }
+
+    deserializer.End ();
+}
+
 namespace ObjectBundle
 {
 using namespace Emergence::Memory::Literals;
@@ -136,74 +167,6 @@ END_SUITE
 
 BEGIN_SUITE (YamlPatchBundleSerialization)
 
-TEST_CASE (DifferentTypes)
-{
-    const TrivialStruct trivialStructInitial;
-    const NonTrivialStruct nonTrivialStructInitial;
-    const UnionStruct unionStructInitial {};
-
-    TrivialStruct trivialStructChanged;
-    trivialStructChanged.int8 = -32;
-    trivialStructChanged.uint32 = 1537;
-
-    NonTrivialStruct nonTrivialStructChanged;
-    nonTrivialStructChanged.flags = 1u << NonTrivialStruct::ALIVE_OFFSET;
-    nonTrivialStructChanged.uniqueString = Emergence::Memory::UniqueString {"For honor!"};
-
-    UnionStruct unionStructChanged;
-    unionStructChanged.type = 1u;
-    unionStructChanged.m = 4u;
-    unionStructChanged.n = 17u;
-
-    std::stringstream buffer;
-    PatchBundleSerializer serializer;
-
-    serializer.Begin ();
-    serializer.Next (Emergence::StandardLayout::PatchBuilder::FromDifference (
-        NonTrivialStruct::Reflect ().mapping, &nonTrivialStructChanged, &nonTrivialStructInitial));
-
-    serializer.Next (Emergence::StandardLayout::PatchBuilder::FromDifference (
-        TrivialStruct::Reflect ().mapping, &trivialStructChanged, &trivialStructInitial));
-
-    serializer.Next (Emergence::StandardLayout::PatchBuilder::FromDifference (
-        UnionStruct::Reflect ().mapping, &unionStructChanged, &unionStructInitial));
-    serializer.End (buffer);
-
-    PatchBundleDeserializer deserializer;
-    deserializer.RegisterType (TrivialStruct::Reflect ().mapping);
-    deserializer.RegisterType (NonTrivialStruct::Reflect ().mapping);
-    deserializer.RegisterType (UnionStruct::Reflect ().mapping);
-
-    REQUIRE (deserializer.Begin (buffer));
-    Emergence::Container::Vector<Emergence::StandardLayout::Patch> patches;
-
-    while (deserializer.HasNext ())
-    {
-        Emergence::Container::Optional<Emergence::StandardLayout::Patch> result = deserializer.Next ();
-        REQUIRE (result.has_value ());
-        patches.emplace_back (result.value ());
-    }
-
-    REQUIRE_EQUAL (patches.size (), 3u);
-    CHECK_EQUAL (patches[0u].GetTypeMapping (), NonTrivialStruct::Reflect ().mapping);
-    NonTrivialStruct nonTrivialStructLoaded;
-    CHECK_NOT_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);
-    patches[0u].Apply (&nonTrivialStructLoaded);
-    CHECK_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);
-
-    CHECK_EQUAL (patches[1u].GetTypeMapping (), TrivialStruct::Reflect ().mapping);
-    TrivialStruct trivialStructLoaded;
-    CHECK_NOT_EQUAL (trivialStructLoaded, trivialStructChanged);
-    patches[1u].Apply (&trivialStructLoaded);
-    CHECK_EQUAL (trivialStructLoaded, trivialStructChanged);
-
-    CHECK_EQUAL (patches[2u].GetTypeMapping (), UnionStruct::Reflect ().mapping);
-    UnionStruct unionStructLoaded;
-    CHECK_NOT_EQUAL (unionStructLoaded, unionStructChanged);
-    patches[2u].Apply (&unionStructLoaded);
-    CHECK_EQUAL (unionStructLoaded, unionStructChanged);
-}
+PATCH_BUNDLE_SERIALIZATION_TESTS (PatchBundleSerializeAndDeserialize)
 
 END_SUITE
-
-#undef PATCH_TESTS

@@ -3,6 +3,8 @@
 #include <istream>
 #include <ostream>
 
+#include <Container/Optional.hpp>
+
 #include <Serialization/FieldNameLookupCache.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -23,6 +25,8 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
 /// \brief Serializes given patch into given binary stream.
 /// \warning Serialization is patch-mapping-dependant: deserialization must be
 ///          made using exactly same mapping, otherwise data will be broken.
+///          Therefore it's advised to only use this type of serialization for
+///          shipping final assets and never for storing development assets.
 void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept;
 
 /// \brief Builds new patch from given binary stream.
@@ -43,4 +47,53 @@ void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Pa
 bool DeserializeFastPortablePatch (std::istream &_input,
                                    StandardLayout::PatchBuilder &_builder,
                                    FieldNameLookupCache &_cache) noexcept;
+
+/// \brief Serializes a bundle of patches to given binary stream in ::SerializePatch format.
+class PatchBundleSerializer final
+{
+public:
+    /// \brief Starts new bundle serialization session.
+    /// \invariant Output stream existence must be guaranteed by user until session is finished.
+    void Begin (std::ostream &_output) noexcept;
+
+    /// \brief Serializes next patch into bundle output stream.
+    void Next (const StandardLayout::Patch &_patch) noexcept;
+
+    /// \brief Ends current bundle serialization session.
+    void End () noexcept;
+
+private:
+    std::ostream *output = nullptr;
+};
+
+/// \brief Deserializes a bundle of patches from given binary stream in ::DeserializePatch format.
+class PatchBundleDeserializer final
+{
+public:
+    /// \brief Registers given type as possible type for patches inside bundles.
+    void RegisterType (const StandardLayout::Mapping &_mapping) noexcept;
+
+    /// \brief Starts new bundle deserialization session.
+    /// \invariant Input stream existence must be guaranteed by user until session is finished.
+    void Begin (std::istream &_input) noexcept;
+
+    /// \return Whether bundle has more unread patches.
+    [[nodiscard]] bool HasNext () const noexcept;
+
+    /// \brief Deserializes next patch from binary input stream.
+    /// \return Next patch or `nullopt` if error happened.
+    Container::Optional<StandardLayout::Patch> Next () noexcept;
+
+    /// \brief Ends current bundle deserialization session.
+    /// \details Safely processes case when there is no active deserialization session.
+    void End () noexcept;
+
+private:
+    std::istream *input = nullptr;
+
+    StandardLayout::PatchBuilder patchBuilder;
+
+    Container::HashMap<Memory::UniqueString, StandardLayout::Mapping> typeRegister {
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"PatchBundleDeserializer"}}};
+};
 } // namespace Emergence::Serialization::Binary

@@ -1,6 +1,9 @@
 #include <sstream>
 
 #include <Container/InplaceVector.hpp>
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Test/Tests.hpp>
@@ -55,6 +58,37 @@ void FastPortablePatchSerializationDeserializationTest (const Type &_initial, co
     builder.End ().Apply (&target);
     CHECK_EQUAL (target, _changed);
 }
+
+void PatchBundleSerializeAndDeserialize (const Container::Vector<StandardLayout::Patch> &_patchesToSerialize,
+                                         Container::Vector<StandardLayout::Patch> &_deserializationOutput)
+{
+    using namespace Emergence::Serialization::Test;
+    std::stringstream buffer;
+    PatchBundleSerializer serializer;
+
+    serializer.Begin (buffer);
+    for (const StandardLayout::Patch &patch : _patchesToSerialize)
+    {
+        serializer.Next (patch);
+    }
+
+    serializer.End ();
+
+    PatchBundleDeserializer deserializer;
+    deserializer.RegisterType (TrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (NonTrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (UnionStruct::Reflect ().mapping);
+
+    deserializer.Begin (buffer);
+    while (deserializer.HasNext ())
+    {
+        Emergence::Container::Optional<Emergence::StandardLayout::Patch> result = deserializer.Next ();
+        REQUIRE (result.has_value ());
+        _deserializationOutput.emplace_back (result.value ());
+    }
+
+    deserializer.End ();
+}
 } // namespace Emergence::Serialization::Binary::Test
 
 using namespace Emergence::Serialization::Test;
@@ -78,4 +112,8 @@ PATCH_SERIALIZATION_TESTS (FastPortablePatchSerializationDeserializationTest)
 
 END_SUITE
 
-#undef PATCH_TESTS
+BEGIN_SUITE (BinaryPatchBundleSerialization)
+
+PATCH_BUNDLE_SERIALIZATION_TESTS (PatchBundleSerializeAndDeserialize)
+
+END_SUITE
