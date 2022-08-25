@@ -11,6 +11,7 @@ namespace Emergence::StandardLayout
 /// \brief Contains set of changes that transform object from one state to another.
 ///
 /// \details PatchBuilder should be used to construct patches.
+///          Patches should be implemented as handles to the real data to make copying as lightweight as possible.
 class Patch final
 {
 public:
@@ -59,6 +60,11 @@ public:
 
     /// \return Iterator, that points to thee ending of transformation changelist.
     [[nodiscard]] Iterator End () const noexcept;
+
+    /// \return Whether this and given patch handles point to the same implementation.
+    /// \details It is implemented as separate method instead of `==`, because this check returns `false`
+    ///          when patches are technically equal, but were built separately.
+    [[nodiscard]] bool IsHandleEqual (const Patch &_other) const noexcept;
 
     /// \brief Combines changes from this and given patch resolving all conflicts in favor of given patch.
     /// \invariant Both patches were build for one mapping!

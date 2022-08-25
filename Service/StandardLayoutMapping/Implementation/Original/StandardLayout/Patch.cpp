@@ -73,6 +73,11 @@ Iterator Patch::End () const noexcept
     return Iterator (array_cast (iterator));
 }
 
+bool Patch::IsHandleEqual (const Patch &_other) const noexcept
+{
+    return block_cast<Handling::Handle<PlainPatch>> (data) == block_cast<Handling::Handle<PlainPatch>> (_other.data);
+}
+
 Patch Patch::operator+ (const Patch &_other) const noexcept
 {
     assert (GetTypeMapping () == _other.GetTypeMapping ());
