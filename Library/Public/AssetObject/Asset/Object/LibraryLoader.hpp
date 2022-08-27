@@ -4,9 +4,9 @@
 
 #include <Container/String.hpp>
 
+#include <Serialization/Binary.hpp>
 #include <Serialization/FieldNameLookupCache.hpp>
 #include <Serialization/Yaml.hpp>
-#include <Serialization/Binary.hpp>
 
 namespace Emergence::Asset::Object
 {
@@ -59,6 +59,8 @@ private:
 
     static Memory::Profiler::AllocationGroup GetAllocationGroup () noexcept;
 
+    void RegisterFolder (const Container::String &_folder) noexcept;
+
     void FormFolderList () noexcept;
 
     void LoadObjectDeclaration (const Container::String &_objectFolder,
@@ -67,17 +69,20 @@ private:
 
     void FormObjectList () noexcept;
 
+    /// \details Objects are loaded sequentially one after another, not simultaneously.
+    ///          This strategy is selected for several reasons:
+    ///          - Persistent storage is expected to be main performance limiter here, not CPU,
+    ///            therefore we would not gain a lot of speed by utilizing more CPU.
+    ///          - Sequential loading allows to use caches to full extent, making loading much more efficient.
     void LoadObjectBody (std::size_t _indexInList) noexcept;
 
     std::atomic_flag loading;
-    std::atomic_unsigned_lock_free bodiesLeftToLoad = 0u;
-
     Library currentLibrary;
     Container::Vector<LibraryLoadingTask> loadingTasks {GetAllocationGroup ()};
 
     Container::Vector<Container::String> folderList {GetAllocationGroup ()};
     Container::Vector<ObjectListItem> objectList {GetAllocationGroup ()};
-    Container::HashMap<Memory::UniqueString, std::size_t> indexInObjectList {GetAllocationGroup()};
+    Container::HashMap<Memory::UniqueString, std::size_t> indexInObjectList {GetAllocationGroup ()};
 
     Serialization::Binary::PatchBundleDeserializer binaryPatchBundleDeserializer;
     Serialization::Yaml::PatchBundleDeserializer yamlPatchBundleDeserializer;

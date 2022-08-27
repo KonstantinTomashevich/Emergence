@@ -79,14 +79,10 @@ DispatcherImplementation::~DispatcherImplementation () noexcept
 
 void DispatcherImplementation::Dispatch (Dispatcher::Job _job) noexcept
 {
-    while (true)
-    {
-        AtomicFlagGuard guard {modifyingPool};
-        jobPool.emplace_back (std::move (_job));
-        hasJobs.test_and_set (std::memory_order_release);
-        hasJobs.notify_one ();
-        return;
-    }
+    AtomicFlagGuard guard {modifyingPool};
+    jobPool.emplace_back (std::move (_job));
+    hasJobs.test_and_set (std::memory_order_release);
+    hasJobs.notify_one ();
 }
 
 std::size_t DispatcherImplementation::GetAvailableThreadsCount () const noexcept

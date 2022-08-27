@@ -152,9 +152,16 @@ void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 
 void Log (Level _level, const char *_message) noexcept
 {
-    if (!globalLogger)
     {
-        Init ();
+        // We need to wrap initialization check in tread-safety spinlock, because several threads may try to
+        // log something simultaneously while global log is not initialized, which would result in a race condition.
+        static std::atomic_flag initializationCheckFlag;
+        AtomicFlagGuard guard (initializationCheckFlag);
+
+        if (!globalLogger)
+        {
+            Init ();
+        }
     }
 
     globalLogger->Log (_level, _message);

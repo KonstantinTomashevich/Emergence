@@ -92,8 +92,19 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
         break;
 
     case StandardLayout::FieldArchetype::UNIQUE_STRING:
-        result = **static_cast<const Memory::UniqueString *> (_address);
+    {
+        const char *stringValue = **static_cast<const Memory::UniqueString *> (_address);
+        if (stringValue)
+        {
+            result = stringValue;
+        }
+        else
+        {
+            result = "";
+        }
+
         break;
+    }
 
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         // Only leaf values are supported.

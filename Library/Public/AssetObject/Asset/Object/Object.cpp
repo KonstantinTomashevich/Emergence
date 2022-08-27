@@ -53,7 +53,11 @@ static bool ArePatchesReferenceSamePart (const TypeManifest &_typeManifest,
         return false;
     };
 
-    if (!findId (_first, firstId) || !findId (_second, secondId))
+    const bool firstIdFound = findId (_first, firstId);
+    const bool secondIdFound = findId (_second, secondId);
+
+    // If both IDs are not found, then both ids have default value and therefore are equal.
+    if (firstIdFound != secondIdFound)
     {
         return false;
     }
@@ -124,7 +128,8 @@ void ExtractChildChangelist (const TypeManifest &_typeManifest,
         {
             if (childPatch.IsHandleEqual (parentPatch))
             {
-                continue;
+                foundInParent = true;
+                break;
             }
 
             if (!ArePatchesReferenceSamePart (_typeManifest, childPatch, parentPatch))
