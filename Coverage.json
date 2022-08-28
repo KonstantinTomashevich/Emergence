@@ -24,6 +24,12 @@
       "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
     },
     {
+      "Prefix": "./Library/Public/AssetObject/Asset/Object/TypeManifest.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
+    },
+    {
       "Prefix": "./Library/Public/Celerity/Public/Celerity/Pipeline.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 24.0,
@@ -38,6 +44,12 @@
       "Prefix": "./Library/Public/Math",
       "Action": "Exclude",
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
+    },
+    {
+      "Prefix": "./Test/Library/AssetObject/Asset/Object/Test/Helpers.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when tests are passing."
     },
     {
       "Prefix": "./Test/Service/Log/Driver/Log/Test/Main.cpp",
