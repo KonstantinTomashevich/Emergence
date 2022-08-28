@@ -17,8 +17,8 @@ const Declaration::Reflection &Declaration::Reflect () noexcept
 }
 
 static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
-                                         const StandardLayout::Patch &_first,
-                                         const StandardLayout::Patch &_second)
+                                        const StandardLayout::Patch &_first,
+                                        const StandardLayout::Patch &_second)
 {
     if (_first.GetTypeMapping () != _second.GetTypeMapping ())
     {
