@@ -405,11 +405,11 @@ TEST_CASE (LoadDependencies)
 
     const Emergence::Memory::UniqueString baseObjectName {"Base"};
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> baseObjectChangelist {
-        MakePatch (SecondComponent {0u, 100u, 20u, 10u})};
+        MakePatch (SecondComponent {0u, 100u, 20u, 10u}), MakePatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 0.5f})};
 
     const Emergence::Memory::UniqueString firstDerivationObjectName {"FirstDerivation"};
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> firstDerivationObjectChangelist {
-        MakePatch (SecondComponent {0u, 0u, 30u, 0u})};
+        MakePatch (SecondComponent {0u, 0u, 30u, 0u}), MakePatch (FirstComponent {1u, 5.0f, 3.0f, 4.0f, 1.0f})};
 
     const Emergence::Memory::UniqueString secondDerivationObjectName {"SecondDerivation"};
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> secondDerivationObjectChangelist {
@@ -455,13 +455,15 @@ TEST_CASE (LoadDependencies)
     CHECK_EQUAL (firstDerivationObjectData->declaration.parent, baseObjectName);
     Emergence::StandardLayout::Patch firstDerivationPatch =
         baseObjectChangelist.front () + firstDerivationObjectChangelist.front ();
-    CheckChangelistEquality (firstDerivationObjectData->body.fullChangelist, {firstDerivationPatch});
+    CheckChangelistEquality (firstDerivationObjectData->body.fullChangelist,
+                             {firstDerivationPatch, baseObjectChangelist[1u], firstDerivationObjectChangelist[1u]});
     CHECK_EQUAL (firstDerivationObjectData->loadedAsDependency, true);
 
     CHECK_EQUAL (secondDerivationObjectData->declaration.parent, firstDerivationObjectName);
     Emergence::StandardLayout::Patch secondDerivationPatch =
         firstDerivationPatch + secondDerivationObjectChangelist.front ();
-    CheckChangelistEquality (secondDerivationObjectData->body.fullChangelist, {secondDerivationPatch});
+    CheckChangelistEquality (secondDerivationObjectData->body.fullChangelist,
+                             {secondDerivationPatch, baseObjectChangelist[1u], firstDerivationObjectChangelist[1u]});
     CHECK_EQUAL (secondDerivationObjectData->loadedAsDependency, false);
 }
 

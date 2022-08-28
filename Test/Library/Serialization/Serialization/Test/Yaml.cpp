@@ -120,8 +120,6 @@ END_SUITE
 
 BEGIN_SUITE (YamlObjectBundleSerialization)
 
-// TODO: Test reusability?
-
 TEST_CASE (MultipleNonTrivial)
 {
     std::stringstream buffer;
@@ -140,8 +138,6 @@ TEST_CASE (MultipleNonTrivial)
 END_SUITE
 
 BEGIN_SUITE (YamlObjectBundleDeserialization)
-
-// TODO: Test reusability?
 
 TEST_CASE (MultipleNonTrivial)
 {

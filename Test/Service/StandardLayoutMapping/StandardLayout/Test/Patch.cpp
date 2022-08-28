@@ -9,7 +9,6 @@
 
 namespace Emergence::StandardLayout::Test
 {
-
 bool PatchTestIncludeMarker () noexcept
 {
     return true;

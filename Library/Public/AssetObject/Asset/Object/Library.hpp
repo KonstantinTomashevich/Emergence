@@ -22,6 +22,7 @@ public:
         ///        of other object and would be ignored otherwise.
         /// \details When loading begins, user selects from which folders objects should be loaded.
         ///          But some objects might have outside dependencies that must be loaded too.
+        ///          If object was loaded as such dependency, this flag will be `true` for it.
         bool loadedAsDependency = false;
     };
 

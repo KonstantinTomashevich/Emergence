@@ -11,7 +11,7 @@
 
 namespace Emergence::Asset::Object
 {
-/// \brief Declaration contains various information about an object, but stores nothing about object content.
+/// \brief Declaration contains various information about an object, but has no information about object content.
 struct Declaration final
 {
     /// \brief Name of the objects that is logical parent for this object or empty value if no parent is required.

@@ -8,7 +8,7 @@ void TypeManifest::Register (const StandardLayout::Mapping &_mapping, const Type
 {
     if (!infos.emplace (_mapping, _info).second)
     {
-        EMERGENCE_LOG (ERROR, "TypeManifest: Detected attempt to register type \"", _mapping.GetName (),
+        EMERGENCE_LOG (ERROR, "Asset::Object::TypeManifest: Detected attempt to register type \"", _mapping.GetName (),
                        "\" more than once!");
     }
 }

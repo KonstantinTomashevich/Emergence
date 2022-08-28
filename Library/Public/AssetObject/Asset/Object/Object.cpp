@@ -16,7 +16,7 @@ const Declaration::Reflection &Declaration::Reflect () noexcept
     return reflection;
 }
 
-static bool ArePatchesReferenceSamePart (const TypeManifest &_typeManifest,
+static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
                                          const StandardLayout::Patch &_first,
                                          const StandardLayout::Patch &_second)
 {
@@ -78,7 +78,7 @@ Body ApplyInheritance (const TypeManifest &_typeManifest,
         bool overrideFound = false;
         for (const StandardLayout::Patch &childPatch : _childChangelist)
         {
-            if (ArePatchesReferenceSamePart (_typeManifest, parentPatch, childPatch))
+            if (DoPatchesReferenceSamePart (_typeManifest, parentPatch, childPatch))
             {
                 overrideFound = true;
                 result.fullChangelist.emplace_back (parentPatch + childPatch);
@@ -97,7 +97,7 @@ Body ApplyInheritance (const TypeManifest &_typeManifest,
         bool alreadyUsedAsOverride = false;
         for (const StandardLayout::Patch &parentPatch : _parent.fullChangelist)
         {
-            if (ArePatchesReferenceSamePart (_typeManifest, parentPatch, childPatch))
+            if (DoPatchesReferenceSamePart (_typeManifest, parentPatch, childPatch))
             {
                 alreadyUsedAsOverride = true;
                 break;
@@ -132,7 +132,7 @@ void ExtractChildChangelist (const TypeManifest &_typeManifest,
                 break;
             }
 
-            if (!ArePatchesReferenceSamePart (_typeManifest, childPatch, parentPatch))
+            if (!DoPatchesReferenceSamePart (_typeManifest, childPatch, parentPatch))
             {
                 continue;
             }

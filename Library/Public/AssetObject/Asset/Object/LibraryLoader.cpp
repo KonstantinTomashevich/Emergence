@@ -155,8 +155,6 @@ void LibraryLoader::LoadObjectDeclaration (const Container::String &_objectFolde
     if (auto iterator = currentLibrary.objects.find (_objectName); iterator != currentLibrary.objects.end ())
     {
         auto indexInObjectListIterator = indexInObjectList.find (_objectName);
-
-        // Check that we're trying to read the same object, not its name-duplicate.
         if (indexInObjectListIterator == indexInObjectList.end ())
         {
             EMERGENCE_LOG (ERROR, "Asset::Object::LibraryLoader: Found cyclic dependency during object \"", _objectName,
@@ -164,6 +162,7 @@ void LibraryLoader::LoadObjectDeclaration (const Container::String &_objectFolde
         }
         else
         {
+            // Check that we're trying to read the same object, not its name-duplicate.
             ObjectListItem &objectListItem = objectList[indexInObjectListIterator->second];
             iterator->second.loadedAsDependency &= _loadingAsDependency;
 
@@ -276,6 +275,7 @@ void LibraryLoader::FormObjectList () noexcept
                     relativePath.substr (0u, relativePath.size () - YAML_OBJECT_DECLARATION_SUFFIX.size ())};
             }
 
+            // If this file is not a declaration, objectName will be left empty, so we will ignore this file.
             if (*objectName)
             {
                 LoadObjectDeclaration (

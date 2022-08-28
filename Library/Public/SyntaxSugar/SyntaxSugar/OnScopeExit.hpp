@@ -16,7 +16,7 @@ public:
 
     ScopeExitGuard (ScopeExitGuard &&_other) = delete;
 
-    ~ScopeExitGuard ()
+    ~ScopeExitGuard () noexcept
     {
         lambda ();
     }

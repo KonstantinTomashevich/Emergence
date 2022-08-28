@@ -138,7 +138,7 @@ private:
 class PatchBundleSerializer final : public BundleSerializerBase
 {
 public:
-    /// \brief Append new object to the current sequence.
+    /// \brief Append new patch to the current sequence.
     void Next (const StandardLayout::Patch &_patch) noexcept;
 
 private:
