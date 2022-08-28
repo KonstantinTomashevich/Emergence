@@ -83,7 +83,7 @@ static const std::array<NonTrivialStruct, 3u> ITEMS {
     NonTrivialStruct {0b001u, {"Second!"}, "For the House!"_us},
     NonTrivialStruct {0b100u, {"Third!"}, "For the golden dragon!"_us}};
 
-static const char *YAML =
+static const char *const YAML =
     "- alive: true\n"
     "  poisoned: true\n"
     "  stunned: true\n"
