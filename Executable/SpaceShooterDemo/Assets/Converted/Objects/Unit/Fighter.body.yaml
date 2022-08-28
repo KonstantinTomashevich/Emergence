@@ -69,7 +69,7 @@
   content:
     objectId: 0
     coolDownNs: 500000000 # 0.5s
-    bulletPrototype: Bullet
+    bulletPrototype: Projectile/Bullet
     shootingPointObjectId: 1
 
 - type: StaticModelComponent

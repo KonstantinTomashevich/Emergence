@@ -4,6 +4,7 @@
 #include <ostream>
 
 #include <Container/HashMap.hpp>
+#include <Container/Optional.hpp>
 #include <Container/Vector.hpp>
 
 #include <Serialization/FieldNameLookupCache.hpp>
@@ -28,7 +29,100 @@ bool DeserializePatch (std::istream &_input,
                        StandardLayout::PatchBuilder &_builder,
                        FieldNameLookupCache &_cache) noexcept;
 
-/// \brief Deserializes a bundle of patches from given text stream with Yaml data.
+// TODO: Refactor to more SAX-like parsing later?
+
+/// \brief Internal type, used to hide YAML library details.
+using YamlRootPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 8u>;
+
+/// \brief Internal type, used to hide YAML library details.
+using YamlIteratorPlaceholder = std::array<uint8_t, sizeof (uintptr_t) * 6u>;
+
+/// \brief Base class for serializers that store multiple items, for example multiple objects or patches.
+class BundleSerializerBase
+{
+public:
+    BundleSerializerBase () noexcept;
+
+    BundleSerializerBase (const BundleSerializerBase &_other) = delete;
+
+    BundleSerializerBase (BundleSerializerBase &&_other) = delete;
+
+    ~BundleSerializerBase () noexcept;
+
+    /// \brief Begin serialization session.
+    void Begin () noexcept;
+
+    /// \brief End serialization session and write result to the output.
+    void End (std::ostream &_output) noexcept;
+
+    BundleSerializerBase &operator= (const BundleSerializerBase &_other) = delete;
+
+    BundleSerializerBase &operator= (BundleSerializerBase &&_other) = delete;
+
+protected:
+    YamlRootPlaceholder yamlRootPlaceholder;
+};
+
+/// \brief Base class for deserializers that extract multiple items, for example multiple objects or patches.
+class BundleDeserializerBase
+{
+public:
+    BundleDeserializerBase () noexcept;
+
+    BundleDeserializerBase (const BundleDeserializerBase &_other) = delete;
+
+    BundleDeserializerBase (BundleDeserializerBase &&_other) = delete;
+
+    ~BundleDeserializerBase () noexcept;
+
+    /// \brief Starts new bundle deserialization session.
+    /// \return Whether session was started successfully.
+    bool Begin (std::istream &_input) noexcept;
+
+    /// \return Whether bundle has more unread items.
+    [[nodiscard]] bool HasNext () const noexcept;
+
+    /// \brief Ends current bundle deserialization session.
+    /// \details Safely processes case when there is no active deserialization session.
+    void End () noexcept;
+
+    BundleDeserializerBase &operator= (const BundleDeserializerBase &_other) = delete;
+
+    BundleDeserializerBase &operator= (BundleDeserializerBase &&_other) = delete;
+
+protected:
+    YamlRootPlaceholder yamlRootPlaceholder;
+    YamlIteratorPlaceholder yamlIteratorPlaceholder;
+};
+
+/// \brief Serializes multiple objects of the same type into YAML sequence.
+class ObjectBundleSerializer final : public BundleSerializerBase
+{
+public:
+    ObjectBundleSerializer (StandardLayout::Mapping _mapping) noexcept;
+
+    /// \brief Append new object to the current sequence.
+    void Next (const void *_object) noexcept;
+
+private:
+    StandardLayout::Mapping mapping;
+};
+
+/// \brief Deserializes multiple objects from YAML sequence.
+class ObjectBundleDeserializer final : public BundleDeserializerBase
+{
+public:
+    ObjectBundleDeserializer (StandardLayout::Mapping _mapping) noexcept;
+
+    /// \brief Extracts next object from bundle if possible and writes its data to given address.
+    /// \return Whether extraction has been completed successfully.
+    bool Next (void *_object) noexcept;
+
+private:
+    FieldNameLookupCache fieldNameLookupCache;
+};
+
+/// \brief Serializes a bundle of patches to given text stream as YAML sequence.
 /// \details Patch bundle format allows to store several patches with different types in one file like that:
 ///          ```yaml
 ///          - type: Patch0Type
@@ -41,25 +135,32 @@ bool DeserializePatch (std::istream &_input,
 ///          ```
 ///          This is useful for storing logically connected patches of different types,
 ///          for example CelerityAssembly AssemblyDescriptor data.
-///
-///          Prefer using shared `_context` to speed up deserialization of multiple bundles.
-bool DeserializePatchBundle (std::istream &_input,
-                             Container::Vector<StandardLayout::Patch> &_output,
-                             class BundleDeserializationContext &_context) noexcept;
+class PatchBundleSerializer final : public BundleSerializerBase
+{
+public:
+    /// \brief Append new patch to the current sequence.
+    void Next (const StandardLayout::Patch &_patch) noexcept;
 
-/// \brief Contains caching context for ::DeserializePatchBundle.
-/// \details Provides type list and allows to speed up deserialization of multiple patch bundles.
-class BundleDeserializationContext final
+private:
+    StandardLayout::Mapping mapping;
+};
+
+/// \brief Deserializes a bundle of patches from given text stream with Yaml data.
+/// \details See PatchBundleSerializer for details about format.
+class PatchBundleDeserializer final : public BundleDeserializerBase
 {
 public:
     /// \brief Registers given type as possible type for patches inside bundles.
     void RegisterType (const StandardLayout::Mapping &_mapping) noexcept;
 
-    /// \return Cache for given type if it was registered.
-    FieldNameLookupCache *RequestCache (Memory::UniqueString _typeName) noexcept;
+    /// \brief Extracts next patch from bundle if possible.
+    /// \return Next patch or `nullopt` if error happened.
+    Container::Optional<StandardLayout::Patch> Next () noexcept;
 
 private:
+    FieldNameLookupCache *RequestCache (Memory::UniqueString _typeName) noexcept;
+
     Container::HashMap<Memory::UniqueString, FieldNameLookupCache> cachesByTypeName {
-        Memory::Profiler::AllocationGroup {Memory::UniqueString {"BundleDeserializationContext"}}};
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"PatchBundleDeserializer"}}};
 };
 } // namespace Emergence::Serialization::Yaml

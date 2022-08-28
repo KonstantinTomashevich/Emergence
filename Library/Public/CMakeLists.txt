@@ -1,3 +1,4 @@
+add_subdirectory (AssetObject)
 add_subdirectory (Celerity)
 add_subdirectory (Container)
 add_subdirectory (Flow)

@@ -41,6 +41,65 @@ void PatchSerializationDeserializationTest (const Type &_initial, const Type &_c
     builder.End ().Apply (&target);
     CHECK_EQUAL (target, _changed);
 }
+
+void PatchBundleSerializeAndDeserialize (const Container::Vector<StandardLayout::Patch> &_patchesToSerialize,
+                                         Container::Vector<StandardLayout::Patch> &_deserializationOutput)
+{
+    using namespace Emergence::Serialization::Test;
+    std::stringstream buffer;
+    PatchBundleSerializer serializer;
+
+    serializer.Begin ();
+    for (const StandardLayout::Patch &patch : _patchesToSerialize)
+    {
+        serializer.Next (patch);
+    }
+
+    serializer.End (buffer);
+
+    PatchBundleDeserializer deserializer;
+    deserializer.RegisterType (TrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (NonTrivialStruct::Reflect ().mapping);
+    deserializer.RegisterType (UnionStruct::Reflect ().mapping);
+
+    REQUIRE (deserializer.Begin (buffer));
+    while (deserializer.HasNext ())
+    {
+        Emergence::Container::Optional<Emergence::StandardLayout::Patch> result = deserializer.Next ();
+        REQUIRE (result.has_value ());
+        _deserializationOutput.emplace_back (result.value ());
+    }
+
+    deserializer.End ();
+}
+
+namespace ObjectBundle
+{
+using namespace Emergence::Memory::Literals;
+using namespace Emergence::Serialization::Test;
+
+static const std::array<NonTrivialStruct, 3u> ITEMS {
+    NonTrivialStruct {0b111u, {"Hello, world!"}, "For gold and glory!"_us},
+    NonTrivialStruct {0b001u, {"Second!"}, "For the House!"_us},
+    NonTrivialStruct {0b100u, {"Third!"}, "For the golden dragon!"_us}};
+
+static const char *const YAML =
+    "- alive: true\n"
+    "  poisoned: true\n"
+    "  stunned: true\n"
+    "  string: Hello, world!\n"
+    "  uniqueString: For gold and glory!\n"
+    "- alive: true\n"
+    "  poisoned: false\n"
+    "  stunned: false\n"
+    "  string: Second!\n"
+    "  uniqueString: For the House!\n"
+    "- alive: false\n"
+    "  poisoned: false\n"
+    "  stunned: true\n"
+    "  string: Third!\n"
+    "  uniqueString: For the golden dragon!";
+} // namespace ObjectBundle
 } // namespace Emergence::Serialization::Yaml::Test
 
 using namespace Emergence::Serialization::Test;
@@ -59,93 +118,51 @@ PATCH_SERIALIZATION_TESTS (PatchSerializationDeserializationTest)
 
 END_SUITE
 
-BEGIN_SUITE (YamlPatchBundleDeserialization)
+BEGIN_SUITE (YamlObjectBundleSerialization)
 
-TEST_CASE (DifferentTypes)
+TEST_CASE (MultipleNonTrivial)
 {
-    static const char *yaml =
-        "- type: NonTrivialStruct\n"
-        "  content:\n"
-        "    alive: true\n"
-        "    uniqueString: \"For honor!\"\n"
-        "- type: TrivialStruct\n"
-        "  content:\n"
-        "    int8: -32\n"
-        "    uint32: 1537\n"
-        "- type: UnionStruct\n"
-        "  content:\n"
-        "    type: 1\n"
-        "    m: 4\n"
-        "    n: 17\n";
-
     std::stringstream buffer;
-    buffer << yaml;
+    ObjectBundleSerializer serializer {NonTrivialStruct::Reflect ().mapping};
 
-    BundleDeserializationContext context;
-    context.RegisterType (TrivialStruct::Reflect ().mapping);
-    context.RegisterType (NonTrivialStruct::Reflect ().mapping);
-    context.RegisterType (UnionStruct::Reflect ().mapping);
-
-    Emergence::Container::Vector<Emergence::StandardLayout::Patch> patches;
-    DeserializePatchBundle (buffer, patches, context);
-
-    REQUIRE_EQUAL (patches.size (), 3u);
-
-    CHECK_EQUAL (patches[0u].GetTypeMapping (), NonTrivialStruct::Reflect ().mapping);
+    serializer.Begin ();
+    for (const NonTrivialStruct &item : ObjectBundle::ITEMS)
     {
-        auto iterator = patches[0u].Begin ();
-        REQUIRE_NOT_EQUAL (iterator, patches[0u].End ());
-        CHECK_EQUAL ((*iterator).field, NonTrivialStruct::Reflect ().alive);
-        CHECK_EQUAL (*static_cast<const bool *> ((*iterator).newValue), true);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[0u].End ());
-        CHECK_EQUAL ((*iterator).field, NonTrivialStruct::Reflect ().uniqueString);
-        CHECK_EQUAL (*static_cast<const Emergence::Memory::UniqueString *> ((*iterator).newValue),
-                     Emergence::Memory::UniqueString {"For honor!"});
-
-        ++iterator;
-        CHECK_EQUAL (iterator, patches[0u].End ());
+        serializer.Next (&item);
     }
 
-    CHECK_EQUAL (patches[1u].GetTypeMapping (), TrivialStruct::Reflect ().mapping);
-    {
-        auto iterator = patches[1u].Begin ();
-        REQUIRE_NOT_EQUAL (iterator, patches[1u].End ());
-        CHECK_EQUAL ((*iterator).field, TrivialStruct::Reflect ().int8);
-        CHECK_EQUAL (*static_cast<const int8_t *> ((*iterator).newValue), -32);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[1u].End ());
-        CHECK_EQUAL ((*iterator).field, TrivialStruct::Reflect ().uint32);
-        CHECK_EQUAL (*static_cast<const uint32_t *> ((*iterator).newValue), 1537u);
-
-        ++iterator;
-        CHECK_EQUAL (iterator, patches[1u].End ());
-    }
-
-    CHECK_EQUAL (patches[2u].GetTypeMapping (), UnionStruct::Reflect ().mapping);
-    {
-        auto iterator = patches[2u].Begin ();
-        REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
-        CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().type);
-        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 1u);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
-        CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().m);
-        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 4u);
-
-        ++iterator;
-        REQUIRE_NOT_EQUAL (iterator, patches[2u].End ());
-        CHECK_EQUAL ((*iterator).field, UnionStruct::Reflect ().n);
-        CHECK_EQUAL (*static_cast<const uint64_t *> ((*iterator).newValue), 17u);
-
-        ++iterator;
-        CHECK_EQUAL (iterator, patches[2u].End ());
-    }
+    serializer.End (buffer);
+    CHECK_EQUAL (buffer.str (), ObjectBundle::YAML);
 }
 
 END_SUITE
 
-#undef PATCH_TESTS
+BEGIN_SUITE (YamlObjectBundleDeserialization)
+
+TEST_CASE (MultipleNonTrivial)
+{
+    std::stringstream buffer;
+    std::decay_t<decltype (ObjectBundle::ITEMS)> items;
+
+    buffer << ObjectBundle::YAML;
+    ObjectBundleDeserializer deserializer {NonTrivialStruct::Reflect ().mapping};
+
+    deserializer.Begin (buffer);
+    for (NonTrivialStruct &item : items)
+    {
+        REQUIRE (deserializer.HasNext ());
+        deserializer.Next (&item);
+    }
+
+    CHECK (!deserializer.HasNext ());
+    deserializer.End ();
+    CHECK_EQUAL (items, ObjectBundle::ITEMS);
+}
+
+END_SUITE
+
+BEGIN_SUITE (YamlPatchBundleSerialization)
+
+PATCH_BUNDLE_SERIALIZATION_TESTS (PatchBundleSerializeAndDeserialize)
+
+END_SUITE

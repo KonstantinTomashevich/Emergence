@@ -7,9 +7,11 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
     sober_naming_variant_target ("${GAME_NAME}Shared" Original SHARED_TARGET)
+    sober_naming_variant_target (AssetObject Original ASSET_OBJECT_TARGET)
     sober_naming_variant_target (MemoryRecording Original MEMORY_RECORDING_TARGET)
     sober_naming_variant_target (Serialization Original SERIALIZATION_TARGET)
 
+    sober_library_link_library (PRIVATE ${ASSET_OBJECT_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_RECORDING_TARGET})
     sober_library_link_library (PRIVATE ${SERIALIZATION_TARGET})
     sober_library_link_library (PRIVATE ${SHARED_TARGET})
