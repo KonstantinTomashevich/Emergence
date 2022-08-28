@@ -29,7 +29,6 @@
     modelName: Models/Wall.mdl
     materialNames:
       count: 2
-      values[0]: Materials/WallTileBorder.xml
       values[1]: Materials/WallTileCenter.xml
 
 - type: ParticleEffectComponent

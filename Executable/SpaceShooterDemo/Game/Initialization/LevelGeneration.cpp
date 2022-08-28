@@ -112,24 +112,26 @@ void LevelGenerator::Execute ()
     PlaceCamera ();
     PlaceDirectionalLight ();
 
+    bool placeRed = true;
     for (std::int32_t x = -30; x < 30; x += 6)
     {
         for (std::int32_t z = -20; z < 20; z += 6)
         {
-            PlaceSpawn (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f, "Obstacle"_us, std::nullopt,
-                        1u, 15u);
+            PlaceSpawn (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f,
+                        placeRed ? "Structure/ObstacleRed"_us : "Structure/ObstacleYellow"_us, std::nullopt, 1u, 15u);
+            placeRed = !placeRed;
         }
     }
 
-    PlaceSpawn (-2.0f, 2.5f, 0.0f, "Fighter"_us, playerInfo->localPlayerUid, 1u, 2u);
+    PlaceSpawn (-2.0f, 2.5f, 0.0f, "Unit/Fighter"_us, playerInfo->localPlayerUid, 1u, 2u);
     const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerId ();
 
     for (std::int32_t x = -27; x < 30; x += 18)
     {
         for (std::int32_t z = -17; z < 20; z += 15)
         {
-            PlaceSpawn (static_cast<float> (x) + 0.5f, 2.5f, static_cast<float> (z) + 0.5f, "Fighter"_us, aiPlayerId,
-                        2u, 5u);
+            PlaceSpawn (static_cast<float> (x) + 0.5f, 2.5f, static_cast<float> (z) + 0.5f, "Unit/Fighter"_us,
+                        aiPlayerId, 2u, 5u);
         }
     }
 }
@@ -140,7 +142,8 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
     {
         for (std::int32_t z = -_halfHeight; z < _halfHeight; ++z)
         {
-            PlacePrototype (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f, "FloorTile"_us);
+            PlacePrototype (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f,
+                            "Structure/FloorTile"_us);
         }
     }
 }

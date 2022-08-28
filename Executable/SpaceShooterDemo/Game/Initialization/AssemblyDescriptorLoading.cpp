@@ -1,6 +1,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include <Asset/Object/LibraryLoader.hpp>
+
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
@@ -17,12 +19,8 @@
 
 #include <Input/InputListenerComponent.hpp>
 
-#include <Log/Log.hpp>
-
 #include <Render/ParticleEffectComponent.hpp>
 #include <Render/StaticModelComponent.hpp>
-
-#include <Serialization/Yaml.hpp>
 
 namespace AssemblyDescriptorLoading
 {
@@ -44,63 +42,50 @@ AssemblyDescriptorLoader::AssemblyDescriptorLoader (Emergence::Celerity::TaskCon
 
 void AssemblyDescriptorLoader::Execute () noexcept
 {
-    static const char *materialsPath = "../GameAssets/Objects/";
+    static const char *objectsPath = "../GameAssets/Objects/";
+
+    Emergence::Asset::Object::TypeManifest typeManifest;
+    typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});
+    typeManifest.Register (DamageDealerComponent::Reflect ().mapping, {DamageDealerComponent::Reflect ().objectId});
+    typeManifest.Register (Emergence::Celerity::CollisionShapeComponent::Reflect ().mapping,
+                           {Emergence::Celerity::CollisionShapeComponent::Reflect ().shapeId});
+    typeManifest.Register (Emergence::Celerity::RigidBodyComponent::Reflect ().mapping,
+                           {Emergence::Celerity::RigidBodyComponent::Reflect ().objectId});
+    typeManifest.Register (Emergence::Celerity::Transform3dComponent::Reflect ().mapping,
+                           {Emergence::Celerity::Transform3dComponent::Reflect ().objectId});
+    typeManifest.Register (InputListenerComponent::Reflect ().mapping, {InputListenerComponent::Reflect ().objectId});
+    typeManifest.Register (MortalComponent::Reflect ().mapping, {MortalComponent::Reflect ().objectId});
+    typeManifest.Register (MovementComponent::Reflect ().mapping, {MovementComponent::Reflect ().objectId});
+    typeManifest.Register (ParticleEffectComponent::Reflect ().mapping, {ParticleEffectComponent::Reflect ().effectId});
+    typeManifest.Register (ShooterComponent::Reflect ().mapping, {ShooterComponent::Reflect ().objectId});
+    typeManifest.Register (StaticModelComponent::Reflect ().mapping, {StaticModelComponent::Reflect ().modelId});
+
+    Emergence::Asset::Object::LibraryLoader libraryLoader {std::move (typeManifest)};
+    libraryLoader.Begin ({{objectsPath, Emergence::Memory::UniqueString {}}});
+
+    // TODO: Rework to adequate multi-frame loading pipeline.
+    while (libraryLoader.IsLoading ())
+    {
+        std::this_thread::yield ();
+    }
+
+    Emergence::Asset::Object::Library library = libraryLoader.End ();
     auto cursor = insertAssemblyDescriptor.Execute ();
 
-    Emergence::Serialization::Yaml::PatchBundleDeserializer deserializer;
-    deserializer.RegisterType (ControllableComponent::Reflect ().mapping);
-    deserializer.RegisterType (DamageDealerComponent::Reflect ().mapping);
-    deserializer.RegisterType (Emergence::Celerity::CollisionShapeComponent::Reflect ().mapping);
-    deserializer.RegisterType (Emergence::Celerity::RigidBodyComponent::Reflect ().mapping);
-    deserializer.RegisterType (Emergence::Celerity::Transform3dComponent::Reflect ().mapping);
-    deserializer.RegisterType (InputListenerComponent::Reflect ().mapping);
-    deserializer.RegisterType (MortalComponent::Reflect ().mapping);
-    deserializer.RegisterType (MovementComponent::Reflect ().mapping);
-    deserializer.RegisterType (ParticleEffectComponent::Reflect ().mapping);
-    deserializer.RegisterType (ShooterComponent::Reflect ().mapping);
-    deserializer.RegisterType (StaticModelComponent::Reflect ().mapping);
-
-    for (const auto &entry : std::filesystem::directory_iterator (materialsPath))
+    for (const auto &[objectName, objectData] : library.GetRegisteredObjectMap ())
     {
-        const auto &path = entry.path ();
-        if (entry.is_regular_file () && path.extension ().string () == ".yaml" && !path.stem ().empty ())
+        if (objectData.loadedAsDependency)
         {
-            EMERGENCE_LOG (DEBUG, "AssemblyDescriptorLoading: Loading descriptor \"", path.stem ().string ().c_str (),
-                           "\" from file \"", path.string ().c_str (), "\"...");
-            std::ifstream input {entry.path ()};
+            continue;
+        }
 
-            if (!input)
-            {
-                EMERGENCE_LOG (ERROR, "AssemblyDescriptorLoading: Unable to open file \"",
-                               entry.path ().string ().c_str (), "\"!");
-                continue;
-            }
+        auto *descriptor = static_cast<Emergence::Celerity::AssemblyDescriptor *> (++cursor);
+        descriptor->id = objectName;
+        descriptor->components.reserve (objectData.body.fullChangelist.size ());
 
-            auto *descriptor = static_cast<Emergence::Celerity::AssemblyDescriptor *> (++cursor);
-            descriptor->id = Emergence::Memory::UniqueString {path.stem ().string ().c_str ()};
-
-            bool deserializedSuccessfully = true;
-            deserializedSuccessfully &= deserializer.Begin (input);
-
-            while (deserializedSuccessfully && deserializer.HasNext ())
-            {
-                Emergence::Container::Optional<Emergence::StandardLayout::Patch> patch = deserializer.Next ();
-                if (patch)
-                {
-                    descriptor->components.emplace_back (patch.value ());
-                }
-                else
-                {
-                    deserializedSuccessfully = false;
-                }
-            }
-
-            deserializer.End ();
-            if (!deserializedSuccessfully)
-            {
-                EMERGENCE_LOG (ERROR, "AssemblyDescriptorLoading: Failed to load components bundle from \"",
-                               entry.path ().string ().c_str (), "\"!");
-            }
+        for (const Emergence::StandardLayout::Patch &patch : objectData.body.fullChangelist)
+        {
+            descriptor->components.emplace_back (patch);
         }
     }
 }
