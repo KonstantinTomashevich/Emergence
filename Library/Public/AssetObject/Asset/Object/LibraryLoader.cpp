@@ -417,3 +417,13 @@ const FolderDependency::Reflection &FolderDependency::Reflect () noexcept
     return reflection;
 }
 } // namespace Emergence::Asset::Object
+
+namespace Emergence::Memory
+{
+Profiler::AllocationGroup DefaultAllocationGroup<Asset::Object::LibraryLoadingTask>::Get () noexcept
+{
+    static Profiler::AllocationGroup group {Asset::Object::GetRootAllocationGroup (),
+                                            UniqueString {"LibraryLoadingTask"}};
+    return group;
+}
+} // namespace Emergence::Memory

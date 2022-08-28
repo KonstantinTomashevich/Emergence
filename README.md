@@ -31,6 +31,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Libraries
 
+- [AssetObject](./Library/Public/AssetObject/README.md): provides format for storing game objects (like units, 
+  buildings, etc) in YAML or binary with single inheritance support.
 - [Celerity](./Library/Public/Celerity/README.md): combines [Warehouse](./Service/Warehouse/README.md),
   [Flow](./Library/Public/Flow/README.md) and [TaskExecutor](./Service/TaskExecutor/README.md) into framework
   for gameplay world logic implementation. Has transform hierarchy and physics engine extensions.
