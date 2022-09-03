@@ -4,7 +4,8 @@
 
 #include <Gameplay/InputConstant.hpp>
 
-#include <Initialization/InputInitialization.hpp>
+#include <Loading/Model/InputInitializationSingleton.hpp>
+#include <Loading/Task/InputInitialization.hpp>
 
 #include <Input/InputSingleton.hpp>
 
@@ -14,6 +15,8 @@ END_MUTING_WARNINGS
 
 namespace InputInitialization
 {
+const Emergence::Memory::UniqueString Checkpoint::INITIALIZED {"InputInitialized"};
+
 class InputInitializer final : public Emergence::Celerity::TaskExecutorBase<InputInitializer>
 {
 public:
@@ -22,16 +25,27 @@ public:
     void Execute () noexcept;
 
 private:
+    Emergence::Celerity::ModifySingletonQuery modifyState;
     Emergence::Celerity::ModifySingletonQuery modifyInput;
 };
 
 InputInitializer::InputInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (MODIFY_SINGLETON (InputSingleton))
+    : modifyState (MODIFY_SINGLETON (InputInitializationSingleton)),
+      modifyInput (MODIFY_SINGLETON (InputSingleton))
 {
+    _constructor.MakeDependencyOf (Checkpoint::INITIALIZED);
 }
 
 void InputInitializer::Execute () noexcept
 {
+    auto stateCursor = modifyState.Execute ();
+    auto *state = static_cast<InputInitializationSingleton *> (*stateCursor);
+
+    if (state->finished)
+    {
+        return;
+    }
+
     auto inputCursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*inputCursor);
 
@@ -68,10 +82,12 @@ void InputInitializer::Execute () noexcept
 
     input->keyStateChangedTriggers.EmplaceBack () = {
         {InputConstant::FIGHT_ACTION_GROUP, InputConstant::SLOWDOWN_ACTION}, SDL_SCANCODE_E, true, false};
+    state->finished = true;
 }
 
-void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
+void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::INITIALIZED);
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"InputInitializer"}).SetExecutor<InputInitializer> ();
 }
 } // namespace InputInitialization

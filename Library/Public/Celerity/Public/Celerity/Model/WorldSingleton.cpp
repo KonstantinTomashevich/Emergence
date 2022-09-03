@@ -18,6 +18,7 @@ const WorldSingleton::Reflection &WorldSingleton::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (WorldSingleton);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fixedUpdateHappened);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (updateMode);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -142,51 +142,87 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     }
 
     assert (_time->timeSpeed >= 0.0f);
-    const auto scaledTimeDeltaNs = static_cast<uint64_t> (static_cast<float> (realTimeDeltaNs) * _time->timeSpeed);
+    float updateModeTimeScale;
+
+    switch (_world->updateMode)
+    {
+    case WorldUpdateMode::SIMULATING:
+        updateModeTimeScale = 1.0f;
+        break;
+    case WorldUpdateMode::FROZEN:
+        updateModeTimeScale = 0.0f;
+        break;
+    }
+
+    const auto scaledTimeDeltaNs =
+        static_cast<uint64_t> (static_cast<float> (realTimeDeltaNs) * updateModeTimeScale * _time->timeSpeed);
     _time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
     _time->normalTimeNs += scaledTimeDeltaNs;
 }
 
 void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 {
-    if (_time->fixedTimeNs > _time->normalTimeNs)
+    switch (_world->updateMode)
     {
-        // We are ahead of normal time, no need to do anything.
-        _world->fixedUpdateHappened = false;
-        return;
+    case WorldUpdateMode::SIMULATING:
+    {
+        if (_time->fixedTimeNs > _time->normalTimeNs)
+        {
+            // We are ahead of normal time, no need to do anything.
+            _world->fixedUpdateHappened = false;
+            return;
+        }
+
+        // Adjust fixed update step to avoid death spiral.
+        // Full frame time should be consistently lower than simulation step.
+        // We also add small epsilon in order to take possible VSync waits into account.
+        constexpr float VSYNC_EPSILON = 1e-3f;
+        const float minimumRealStepTime = _time->averageFullFrameRealDurationS.Get () - VSYNC_EPSILON;
+
+        assert (!_time->targetFixedFrameDurationsS.Empty ());
+        std::size_t selectedStepIndex = 0u;
+
+        while (_time->targetFixedFrameDurationsS[selectedStepIndex] < minimumRealStepTime &&
+               selectedStepIndex + 1u < _time->targetFixedFrameDurationsS.GetCount ())
+        {
+            ++selectedStepIndex;
+        }
+
+        // We do not need to take time scaling into account,
+        // because it affects fixed updates by slowing down normal time.
+        _time->fixedDurationS = _time->targetFixedFrameDurationsS[selectedStepIndex];
+        const auto fixedDurationNs = static_cast<uint64_t> (_time->fixedDurationS * 1e9f);
+
+        // Catch up to normal time.
+        while (_time->fixedTimeNs <= _time->normalTimeNs)
+        {
+            if (fixedPipeline)
+            {
+                fixedPipeline->Execute ();
+            }
+
+            _time->fixedTimeNs += fixedDurationNs;
+        }
+
+        _world->fixedUpdateHappened = true;
+        break;
     }
 
-    // Adjust fixed update step to avoid death spiral.
-    // Full frame time should be consistently lower than simulation step.
-    // We also add small epsilon in order to take possible VSync waits into account.
-    constexpr float VSYNC_EPSILON = 1e-3f;
-    const float minimumRealStepTime = _time->averageFullFrameRealDurationS.Get () - VSYNC_EPSILON;
-
-    assert (!_time->targetFixedFrameDurationsS.Empty ());
-    std::size_t selectedStepIndex = 0u;
-
-    while (_time->targetFixedFrameDurationsS[selectedStepIndex] < minimumRealStepTime &&
-           selectedStepIndex + 1u < _time->targetFixedFrameDurationsS.GetCount ())
+    case WorldUpdateMode::FROZEN:
     {
-        ++selectedStepIndex;
-    }
+        // Fixed pipeline is executed each frame with zero time
+        // step to compensate for changes made by other pipelines.
+        _time->fixedDurationS = 0.0f;
 
-    // We do not need to take time scaling into account, because it affects fixed updates by slowing down normal time.
-    _time->fixedDurationS = _time->targetFixedFrameDurationsS[selectedStepIndex];
-    const auto fixedDurationNs = static_cast<uint64_t> (_time->fixedDurationS * 1e9f);
-
-    // Catch up to normal time.
-    while (_time->fixedTimeNs <= _time->normalTimeNs)
-    {
         if (fixedPipeline)
         {
             fixedPipeline->Execute ();
         }
 
-        _time->fixedTimeNs += fixedDurationNs;
+        _world->fixedUpdateHappened = true;
+        break;
     }
-
-    _world->fixedUpdateHappened = true;
+    }
 }
 
 Pipeline *World::AddPipeline (Memory::UniqueString _id,

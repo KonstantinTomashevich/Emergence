@@ -4,14 +4,19 @@
 #include <Celerity/Physics/DynamicsMaterial.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
-#include <Initialization/DynamicsMaterialLoading.hpp>
+#include <Loading/Model/DynamicsMaterialLoadingSingleton.hpp>
+#include <Loading/Task/DynamicsMaterialLoading.hpp>
 
 #include <Log/Log.hpp>
 
 #include <Serialization/Yaml.hpp>
 
+#include <SyntaxSugar/Time.hpp>
+
 namespace DynamicsMaterialLoading
 {
+const Emergence::Memory::UniqueString Checkpoint::STEP_FINISHED {"DynamicsMaterialLoadingStepFinished"};
+
 class DynamicsMaterialLoader final : public Emergence::Celerity::TaskExecutorBase<DynamicsMaterialLoader>
 {
 public:
@@ -20,22 +25,44 @@ public:
     void Execute () noexcept;
 
 private:
+    static constexpr const char *MATERIALS_PATH = "../GameAssets/Physics/Materials/";
+
+    Emergence::Celerity::ModifySingletonQuery modifyState;
     Emergence::Celerity::InsertLongTermQuery insertDynamicsMaterial;
+
+    Emergence::Serialization::FieldNameLookupCache cache {Emergence::Celerity::DynamicsMaterial::Reflect ().mapping};
+    std::filesystem::directory_iterator directoryIterator {MATERIALS_PATH};
 };
 
 DynamicsMaterialLoader::DynamicsMaterialLoader (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : insertDynamicsMaterial (INSERT_LONG_TERM (Emergence::Celerity::DynamicsMaterial))
+    : modifyState (MODIFY_SINGLETON (DynamicsMaterialLoadingSingleton)),
+      insertDynamicsMaterial (INSERT_LONG_TERM (Emergence::Celerity::DynamicsMaterial))
 {
+    _constructor.MakeDependencyOf (Checkpoint::STEP_FINISHED);
 }
 
 void DynamicsMaterialLoader::Execute () noexcept
 {
-    static const char *materialsPath = "../GameAssets/Physics/Materials/";
-    auto cursor = insertDynamicsMaterial.Execute ();
-    Emergence::Serialization::FieldNameLookupCache cache {Emergence::Celerity::DynamicsMaterial::Reflect ().mapping};
+    auto stateCursor = modifyState.Execute ();
+    auto *state = static_cast<DynamicsMaterialLoadingSingleton *> (*stateCursor);
 
-    for (const auto &entry : std::filesystem::directory_iterator (materialsPath))
+    if (state->finished)
     {
+        return;
+    }
+
+    auto cursor = insertDynamicsMaterial.Execute ();
+    const std::uint64_t startTime = Emergence::Time::NanosecondsSinceStartup ();
+    constexpr std::uint64_t MAXIMUM_LOADING_TIME_PER_STEP = 16000000u; // 16ms
+
+    while (directoryIterator != std::filesystem::end (directoryIterator))
+    {
+        if (Emergence::Time::NanosecondsSinceStartup () - startTime > MAXIMUM_LOADING_TIME_PER_STEP)
+        {
+            return;
+        }
+
+        const std::filesystem::directory_entry &entry = *directoryIterator;
         if (entry.is_regular_file () && entry.path ().extension ().string () == ".yaml")
         {
             EMERGENCE_LOG (DEBUG, "DynamicsMaterialLoading: Loading \"", entry.path ().string ().c_str (), "\"...");
@@ -55,13 +82,18 @@ void DynamicsMaterialLoader::Execute () noexcept
                                entry.path ().string ().c_str (), "\"!");
             }
         }
+
+        ++directoryIterator;
     }
+
+    state->finished = true;
 }
 
 using namespace Emergence::Memory::Literals;
 
-void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
+void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STEP_FINISHED);
     _pipelineBuilder.AddTask ("DynamicsMaterialLoader"_us).SetExecutor<DynamicsMaterialLoader> ();
 }
 } // namespace DynamicsMaterialLoading

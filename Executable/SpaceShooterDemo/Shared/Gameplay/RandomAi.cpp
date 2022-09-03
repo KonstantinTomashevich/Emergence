@@ -1,6 +1,7 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
+#include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/Transform3dComponent.hpp>
@@ -74,6 +75,7 @@ public:
     void Execute () noexcept;
 
 private:
+    Emergence::Celerity::FetchSingletonQuery fetchWorld;
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::ModifySingletonQuery modifyRandom;
 
@@ -85,7 +87,8 @@ private:
 };
 
 InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       modifyRandom (MODIFY_SINGLETON (RandomSingleton)),
 
       modifyRandomAiByIdAscending (MODIFY_ASCENDING_RANGE (RandomAiComponent, objectId)),
@@ -100,6 +103,15 @@ InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_construct
 
 void InputGenerator::Execute () noexcept
 {
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
+    // AI does not generate any input unless simulation is enabled.
+    if (world->updateMode != Emergence::Celerity::WorldUpdateMode::SIMULATING)
+    {
+        return;
+    }
+
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
 

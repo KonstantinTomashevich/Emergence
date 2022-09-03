@@ -32,11 +32,12 @@
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
-#include <Initialization/AssemblyDescriptorLoading.hpp>
-#include <Initialization/DynamicsMaterialLoading.hpp>
-#include <Initialization/InputInitialization.hpp>
-#include <Initialization/LevelGeneration.hpp>
-#include <Initialization/PhysicsInitialization.hpp>
+#include <Loading/Task/AssemblyDescriptorLoading.hpp>
+#include <Loading/Task/DynamicsMaterialLoading.hpp>
+#include <Loading/Task/InputInitialization.hpp>
+#include <Loading/Task/LevelGeneration.hpp>
+#include <Loading/Task/LoadingStatusCheck.hpp>
+#include <Loading/Task/PhysicsInitialization.hpp>
 
 #include <Input/Input.hpp>
 
@@ -108,6 +109,9 @@ private:
 
     InputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
+
+    Emergence::Celerity::Pipeline *loadingPipeline = nullptr;
+    bool loadingFinished = false;
 };
 
 GameApplication::GameApplication (Urho3D::Context *_context)
@@ -152,15 +156,15 @@ void GameApplication::Start ()
     Emergence::VisualGraph::Graph pipelineVisualGraph;
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
-    pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
-    AssemblyDescriptorLoading::AddToInitializationPipeline (pipelineBuilder);
-    DynamicsMaterialLoading::AddToInitializationPipeline (pipelineBuilder);
-    InputInitialization::AddToInitializationPipeline (pipelineBuilder);
-    LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
-    PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
-    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End (&pipelineVisualGraph);
-    assert (initializer);
-    SaveVisualGraph (pipelineVisualGraph, "InitializationPipeline.graph");
+    pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    AssemblyDescriptorLoading::AddToLoadingPipeline (pipelineBuilder);
+    DynamicsMaterialLoading::AddToLoadingPipeline (pipelineBuilder);
+    InputInitialization::AddToLoadingPipeline (pipelineBuilder);
+    LevelGeneration::AddToLoadingPipeline (pipelineBuilder);
+    PhysicsInitialization::AddToLoadingPipeline (pipelineBuilder);
+    LoadingStatusCheck::AddToLoadingPipeline (pipelineBuilder, &loadingFinished);
+    loadingPipeline = pipelineBuilder.End (&pipelineVisualGraph);
+    SaveVisualGraph (pipelineVisualGraph, "LoadingPipeline.graph");
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Control::AddToFixedUpdate (pipelineBuilder);
@@ -191,9 +195,6 @@ void GameApplication::Start ()
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     pipelineBuilder.End (&pipelineVisualGraph);
     SaveVisualGraph (pipelineVisualGraph, "NormalPipeline.graph");
-
-    initializer->Execute ();
-    world.RemovePipeline (initializer);
 }
 
 void GameApplication::Stop ()
@@ -203,6 +204,19 @@ void GameApplication::Stop ()
 
 void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap & /*unused*/) noexcept
 {
+    if (loadingPipeline)
+    {
+        loadingPipeline->Execute ();
+        if (loadingFinished)
+        {
+            world.RemovePipeline (loadingPipeline);
+            loadingPipeline = nullptr;
+        }
+    }
+
+    // TODO: Create lag logger and find out what causes visual lags.
+    //       Is there any sense to investigate it before profiler integration?
+
     world.Update ();
     inputAccumulator.Clear ();
 
