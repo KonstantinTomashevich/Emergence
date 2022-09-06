@@ -59,6 +59,10 @@ public:
     /// \return Whether current loading routine is still going on.
     bool IsLoading () const noexcept;
 
+    /// \return Loading tasks of current loading routine.
+    /// \invariant Inside loading routine (between ::Begin and ::End calls).
+    const Container::Vector<LibraryLoadingTask> &GetLoadingTasks () noexcept;
+
     /// \return Library created during last loading routine.
     /// \details Can only be called once per loading routine, because library is moved out of loader.
     /// \invariant `IsLoading` is `false`.

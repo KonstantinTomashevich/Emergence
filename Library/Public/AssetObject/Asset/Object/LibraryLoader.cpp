@@ -53,6 +53,11 @@ bool LibraryLoader::IsLoading () const noexcept
     return loading.test (std::memory_order_acquire);
 }
 
+const Container::Vector<LibraryLoadingTask> &LibraryLoader::GetLoadingTasks () noexcept
+{
+    return loadingTasks;
+}
+
 Library LibraryLoader::End () noexcept
 {
     assert (!IsLoading ());
