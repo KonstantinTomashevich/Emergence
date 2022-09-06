@@ -4,8 +4,9 @@
 
 #include <Gameplay/InputConstant.hpp>
 
-#include <Loading/Model/InputInitializationSingleton.hpp>
+#include <Loading/Model/Events.hpp>
 #include <Loading/Task/InputInitialization.hpp>
+#include <Loading/Task/LoadingOrchestration.hpp>
 
 #include <Input/InputSingleton.hpp>
 
@@ -15,8 +16,6 @@ END_MUTING_WARNINGS
 
 namespace InputInitialization
 {
-const Emergence::Memory::UniqueString Checkpoint::INITIALIZED {"InputInitialized"};
-
 class InputInitializer final : public Emergence::Celerity::TaskExecutorBase<InputInitializer>
 {
 public:
@@ -25,23 +24,21 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::ModifySingletonQuery modifyState;
     Emergence::Celerity::ModifySingletonQuery modifyInput;
+    Emergence::Celerity::FetchSequenceQuery fetchLoadingFinishedEvent;
 };
 
 InputInitializer::InputInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyState (MODIFY_SINGLETON (InputInitializationSingleton)),
-      modifyInput (MODIFY_SINGLETON (InputSingleton))
+    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
+      fetchLoadingFinishedEvent (FETCH_SEQUENCE (LoadingFinishedEvent))
 {
-    _constructor.MakeDependencyOf (Checkpoint::INITIALIZED);
+    _constructor.DependOn (LoadingOrchestration::Checkpoint::FINISHED);
 }
 
 void InputInitializer::Execute () noexcept
 {
-    auto stateCursor = modifyState.Execute ();
-    auto *state = static_cast<InputInitializationSingleton *> (*stateCursor);
-
-    if (state->finished)
+    auto eventCursor = fetchLoadingFinishedEvent.Execute ();
+    if (!*eventCursor)
     {
         return;
     }
@@ -82,12 +79,10 @@ void InputInitializer::Execute () noexcept
 
     input->keyStateChangedTriggers.EmplaceBack () = {
         {InputConstant::FIGHT_ACTION_GROUP, InputConstant::SLOWDOWN_ACTION}, SDL_SCANCODE_E, true, false};
-    state->finished = true;
 }
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (Checkpoint::INITIALIZED);
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"InputInitializer"}).SetExecutor<InputInitializer> ();
 }
 } // namespace InputInitialization

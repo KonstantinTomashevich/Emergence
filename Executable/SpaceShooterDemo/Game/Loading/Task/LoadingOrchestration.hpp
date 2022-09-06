@@ -2,8 +2,15 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace LoadingStatusCheck
+namespace LoadingOrchestration
 {
+struct Checkpoint final
+{
+    Checkpoint () = delete;
+
+    static const Emergence::Memory::UniqueString FINISHED;
+};
+
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                            bool *_loadingFinishedOutput) noexcept;
-} // namespace LoadingStatusCheck
+} // namespace LoadingOrchestration

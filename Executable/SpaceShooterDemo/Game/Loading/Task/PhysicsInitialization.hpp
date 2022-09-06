@@ -8,7 +8,7 @@ struct Checkpoint final
 {
     Checkpoint () = delete;
 
-    static const Emergence::Memory::UniqueString INITIALIZED;
+    static const Emergence::Memory::UniqueString FINISHED;
 };
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;

@@ -5,12 +5,11 @@
 
 #include <Gameplay/PhysicsConstant.hpp>
 
-#include <Loading/Model/PhysicsInitializationSingleton.hpp>
 #include <Loading/Task/PhysicsInitialization.hpp>
 
 namespace PhysicsInitialization
 {
-const Emergence::Memory::UniqueString Checkpoint::INITIALIZED {"PhysicsInitialized"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"PhysicsInitializationFinished"};
 
 class PhysicsInitializer final : public Emergence::Celerity::TaskExecutorBase<PhysicsInitializer>
 {
@@ -20,23 +19,19 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::ModifySingletonQuery modifyState;
+    bool initialized = false;
     Emergence::Celerity::ModifySingletonQuery modifyPhysicsWorld;
 };
 
 PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyState (MODIFY_SINGLETON (PhysicsInitializationSingleton)),
-      modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton))
+    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton))
 {
-    _constructor.MakeDependencyOf (Checkpoint::INITIALIZED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void PhysicsInitializer::Execute () noexcept
 {
-    auto stateCursor = modifyState.Execute ();
-    auto *state = static_cast<PhysicsInitializationSingleton *> (*stateCursor);
-
-    if (state->finished)
+    if (initialized)
     {
         return;
     }
@@ -63,14 +58,14 @@ void PhysicsInitializer::Execute () noexcept
         (1u << PhysicsConstant::OBSTACLE_COLLISION_GROUP) | (1u << PhysicsConstant::HIT_BOX_COLLISION_GROUP);
 
     world->collisionMasks[PhysicsConstant::HIT_BOX_COLLISION_GROUP] = (1u << PhysicsConstant::BULLET_COLLISION_GROUP);
-    state->finished = true;
+    initialized = true;
 }
 
 using namespace Emergence::Memory::Literals;
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (Checkpoint::INITIALIZED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("PhysicsInitializer"_us).SetExecutor<PhysicsInitializer> ();
 }
 } // namespace PhysicsInitialization

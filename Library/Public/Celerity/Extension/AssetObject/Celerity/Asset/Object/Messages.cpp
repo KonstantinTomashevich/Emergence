@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Object/Message.hpp>
+#include <Celerity/Asset/Object/Messages.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

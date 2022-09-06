@@ -1,4 +1,5 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
+#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
 #include <Celerity/Physics/PhysicsWorldSingleton.hpp>
@@ -14,11 +15,7 @@
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/SpawnComponent.hpp>
 
-#include <Loading/Model/AssemblyDescriptorLoadingSingleton.hpp>
-#include <Loading/Model/DynamicsMaterialLoadingSingleton.hpp>
-#include <Loading/Model/LevelGenerationSingleton.hpp>
-#include <Loading/Model/PhysicsInitializationSingleton.hpp>
-#include <Loading/Task/AssemblyDescriptorLoading.hpp>
+#include <Loading/Model/Messages.hpp>
 #include <Loading/Task/DynamicsMaterialLoading.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
 #include <Loading/Task/PhysicsInitialization.hpp>
@@ -31,7 +28,7 @@
 
 namespace LevelGeneration
 {
-const Emergence::Memory::UniqueString Checkpoint::STEP_FINISHED {"LevelGenerationStepFinished"};
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"LevelGenerationFinished"};
 
 using namespace Emergence::Memory::Literals;
 
@@ -73,10 +70,7 @@ private:
         Emergence::Memory::UniqueString _descriptorId,
         Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId = std::nullopt) noexcept;
 
-    Emergence::Celerity::ModifySingletonQuery modifyState;
-    Emergence::Celerity::FetchSingletonQuery fetchAssemblyDescriptorLoadingState;
-    Emergence::Celerity::FetchSingletonQuery fetchDynamicsMaterialLoadingState;
-    Emergence::Celerity::FetchSingletonQuery fetchPhysicsInitializationState;
+    Emergence::Celerity::ModifySequenceQuery modifyRequest;
     Emergence::Celerity::ModifySingletonQuery fetchWorld;
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
@@ -92,13 +86,11 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertLight;
     Emergence::Celerity::InsertLongTermQuery insertPrototype;
     Emergence::Celerity::InsertLongTermQuery insertDamageDealer;
+    Emergence::Celerity::InsertShortTermQuery insertResponse;
 };
 
 LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyState (MODIFY_SINGLETON (LevelGenerationSingleton)),
-      fetchAssemblyDescriptorLoadingState (FETCH_SINGLETON (AssemblyDescriptorLoadingSingleton)),
-      fetchDynamicsMaterialLoadingState (FETCH_SINGLETON (DynamicsMaterialLoadingSingleton)),
-      fetchPhysicsInitializationState (FETCH_SINGLETON (PhysicsInitializationSingleton)),
+    : modifyRequest (MODIFY_SEQUENCE (LevelGenerationRequest)),
       fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton)),
@@ -113,42 +105,24 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       insertCamera (INSERT_LONG_TERM (CameraComponent)),
       insertLight (INSERT_LONG_TERM (LightComponent)),
       insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent)),
-      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent))
+      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent)),
+      insertResponse (INSERT_SHORT_TERM (LevelGenerationFinishedResponse))
 {
-    _constructor.DependOn (AssemblyDescriptorLoading::Checkpoint::STEP_FINISHED);
-    _constructor.DependOn (DynamicsMaterialLoading::Checkpoint::STEP_FINISHED);
-    _constructor.DependOn (PhysicsInitialization::Checkpoint::INITIALIZED);
-    _constructor.MakeDependencyOf (Checkpoint::STEP_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::PROCESSING_FINISHED);
+    _constructor.DependOn (DynamicsMaterialLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void LevelGenerator::Execute ()
 {
-    auto stateCursor = modifyState.Execute ();
-    auto *state = static_cast<LevelGenerationSingleton *> (*stateCursor);
-
-    if (state->finished)
+    auto requestCursor = modifyRequest.Execute ();
+    if (!*requestCursor)
     {
         return;
     }
 
-    auto assemblyDescriptorLoadingStateCursor = fetchAssemblyDescriptorLoadingState.Execute ();
-    const auto *assemblyDescriptorLoadingState =
-        static_cast<const AssemblyDescriptorLoadingSingleton *> (*assemblyDescriptorLoadingStateCursor);
-
-    auto dynamicsMaterialLoadingStateCursor = fetchDynamicsMaterialLoadingState.Execute ();
-    const auto *dynamicsMaterialLoadingState =
-        static_cast<const DynamicsMaterialLoadingSingleton *> (*dynamicsMaterialLoadingStateCursor);
-
-    auto physicsInitializationStateCursor = fetchPhysicsInitializationState.Execute ();
-    const auto *physicsInitializationState =
-        static_cast<const PhysicsInitializationSingleton *> (*physicsInitializationStateCursor);
-
-    if (!assemblyDescriptorLoadingState->finished || !dynamicsMaterialLoadingState->finished ||
-        !physicsInitializationState->finished)
-    {
-        return;
-    }
-
+    ~requestCursor;
     auto playerInfoCursor = fetchPlayerInfo.Execute ();
     const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
 
@@ -180,7 +154,8 @@ void LevelGenerator::Execute ()
         }
     }
 
-    state->finished = true;
+    auto responseCursor = insertResponse.Execute ();
+    ++responseCursor;
 }
 
 void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept
@@ -350,7 +325,7 @@ void LevelGenerator::PlaceSpawn (float _x,
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (Checkpoint::STEP_FINISHED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("LevelGenerator"_us).SetExecutor<LevelGenerator> ();
 }
 } // namespace LevelGeneration

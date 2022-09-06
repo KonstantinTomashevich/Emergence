@@ -3,7 +3,7 @@
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Asset/Object/LoadingStateSingleton.hpp>
-#include <Celerity/Asset/Object/Message.hpp>
+#include <Celerity/Asset/Object/Messages.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 namespace Emergence::Celerity::AssetObjectLoading
@@ -64,6 +64,7 @@ LoadingProcessor::LoadingProcessor (TaskConstructor &_constructor, Asset::Object
 
 void LoadingProcessor::Execute () noexcept
 {
+    ClearResponses ();
     auto stateCursor = modifyState.Execute ();
     auto *state = static_cast<AssetObjectLoadingStateSingleton *> (*stateCursor);
 
@@ -76,8 +77,6 @@ void LoadingProcessor::Execute () noexcept
     {
         ProcessRequests (state);
     }
-
-    ClearResponses ();
 }
 
 void LoadingProcessor::FinishLoading (AssetObjectLoadingStateSingleton *_state) noexcept

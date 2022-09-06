@@ -8,6 +8,7 @@
 
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
+#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/Simulation.hpp>
@@ -32,11 +33,11 @@
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
-#include <Loading/Task/AssemblyDescriptorLoading.hpp>
+#include <Loading/Model/AssetObjectTypeManifest.hpp>
 #include <Loading/Task/DynamicsMaterialLoading.hpp>
 #include <Loading/Task/InputInitialization.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
-#include <Loading/Task/LoadingStatusCheck.hpp>
+#include <Loading/Task/LoadingOrchestration.hpp>
 #include <Loading/Task/PhysicsInitialization.hpp>
 
 #include <Input/Input.hpp>
@@ -157,12 +158,12 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
-    AssemblyDescriptorLoading::AddToLoadingPipeline (pipelineBuilder);
+    Emergence::Celerity::AssetObjectLoading::AddToLoadingPipeline (pipelineBuilder, PrepareAssetObjectTypeManifest ());
     DynamicsMaterialLoading::AddToLoadingPipeline (pipelineBuilder);
     InputInitialization::AddToLoadingPipeline (pipelineBuilder);
     LevelGeneration::AddToLoadingPipeline (pipelineBuilder);
     PhysicsInitialization::AddToLoadingPipeline (pipelineBuilder);
-    LoadingStatusCheck::AddToLoadingPipeline (pipelineBuilder, &loadingFinished);
+    LoadingOrchestration::AddToLoadingPipeline (pipelineBuilder, &loadingFinished);
     loadingPipeline = pipelineBuilder.End (&pipelineVisualGraph);
     SaveVisualGraph (pipelineVisualGraph, "LoadingPipeline.graph");
 
