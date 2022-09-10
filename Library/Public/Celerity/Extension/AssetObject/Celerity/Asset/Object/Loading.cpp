@@ -10,8 +10,8 @@ namespace Emergence::Celerity::AssetObjectLoading
 {
 using namespace Memory::Literals;
 
-const Memory::UniqueString Checkpoint::PROCESSING_STARTED {"AssetObjectLoadingProcessingStarted"};
-const Memory::UniqueString Checkpoint::PROCESSING_FINISHED {"AssetObjectLoadingProcessingFinished"};
+const Memory::UniqueString Checkpoint::STARTED {"AssetObjectLoadingStarted"};
+const Memory::UniqueString Checkpoint::FINISHED {"AssetObjectLoadingFinished"};
 
 class LoadingProcessor final : public TaskExecutorBase<LoadingProcessor>
 {
@@ -58,8 +58,8 @@ LoadingProcessor::LoadingProcessor (TaskConstructor &_constructor, Asset::Object
 
       libraryLoader (std::move (_manifest))
 {
-    _constructor.DependOn (Checkpoint::PROCESSING_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::PROCESSING_FINISHED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void LoadingProcessor::Execute () noexcept
@@ -191,8 +191,8 @@ void LoadingProcessor::ClearResponses () noexcept
 
 void AddToLoadingPipeline (PipelineBuilder &_builder, Asset::Object::TypeManifest _typeManifest) noexcept
 {
-    _builder.AddCheckpoint (Checkpoint::PROCESSING_STARTED);
-    _builder.AddCheckpoint (Checkpoint::PROCESSING_FINISHED);
+    _builder.AddCheckpoint (Checkpoint::STARTED);
+    _builder.AddCheckpoint (Checkpoint::FINISHED);
     _builder.AddTask ("AssetObjectLoadingProcessor"_us).SetExecutor<LoadingProcessor> (std::move (_typeManifest));
 }
 } // namespace Emergence::Celerity::AssetObjectLoading

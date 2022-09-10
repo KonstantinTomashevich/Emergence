@@ -108,7 +108,7 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent)),
       insertResponse (INSERT_SHORT_TERM (LevelGenerationFinishedResponse))
 {
-    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::PROCESSING_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::FINISHED);
     _constructor.DependOn (DynamicsMaterialLoading::Checkpoint::FINISHED);
     _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);

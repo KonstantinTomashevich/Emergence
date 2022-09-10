@@ -12,10 +12,10 @@ struct Checkpoint final
     Checkpoint () = delete;
 
     /// \brief Loading pipeline processing starts after this checkpoint.
-    static const Memory::UniqueString PROCESSING_STARTED;
+    static const Memory::UniqueString STARTED;
 
     /// \brief Loading pipeline processing is finished before this checkpoint.
-    static const Memory::UniqueString PROCESSING_FINISHED;
+    static const Memory::UniqueString FINISHED;
 };
 
 /// \brief Adds tasks that execute loading pipeline: process requests and integrate

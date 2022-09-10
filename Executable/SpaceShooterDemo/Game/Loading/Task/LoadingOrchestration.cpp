@@ -65,7 +65,7 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
 
       loadingFinishedOutput (_loadingFinishedOutput)
 {
-    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::PROCESSING_FINISHED);
+    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::FINISHED);
     _constructor.DependOn (DynamicsMaterialLoading::Checkpoint::FINISHED);
     _constructor.DependOn (LevelGeneration::Checkpoint::FINISHED);
     _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
