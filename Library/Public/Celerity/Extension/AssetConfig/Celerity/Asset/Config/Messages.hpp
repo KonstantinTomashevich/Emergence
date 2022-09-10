@@ -6,7 +6,7 @@
 
 namespace Emergence::Celerity
 {
-struct ConfigLoadingRequest final
+struct AssetConfigRequest final
 {
     StandardLayout::Mapping type;
 
@@ -21,7 +21,7 @@ struct ConfigLoadingRequest final
     static const Reflection &Reflect () noexcept;
 };
 
-struct ConfigLoadingFinishedResponse final
+struct AssetConfigLoadedResponse final
 {
     StandardLayout::Mapping type;
 

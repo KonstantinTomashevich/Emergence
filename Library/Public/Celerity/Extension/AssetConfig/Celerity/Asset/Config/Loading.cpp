@@ -45,7 +45,7 @@ private:
     ModifySingletonQuery modifyLoadingState;
     ModifySequenceQuery modifyRequest;
     ModifySequenceQuery modifyResponse;
-    InsertLongTermQuery insertResponse;
+    InsertShortTermQuery insertResponse;
 
     const std::uint64_t maxLoadingTimePerFrameNs;
     Container::Vector<PerTypeData> perTypeData {Memory::Profiler::AllocationGroup::Top ()};
@@ -59,9 +59,9 @@ Loader::Loader (TaskConstructor &_constructor,
                 std::uint64_t _maxLoadingTimePerFrameNs,
                 const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
     : modifyLoadingState (MODIFY_SINGLETON (AssetConfigLoadingStateSingleton)),
-      modifyRequest (MODIFY_SEQUENCE (ConfigLoadingRequest)),
-      modifyResponse (MODIFY_SEQUENCE (ConfigLoadingFinishedResponse)),
-      insertResponse (INSERT_LONG_TERM (ConfigLoadingFinishedResponse)),
+      modifyRequest (MODIFY_SEQUENCE (AssetConfigRequest)),
+      modifyResponse (MODIFY_SEQUENCE (AssetConfigLoadedResponse)),
+      insertResponse (INSERT_SHORT_TERM (AssetConfigLoadedResponse)),
       maxLoadingTimePerFrameNs (_maxLoadingTimePerFrameNs)
 {
     _constructor.DependOn (Checkpoint::STARTED);
@@ -209,7 +209,7 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
     }
 
     auto insertionCursor = insertResponse.Execute ();
-    static_cast<ConfigLoadingFinishedResponse *> (++insertionCursor)->type = requestedType;
+    static_cast<AssetConfigLoadedResponse *> (++insertionCursor)->type = requestedType;
     state.loaded = true;
     return CONTINUE_PIPELINE;
 }
@@ -219,7 +219,7 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
     serving = false;
     auto requestCursor = modifyRequest.Execute ();
 
-    while (auto *request = static_cast<ConfigLoadingRequest *> (*requestCursor))
+    while (auto *request = static_cast<AssetConfigRequest *> (*requestCursor))
     {
         for (const AssetConfigLoadingStateSingleton::TypeState &state : _loadingState->typeStates)
         {
@@ -229,7 +229,7 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
                 if (state.loaded && !request->forceReload)
                 {
                     auto insertionCursor = insertResponse.Execute ();
-                    static_cast<ConfigLoadingFinishedResponse *> (++insertionCursor)->type = state.type;
+                    static_cast<AssetConfigLoadedResponse *> (++insertionCursor)->type = state.type;
                     continue;
                 }
 

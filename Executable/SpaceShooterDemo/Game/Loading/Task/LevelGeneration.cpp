@@ -1,4 +1,5 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
+#include <Celerity/Asset/Config/Loading.hpp>
 #include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
@@ -16,7 +17,6 @@
 #include <Gameplay/SpawnComponent.hpp>
 
 #include <Loading/Model/Messages.hpp>
-#include <Loading/Task/DynamicsMaterialLoading.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
 #include <Loading/Task/PhysicsInitialization.hpp>
 
@@ -108,8 +108,8 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent)),
       insertResponse (INSERT_SHORT_TERM (LevelGenerationFinishedResponse))
 {
+    _constructor.DependOn (Emergence::Celerity::AssetConfigLoading::Checkpoint::FINISHED);
     _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::FINISHED);
-    _constructor.DependOn (DynamicsMaterialLoading::Checkpoint::FINISHED);
     _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }

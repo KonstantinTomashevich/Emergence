@@ -4,30 +4,6 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-struct DynamicsMaterialLoadingRequest final
-{
-    Emergence::Container::String folder;
-
-    struct Reflection final
-    {
-        Emergence::StandardLayout::Mapping mapping;
-    };
-
-    static const Reflection &Reflect () noexcept;
-};
-
-struct DynamicsMaterialLoadingFinishedResponse final
-{
-    Emergence::Container::String folder;
-
-    struct Reflection final
-    {
-        Emergence::StandardLayout::Mapping mapping;
-    };
-
-    static const Reflection &Reflect () noexcept;
-};
-
 struct alignas (uintptr_t) LevelGenerationRequest final
 {
     struct Reflection final

@@ -4,11 +4,11 @@
 
 namespace Emergence::Celerity
 {
-const ConfigLoadingRequest::Reflection &ConfigLoadingRequest::Reflect () noexcept
+const AssetConfigRequest::Reflection &AssetConfigRequest::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ConfigLoadingRequest);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AssetConfigRequest);
         EMERGENCE_MAPPING_REGISTER_REGULAR (forceReload);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -16,11 +16,11 @@ const ConfigLoadingRequest::Reflection &ConfigLoadingRequest::Reflect () noexcep
     return reflection;
 }
 
-const ConfigLoadingFinishedResponse::Reflection &ConfigLoadingFinishedResponse::Reflect () noexcept
+const AssetConfigLoadedResponse::Reflection &AssetConfigLoadedResponse::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ConfigLoadingFinishedResponse);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AssetConfigLoadedResponse);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
