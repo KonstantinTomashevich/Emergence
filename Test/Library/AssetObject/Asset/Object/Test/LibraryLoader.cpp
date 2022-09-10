@@ -64,40 +64,42 @@ void PrepareEnvironment (const Container::Vector<FolderDefinition> &_folders)
         const std::filesystem::path folderPath = rootPath / folder.relativePath;
         std::filesystem::create_directories (folderPath);
 
-        if (!folder.relativeDependencyFolders.empty ())
+        FolderDependency dependency;
+        const bool eitherBinaryOrHasDependencies =
+            folder.dependencySerializationFormat == SerializationFormat::BINARY ||
+            !folder.relativeDependencyFolders.empty ();
+        REQUIRE_WITH_MESSAGE (eitherBinaryOrHasDependencies, "Only binary format supports absence of dependencies!");
+
+        switch (folder.dependencySerializationFormat)
         {
-            FolderDependency dependency;
-            switch (folder.dependencySerializationFormat)
+        case SerializationFormat::BINARY:
+        {
+            std::ofstream output {folderPath / LibraryLoader::BINARY_FOLDER_DEPENDENCY_LIST, std::ios::binary};
+            for (const Container::String &relativePath : folder.relativeDependencyFolders)
             {
-            case SerializationFormat::BINARY:
+                REQUIRE (relativePath.size () < FolderDependency::RELATIVE_PATH_MAX_LENGTH);
+                strcpy (dependency.relativePath.data (), relativePath.c_str ());
+                Serialization::Binary::SerializeObject (output, &dependency, FolderDependency::Reflect ().mapping);
+            }
+
+            break;
+        }
+        case SerializationFormat::YAML:
+        {
+            std::ofstream output {folderPath / LibraryLoader::YAML_FOLDER_DEPENDENCY_LIST};
+            Serialization::Yaml::ObjectBundleSerializer serializer {FolderDependency::Reflect ().mapping};
+            serializer.Begin ();
+
+            for (const Container::String &relativePath : folder.relativeDependencyFolders)
             {
-                std::ofstream output {folderPath / LibraryLoader::BINARY_FOLDER_DEPENDENCY_LIST, std::ios::binary};
-                for (const Container::String &relativePath : folder.relativeDependencyFolders)
-                {
-                    REQUIRE (relativePath.size () < FolderDependency::RELATIVE_PATH_MAX_LENGTH);
-                    strcpy (dependency.relativePath.data (), relativePath.c_str ());
-                    Serialization::Binary::SerializeObject (output, &dependency, FolderDependency::Reflect ().mapping);
-                }
-
-                break;
+                REQUIRE (relativePath.size () < FolderDependency::RELATIVE_PATH_MAX_LENGTH);
+                strcpy (dependency.relativePath.data (), relativePath.c_str ());
+                serializer.Next (&dependency);
             }
-            case SerializationFormat::YAML:
-            {
-                std::ofstream output {folderPath / LibraryLoader::YAML_FOLDER_DEPENDENCY_LIST};
-                Serialization::Yaml::ObjectBundleSerializer serializer {FolderDependency::Reflect ().mapping};
-                serializer.Begin ();
 
-                for (const Container::String &relativePath : folder.relativeDependencyFolders)
-                {
-                    REQUIRE (relativePath.size () < FolderDependency::RELATIVE_PATH_MAX_LENGTH);
-                    strcpy (dependency.relativePath.data (), relativePath.c_str ());
-                    serializer.Next (&dependency);
-                }
-
-                serializer.End (output);
-                break;
-            }
-            }
+            serializer.End (output);
+            break;
+        }
         }
 
         for (const ObjectDefinition &object : folder.objects)
@@ -183,7 +185,7 @@ TEST_CASE (LoadTrivial)
 
     PrepareEnvironment ({{*folderName,
                           {},
-                          SerializationFormat::YAML,
+                          SerializationFormat::BINARY,
                           {
                               {firstObjectName, {}, firstObjectChangelist},
                               {secondObjectName, {}, secondObjectChangelist},
@@ -228,7 +230,7 @@ TEST_CASE (LoadSpecified)
 
     PrepareEnvironment ({{*folderName,
                           {},
-                          SerializationFormat::YAML,
+                          SerializationFormat::BINARY,
                           {
                               {firstObjectName, {}, firstObjectChangelist},
                               {secondObjectName, {}, secondObjectChangelist},
@@ -311,7 +313,7 @@ TEST_CASE (LoadTrivialSubdirectories)
 
     PrepareEnvironment ({{*folderName,
                           {},
-                          SerializationFormat::YAML,
+                          SerializationFormat::BINARY,
                           {
                               {firstObjectName, {}, firstObjectChangelist},
                               {secondObjectName, {}, secondObjectChangelist},
@@ -361,7 +363,7 @@ TEST_CASE (LoadInheritance)
     PrepareEnvironment (
         {{*folderName,
           {},
-          SerializationFormat::YAML,
+          SerializationFormat::BINARY,
           {
               {baseObjectName, {}, baseObjectChangelist},
               {firstDerivationObjectName, {baseObjectName}, firstDerivationObjectChangelist},
@@ -418,7 +420,7 @@ TEST_CASE (LoadDependencies)
     PrepareEnvironment ({
         {*baseFolderName,
          {},
-         SerializationFormat::YAML,
+         SerializationFormat::BINARY,
          {
              {baseObjectName, {}, baseObjectChangelist},
          }},
