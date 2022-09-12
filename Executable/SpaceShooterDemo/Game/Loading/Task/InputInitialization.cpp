@@ -4,7 +4,9 @@
 
 #include <Gameplay/InputConstant.hpp>
 
-#include <Initialization/InputInitialization.hpp>
+#include <Loading/Model/Events.hpp>
+#include <Loading/Task/InputInitialization.hpp>
+#include <Loading/Task/LoadingOrchestration.hpp>
 
 #include <Input/InputSingleton.hpp>
 
@@ -23,15 +25,24 @@ public:
 
 private:
     Emergence::Celerity::ModifySingletonQuery modifyInput;
+    Emergence::Celerity::FetchSequenceQuery fetchLoadingFinishedEvent;
 };
 
 InputInitializer::InputInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (MODIFY_SINGLETON (InputSingleton))
+    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
+      fetchLoadingFinishedEvent (FETCH_SEQUENCE (LoadingFinishedEvent))
 {
+    _constructor.DependOn (LoadingOrchestration::Checkpoint::FINISHED);
 }
 
 void InputInitializer::Execute () noexcept
 {
+    auto eventCursor = fetchLoadingFinishedEvent.Execute ();
+    if (!*eventCursor)
+    {
+        return;
+    }
+
     auto inputCursor = modifyInput.Execute ();
     auto *input = static_cast<InputSingleton *> (*inputCursor);
 
@@ -70,7 +81,7 @@ void InputInitializer::Execute () noexcept
         {InputConstant::FIGHT_ACTION_GROUP, InputConstant::SLOWDOWN_ACTION}, SDL_SCANCODE_E, true, false};
 }
 
-void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
+void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"InputInitializer"}).SetExecutor<InputInitializer> ();
 }

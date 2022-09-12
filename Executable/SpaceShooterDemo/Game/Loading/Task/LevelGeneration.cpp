@@ -1,4 +1,6 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
+#include <Celerity/Asset/Config/Loading.hpp>
+#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
 #include <Celerity/Physics/PhysicsWorldSingleton.hpp>
@@ -14,8 +16,9 @@
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/SpawnComponent.hpp>
 
-#include <Initialization/LevelGeneration.hpp>
-#include <Initialization/PhysicsInitialization.hpp>
+#include <Loading/Model/Messages.hpp>
+#include <Loading/Task/LevelGeneration.hpp>
+#include <Loading/Task/PhysicsInitialization.hpp>
 
 #include <Math/Constants.hpp>
 
@@ -25,6 +28,8 @@
 
 namespace LevelGeneration
 {
+const Emergence::Memory::UniqueString Checkpoint::FINISHED {"LevelGenerationFinished"};
+
 using namespace Emergence::Memory::Literals;
 
 class LevelGenerator final : public Emergence::Celerity::TaskExecutorBase<LevelGenerator>
@@ -65,6 +70,7 @@ private:
         Emergence::Memory::UniqueString _descriptorId,
         Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId = std::nullopt) noexcept;
 
+    Emergence::Celerity::ModifySequenceQuery modifyRequest;
     Emergence::Celerity::ModifySingletonQuery fetchWorld;
     Emergence::Celerity::ModifySingletonQuery modifyRenderScene;
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
@@ -80,10 +86,12 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertLight;
     Emergence::Celerity::InsertLongTermQuery insertPrototype;
     Emergence::Celerity::InsertLongTermQuery insertDamageDealer;
+    Emergence::Celerity::InsertShortTermQuery insertResponse;
 };
 
 LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
+    : modifyRequest (MODIFY_SEQUENCE (LevelGenerationRequest)),
+      fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton)),
       fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
@@ -97,13 +105,24 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       insertCamera (INSERT_LONG_TERM (CameraComponent)),
       insertLight (INSERT_LONG_TERM (LightComponent)),
       insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent)),
-      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent))
+      insertDamageDealer (INSERT_LONG_TERM (DamageDealerComponent)),
+      insertResponse (INSERT_SHORT_TERM (LevelGenerationFinishedResponse))
 {
-    _constructor.DependOn (PhysicsInitialization::Checkpoint::PHYSICS_INITIALIZED);
+    _constructor.DependOn (Emergence::Celerity::AssetConfigLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void LevelGenerator::Execute ()
 {
+    auto requestCursor = modifyRequest.Execute ();
+    if (!*requestCursor)
+    {
+        return;
+    }
+
+    ~requestCursor;
     auto playerInfoCursor = fetchPlayerInfo.Execute ();
     const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
 
@@ -134,6 +153,9 @@ void LevelGenerator::Execute ()
                         aiPlayerId, 2u, 5u);
         }
     }
+
+    auto responseCursor = insertResponse.Execute ();
+    ++responseCursor;
 }
 
 void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeight) noexcept
@@ -301,8 +323,9 @@ void LevelGenerator::PlaceSpawn (float _x,
     spawn->spawnCoolDownNs = static_cast<uint64_t> (_spawnCoolDownS) * 1000000000u;
 }
 
-void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
+void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("LevelGenerator"_us).SetExecutor<LevelGenerator> ();
 }
 } // namespace LevelGeneration

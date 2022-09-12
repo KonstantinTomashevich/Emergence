@@ -8,6 +8,9 @@
 
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
+#include <Celerity/Asset/Config/Loading.hpp>
+#include <Celerity/Asset/Config/PathMappingLoading.hpp>
+#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/Simulation.hpp>
@@ -32,11 +35,12 @@
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
-#include <Initialization/AssemblyDescriptorLoading.hpp>
-#include <Initialization/DynamicsMaterialLoading.hpp>
-#include <Initialization/InputInitialization.hpp>
-#include <Initialization/LevelGeneration.hpp>
-#include <Initialization/PhysicsInitialization.hpp>
+#include <Loading/Model/AssetConfigTypeMeta.hpp>
+#include <Loading/Model/AssetObjectTypeManifest.hpp>
+#include <Loading/Task/InputInitialization.hpp>
+#include <Loading/Task/LevelGeneration.hpp>
+#include <Loading/Task/LoadingOrchestration.hpp>
+#include <Loading/Task/PhysicsInitialization.hpp>
 
 #include <Input/Input.hpp>
 
@@ -108,6 +112,9 @@ private:
 
     InputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
+
+    Emergence::Celerity::Pipeline *loadingPipeline = nullptr;
+    bool loadingFinished = false;
 };
 
 GameApplication::GameApplication (Urho3D::Context *_context)
@@ -152,15 +159,18 @@ void GameApplication::Start ()
     Emergence::VisualGraph::Graph pipelineVisualGraph;
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
-    pipelineBuilder.Begin ("Initialization"_us, Emergence::Celerity::PipelineType::CUSTOM);
-    AssemblyDescriptorLoading::AddToInitializationPipeline (pipelineBuilder);
-    DynamicsMaterialLoading::AddToInitializationPipeline (pipelineBuilder);
-    InputInitialization::AddToInitializationPipeline (pipelineBuilder);
-    LevelGeneration::AddToInitializationPipeline (pipelineBuilder);
-    PhysicsInitialization::AddToInitializationPipeline (pipelineBuilder);
-    Emergence::Celerity::Pipeline *initializer = pipelineBuilder.End (&pipelineVisualGraph);
-    assert (initializer);
-    SaveVisualGraph (pipelineVisualGraph, "InitializationPipeline.graph");
+    pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
+    Emergence::Celerity::AssetConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
+                                                                   PrepareAssetConfigTypeMeta ());
+    Emergence::Celerity::AssetConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameAssets",
+                                                                              PrepareAssetConfigTypeMeta ());
+    Emergence::Celerity::AssetObjectLoading::AddToLoadingPipeline (pipelineBuilder, PrepareAssetObjectTypeManifest ());
+    InputInitialization::AddToLoadingPipeline (pipelineBuilder);
+    LevelGeneration::AddToLoadingPipeline (pipelineBuilder);
+    PhysicsInitialization::AddToLoadingPipeline (pipelineBuilder);
+    LoadingOrchestration::AddToLoadingPipeline (pipelineBuilder, &loadingFinished);
+    loadingPipeline = pipelineBuilder.End (&pipelineVisualGraph);
+    SaveVisualGraph (pipelineVisualGraph, "LoadingPipeline.graph");
 
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Control::AddToFixedUpdate (pipelineBuilder);
@@ -191,9 +201,6 @@ void GameApplication::Start ()
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     pipelineBuilder.End (&pipelineVisualGraph);
     SaveVisualGraph (pipelineVisualGraph, "NormalPipeline.graph");
-
-    initializer->Execute ();
-    world.RemovePipeline (initializer);
 }
 
 void GameApplication::Stop ()
@@ -203,6 +210,16 @@ void GameApplication::Stop ()
 
 void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::VariantMap & /*unused*/) noexcept
 {
+    if (loadingPipeline)
+    {
+        loadingPipeline->Execute ();
+        if (loadingFinished)
+        {
+            world.RemovePipeline (loadingPipeline);
+            loadingPipeline = nullptr;
+        }
+    }
+
     world.Update ();
     inputAccumulator.Clear ();
 

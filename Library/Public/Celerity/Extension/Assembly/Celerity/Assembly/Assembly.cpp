@@ -16,8 +16,8 @@
 
 namespace Emergence::Celerity::Assembly
 {
-const Emergence::Memory::UniqueString Checkpoint::STARTED {"AssemblyStarted"};
-const Emergence::Memory::UniqueString Checkpoint::FINISHED {"AssemblyFinished"};
+const Memory::UniqueString Checkpoint::STARTED {"AssemblyStarted"};
+const Memory::UniqueString Checkpoint::FINISHED {"AssemblyFinished"};
 
 class AssemblerBase
 {

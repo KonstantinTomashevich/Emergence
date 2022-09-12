@@ -893,7 +893,7 @@ void BodyMassSynchronizer::Execute ()
     Container::Vector<float> densities {heap.GetAllocationGroup ()};
     Container::Vector<UniqueId> bodyIds {heap.GetAllocationGroup ()};
 
-    // Filter out duplicates to avoid excessive mass recalculations (there're quite expensive).
+    // Filter out duplicates to avoid excessive mass recalculations (they're quite expensive).
     for (auto eventCursor = fetchBodyMassInvalidationEvents.Execute ();
          const auto *event = static_cast<const RigidBodyComponentMassInvalidatedEvent *> (*eventCursor); ++eventCursor)
     {
@@ -1262,11 +1262,14 @@ void SimulationExecutor::UpdateKinematicTargets (float _timeStep) noexcept
 
 void SimulationExecutor::ExecuteSimulation (const PhysicsWorldSingleton *_physicsWorld, float _timeStep) noexcept
 {
-    const auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
-    pxWorld.scene->setSimulationEventCallback (this);
-    // TODO: Make use of scratch buffer?
-    pxWorld.scene->simulate (_timeStep);
-    pxWorld.scene->fetchResults (true);
+    if (!Math::NearlyEqual (_timeStep, 0.0f))
+    {
+        const auto &pxWorld = block_cast<PhysXWorld> (_physicsWorld->implementationBlock);
+        pxWorld.scene->setSimulationEventCallback (this);
+        // TODO: Make use of scratch buffer?
+        pxWorld.scene->simulate (_timeStep);
+        pxWorld.scene->fetchResults (true);
+    }
 }
 
 void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept

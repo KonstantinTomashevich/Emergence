@@ -8,8 +8,8 @@ struct Checkpoint final
 {
     Checkpoint () = delete;
 
-    static const Emergence::Memory::UniqueString PHYSICS_INITIALIZED;
+    static const Emergence::Memory::UniqueString FINISHED;
 };
 
-void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
+void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace PhysicsInitialization

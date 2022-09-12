@@ -4,5 +4,5 @@
 
 namespace InputInitialization
 {
-void AddToInitializationPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
+void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace InputInitialization

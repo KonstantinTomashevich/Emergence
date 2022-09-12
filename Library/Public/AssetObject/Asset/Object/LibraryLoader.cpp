@@ -53,6 +53,11 @@ bool LibraryLoader::IsLoading () const noexcept
     return loading.test (std::memory_order_acquire);
 }
 
+const Container::Vector<LibraryLoadingTask> &LibraryLoader::GetLoadingTasks () noexcept
+{
+    return loadingTasks;
+}
+
 Library LibraryLoader::End () noexcept
 {
     assert (!IsLoading ());
@@ -77,11 +82,17 @@ void LibraryLoader::RegisterFolder (const Container::String &_folder) noexcept
     folderList.emplace_back (_folder);
     std::filesystem::path folderPath {_folder};
     FolderDependency dependency;
+
     std::filesystem::path binDependencyListPath = folderPath / BINARY_FOLDER_DEPENDENCY_LIST;
+    std::filesystem::path yamlDependencyListPath = folderPath / YAML_FOLDER_DEPENDENCY_LIST;
 
     if (std::filesystem::is_regular_file (binDependencyListPath))
     {
         std::ifstream input (binDependencyListPath, std::ios::binary);
+        // We need to do get-unget in order to force empty file check. Otherwise, it is not guaranteed.
+        input.get ();
+        input.unget ();
+
         while (input)
         {
             if (!Serialization::Binary::DeserializeObject (input, &dependency, FolderDependency::Reflect ().mapping))
@@ -101,34 +112,34 @@ void LibraryLoader::RegisterFolder (const Container::String &_folder) noexcept
             input.peek ();
         }
     }
-    else
+    else if (std::filesystem::is_regular_file (yamlDependencyListPath))
     {
-        std::filesystem::path yamlDependencyListPath = folderPath / YAML_FOLDER_DEPENDENCY_LIST;
-        if (std::filesystem::is_regular_file (yamlDependencyListPath))
+        std::ifstream input (yamlDependencyListPath);
+        Serialization::Yaml::ObjectBundleDeserializer deserializer {FolderDependency::Reflect ().mapping};
+        bool successful = deserializer.Begin (input);
+
+        while (successful && deserializer.HasNext ())
         {
-            std::ifstream input (yamlDependencyListPath);
-            Serialization::Yaml::ObjectBundleDeserializer deserializer {FolderDependency::Reflect ().mapping};
-            bool successful = deserializer.Begin (input);
-
-            while (successful && deserializer.HasNext ())
+            if ((successful = deserializer.Next (&dependency)))
             {
-                if ((successful = deserializer.Next (&dependency)))
-                {
-                    RegisterFolder ((folderPath / dependency.relativePath.data ())
-                                        .lexically_normal ()
-                                        .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ());
-                }
-            }
-
-            deserializer.End ();
-            if (!successful)
-            {
-                EMERGENCE_LOG (
-                    ERROR, "Asset::Object::LibraryLoader: Unable to deserialize folder dependencies list \"",
-                    yamlDependencyListPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                    "\".");
+                RegisterFolder ((folderPath / dependency.relativePath.data ())
+                                    .lexically_normal ()
+                                    .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ());
             }
         }
+
+        deserializer.End ();
+        if (!successful)
+        {
+            EMERGENCE_LOG (
+                ERROR, "Asset::Object::LibraryLoader: Unable to deserialize folder dependencies list \"",
+                yamlDependencyListPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
+        }
+    }
+    else
+    {
+        EMERGENCE_LOG (ERROR, "Asset::Object::LibraryLoader: Unable to find dependencies list for folder \"",
+                       folderPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
     }
 }
 
