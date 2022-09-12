@@ -221,16 +221,19 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
 
     while (auto *request = static_cast<AssetConfigRequest *> (*requestCursor))
     {
+        bool loadingSkipped = false;
         for (const AssetConfigLoadingStateSingleton::TypeState &state : _loadingState->typeStates)
         {
             if (state.type == request->type)
             {
                 ~requestCursor;
+
                 if (state.loaded && !request->forceReload)
                 {
+                    loadingSkipped = true;
                     auto insertionCursor = insertResponse.Execute ();
                     static_cast<AssetConfigLoadedResponse *> (++insertionCursor)->type = state.type;
-                    continue;
+                    break;
                 }
 
                 serving = true;
@@ -240,9 +243,12 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
             }
         }
 
-        EMERGENCE_LOG (ERROR, "AssetConfigLoading: Unable to find loading state for config type \"",
-                       request->type.GetName (), "\". Therefore this type cannot be loaded.");
-        ~requestCursor;
+        if (!loadingSkipped)
+        {
+            EMERGENCE_LOG (ERROR, "AssetConfigLoading: Unable to find loading state for config type \"",
+                           request->type.GetName (), "\". Therefore this type cannot be loaded.");
+            ~requestCursor;
+        }
     }
 
     return false;
