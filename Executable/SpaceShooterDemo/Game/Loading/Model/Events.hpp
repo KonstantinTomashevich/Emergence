@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
+#include <Celerity/Event/Macro.generated.hpp>
 
 EMERGENCE_CELERITY_EVENT0_DECLARATION (LoadingFinishedEvent);
 
