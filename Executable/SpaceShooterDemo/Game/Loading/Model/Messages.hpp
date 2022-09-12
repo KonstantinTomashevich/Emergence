@@ -4,8 +4,10 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-struct alignas (uintptr_t) LevelGenerationRequest final
+struct LevelGenerationRequest final
 {
+    [[maybe_unused]] uintptr_t alignmentFixer = 0u;
+
     struct Reflection final
     {
         Emergence::StandardLayout::Mapping mapping;
@@ -14,8 +16,10 @@ struct alignas (uintptr_t) LevelGenerationRequest final
     static const Reflection &Reflect () noexcept;
 };
 
-struct alignas (uintptr_t) LevelGenerationFinishedResponse final
+struct LevelGenerationFinishedResponse final
 {
+    [[maybe_unused]] uintptr_t alignmentFixer = 0u;
+
     struct Reflection final
     {
         Emergence::StandardLayout::Mapping mapping;

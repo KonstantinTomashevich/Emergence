@@ -142,7 +142,7 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     }
 
     assert (_time->timeSpeed >= 0.0f);
-    float updateModeTimeScale;
+    float updateModeTimeScale = 1.0f;
 
     switch (_world->updateMode)
     {
