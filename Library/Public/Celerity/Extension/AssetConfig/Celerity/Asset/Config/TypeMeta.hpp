@@ -4,9 +4,13 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Contains meta information about config type that is needed for asset config processing.
 struct AssetConfigTypeMeta final
 {
+    /// \brief Type of a config.
     StandardLayout::Mapping mapping;
+
+    /// \brief Field that contains config name.
     StandardLayout::FieldId nameField;
 };
 } // namespace Emergence::Celerity

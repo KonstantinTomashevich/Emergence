@@ -17,7 +17,7 @@ struct Checkpoint final
     static const Memory::UniqueString FINISHED;
 };
 
-/// \brief Adds tasks that execute loading pipeline: process requests and load configs.
+/// \brief Adds task that executes loading pipeline: processes requests and loads configs.
 void AddToLoadingPipeline (PipelineBuilder &_builder,
                            std::uint64_t _maxLoadingTimePerFrameNs,
                            const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept;
