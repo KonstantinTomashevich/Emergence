@@ -99,6 +99,7 @@ void SerializeConfigs (const Container::String &_folder, const Container::Vector
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Other overloads cannot be made static.
 bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
 {
     LOG ("Resetting environment...");
