@@ -7,8 +7,8 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Contains public state of asset config loading pipeline.
-/// \invariant Read-only for users: external changes are not expected by pipeline code.
+/// \brief Contains public state of asset config loading routine.
+/// \invariant Read-only for users: external changes are not expected by routine code.
 struct AssetConfigLoadingStateSingleton final
 {
     /// \brief Contains state and meta of one particular config type.

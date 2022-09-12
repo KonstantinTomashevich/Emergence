@@ -99,12 +99,12 @@ void Loader::Execute () noexcept
 
 bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingState, std::uint64_t _startTime) noexcept
 {
-    constexpr bool CONTINUE_PIPELINE = true;
-    constexpr bool STOP_PIPELINE = false;
+    constexpr bool CONTINUE_ROUTINE = true;
+    constexpr bool STOP_ROUTINE = false;
 
     if (!serving)
     {
-        return CONTINUE_PIPELINE;
+        return CONTINUE_ROUTINE;
     }
 
     auto perTypeDataIterator = std::find_if (perTypeData.begin (), perTypeData.end (),
@@ -117,7 +117,7 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
     {
         EMERGENCE_LOG (ERROR, "AssetConfigLoading: Config type \"", requestedType.GetName (),
                        "\" is not supported! Check loading task registration.");
-        return CONTINUE_PIPELINE;
+        return CONTINUE_ROUTINE;
     }
 
     PerTypeData &perType = *perTypeDataIterator;
@@ -131,7 +131,7 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
     {
         EMERGENCE_LOG (ERROR, "AssetConfigLoading: Config type \"", requestedType.GetName (),
                        "\" is not supported! Check path mapping loading task registration and path mapping asset.");
-        return CONTINUE_PIPELINE;
+        return CONTINUE_ROUTINE;
     }
 
     AssetConfigLoadingStateSingleton::TypeState &state = *stateIterator;
@@ -142,14 +142,14 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
     {
         if (Emergence::Time::NanosecondsSinceStartup () - _startTime > maxLoadingTimePerFrameNs)
         {
-            return STOP_PIPELINE;
+            return STOP_ROUTINE;
         }
 
         const std::filesystem::directory_entry &entry = *directoryIterator;
         const std::filesystem::path &extension = entry.path ().extension ();
 
-        constexpr const char *const BINARY_SUFFIX = ".bin";
-        constexpr const char *const YAML_SUFFIX = ".yaml";
+        constexpr const char BINARY_SUFFIX[] = ".bin";
+        constexpr const char YAML_SUFFIX[] = ".yaml";
 
         const bool isBinaryConfig = extension == BINARY_SUFFIX;
         const bool isYamlConfig = extension == YAML_SUFFIX;
@@ -164,12 +164,12 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
             if (relativePath.ends_with (BINARY_SUFFIX))
             {
                 configName =
-                    Memory::UniqueString {relativePath.substr (0u, relativePath.size () - strlen (BINARY_SUFFIX))};
+                    Memory::UniqueString {relativePath.substr (0u, relativePath.size () - sizeof (BINARY_SUFFIX) + 1u)};
             }
             else if (relativePath.ends_with (YAML_SUFFIX))
             {
                 configName =
-                    Memory::UniqueString {relativePath.substr (0u, relativePath.size () - strlen (YAML_SUFFIX))};
+                    Memory::UniqueString {relativePath.substr (0u, relativePath.size () - sizeof (YAML_SUFFIX) + 1u)};
             }
 
             // Remove old version of config if it exists.
@@ -211,7 +211,7 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
     auto insertionCursor = insertResponse.Execute ();
     static_cast<AssetConfigLoadedResponse *> (++insertionCursor)->type = requestedType;
     state.loaded = true;
-    return CONTINUE_PIPELINE;
+    return CONTINUE_ROUTINE;
 }
 
 bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingState) noexcept
@@ -227,7 +227,6 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
             if (state.type == request->type)
             {
                 ~requestCursor;
-
                 if (state.loaded && !request->forceReload)
                 {
                     loadingSkipped = true;

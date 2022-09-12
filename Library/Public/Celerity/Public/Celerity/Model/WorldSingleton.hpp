@@ -13,7 +13,7 @@ enum class WorldUpdateMode
     /// \brief Default update mode.
     /// \details - Time is accumulated with no additional scale.
     ///          - Normal pipeline is executed each update.
-    ///          - Time "produced" by normal pipeline is used to "feed" and executed fixed pipeline.
+    ///          - Time "produced" by normal pipeline is used to "feed" and execute fixed pipeline.
     SIMULATING = 0u,
 
     /// \brief Update mode for loading and pause screens.

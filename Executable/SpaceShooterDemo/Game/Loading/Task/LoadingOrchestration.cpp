@@ -99,25 +99,32 @@ void LoadingOrchestrator::Execute () noexcept
 
     case LoadingStage::LOADING_LEVEL_ASSETS:
     {
-        for (auto cursor = fetchAssetObjectFolderResponse.Execute ();
-             const auto *response = static_cast<const Emergence::Celerity::AssetObjectFolderLoadedResponse *> (*cursor);
-             ++cursor)
+        if (!assetObjectsLoaded)
         {
-            if (response->folder == assetObjectFolder)
+            for (auto cursor = fetchAssetObjectFolderResponse.Execute ();
+                 const auto *response =
+                     static_cast<const Emergence::Celerity::AssetObjectFolderLoadedResponse *> (*cursor);
+                 ++cursor)
             {
-                assetObjectsLoaded = true;
-                break;
+                if (response->folder == assetObjectFolder)
+                {
+                    assetObjectsLoaded = true;
+                    break;
+                }
             }
         }
 
-        for (auto cursor = fetchAssetConfigResponse.Execute ();
-             const auto *response = static_cast<const Emergence::Celerity::AssetConfigLoadedResponse *> (*cursor);
-             ++cursor)
+        if (!dynamicsMaterialsLoaded)
         {
-            if (response->type == Emergence::Celerity::DynamicsMaterial::Reflect ().mapping)
+            for (auto cursor = fetchAssetConfigResponse.Execute ();
+                 const auto *response = static_cast<const Emergence::Celerity::AssetConfigLoadedResponse *> (*cursor);
+                 ++cursor)
             {
-                dynamicsMaterialsLoaded = true;
-                break;
+                if (response->type == Emergence::Celerity::DynamicsMaterial::Reflect ().mapping)
+                {
+                    dynamicsMaterialsLoaded = true;
+                    break;
+                }
             }
         }
 

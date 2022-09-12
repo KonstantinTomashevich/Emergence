@@ -10,10 +10,10 @@ struct Checkpoint final
 {
     Checkpoint () = delete;
 
-    /// \brief Path mapping loading pipeline processing starts after this checkpoint.
+    /// \brief Path mapping loading routine starts after this checkpoint.
     static const Memory::UniqueString STARTED;
 
-    /// \brief Path mapping loading pipeline processing is finished before this checkpoint.
+    /// \brief Path mapping loading routine is finished before this checkpoint.
     static const Memory::UniqueString FINISHED;
 };
 
@@ -21,6 +21,7 @@ struct Checkpoint final
 extern const char *const BINARY_FILE_NAME;
 
 /// \brief Name of YAML config path mapping file.
+/// \details YAML file is used only if binary file is not present.
 extern const char *const YAML_FILE_NAME;
 
 /// \brief Adds task that loads config path mapping and initializes AssetConfigLoadingStateSingleton.

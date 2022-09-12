@@ -220,9 +220,6 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
         }
     }
 
-    // TODO: Create lag logger and find out what causes visual lags.
-    //       Is there any sense to investigate it before profiler integration?
-
     world.Update ();
     inputAccumulator.Clear ();
 

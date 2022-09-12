@@ -21,11 +21,11 @@ public:
     void Execute () noexcept;
 
 private:
+    void ClearResponses () noexcept;
+
     void FinishLoading (AssetObjectLoadingStateSingleton *_state) noexcept;
 
     void ProcessRequests (AssetObjectLoadingStateSingleton *_state) noexcept;
-
-    void ClearResponses () noexcept;
 
     ModifySingletonQuery modifyState;
 
@@ -76,6 +76,17 @@ void LoadingProcessor::Execute () noexcept
     if (!loadingNow)
     {
         ProcessRequests (state);
+    }
+}
+
+void LoadingProcessor::ClearResponses () noexcept
+{
+    for (auto cursor = modifyObjectResponses.Execute (); *cursor; ~cursor)
+    {
+    }
+
+    for (auto cursor = modifyFolderResponses.Execute (); *cursor; ~cursor)
+    {
     }
 }
 
@@ -175,17 +186,6 @@ void LoadingProcessor::ProcessRequests (AssetObjectLoadingStateSingleton *_state
     {
         libraryLoader.Begin (loadingTasks);
         loadingNow = true;
-    }
-}
-
-void LoadingProcessor::ClearResponses () noexcept
-{
-    for (auto cursor = modifyObjectResponses.Execute (); *cursor; ~cursor)
-    {
-    }
-
-    for (auto cursor = modifyFolderResponses.Execute (); *cursor; ~cursor)
-    {
     }
 }
 
