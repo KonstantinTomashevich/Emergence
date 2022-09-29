@@ -10,11 +10,21 @@ namespace Emergence::Pegasus::Constants::VolumetricIndex
 /// \brief Maximum supported count of dimensions for VolumetricIndex.
 constexpr std::size_t MAX_DIMENSIONS = Implementation::VolumetricIndex::MAX_DIMENSIONS;
 
-/// \brief Maximum subdivision levels for each dimension count.
-constexpr std::array<std::size_t, MAX_DIMENSIONS> LEVELS = Implementation::VolumetricIndex::LEVELS;
+/// \brief Maximum supported count of levels for volumetric trees.
+constexpr std::size_t MAX_LEVELS = Implementation::VolumetricIndex::MAX_LEVELS;
+
+/// \brief Ideal scale for unit-to-partition conversion.
+/// \details Actual scale might be a bit higher due to partition rounding to power of two.
+constexpr float IDEAL_UNIT_TO_PARTITION_SCALE = Implementation::VolumetricIndex::IDEAL_UNIT_TO_PARTITION_SCALE;
 
 /// \brief Used to check floating point values equality.
 constexpr float EPSILON = Implementation::VolumetricIndex::EPSILON;
 
+/// \brief Provides list of all volumetric tree variants for supported types and dimensions.
+/// \details Suffix is added for convenient listing of enumerators.
+#define VOLUMETRIC_TREE_VARIANTS(Suffix) IMPLEMENTATION_VOLUMETRIC_TREE_VARIANTS (Suffix)
+
 static_assert (MAX_DIMENSIONS > 0u);
+static_assert (MAX_LEVELS > 0u);
+static_assert (IDEAL_UNIT_TO_PARTITION_SCALE > 0.0f);
 } // namespace Emergence::Pegasus::Constants::VolumetricIndex
