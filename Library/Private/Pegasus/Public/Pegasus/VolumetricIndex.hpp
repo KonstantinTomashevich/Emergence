@@ -587,4 +587,16 @@ void PartitioningTree<Dimensions>::DeleteNodeWithChildren (Node *_node)
     _node->~Node ();
     nodePool.Release (_node);
 }
+
+template <std::size_t Dimensions>
+PartitioningTree<Dimensions>::Node::~Node () noexcept
+{
+#ifndef NDEBUG
+    // Ensure that all children are properly deleted by VolumetricTree::DeleteNode.
+    for (std::size_t index = 0u; index < NODE_CHILDREN_COUNT; ++index)
+    {
+        assert (!children[index]);
+    }
+#endif
+}
 } // namespace Emergence::Pegasus

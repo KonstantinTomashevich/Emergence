@@ -517,18 +517,6 @@ PartitioningTree<Dimensions>::Node::Node (PartitioningTree *_tree,
 }
 
 template <std::size_t Dimensions>
-PartitioningTree<Dimensions>::Node::~Node () noexcept
-{
-#ifndef NDEBUG
-    // Ensure that all children are properly deleted by VolumetricTree::DeleteNode.
-    for (std::size_t index = 0u; index < NODE_CHILDREN_COUNT; ++index)
-    {
-        assert (!children[index]);
-    }
-#endif
-}
-
-template <std::size_t Dimensions>
 std::size_t PartitioningTree<Dimensions>::SelectNodeChildForShape (const Node &_node, const Shape &_shape) noexcept
 {
     Index minNode = 0u;
