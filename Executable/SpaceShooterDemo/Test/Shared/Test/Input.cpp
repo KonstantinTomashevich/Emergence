@@ -1,9 +1,9 @@
 #include <thread>
-#include <variant>
 
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
 
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Log/Log.hpp>
@@ -76,14 +76,14 @@ struct PushCustomAction
 };
 } // namespace Steps
 
-using ConfiguratorStep = std::variant<Steps::CreateListener,
-                                      Steps::DeleteListener,
-                                      Steps::AddSubscription,
-                                      Steps::UnsubscribeListener,
-                                      Steps::UnsubscribeGroup,
-                                      Steps::FireKeyDown,
-                                      Steps::FireKeyUp,
-                                      Steps::PushCustomAction>;
+using ConfiguratorStep = Emergence::Container::Variant<Steps::CreateListener,
+                                                       Steps::DeleteListener,
+                                                       Steps::AddSubscription,
+                                                       Steps::UnsubscribeListener,
+                                                       Steps::UnsubscribeGroup,
+                                                       Steps::FireKeyDown,
+                                                       Steps::FireKeyUp,
+                                                       Steps::PushCustomAction>;
 
 using FrameConfiguration = Vector<ConfiguratorStep>;
 
@@ -328,7 +328,7 @@ struct FixedUpdateRequest final
 
 void RunTest (Vector<KeyStateTrigger> _keyStateChangedTriggers,
               Vector<KeyStateChangedTrigger> _keyStateTriggers,
-              const Vector<std::variant<NormalUpdateRequest, FixedUpdateRequest>> &_updates)
+              const Vector<Emergence::Container::Variant<NormalUpdateRequest, FixedUpdateRequest>> &_updates)
 {
     World world {"TestWorld"_us};
     InputAccumulator inputAccumulator;

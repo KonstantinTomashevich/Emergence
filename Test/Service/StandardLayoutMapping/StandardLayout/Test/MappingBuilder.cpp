@@ -1,7 +1,6 @@
-#include <variant>
-
 #include <Container/HashSet.hpp>
 #include <Container/StringBuilder.hpp>
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -89,7 +88,7 @@ struct NestedObjectFieldSeed final : public FieldSeedBase
     Mapping typeMapping;
 };
 
-using FieldSeed = std::variant<BitFieldSeed,
+using FieldSeed = Container::Variant<BitFieldSeed,
                                Int8FieldSeed,
                                Int16FieldSeed,
                                Int32FieldSeed,

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <variant>
 
 #include <Container/String.hpp>
+#include <Container/Variant.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -69,7 +69,7 @@ struct CloseAllocator
 {
 };
 
-using Task = std::variant<CreateLinearRepresentation,
+using Task = Container::Variant<CreateLinearRepresentation,
                           CreatePointRepresentation,
                           CreateSignalRepresentation,
                           CreateVolumetricRepresentation,

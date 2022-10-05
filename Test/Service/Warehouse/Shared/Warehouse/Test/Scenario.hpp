@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <variant>
 
 #include <Container/String.hpp>
+#include <Container/Variant.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -118,7 +118,7 @@ struct InsertObjects
     Container::Vector<const void *> copyFrom;
 };
 
-using Task = std::variant<PrepareFetchSingletonQuery,
+using Task = Container::Variant<PrepareFetchSingletonQuery,
                           PrepareModifySingletonQuery,
                           PrepareInsertShortTermQuery,
                           PrepareFetchSequenceQuery,

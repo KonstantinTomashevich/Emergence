@@ -1,5 +1,6 @@
 #include <sstream>
-#include <variant>
+
+#include <Container/Variant.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -64,7 +65,7 @@ namespace Emergence::Handling::Test
 {
 using namespace Context::Extension::Tasks;
 
-using Task = std::variant<Reference::Test::Tasks::Create,
+using Task = Container::Variant<Reference::Test::Tasks::Create,
                           Move<HandleableResourceTag>,
                           Copy<HandleableResourceTag>,
                           MoveAssign<HandleableResourceTag>,

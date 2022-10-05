@@ -12,7 +12,7 @@
 
 namespace Emergence::Warehouse::Test
 {
-using PreparedQuery = std::variant<FetchSingletonQuery,
+using PreparedQuery = Container::Variant<FetchSingletonQuery,
                                    ModifySingletonQuery,
                                    InsertShortTermQuery,
                                    FetchSequenceQuery,
@@ -31,7 +31,7 @@ using PreparedQuery = std::variant<FetchSingletonQuery,
                                    FetchRayIntersectionQuery,
                                    ModifyRayIntersectionQuery>;
 
-using Cursor = std::variant<FetchSingletonQuery::Cursor,
+using Cursor = Container::Variant<FetchSingletonQuery::Cursor,
                             ModifySingletonQuery::Cursor,
                             FetchSequenceQuery::Cursor,
                             ModifySequenceQuery::Cursor,

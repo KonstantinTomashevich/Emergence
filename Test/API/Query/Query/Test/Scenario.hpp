@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cstdint>
-#include <variant>
 
 #include <Container/String.hpp>
 
 #include <Container/HashMap.hpp>
 #include <Container/Optional.hpp>
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -103,12 +103,12 @@ struct Volumetric final
 std::ostream &operator<< (std::ostream &_output, const Volumetric::SupportedValue &_value);
 } // namespace Sources
 
-using Source = std::variant<Sources::Singleton,
-                            Sources::UnorderedSequence,
-                            Sources::Value,
-                            Sources::Range,
-                            Sources::Signal,
-                            Sources::Volumetric>;
+using Source = Container::Variant<Sources::Singleton,
+                                  Sources::UnorderedSequence,
+                                  Sources::Value,
+                                  Sources::Range,
+                                  Sources::Signal,
+                                  Sources::Volumetric>;
 
 struct Storage final
 {
@@ -304,29 +304,29 @@ std::ostream &operator<< (std::ostream &_output, const CursorDeleteObject &_task
 std::ostream &operator<< (std::ostream &_output, const CursorClose &_task);
 } // namespace Tasks
 
-using Task = std::variant<Tasks::QuerySingletonToRead,
-                          Tasks::QuerySingletonToEdit,
-                          Tasks::QueryUnorderedSequenceToRead,
-                          Tasks::QueryUnorderedSequenceToEdit,
-                          Tasks::QueryValueToRead,
-                          Tasks::QueryValueToEdit,
-                          Tasks::QueryAscendingRangeToRead,
-                          Tasks::QueryAscendingRangeToEdit,
-                          Tasks::QueryDescendingRangeToRead,
-                          Tasks::QueryDescendingRangeToEdit,
-                          Tasks::QuerySignalToRead,
-                          Tasks::QuerySignalToEdit,
-                          Tasks::QueryShapeIntersectionToRead,
-                          Tasks::QueryShapeIntersectionToEdit,
-                          Tasks::QueryRayIntersectionToRead,
-                          Tasks::QueryRayIntersectionToEdit,
-                          Tasks::CursorCheck,
-                          Tasks::CursorCheckAllOrdered,
-                          Tasks::CursorCheckAllUnordered,
-                          Tasks::CursorEdit,
-                          Tasks::CursorIncrement,
-                          Tasks::CursorDeleteObject,
-                          Tasks::CursorClose>;
+using Task = Container::Variant<Tasks::QuerySingletonToRead,
+                                Tasks::QuerySingletonToEdit,
+                                Tasks::QueryUnorderedSequenceToRead,
+                                Tasks::QueryUnorderedSequenceToEdit,
+                                Tasks::QueryValueToRead,
+                                Tasks::QueryValueToEdit,
+                                Tasks::QueryAscendingRangeToRead,
+                                Tasks::QueryAscendingRangeToEdit,
+                                Tasks::QueryDescendingRangeToRead,
+                                Tasks::QueryDescendingRangeToEdit,
+                                Tasks::QuerySignalToRead,
+                                Tasks::QuerySignalToEdit,
+                                Tasks::QueryShapeIntersectionToRead,
+                                Tasks::QueryShapeIntersectionToEdit,
+                                Tasks::QueryRayIntersectionToRead,
+                                Tasks::QueryRayIntersectionToEdit,
+                                Tasks::CursorCheck,
+                                Tasks::CursorCheckAllOrdered,
+                                Tasks::CursorCheckAllUnordered,
+                                Tasks::CursorEdit,
+                                Tasks::CursorIncrement,
+                                Tasks::CursorDeleteObject,
+                                Tasks::CursorClose>;
 
 struct Scenario final
 {

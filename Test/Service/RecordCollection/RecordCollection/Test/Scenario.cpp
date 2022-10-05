@@ -15,9 +15,9 @@
 namespace Emergence::RecordCollection::Test
 {
 using RepresentationReference =
-    std::variant<LinearRepresentation, PointRepresentation, SignalRepresentation, VolumetricRepresentation>;
+    Container::Variant<LinearRepresentation, PointRepresentation, SignalRepresentation, VolumetricRepresentation>;
 
-using Cursor = std::variant<LinearRepresentation::AscendingReadCursor,
+using Cursor = Container::Variant<LinearRepresentation::AscendingReadCursor,
                             LinearRepresentation::AscendingEditCursor,
                             LinearRepresentation::DescendingReadCursor,
                             LinearRepresentation::DescendingEditCursor,

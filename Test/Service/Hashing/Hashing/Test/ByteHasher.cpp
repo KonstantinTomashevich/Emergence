@@ -1,6 +1,6 @@
 #include <ctime>
-#include <variant>
 
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Hashing/ByteHasher.hpp>
@@ -32,7 +32,7 @@ struct Clear
 {
 };
 
-using Scenario = Container::Vector<std::variant<AppendOne, AppendMany, Clear>>;
+using Scenario = Container::Vector<Container::Variant<AppendOne, AppendMany, Clear>>;
 
 uint64_t ExecuteScenario (ByteHasher &_hasher, const Scenario &_scenario)
 {
