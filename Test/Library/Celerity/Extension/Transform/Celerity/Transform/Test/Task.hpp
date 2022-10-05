@@ -66,11 +66,11 @@ struct RemoveTransform final
 } // namespace Requests
 
 using Request = Container::Variant<Requests::CreateTransform,
-                             Requests::ChangeParent,
-                             Requests::SetLocalTransform,
-                             Requests::CheckTransform,
-                             Requests::CheckTransformExists,
-                             Requests::RemoveTransform>;
+                                   Requests::ChangeParent,
+                                   Requests::SetLocalTransform,
+                                   Requests::CheckTransform,
+                                   Requests::CheckTransformExists,
+                                   Requests::RemoveTransform>;
 
 namespace RequestExecutor
 {

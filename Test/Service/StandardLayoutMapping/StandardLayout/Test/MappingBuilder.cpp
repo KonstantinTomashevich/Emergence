@@ -89,20 +89,20 @@ struct NestedObjectFieldSeed final : public FieldSeedBase
 };
 
 using FieldSeed = Container::Variant<BitFieldSeed,
-                               Int8FieldSeed,
-                               Int16FieldSeed,
-                               Int32FieldSeed,
-                               Int64FieldSeed,
-                               UInt8FieldSeed,
-                               UInt16FieldSeed,
-                               UInt32FieldSeed,
-                               UInt64FieldSeed,
-                               FloatFieldSeed,
-                               DoubleFieldSeed,
-                               StringFieldSeed,
-                               BlockFieldSeed,
-                               UniqueStringFieldSeed,
-                               NestedObjectFieldSeed>;
+                                     Int8FieldSeed,
+                                     Int16FieldSeed,
+                                     Int32FieldSeed,
+                                     Int64FieldSeed,
+                                     UInt8FieldSeed,
+                                     UInt16FieldSeed,
+                                     UInt32FieldSeed,
+                                     UInt64FieldSeed,
+                                     FloatFieldSeed,
+                                     DoubleFieldSeed,
+                                     StringFieldSeed,
+                                     BlockFieldSeed,
+                                     UniqueStringFieldSeed,
+                                     NestedObjectFieldSeed>;
 
 struct MappingSeed final
 {

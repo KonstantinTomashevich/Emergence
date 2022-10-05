@@ -18,17 +18,17 @@ using RepresentationReference =
     Container::Variant<LinearRepresentation, PointRepresentation, SignalRepresentation, VolumetricRepresentation>;
 
 using Cursor = Container::Variant<LinearRepresentation::AscendingReadCursor,
-                            LinearRepresentation::AscendingEditCursor,
-                            LinearRepresentation::DescendingReadCursor,
-                            LinearRepresentation::DescendingEditCursor,
-                            PointRepresentation::ReadCursor,
-                            PointRepresentation::EditCursor,
-                            SignalRepresentation::ReadCursor,
-                            SignalRepresentation::EditCursor,
-                            VolumetricRepresentation::ShapeIntersectionReadCursor,
-                            VolumetricRepresentation::ShapeIntersectionEditCursor,
-                            VolumetricRepresentation::RayIntersectionReadCursor,
-                            VolumetricRepresentation::RayIntersectionEditCursor>;
+                                  LinearRepresentation::AscendingEditCursor,
+                                  LinearRepresentation::DescendingReadCursor,
+                                  LinearRepresentation::DescendingEditCursor,
+                                  PointRepresentation::ReadCursor,
+                                  PointRepresentation::EditCursor,
+                                  SignalRepresentation::ReadCursor,
+                                  SignalRepresentation::EditCursor,
+                                  VolumetricRepresentation::ShapeIntersectionReadCursor,
+                                  VolumetricRepresentation::ShapeIntersectionEditCursor,
+                                  VolumetricRepresentation::RayIntersectionReadCursor,
+                                  VolumetricRepresentation::RayIntersectionEditCursor>;
 } // namespace Emergence::RecordCollection::Test
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (Emergence::RecordCollection::Test::CursorTag,

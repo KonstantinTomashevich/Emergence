@@ -66,12 +66,12 @@ namespace Emergence::Handling::Test
 using namespace Context::Extension::Tasks;
 
 using Task = Container::Variant<Reference::Test::Tasks::Create,
-                          Move<HandleableResourceTag>,
-                          Copy<HandleableResourceTag>,
-                          MoveAssign<HandleableResourceTag>,
-                          CopyAssign<HandleableResourceTag>,
-                          Delete<HandleableResourceTag>,
-                          Reference::Test::Tasks::CheckStatus>;
+                                Move<HandleableResourceTag>,
+                                Copy<HandleableResourceTag>,
+                                MoveAssign<HandleableResourceTag>,
+                                CopyAssign<HandleableResourceTag>,
+                                Delete<HandleableResourceTag>,
+                                Reference::Test::Tasks::CheckStatus>;
 
 std::ostream &operator<< (std::ostream &_output, const Container::Vector<Task> &_tasks)
 {

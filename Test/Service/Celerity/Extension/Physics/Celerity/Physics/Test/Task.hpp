@@ -130,17 +130,17 @@ struct RemoveCollisionShape final
 } // namespace ConfiguratorTasks
 
 using ConfiguratorTask = Container::Variant<ConfiguratorTasks::AddDynamicsMaterial,
-                                      ConfiguratorTasks::UpdateDynamicsMaterial,
-                                      ConfiguratorTasks::RemoveDynamicsMaterial,
-                                      ConfiguratorTasks::AddTransform,
-                                      ConfiguratorTasks::UpdateTransform,
-                                      ConfiguratorTasks::RemoveTransform,
-                                      ConfiguratorTasks::AddRigidBody,
-                                      ConfiguratorTasks::UpdateRigidBody,
-                                      ConfiguratorTasks::RemoveRigidBody,
-                                      ConfiguratorTasks::AddCollisionShape,
-                                      ConfiguratorTasks::UpdateCollisionShape,
-                                      ConfiguratorTasks::RemoveCollisionShape>;
+                                            ConfiguratorTasks::UpdateDynamicsMaterial,
+                                            ConfiguratorTasks::RemoveDynamicsMaterial,
+                                            ConfiguratorTasks::AddTransform,
+                                            ConfiguratorTasks::UpdateTransform,
+                                            ConfiguratorTasks::RemoveTransform,
+                                            ConfiguratorTasks::AddRigidBody,
+                                            ConfiguratorTasks::UpdateRigidBody,
+                                            ConfiguratorTasks::RemoveRigidBody,
+                                            ConfiguratorTasks::AddCollisionShape,
+                                            ConfiguratorTasks::UpdateCollisionShape,
+                                            ConfiguratorTasks::RemoveCollisionShape>;
 
 struct ConfiguratorFrame final
 {
@@ -180,9 +180,9 @@ struct CheckEvents final
 } // namespace ValidatorTasks
 
 using ValidatorTask = Container::Variant<ValidatorTasks::CheckRigidBodyExistence,
-                                   ValidatorTasks::CheckCollisionShapeExistence,
-                                   ValidatorTasks::CheckObjectTransform,
-                                   ValidatorTasks::CheckEvents>;
+                                         ValidatorTasks::CheckCollisionShapeExistence,
+                                         ValidatorTasks::CheckObjectTransform,
+                                         ValidatorTasks::CheckEvents>;
 
 struct ValidatorFrame final
 {
