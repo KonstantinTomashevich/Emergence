@@ -351,8 +351,6 @@ public:
         bool CheckIntersection (const void *_record) const noexcept;
     };
 
-    static_assert (sizeof (ShapeIntersectionEnumerator) <= sizeof (std::uintptr_t) * 44u);
-
     VolumetricTree (const std::array<Dimension, Dimensions> &_dimensions) noexcept;
 
     VolumetricTree (const VolumetricTree &_other) = delete;
