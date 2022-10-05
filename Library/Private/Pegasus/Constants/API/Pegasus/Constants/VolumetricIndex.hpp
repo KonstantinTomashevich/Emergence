@@ -22,7 +22,7 @@ constexpr float EPSILON = Implementation::VolumetricIndex::EPSILON;
 
 /// \brief Provides list of all volumetric tree variants for supported types and dimensions.
 /// \details Suffix is added for convenient listing of enumerators.
-#define VOLUMETRIC_TREE_VARIANTS(Suffix) IMPLEMENTATION_VOLUMETRIC_TREE_VARIANTS (Suffix)
+#define VOLUMETRIC_TREE_VARIANTS(...) IMPLEMENTATION_VOLUMETRIC_TREE_VARIANTS (__VA_ARGS__)
 
 static_assert (MAX_DIMENSIONS > 0u);
 static_assert (MAX_LEVELS > 0u);

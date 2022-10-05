@@ -278,7 +278,7 @@ void PartitioningTree<Dimensions>::RayEnumerator::MoveToNextTarget () noexcept
 
             if (moveLength > 0.0f && moveLength < smallestMoveLength)
             {
-                movementDimension = dimension;
+                movementDimension = static_cast<Index> (dimension);
                 smallestMoveLength = moveLength;
             }
         }
@@ -417,13 +417,13 @@ void PartitioningTree<Dimensions>::Insert (const void *_record, const Shape &_sh
         if (!current->children[childIndex])
         {
             std::array<Index, Dimensions> center;
-            const Index dividingShift = currentLevel + 2u;
+            const auto dividingShift = static_cast<Index> (currentLevel + 2u);
             const Index halfSize = border >> dividingShift;
             assert (halfSize > 0u);
 
             for (std::size_t index = 0u; index < Dimensions; ++index)
             {
-                if (childIndex & (1u << index))
+                if (childIndex & (std::size_t {1u} << index))
                 {
                     center[index] = current->center[index] + halfSize;
                 }
@@ -854,7 +854,8 @@ VolumetricTree<Unit, Dimensions>::EnumerateIntersectingShapes (const VolumetricT
     }
 
     return {this, ray,
-            partitioningTree.EnumerateIntersectingShapes (partitioningRay, _maxLength, partitioningDistanceFactors)};
+            partitioningTree.EnumerateIntersectingShapes (partitioningRay, static_cast<float> (_maxLength),
+                                                          partitioningDistanceFactors)};
 }
 
 template <typename Unit, std::size_t Dimensions>
@@ -966,7 +967,7 @@ typename PartitioningTree<Dimensions>::Index VolumetricTree<Unit, Dimensions>::C
     const FloatingUnit percent = static_cast<FloatingUnit> (localizedValue) / static_cast<FloatingUnit> (space);
 
     return static_cast<typename PartitioningTree<Dimensions>::Index> (
-        std::floorf (percent * static_cast<FloatingUnit> (partitions)));
+        std::floor (percent * static_cast<FloatingUnit> (partitions)));
 }
 
 template <typename Unit, std::size_t Dimensions>
