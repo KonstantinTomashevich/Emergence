@@ -371,15 +371,6 @@ PartitioningTree<Dimensions>::PartitioningTree (PartitioningTree &&_other) noexc
 }
 
 template <std::size_t Dimensions>
-PartitioningTree<Dimensions>::~PartitioningTree () noexcept
-{
-    if (root)
-    {
-        DeleteNodeWithChildren (root);
-    }
-}
-
-template <std::size_t Dimensions>
 typename PartitioningTree<Dimensions>::Index PartitioningTree<Dimensions>::GetBorder () const noexcept
 {
     return border;

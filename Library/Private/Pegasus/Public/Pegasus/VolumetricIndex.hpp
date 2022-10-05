@@ -559,4 +559,14 @@ private:
     VolumetricTreeVariant tree;
     Container::Vector<const void *> reinsertionQueue {Memory::Profiler::AllocationGroup {"ReinsertionQueue"_us}};
 };
+
+// Must be inlined in header, otherwise some compilers do not generate code for this method.
+template <std::size_t Dimensions>
+PartitioningTree<Dimensions>::~PartitioningTree () noexcept
+{
+    if (root)
+    {
+        DeleteNodeWithChildren (root);
+    }
+}
 } // namespace Emergence::Pegasus
