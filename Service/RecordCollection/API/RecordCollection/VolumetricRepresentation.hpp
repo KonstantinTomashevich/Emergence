@@ -69,7 +69,7 @@ public:
         friend class VolumetricRepresentation;
 
         /// About uint64_t: same as in comment in ShapeIntersectionReadCursor, but for Ray caching.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 36u);
 
         explicit RayIntersectionReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
@@ -86,7 +86,7 @@ public:
         friend class VolumetricRepresentation;
 
         /// About uint64_t: see comment in RayIntersectionReadCursor.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 36u);
 
         explicit RayIntersectionEditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };

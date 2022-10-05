@@ -28,7 +28,7 @@ public:
 
         /// Cursor implementation could copy Shape inside to be more cache coherent and Shape could contain doubles,
         /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 22u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 46u);
 
         explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };

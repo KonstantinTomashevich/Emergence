@@ -10,7 +10,7 @@ constexpr std::size_t MAX_LEVELS = 16u;
 
 constexpr float IDEAL_UNIT_TO_PARTITION_SCALE = 0.4f;
 
-constexpr float EPSILON = 1e-7f;
+constexpr float EPSILON = 1e-5f;
 
 #define IMPLEMENTATION_VOLUMETRIC_TREE_VARIANTS(Suffix)                                                                \
     VolumetricTree<int8_t, 1u> Suffix, VolumetricTree<int16_t, 1u> Suffix, VolumetricTree<int32_t, 1u> Suffix,         \

@@ -13,6 +13,8 @@
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
+#include <SyntaxSugar/SelectType.hpp>
+
 namespace Emergence::Pegasus
 {
 using namespace Memory::Literals;
@@ -57,6 +59,11 @@ public:
         std::array<Axe, Dimensions> axis;
     };
 
+    struct FloatingPoint
+    {
+        std::array<FloatingIndex, Dimensions> coordinates;
+    };
+
     class ShapeEnumerator final
     {
     public:
@@ -97,7 +104,60 @@ public:
         Container::InplaceVector<StackItem, Constants::VolumetricIndex::MAX_LEVELS> stack;
     };
 
-    PartitioningTree (const std::array<Index, Dimensions> &_borders) noexcept;
+    class RayEnumerator final
+    {
+    public:
+        RayEnumerator (const RayEnumerator &_other) noexcept = default;
+
+        RayEnumerator (RayEnumerator &&_other) noexcept = default;
+
+        ~RayEnumerator () noexcept = default;
+
+        /// \warning Invalidates other enumerators.
+        void EraseRecord (std::size_t _index) noexcept;
+
+        [[nodiscard]] const Container::Vector<const void *> *operator* () const noexcept;
+
+        RayEnumerator &operator++ () noexcept;
+
+        RayEnumerator &operator= (const RayEnumerator &_other) noexcept = default;
+
+        RayEnumerator &operator= (RayEnumerator &&_other) noexcept = default;
+
+    private:
+        friend class PartitioningTree;
+
+        RayEnumerator (PartitioningTree *_tree,
+                       const Ray &_ray,
+                       float _maxDistance,
+                       const std::array<float, Dimensions> &_distanceFactors) noexcept;
+
+        [[nodiscard]] Index GetNextChildIndex () const noexcept;
+
+        bool ContinueDescentToTarget () noexcept;
+
+        void MoveToNextTarget () noexcept;
+
+        void Stop () noexcept;
+
+        PartitioningTree *tree = nullptr;
+        std::array<Index, Dimensions> currentTargetNode;
+
+        FloatingPoint currentPoint;
+        FloatingPoint normalizedDirection;
+
+        float traveledDistanceSquared = 0.0f;
+        const float maxDistanceToTravelSquared = 0.0f;
+
+        // We need to multiply values by factors when calculating distance, because transformation of world coordinates
+        // into partitioning tree coordinates is non-uniform, therefore factors are required to calculate game world
+        // distance correctly.
+        std::array<float, Dimensions> distanceFactors;
+
+        Container::InplaceVector<Node *, Constants::VolumetricIndex::MAX_LEVELS> stack;
+    };
+
+    PartitioningTree (Index _border) noexcept;
 
     PartitioningTree (const PartitioningTree &_other) = delete;
 
@@ -105,9 +165,13 @@ public:
 
     ~PartitioningTree () noexcept;
 
-    [[nodiscard]] const std::array<Index, Dimensions> &GetBorders () const noexcept;
+    [[nodiscard]] Index GetBorder () const noexcept;
 
     ShapeEnumerator EnumerateIntersectingShapes (const Shape &_shape) noexcept;
+
+    RayEnumerator EnumerateIntersectingShapes (const Ray &_ray,
+                                               float _maxDistance,
+                                               const std::array<float, Dimensions> &_distanceFactors) noexcept;
 
     /// \warning Invalidates iterators.
     void Insert (const void *_record, const Shape &_shape);
@@ -151,7 +215,7 @@ private:
 
     void DeleteNodeWithChildren (Node *_node);
 
-    std::array<Index, Dimensions> borders;
+    Index border;
     Index maxLevel = 1u;
     Memory::OrderedPool nodePool {Memory::Profiler::AllocationGroup {"Node"_us}, sizeof (Node), alignof (Node)};
     Node *root = nullptr;
@@ -160,13 +224,64 @@ private:
 template <typename Unit, std::size_t Dimensions>
 class VolumetricTree final
 {
+private:
+    template <typename Enumerator, typename Geometry, typename Inheritor>
+    class EnumeratorWrapper
+    {
+    public:
+        EnumeratorWrapper (const EnumeratorWrapper &_other) noexcept = default;
+
+        EnumeratorWrapper (EnumeratorWrapper &&_other) noexcept = default;
+
+        ~EnumeratorWrapper () noexcept = default;
+
+        [[nodiscard]] const void *operator* () const noexcept;
+
+        Inheritor &operator++ () noexcept;
+
+        Inheritor &operator~() noexcept;
+
+        EnumeratorWrapper &operator= (const EnumeratorWrapper &_other) noexcept = default;
+
+        EnumeratorWrapper &operator= (EnumeratorWrapper &&_other) noexcept = default;
+
+    protected:
+        VolumetricTree *tree;
+        const Geometry geometry;
+
+    private:
+        friend class VolumetricTree;
+
+        EnumeratorWrapper (VolumetricTree *_tree, const Geometry &_geometry, Enumerator _enumerator) noexcept;
+
+        void EnsureCurrentRecordIsValid () noexcept;
+
+        std::size_t currentRecordIndex = 0u;
+        Enumerator enumerator;
+    };
+
 public:
+    static constexpr bool USE_DOUBLE_AS_FLOATING_UNIT = sizeof (Unit) > sizeof (float);
+
+    using FloatingUnit = SelectType<double, float, USE_DOUBLE_AS_FLOATING_UNIT>;
+
     struct Shape final
     {
         struct MinMax final
         {
-            Unit min = 0u;
-            Unit max = 0u;
+            Unit min;
+            Unit max;
+        };
+
+        std::array<MinMax, Dimensions> bounds;
+    };
+
+    struct FloatingShape final
+    {
+        struct MinMax final
+        {
+            FloatingUnit min;
+            FloatingUnit max;
         };
 
         std::array<MinMax, Dimensions> bounds;
@@ -176,11 +291,23 @@ public:
     {
         struct Axe final
         {
-            Unit origin = 0.0f;
-            Unit direction = 0.0f;
+            Unit origin;
+            Unit direction;
         };
 
         std::array<Axe, Dimensions> axis;
+    };
+
+    struct LimitedFloatingRay
+    {
+        struct Axe final
+        {
+            FloatingUnit origin;
+            FloatingUnit direction;
+        };
+
+        std::array<Axe, Dimensions> axis;
+        FloatingUnit lengthSquared;
     };
 
     struct Dimension final
@@ -195,24 +322,10 @@ public:
     };
 
     class ShapeIntersectionEnumerator final
+        : public EnumeratorWrapper<typename PartitioningTree<Dimensions>::ShapeEnumerator,
+                                   Shape,
+                                   ShapeIntersectionEnumerator>
     {
-    public:
-        ShapeIntersectionEnumerator (const ShapeIntersectionEnumerator &_other) noexcept = default;
-
-        ShapeIntersectionEnumerator (ShapeIntersectionEnumerator &&_other) noexcept = default;
-
-        ~ShapeIntersectionEnumerator () noexcept = default;
-
-        [[nodiscard]] const void *operator* () const noexcept;
-
-        ShapeIntersectionEnumerator &operator++ () noexcept;
-
-        ShapeIntersectionEnumerator &operator~() noexcept;
-
-        ShapeIntersectionEnumerator &operator= (const ShapeIntersectionEnumerator &_other) noexcept = default;
-
-        ShapeIntersectionEnumerator &operator= (ShapeIntersectionEnumerator &&_other) noexcept = default;
-
     private:
         friend class VolumetricTree;
 
@@ -220,14 +333,22 @@ public:
                                      const Shape &_shape,
                                      typename PartitioningTree<Dimensions>::ShapeEnumerator _enumerator) noexcept;
 
-        void EnsureCurrentRecordIsValid () noexcept;
+        bool CheckIntersection (const void *_record) const noexcept;
+    };
+
+    class RayIntersectionEnumerator final
+        : public EnumeratorWrapper<typename PartitioningTree<Dimensions>::RayEnumerator,
+                                   LimitedFloatingRay,
+                                   RayIntersectionEnumerator>
+    {
+    private:
+        friend class VolumetricTree;
+
+        RayIntersectionEnumerator (VolumetricTree *_tree,
+                                   const LimitedFloatingRay &_ray,
+                                   typename PartitioningTree<Dimensions>::RayEnumerator _enumerator) noexcept;
 
         bool CheckIntersection (const void *_record) const noexcept;
-
-        VolumetricTree *tree;
-        std::size_t currentRecordIndex = 0u;
-        Shape shape;
-        typename PartitioningTree<Dimensions>::ShapeEnumerator shapeEnumerator;
     };
 
     static_assert (sizeof (ShapeIntersectionEnumerator) <= sizeof (std::uintptr_t) * 44u);
@@ -244,6 +365,8 @@ public:
 
     ShapeIntersectionEnumerator EnumerateIntersectingShapes (const Shape &_shape) noexcept;
 
+    RayIntersectionEnumerator EnumerateIntersectingShapes (const Ray &_ray, FloatingUnit _maxLength) noexcept;
+
     void Insert (const void *_record);
 
     void Update (const void *_record, const void *_backup) noexcept;
@@ -255,13 +378,21 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (VolumetricTree);
 
 private:
-    static std::array<typename PartitioningTree<Dimensions>::Index, Dimensions> PreparePartitioningSpace (
+    static typename PartitioningTree<Dimensions>::Index PreparePartitioningSpace (
         const std::array<Dimension, Dimensions> &_dimensions) noexcept;
 
     Shape ExtractShape (const void *_record) const noexcept;
 
     [[nodiscard]] typename PartitioningTree<Dimensions>::Shape ConvertToPartitioningShape (
         const Shape &_shape) const noexcept;
+
+    [[nodiscard]] FloatingShape ConvertToFloatingShape (const Shape &_shape) const noexcept;
+
+    [[nodiscard]] typename PartitioningTree<Dimensions>::Index ConvertPointToIndex (
+        Unit _point, std::size_t _dimension) const noexcept;
+
+    [[nodiscard]] typename PartitioningTree<Dimensions>::FloatingIndex ConvertDirectionToIndex (
+        Unit _direction, std::size_t _dimension) const noexcept;
 
     std::array<Dimension, Dimensions> dimensions;
     PartitioningTree<Dimensions> partitioningTree;
@@ -270,6 +401,8 @@ private:
 using VolumetricTreeVariant = Container::Variant<VOLUMETRIC_TREE_VARIANTS ()>;
 
 using ShapeIntersectionEnumeratorVariant = Container::Variant<VOLUMETRIC_TREE_VARIANTS (::ShapeIntersectionEnumerator)>;
+
+using RayIntersectionEnumeratorVariant = Container::Variant<VOLUMETRIC_TREE_VARIANTS (::RayIntersectionEnumerator)>;
 
 class VolumetricIndex final : public IndexBase
 {
@@ -356,9 +489,10 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionReadCursor (VolumetricIndex *_index) noexcept;
+        RayIntersectionReadCursor (VolumetricIndex *_index, RayIntersectionEnumeratorVariant _baseEnumerator) noexcept;
 
         VolumetricIndex *index = nullptr;
+        RayIntersectionEnumeratorVariant baseEnumerator;
     };
 
     class RayIntersectionEditCursor final
@@ -369,7 +503,7 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionEditCursor (VolumetricIndex *_index) noexcept;
+        RayIntersectionEditCursor (VolumetricIndex *_index, RayIntersectionEnumeratorVariant _baseEnumerator) noexcept;
 
         template <typename Enumerator>
         void BeginRecordEdition (Enumerator &_enumerator) noexcept;
@@ -378,6 +512,7 @@ public:
         bool EndRecordEdition (Enumerator &_enumerator) noexcept;
 
         VolumetricIndex *index = nullptr;
+        RayIntersectionEnumeratorVariant baseEnumerator;
     };
 
     VolumetricIndex (Storage *_storage,
