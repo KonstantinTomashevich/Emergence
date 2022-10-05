@@ -560,7 +560,7 @@ private:
     Container::Vector<const void *> reinsertionQueue {Memory::Profiler::AllocationGroup {"ReinsertionQueue"_us}};
 };
 
-// Must be inlined in header, otherwise some compilers do not generate code for this method.
+// Must be inlined in header, otherwise some compilers do not generate code for these methods.
 template <std::size_t Dimensions>
 PartitioningTree<Dimensions>::~PartitioningTree () noexcept
 {
@@ -568,5 +568,23 @@ PartitioningTree<Dimensions>::~PartitioningTree () noexcept
     {
         DeleteNodeWithChildren (root);
     }
+}
+
+template <std::size_t Dimensions>
+void PartitioningTree<Dimensions>::DeleteNodeWithChildren (Node *_node)
+{
+    if (!_node)
+    {
+        return;
+    }
+
+    for (std::size_t index = 0u; index < NODE_CHILDREN_COUNT; ++index)
+    {
+        DeleteNodeWithChildren (_node->children[index]);
+        _node->children[index] = nullptr;
+    }
+
+    _node->~Node ();
+    nodePool.Release (_node);
 }
 } // namespace Emergence::Pegasus
