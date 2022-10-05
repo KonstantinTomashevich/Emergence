@@ -1,6 +1,6 @@
 #pragma once
 
-#include <variant>
+#include <Container/Variant.hpp>
 
 #include <SyntaxSugar/MuteWarnings.hpp>
 
@@ -45,7 +45,7 @@ struct PhysXWorld final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (PhysXWorld);
 
-    std::variant<physx::PxDefaultAllocator, ProfiledAllocator> allocator;
+    Container::Variant<physx::PxDefaultAllocator, ProfiledAllocator> allocator;
     physx::PxDefaultErrorCallback errorCallback;
 
     physx::PxFoundation *foundation = nullptr;

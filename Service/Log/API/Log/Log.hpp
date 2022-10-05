@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cstdint>
-#include <variant>
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
 #include <Container/StringBuilder.hpp>
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Heap.hpp>
@@ -55,7 +55,7 @@ struct File final : public Base
 } // namespace Sinks
 
 /// \brief Variant, that contains configuration for any available sink type.
-using Sink = std::variant<Sinks::StandardOut, Sinks::StandardError, Sinks::File>;
+using Sink = Container::Variant<Sinks::StandardOut, Sinks::StandardError, Sinks::File>;
 
 /// \brief Allows logging messages to given set of sinks.
 class Logger final

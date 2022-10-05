@@ -43,7 +43,7 @@ EMERGENCE_BIND_EDIT_CURSOR_OPERATIONS_IMPLEMENTATION (RayIntersectionEditCursor,
 
 using DimensionIterator = VolumetricRepresentation::DimensionIterator;
 
-using DimensionIteratorImplementation = Pegasus::VolumetricIndex::DimensionVector::ConstIterator;
+using DimensionIteratorImplementation = Pegasus::VolumetricIndex::DimensionIterator;
 
 // NOLINTNEXTLINE(modernize-use-auto): It's impossible to use auto there.
 EMERGENCE_BIND_BIDIRECTIONAL_ITERATOR_OPERATIONS_IMPLEMENTATION (DimensionIterator, DimensionIteratorImplementation)
@@ -52,7 +52,7 @@ VolumetricRepresentation::DimensionIterator::Dimension VolumetricRepresentation:
     const noexcept
 {
     const Pegasus::VolumetricIndex::Dimension &dimension = *block_cast<DimensionIteratorImplementation> (data);
-    return {&dimension.globalMinBorder, dimension.minBorderField, &dimension.globalMaxBorder, dimension.maxBorderField};
+    return {&dimension.min, dimension.minField, &dimension.max, dimension.maxField};
 }
 
 VolumetricRepresentation::VolumetricRepresentation (const VolumetricRepresentation &_other) noexcept
@@ -81,9 +81,9 @@ VolumetricRepresentation::ShapeIntersectionReadCursor VolumetricRepresentation::
     assert (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
-    Pegasus::VolumetricIndex::ShapeIntersectionReadCursor cursor = index->LookupShapeIntersectionToRead (
-        *static_cast<const Pegasus::VolumetricIndex::AxisAlignedShapeContainer *> (_shape));
-    return ShapeIntersectionReadCursor (array_cast (cursor));
+    Pegasus::VolumetricIndex::ShapeIntersectionReadCursor cursor = index->LookupShapeIntersectionToRead (_shape);
+    return ShapeIntersectionReadCursor (
+        array_cast<decltype (cursor), ShapeIntersectionReadCursor::DATA_MAX_SIZE> (cursor));
 }
 
 VolumetricRepresentation::ShapeIntersectionEditCursor VolumetricRepresentation::EditShapeIntersections (
@@ -92,9 +92,9 @@ VolumetricRepresentation::ShapeIntersectionEditCursor VolumetricRepresentation::
     assert (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
-    Pegasus::VolumetricIndex::ShapeIntersectionEditCursor cursor = index->LookupShapeIntersectionToEdit (
-        *static_cast<const Pegasus::VolumetricIndex::AxisAlignedShapeContainer *> (_shape));
-    return ShapeIntersectionEditCursor (array_cast (cursor));
+    Pegasus::VolumetricIndex::ShapeIntersectionEditCursor cursor = index->LookupShapeIntersectionToEdit (_shape);
+    return ShapeIntersectionEditCursor (
+        array_cast<decltype (cursor), ShapeIntersectionEditCursor::DATA_MAX_SIZE> (cursor));
 }
 
 VolumetricRepresentation::RayIntersectionReadCursor VolumetricRepresentation::ReadRayIntersections (
@@ -103,9 +103,8 @@ VolumetricRepresentation::RayIntersectionReadCursor VolumetricRepresentation::Re
     assert (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
-    Pegasus::VolumetricIndex::RayIntersectionReadCursor cursor = index->LookupRayIntersectionToRead (
-        *static_cast<const Pegasus::VolumetricIndex::RayContainer *> (_ray), _rayLength);
-    return RayIntersectionReadCursor (array_cast (cursor));
+    Pegasus::VolumetricIndex::RayIntersectionReadCursor cursor = index->LookupRayIntersectionToRead (_ray, _rayLength);
+    return RayIntersectionReadCursor (array_cast<decltype (cursor), RayIntersectionReadCursor::DATA_MAX_SIZE> (cursor));
 }
 
 VolumetricRepresentation::RayIntersectionEditCursor VolumetricRepresentation::EditRayIntersections (
@@ -114,9 +113,8 @@ VolumetricRepresentation::RayIntersectionEditCursor VolumetricRepresentation::Ed
     assert (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
-    Pegasus::VolumetricIndex::RayIntersectionEditCursor cursor = index->LookupRayIntersectionToEdit (
-        *static_cast<const Pegasus::VolumetricIndex::RayContainer *> (_ray), _rayLength);
-    return RayIntersectionEditCursor (array_cast (cursor));
+    Pegasus::VolumetricIndex::RayIntersectionEditCursor cursor = index->LookupRayIntersectionToEdit (_ray, _rayLength);
+    return RayIntersectionEditCursor (array_cast<decltype (cursor), RayIntersectionEditCursor::DATA_MAX_SIZE> (cursor));
 }
 
 VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionBegin () const noexcept
@@ -125,7 +123,7 @@ VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionB
     Pegasus::VolumetricIndex *index =
         reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
-    auto iterator = index->GetDimensions ().Begin ();
+    auto iterator = index->BeginDimensions ();
     return DimensionIterator (array_cast (iterator));
 }
 
@@ -135,7 +133,7 @@ VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionE
     Pegasus::VolumetricIndex *index =
         reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
-    auto iterator = index->GetDimensions ().End ();
+    auto iterator = index->EndDimensions ();
     return DimensionIterator (array_cast (iterator));
 }
 

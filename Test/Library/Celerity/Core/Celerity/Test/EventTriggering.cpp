@@ -1,12 +1,13 @@
 #include <cstdint>
 #include <thread>
-#include <variant>
 
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/World.hpp>
+
+#include <Container/Variant.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
@@ -205,7 +206,7 @@ struct RemoveRecord final
     uint64_t recordId;
 };
 
-using Task = std::variant<Tasks::AddRecord, Tasks::EditRecord, Tasks::RemoveRecord>;
+using Task = Container::Variant<Tasks::AddRecord, Tasks::EditRecord, Tasks::RemoveRecord>;
 
 class Executor final : public TaskExecutorBase<Executor>
 {

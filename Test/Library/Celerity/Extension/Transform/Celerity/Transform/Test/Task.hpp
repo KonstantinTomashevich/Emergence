@@ -6,11 +6,10 @@
 #    pragma warning(disable : 4324)
 #endif
 
-#include <variant>
-
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Math/Transform3d.hpp>
@@ -66,12 +65,12 @@ struct RemoveTransform final
 };
 } // namespace Requests
 
-using Request = std::variant<Requests::CreateTransform,
-                             Requests::ChangeParent,
-                             Requests::SetLocalTransform,
-                             Requests::CheckTransform,
-                             Requests::CheckTransformExists,
-                             Requests::RemoveTransform>;
+using Request = Container::Variant<Requests::CreateTransform,
+                                   Requests::ChangeParent,
+                                   Requests::SetLocalTransform,
+                                   Requests::CheckTransform,
+                                   Requests::CheckTransformExists,
+                                   Requests::RemoveTransform>;
 
 namespace RequestExecutor
 {

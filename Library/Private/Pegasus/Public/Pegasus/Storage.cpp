@@ -268,10 +268,10 @@ Handling::Handle<VolumetricIndex> Storage::CreateVolumetricIndex (
             VolumetricIndex (this, _dimensions),
         0u});
 
-    for (const VolumetricIndex::Dimension &dimension : holder.index->GetDimensions ())
+    for (auto iterator = holder.index->BeginDimensions (); iterator != holder.index->EndDimensions (); ++iterator)
     {
-        RegisterIndexedFieldUsage (dimension.minBorderField);
-        RegisterIndexedFieldUsage (dimension.maxBorderField);
+        RegisterIndexedFieldUsage ((*iterator).minField);
+        RegisterIndexedFieldUsage ((*iterator).maxField);
     }
 
     holder.indexedFieldMask = BuildIndexMask (*holder.index);
@@ -545,10 +545,10 @@ void Storage::DropIndex (const SignalIndex &_index) noexcept
 
 void Storage::DropIndex (const VolumetricIndex &_index) noexcept
 {
-    for (const VolumetricIndex::Dimension &dimension : _index.GetDimensions ())
+    for (auto iterator = _index.BeginDimensions (); iterator != _index.EndDimensions (); ++iterator)
     {
-        UnregisterIndexedFieldUsage (dimension.minBorderField);
-        UnregisterIndexedFieldUsage (dimension.maxBorderField);
+        UnregisterIndexedFieldUsage ((*iterator).minField);
+        UnregisterIndexedFieldUsage ((*iterator).maxField);
     }
 
     volumetricIndices.EraseExchangingWithLast (
@@ -618,7 +618,7 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIn
 {
     Constants::Storage::IndexedFieldMask indexMask = 0u;
 
-    for (const VolumetricIndex::Dimension &dimension : _index.GetDimensions ())
+    for (auto iterator = _index.BeginDimensions (); iterator != _index.EndDimensions (); ++iterator)
     {
         auto findField = [this] (const StandardLayout::Field &_field)
         {
@@ -629,11 +629,11 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIn
                                  });
         };
 
-        auto minIterator = findField (dimension.minBorderField);
+        auto minIterator = findField ((*iterator).minField);
         assert (minIterator != indexedFields.End ());
         indexMask |= 1u << (minIterator - indexedFields.Begin ());
 
-        auto maxIterator = findField (dimension.maxBorderField);
+        auto maxIterator = findField ((*iterator).maxField);
         assert (maxIterator != indexedFields.End ());
         indexMask |= 1u << (maxIterator - indexedFields.Begin ());
     }

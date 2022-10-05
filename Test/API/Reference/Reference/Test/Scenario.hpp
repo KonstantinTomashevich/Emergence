@@ -1,9 +1,7 @@
 #pragma once
 
-#include <variant>
-
 #include <Container/String.hpp>
-
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -52,13 +50,13 @@ struct CheckStatus
 };
 } // namespace Tasks
 
-using Task = std::variant<Tasks::Create,
-                          Tasks::Move,
-                          Tasks::Copy,
-                          Tasks::CopyAssign,
-                          Tasks::MoveAssign,
-                          Tasks::Delete,
-                          Tasks::CheckStatus>;
+using Task = Container::Variant<Tasks::Create,
+                                Tasks::Move,
+                                Tasks::Copy,
+                                Tasks::CopyAssign,
+                                Tasks::MoveAssign,
+                                Tasks::Delete,
+                                Tasks::CheckStatus>;
 
 using Scenario = Container::Vector<Task>;
 } // namespace Emergence::Reference::Test

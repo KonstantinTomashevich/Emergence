@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <variant>
 
 #include <Container/String.hpp>
+#include <Container/Variant.hpp>
 
 #include <Context/Extension/ObjectStorage.hpp>
 
@@ -69,42 +69,42 @@ struct CloseAllocator
 {
 };
 
-using Task = std::variant<CreateLinearRepresentation,
-                          CreatePointRepresentation,
-                          CreateSignalRepresentation,
-                          CreateVolumetricRepresentation,
-                          Move<struct RepresentationReferenceTag>,
-                          Copy<struct RepresentationReferenceTag>,
-                          MoveAssign<struct RepresentationReferenceTag>,
-                          CopyAssign<struct RepresentationReferenceTag>,
-                          Delete<struct RepresentationReferenceTag>,
-                          CheckIsRepresentationCanBeDropped,
-                          DropRepresentation,
-                          OpenAllocator,
-                          AllocateAndInit,
-                          CloseAllocator,
-                          QueryValueToRead,
-                          QueryValueToEdit,
-                          QueryAscendingRangeToRead,
-                          QueryAscendingRangeToEdit,
-                          QueryDescendingRangeToRead,
-                          QueryDescendingRangeToEdit,
-                          QuerySignalToRead,
-                          QuerySignalToEdit,
-                          QueryShapeIntersectionToRead,
-                          QueryShapeIntersectionToEdit,
-                          QueryRayIntersectionToRead,
-                          QueryRayIntersectionToEdit,
-                          CursorCheck,
-                          CursorCheckAllOrdered,
-                          CursorCheckAllUnordered,
-                          CursorEdit,
-                          CursorIncrement,
-                          CursorDeleteObject,
-                          Move<struct CursorTag>,
-                          Copy<struct CursorTag>,
-                          Delete<struct CursorTag>,
-                          CursorClose>;
+using Task = Container::Variant<CreateLinearRepresentation,
+                                CreatePointRepresentation,
+                                CreateSignalRepresentation,
+                                CreateVolumetricRepresentation,
+                                Move<struct RepresentationReferenceTag>,
+                                Copy<struct RepresentationReferenceTag>,
+                                MoveAssign<struct RepresentationReferenceTag>,
+                                CopyAssign<struct RepresentationReferenceTag>,
+                                Delete<struct RepresentationReferenceTag>,
+                                CheckIsRepresentationCanBeDropped,
+                                DropRepresentation,
+                                OpenAllocator,
+                                AllocateAndInit,
+                                CloseAllocator,
+                                QueryValueToRead,
+                                QueryValueToEdit,
+                                QueryAscendingRangeToRead,
+                                QueryAscendingRangeToEdit,
+                                QueryDescendingRangeToRead,
+                                QueryDescendingRangeToEdit,
+                                QuerySignalToRead,
+                                QuerySignalToEdit,
+                                QueryShapeIntersectionToRead,
+                                QueryShapeIntersectionToEdit,
+                                QueryRayIntersectionToRead,
+                                QueryRayIntersectionToEdit,
+                                CursorCheck,
+                                CursorCheckAllOrdered,
+                                CursorCheckAllUnordered,
+                                CursorEdit,
+                                CursorIncrement,
+                                CursorDeleteObject,
+                                Move<struct CursorTag>,
+                                Copy<struct CursorTag>,
+                                Delete<struct CursorTag>,
+                                CursorClose>;
 
 namespace TestQueryApiDrivers
 {

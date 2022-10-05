@@ -15,20 +15,20 @@
 namespace Emergence::RecordCollection::Test
 {
 using RepresentationReference =
-    std::variant<LinearRepresentation, PointRepresentation, SignalRepresentation, VolumetricRepresentation>;
+    Container::Variant<LinearRepresentation, PointRepresentation, SignalRepresentation, VolumetricRepresentation>;
 
-using Cursor = std::variant<LinearRepresentation::AscendingReadCursor,
-                            LinearRepresentation::AscendingEditCursor,
-                            LinearRepresentation::DescendingReadCursor,
-                            LinearRepresentation::DescendingEditCursor,
-                            PointRepresentation::ReadCursor,
-                            PointRepresentation::EditCursor,
-                            SignalRepresentation::ReadCursor,
-                            SignalRepresentation::EditCursor,
-                            VolumetricRepresentation::ShapeIntersectionReadCursor,
-                            VolumetricRepresentation::ShapeIntersectionEditCursor,
-                            VolumetricRepresentation::RayIntersectionReadCursor,
-                            VolumetricRepresentation::RayIntersectionEditCursor>;
+using Cursor = Container::Variant<LinearRepresentation::AscendingReadCursor,
+                                  LinearRepresentation::AscendingEditCursor,
+                                  LinearRepresentation::DescendingReadCursor,
+                                  LinearRepresentation::DescendingEditCursor,
+                                  PointRepresentation::ReadCursor,
+                                  PointRepresentation::EditCursor,
+                                  SignalRepresentation::ReadCursor,
+                                  SignalRepresentation::EditCursor,
+                                  VolumetricRepresentation::ShapeIntersectionReadCursor,
+                                  VolumetricRepresentation::ShapeIntersectionEditCursor,
+                                  VolumetricRepresentation::RayIntersectionReadCursor,
+                                  VolumetricRepresentation::RayIntersectionEditCursor>;
 } // namespace Emergence::RecordCollection::Test
 
 EMERGENCE_CONTEXT_BIND_OBJECT_TAG (Emergence::RecordCollection::Test::CursorTag,

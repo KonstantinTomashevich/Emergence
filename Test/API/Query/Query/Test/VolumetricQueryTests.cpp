@@ -324,14 +324,14 @@ Scenario IntegerIntersections ()
                 QueryRayIntersectionToRead {{{"screenRect", "origin = (100, 250), direction = (100, 50)"},
                                              {int16_t (100), int16_t (250)},
                                              {int16_t (100), int16_t (50)}}},
-                CursorCheckAllOrdered {"origin = (100, 250), direction = (100, 50)",
-                                       {&RECT_MIN_200_300_MAX_300_400, &RECT_MIN_700_400_MAX_1000_600}},
+                CursorCheckAllUnordered {"origin = (100, 250), direction = (100, 50)",
+                                         {&RECT_MIN_200_300_MAX_300_400, &RECT_MIN_700_400_MAX_1000_600}},
 
                 QueryRayIntersectionToRead {{{"screenRect", "origin = (300, 50), direction = (100, 100)"},
                                              {int16_t (300), int16_t (50)},
                                              {int16_t (100), int16_t (100)}}},
-                CursorCheckAllOrdered {"origin = (300, 50), direction = (100, 100)",
-                                       {&RECT_MIN_0_0_MAX_500_200, &RECT_MIN_700_400_MAX_1000_600}},
+                CursorCheckAllUnordered {"origin = (300, 50), direction = (100, 100)",
+                                         {&RECT_MIN_0_0_MAX_500_200, &RECT_MIN_700_400_MAX_1000_600}},
             }};
 }
 } // namespace Emergence::Query::Test::VolumetricQuery

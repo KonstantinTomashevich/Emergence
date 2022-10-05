@@ -6,11 +6,10 @@
 #    pragma warning(disable : 4324)
 #endif
 
-#include <variant>
-
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Math/Transform3d.hpp>
@@ -68,9 +67,9 @@ struct CheckVector3f final
 };
 } // namespace Tasks
 
-using ConfiguratorTask = std::variant<Tasks::AddAssemblyDescriptor, Tasks::SpawnPrototype>;
+using ConfiguratorTask = Container::Variant<Tasks::AddAssemblyDescriptor, Tasks::SpawnPrototype>;
 
-using ValidatorTask = std::variant<Tasks::CheckComponent, Tasks::CheckVector3f>;
+using ValidatorTask = Container::Variant<Tasks::CheckComponent, Tasks::CheckVector3f>;
 
 void AddConfiguratorAndValidator (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                                   Container::Vector<ConfiguratorTask> _configuratorTasks,

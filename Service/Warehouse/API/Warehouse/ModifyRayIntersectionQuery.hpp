@@ -28,7 +28,7 @@ public:
 
         /// Cursor implementation could copy Ray inside to be more cache coherent and Ray could contain doubles,
         /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 20u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 36u);
 
         explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };

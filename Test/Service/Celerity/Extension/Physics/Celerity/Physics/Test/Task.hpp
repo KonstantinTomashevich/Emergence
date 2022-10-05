@@ -6,13 +6,12 @@
 #    pragma warning(disable : 4324)
 #endif
 
-#include <variant>
-
 #include <Celerity/Physics/CollisionGeometry.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Math/Constants.hpp>
@@ -130,18 +129,18 @@ struct RemoveCollisionShape final
 };
 } // namespace ConfiguratorTasks
 
-using ConfiguratorTask = std::variant<ConfiguratorTasks::AddDynamicsMaterial,
-                                      ConfiguratorTasks::UpdateDynamicsMaterial,
-                                      ConfiguratorTasks::RemoveDynamicsMaterial,
-                                      ConfiguratorTasks::AddTransform,
-                                      ConfiguratorTasks::UpdateTransform,
-                                      ConfiguratorTasks::RemoveTransform,
-                                      ConfiguratorTasks::AddRigidBody,
-                                      ConfiguratorTasks::UpdateRigidBody,
-                                      ConfiguratorTasks::RemoveRigidBody,
-                                      ConfiguratorTasks::AddCollisionShape,
-                                      ConfiguratorTasks::UpdateCollisionShape,
-                                      ConfiguratorTasks::RemoveCollisionShape>;
+using ConfiguratorTask = Container::Variant<ConfiguratorTasks::AddDynamicsMaterial,
+                                            ConfiguratorTasks::UpdateDynamicsMaterial,
+                                            ConfiguratorTasks::RemoveDynamicsMaterial,
+                                            ConfiguratorTasks::AddTransform,
+                                            ConfiguratorTasks::UpdateTransform,
+                                            ConfiguratorTasks::RemoveTransform,
+                                            ConfiguratorTasks::AddRigidBody,
+                                            ConfiguratorTasks::UpdateRigidBody,
+                                            ConfiguratorTasks::RemoveRigidBody,
+                                            ConfiguratorTasks::AddCollisionShape,
+                                            ConfiguratorTasks::UpdateCollisionShape,
+                                            ConfiguratorTasks::RemoveCollisionShape>;
 
 struct ConfiguratorFrame final
 {
@@ -180,10 +179,10 @@ struct CheckEvents final
 };
 } // namespace ValidatorTasks
 
-using ValidatorTask = std::variant<ValidatorTasks::CheckRigidBodyExistence,
-                                   ValidatorTasks::CheckCollisionShapeExistence,
-                                   ValidatorTasks::CheckObjectTransform,
-                                   ValidatorTasks::CheckEvents>;
+using ValidatorTask = Container::Variant<ValidatorTasks::CheckRigidBodyExistence,
+                                         ValidatorTasks::CheckCollisionShapeExistence,
+                                         ValidatorTasks::CheckObjectTransform,
+                                         ValidatorTasks::CheckEvents>;
 
 struct ValidatorFrame final
 {

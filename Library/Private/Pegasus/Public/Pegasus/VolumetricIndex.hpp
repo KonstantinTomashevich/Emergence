@@ -3,185 +3,447 @@
 #include <API/Common/Cursor.hpp>
 
 #include <Container/InplaceVector.hpp>
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <Handling/HandleableBase.hpp>
 
+#include <Memory/OrderedPool.hpp>
+
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
+
+#include <SyntaxSugar/SelectType.hpp>
 
 namespace Emergence::Pegasus
 {
 using namespace Memory::Literals;
 
-class VolumetricIndex final : public IndexBase
+template <std::size_t Dimensions>
+class PartitioningTree final
 {
 private:
-    using LeafCoordinate = std::array<std::size_t, Constants::VolumetricIndex::MAX_DIMENSIONS>;
+    struct Node;
 
-    struct LeafSector final
+public:
+    using Index = std::uint16_t;
+    using FloatingIndex = float;
+
+    struct Shape final
     {
-        LeafCoordinate min;
-        LeafCoordinate max;
+        struct MinMax final
+        {
+            Index min = 0u;
+            Index max = 0u;
+
+            bool operator== (const MinMax &_other) const = default;
+
+            bool operator!= (const MinMax &_other) const = default;
+        };
+
+        std::array<MinMax, Dimensions> bounds;
+
+        bool operator== (const Shape &_other) const = default;
+
+        bool operator!= (const Shape &_other) const = default;
+    };
+
+    struct Ray final
+    {
+        struct Axe final
+        {
+            FloatingIndex origin = 0.0f;
+            FloatingIndex direction = 0.0f;
+        };
+
+        std::array<Axe, Dimensions> axis;
+    };
+
+    struct FloatingPoint
+    {
+        std::array<FloatingIndex, Dimensions> coordinates;
+    };
+
+    class ShapeEnumerator final
+    {
+    public:
+        ShapeEnumerator (const ShapeEnumerator &_other) noexcept = default;
+
+        ShapeEnumerator (ShapeEnumerator &&_other) noexcept = default;
+
+        ~ShapeEnumerator () noexcept = default;
+
+        /// \warning Invalidates other enumerators.
+        void EraseRecord (std::size_t _index) noexcept;
+
+        [[nodiscard]] const Container::Vector<const void *> *operator* () const noexcept;
+
+        ShapeEnumerator &operator++ () noexcept;
+
+        ShapeEnumerator &operator= (const ShapeEnumerator &_other) noexcept = default;
+
+        ShapeEnumerator &operator= (ShapeEnumerator &&_other) noexcept = default;
+
+    private:
+        friend class PartitioningTree;
+
+        struct StackItem final
+        {
+            Node *node = nullptr;
+            Index filterValue = 0u;
+            Index filterMask = 0u;
+            Index nextChildToVisit = 0u;
+        };
+
+        ShapeEnumerator (PartitioningTree *_tree, const Shape &_shape) noexcept;
+
+        void EnterNode (Node *_node) noexcept;
+
+        PartitioningTree *tree = nullptr;
+        const Shape shape;
+        Container::InplaceVector<StackItem, Constants::VolumetricIndex::MAX_LEVELS> stack;
+    };
+
+    class RayEnumerator final
+    {
+    public:
+        RayEnumerator (const RayEnumerator &_other) noexcept = default;
+
+        RayEnumerator (RayEnumerator &&_other) noexcept = default;
+
+        ~RayEnumerator () noexcept = default;
+
+        /// \warning Invalidates other enumerators.
+        void EraseRecord (std::size_t _index) noexcept;
+
+        [[nodiscard]] const Container::Vector<const void *> *operator* () const noexcept;
+
+        RayEnumerator &operator++ () noexcept;
+
+        RayEnumerator &operator= (const RayEnumerator &_other) noexcept = default;
+
+        RayEnumerator &operator= (RayEnumerator &&_other) noexcept = default;
+
+    private:
+        friend class PartitioningTree;
+
+        RayEnumerator (PartitioningTree *_tree,
+                       const Ray &_ray,
+                       float _maxDistance,
+                       const std::array<float, Dimensions> &_distanceFactors) noexcept;
+
+        [[nodiscard]] Index GetNextChildIndex () const noexcept;
+
+        bool ContinueDescentToTarget () noexcept;
+
+        void MoveToNextTarget () noexcept;
+
+        void Stop () noexcept;
+
+        PartitioningTree *tree = nullptr;
+        std::array<Index, Dimensions> currentTargetNode;
+
+        FloatingPoint currentPoint;
+        FloatingPoint normalizedDirection;
+
+        float traveledDistanceSquared = 0.0f;
+        const float maxDistanceToTravelSquared = 0.0f;
+
+        // We need to multiply values by factors when calculating distance, because transformation of world coordinates
+        // into partitioning tree coordinates is non-uniform, therefore factors are required to calculate game world
+        // distance correctly.
+        std::array<float, Dimensions> distanceFactors;
+
+        Container::InplaceVector<Node *, Constants::VolumetricIndex::MAX_LEVELS> stack;
+    };
+
+    PartitioningTree (Index _border) noexcept;
+
+    PartitioningTree (const PartitioningTree &_other) = delete;
+
+    PartitioningTree (PartitioningTree &&_other) noexcept;
+
+    ~PartitioningTree () noexcept;
+
+    [[nodiscard]] Index GetBorder () const noexcept;
+
+    ShapeEnumerator EnumerateIntersectingShapes (const Shape &_shape) noexcept;
+
+    RayEnumerator EnumerateIntersectingShapes (const Ray &_ray,
+                                               float _maxDistance,
+                                               const std::array<float, Dimensions> &_distanceFactors) noexcept;
+
+    /// \warning Invalidates iterators.
+    void Insert (const void *_record, const Shape &_shape);
+
+    /// \warning Invalidates iterators.
+    void Erase (const void *_record, const Shape &_shape) noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (PartitioningTree);
+
+private:
+    static_assert (Dimensions < sizeof (Index) * 8u);
+
+    static constexpr Index NODE_CHILDREN_COUNT = 1u << Dimensions;
+
+    static constexpr Index SELECT_TOP_NODE = NODE_CHILDREN_COUNT;
+
+    struct Node final
+    {
+        Node (PartitioningTree *_tree, const std::array<Index, Dimensions> &_center) noexcept;
+
+        Node (const Node &_other) = delete;
+
+        Node (Node &&_other) = delete;
+
+        ~Node () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (Node);
+
+        Container::Vector<const void *> records;
+        std::array<Index, Dimensions> center;
+
+        /// \brief We store children count to make no-children check faster.
+        std::size_t childrenCount = 0u;
+
+        std::array<Node *, NODE_CHILDREN_COUNT> children;
+    };
+
+    static std::size_t SelectNodeChildForShape (const Node &_node, const Shape &_shape) noexcept;
+
+    static bool IsSafeToDelete (const Node &_node) noexcept;
+
+    void DeleteNodeWithChildren (Node *_node);
+
+    Index border;
+    Index maxLevel = 1u;
+    Memory::OrderedPool nodePool {Memory::Profiler::AllocationGroup {"Node"_us}, sizeof (Node), alignof (Node)};
+    Node *root = nullptr;
+};
+
+template <typename Unit, std::size_t Dimensions>
+class VolumetricTree final
+{
+private:
+    template <typename Enumerator, typename Geometry, typename Inheritor>
+    class EnumeratorWrapper
+    {
+    public:
+        EnumeratorWrapper (const EnumeratorWrapper &_other) noexcept = default;
+
+        EnumeratorWrapper (EnumeratorWrapper &&_other) noexcept = default;
+
+        ~EnumeratorWrapper () noexcept = default;
+
+        [[nodiscard]] const void *operator* () const noexcept;
+
+        Inheritor &operator++ () noexcept;
+
+        Inheritor &operator~() noexcept;
+
+        EnumeratorWrapper &operator= (const EnumeratorWrapper &_other) noexcept = default;
+
+        EnumeratorWrapper &operator= (EnumeratorWrapper &&_other) noexcept = default;
+
+    protected:
+        VolumetricTree *tree;
+        const Geometry geometry;
+
+    private:
+        friend class VolumetricTree;
+
+        EnumeratorWrapper (VolumetricTree *_tree, const Geometry &_geometry, Enumerator _enumerator) noexcept;
+
+        void EnsureCurrentRecordIsValid () noexcept;
+
+        std::size_t currentRecordIndex = 0u;
+        Enumerator enumerator;
     };
 
 public:
-    union SupportedAxisValue final
+    static constexpr bool USE_DOUBLE_AS_FLOATING_UNIT = sizeof (Unit) > sizeof (float);
+
+    using FloatingUnit = SelectType<double, float, USE_DOUBLE_AS_FLOATING_UNIT>;
+
+    struct Shape final
     {
-        SupportedAxisValue () noexcept;
+        struct MinMax final
+        {
+            Unit min;
+            Unit max;
+        };
 
-        SupportedAxisValue (int8_t _value) noexcept;
-
-        SupportedAxisValue (int16_t _value) noexcept;
-
-        SupportedAxisValue (int32_t _value) noexcept;
-
-        SupportedAxisValue (int64_t _value) noexcept;
-
-        SupportedAxisValue (uint8_t _value) noexcept;
-
-        SupportedAxisValue (uint16_t _value) noexcept;
-
-        SupportedAxisValue (uint32_t _value) noexcept;
-
-        SupportedAxisValue (uint64_t _value) noexcept;
-
-        SupportedAxisValue (float _value) noexcept;
-
-        SupportedAxisValue (double _value) noexcept;
-
-        int8_t int8;
-        int16_t int16;
-        int32_t int32;
-        int64_t int64;
-
-        uint8_t uint8;
-        uint16_t uint16;
-        uint32_t uint32;
-        uint64_t uint64;
-
-        float floating;
-        double doubleFloating;
+        std::array<MinMax, Dimensions> bounds;
     };
 
-    struct Dimension
+    struct FloatingShape final
     {
-        StandardLayout::Field minBorderField;
+        struct MinMax final
+        {
+            FloatingUnit min;
+            FloatingUnit max;
+        };
 
-        SupportedAxisValue globalMinBorder = 0u;
-
-        StandardLayout::Field maxBorderField;
-
-        SupportedAxisValue globalMaxBorder = 0u;
+        std::array<MinMax, Dimensions> bounds;
     };
 
-    using DimensionVector = Container::InplaceVector<Dimension, Constants::VolumetricIndex::MAX_DIMENSIONS>;
-
-    /// Used only for index construction. ::Dimension is according dimension representation of constructed index.
-    struct DimensionDescriptor final
-    {
-        SupportedAxisValue globalMinBorder;
-
-        StandardLayout::FieldId minBorderField;
-
-        SupportedAxisValue globalMaxBorder;
-
-        StandardLayout::FieldId maxBorderField;
-    };
-
-    /// \brief Axis aligned shape with specific value type.
-    template <typename AxisValue>
-    struct AxisAlignedShape final
-    {
-        /// \brief Contains min-max pairs for all dimensions.
-        /// \details It's recommended to use ::Min and ::Max methods to access values of this array.
-        std::array<AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
-
-        AxisValue &Min (std::size_t _dimensionIndex) noexcept;
-
-        AxisValue &Max (std::size_t _dimensionIndex) noexcept;
-
-        [[nodiscard]] const AxisValue &Min (std::size_t _dimensionIndex) const noexcept;
-
-        [[nodiscard]] const AxisValue &Max (std::size_t _dimensionIndex) const noexcept;
-    };
-
-    /// \brief Memory block, that can fit AxisAlignedShape of any supported type.
-    using AxisAlignedShapeContainer = std::array<uint8_t, sizeof (AxisAlignedShape<SupportedAxisValue>)>;
-
-    /// \brief Ray with specific value type.
-    template <typename AxisValue>
     struct Ray final
     {
-        /// \brief Contains origin-direction pairs for all dimensions.
-        /// \details It's recommended to use ::Origin and ::Direction methods to access values of this array.
-        std::array<AxisValue, Constants::VolumetricIndex::MAX_DIMENSIONS * 2u> data;
+        struct Axe final
+        {
+            Unit origin;
+            Unit direction;
+        };
 
-        AxisValue &Origin (std::size_t _dimensionIndex) noexcept;
-
-        AxisValue &Direction (std::size_t _dimensionIndex) noexcept;
-
-        const AxisValue &Origin (std::size_t _dimensionIndex) const noexcept;
-
-        const AxisValue &Direction (std::size_t _dimensionIndex) const noexcept;
+        std::array<Axe, Dimensions> axis;
     };
 
-    /// \brief Memory block, that can fit Ray of any supported type.
-    using RayContainer =
-        std::array<uint8_t, sizeof (SupportedAxisValue) * Constants::VolumetricIndex::MAX_DIMENSIONS * 2u>;
+    struct LimitedFloatingRay
+    {
+        struct Axe final
+        {
+            FloatingUnit origin;
+            FloatingUnit direction;
+        };
 
-    class ShapeIntersectionCursorBase
+        std::array<Axe, Dimensions> axis;
+        FloatingUnit lengthSquared;
+    };
+
+    struct Dimension final
+    {
+        StandardLayout::Field minField;
+
+        Unit minBorder;
+
+        StandardLayout::Field maxField;
+
+        Unit maxBorder;
+    };
+
+    class ShapeIntersectionEnumerator final
+        : public EnumeratorWrapper<typename PartitioningTree<Dimensions>::ShapeEnumerator,
+                                   Shape,
+                                   ShapeIntersectionEnumerator>
+    {
+    private:
+        friend class VolumetricTree;
+
+        ShapeIntersectionEnumerator (VolumetricTree *_tree,
+                                     const Shape &_shape,
+                                     typename PartitioningTree<Dimensions>::ShapeEnumerator _enumerator) noexcept;
+
+        bool CheckIntersection (const void *_record) const noexcept;
+    };
+
+    class RayIntersectionEnumerator final
+        : public EnumeratorWrapper<typename PartitioningTree<Dimensions>::RayEnumerator,
+                                   LimitedFloatingRay,
+                                   RayIntersectionEnumerator>
+    {
+    private:
+        friend class VolumetricTree;
+
+        RayIntersectionEnumerator (VolumetricTree *_tree,
+                                   const LimitedFloatingRay &_ray,
+                                   typename PartitioningTree<Dimensions>::RayEnumerator _enumerator) noexcept;
+
+        bool CheckIntersection (const void *_record) const noexcept;
+    };
+
+    VolumetricTree (const std::array<Dimension, Dimensions> &_dimensions) noexcept;
+
+    VolumetricTree (const VolumetricTree &_other) = delete;
+
+    VolumetricTree (VolumetricTree &&_other) noexcept = default;
+
+    ~VolumetricTree () noexcept = default;
+
+    [[nodiscard]] const std::array<Dimension, Dimensions> &GetDimensions () const noexcept;
+
+    ShapeIntersectionEnumerator EnumerateIntersectingShapes (const Shape &_shape) noexcept;
+
+    RayIntersectionEnumerator EnumerateIntersectingShapes (const Ray &_ray, FloatingUnit _maxLength) noexcept;
+
+    void Insert (const void *_record);
+
+    void Update (const void *_record, const void *_backup) noexcept;
+
+    bool IsPartitioningChanged (const void *_record, const void *_backup) const noexcept;
+
+    void EraseWithBackup (const void *_record, const void *_backup) noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (VolumetricTree);
+
+private:
+    static typename PartitioningTree<Dimensions>::Index PreparePartitioningSpace (
+        const std::array<Dimension, Dimensions> &_dimensions) noexcept;
+
+    Shape ExtractShape (const void *_record) const noexcept;
+
+    [[nodiscard]] typename PartitioningTree<Dimensions>::Shape ConvertToPartitioningShape (
+        const Shape &_shape) const noexcept;
+
+    [[nodiscard]] FloatingShape ConvertToFloatingShape (const Shape &_shape) const noexcept;
+
+    [[nodiscard]] typename PartitioningTree<Dimensions>::Index ConvertPointToIndex (
+        Unit _point, std::size_t _dimension) const noexcept;
+
+    [[nodiscard]] typename PartitioningTree<Dimensions>::FloatingIndex ConvertDirectionToIndex (
+        Unit _direction, std::size_t _dimension) const noexcept;
+
+    std::array<Dimension, Dimensions> dimensions;
+    PartitioningTree<Dimensions> partitioningTree;
+};
+
+using VolumetricTreeVariant = Container::Variant<VOLUMETRIC_TREE_VARIANTS ()>;
+
+using ShapeIntersectionEnumeratorVariant = Container::Variant<VOLUMETRIC_TREE_VARIANTS (::ShapeIntersectionEnumerator)>;
+
+using RayIntersectionEnumeratorVariant = Container::Variant<VOLUMETRIC_TREE_VARIANTS (::RayIntersectionEnumerator)>;
+
+class VolumetricIndex final : public IndexBase
+{
+public:
+    using ValuePlaceholder = std::array<uint8_t, 8u>;
+
+    struct DimensionDescriptor final
+    {
+        StandardLayout::FieldId minField;
+
+        ValuePlaceholder min;
+
+        StandardLayout::FieldId maxField;
+
+        ValuePlaceholder max;
+    };
+
+    struct Dimension final
+    {
+        StandardLayout::Field minField;
+
+        ValuePlaceholder min;
+
+        StandardLayout::Field maxField;
+
+        ValuePlaceholder max;
+    };
+
+    class DimensionIterator final
     {
     public:
-        ShapeIntersectionCursorBase (const ShapeIntersectionCursorBase &_other) noexcept;
-
-        ShapeIntersectionCursorBase (ShapeIntersectionCursorBase &&_other) noexcept;
-
-        ~ShapeIntersectionCursorBase () noexcept;
-
-        EMERGENCE_DELETE_ASSIGNMENT (ShapeIntersectionCursorBase);
-
-    protected:
-        ShapeIntersectionCursorBase (VolumetricIndex *_index,
-                                     const LeafSector &_sector,
-                                     const AxisAlignedShapeContainer &_shape) noexcept;
-
-        [[nodiscard]] bool IsFinished () const noexcept;
-
-        void MoveToNextRecord () noexcept;
-
-        [[nodiscard]] const void *GetRecord () const noexcept;
-
-        [[nodiscard]] VolumetricIndex *GetIndex () const noexcept;
-
-        /// Check CursorCommons::FixCurrentRecordIndex for explanation.
-        void FixCurrentRecordIndex () noexcept;
+        EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (DimensionIterator, const Dimension &);
 
     private:
-        template <typename>
-        friend struct CursorCommons;
+        friend class VolumetricIndex;
 
-        template <typename Operations>
-        bool MoveToNextCoordinate (const Operations & /*unused*/) noexcept;
+        DimensionIterator (const VolumetricIndex *_index, std::size_t _dimensionIndex) noexcept;
 
-        template <typename Operations>
-        bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
-
-        VolumetricIndex *index;
-        const LeafSector sector;
-        const AxisAlignedShapeContainer shape;
-
-        LeafCoordinate currentCoordinate;
-        std::size_t currentRecordIndex = 0u;
-
-        // TODO: Think about reworking ::visitedRecords mechanism.
-        //       Allocating huge vector on every query call is disgusting.
-
-        Container::Vector<bool> visitedRecords {
-            Memory::Profiler::AllocationGroup {"ShapeIntersectionVisitationMask"_us}};
+        const VolumetricIndex *index = nullptr;
+        std::size_t dimensionIndex = 0u;
     };
 
-    class ShapeIntersectionReadCursor final : private ShapeIntersectionCursorBase
+    class ShapeIntersectionReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (ShapeIntersectionReadCursor);
@@ -190,11 +452,13 @@ public:
         friend class VolumetricIndex;
 
         ShapeIntersectionReadCursor (VolumetricIndex *_index,
-                                     const LeafSector &_sector,
-                                     const AxisAlignedShapeContainer &_shape) noexcept;
+                                     ShapeIntersectionEnumeratorVariant _baseEnumerator) noexcept;
+
+        VolumetricIndex *index = nullptr;
+        ShapeIntersectionEnumeratorVariant baseEnumerator;
     };
 
-    class ShapeIntersectionEditCursor final : private ShapeIntersectionCursorBase
+    class ShapeIntersectionEditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (ShapeIntersectionEditCursor);
@@ -203,69 +467,19 @@ public:
         friend class VolumetricIndex;
 
         ShapeIntersectionEditCursor (VolumetricIndex *_index,
-                                     const LeafSector &_sector,
-                                     const AxisAlignedShapeContainer &_shape) noexcept;
+                                     ShapeIntersectionEnumeratorVariant _baseEnumerator) noexcept;
 
-        void BeginRecordEdition () const noexcept;
+        template <typename Enumerator>
+        void BeginRecordEdition (Enumerator &_enumerator) noexcept;
+
+        template <typename Enumerator>
+        bool EndRecordEdition (Enumerator &_enumerator) noexcept;
+
+        VolumetricIndex *index = nullptr;
+        ShapeIntersectionEnumeratorVariant baseEnumerator;
     };
 
-    class RayIntersectionCursorBase
-    {
-    public:
-        RayIntersectionCursorBase (const RayIntersectionCursorBase &_other) noexcept;
-
-        RayIntersectionCursorBase (RayIntersectionCursorBase &&_other) noexcept;
-
-        ~RayIntersectionCursorBase () noexcept;
-
-        EMERGENCE_DELETE_ASSIGNMENT (RayIntersectionCursorBase);
-
-    protected:
-        RayIntersectionCursorBase (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
-
-        [[nodiscard]] bool IsFinished () const noexcept;
-
-        void MoveToNextRecord () noexcept;
-
-        [[nodiscard]] const void *GetRecord () const noexcept;
-
-        [[nodiscard]] VolumetricIndex *GetIndex () const noexcept;
-
-        /// Check CursorCommons::FixCurrentRecordIndex for explanation.
-        void FixCurrentRecordIndex () noexcept;
-
-    private:
-        template <typename>
-        friend struct CursorCommons;
-
-        template <typename Operations>
-        bool MoveToNextCoordinate (const Operations & /*unused*/) noexcept;
-
-        template <typename Operations>
-        bool CheckIntersection (const void *_record, const Operations &_operations) const noexcept;
-
-        VolumetricIndex *index;
-
-        /// \brief Intermediate point in leaf coordinates (not world coordinates), used for next leaf selection.
-        std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> currentPoint;
-
-        /// \brief Ray direction, converted into leaf coordinates.
-        std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> direction;
-
-        /// Distance from ray origin to ::currentPoint border in world coordinates.
-        float distanceTraveled = 0.0f;
-
-        const RayContainer ray;
-
-        /// \brief Maximum allowed distance for ray-shape collisions.
-        const float maxDistance;
-
-        LeafCoordinate currentCoordinate;
-        std::size_t currentRecordIndex = 0u;
-        Container::Vector<bool> visitedRecords {Memory::Profiler::AllocationGroup {"RayIntersectionVisitationMask"_us}};
-    };
-
-    class RayIntersectionReadCursor final : private RayIntersectionCursorBase
+    class RayIntersectionReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (RayIntersectionReadCursor);
@@ -273,10 +487,13 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionReadCursor (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
+        RayIntersectionReadCursor (VolumetricIndex *_index, RayIntersectionEnumeratorVariant _baseEnumerator) noexcept;
+
+        VolumetricIndex *index = nullptr;
+        RayIntersectionEnumeratorVariant baseEnumerator;
     };
 
-    class RayIntersectionEditCursor final : private RayIntersectionCursorBase
+    class RayIntersectionEditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (RayIntersectionEditCursor);
@@ -284,99 +501,48 @@ public:
     private:
         friend class VolumetricIndex;
 
-        RayIntersectionEditCursor (VolumetricIndex *_index, const RayContainer &_ray, float _maxDistance) noexcept;
+        RayIntersectionEditCursor (VolumetricIndex *_index, RayIntersectionEnumeratorVariant _baseEnumerator) noexcept;
 
-        void BeginRecordEdition () const noexcept;
+        template <typename Enumerator>
+        void BeginRecordEdition (Enumerator &_enumerator) noexcept;
+
+        template <typename Enumerator>
+        bool EndRecordEdition (Enumerator &_enumerator) noexcept;
+
+        VolumetricIndex *index = nullptr;
+        RayIntersectionEnumeratorVariant baseEnumerator;
     };
 
-    /// There is no sense to copy indices.
+    VolumetricIndex (Storage *_storage,
+                     const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
+
     VolumetricIndex (const VolumetricIndex &_other) = delete;
 
-    /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     VolumetricIndex (VolumetricIndex &&_other) = delete;
 
-    const DimensionVector &GetDimensions () const noexcept;
+    ~VolumetricIndex () noexcept = default;
 
-    ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const AxisAlignedShapeContainer &_shape) noexcept;
+    DimensionIterator BeginDimensions () const noexcept;
 
-    ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const AxisAlignedShapeContainer &_shape) noexcept;
+    DimensionIterator EndDimensions () const noexcept;
 
-    RayIntersectionReadCursor LookupRayIntersectionToRead (
-        const RayContainer &_ray, float _maxDistance = std::numeric_limits<float>::max ()) noexcept;
+    ShapeIntersectionReadCursor LookupShapeIntersectionToRead (const void *_shape) noexcept;
 
-    RayIntersectionEditCursor LookupRayIntersectionToEdit (
-        const RayContainer &_ray, float _maxDistance = std::numeric_limits<float>::max ()) noexcept;
+    ShapeIntersectionEditCursor LookupShapeIntersectionToEdit (const void *_shape) noexcept;
+
+    RayIntersectionReadCursor LookupRayIntersectionToRead (const void *_ray, float _rayLength) noexcept;
+
+    RayIntersectionEditCursor LookupRayIntersectionToEdit (const void *_ray, float _rayLength) noexcept;
 
     void Drop () noexcept;
 
-    /// There is no sense to copy assign indices.
-    VolumetricIndex &operator= (const VolumetricIndex &_other) = delete;
-
-    /// Move assigning indices is forbidden, because otherwise user can move index out of Storage.
-    VolumetricIndex &operator= (VolumetricIndex &&_other) = delete;
+    EMERGENCE_DELETE_ASSIGNMENT (VolumetricIndex);
 
 private:
     friend class Storage;
 
-    template <typename>
-    friend struct CursorCommons;
-
-    struct RecordData final
-    {
-        const void *record;
-        std::size_t recordId;
-    };
-
-    struct LeafData final
-    {
-        Container::Vector<RecordData> records;
-
-        Container::Vector<RecordData>::iterator FindRecord (const void *_record) noexcept;
-
-        /// \brief Deletes record from leaf using "exchange with last" strategy.
-        void DeleteRecord (const Container::Vector<RecordData>::iterator &_recordIterator) noexcept;
-    };
-
-    VolumetricIndex (Storage *_storage, const Container::Vector<DimensionDescriptor> &_dimensions) noexcept;
-
-    ~VolumetricIndex () = default;
-
-    template <typename Operations>
-    LeafSector CalculateSector (const void *_record, const Operations &_operations) const noexcept;
-
-    template <typename Operations>
-    LeafSector CalculateSector (const AxisAlignedShapeContainer &_shape, const Operations &_operations) const noexcept;
-
-    template <typename Operations>
-    SupportedAxisValue CalculateLeafSize (const Dimension &_dimension, const Operations &_operations) const noexcept;
-
-    template <typename Operations>
-    std::size_t CalculateCoordinate (const SupportedAxisValue &_value,
-                                     const Dimension &_dimension,
-                                     const SupportedAxisValue &_leafSize,
-                                     const Operations &_operations) const noexcept;
-
-    template <typename Operations>
-    bool CheckRayShapeIntersection (
-        const RayContainer &_ray,
-        const AxisAlignedShapeContainer &_shape,
-        float &_distanceOutput,
-        std::array<float, Constants::VolumetricIndex::MAX_DIMENSIONS> &_intersectionPointOutput,
-        const Operations &_operations) const noexcept;
-
-    template <typename Callback>
-    void ForEachCoordinate (const LeafSector &_sector, const Callback &_callback) const noexcept;
-
-    std::size_t GetLeafIndex (const LeafCoordinate &_coordinate) const noexcept;
-
-    bool IsInsideSector (const LeafSector &_sector, const LeafCoordinate &_coordinate) const noexcept;
-
-    bool AreEqual (const LeafCoordinate &_left, const LeafCoordinate &_right) const noexcept;
-
-    VolumetricIndex::LeafCoordinate NextInsideSector (const LeafSector &_sector,
-                                                      LeafCoordinate _coordinate) const noexcept;
-
-    bool AreEqual (const LeafSector &_left, const LeafSector &_right) const noexcept;
+    static VolumetricTreeVariant CreateVolumetricTree (
+        Storage *_storage, const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;
 
     void InsertRecord (const void *_record) noexcept;
 
@@ -384,62 +550,51 @@ private:
 
     void OnRecordChanged (const void *_record, const void *_recordBackup) noexcept;
 
+    bool OnRecordChangedByMe (const void *_record, const void *_recordBackup) noexcept;
+
     void OnWriterClosed () noexcept;
 
-    DimensionVector dimensions;
-
-    // TODO: For now we use simplified approach and work only with leaves, therefore reducing octree into grid.
-    //       This approach is problematic because it significantly limits count of subdivisions.
-    Container::Vector<LeafData> leaves;
-    Container::Vector<std::size_t> freeRecordIds;
-    std::size_t nextRecordId = 0u;
+    VolumetricTreeVariant tree;
+    Container::Vector<const void *> reinsertionQueue {Memory::Profiler::AllocationGroup {"ReinsertionQueue"_us}};
 };
 
-template <typename AxisValue>
-AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Min (std::size_t _dimensionIndex) noexcept
+// Must be inlined in header, otherwise some compilers do not generate code for these methods.
+template <std::size_t Dimensions>
+PartitioningTree<Dimensions>::~PartitioningTree () noexcept
 {
-    return data[_dimensionIndex * 2u];
+    if (root)
+    {
+        DeleteNodeWithChildren (root);
+    }
 }
 
-template <typename AxisValue>
-AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Max (std::size_t _dimensionIndex) noexcept
+template <std::size_t Dimensions>
+void PartitioningTree<Dimensions>::DeleteNodeWithChildren (Node *_node)
 {
-    return data[_dimensionIndex * 2u + 1u];
+    if (!_node)
+    {
+        return;
+    }
+
+    for (std::size_t index = 0u; index < NODE_CHILDREN_COUNT; ++index)
+    {
+        DeleteNodeWithChildren (_node->children[index]);
+        _node->children[index] = nullptr;
+    }
+
+    _node->~Node ();
+    nodePool.Release (_node);
 }
 
-template <typename AxisValue>
-const AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Min (std::size_t _dimensionIndex) const noexcept
+template <std::size_t Dimensions>
+PartitioningTree<Dimensions>::Node::~Node () noexcept
 {
-    return data[_dimensionIndex * 2u];
-}
-
-template <typename AxisValue>
-const AxisValue &VolumetricIndex::AxisAlignedShape<AxisValue>::Max (std::size_t _dimensionIndex) const noexcept
-{
-    return data[_dimensionIndex * 2u + 1u];
-}
-
-template <typename AxisValue>
-AxisValue &VolumetricIndex::Ray<AxisValue>::Origin (std::size_t _dimensionIndex) noexcept
-{
-    return data[_dimensionIndex * 2u];
-}
-
-template <typename AxisValue>
-AxisValue &VolumetricIndex::Ray<AxisValue>::Direction (std::size_t _dimensionIndex) noexcept
-{
-    return data[_dimensionIndex * 2u + 1u];
-}
-
-template <typename AxisValue>
-const AxisValue &VolumetricIndex::Ray<AxisValue>::Origin (std::size_t _dimensionIndex) const noexcept
-{
-    return data[_dimensionIndex * 2u];
-}
-
-template <typename AxisValue>
-const AxisValue &VolumetricIndex::Ray<AxisValue>::Direction (std::size_t _dimensionIndex) const noexcept
-{
-    return data[_dimensionIndex * 2u + 1u];
+#ifndef NDEBUG
+    // Ensure that all children are properly deleted by VolumetricTree::DeleteNode.
+    for (std::size_t index = 0u; index < NODE_CHILDREN_COUNT; ++index)
+    {
+        assert (!children[index]);
+    }
+#endif
 }
 } // namespace Emergence::Pegasus

@@ -21,10 +21,10 @@ requires std::is_copy_constructible_v<Cursor> Cursor CopyCursor (const Cursor &_
 }
 
 template <typename... Variants>
-std::variant<Variants...> CopyCursor (const std::variant<Variants...> &_other)
+Container::Variant<Variants...> CopyCursor (const Container::Variant<Variants...> &_other)
 {
     return std::visit (
-        [] (const auto &_cursor) -> std::variant<Variants...>
+        [] (const auto &_cursor) -> Container::Variant<Variants...>
         {
             if constexpr (std::is_copy_constructible_v<std::decay_t<decltype (_cursor)>>)
             {

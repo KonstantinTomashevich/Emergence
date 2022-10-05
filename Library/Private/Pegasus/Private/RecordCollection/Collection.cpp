@@ -160,11 +160,10 @@ VolumetricRepresentation Collection::CreateVolumetricRepresentation (
     for (const DimensionDescriptor &dimension : _dimensions)
     {
         convertedDimensions.emplace_back (Pegasus::VolumetricIndex::DimensionDescriptor {
-            *reinterpret_cast<const Pegasus::VolumetricIndex::SupportedAxisValue *> (dimension.globalMinBorder),
             dimension.minBorderField,
-
-            *reinterpret_cast<const Pegasus::VolumetricIndex::SupportedAxisValue *> (dimension.globalMaxBorder),
+            *reinterpret_cast<const Pegasus::VolumetricIndex::ValuePlaceholder *> (dimension.globalMinBorder),
             dimension.maxBorderField,
+            *reinterpret_cast<const Pegasus::VolumetricIndex::ValuePlaceholder *> (dimension.globalMaxBorder),
         });
     }
 

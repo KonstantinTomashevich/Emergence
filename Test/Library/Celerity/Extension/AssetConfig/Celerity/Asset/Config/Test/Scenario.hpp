@@ -1,10 +1,9 @@
 #pragma once
 
-#include <variant>
-
 #include <Celerity/Asset/Config/Test/Types.hpp>
 
 #include <Container/String.hpp>
+#include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -42,7 +41,7 @@ struct CheckBuildingConfig final
 } // namespace Tasks
 
 using Task =
-    std::variant<Tasks::ResetEnvironment, Tasks::LoadConfig, Tasks::CheckUnitConfig, Tasks::CheckBuildingConfig>;
+    Container::Variant<Tasks::ResetEnvironment, Tasks::LoadConfig, Tasks::CheckUnitConfig, Tasks::CheckBuildingConfig>;
 
 void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept;
 } // namespace Emergence::Celerity::Test
