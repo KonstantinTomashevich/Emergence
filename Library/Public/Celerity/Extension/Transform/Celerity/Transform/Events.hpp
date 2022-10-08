@@ -6,17 +6,25 @@
 
 namespace Emergence::Celerity
 {
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentAddedFixedToNormalEvent, UniqueId, objectId);
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentAddedNormalEvent, UniqueId, objectId);
+#define DECLARE_TRANSFORM_EVENTS(Dimension)                                                                            \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentAddedFixedToNormalEvent, UniqueId,          \
+                                           objectId);                                                                  \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentAddedNormalEvent, UniqueId, objectId);      \
+                                                                                                                       \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (                                                                            \
+        Transform##Dimension##dComponentVisualLocalTransformChangedFixedToNormalEvent, UniqueId, objectId);            \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentVisualLocalTransformChangedNormalEvent,     \
+                                           UniqueId, objectId);                                                        \
+                                                                                                                       \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentRemovedFixedEvent, UniqueId, objectId);     \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentRemovedNormalEvent, UniqueId, objectId);    \
+    EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentRemovedFixedToNormalEvent, UniqueId,        \
+                                           objectId);
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentVisualLocalTransformChangedFixedToNormalEvent,
-                                       UniqueId,
-                                       objectId);
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentVisualLocalTransformChangedNormalEvent, UniqueId, objectId);
+DECLARE_TRANSFORM_EVENTS (2)
+DECLARE_TRANSFORM_EVENTS (3)
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentRemovedFixedEvent, UniqueId, objectId);
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentRemovedNormalEvent, UniqueId, objectId);
-EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform3dComponentRemovedFixedToNormalEvent, UniqueId, objectId);
+void RegisterTransform2dEvents (EventRegistrar &_registrar) noexcept;
 
-void RegisterTransformEvents (EventRegistrar &_registrar) noexcept;
+void RegisterTransform3dEvents (EventRegistrar &_registrar) noexcept;
 } // namespace Emergence::Celerity

@@ -2,7 +2,7 @@
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>

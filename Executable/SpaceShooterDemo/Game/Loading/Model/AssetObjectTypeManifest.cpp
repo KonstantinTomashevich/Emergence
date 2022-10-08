@@ -1,6 +1,6 @@
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>

@@ -1,39 +1,45 @@
-#include <Celerity/Transform/Transform3dComponent.hpp>
-#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-UniqueId Transform3dComponent::GetObjectId () const noexcept
+template <typename Transform>
+UniqueId TransformComponent<Transform>::GetObjectId () const noexcept
 {
     return objectId;
 }
 
-void Transform3dComponent::SetObjectId (UniqueId _objectId) noexcept
+template <typename Transform>
+void TransformComponent<Transform>::SetObjectId (UniqueId _objectId) noexcept
 {
     objectId = _objectId;
 }
 
-UniqueId Transform3dComponent::GetParentObjectId () const noexcept
+template <typename Transform>
+UniqueId TransformComponent<Transform>::GetParentObjectId () const noexcept
 {
     return parentObjectId;
 }
 
-void Transform3dComponent::SetParentObjectId (UniqueId _parentObjectId) noexcept
+template <typename Transform>
+void TransformComponent<Transform>::SetParentObjectId (UniqueId _parentObjectId) noexcept
 {
     parentObjectId = _parentObjectId;
     logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
 }
 
-const Math::Transform3d &Transform3dComponent::GetLogicalLocalTransform () const noexcept
+template <typename Transform>
+const Transform &TransformComponent<Transform>::GetLogicalLocalTransform () const noexcept
 {
     return logicalLocalTransform;
 }
 
-void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_transform,
-                                                     bool _skipInterpolation) noexcept
+template <typename Transform>
+void TransformComponent<Transform>::SetLogicalLocalTransform (const Transform &_transform,
+                                                              bool _skipInterpolation) noexcept
 {
     logicalLocalTransform = _transform;
     ++logicalLocalTransformRevision;
@@ -56,8 +62,9 @@ void Transform3dComponent::SetLogicalLocalTransform (const Math::Transform3d &_t
     }
 }
 
-const Math::Transform3d &Transform3dComponent::GetLogicalWorldTransform (
-    Transform3dWorldAccessor &_accessor) const noexcept
+template <typename Transform>
+const Transform &TransformComponent<Transform>::GetLogicalWorldTransform (
+    TransformWorldAccessor<Transform> &_accessor) const noexcept
 {
     static std::atomic_flag lock;
     AtomicFlagGuard guard {lock};
@@ -66,20 +73,23 @@ const Math::Transform3d &Transform3dComponent::GetLogicalWorldTransform (
     return logicalWorldTransformCache;
 }
 
-const Math::Transform3d &Transform3dComponent::GetVisualLocalTransform () const noexcept
+template <typename Transform>
+const Transform &TransformComponent<Transform>::GetVisualLocalTransform () const noexcept
 {
     return visualLocalTransform;
 }
 
-void Transform3dComponent::SetVisualLocalTransform (const Math::Transform3d &_transform) noexcept
+template <typename Transform>
+void TransformComponent<Transform>::SetVisualLocalTransform (const Transform &_transform) noexcept
 {
     visualLocalTransform = _transform;
     ++visualLocalTransformRevision;
     visualLocalTransformChangedSinceLastUpdate = true;
 }
 
-const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
-    Transform3dWorldAccessor &_accessor) const noexcept
+template <typename Transform>
+const Transform &TransformComponent<Transform>::GetVisualWorldTransform (
+    TransformWorldAccessor<Transform> &_accessor) const noexcept
 {
     static std::atomic_flag lock;
     AtomicFlagGuard guard {lock};
@@ -89,8 +99,8 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
 }
 
 #define CACHE_UPDATE_METHOD(MethodTag, VariableTag)                                                                    \
-    auto cursor = _accessor.fetchTransform3dByObjectId.Execute (&parentObjectId);                                      \
-    const auto *parent = static_cast<const Transform3dComponent *> (*cursor);                                          \
+    auto cursor = _accessor.fetchTransformByObjectId.Execute (&parentObjectId);                                        \
+    const auto *parent = static_cast<const TransformComponent *> (*cursor);                                            \
                                                                                                                        \
     if (parent)                                                                                                        \
     {                                                                                                                  \
@@ -122,21 +132,42 @@ const Math::Transform3d &Transform3dComponent::GetVisualWorldTransform (
                                                                                                                        \
     return false
 
-bool Transform3dComponent::UpdateLogicalWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept
+template <typename Transform>
+bool TransformComponent<Transform>::UpdateLogicalWorldTransformCache (
+    TransformWorldAccessor<Transform> &_accessor) const noexcept
 {
     CACHE_UPDATE_METHOD (Logical, logical);
 }
 
-bool Transform3dComponent::UpdateVisualWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept
+template <typename Transform>
+bool TransformComponent<Transform>::UpdateVisualWorldTransformCache (
+    TransformWorldAccessor<Transform> &_accessor) const noexcept
 {
     CACHE_UPDATE_METHOD (Visual, visual);
 }
 
-const Transform3dComponent::Reflection &Transform3dComponent::Reflect () noexcept
+template <typename Transform>
+const typename TransformComponent<Transform>::Reflection &TransformComponent<Transform>::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Transform3dComponent);
+        constexpr const char *NAME = []() constexpr
+        {
+            if constexpr (std::is_same_v<Transform, Math::Transform2d>)
+            {
+                return "Transform2dComponent";
+            }
+
+            if constexpr (std::is_same_v<Transform, Math::Transform3d>)
+            {
+                return "Transform3dComponent";
+            }
+
+            return "TransformUnknownComponent";
+        }
+        ();
+
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME (TransformComponent, NAME);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (parentObjectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (logicalLocalTransform);
@@ -150,4 +181,7 @@ const Transform3dComponent::Reflection &Transform3dComponent::Reflect () noexcep
 
     return reflection;
 }
+
+template class TransformComponent<Math::Transform2d>;
+template class TransformComponent<Math::Transform3d>;
 } // namespace Emergence::Celerity

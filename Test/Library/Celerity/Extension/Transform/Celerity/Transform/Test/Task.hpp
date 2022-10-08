@@ -12,6 +12,7 @@
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
 
+#include <Math/Transform2d.hpp>
 #include <Math/Transform3d.hpp>
 
 namespace Emergence::Celerity::Test
@@ -32,17 +33,43 @@ struct ChangeParent final
 
 struct SetLocalTransform final
 {
+    SetLocalTransform (UniqueId _id,
+                       bool _logical,
+                       bool _skipInterpolation,
+                       const Math::Transform2d &_transform2D) noexcept;
+
+    SetLocalTransform (UniqueId _id,
+                       bool _logical,
+                       bool _skipInterpolation,
+                       const Math::Transform3d &_transform3D) noexcept;
+
     Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
     bool logical = true;
 
     /// \warning Ignored if not ::logical.
     bool skipInterpolation = false;
 
-    Math::Transform3d transform;
+    union
+    {
+        Math::Transform2d transform2d;
+        Math::Transform3d transform3d;
+    };
 };
 
 struct CheckTransform final
 {
+    CheckTransform (UniqueId _id,
+                    bool _logical,
+                    bool _local,
+                    bool _useModifyQuery,
+                    const Math::Transform2d &_expectedTransform2D) noexcept;
+
+    CheckTransform (UniqueId _id,
+                    bool _logical,
+                    bool _local,
+                    bool _useModifyQuery,
+                    const Math::Transform3d &_expectedTransform3D) noexcept;
+
     Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
     bool logical = true;
     bool local = true;
@@ -50,7 +77,11 @@ struct CheckTransform final
     /// \warning Ignored if ::local.
     bool useModifyQuery = false;
 
-    Math::Transform3d expectedTransform;
+    union
+    {
+        Math::Transform2d expectedTransform2d;
+        Math::Transform3d expectedTransform3d;
+    };
 };
 
 struct CheckTransformExists final
@@ -76,12 +107,19 @@ namespace RequestExecutor
 {
 using RequestPacket = Container::Vector<Request>;
 
-void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
+void Add2dToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                        Container::Vector<RequestPacket> _requests,
                        bool _withHierarchyCleanup = false) noexcept;
 
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
+void Add2dToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                         Container::Vector<RequestPacket> _requests) noexcept;
+
+void Add3dToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
+                         Container::Vector<RequestPacket> _requests,
+                         bool _withHierarchyCleanup = false) noexcept;
+
+void Add3dToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
+                          Container::Vector<RequestPacket> _requests) noexcept;
 } // namespace RequestExecutor
 } // namespace Emergence::Celerity::Test
 

@@ -3,8 +3,8 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
-#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/EffectConstant.hpp>

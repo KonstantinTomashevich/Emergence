@@ -8,12 +8,10 @@
 
 #include <StandardLayout/MappingBuilder.hpp>
 
-/// \brief Helper for mapping static registration. Contains beginning of registration functor.
-/// \invariant Class reflection structure name must be Class::Reflection.
-/// \see EMERGENCE_MAPPING_REGISTRATION_END
-#define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
+/// \brief Version of EMERGENCE_MAPPING_REGISTRATION_BEGIN, that allows custom class name to be passed.
+#define EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME(Class, ClassName)                                        \
     Emergence::StandardLayout::MappingBuilder builder;                                                                 \
-    builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class), alignof (Class));                         \
+    builder.Begin (Emergence::Memory::UniqueString {ClassName}, sizeof (Class), alignof (Class));                      \
     using Type [[maybe_unused]] = Class;                                                                               \
                                                                                                                        \
     if constexpr (std::is_default_constructible_v<Class> && !std::is_trivially_default_constructible_v<Class>)         \
@@ -27,6 +25,12 @@
     }                                                                                                                  \
                                                                                                                        \
     Class::Reflection reflectionData
+
+/// \brief Helper for mapping static registration. Contains beginning of registration functor.
+/// \invariant Class reflection structure name must be Class::Reflection.
+/// \see EMERGENCE_MAPPING_REGISTRATION_END
+#define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
+    EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME (Class, #Class)
 
 /// \brief Helper for mapping static registration. Contains ending of registration functor.
 /// \invariant Class reflection structure name must contain `mapping` field, in which resulting mapping will be stored.
@@ -106,14 +110,16 @@ void DefaultDestructor (void *_address)
 
 /// \brief Checks that type has static `Reflect` method for reflection-based logic.
 template <typename T>
-concept HasReflection = requires (T)
-{
-    {T::Reflect ()};
-};
+concept HasReflection = requires (T) {
+                            {
+                                T::Reflect ()
+                            };
+                        };
 
 /// \brief Checks that type is supported by ::RegisterRegularField function logic.
 template <typename T>
-concept RegularFieldType = std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
+concept RegularFieldType =
+    std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
     std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
     std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
     std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, Memory::UniqueString> ||
