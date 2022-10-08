@@ -19,7 +19,6 @@ namespace Emergence::Celerity
 IMPLEMENT_TRANSFORM_EVENTS (2)
 IMPLEMENT_TRANSFORM_EVENTS (3)
 
-
 #define REGISTER_TRANSFORM_EVENTS(Dimension)                                                                           \
     _registrar.OnAddEvent ({{Transform##Dimension##dComponentAddedFixedToNormalEvent::Reflect ().mapping,              \
                              EventRoute::FROM_FIXED_TO_NORMAL},                                                        \

@@ -13,8 +13,7 @@ const Memory::UniqueString Checkpoint::DETACHMENT_DETECTION_FINISHED {
     "TransformHierarchyCleanup::DetachmentDetectionFinished"};
 
 const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_STARTED {"TransformHierarchyCleanup::DetachedRemovalStarted"};
-const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_FINISHED {
-    "TransformHierarchyCleanup::DetachedRemovalFinished"};
+const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_FINISHED {"TransformHierarchyCleanup::DetachedRemovalFinished"};
 
 namespace Tasks
 {
