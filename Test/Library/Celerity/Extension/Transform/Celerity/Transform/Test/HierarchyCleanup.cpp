@@ -9,8 +9,8 @@
 
 namespace Emergence::Celerity::Test
 {
-using namespace Emergence::Celerity::Test::Requests;
 using namespace Memory::Literals;
+using namespace Requests;
 
 template <bool use2d>
 void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _scenario)

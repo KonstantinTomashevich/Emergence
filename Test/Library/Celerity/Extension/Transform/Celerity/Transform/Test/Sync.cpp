@@ -14,6 +14,7 @@
 namespace Emergence::Celerity::Test
 {
 using namespace Memory::Literals;
+using namespace Requests;
 
 // Use 1 us fixed frames to make test time points more readable.
 constexpr float TEST_FIXED_FRAME_TIME_S = 0.000001f;
@@ -196,7 +197,6 @@ void InterpolationWithPauseTest (const Transform &_initialTransform,
 } // namespace Emergence::Celerity::Test
 
 using namespace Emergence::Math;
-using namespace Emergence::Celerity::Test::Requests;
 using namespace Emergence::Celerity::Test;
 
 BEGIN_SUITE (TransformVisualSync2d)
