@@ -16,22 +16,22 @@ namespace Requests
 SetLocalTransform::SetLocalTransform (Celerity::UniqueId _id,
                                       bool _logical,
                                       bool _skipInterpolation,
-                                      const Math::Transform2d &_transform2D) noexcept
+                                      const Math::Transform2d &_transform2d) noexcept
     : id (_id),
       logical (_logical),
       skipInterpolation (_skipInterpolation),
-      transform2d (_transform2D)
+      transform2d (_transform2d)
 {
 }
 
 SetLocalTransform::SetLocalTransform (Celerity::UniqueId _id,
                                       bool _logical,
                                       bool _skipInterpolation,
-                                      const Math::Transform3d &_transform3D) noexcept
+                                      const Math::Transform3d &_transform3d) noexcept
     : id (_id),
       logical (_logical),
       skipInterpolation (_skipInterpolation),
-      transform3d (_transform3D)
+      transform3d (_transform3d)
 {
 }
 

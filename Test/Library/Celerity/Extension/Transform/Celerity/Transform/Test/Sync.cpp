@@ -19,16 +19,16 @@ using namespace Requests;
 // Use 1 us fixed frames to make test time points more readable.
 constexpr float TEST_FIXED_FRAME_TIME_S = 0.000001f;
 
-template <bool use2d>
 void SyncTest (Container::Vector<uint64_t> _timeSamples,
                Container::Vector<RequestExecutor::RequestPacket> _fixedRequests,
-               Container::Vector<RequestExecutor::RequestPacket> _normalRequests)
+               Container::Vector<RequestExecutor::RequestPacket> _normalRequests,
+               bool _use2d)
 {
     World world {"TestWorld"_us, WorldConfiguration {{TEST_FIXED_FRAME_TIME_S}}};
     PipelineBuilder builder {&world};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
-    if (use2d)
+    if (_use2d)
     {
         RequestExecutor::Add2dToFixedUpdate (builder, std::move (_fixedRequests));
     }
@@ -40,7 +40,7 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
     REQUIRE (builder.End ());
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
 
-    if (use2d)
+    if (_use2d)
     {
         VisualTransformSync::Add2dToNormalUpdate (builder);
         RequestExecutor::Add2dToNormalUpdate (builder, std::move (_normalRequests));
@@ -67,7 +67,7 @@ void TrivialInterpolationTest (const Transform &_initialTransform,
                                const Transform &_transform080,
                                const Transform &_targetTransform)
 {
-    SyncTest<std::is_same_v<Transform, Math::Transform2d>> (
+    SyncTest (
         {
             0u,
             1000u,
@@ -88,13 +88,14 @@ void TrivialInterpolationTest (const Transform &_initialTransform,
             {{CheckTransform {0u, false, true, false, _transform025}}},
             {{CheckTransform {0u, false, true, false, _transform080}}},
             {{CheckTransform {0u, false, true, false, _targetTransform}}},
-        });
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
 template <typename Transform>
 void InterpolationSkipTest (const Transform &_initialTransform, const Transform &_targetTransform)
 {
-    SyncTest<std::is_same_v<Transform, Math::Transform2d>> (
+    SyncTest (
         {
             0u,
             1000u,
@@ -115,7 +116,8 @@ void InterpolationSkipTest (const Transform &_initialTransform, const Transform 
             {{CheckTransform {0u, false, true, false, _targetTransform}}},
             {{CheckTransform {0u, false, true, false, _targetTransform}}},
             {{CheckTransform {0u, false, true, false, _targetTransform}}},
-        });
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
 template <typename Transform>
@@ -126,7 +128,7 @@ void InterpolationAndWorldTransformTest (const Transform &_parentInitialTransfor
                                          const Transform &_childWorldTransform025,
                                          const Transform &_childWorldTransform080)
 {
-    SyncTest<std::is_same_v<Transform, Math::Transform2d>> (
+    SyncTest (
         {
             0u,
             1000u,
@@ -152,7 +154,8 @@ void InterpolationAndWorldTransformTest (const Transform &_parentInitialTransfor
             {{CheckTransform {1u, false, false, false, _childWorldTransform025}}},
             {{CheckTransform {1u, false, false, false, _childWorldTransform080}}},
             {{CheckTransform {1u, false, false, false, _parentTargetTransform * _childTargetTransform}}},
-        });
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
 template <typename Transform>
@@ -161,7 +164,7 @@ void InterpolationWithPauseTest (const Transform &_initialTransform,
                                  const Transform &_transform080,
                                  const Transform &_targetTransform)
 {
-    SyncTest<std::is_same_v<Transform, Math::Transform2d>> (
+    SyncTest (
         {
             0u,
             1000u,
@@ -192,7 +195,8 @@ void InterpolationWithPauseTest (const Transform &_initialTransform,
             {{CheckTransform {0u, false, true, false, _transform080}}},
             {{CheckTransform {0u, false, true, false, _transform025}}},
             {{CheckTransform {0u, false, true, false, _initialTransform}}},
-        });
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 } // namespace Emergence::Celerity::Test
 

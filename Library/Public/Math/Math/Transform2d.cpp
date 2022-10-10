@@ -1,7 +1,3 @@
-// We use CGLM for math (especially non-trivial one), because it is written in an optimized way (including SIMD usage).
-// We use a lot of const casts, because CGLM doesn't use const keyword even when arguments are constant.
-#include <cglm/affine.h>
-
 #include <Math/Scalar.hpp>
 #include <Math/Transform2d.hpp>
 

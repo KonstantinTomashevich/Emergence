@@ -36,12 +36,12 @@ struct SetLocalTransform final
     SetLocalTransform (UniqueId _id,
                        bool _logical,
                        bool _skipInterpolation,
-                       const Math::Transform2d &_transform2D) noexcept;
+                       const Math::Transform2d &_transform2d) noexcept;
 
     SetLocalTransform (UniqueId _id,
                        bool _logical,
                        bool _skipInterpolation,
-                       const Math::Transform3d &_transform3D) noexcept;
+                       const Math::Transform3d &_transform3d) noexcept;
 
     Celerity::UniqueId id = Celerity::INVALID_UNIQUE_ID;
     bool logical = true;

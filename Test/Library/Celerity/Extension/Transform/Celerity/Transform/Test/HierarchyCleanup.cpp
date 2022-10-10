@@ -12,13 +12,12 @@ namespace Emergence::Celerity::Test
 using namespace Memory::Literals;
 using namespace Requests;
 
-template <bool use2d>
-void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _scenario)
+void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _scenario, bool _use2d)
 {
     World world {"TestWorld"_us};
     {
         EventRegistrar registrar {&world};
-        if (use2d)
+        if (_use2d)
         {
             RegisterTransform2dEvents (registrar);
         }
@@ -32,7 +31,7 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     const std::size_t stepCount = _scenario.size ();
 
-    if (use2d)
+    if (_use2d)
     {
         HierarchyCleanup::Add2dToFixedUpdate (builder);
         RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario), true);
@@ -129,17 +128,17 @@ BEGIN_SUITE (HierarchyCleanup2d)
 
 TEST_CASE (OneLevel)
 {
-    HierarchyCleanupTest<true> (ONE_LEVEL_TEST);
+    HierarchyCleanupTest (ONE_LEVEL_TEST, true);
 }
 
 TEST_CASE (MultipleLevels)
 {
-    HierarchyCleanupTest<true> (MULTIPLE_LEVELS_TEST);
+    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, true);
 }
 
 TEST_CASE (IntermediateTransformRemoval)
 {
-    HierarchyCleanupTest<true> (INTERMEDIATE_TRANSFORM_REMOVAL_TEST);
+    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, true);
 }
 
 END_SUITE
@@ -148,17 +147,17 @@ BEGIN_SUITE (HierarchyCleanup3d)
 
 TEST_CASE (OneLevel)
 {
-    HierarchyCleanupTest<false> (ONE_LEVEL_TEST);
+    HierarchyCleanupTest (ONE_LEVEL_TEST, false);
 }
 
 TEST_CASE (MultipleLevels)
 {
-    HierarchyCleanupTest<false> (MULTIPLE_LEVELS_TEST);
+    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, false);
 }
 
 TEST_CASE (IntermediateTransformRemoval)
 {
-    HierarchyCleanupTest<false> (INTERMEDIATE_TRANSFORM_REMOVAL_TEST);
+    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, false);
 }
 
 END_SUITE

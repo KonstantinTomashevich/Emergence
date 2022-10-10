@@ -10,14 +10,13 @@ namespace Emergence::Celerity::Test
 {
 using namespace Memory::Literals;
 
-template <bool use2d>
-void OperationsTest (RequestExecutor::RequestPacket _scenario)
+void OperationsTest (RequestExecutor::RequestPacket _scenario, bool _use2d)
 {
     World world {"TestWorld"_us};
     PipelineBuilder builder {&world};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
-    if (use2d)
+    if (_use2d)
     {
         RequestExecutor::Add2dToFixedUpdate (builder, {std::move (_scenario)});
     }
@@ -46,41 +45,43 @@ void HierarchyTest (bool _logical,
 {
     using namespace Requests;
 
-    OperationsTest<std::is_same_v<Transform, Math::Transform2d>> ({
-        CreateTransform {0u, INVALID_UNIQUE_ID},
-        SetLocalTransform {0u, _logical, false, _initial0},
+    OperationsTest (
+        {
+            CreateTransform {0u, INVALID_UNIQUE_ID},
+            SetLocalTransform {0u, _logical, false, _initial0},
 
-        CreateTransform {1u, 0u},
-        SetLocalTransform {1u, _logical, false, _initial1},
+            CreateTransform {1u, 0u},
+            SetLocalTransform {1u, _logical, false, _initial1},
 
-        CreateTransform {2u, 1u},
-        SetLocalTransform {2u, _logical, false, _initial2},
+            CreateTransform {2u, 1u},
+            SetLocalTransform {2u, _logical, false, _initial2},
 
-        CreateTransform {3u, 2u},
-        SetLocalTransform {3u, _logical, false, _initial3},
+            CreateTransform {3u, 2u},
+            SetLocalTransform {3u, _logical, false, _initial3},
 
-        CreateTransform {4u, INVALID_UNIQUE_ID},
-        SetLocalTransform {4u, _logical, false, _initial4},
+            CreateTransform {4u, INVALID_UNIQUE_ID},
+            SetLocalTransform {4u, _logical, false, _initial4},
 
-        CreateTransform {5u, 4u},
-        SetLocalTransform {5u, _logical, false, _initial5},
+            CreateTransform {5u, 4u},
+            SetLocalTransform {5u, _logical, false, _initial5},
 
-        // Do several checks to test caching.
-        CheckTransform {3u, _logical, false, _useModifyQuery, _expected3},
-        CheckTransform {3u, _logical, false, _useModifyQuery, _expected3},
-        CheckTransform {5u, _logical, false, _useModifyQuery, _expected5},
-        CheckTransform {5u, _logical, false, _useModifyQuery, _expected5},
+            // Do several checks to test caching.
+            CheckTransform {3u, _logical, false, _useModifyQuery, _expected3},
+            CheckTransform {3u, _logical, false, _useModifyQuery, _expected3},
+            CheckTransform {5u, _logical, false, _useModifyQuery, _expected5},
+            CheckTransform {5u, _logical, false, _useModifyQuery, _expected5},
 
-        // Check that caching reacts to change inside hierarchy correctly.
-        SetLocalTransform {2u, _logical, false, Transform {}},
-        CheckTransform {3u, _logical, false, _useModifyQuery, _expected3Changed},
-        CheckTransform {3u, _logical, false, _useModifyQuery, _expected3Changed},
+            // Check that caching reacts to change inside hierarchy correctly.
+            SetLocalTransform {2u, _logical, false, Transform {}},
+            CheckTransform {3u, _logical, false, _useModifyQuery, _expected3Changed},
+            CheckTransform {3u, _logical, false, _useModifyQuery, _expected3Changed},
 
-        // Check that caching reacts to parent change correctly.
-        ChangeParent {3u, 4u},
-        CheckTransform {3u, _logical, false, _useModifyQuery, _expected3OtherParent},
-        CheckTransform {3u, _logical, false, _useModifyQuery, _expected3OtherParent},
-    });
+            // Check that caching reacts to parent change correctly.
+            ChangeParent {3u, 4u},
+            CheckTransform {3u, _logical, false, _useModifyQuery, _expected3OtherParent},
+            CheckTransform {3u, _logical, false, _useModifyQuery, _expected3OtherParent},
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
 void HierarchyTest3d (bool _logical, bool _useModifyQuery)
@@ -121,15 +122,17 @@ TEST_CASE (SetAndCheck)
     const Emergence::Math::Transform2d logicalTransform {{-11.0f, 15.0f}, 0.66f, {1.0f, 2.0f}};
     const Emergence::Math::Transform2d visualTransform {{-11.33f, 15.127f}, 0.69f, {2.0f, 1.0f}};
 
-    OperationsTest<true> ({
-        CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-        SetLocalTransform {0u, true, false, logicalTransform},
-        SetLocalTransform {0u, false, false, visualTransform},
-        CheckTransform {0u, true, true, false, logicalTransform},
-        CheckTransform {0u, true, false, false, logicalTransform},
-        CheckTransform {0u, false, true, false, visualTransform},
-        CheckTransform {0u, false, false, false, visualTransform},
-    });
+    OperationsTest (
+        {
+            CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
+            SetLocalTransform {0u, true, false, logicalTransform},
+            SetLocalTransform {0u, false, false, visualTransform},
+            CheckTransform {0u, true, true, false, logicalTransform},
+            CheckTransform {0u, true, false, false, logicalTransform},
+            CheckTransform {0u, false, true, false, visualTransform},
+            CheckTransform {0u, false, false, false, visualTransform},
+        },
+        true);
 }
 
 TEST_CASE (LogicalTransformHierarchy)
@@ -158,15 +161,17 @@ TEST_CASE (SetAndCheck)
     const Emergence::Math::Transform3d visualTransform {
         {-11.33f, 15.127f, 23.34f}, {{0.69f, 0.51f, 1.33f}}, {2.0f, 1.0f, 4.2f}};
 
-    OperationsTest<false> ({
-        CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-        SetLocalTransform {0u, true, false, logicalTransform},
-        SetLocalTransform {0u, false, false, visualTransform},
-        CheckTransform {0u, true, true, false, logicalTransform},
-        CheckTransform {0u, true, false, false, logicalTransform},
-        CheckTransform {0u, false, true, false, visualTransform},
-        CheckTransform {0u, false, false, false, visualTransform},
-    });
+    OperationsTest (
+        {
+            CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
+            SetLocalTransform {0u, true, false, logicalTransform},
+            SetLocalTransform {0u, false, false, visualTransform},
+            CheckTransform {0u, true, true, false, logicalTransform},
+            CheckTransform {0u, true, false, false, logicalTransform},
+            CheckTransform {0u, false, true, false, visualTransform},
+            CheckTransform {0u, false, false, false, visualTransform},
+        },
+        false);
 }
 
 TEST_CASE (LogicalTransformHierarchy)
