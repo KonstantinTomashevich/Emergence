@@ -17,8 +17,8 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
-#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/World.hpp>
 
 #include <Export/Graph.hpp>
@@ -151,7 +151,7 @@ void GameApplication::Start ()
         Emergence::Celerity::EventRegistrar registrar {&world};
         Emergence::Celerity::RegisterAssemblyEvents (registrar);
         Emergence::Celerity::RegisterPhysicsEvents (registrar);
-        Emergence::Celerity::RegisterTransformEvents (registrar);
+        Emergence::Celerity::RegisterTransform3dEvents (registrar);
         RegisterGameplayEvents (registrar);
         RegisterRenderEvents (registrar);
     }
@@ -177,7 +177,7 @@ void GameApplication::Start ()
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes ());
-    Emergence::Celerity::HierarchyCleanup::AddToFixedUpdate (pipelineBuilder);
+    Emergence::Celerity::HierarchyCleanup::Add3dToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
@@ -193,8 +193,8 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes ());
-    Emergence::Celerity::HierarchyCleanup::AddToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::VisualTransformSync::AddToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::HierarchyCleanup::Add3dToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::VisualTransformSync::Add3dToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);

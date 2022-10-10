@@ -24,9 +24,15 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString DETACHED_REMOVAL_FINISHED;
 };
 
-/// \brief Adds tasks required to cleanup detached transform hierarchy to fixed update pipeline.
-void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+/// \brief Adds tasks required to cleanup detached transform 2d hierarchy to fixed update pipeline.
+void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 
-/// \brief Adds tasks required to cleanup detached transform hierarchy to normal update pipeline.
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+/// \brief Adds tasks required to cleanup detached transform 2d hierarchy to normal update pipeline.
+void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+
+/// \brief Adds tasks required to cleanup detached transform 3d hierarchy to fixed update pipeline.
+void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+
+/// \brief Adds tasks required to cleanup detached transform 3d hierarchy to normal update pipeline.
+void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::HierarchyCleanup

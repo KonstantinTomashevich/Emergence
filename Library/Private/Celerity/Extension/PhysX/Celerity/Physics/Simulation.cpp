@@ -14,8 +14,8 @@
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
-#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Log/Log.hpp>
 

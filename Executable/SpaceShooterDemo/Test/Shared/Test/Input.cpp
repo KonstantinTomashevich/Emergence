@@ -1,7 +1,7 @@
 #include <thread>
 
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>

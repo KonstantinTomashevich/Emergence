@@ -13,8 +13,8 @@
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/Physics/Test/Task.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
-#include <Celerity/Transform/Transform3dWorldAccessor.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -415,7 +415,7 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
     {
         EventRegistrar registrar {&world};
         RegisterPhysicsEvents (registrar);
-        RegisterTransformEvents (registrar);
+        RegisterTransform3dEvents (registrar);
     }
 
     PipelineBuilder builder {&world};

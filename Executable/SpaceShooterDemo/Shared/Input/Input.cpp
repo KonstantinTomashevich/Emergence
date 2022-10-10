@@ -1,7 +1,7 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
-#include <Celerity/Transform/Transform3dHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Input/Input.hpp>
 #include <Input/InputListenerComponent.hpp>

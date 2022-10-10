@@ -8,12 +8,10 @@
 
 #include <StandardLayout/MappingBuilder.hpp>
 
-/// \brief Helper for mapping static registration. Contains beginning of registration functor.
-/// \invariant Class reflection structure name must be Class::Reflection.
-/// \see EMERGENCE_MAPPING_REGISTRATION_END
-#define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
+/// \brief Version of EMERGENCE_MAPPING_REGISTRATION_BEGIN, that allows custom class name to be passed.
+#define EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME(Class, ClassName)                                        \
     Emergence::StandardLayout::MappingBuilder builder;                                                                 \
-    builder.Begin (Emergence::Memory::UniqueString {#Class}, sizeof (Class), alignof (Class));                         \
+    builder.Begin (Emergence::Memory::UniqueString {ClassName}, sizeof (Class), alignof (Class));                      \
     using Type [[maybe_unused]] = Class;                                                                               \
                                                                                                                        \
     if constexpr (std::is_default_constructible_v<Class> && !std::is_trivially_default_constructible_v<Class>)         \
@@ -27,6 +25,12 @@
     }                                                                                                                  \
                                                                                                                        \
     Class::Reflection reflectionData
+
+/// \brief Helper for mapping static registration. Contains beginning of registration functor.
+/// \invariant Class reflection structure name must be Class::Reflection.
+/// \see EMERGENCE_MAPPING_REGISTRATION_END
+#define EMERGENCE_MAPPING_REGISTRATION_BEGIN(Class)                                                                    \
+    EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME (Class, #Class)
 
 /// \brief Helper for mapping static registration. Contains ending of registration functor.
 /// \invariant Class reflection structure name must contain `mapping` field, in which resulting mapping will be stored.

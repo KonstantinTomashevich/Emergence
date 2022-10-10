@@ -2,13 +2,15 @@
 
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Math/Transform2d.hpp>
 #include <Math/Transform3d.hpp>
 
 #include <SyntaxSugar/AtomicFlagGuard.hpp>
 
 namespace Emergence::Celerity
 {
-class Transform3dWorldAccessor;
+template <typename Transform>
+class TransformWorldAccessor;
 
 /// \brief Represents transform hierarchy node attached to an object.
 /// \details There are two types of object transform:
@@ -21,10 +23,11 @@ class Transform3dWorldAccessor;
 ///
 ///          If object is used only for visual effects, only its visual transform should be changed,
 ///          because it has no "logical" gameplay meaning.
-class Transform3dComponent final
+template <typename Transform>
+class TransformComponent final
 {
 public:
-    Transform3dComponent () noexcept = default;
+    TransformComponent () noexcept = default;
 
     /// \return Id of an object to which component is attached.
     UniqueId GetObjectId () const noexcept;
@@ -39,50 +42,51 @@ public:
     void SetParentObjectId (UniqueId _parentObjectId) noexcept;
 
     /// \return Local logical (see class details) transform.
-    const Math::Transform3d &GetLogicalLocalTransform () const noexcept;
+    const Transform &GetLogicalLocalTransform () const noexcept;
 
     /// \brief Set local logical (see class details) transform.
     /// \param _skipInterpolation If true, visual position will be set right away instead of being interpolated.
-    void SetLogicalLocalTransform (const Math::Transform3d &_transform, bool _skipInterpolation = false) noexcept;
+    void SetLogicalLocalTransform (const Transform &_transform, bool _skipInterpolation = false) noexcept;
 
     /// \return Global logical (see class details) transform.
-    const Math::Transform3d &GetLogicalWorldTransform (Transform3dWorldAccessor &_accessor) const noexcept;
+    const Transform &GetLogicalWorldTransform (TransformWorldAccessor<Transform> &_accessor) const noexcept;
 
     /// \return Local visual (see class details) transform.
-    const Math::Transform3d &GetVisualLocalTransform () const noexcept;
+    const Transform &GetVisualLocalTransform () const noexcept;
 
     /// \brief Set local visual (see class details) transform.
-    void SetVisualLocalTransform (const Math::Transform3d &_transform) noexcept;
+    void SetVisualLocalTransform (const Transform &_transform) noexcept;
 
     /// \return Global visual (see class details) transform.
-    const Math::Transform3d &GetVisualWorldTransform (Transform3dWorldAccessor &_accessor) const noexcept;
+    const Transform &GetVisualWorldTransform (TransformWorldAccessor<Transform> &_accessor) const noexcept;
 
 private:
-    friend class Transform3dVisualSynchronizer;
+    template <typename TransformComponentType>
+    friend class TransformVisualSynchronizer;
 
     /// \brief Used to inform transform caching logic that parent transform was never observed yet.
     static constexpr std::size_t UNKNOWN_REVISION = std::numeric_limits<UniqueId>::max ();
 
     /// \return Whether cache was actually changed.
-    bool UpdateLogicalWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept;
+    bool UpdateLogicalWorldTransformCache (TransformWorldAccessor<Transform> &_accessor) const noexcept;
 
     /// \return Whether cache was actually changed.
-    bool UpdateVisualWorldTransformCache (Transform3dWorldAccessor &_accessor) const noexcept;
+    bool UpdateVisualWorldTransformCache (TransformWorldAccessor<Transform> &_accessor) const noexcept;
 
     UniqueId objectId = INVALID_UNIQUE_ID;
     UniqueId parentObjectId = INVALID_UNIQUE_ID;
 
-    Math::Transform3d logicalLocalTransform;
+    Transform logicalLocalTransform;
     uint64_t logicalLocalTransformRevision = 0u;
     mutable uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool logicalLocalTransformChangedSinceLastUpdate = false;
-    mutable Math::Transform3d logicalWorldTransformCache;
+    mutable Transform logicalWorldTransformCache;
 
-    Math::Transform3d visualLocalTransform;
+    Transform visualLocalTransform;
     uint64_t visualLocalTransformRevision = 0u;
     mutable uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool visualLocalTransformChangedSinceLastUpdate = false;
-    mutable Math::Transform3d visualWorldTransformCache;
+    mutable Transform visualWorldTransformCache;
 
     bool visualTransformSyncNeeded = false;
 
@@ -106,4 +110,7 @@ public:
 
     static const Reflection &Reflect () noexcept;
 };
+
+using Transform2dComponent = TransformComponent<Math::Transform2d>;
+using Transform3dComponent = TransformComponent<Math::Transform3d>;
 } // namespace Emergence::Celerity

@@ -3,8 +3,8 @@
 #include <Celerity/Assembly/Test/Data.hpp>
 #include <Celerity/Assembly/Test/Task.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
-#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Constants.hpp>
 

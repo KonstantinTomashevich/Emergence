@@ -1,7 +1,7 @@
 #include <algorithm>
 
 #include <Celerity/Transform/Test/Task.hpp>
-#include <Celerity/Transform/Transform3dVisualSync.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Constants.hpp>
 
@@ -14,46 +14,59 @@
 namespace Emergence::Celerity::Test
 {
 using namespace Memory::Literals;
+using namespace Requests;
 
 // Use 1 us fixed frames to make test time points more readable.
 constexpr float TEST_FIXED_FRAME_TIME_S = 0.000001f;
 
 void SyncTest (Container::Vector<uint64_t> _timeSamples,
                Container::Vector<RequestExecutor::RequestPacket> _fixedRequests,
-               Container::Vector<RequestExecutor::RequestPacket> _normalRequests)
+               Container::Vector<RequestExecutor::RequestPacket> _normalRequests,
+               bool _use2d)
 {
     World world {"TestWorld"_us, WorldConfiguration {{TEST_FIXED_FRAME_TIME_S}}};
     PipelineBuilder builder {&world};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
-    RequestExecutor::AddToFixedUpdate (builder, std::move (_fixedRequests));
-    REQUIRE (builder.End ());
+    if (_use2d)
+    {
+        RequestExecutor::Add2dToFixedUpdate (builder, std::move (_fixedRequests));
+    }
+    else
+    {
+        RequestExecutor::Add3dToFixedUpdate (builder, std::move (_fixedRequests));
+    }
 
+    REQUIRE (builder.End ());
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    VisualTransformSync::AddToNormalUpdate (builder);
-    RequestExecutor::AddToNormalUpdate (builder, std::move (_normalRequests));
-    REQUIRE (builder.End ());
 
+    if (_use2d)
+    {
+        VisualTransformSync::Add2dToNormalUpdate (builder);
+        RequestExecutor::Add2dToNormalUpdate (builder, std::move (_normalRequests));
+    }
+    else
+    {
+        VisualTransformSync::Add3dToNormalUpdate (builder);
+        RequestExecutor::Add3dToNormalUpdate (builder, std::move (_normalRequests));
+    }
+
+    REQUIRE (builder.End ());
     std::sort (_timeSamples.begin (), _timeSamples.end ());
+
     for (const uint64_t time : _timeSamples)
     {
         Time::Override (time);
         world.Update ();
     }
 }
-} // namespace Emergence::Celerity::Test
 
-using namespace Emergence::Math;
-using namespace Emergence::Celerity::Test::Requests;
-using namespace Emergence::Celerity::Test;
-
-BEGIN_SUITE (TransformVisualSync)
-
-TEST_CASE (TrivialInterpolation)
+template <typename Transform>
+void TrivialInterpolationTest (const Transform &_initialTransform,
+                               const Transform &_transform025,
+                               const Transform &_transform080,
+                               const Transform &_targetTransform)
 {
-    const Transform3d initialTransform {{1.0f, 3.0f, 5.0f}};
-    const Transform3d targetTransform {{31.0f, -7.0f, 25.0f}, {{PI * 0.5f, PI * 0.25f, 0.0f}}, {2.0f, 3.0f, 2.0f}};
-
     SyncTest (
         {
             0u,
@@ -65,35 +78,23 @@ TEST_CASE (TrivialInterpolation)
         {
             {
                 CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                SetLocalTransform {0u, true, true, initialTransform},
+                SetLocalTransform {0u, true, true, _initialTransform},
             },
-            {SetLocalTransform {0u, true, false, targetTransform}},
+            {SetLocalTransform {0u, true, false, _targetTransform}},
         },
         {
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u,
-                              false,
-                              true,
-                              false,
-                              {{8.5f, 0.5f, 10.0f},
-                               {0.183853373f, 0.0761545449f, 0.0761545449f, 0.97703582f},
-                               {1.25f, 1.5f, 1.25f}}}}},
-            {{CheckTransform {
-                0u,
-                false,
-                true,
-                false,
-                {{25.0f, -5.0f, 21.0f}, {0.547313631f, 0.226704717f, 0.226704717f, 0.77308315f}, {1.8f, 2.6f, 1.8f}}}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-        });
+            {{CheckTransform {0u, false, true, false, _initialTransform}}},
+            {{CheckTransform {0u, false, true, false, _initialTransform}}},
+            {{CheckTransform {0u, false, true, false, _transform025}}},
+            {{CheckTransform {0u, false, true, false, _transform080}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
-TEST_CASE (InterpolationSkip)
+template <typename Transform>
+void InterpolationSkipTest (const Transform &_initialTransform, const Transform &_targetTransform)
 {
-    const Transform3d initialTransform {{1.0f, 3.0f, 5.0f}};
-    const Transform3d targetTransform {{31.0f, -7.0f, 25.0f}, {{PI * 0.5f, PI * 0.25f, 0.0f}}, {2.0f, 3.0f, 2.0f}};
-
     SyncTest (
         {
             0u,
@@ -105,27 +106,28 @@ TEST_CASE (InterpolationSkip)
         {
             {
                 CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                SetLocalTransform {0u, true, true, initialTransform},
+                SetLocalTransform {0u, true, true, _initialTransform},
             },
-            {SetLocalTransform {0u, true, true, targetTransform}},
+            {SetLocalTransform {0u, true, true, _targetTransform}},
         },
         {
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-        });
+            {{CheckTransform {0u, false, true, false, _initialTransform}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
-TEST_CASE (InterpolationAndWorldTransform)
+template <typename Transform>
+void InterpolationAndWorldTransformTest (const Transform &_parentInitialTransform,
+                                         const Transform &_parentTargetTransform,
+                                         const Transform &_childInitialTransform,
+                                         const Transform &_childTargetTransform,
+                                         const Transform &_childWorldTransform025,
+                                         const Transform &_childWorldTransform080)
 {
-    const Transform3d parentInitialTransform;
-    const Transform3d parentTargetTransform {{2.0f, 0.0f, 2.0f}};
-
-    const Transform3d childInitialTransform {{-1.0f, 0.0f, 0.0f}};
-    const Transform3d childTargetTransform {{1.0f, 0.0f, 0.0f}};
-
     SyncTest (
         {
             0u,
@@ -137,31 +139,31 @@ TEST_CASE (InterpolationAndWorldTransform)
         {{
              {
                  CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                 SetLocalTransform {0u, true, true, parentInitialTransform},
+                 SetLocalTransform {0u, true, true, _parentInitialTransform},
                  CreateTransform {1u, 0u},
-                 SetLocalTransform {1u, true, true, childInitialTransform},
+                 SetLocalTransform {1u, true, true, _childInitialTransform},
              },
          },
          {
-             SetLocalTransform {0u, true, false, parentTargetTransform},
-             SetLocalTransform {1u, true, false, childTargetTransform},
+             SetLocalTransform {0u, true, false, _parentTargetTransform},
+             SetLocalTransform {1u, true, false, _childTargetTransform},
          }},
         {
-            {{CheckTransform {1u, false, false, false, parentInitialTransform * childInitialTransform}}},
-            {{CheckTransform {1u, false, false, false, parentInitialTransform * childInitialTransform}}},
-            {{CheckTransform {1u, false, false, false,
-                              Transform3d {{0.5f, 0.0f, 0.5f}} * Transform3d {{-0.5f, 0.0f, 0.0f}}}}},
-            {{CheckTransform {1u, false, false, false,
-                              Transform3d {{1.6f, 0.0f, 1.6f}} * Transform3d {{0.6f, 0.0f, 0.0f}}}}},
-            {{CheckTransform {1u, false, false, false, parentTargetTransform * childTargetTransform}}},
-        });
+            {{CheckTransform {1u, false, false, false, _parentInitialTransform * _childInitialTransform}}},
+            {{CheckTransform {1u, false, false, false, _parentInitialTransform * _childInitialTransform}}},
+            {{CheckTransform {1u, false, false, false, _childWorldTransform025}}},
+            {{CheckTransform {1u, false, false, false, _childWorldTransform080}}},
+            {{CheckTransform {1u, false, false, false, _parentTargetTransform * _childTargetTransform}}},
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
 }
 
-TEST_CASE (InterpolationWithPause)
+template <typename Transform>
+void InterpolationWithPauseTest (const Transform &_initialTransform,
+                                 const Transform &_transform025,
+                                 const Transform &_transform080,
+                                 const Transform &_targetTransform)
 {
-    const Transform3d initialTransform {{2.0f, 4.0f, 10.0f}};
-    const Transform3d targetTransform {{30.0f, 20.0f, 30.0f}};
-
     SyncTest (
         {
             0u,
@@ -177,23 +179,87 @@ TEST_CASE (InterpolationWithPause)
         {
             {
                 CreateTransform {0u, Emergence::Celerity::INVALID_UNIQUE_ID},
-                SetLocalTransform {0u, true, true, initialTransform},
+                SetLocalTransform {0u, true, true, _initialTransform},
             },
-            {SetLocalTransform {0u, true, false, targetTransform}},
+            {SetLocalTransform {0u, true, false, _targetTransform}},
             {},
-            {SetLocalTransform {0u, true, false, initialTransform}},
+            {SetLocalTransform {0u, true, false, _initialTransform}},
         },
         {
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-            {{CheckTransform {0u, false, true, false, {{9.0f, 8.0f, 15.0f}}}}},
-            {{CheckTransform {0u, false, true, false, {{24.4f, 16.8f, 26.0f}}}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-            {{CheckTransform {0u, false, true, false, targetTransform}}},
-            {{CheckTransform {0u, false, true, false, {{24.4f, 16.8f, 26.0f}}}}},
-            {{CheckTransform {0u, false, true, false, {{9.0f, 8.0f, 15.0f}}}}},
-            {{CheckTransform {0u, false, true, false, initialTransform}}},
-        });
+            {{CheckTransform {0u, false, true, false, _initialTransform}}},
+            {{CheckTransform {0u, false, true, false, _initialTransform}}},
+            {{CheckTransform {0u, false, true, false, _transform025}}},
+            {{CheckTransform {0u, false, true, false, _transform080}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+            {{CheckTransform {0u, false, true, false, _targetTransform}}},
+            {{CheckTransform {0u, false, true, false, _transform080}}},
+            {{CheckTransform {0u, false, true, false, _transform025}}},
+            {{CheckTransform {0u, false, true, false, _initialTransform}}},
+        },
+        std::is_same_v<Transform, Math::Transform2d>);
+}
+} // namespace Emergence::Celerity::Test
+
+using namespace Emergence::Math;
+using namespace Emergence::Celerity::Test;
+
+BEGIN_SUITE (TransformVisualSync2d)
+
+TEST_CASE (TrivialInterpolation)
+{
+    TrivialInterpolationTest<Transform2d> ({{1.0f, 3.0f}}, {{8.5f, 0.5f}, PI * 0.125f, {1.25f, 1.5f}},
+                                           {{25.0f, -5.0f}, PI * 0.4f, {1.8f, 2.6f}},
+                                           {{31.0f, -7.0f}, PI * 0.5f, {2.0f, 3.0f}});
+}
+
+TEST_CASE (InterpolationSkip)
+{
+    InterpolationSkipTest<Transform2d> ({{1.0f, 3.0f}}, {{31.0f, -7.0f}, PI * 0.5f, {2.0f, 3.0f}});
+}
+
+TEST_CASE (InterpolationAndWorldTransform)
+{
+    InterpolationAndWorldTransformTest<Transform2d> ({}, {{2.0f, 0.0f}}, {{-1.0f, 0.0f}}, {{1.0f, 0.0f}},
+                                                     Transform2d {{0.5f, 0.0f}} * Transform2d {{-0.5f, 0.0f}},
+                                                     Transform2d {{1.6f, 0.0f}} * Transform2d {{0.6f, 0.0f}});
+}
+
+TEST_CASE (InterpolationWithPause)
+{
+    InterpolationWithPauseTest<Transform2d> ({{2.0f, 4.0f}}, {{9.0f, 8.0f}}, {{24.4f, 16.8f}}, {{30.0f, 20.0f}});
+}
+
+END_SUITE
+
+BEGIN_SUITE (TransformVisualSync3d)
+
+TEST_CASE (TrivialInterpolation)
+{
+    TrivialInterpolationTest<Transform3d> (
+        {{1.0f, 3.0f, 5.0f}},
+        {{8.5f, 0.5f, 10.0f}, {0.183853373f, 0.0761545449f, 0.0761545449f, 0.97703582f}, {1.25f, 1.5f, 1.25f}},
+        {{25.0f, -5.0f, 21.0f}, {0.547313631f, 0.226704717f, 0.226704717f, 0.77308315f}, {1.8f, 2.6f, 1.8f}},
+        {{31.0f, -7.0f, 25.0f}, {{PI * 0.5f, PI * 0.25f, 0.0f}}, {2.0f, 3.0f, 2.0f}});
+}
+
+TEST_CASE (InterpolationSkip)
+{
+    InterpolationSkipTest<Transform3d> ({{1.0f, 3.0f, 5.0f}},
+                                        {{31.0f, -7.0f, 25.0f}, {{PI * 0.5f, PI * 0.25f, 0.0f}}, {2.0f, 3.0f, 2.0f}});
+}
+
+TEST_CASE (InterpolationAndWorldTransform)
+{
+    InterpolationAndWorldTransformTest<Transform3d> (
+        {}, {{2.0f, 0.0f, 2.0f}}, {{-1.0f, 0.0f, 0.0f}}, {{1.0f, 0.0f, 0.0f}},
+        Transform3d {{0.5f, 0.0f, 0.5f}} * Transform3d {{-0.5f, 0.0f, 0.0f}},
+        Transform3d {{1.6f, 0.0f, 1.6f}} * Transform3d {{0.6f, 0.0f, 0.0f}});
+}
+
+TEST_CASE (InterpolationWithPause)
+{
+    InterpolationWithPauseTest<Transform3d> ({{2.0f, 4.0f, 10.0f}}, {{9.0f, 8.0f, 15.0f}}, {{24.4f, 16.8f, 26.0f}},
+                                             {{30.0f, 20.0f, 30.0f}});
 }
 
 END_SUITE

@@ -6,7 +6,7 @@
 #include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Container/Optional.hpp>
 

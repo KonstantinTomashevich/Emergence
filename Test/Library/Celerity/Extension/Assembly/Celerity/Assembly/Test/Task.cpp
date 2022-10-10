@@ -4,7 +4,7 @@
 #include <Celerity/Assembly/Test/Task.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Transform/Transform3dComponent.hpp>
+#include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Container/StringBuilder.hpp>
 

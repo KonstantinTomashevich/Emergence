@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <type_traits>
 
 #include <Math/NoInitializationFlag.hpp>
 
