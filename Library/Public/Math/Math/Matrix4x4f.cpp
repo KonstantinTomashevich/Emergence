@@ -11,6 +11,8 @@
 #include <Math/Matrix4x4f.hpp>
 #include <Math/Transform3d.hpp>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 #if defined(__clang__)
 // There is no align-mismatch check in old versions.
 #    pragma clang diagnostic ignored "-Wunknown-warning-option"
@@ -113,6 +115,33 @@ Matrix4x4f &Matrix4x4f::operator= (Matrix4x4f &&_other) noexcept
     // We have trivial destructor, therefore we can just invoke constructor.
     new (this) Matrix4x4f (_other);
     return *this;
+}
+
+const Matrix4x4f::Reflection &Matrix4x4f::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Matrix4x4f);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m00);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m01);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m02);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m03);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m10);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m11);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m12);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m13);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m20);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m21);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m22);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m23);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m30);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m31);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m32);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m33);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
 }
 
 Matrix4x4f MultiplyTransformMatrices (const Matrix4x4f &_left, const Matrix4x4f &_right) noexcept
