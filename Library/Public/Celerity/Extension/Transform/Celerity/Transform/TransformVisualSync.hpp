@@ -4,7 +4,7 @@
 
 namespace Emergence::Celerity::VisualTransformSync
 {
-/// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
+/// \brief Contains checkpoints, supported by tasks from ::Add2dToNormalUpdate and ::Add3dToNormalUpdate.
 struct Checkpoint final
 {
     Checkpoint () = delete;
