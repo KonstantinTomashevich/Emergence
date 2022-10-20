@@ -10,8 +10,13 @@ const Asset::Reflection &Asset::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Asset);
         EMERGENCE_MAPPING_REGISTER_REGULAR (id);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (usages);
+
+        static_assert (sizeof (StandardLayout::Mapping) == sizeof (uint64_t));
+        reflectionData.typeNumber =
+            builder.RegisterUInt64 (Memory::UniqueString {"typeStateBlock"}, offsetof (Asset, type));
+
         EMERGENCE_MAPPING_REGISTER_REGULAR (state);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (usages);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

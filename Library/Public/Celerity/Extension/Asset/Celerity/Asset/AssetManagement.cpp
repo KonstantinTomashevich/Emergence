@@ -174,7 +174,7 @@ void AssetManager::Execute () noexcept
 AssetManager::AssetUserData::AssetUserData (TaskConstructor &_constructor,
                                             const AssetReferenceBinding &_binding,
                                             const AssetReferenceBindingHookEvents &_hooks) noexcept
-    : fetchUserById (_constructor.FetchValue (_binding.objectType, {_binding.resourceUserIdField})),
+    : fetchUserById (_constructor.FetchValue (_binding.objectType, {_binding.assetUserIdField})),
       fetchOnAddedEvents (_constructor.FetchSequence (_hooks.onObjectAdded)),
       fetchOnChangedEvents (_constructor.FetchSequence (_hooks.onAnyReferenceChanged)),
       fetchOnRemovedEvents (_constructor.FetchSequence (_hooks.onObjectRemoved))

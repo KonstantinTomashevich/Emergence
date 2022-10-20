@@ -26,7 +26,7 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
 
         _registrar.OnAddEvent ({{hook.onObjectAdded, EventRoute::NORMAL},
                                 binding.objectType,
-                                {{binding.resourceUserIdField, assetUserIdField}}});
+                                {{binding.assetUserIdField, assetUserIdField}}});
 
         builder.Begin (Memory::UniqueString {EMERGENCE_BUILD_STRING ("AssetUser", binding.objectType.GetName (),
                                                                      "ChangedNormalEvent")},
@@ -59,7 +59,7 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
                                    binding.objectType,
                                    unchangedAssetsFields,
                                    unchangedAssetsCopyOut,
-                                   {{binding.resourceUserIdField, assetUserIdField}}});
+                                   {{binding.assetUserIdField, assetUserIdField}}});
 
         builder.Begin (Memory::UniqueString {EMERGENCE_BUILD_STRING ("AssetUser", binding.objectType.GetName (),
                                                                      "RemovedNormalEvent")},

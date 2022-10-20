@@ -60,13 +60,13 @@ AssetReferenceBindingList GetAssetReferenceBinding () noexcept
 
     AssetReferenceBinding &singleUserBinding = list.emplace_back ();
     singleUserBinding.objectType = SingleAssetUser::Reflect ().mapping;
-    singleUserBinding.resourceUserIdField = SingleAssetUser::Reflect ().assetUserId;
+    singleUserBinding.assetUserIdField = SingleAssetUser::Reflect ().assetUserId;
     singleUserBinding.references.emplace_back () = {SingleAssetUser::Reflect ().assetId,
                                                     FirstAssetType::Reflect ().mapping};
 
     AssetReferenceBinding &multipleUserBinding = list.emplace_back ();
     multipleUserBinding.objectType = MultipleAssetUser::Reflect ().mapping;
-    multipleUserBinding.resourceUserIdField = MultipleAssetUser::Reflect ().assetUserId;
+    multipleUserBinding.assetUserIdField = MultipleAssetUser::Reflect ().assetUserId;
 
     multipleUserBinding.references.emplace_back () = {MultipleAssetUser::Reflect ().firstAssetId,
                                                       FirstAssetType::Reflect ().mapping};
