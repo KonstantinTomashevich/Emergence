@@ -8,6 +8,11 @@
 
 namespace Emergence::Celerity::AssetManagement
 {
+const Memory::UniqueString Checkpoint::STARTED {"AssetManagementStarted"};
+const Memory::UniqueString Checkpoint::ASSET_LOADING_STARTED {"AssetManagementAssetLoadingStarted"};
+const Memory::UniqueString Checkpoint::ASSET_LOADING_FINISHED {"AssetManagementAssetLoadingFinished"};
+const Memory::UniqueString Checkpoint::FINISHED {"AssetManagementFinished"};
+
 class AssetManager final : public TaskExecutorBase<AssetManager>
 {
 public:
@@ -79,12 +84,21 @@ void AssetManager::Execute () noexcept
     auto assetManagerCursor = modifyAssetManager.Execute ();
     auto *assetManager = static_cast<AssetManagerSingleton *> (*assetManagerCursor);
 
+#ifndef NDEBUG
+    // Current scenario supports only one addition/change per asset user per
+    // frame. Having more than one change per frame indicates that asset usage
+    // selection is decentralized, which is not a good pattern in most cases.
+    Container::HashSet<UniqueId> assetUsersAffectedThisFrame {assetUsers.get_allocator ()};
+#endif
+
     for (AssetUserData &assetUser : assetUsers)
     {
         for (auto eventCursor = assetUser.fetchOnAddedEvents.Execute ();
              const auto *event = static_cast<const AssetUserAddedEventView *> (*eventCursor); ++eventCursor)
         {
+            assert (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
             auto assetUserCursor = assetUser.fetchUserById.Execute (&event->assetUserId);
+
             if (const void *assetUserObject = *assetUserCursor)
             {
                 for (const AssetReferenceFieldData &field : assetUser.fields)
@@ -98,19 +112,12 @@ void AssetManager::Execute () noexcept
         }
     }
 
-#ifndef _NDEBUG
-    Container::HashSet<UniqueId> assetUsersChangedThisFrame {assetUsers.get_allocator ()};
-#endif
-
     for (AssetUserData &assetUser : assetUsers)
     {
         for (auto eventCursor = assetUser.fetchOnChangedEvents.Execute ();
              const auto *event = static_cast<const AssetUserChangedEventView *> (*eventCursor); ++eventCursor)
         {
-            // Current scenario supports only one change per asset user per frame.
-            // Having more than one change per frame indicates that asset usage
-            // selection is decentralized, which is not a good pattern in most cases.
-            assert (assetUsersChangedThisFrame.emplace (event->assetUserId).second);
+            assert (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
             auto assetUserCursor = assetUser.fetchUserById.Execute (&event->assetUserId);
 
             if (const void *assetUserObject = *assetUserCursor)
@@ -150,7 +157,7 @@ void AssetManager::Execute () noexcept
 
     for (AssetUserData &assetUser : assetUsers)
     {
-        for (auto eventCursor = assetUser.fetchOnAddedEvents.Execute ();
+        for (auto eventCursor = assetUser.fetchOnRemovedEvents.Execute ();
              const auto *event = static_cast<const AssetUserRemovedEventView *> (*eventCursor); ++eventCursor)
         {
             for (std::size_t fieldIndex = 0u; fieldIndex < assetUser.fields.size (); ++fieldIndex)
@@ -294,7 +301,7 @@ void AssetStateUpdater::Execute () noexcept
     auto assetManagerCursor = modifyAssetManager.Execute ();
     auto *assetManager = static_cast<AssetManagerSingleton *> (*assetManagerCursor);
 
-#ifndef _NDEBUG
+#ifndef NDEBUG
     Container::HashSet<Memory::UniqueString> assetsUpdatedThisFrame {fetchStateUpdateEvents.get_allocator ()};
 #endif
 

@@ -10,7 +10,7 @@ struct Checkpoint final
     Checkpoint () = delete;
 
     /// \brief After this checkpoint visual transforms are guaranteed to be ready for use.
-    static const Emergence::Memory::UniqueString FINISHED;
+    static const Memory::UniqueString FINISHED;
 };
 
 /// \brief Adds tasks required to sync and interpolate visual 2d transforms from logical 2d transforms.

@@ -49,8 +49,8 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
             }
         };
 
-        Container::Vector<StandardLayout::FieldId> unchangedAssetsFields {AssetBindingAllocationGroup ()};
-        Container::Vector<CopyOutField> unchangedAssetsCopyOut {AssetBindingAllocationGroup ()};
+        Container::Vector<StandardLayout::FieldId> unchangedAssetsFields {GetAssetBindingAllocationGroup ()};
+        Container::Vector<CopyOutField> unchangedAssetsCopyOut {GetAssetBindingAllocationGroup ()};
         generateAssetListTail (offsetof (AssetUserChangedEventView, unchangedAssets), unchangedAssetsFields,
                                unchangedAssetsCopyOut);
         hook.onAnyReferenceChanged = builder.End ();
@@ -66,10 +66,9 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
                        sizeof (AssetUserRemovedEventView) + sizeof (Memory::UniqueString) * binding.references.size (),
                        alignof (AssetUserRemovedEventView));
 
-        Container::Vector<StandardLayout::FieldId> assetsFields {AssetBindingAllocationGroup ()};
-        Container::Vector<CopyOutField> assetsCopyOut {AssetBindingAllocationGroup ()};
-        generateAssetListTail (offsetof (AssetUserRemovedEventView, assets), unchangedAssetsFields,
-                               unchangedAssetsCopyOut);
+        Container::Vector<StandardLayout::FieldId> assetsFields {GetAssetBindingAllocationGroup ()};
+        Container::Vector<CopyOutField> assetsCopyOut {GetAssetBindingAllocationGroup ()};
+        generateAssetListTail (offsetof (AssetUserRemovedEventView, assets), assetsFields, assetsCopyOut);
 
         hook.onObjectRemoved = builder.End ();
         _registrar.OnRemoveEvent ({{hook.onObjectRemoved, EventRoute::NORMAL}, binding.objectType, assetsCopyOut});

@@ -7,7 +7,7 @@
 
 namespace Emergence::Celerity
 {
-Memory::Profiler::AllocationGroup AssetBindingAllocationGroup () noexcept;
+Memory::Profiler::AllocationGroup GetAssetBindingAllocationGroup () noexcept;
 
 struct AssetReferenceField final
 {
@@ -19,7 +19,7 @@ struct AssetReferenceBinding final
 {
     StandardLayout::Mapping objectType;
     StandardLayout::FieldId resourceUserIdField;
-    Container::Vector<AssetReferenceField> references {AssetBindingAllocationGroup ()};
+    Container::Vector<AssetReferenceField> references {GetAssetBindingAllocationGroup ()};
 };
 
 using AssetReferenceBindingList = Container::Vector<AssetReferenceBinding>;
@@ -33,8 +33,9 @@ struct AssetReferenceBindingHookEvents final
 
 struct AssetReferenceBindingEventMap final
 {
-    Container::HashMap<StandardLayout::Mapping, AssetReferenceBindingHookEvents> hooks {AssetBindingAllocationGroup ()};
+    Container::HashMap<StandardLayout::Mapping, AssetReferenceBindingHookEvents> hooks {
+        GetAssetBindingAllocationGroup ()};
     Container::HashMap<StandardLayout::Mapping, StandardLayout::Mapping> stateUpdate {
-        AssetBindingAllocationGroup ()};
+        GetAssetBindingAllocationGroup ()};
 };
 } // namespace Emergence::Celerity

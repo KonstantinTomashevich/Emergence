@@ -2,7 +2,7 @@
 
 namespace Emergence::Celerity
 {
-Memory::Profiler::AllocationGroup AssetBindingAllocationGroup () noexcept
+Memory::Profiler::AllocationGroup GetAssetBindingAllocationGroup () noexcept
 {
     static Memory::Profiler::AllocationGroup group {Memory::Profiler::AllocationGroup::Root (),
                                                     Memory::UniqueString {"CelerityAssetBinding"}};
