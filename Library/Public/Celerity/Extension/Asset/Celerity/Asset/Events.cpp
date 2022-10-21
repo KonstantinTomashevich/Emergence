@@ -31,7 +31,7 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
                                                                      "ChangedNormalEvent")},
                        sizeof (AssetUserChangedEventView) + sizeof (Memory::UniqueString) * binding.references.size (),
                        alignof (AssetUserChangedEventView));
-        
+
         assetUserIdField =
             StandardLayout::Registration::RegisterRegularField<decltype (AssetUserChangedEventView::assetUserId)> (
                 builder, "assetUserId", offsetof (AssetUserChangedEventView, assetUserId));
