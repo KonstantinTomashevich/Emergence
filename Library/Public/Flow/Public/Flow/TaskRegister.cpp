@@ -560,12 +560,25 @@ void TaskRegister::Clear () noexcept
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] Memory::UniqueString _name) const noexcept
 {
-    assert (std::find_if (tasks.begin (), tasks.end (),
-                          [_name] (const Task &_task)
-                          {
-                              return _task.name == _name;
-                          }) == tasks.end ());
+#ifndef NDEBUG
+    auto taskIterator = std::find_if (tasks.begin (), tasks.end (),
+                                      [_name] (const Task &_task)
+                                      {
+                                          return _task.name == _name;
+                                      });
 
-    assert (std::find (checkpoints.begin (), checkpoints.end (), _name) == checkpoints.end ());
+    if (taskIterator != tasks.end ())
+    {
+        EMERGENCE_LOG (CRITICAL_ERROR, "TaskGraph: Task name \"", _name, "\" is already occupied by other task!");
+        assert (false);
+    }
+
+    auto checkpointIterator = std::find (checkpoints.begin (), checkpoints.end (), _name);
+    if (checkpointIterator != checkpoints.end ())
+    {
+        EMERGENCE_LOG (CRITICAL_ERROR, "TaskGraph: Task name \"", _name, "\" is already occupied by other checkpoint!");
+        assert (false);
+    }
+#endif
 }
 } // namespace Emergence::Flow

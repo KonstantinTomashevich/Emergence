@@ -11,10 +11,10 @@ struct Checkpoint final
     Checkpoint () = delete;
 
     /// \brief Assembly routine execution starts after this checkpoint.
-    static const Emergence::Memory::UniqueString STARTED;
+    static const Memory::UniqueString STARTED;
 
     /// \brief Assembly routine execution finishes before this checkpoint.
-    static const Emergence::Memory::UniqueString FINISHED;
+    static const Memory::UniqueString FINISHED;
 };
 
 /// \brief Adds tasks that execute assembly routine in fixed update.

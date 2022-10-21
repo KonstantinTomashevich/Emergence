@@ -12,16 +12,16 @@ struct Checkpoint final
     Checkpoint () = delete;
 
     /// \brief Detached transform detection is started after this checkpoint.
-    static const Emergence::Memory::UniqueString DETACHMENT_DETECTION_STARTED;
+    static const Memory::UniqueString DETACHMENT_DETECTION_STARTED;
 
     /// \brief Detached transform detection is guaranteed to be finished after this checkpoint.
-    static const Emergence::Memory::UniqueString DETACHMENT_DETECTION_FINISHED;
+    static const Memory::UniqueString DETACHMENT_DETECTION_FINISHED;
 
     /// \brief Detached transform removal is executed after this checkpoint.
-    static const Emergence::Memory::UniqueString DETACHED_REMOVAL_STARTED;
+    static const Memory::UniqueString DETACHED_REMOVAL_STARTED;
 
     /// \brief Detached transform removal is guaranteed to be finished after this checkpoint.
-    static const Emergence::Memory::UniqueString DETACHED_REMOVAL_FINISHED;
+    static const Memory::UniqueString DETACHED_REMOVAL_FINISHED;
 };
 
 /// \brief Adds tasks required to cleanup detached transform 2d hierarchy to fixed update pipeline.
