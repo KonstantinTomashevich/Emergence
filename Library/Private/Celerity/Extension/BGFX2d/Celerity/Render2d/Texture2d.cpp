@@ -9,7 +9,7 @@ const Texture2d::Reflection &Texture2d::Reflect () noexcept
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Texture2d);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (resourceId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (nativeHandle);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

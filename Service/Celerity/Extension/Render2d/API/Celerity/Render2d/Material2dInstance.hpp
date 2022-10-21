@@ -1,6 +1,12 @@
 #pragma once
 
+#include <Celerity/Standard/UniqueId.hpp>
+
 #include <Container/Vector.hpp>
+
+#include <Math/Vector4f.hpp>
+#include <Math/Matrix3x3f.hpp>
+#include <Math/Matrix4x4f.hpp>
 
 #include <Memory/UniqueString.hpp>
 
@@ -12,21 +18,85 @@ struct Material2d;
 
 struct Material2dInstance final
 {
-    Memory::UniqueString resourceId;
-    Memory::UniqueString materialResourceId;
-
-    Container::Vector<uint8_t> uniforms {Memory::Profiler::AllocationGroup::Top ()};
-
-    void InitForMaterial (const Material2d *_material) noexcept;
-
-    void SetUniformById (const Material2d *_material, Memory::UniqueString _id, const void *_source) noexcept;
-
-    void SetUniformByIndex (const Material2d *_material, std::size_t _index, const void *_source) noexcept;
+    Memory::UniqueString assetId;
+    UniqueId assetUserId = INVALID_UNIQUE_ID;
+    Memory::UniqueString materialAssetId;
 
     struct Reflection final
     {
-        StandardLayout::FieldId resourceId;
-        StandardLayout::FieldId materialResourceId;
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId assetUserId;
+        StandardLayout::FieldId materialAssetId;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct UniformVector4fValue final
+{
+    Memory::UniqueString assetId;
+    Memory::UniqueString uniformName;
+    Math::Vector4f value = Math::Vector4f::ZERO;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId uniformName;
+        StandardLayout::FieldId value;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct UniformMatrix3x3fValue final
+{
+    Memory::UniqueString assetId;
+    Memory::UniqueString uniformName;
+    Math::Matrix3x3f value = Math::Matrix3x3f::ZERO;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId uniformName;
+        StandardLayout::FieldId value;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct UniformMatrix4x4fValue final
+{
+    Memory::UniqueString assetId;
+    Memory::UniqueString uniformName;
+    Math::Matrix4x4f value = Math::Matrix4x4f::ZERO;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId uniformName;
+        StandardLayout::FieldId value;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct UniformSamplerValue final
+{
+    Memory::UniqueString assetId;
+    Memory::UniqueString uniformName;
+    UniqueId assetUserId = INVALID_UNIQUE_ID;
+    Memory::UniqueString textureId;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId uniformName;
+        StandardLayout::FieldId assetUserId;
+        StandardLayout::FieldId textureId;
         StandardLayout::Mapping mapping;
     };
 

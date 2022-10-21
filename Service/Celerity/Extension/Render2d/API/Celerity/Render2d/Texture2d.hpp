@@ -8,13 +8,13 @@ namespace Emergence::Celerity
 {
 struct Texture2d final
 {
-    Memory::UniqueString resourceId;
+    Memory::UniqueString assetId;
 
     uint64_t nativeHandle = 0u;
 
     struct Reflection final
     {
-        StandardLayout::FieldId resourceId;
+        StandardLayout::FieldId assetId;
         StandardLayout::FieldId nativeHandle;
         StandardLayout::Mapping mapping;
     };

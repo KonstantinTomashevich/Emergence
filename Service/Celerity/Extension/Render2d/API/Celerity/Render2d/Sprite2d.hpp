@@ -14,16 +14,20 @@ struct Sprite2d final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
     UniqueId spriteId = INVALID_UNIQUE_ID;
+    UniqueId assetUserId = INVALID_UNIQUE_ID;
 
-    Memory::UniqueString materialInstanceResourceId;
+    Memory::UniqueString materialInstanceAssetId;
     Math::Vector2f uv;
+    std::uint16_t layer = 0u;
 
     struct Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId spriteId;
-        StandardLayout::FieldId materialInstanceResourceId;
+        StandardLayout::FieldId assetUserId;
+        StandardLayout::FieldId materialInstanceAssetId;
         StandardLayout::FieldId uv;
+        StandardLayout::FieldId layer;
         StandardLayout::Mapping mapping;
     };
 

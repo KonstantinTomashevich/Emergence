@@ -11,8 +11,10 @@ const Sprite2d::Reflection &Sprite2d::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2d);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (spriteId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceResourceId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceAssetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (uv);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (layer);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

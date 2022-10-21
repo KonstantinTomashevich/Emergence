@@ -8,32 +8,18 @@
 
 namespace Emergence::Celerity
 {
-enum class Uniform2dType
+struct Material2d final
 {
-    VECTOR_4F = 0u,
-    MATRIX_3X3F,
-    MATRIX_4X4F,
-    SAMPLER,
-};
-
-std::size_t GetUniformSize (Uniform2dType _type) noexcept;
-
-struct Uniform2d
-{
-    Memory::UniqueString id;
-    Uniform2dType type = Uniform2dType::VECTOR_4F;
-    std::uint64_t count = 0u;
-
-    std::uint64_t offset = 0u;
+    Memory::UniqueString assetId;
+    Memory::UniqueString vertexShader;
+    Memory::UniqueString fragmentShader;
     std::uintptr_t nativeHandle = 0u;
 
     struct Reflection final
     {
-        StandardLayout::FieldId id;
-        StandardLayout::FieldId type;
-        StandardLayout::FieldId count;
-
-        StandardLayout::FieldId offset;
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId vertexShader;
+        StandardLayout::FieldId fragmentShader;
         StandardLayout::FieldId nativeHandle;
         StandardLayout::Mapping mapping;
     };
@@ -41,20 +27,28 @@ struct Uniform2d
     static const Reflection &Reflect () noexcept;
 };
 
-struct Material2d final
+enum class Uniform2dType : uint8_t
 {
-    Memory::UniqueString resourceId;
-    Memory::UniqueString vertexShader;
-    Memory::UniqueString fragmentShader;
-    std::uintptr_t nativeHandle = 0u;
+    VECTOR_4F = 0u,
+    MATRIX_3X3F,
+    MATRIX_4X4F,
+    SAMPLER,
+};
 
-    Container::Vector<Uniform2d> uniforms {Memory::Profiler::AllocationGroup::Top ()};
+struct Uniform2d final
+{
+    Memory::UniqueString assetId;
+    Memory::UniqueString name;
+    Uniform2dType type = Uniform2dType::VECTOR_4F;
+    std::uint32_t count = 0u;
+    std::uintptr_t nativeHandle = 0u;
 
     struct Reflection final
     {
-        StandardLayout::FieldId resourceId;
-        StandardLayout::FieldId vertexShader;
-        StandardLayout::FieldId fragmentShader;
+        StandardLayout::FieldId assetId;
+        StandardLayout::FieldId name;
+        StandardLayout::FieldId type;
+        StandardLayout::FieldId count;
         StandardLayout::FieldId nativeHandle;
         StandardLayout::Mapping mapping;
     };
