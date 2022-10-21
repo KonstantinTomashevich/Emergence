@@ -42,22 +42,18 @@ private:
         Container::Vector<AssetReferenceFieldData> fields {Memory::Profiler::AllocationGroup::Top ()};
     };
 
-    static void OnAssetRemoved (AssetManagerSingleton *_assetManager, Asset *_asset) noexcept;
-
     void OnAssetUsageAdded (AssetManagerSingleton *_assetManager,
                             Memory::UniqueString _assetId,
                             const StandardLayout::Mapping &_assetType) noexcept;
 
-    void OnAssetUsageRemoved (AssetManagerSingleton *_assetManager,
-                              Memory::UniqueString _assetId,
-                              bool _delayAssetRemoval) noexcept;
+    void OnAssetUsageRemoved (AssetManagerSingleton *_assetManager, Memory::UniqueString _assetId) noexcept;
 
     Container::Vector<AssetUserData> assetUsers {Memory::Profiler::AllocationGroup::Top ()};
-    Container::Vector<Memory::UniqueString> delayedAssetRemovalQueue {Memory::Profiler::AllocationGroup::Top ()};
 
     ModifySingletonQuery modifyAssetManager;
     InsertLongTermQuery insertAsset;
     ModifyValueQuery modifyAssetById;
+    RemoveSignalQuery removeUnusedAssets;
 };
 
 AssetManager::AssetManager (TaskConstructor &_constructor,
@@ -65,7 +61,8 @@ AssetManager::AssetManager (TaskConstructor &_constructor,
                             const AssetReferenceBindingEventMap &_bindingEvents) noexcept
     : modifyAssetManager (MODIFY_SINGLETON (AssetManagerSingleton)),
       insertAsset (INSERT_LONG_TERM (Asset)),
-      modifyAssetById (MODIFY_VALUE_1F (Asset, id))
+      modifyAssetById (MODIFY_VALUE_1F (Asset, id)),
+      removeUnusedAssets (REMOVE_SIGNAL (Asset, usages, 0u))
 {
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::ASSET_LOADING_STARTED);
@@ -131,29 +128,13 @@ void AssetManager::Execute () noexcept
 
                     if (oldValue != currentValue)
                     {
-                        OnAssetUsageRemoved (assetManager, oldValue, true);
+                        OnAssetUsageRemoved (assetManager, oldValue);
                         OnAssetUsageAdded (assetManager, currentValue, field.type);
                     }
                 }
             }
         }
     }
-
-    for (Memory::UniqueString assetId : delayedAssetRemovalQueue)
-    {
-        auto cursor = modifyAssetById.Execute (&assetId);
-        if (auto *asset = static_cast<Asset *> (*cursor))
-        {
-            // Usages count might be updated during changes processing, so we need to check it again.
-            if (asset->usages == 0u)
-            {
-                OnAssetRemoved (assetManager, asset);
-                ~cursor;
-            }
-        }
-    }
-
-    delayedAssetRemovalQueue.clear ();
 
     for (AssetUserData &assetUser : assetUsers)
     {
@@ -162,7 +143,20 @@ void AssetManager::Execute () noexcept
         {
             for (std::size_t fieldIndex = 0u; fieldIndex < assetUser.fields.size (); ++fieldIndex)
             {
-                OnAssetUsageRemoved (assetManager, event->assets[fieldIndex], false);
+                OnAssetUsageRemoved (assetManager, event->assets[fieldIndex]);
+            }
+        }
+    }
+
+    if (assetManager->automaticallyCleanUnusedAssets)
+    {
+        for (auto cursor = removeUnusedAssets.Execute ();
+             const auto *asset = static_cast<const Asset *> (cursor.ReadConst ()); ~cursor)
+        {
+            --assetManager->unusedAssetCount;
+            if (asset->state == AssetState::LOADING)
+            {
+                --assetManager->assetsLeftToLoad;
             }
         }
     }
@@ -183,15 +177,6 @@ AssetManager::AssetUserData::AssetUserData (TaskConstructor &_constructor,
     for (const AssetReferenceField &field : _binding.references)
     {
         fields.emplace_back () = {_binding.objectType.GetField (field.field), field.assetType};
-    }
-}
-
-void AssetManager::OnAssetRemoved (AssetManagerSingleton *_assetManager, Asset *_asset) noexcept
-{
-    --_assetManager->unusedAssetCount;
-    if (_asset->state == AssetState::LOADING)
-    {
-        --_assetManager->assetsLeftToLoad;
     }
 }
 
@@ -236,9 +221,7 @@ void AssetManager::OnAssetUsageAdded (AssetManagerSingleton *_assetManager,
     ++_assetManager->assetsLeftToLoad;
 }
 
-void AssetManager::OnAssetUsageRemoved (AssetManagerSingleton *_assetManager,
-                                        Memory::UniqueString _assetId,
-                                        bool _delayAssetRemoval) noexcept
+void AssetManager::OnAssetUsageRemoved (AssetManagerSingleton *_assetManager, Memory::UniqueString _assetId) noexcept
 {
     if (!*_assetId)
     {
@@ -252,18 +235,6 @@ void AssetManager::OnAssetUsageRemoved (AssetManagerSingleton *_assetManager,
         if (--asset->usages == 0u)
         {
             ++_assetManager->unusedAssetCount;
-            if (_assetManager->automaticallyCleanUnusedAssets)
-            {
-                if (_delayAssetRemoval)
-                {
-                    delayedAssetRemovalQueue.emplace_back (_assetId);
-                }
-                else
-                {
-                    OnAssetRemoved (_assetManager, asset);
-                    ~cursor;
-                }
-            }
         }
     }
 }

@@ -209,6 +209,37 @@ TEST_CASE (SeveralMultipleAssetUsers)
     });
 }
 
+TEST_CASE (EnableUnusedCleanup)
+{
+    ExecuteScenario ({
+        {{
+             SetAutomaticallyCleanUnusedAssets {false},
+             AddSingleAssetUser {0u, "testInstance"_us},
+         },
+         {},
+         {
+             CheckAssetUsages {"testInstance"_us, 1u},
+             CheckUnusedAssetCount {0u},
+         }},
+        {{
+             RemoveSingleAssetUser {0u},
+         },
+         {},
+         {
+             CheckAssetUsages {"testInstance"_us, 0u},
+             CheckUnusedAssetCount {1u},
+         }},
+        {{
+             SetAutomaticallyCleanUnusedAssets {true},
+         },
+         {},
+         {
+             CheckAssetNotExists {"testInstance"_us},
+             CheckUnusedAssetCount {0u},
+         }},
+    });
+}
+
 END_SUITE
 
 BEGIN_SUITE (StatusUpdate)
