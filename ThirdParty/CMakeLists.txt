@@ -1,3 +1,4 @@
+add_subdirectory (bgfx.cmake)
 add_subdirectory (cglm)
 add_subdirectory (doctest)
 
