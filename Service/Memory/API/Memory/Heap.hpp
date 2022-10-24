@@ -10,7 +10,8 @@ namespace Emergence::Memory
 {
 /// \brief Integrates malloc-free mechanism with memory profiling routine.
 /// \warning Heap is just wrapper for malloc-free, therefore, unlike other allocators,
-///          it's object destruction does not lead to deallocation of records.
+///          it's object destruction does not lead to deallocation of records. But it
+///          also means that this allocator is thread safe.
 class Heap final
 {
 public:
