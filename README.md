@@ -9,6 +9,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Services
 
+- [Assert](./Service/Assert/README.md): provides assertion mechanism with optional interactive mode.
 - [ExportGraph](./Service/ExportGraph/README.md): exports [VisualGraph](./Library/Public/VisualGraph/README.md)
   instances to well known formats, like DOT.
 - [Hashing](./Service/Hashing/README.md): provides byte sequence hashing.
@@ -31,7 +32,6 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 
 ### Libraries
 
-- [Assert](./Library/Public/Assert/README.md): provides assertion mechanism with optional interactive message box.
 - [AssetObject](./Library/Public/AssetObject/README.md): provides format for storing game objects (like units, 
   buildings, etc) in YAML or binary with single inheritance support.
 - [Celerity](./Library/Public/Celerity/README.md): combines [Warehouse](./Service/Warehouse/README.md),

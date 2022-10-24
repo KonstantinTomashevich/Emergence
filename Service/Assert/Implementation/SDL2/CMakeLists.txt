@@ -1,0 +1,5 @@
+sober_implementation_begin (SDL2)
+    sober_implementation_setup_target (STATIC "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+    sober_naming_variant_target (AssertSDL2 Original ASSERT_LIBRARY_TARGET)
+    sober_implementation_link_library ("${ASSERT_LIBRARY_TARGET}")
+sober_implementation_end ()

@@ -1,4 +1,3 @@
-add_subdirectory (Assert)
 add_subdirectory (AssetObject)
 add_subdirectory (Celerity)
 add_subdirectory (Container)
