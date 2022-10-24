@@ -1,5 +1,9 @@
 add_subdirectory (bgfx.cmake)
 add_subdirectory (cglm)
+
+add_library (DebugBreak INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/debugbreak/debugbreak.h")
+target_include_directories (DebugBreak INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/debugbreak")
+
 add_subdirectory (doctest)
 
 # ImGUI is not using CMake, therefore we need to add our own library target.
