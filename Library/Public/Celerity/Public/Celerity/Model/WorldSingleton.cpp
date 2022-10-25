@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Celerity/Model/WorldSingleton.hpp>
 
@@ -8,7 +8,7 @@ namespace Emergence::Celerity
 {
 uintptr_t WorldSingleton::GenerateId () const noexcept
 {
-    assert (idCounter != std::numeric_limits<decltype (idCounter)::value_type>::max ());
+    EMERGENCE_ASSERT (idCounter != std::numeric_limits<decltype (idCounter)::value_type>::max ());
     return const_cast<WorldSingleton *> (this)->idCounter++;
 }
 

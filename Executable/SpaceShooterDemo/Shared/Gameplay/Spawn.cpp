@@ -119,7 +119,7 @@ void SpawnProcessor::Execute () noexcept
     for (auto spawnCursor = modifySpawnByCoolingDownUntil.Execute (nullptr, &time->fixedTimeNs);
          auto *spawn = static_cast<SpawnComponent *> (*spawnCursor);)
     {
-        assert (spawn->maxSpawnedObjects <= SpawnComponent::MAX_OBJECTS_PER_SPAWN);
+        EMERGENCE_ASSERT (spawn->maxSpawnedObjects <= SpawnComponent::MAX_OBJECTS_PER_SPAWN);
         if (spawn->spawnedObjects.GetCount () < spawn->maxSpawnedObjects)
         {
             Emergence::Math::Transform3d spawnTransform {Emergence::Math::NoInitializationFlag::Confirm ()};

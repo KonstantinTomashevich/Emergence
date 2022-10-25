@@ -1,3 +1,5 @@
+#include <Assert/Assert.hpp>
+
 #include <Celerity/Assembly/Test/Data.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
@@ -53,7 +55,7 @@ const FixedMultiComponent::Reflection &FixedMultiComponent::Reflect () noexcept
 
 uintptr_t FixedMultiComponentIdGeneratorSingleton::GenerateInstanceId () const noexcept
 {
-    assert (instanceIdCounter != std::numeric_limits<decltype (instanceIdCounter)::value_type>::max ());
+    EMERGENCE_ASSERT (instanceIdCounter != std::numeric_limits<decltype (instanceIdCounter)::value_type>::max ());
     return const_cast<FixedMultiComponentIdGeneratorSingleton *> (this)->instanceIdCounter++;
 }
 

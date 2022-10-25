@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Memory/Recording/StreamSerializer.hpp>
 
@@ -23,7 +23,7 @@ StreamSerializer::~StreamSerializer () noexcept
 
 void StreamSerializer::Begin (std::ostream *_output, const Profiler::CapturedAllocationGroup &_capturedRoot) noexcept
 {
-    assert (_output);
+    EMERGENCE_ASSERT (_output);
     output = _output;
 
     uidAssigner.ImportCapture (_capturedRoot,

@@ -1,5 +1,6 @@
-#include <cassert>
 #include <cstdlib>
+
+#include <Assert/Assert.hpp>
 
 #include <Memory/Original/UnorderedPool.hpp>
 
@@ -14,8 +15,8 @@ UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group,
       pageCapacity (_pageCapacity),
       group (std::move (_group))
 {
-    assert (_pageCapacity > 0u);
-    assert (_chunkSize >= sizeof (Chunk));
+    EMERGENCE_ASSERT (_pageCapacity > 0u);
+    EMERGENCE_ASSERT (_chunkSize >= sizeof (Chunk));
 }
 
 UnorderedPool::UnorderedPool (UnorderedPool &&_other) noexcept
@@ -75,7 +76,7 @@ void UnorderedPool::Release (void *_chunk) noexcept
     chunk->nextFree = topFreeChunk;
     topFreeChunk = chunk;
 
-    assert (acquiredChunkCount > 0u);
+    EMERGENCE_ASSERT (acquiredChunkCount > 0u);
     --acquiredChunkCount;
 }
 

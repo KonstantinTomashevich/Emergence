@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
 
@@ -22,14 +22,14 @@ StreamDeserializer::~StreamDeserializer () noexcept
 
 void StreamDeserializer::Begin (Track *_target, std::istream *_input) noexcept
 {
-    assert (_input);
+    EMERGENCE_ASSERT (_input);
     ReporterBase::Begin (_target);
     input = _input;
 }
 
 bool StreamDeserializer::TryReadNext () noexcept
 {
-    assert (input);
+    EMERGENCE_ASSERT (input);
     if (!*input)
     {
         return false;

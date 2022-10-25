@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
 
@@ -39,7 +39,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
     {
         for (std::size_t dependantIndex : item.dependantTasksIndices)
         {
-            assert (dependantIndex < dependenciesLeft.size ());
+            EMERGENCE_ASSERT (dependantIndex < dependenciesLeft.size ());
             ++dependenciesLeft[dependantIndex];
         }
     }
@@ -60,7 +60,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         std::size_t taskIndex = resolvedTasks.back ();
         resolvedTasks.pop_back ();
 
-        assert (taskIndex < _collection.tasks.size ());
+        EMERGENCE_ASSERT (taskIndex < _collection.tasks.size ());
         orderedTasks.emplace_back (_collection.tasks[taskIndex].task);
 
         for (std::size_t dependantIndex : _collection.tasks[taskIndex].dependantTasksIndices)
@@ -73,7 +73,7 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
     }
 
     // This assert fails if task collection contains circular dependencies.
-    assert (resolvedTasksCount == _collection.tasks.size ());
+    EMERGENCE_ASSERT (resolvedTasksCount == _collection.tasks.size ());
 }
 
 void ExecutorImplementation::Execute () const noexcept
@@ -120,7 +120,7 @@ Executor::~Executor () noexcept
 void Executor::Execute () noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.executor);
+    EMERGENCE_ASSERT (internal.executor);
     internal.executor->Execute ();
 }
 } // namespace Emergence::Task

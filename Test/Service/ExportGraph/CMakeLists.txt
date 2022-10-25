@@ -9,6 +9,7 @@ sober_test_begin (ExportGraph)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Shared")
 
     sober_library_use_service (PER_VARIANT PRIVATE TestExportGraphExpectation)
+    sober_library_use_service (SHARED PRIVATE Assert)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
@@ -27,3 +28,4 @@ sober_test_end ()
 
 sober_naming_test_collection (ExportGraph COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")
+ensure_test_shared_library_existence ()

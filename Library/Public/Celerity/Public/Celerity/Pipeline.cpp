@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Celerity/Pipeline.hpp>
 
@@ -22,11 +22,11 @@ const char *GetPipelineTypeName (PipelineType _type)
         return "Custom";
 
     case PipelineType::COUNT:
-        assert (false);
+        EMERGENCE_ASSERT (false);
         return nullptr;
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return nullptr;
 }
 

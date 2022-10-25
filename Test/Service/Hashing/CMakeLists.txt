@@ -12,9 +12,12 @@ sober_test_begin (Hashing)
     sober_library_link_library (PRIVATE ${CONTAINER_LIBRARY_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
 
-    sober_library_use_service (SHARED PRIVATE Testing)
+    sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
+    sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
+    sober_library_use_service (SHARED PRIVATE Testing)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
     if (MSVC)
@@ -27,3 +30,4 @@ sober_test_end ()
 
 sober_naming_test_collection (Hashing COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")
+ensure_test_shared_library_existence ()

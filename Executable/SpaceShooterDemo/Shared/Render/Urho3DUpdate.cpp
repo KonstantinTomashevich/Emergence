@@ -109,7 +109,7 @@ Urho3D::Node *Urho3DNodeAccessor::GetNode (Emergence::Celerity::UniqueId _object
     if (auto *component = static_cast<Urho3DNodeComponent *> (*cursor))
     {
         component->usages += _usageDelta;
-        assert (component->node);
+        EMERGENCE_ASSERT (component->node);
         return component->node;
     }
 

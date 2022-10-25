@@ -1,6 +1,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include <Assert/Assert.hpp>
+
 #include <Asset/Object/LibraryLoader.hpp>
 
 #include <Job/Dispatcher.hpp>
@@ -28,12 +30,12 @@ LibraryLoader::LibraryLoader (TypeManifest _typeManifest) noexcept
 
 LibraryLoader::~LibraryLoader () noexcept
 {
-    assert (!IsLoading ());
+    EMERGENCE_ASSERT (!IsLoading ());
 }
 
 void LibraryLoader::Begin (const Container::Vector<LibraryLoadingTask> &_loadingTasks) noexcept
 {
-    assert (!IsLoading ());
+    EMERGENCE_ASSERT (!IsLoading ());
     loading.test_and_set (std::memory_order_acquire);
 
     for (const LibraryLoadingTask &task : _loadingTasks)
@@ -60,7 +62,7 @@ const Container::Vector<LibraryLoadingTask> &LibraryLoader::GetLoadingTasks () n
 
 Library LibraryLoader::End () noexcept
 {
-    assert (!IsLoading ());
+    EMERGENCE_ASSERT (!IsLoading ());
     loadingTasks.clear ();
     folderList.clear ();
     objectList.clear ();

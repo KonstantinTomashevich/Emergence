@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Iterator.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <StandardLayout/Original/PlainPatch.hpp>
 #include <StandardLayout/Patch.hpp>
@@ -39,28 +39,28 @@ Patch::~Patch () noexcept
 Mapping Patch::GetTypeMapping () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainPatch>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return handle->GetTypeMapping ();
 }
 
 void Patch::Apply (void *_object) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainPatch>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     handle->Apply (_object);
 }
 
 std::size_t Patch::GetChangeCount () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainPatch>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return handle->GetValueCount ();
 }
 
 Iterator Patch::Begin () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainPatch>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const ValueSetter *iterator = handle->Begin ();
     return Iterator (array_cast (iterator));
 }
@@ -68,7 +68,7 @@ Iterator Patch::Begin () const noexcept
 Iterator Patch::End () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainPatch>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const ValueSetter *iterator = handle->End ();
     return Iterator (array_cast (iterator));
 }
@@ -80,7 +80,7 @@ bool Patch::IsHandleEqual (const Patch &_other) const noexcept
 
 Patch Patch::operator+ (const Patch &_other) const noexcept
 {
-    assert (GetTypeMapping () == _other.GetTypeMapping ());
+    EMERGENCE_ASSERT (GetTypeMapping () == _other.GetTypeMapping ());
     PlainPatchBuilder builder;
     builder.Begin (GetTypeMapping ());
 
@@ -115,7 +115,7 @@ Patch Patch::operator+ (const Patch &_other) const noexcept
 
 Patch Patch::operator- (const Patch &_other) const noexcept
 {
-    assert (GetTypeMapping () == _other.GetTypeMapping ());
+    EMERGENCE_ASSERT (GetTypeMapping () == _other.GetTypeMapping ());
     PlainPatchBuilder builder;
     builder.Begin (GetTypeMapping ());
 

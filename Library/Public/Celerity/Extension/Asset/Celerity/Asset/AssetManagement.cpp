@@ -71,7 +71,7 @@ AssetManager::AssetManager (TaskConstructor &_constructor,
 
     for (const AssetReferenceBinding &binding : _bindingList)
     {
-        assert (_bindingEvents.hooks.contains (binding.objectType));
+        EMERGENCE_ASSERT (_bindingEvents.hooks.contains (binding.objectType));
         assetUsers.emplace_back (_constructor, binding, _bindingEvents.hooks.at (binding.objectType));
     }
 }
@@ -93,7 +93,7 @@ void AssetManager::Execute () noexcept
         for (auto eventCursor = assetUser.fetchOnAddedEvents.Execute ();
              const auto *event = static_cast<const AssetUserAddedEventView *> (*eventCursor); ++eventCursor)
         {
-            assert (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
+            EMERGENCE_ASSERT (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
             auto assetUserCursor = assetUser.fetchUserById.Execute (&event->assetUserId);
 
             if (const void *assetUserObject = *assetUserCursor)
@@ -114,7 +114,7 @@ void AssetManager::Execute () noexcept
         for (auto eventCursor = assetUser.fetchOnChangedEvents.Execute ();
              const auto *event = static_cast<const AssetUserChangedEventView *> (*eventCursor); ++eventCursor)
         {
-            assert (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
+            EMERGENCE_ASSERT (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
             auto assetUserCursor = assetUser.fetchUserById.Execute (&event->assetUserId);
 
             if (const void *assetUserObject = *assetUserCursor)
@@ -162,7 +162,7 @@ void AssetManager::Execute () noexcept
     }
 
     // Assert that unused asset counting works as expected.
-    assert (!assetManager->automaticallyCleanUnusedAssets || assetManager->unusedAssetCount == 0u);
+    EMERGENCE_ASSERT (!assetManager->automaticallyCleanUnusedAssets || assetManager->unusedAssetCount == 0u);
 }
 
 AssetManager::AssetUserData::AssetUserData (TaskConstructor &_constructor,
@@ -203,7 +203,7 @@ void AssetManager::OnAssetUsageAdded (AssetManagerSingleton *_assetManager,
 
             if (++asset->usages == 1u)
             {
-                assert (_assetManager->unusedAssetCount > 0u);
+                EMERGENCE_ASSERT (_assetManager->unusedAssetCount > 0u);
                 --_assetManager->unusedAssetCount;
             }
 
@@ -231,7 +231,7 @@ void AssetManager::OnAssetUsageRemoved (AssetManagerSingleton *_assetManager, Me
     auto cursor = modifyAssetById.Execute (&_assetId);
     if (auto *asset = static_cast<Asset *> (*cursor))
     {
-        assert (asset->usages > 0u);
+        EMERGENCE_ASSERT (asset->usages > 0u);
         if (--asset->usages == 0u)
         {
             ++_assetManager->unusedAssetCount;
@@ -282,7 +282,7 @@ void AssetStateUpdater::Execute () noexcept
              const auto *event = static_cast<const AssetStateUpdateEventView *> (*eventCursor); ++eventCursor)
         {
             // We expect only one update per asset per frame.
-            assert (assetsUpdatedThisFrame.emplace (event->assetId).second);
+            EMERGENCE_ASSERT (assetsUpdatedThisFrame.emplace (event->assetId).second);
             auto assetCursor = editAssetById.Execute (&event->assetId);
 
             if (auto *asset = static_cast<Asset *> (*assetCursor))

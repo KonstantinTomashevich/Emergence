@@ -1,5 +1,6 @@
 #include <Assert/Assert.hpp>
 
+#include <Container/HashMap.hpp>
 #include <Container/HashSet.hpp>
 
 #include <debugbreak.h>
@@ -14,24 +15,31 @@ namespace Emergence
 {
 static bool interactiveAssertEnabled = false;
 static std::atomic_flag interactiveAssertLock;
-static Container::HashSet<Container::String> fileLinesToSkipAsserts {Memory::Profiler::AllocationGroup {
+
+static Memory::Profiler::AllocationGroup allocationGroup {Memory::Profiler::AllocationGroup {
     Memory::Profiler::AllocationGroup::Root (), Memory::UniqueString {"InteractiveAssert"}}};
+
+struct FileSkipData
+{
+    Container::HashSet<std::size_t> lines {allocationGroup};
+};
+
+static Container::HashMap<Container::String, FileSkipData> assertSkipsPerFile {allocationGroup};
 
 void SetIsAssertInteractive (bool _interactive) noexcept
 {
     interactiveAssertEnabled = _interactive;
 }
 
-void AssertFailed (const char *_message, const char *_expression, const char *_file, size_t _line) noexcept
+void AssertFailed (const char *_expression, const char *_file, size_t _line) noexcept
 {
-    EMERGENCE_LOG (CRITICAL_ERROR, "Assert failed: ", _message, ". Expression: ", _expression, ". File: ", _file,
-                   ". Line: ", _line);
+    EMERGENCE_LOG (CRITICAL_ERROR, "Expression: ", _expression, ". File: ", _file, ". Line: ", _line);
     if (interactiveAssertEnabled)
     {
         AtomicFlagGuard interactiveAssertGuard {interactiveAssertLock};
-        const Container::String assertFileLine = EMERGENCE_BUILD_STRING (_file, "#L", _line);
+        auto iterator = assertSkipsPerFile.find (_file);
 
-        if (fileLinesToSkipAsserts.contains (assertFileLine))
+        if (iterator != assertSkipsPerFile.end () && iterator->second.lines.contains (_line))
         {
             return;
         }
@@ -48,8 +56,8 @@ void AssertFailed (const char *_message, const char *_expression, const char *_f
             {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT | SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, BUTTON_SKIP, "Skip"},
         };
 
-        const Container::String assertText = EMERGENCE_BUILD_STRING (
-            "Message: ", _message, ".\nExpression: ", _expression, ".\nFile: ", _file, ".\nLine: ", _line, ".");
+        const Container::String assertText =
+            EMERGENCE_BUILD_STRING ("Expression: ", _expression, ".\nFile: ", _file, ".\nLine: ", _line, ".");
 
         const SDL_MessageBoxData messageBoxData = {
             SDL_MESSAGEBOX_ERROR,    nullptr, "Assert failed!", assertText.c_str (),
@@ -75,7 +83,7 @@ void AssertFailed (const char *_message, const char *_expression, const char *_f
 
         if (resultButtonId == BUTTON_SKIP_ALL_OCCURRENCES)
         {
-            fileLinesToSkipAsserts.emplace (assertFileLine);
+            assertSkipsPerFile[_file].lines.emplace (_line);
             return;
         }
 

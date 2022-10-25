@@ -1,7 +1,3 @@
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
-
 #include <Galleon/CargoDeck.hpp>
 #include <Galleon/SingletonContainer.hpp>
 
@@ -10,7 +6,7 @@ namespace Emergence::Galleon
 SingletonContainer::FetchQuery::Cursor::Cursor (const SingletonContainer::FetchQuery::Cursor &_other) noexcept
     : container (_other.container)
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterReadAccess ();
 }
 
@@ -24,14 +20,14 @@ SingletonContainer::FetchQuery::Cursor::~Cursor () noexcept
 
 const void *SingletonContainer::FetchQuery::Cursor::operator* () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container->singletonInstance;
 }
 
 SingletonContainer::FetchQuery::Cursor::Cursor (Handling::Handle<SingletonContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterReadAccess ();
 }
 
@@ -42,14 +38,14 @@ SingletonContainer::FetchQuery::Cursor SingletonContainer::FetchQuery::Execute (
 
 Handling::Handle<SingletonContainer> SingletonContainer::FetchQuery::GetContainer () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
 SingletonContainer::FetchQuery::FetchQuery (Handling::Handle<SingletonContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 SingletonContainer::ModifyQuery::Cursor::~Cursor () noexcept
@@ -62,14 +58,14 @@ SingletonContainer::ModifyQuery::Cursor::~Cursor () noexcept
 
 void *SingletonContainer::ModifyQuery::Cursor::operator* () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container->singletonInstance;
 }
 
 SingletonContainer::ModifyQuery::Cursor::Cursor (Handling::Handle<SingletonContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterWriteAccess ();
 }
 
@@ -80,14 +76,14 @@ SingletonContainer::ModifyQuery::Cursor SingletonContainer::ModifyQuery::Execute
 
 Handling::Handle<SingletonContainer> SingletonContainer::ModifyQuery::GetContainer () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
 SingletonContainer::ModifyQuery::ModifyQuery (Handling::Handle<SingletonContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 SingletonContainer::FetchQuery SingletonContainer::Fetch () noexcept
@@ -102,7 +98,7 @@ SingletonContainer::ModifyQuery SingletonContainer::Modify () noexcept
 
 void SingletonContainer::LastReferenceUnregistered () noexcept
 {
-    assert (deck);
+    EMERGENCE_ASSERT (deck);
     deck->DetachContainer (this);
 }
 

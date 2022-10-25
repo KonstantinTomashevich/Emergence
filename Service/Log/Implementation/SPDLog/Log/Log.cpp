@@ -2,8 +2,9 @@
 #define FMT_EXCEPTIONS 0
 
 #include <atomic>
-#include <cassert>
 #include <memory>
+
+#include <Assert/Assert.hpp>
 
 #include <Container/Optional.hpp>
 
@@ -58,7 +59,7 @@ static spdlog::level::level_enum ToSPDLogLevel (Level _level)
         return spdlog::level::critical;
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return spdlog::level::critical;
 }
 
@@ -108,7 +109,7 @@ LoggerImplementation::LoggerImplementation (LoggerImplementation &&_other) noexc
     : logger (std::move (_other.logger))
 {
     // Assert that there is no active logging operation.
-    assert (!_other.locked.test ());
+    EMERGENCE_ASSERT (!_other.locked.test ());
 }
 
 void LoggerImplementation::Log (Level _level, const char *_message) noexcept
@@ -146,7 +147,7 @@ static Container::Optional<Logger> globalLogger;
 
 void Init (Level _forceFlushOn, const Container::Vector<Sink> &_sinks) noexcept
 {
-    assert (!globalLogger);
+    EMERGENCE_ASSERT (!globalLogger);
     globalLogger.emplace (_forceFlushOn, _sinks);
 }
 

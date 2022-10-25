@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Cursor.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <Handling/Handle.hpp>
 
@@ -43,7 +43,7 @@ SignalRepresentation::~SignalRepresentation () noexcept
 
 ReadCursor SignalRepresentation::ReadSignaled () noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::SignalIndex *index = reinterpret_cast<Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ();
     Pegasus::SignalIndex::ReadCursor cursor = index->LookupSignaledToRead ();
     return ReadCursor (array_cast (cursor));
@@ -51,7 +51,7 @@ ReadCursor SignalRepresentation::ReadSignaled () noexcept
 
 EditCursor SignalRepresentation::EditSignaled () noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::SignalIndex *index = reinterpret_cast<Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ();
     Pegasus::SignalIndex::EditCursor cursor = index->LookupSignaledToEdit ();
     return EditCursor (array_cast (cursor));
@@ -59,31 +59,31 @@ EditCursor SignalRepresentation::EditSignaled () noexcept
 
 StandardLayout::Field SignalRepresentation::GetKeyField () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->GetIndexedField ();
 }
 
 bool SignalRepresentation::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->IsSignaledValue (_value);
 }
 
 std::array<uint8_t, sizeof (uint64_t)> SignalRepresentation::GetSignaledValue () const
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->GetSignaledValue ();
 }
 
 const StandardLayout::Mapping &SignalRepresentation::GetTypeMapping () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->GetRecordMapping ();
 }
 
 bool SignalRepresentation::CanBeDropped () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle);
     Pegasus::SignalIndex *index = realHandle.Get ();
 
@@ -97,7 +97,7 @@ bool SignalRepresentation::CanBeDropped () const noexcept
 
 void SignalRepresentation::Drop () noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle);
     Pegasus::SignalIndex *index = realHandle.Get ();
 
@@ -135,7 +135,7 @@ SignalRepresentation &SignalRepresentation::operator= (SignalRepresentation &&_o
 
 SignalRepresentation::SignalRepresentation (void *_handle) noexcept
 {
-    assert (_handle);
+    EMERGENCE_ASSERT (_handle);
     static_assert (sizeof (handle) == sizeof (Handling::Handle<Pegasus::SignalIndex>));
     new (&handle) Handling::Handle<Pegasus::SignalIndex> (static_cast<Pegasus::SignalIndex *> (_handle));
 }

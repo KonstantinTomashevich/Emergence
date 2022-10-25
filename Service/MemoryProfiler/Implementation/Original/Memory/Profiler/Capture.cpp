@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Iterator.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <Memory/Profiler/Capture.hpp>
 #include <Memory/Profiler/ImplementationUtils.hpp>
@@ -49,7 +49,7 @@ CapturedAllocationGroup::~CapturedAllocationGroup () noexcept
 Iterator CapturedAllocationGroup::BeginChildren () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     auto iterator = group->BeginChildren ();
     return Iterator (array_cast (iterator));
 }
@@ -64,48 +64,48 @@ Iterator CapturedAllocationGroup::EndChildren () const noexcept
 UniqueString CapturedAllocationGroup::GetId () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     return group->GetId ();
 }
 
 size_t CapturedAllocationGroup::GetAcquired () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     return group->GetAcquired ();
 }
 
 size_t CapturedAllocationGroup::GetReserved () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     return group->GetReserved ();
 }
 
 size_t CapturedAllocationGroup::GetTotal () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     return group->GetTotal ();
 }
 
 AllocationGroup CapturedAllocationGroup::GetSource () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     return ImplementationUtils::ToServiceFormat (const_cast<Original::AllocationGroup *> (group->GetSource ()));
 }
 
 uint64_t CapturedAllocationGroup::GetCaptureTimeNs () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
-    assert (group);
+    EMERGENCE_ASSERT (group);
     return group->GetCaptureTimeNs ();
 }
 
 CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept
 {
-    assert (_handle);
+    EMERGENCE_ASSERT (_handle);
     static_assert (sizeof (handle) == sizeof (CapturedGroupHandle));
     new (&handle) CapturedGroupHandle (static_cast<Original::CapturedAllocationGroup *> (_handle));
 }

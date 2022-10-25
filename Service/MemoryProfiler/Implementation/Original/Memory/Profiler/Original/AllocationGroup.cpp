@@ -1,5 +1,6 @@
 #include <atomic>
-#include <cassert>
+
+#include <Assert/Assert.hpp>
 
 #include <Memory/Profiler/ImplementationUtils.hpp>
 #include <Memory/Profiler/Original/AllocationGroup.hpp>
@@ -26,7 +27,7 @@ AllocationGroup::Iterator::~Iterator () noexcept = default;
 
 AllocationGroup::Iterator &AllocationGroup::Iterator::operator++ () noexcept
 {
-    assert (current);
+    EMERGENCE_ASSERT (current);
     current = current->nextOnLevel;
     return *this;
 }
@@ -77,7 +78,7 @@ AllocationGroup *AllocationGroup::Request (AllocationGroup *_parent,
                                            UniqueString _id,
                                            const ProfilingLock & /*unused*/) noexcept
 {
-    assert (_parent);
+    EMERGENCE_ASSERT (_parent);
     AllocationGroup *child = _parent->firstChild;
 
     while (child)
@@ -172,7 +173,7 @@ void AllocationGroup::AllocateInternal (size_t _bytesCount) noexcept
 
 void AllocationGroup::AcquireInternal (size_t _bytesCount) noexcept
 {
-    assert (reserved >= _bytesCount);
+    EMERGENCE_ASSERT (reserved >= _bytesCount);
     reserved -= _bytesCount;
     acquired += _bytesCount;
 
@@ -184,7 +185,7 @@ void AllocationGroup::AcquireInternal (size_t _bytesCount) noexcept
 
 void AllocationGroup::ReleaseInternal (size_t _bytesCount) noexcept
 {
-    assert (acquired >= _bytesCount);
+    EMERGENCE_ASSERT (acquired >= _bytesCount);
     acquired -= _bytesCount;
     reserved += _bytesCount;
 
@@ -196,7 +197,7 @@ void AllocationGroup::ReleaseInternal (size_t _bytesCount) noexcept
 
 void AllocationGroup::FreeInternal (size_t _bytesCount) noexcept
 {
-    assert (reserved >= _bytesCount);
+    EMERGENCE_ASSERT (reserved >= _bytesCount);
     reserved -= _bytesCount;
 
     if (parent)
@@ -219,7 +220,7 @@ AllocationGroupStack &AllocationGroupStack::Get () noexcept
 
 void AllocationGroupStack::Push (AllocationGroup *_group) noexcept
 {
-    assert (_group);
+    EMERGENCE_ASSERT (_group);
     stack.EmplaceBack (_group);
 }
 

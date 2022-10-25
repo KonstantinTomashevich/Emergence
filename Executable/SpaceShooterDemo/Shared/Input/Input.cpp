@@ -139,7 +139,7 @@ NormalInputDispatcher::NormalInputDispatcher (Emergence::Celerity::TaskConstruct
       fetchWorld (_constructor.FetchSingleton (Emergence::Celerity::WorldSingleton::Reflect ().mapping)),
       inputAccumulator (_inputAccumulator)
 {
-    assert (inputAccumulator);
+    EMERGENCE_ASSERT (inputAccumulator);
 }
 
 void NormalInputDispatcher::Execute () noexcept

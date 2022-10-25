@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Memory/Profiler/Original/Capture.hpp>
 
@@ -23,7 +23,7 @@ CapturedAllocationGroup::Iterator::~Iterator () noexcept = default;
 
 CapturedAllocationGroup::Iterator &CapturedAllocationGroup::Iterator::operator++ () noexcept
 {
-    assert (current);
+    EMERGENCE_ASSERT (current);
     current = current->nextOnLevel;
     return *this;
 }
@@ -145,7 +145,7 @@ EventObserver::~EventObserver () noexcept
 
 const Event *EventObserver::NextEvent (const ProfilingLock &_lock) noexcept
 {
-    assert (!movedOut);
+    EMERGENCE_ASSERT (!movedOut);
     if (const EventNode *next = EventManager::Get ().RequestNext (current, _lock))
     {
         current = next;

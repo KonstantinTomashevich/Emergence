@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Cursor.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <Handling/Handle.hpp>
 
@@ -56,7 +56,7 @@ LinearRepresentation::~LinearRepresentation () noexcept
 LinearRepresentation::AscendingReadCursor LinearRepresentation::ReadAscendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::AscendingReadCursor cursor = index->LookupToReadAscending ({_min}, {_max});
     return AscendingReadCursor (array_cast (cursor));
@@ -65,7 +65,7 @@ LinearRepresentation::AscendingReadCursor LinearRepresentation::ReadAscendingInt
 LinearRepresentation::AscendingEditCursor LinearRepresentation::EditAscendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::AscendingEditCursor cursor = index->LookupToEditAscending ({_min}, {_max});
     return AscendingEditCursor (array_cast (cursor));
@@ -74,7 +74,7 @@ LinearRepresentation::AscendingEditCursor LinearRepresentation::EditAscendingInt
 LinearRepresentation::DescendingReadCursor LinearRepresentation::ReadDescendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::DescendingReadCursor cursor = index->LookupToReadDescending ({_min}, {_max});
 
@@ -84,7 +84,7 @@ LinearRepresentation::DescendingReadCursor LinearRepresentation::ReadDescendingI
 LinearRepresentation::DescendingEditCursor LinearRepresentation::EditDescendingInterval (
     LinearRepresentation::KeyFieldValue _min, LinearRepresentation::KeyFieldValue _max) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::OrderedIndex *index = reinterpret_cast<Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ();
     Pegasus::OrderedIndex::DescendingEditCursor cursor = index->LookupToEditDescending ({_min}, {_max});
 
@@ -93,19 +93,19 @@ LinearRepresentation::DescendingEditCursor LinearRepresentation::EditDescendingI
 
 StandardLayout::Field LinearRepresentation::GetKeyField () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ()->GetIndexedField ();
 }
 
 const StandardLayout::Mapping &LinearRepresentation::GetTypeMapping () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle)->Get ()->GetRecordMapping ();
 }
 
 bool LinearRepresentation::CanBeDropped () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle);
     Pegasus::OrderedIndex *index = realHandle.Get ();
 
@@ -119,7 +119,7 @@ bool LinearRepresentation::CanBeDropped () const noexcept
 
 void LinearRepresentation::Drop () noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::OrderedIndex> *> (&handle);
     Pegasus::OrderedIndex *index = realHandle.Get ();
 
@@ -157,7 +157,7 @@ LinearRepresentation &LinearRepresentation::operator= (LinearRepresentation &&_o
 
 LinearRepresentation::LinearRepresentation (void *_handle) noexcept
 {
-    assert (_handle);
+    EMERGENCE_ASSERT (_handle);
     static_assert (sizeof (handle) == sizeof (Handling::Handle<Pegasus::OrderedIndex>));
     new (&handle) Handling::Handle<Pegasus::OrderedIndex> (static_cast<Pegasus::OrderedIndex *> (_handle));
 }

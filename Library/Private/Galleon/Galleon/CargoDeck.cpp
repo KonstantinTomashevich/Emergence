@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Galleon/CargoDeck.hpp>
 
@@ -27,9 +27,9 @@ CargoDeck::CargoDeck (Memory::UniqueString _name) noexcept
 CargoDeck::~CargoDeck () noexcept
 {
     // Assert that all containers are detached.
-    assert (singleton.IsEmpty ());
-    assert (shortTerm.IsEmpty ());
-    assert (longTerm.IsEmpty ());
+    EMERGENCE_ASSERT (singleton.IsEmpty ());
+    EMERGENCE_ASSERT (shortTerm.IsEmpty ());
+    EMERGENCE_ASSERT (longTerm.IsEmpty ());
 }
 
 Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)

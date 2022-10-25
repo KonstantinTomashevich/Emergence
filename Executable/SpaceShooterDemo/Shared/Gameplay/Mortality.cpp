@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
@@ -143,7 +141,7 @@ void DamageProcessor::Execute () noexcept
     for (auto eventCursor = fetchDamageEvents.Execute ();
          const auto *event = static_cast<const DamageEvent *> (*eventCursor); ++eventCursor)
     {
-        assert (event->amount >= 0.0f);
+        EMERGENCE_ASSERT (event->amount >= 0.0f);
         auto mortalCursor = editMortalById.Execute (&event->objectId);
 
         if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor);

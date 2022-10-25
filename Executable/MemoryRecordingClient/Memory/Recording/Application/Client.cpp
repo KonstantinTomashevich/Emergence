@@ -1,3 +1,5 @@
+#include <Assert/Assert.hpp>
+
 #include <cstdio>
 
 #include <imgui.h>
@@ -10,6 +12,7 @@ namespace Emergence::Memory::Recording::Application
 {
 Client::Client () noexcept
 {
+    SetIsAssertInteractive (true);
     if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         printf ("SDL Error: %s\n", SDL_GetError ());

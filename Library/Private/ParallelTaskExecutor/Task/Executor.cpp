@@ -1,6 +1,7 @@
 #include <atomic>
-#include <cassert>
 #include <thread>
+
+#include <Assert/Assert.hpp>
 
 #include <Container/Vector.hpp>
 
@@ -95,12 +96,12 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         }
     }
 
-    assert (!entryTaskIndices.empty ());
+    EMERGENCE_ASSERT (!entryTaskIndices.empty ());
 }
 
 void ExecutorImplementation::Execute () noexcept
 {
-    assert (!entryTaskIndices.empty ());
+    EMERGENCE_ASSERT (!entryTaskIndices.empty ());
     if (entryTaskIndices.empty ())
     {
         return;
@@ -124,7 +125,7 @@ void ExecutorImplementation::Execute () noexcept
 void ExecutorImplementation::TaskFunction (std::size_t _taskIndex) noexcept
 {
     Task &task = tasks[_taskIndex];
-    assert (task.dependenciesLeftThisRun == 0u);
+    EMERGENCE_ASSERT (task.dependenciesLeftThisRun == 0u);
     task.executor ();
     task.dependenciesLeftThisRun = task.dependencyCount;
 
@@ -188,7 +189,7 @@ Executor::~Executor () noexcept
 void Executor::Execute () noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.executor);
+    EMERGENCE_ASSERT (internal.executor);
     internal.executor->Execute ();
 }
 } // namespace Emergence::Task

@@ -18,6 +18,8 @@ sober_test_begin (StandardLayoutMapping)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
     sober_library_link_library (PRIVATE ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
+    sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
     sober_library_use_service (SHARED PRIVATE Testing)
@@ -33,3 +35,4 @@ sober_test_end ()
 
 sober_naming_test_collection (StandardLayoutMapping COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")
+ensure_test_shared_library_existence ()

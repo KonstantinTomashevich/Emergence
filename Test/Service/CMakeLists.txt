@@ -1,3 +1,13 @@
+function (ensure_test_shared_library_existence)
+    get_property (TEST_TARGETS DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY BUILDSYSTEM_TARGETS)
+    foreach (TARGET IN LISTS TEST_TARGETS)
+        get_target_property (TARGET_TYPE "${TARGET}" TYPE)
+        if (TARGET_TYPE STREQUAL "EXECUTABLE")
+            copy_required_shared_libraries (${TARGET})
+        endif ()
+    endforeach ()
+endfunction ()
+
 add_subdirectory (Celerity)
 add_subdirectory (ExportGraph)
 add_subdirectory (Hashing)

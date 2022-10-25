@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Container/Optional.hpp>
 #include <Container/String.hpp>
@@ -65,7 +65,7 @@ static void SerializePatchValue (std::ostream &_output, const StandardLayout::Fi
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         // Unsupported.
-        assert (false);
+        EMERGENCE_ASSERT (false);
         break;
     }
 }
@@ -78,7 +78,7 @@ static bool DeserializePatchValue (std::istream &_input,
     std::array<uint8_t, 8u> buffer;
     if (_field.GetArchetype () != StandardLayout::FieldArchetype::UNIQUE_STRING)
     {
-        assert (buffer.size () >= _field.GetSize ());
+        EMERGENCE_ASSERT (buffer.size () >= _field.GetSize ());
         if (!_input.read (reinterpret_cast<char *> (buffer.data ()), static_cast<std::streamsize> (_field.GetSize ())))
         {
             return false;
@@ -155,7 +155,7 @@ static bool DeserializePatchValue (std::istream &_input,
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         // Unsupported.
-        assert (false);
+        EMERGENCE_ASSERT (false);
         return false;
     }
 
@@ -417,7 +417,7 @@ void PatchBundleSerializer::Begin (std::ostream &_output) noexcept
 
 void PatchBundleSerializer::Next (const StandardLayout::Patch &_patch) noexcept
 {
-    assert (output);
+    EMERGENCE_ASSERT (output);
     WriteString (*output, *_patch.GetTypeMapping ().GetName ());
     SerializePatch (*output, _patch);
 }
@@ -439,7 +439,7 @@ void PatchBundleDeserializer::Begin (std::istream &_input) noexcept
 
 bool PatchBundleDeserializer::HasNext () const noexcept
 {
-    assert (input);
+    EMERGENCE_ASSERT (input);
     // Peek to trigger end of stream check.
     input->peek ();
     return input->good ();
@@ -447,7 +447,7 @@ bool PatchBundleDeserializer::HasNext () const noexcept
 
 Container::Optional<StandardLayout::Patch> PatchBundleDeserializer::Next () noexcept
 {
-    assert (input);
+    EMERGENCE_ASSERT (input);
     if (!HasNext ())
     {
         return std::nullopt;

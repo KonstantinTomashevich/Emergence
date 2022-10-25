@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 namespace Emergence
 {
@@ -61,7 +61,7 @@ ReturnType VisitUnion2 (Functor _functor, Union &_union, size_t _switch)
         BODY (0)
 
     default:
-        assert (_switch == 1u);
+        EMERGENCE_ASSERT (_switch == 1u);
         BODY (1)
     }
 
@@ -88,7 +88,7 @@ ReturnType VisitUnion2 (Functor _functor, Union &_union, size_t _switch)
         case 0u:                                                                                                       \
             return CallTarget##0(__VA_ARGS__);                                                                         \
         default:                                                                                                       \
-            assert (SwitchSource == 1u);                                                                               \
+            EMERGENCE_ASSERT (SwitchSource == 1u);                                                                               \
             return CallTarget##1(__VA_ARGS__);                                                                         \
         }                                                                                                              \
     }()

@@ -122,6 +122,7 @@ GameApplication::GameApplication (Urho3D::Context *_context)
       memoryEventOutput ("MemoryRecording.track", std::ios::binary),
       memoryEventObserver (StartRecording (memoryEventSerializer, memoryEventOutput))
 {
+    Emergence::SetIsAssertInteractive (true);
     SubscribeToEvent (Urho3D::E_UPDATE, URHO3D_HANDLER (GameApplication, HandleUpdate));
     SubscribeToEvent (Urho3D::E_KEYDOWN, URHO3D_HANDLER (GameApplication, HandleKeyDown));
     SubscribeToEvent (Urho3D::E_KEYUP, URHO3D_HANDLER (GameApplication, HandleKeyUp));

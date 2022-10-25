@@ -17,6 +17,8 @@ sober_library_begin (TestLogShared STATIC)
     sober_variant_end ()
 sober_library_end ()
 
+sober_naming_implementation_target (Assert SDL2 ASSERT_IMPLEMENTATION_TARGET)
+sober_naming_implementation_target (Log SPDLog DRIVER_LOG_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (Memory Original MEMORY_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (MemoryProfiler Original MEMORY_PROFILER_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (StandardLayoutMapping Original STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET)
@@ -35,6 +37,7 @@ sober_library_begin (TestLogApp STATIC)
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE Log)
+    sober_library_use_service (SHARED PRIVATE Assert)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
     sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
@@ -48,9 +51,9 @@ sober_library_end ()
 
 add_executable (TestLogDriver "${CMAKE_CURRENT_SOURCE_DIR}/Driver/Log/Test/Main.cpp")
 target_link_libraries (TestLogDriver PRIVATE
-        ${LOG_TEST_SHARED_LIBRARY} ${MEMORY_IMPLEMENTATION_TARGET}
+        ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_TEST_SHARED_LIBRARY} ${MEMORY_IMPLEMENTATION_TARGET}
         ${MEMORY_PROFILER_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_STUB_TARGET}
-        ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET})
+        ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET} ${DRIVER_LOG_IMPLEMENTATION_TARGET})
 add_dependencies (ServiceTests TestLogDriver)
 
 foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
@@ -62,3 +65,5 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
     add_dependencies (ServiceTests "${RUNNER_TARGET}")
     add_test (NAME "${RUNNER_TARGET}" COMMAND TestLogDriver $<TARGET_FILE:${RUNNER_TARGET}>)
 endforeach ()
+
+ensure_test_shared_library_existence ()

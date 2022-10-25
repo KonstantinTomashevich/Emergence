@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Memory/Recording/ReportingHelpers.hpp>
 
@@ -31,7 +31,7 @@ GroupUID GroupUIDAssigner::GetOrAssignUID (const Profiler::AllocationGroup &_gro
 
     const GroupUID parent = GetOrAssignUID (_group.Parent (), _declarationConsumer);
     const GroupUID uid = counter++;
-    assert (uid != MISSING_GROUP_ID);
+    EMERGENCE_ASSERT (uid != MISSING_GROUP_ID);
     uids[_group] = uid;
 
     _declarationConsumer ({
@@ -59,7 +59,7 @@ void GroupUIDAssigner::ImportCapture (const Profiler::CapturedAllocationGroup &_
                     {
                         // Nested assignment is disallowed for captured groups, because it makes
                         // no sense: ImportCapture should always be called on capture root group.
-                        assert (_event.id == _captured.GetId ());
+                        EMERGENCE_ASSERT (_event.id == _captured.GetId ());
 
                         _event.timeNs = _captured.GetCaptureTimeNs ();
                         _event.reservedBytes = _captured.GetReserved ();
@@ -81,7 +81,7 @@ void GroupUIDAssigner::Clear () noexcept
 
 Event ConvertEvent (GroupUID _groupUID, const Profiler::Event &_source) noexcept
 {
-    assert (_groupUID != MISSING_GROUP_ID);
+    EMERGENCE_ASSERT (_groupUID != MISSING_GROUP_ID);
     switch (_source.type)
     {
     case Profiler::EventType::ALLOCATE:
@@ -124,7 +124,7 @@ Event ConvertEvent (GroupUID _groupUID, const Profiler::Event &_source) noexcept
         };
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return {
         _source.timeNs,
         MISSING_GROUP_ID,

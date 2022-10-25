@@ -19,6 +19,7 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_library_link_library (PRIVATE ${SHARED_TARGET})
     sober_library_link_library (PRIVATE PhysX)
 
+    sober_library_use_service (PER_VARIANT PRIVATE Assert)
     sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics)
     sober_library_use_service (PER_VARIANT PRIVATE ExportGraph)
     sober_library_use_service (PER_VARIANT PRIVATE JobDispatcher)

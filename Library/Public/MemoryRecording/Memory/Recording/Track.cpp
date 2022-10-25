@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
 
@@ -9,7 +9,7 @@ namespace Emergence::Memory::Recording
 {
 RecordedAllocationGroup::Iterator &RecordedAllocationGroup::Iterator::operator++ () noexcept
 {
-    assert (current);
+    EMERGENCE_ASSERT (current);
     current = current->nextOnLevel.get ();
     return *this;
 }
@@ -189,7 +189,7 @@ Track::EventIterator::~EventIterator () noexcept = default;
 
 Track::EventIterator &Track::EventIterator::operator++ () noexcept
 {
-    assert (track);
+    EMERGENCE_ASSERT (track);
     if (current)
     {
         current = current->next;
@@ -212,7 +212,7 @@ Track::EventIterator Track::EventIterator::operator++ (int) noexcept
 
 Track::EventIterator &Track::EventIterator::operator-- () noexcept
 {
-    assert (track);
+    EMERGENCE_ASSERT (track);
     if (current)
     {
         current = current->previous;
@@ -236,7 +236,7 @@ Track::EventIterator Track::EventIterator::operator-- (int) noexcept
 bool Track::EventIterator::operator== (const Track::EventIterator &_other) const noexcept
 {
     // Comparing iterators from different recordings seems error-prone.
-    assert (track == _other.track);
+    EMERGENCE_ASSERT (track == _other.track);
     return current == _other.current;
 }
 
@@ -337,7 +337,7 @@ bool Track::MoveToNextEvent () noexcept
     }
 
     EventNode *next = current ? current->next : first;
-    assert (next);
+    EMERGENCE_ASSERT (next);
 
     switch (next->event.type)
     {
@@ -423,7 +423,7 @@ void Track::ReportEvent (const Event &_event) noexcept
     }
     else
     {
-        assert (!first);
+        EMERGENCE_ASSERT (!first);
         first = node;
         last = node;
     }
@@ -431,7 +431,7 @@ void Track::ReportEvent (const Event &_event) noexcept
 
 RecordedAllocationGroup *Track::RequireGroup (GroupUID _uid) const noexcept
 {
-    assert (_uid != MISSING_GROUP_ID);
+    EMERGENCE_ASSERT (_uid != MISSING_GROUP_ID);
     RecordedAllocationGroup *group = _uid < idToGroup.size () ? idToGroup[_uid] : nullptr;
 
     if (!group)
@@ -444,8 +444,8 @@ RecordedAllocationGroup *Track::RequireGroup (GroupUID _uid) const noexcept
 
 bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::DECLARE_GROUP);
-    assert (_event.uid != MISSING_GROUP_ID);
+    EMERGENCE_ASSERT (_event.type == EventType::DECLARE_GROUP);
+    EMERGENCE_ASSERT (_event.uid != MISSING_GROUP_ID);
 
     if (_event.uid < idToGroup.size ())
     {
@@ -470,12 +470,12 @@ bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
     if (_event.parent == MISSING_GROUP_ID)
     {
         // Root group declaration.
-        assert (!*_event.id);
-        assert (!root); // If root exists, it should have been found by id previously.
+        EMERGENCE_ASSERT (!*_event.id);
+        EMERGENCE_ASSERT (!root); // If root exists, it should have been found by id previously.
 
         root.reset (new RecordedAllocationGroup {nullptr, {}, _event.reservedBytes, _event.acquiredBytes});
-        assert (idToGroup.empty ()); // If we created any groups before root, then our logic is broken.
-        assert (idToGroup.size () == _event.uid);
+        EMERGENCE_ASSERT (idToGroup.empty ()); // If we created any groups before root, then our logic is broken.
+        EMERGENCE_ASSERT (idToGroup.size () == _event.uid);
         idToGroup.emplace_back (root.get ());
 
         return true;
@@ -494,7 +494,7 @@ bool Track::ApplyDeclareGroupEvent (const Event &_event) noexcept
 
 bool Track::ApplyAllocateEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::ALLOCATE);
+    EMERGENCE_ASSERT (_event.type == EventType::ALLOCATE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         group->Allocate (_event.bytes);
@@ -506,7 +506,7 @@ bool Track::ApplyAllocateEvent (const Event &_event) noexcept
 
 bool Track::ApplyAcquireEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::ACQUIRE);
+    EMERGENCE_ASSERT (_event.type == EventType::ACQUIRE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         if (group->Acquire (_event.bytes))
@@ -523,7 +523,7 @@ bool Track::ApplyAcquireEvent (const Event &_event) noexcept
 
 bool Track::ApplyReleaseEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::RELEASE);
+    EMERGENCE_ASSERT (_event.type == EventType::RELEASE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         if (group->Release (_event.bytes))
@@ -540,7 +540,7 @@ bool Track::ApplyReleaseEvent (const Event &_event) noexcept
 
 bool Track::ApplyFreeEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::FREE);
+    EMERGENCE_ASSERT (_event.type == EventType::FREE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         if (group->Free (_event.bytes))
@@ -556,7 +556,7 @@ bool Track::ApplyFreeEvent (const Event &_event) noexcept
 
 bool Track::UndoDeclareGroupEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::DECLARE_GROUP);
+    EMERGENCE_ASSERT (_event.type == EventType::DECLARE_GROUP);
     if (_event.uid < idToGroup.size ())
     {
         auto *group = idToGroup[_event.uid];
@@ -577,7 +577,7 @@ bool Track::UndoDeclareGroupEvent (const Event &_event) noexcept
 
 bool Track::UndoAllocateEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::ALLOCATE);
+    EMERGENCE_ASSERT (_event.type == EventType::ALLOCATE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         if (group->Free (_event.bytes))
@@ -594,7 +594,7 @@ bool Track::UndoAllocateEvent (const Event &_event) noexcept
 
 bool Track::UndoAcquireEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::ACQUIRE);
+    EMERGENCE_ASSERT (_event.type == EventType::ACQUIRE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         if (group->Release (_event.bytes))
@@ -611,7 +611,7 @@ bool Track::UndoAcquireEvent (const Event &_event) noexcept
 
 bool Track::UndoReleaseEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::RELEASE);
+    EMERGENCE_ASSERT (_event.type == EventType::RELEASE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         if (group->Acquire (_event.bytes))
@@ -628,7 +628,7 @@ bool Track::UndoReleaseEvent (const Event &_event) noexcept
 
 bool Track::UndoFreeEvent (const Event &_event) noexcept
 {
-    assert (_event.type == EventType::FREE);
+    EMERGENCE_ASSERT (_event.type == EventType::FREE);
     if (RecordedAllocationGroup *group = RequireGroup (_event.group))
     {
         group->Allocate (_event.bytes);

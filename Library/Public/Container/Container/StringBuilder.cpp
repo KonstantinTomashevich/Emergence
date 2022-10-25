@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
-#include <cstring>
+#include <Assert/Assert.hpp>
 
 #include <Container/StringBuilder.hpp>
 
@@ -29,7 +28,7 @@ const char *StringBuilder::Get () const noexcept
     if (spaceLeft > 0u)                                                                                                \
     {                                                                                                                  \
         int symbolCount = snprintf (&buffer[count], spaceLeft, (Format), _value);                                      \
-        assert (symbolCount >= 0);                                                                                     \
+        EMERGENCE_ASSERT (symbolCount >= 0);                                                        \
         count += std::min (spaceLeft, static_cast<std::size_t> (symbolCount));                                         \
     }                                                                                                                  \
                                                                                                                        \
@@ -224,7 +223,7 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
 
 std::size_t StringBuilder::SpaceLeft () const noexcept
 {
-    assert (count < BUFFER_SIZE);
+    EMERGENCE_ASSERT (count < BUFFER_SIZE);
     return BUFFER_SIZE - count;
 }
 } // namespace Emergence::Container

@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <StandardLayout/Original/PlainPatch.hpp>
 
@@ -95,7 +95,7 @@ void PlainPatch::Apply (void *_object) const noexcept
         case FieldArchetype::BLOCK:
         case FieldArchetype::NESTED_OBJECT:
             // Unsupported!
-            assert (false);
+            EMERGENCE_ASSERT (false);
             break;
         }
     }
@@ -144,7 +144,7 @@ void PlainPatch::operator delete (void *_pointer) noexcept
 
 PlainPatch *PlainPatch::ChangeCapacity (std::size_t _newValueCapacity) noexcept
 {
-    assert (_newValueCapacity >= valueCount);
+    EMERGENCE_ASSERT (_newValueCapacity >= valueCount);
 
     // We can safely use resize because we know how Mapping movement works in this implementation.
     auto *newInstance = static_cast<PlainPatch *> (GetHeap ().Resize (
@@ -167,14 +167,14 @@ PlainPatchBuilder::~PlainPatchBuilder () noexcept
 
 void PlainPatchBuilder::Begin (Mapping _mapping) noexcept
 {
-    assert (!underConstruction);
+    EMERGENCE_ASSERT (!underConstruction);
     underConstruction = new (INITIAL_VALUE_CAPACITY) PlainPatch (std::move (_mapping));
     underConstruction->valueCapacity = INITIAL_VALUE_CAPACITY;
 }
 
 void PlainPatchBuilder::Set (FieldId _field, const std::array<uint8_t, VALUE_MAX_SIZE> &_value) noexcept
 {
-    assert (underConstruction);
+    EMERGENCE_ASSERT (underConstruction);
     if (underConstruction->valueCount == underConstruction->valueCapacity)
     {
         underConstruction = underConstruction->ChangeCapacity (underConstruction->valueCount * 2u);
@@ -186,7 +186,7 @@ void PlainPatchBuilder::Set (FieldId _field, const std::array<uint8_t, VALUE_MAX
 
 PlainPatch *PlainPatchBuilder::End () noexcept
 {
-    assert (underConstruction);
+    EMERGENCE_ASSERT (underConstruction);
     PlainPatch *result = underConstruction->ChangeCapacity (underConstruction->valueCount);
     underConstruction = nullptr;
     return result;

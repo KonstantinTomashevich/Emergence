@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/Asset/Config/Loading.hpp>
 #include <Celerity/Asset/Config/Messages.hpp>
 #include <Celerity/Asset/Object/Loading.hpp>
@@ -167,7 +165,7 @@ void LoadingOrchestrator::Execute () noexcept
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                            bool *_loadingFinishedOutput) noexcept
 {
-    assert (_loadingFinishedOutput);
+    EMERGENCE_ASSERT (_loadingFinishedOutput);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"LoadingOrchestrator"})
         .SetExecutor<LoadingOrchestrator> (_loadingFinishedOutput);

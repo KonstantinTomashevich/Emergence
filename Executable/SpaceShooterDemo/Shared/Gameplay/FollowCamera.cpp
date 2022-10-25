@@ -68,7 +68,7 @@ void CameraUpdater::Execute () noexcept
         if (auto *cameraTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (*cameraTransformCursor))
         {
             // We assume that camera is always a top level citizen.
-            assert (cameraTransform->GetParentObjectId () == Emergence::Celerity::INVALID_UNIQUE_ID);
+            EMERGENCE_ASSERT (cameraTransform->GetParentObjectId () == Emergence::Celerity::INVALID_UNIQUE_ID);
             cameraTransform->SetVisualLocalTransform (unitTransform * followCameraSettings->cameraLocalTransform);
         }
     }

@@ -3,6 +3,8 @@
 #include <compare>
 #include <type_traits>
 
+#include <Assert/Assert.hpp>
+
 #include <StandardLayout/Field.hpp>
 
 namespace Emergence::Pegasus
@@ -60,9 +62,9 @@ struct UniqueStringValueComparator final
 template <typename Callback>
 auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callback &_callback) noexcept
 {
-    assert (_field.IsHandleValid ());
+    EMERGENCE_ASSERT (_field.IsHandleValid ());
     // _field should be leaf-field, not intermediate nested object.
-    assert (_field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
+    EMERGENCE_ASSERT (_field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
     switch (_field.GetArchetype ())
     {
@@ -142,7 +144,7 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     }
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return _callback (BlockValueComparator {_field.GetSize ()});
 }
 

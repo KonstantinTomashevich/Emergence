@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <algorithm>
-#include <cassert>
 
 #include <Celerity/Event/EventTrigger.hpp>
 
@@ -13,8 +12,8 @@ using namespace Memory::Literals;
 
 static void ApplyCopyOut (const CopyOutBlock &_block, const void *_source, void *_target)
 {
-    assert (_source);
-    assert (_target);
+    EMERGENCE_ASSERT (_source);
+    EMERGENCE_ASSERT (_target);
 
     memcpy (static_cast<uint8_t *> (_target) + _block.targetOffset,
             static_cast<const uint8_t *> (_source) + _block.sourceOffset, _block.length);
@@ -44,13 +43,13 @@ static Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> Bak
         StandardLayout::Field source = _recordType.GetField (copyOut.recordField);
         StandardLayout::Field target = _eventType.GetField (copyOut.eventField);
 
-        assert (source);
-        assert (target);
-        assert (source.GetArchetype () == target.GetArchetype ());
-        assert (source.GetSize () == target.GetSize ());
+        EMERGENCE_ASSERT (source);
+        EMERGENCE_ASSERT (target);
+        EMERGENCE_ASSERT (source.GetArchetype () == target.GetArchetype ());
+        EMERGENCE_ASSERT (source.GetSize () == target.GetSize ());
 
         // TODO: Is there any way to add bit support without downgrading overall performance?
-        assert (source.GetArchetype () != StandardLayout::FieldArchetype::BIT);
+        EMERGENCE_ASSERT (source.GetArchetype () != StandardLayout::FieldArchetype::BIT);
 
         converted.emplace_back (CopyOutBlock {source.GetOffset (), target.GetOffset (), source.GetSize ()});
     }
@@ -104,11 +103,11 @@ PipelineType GetEventProducingPipeline (EventRoute _route) noexcept
         return PipelineType::CUSTOM;
 
     case EventRoute::COUNT:
-        assert (false);
+        EMERGENCE_ASSERT (false);
         return PipelineType::CUSTOM;
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return PipelineType::CUSTOM;
 }
 
@@ -129,11 +128,11 @@ PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept
         return PipelineType::CUSTOM;
 
     case EventRoute::COUNT:
-        assert (false);
+        EMERGENCE_ASSERT (false);
         return PipelineType::CUSTOM;
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return PipelineType::CUSTOM;
 }
 
@@ -199,8 +198,8 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
         // Only tracked fields can be copied out of unchanged version of record for several reasons:
         // - Requiring old copies of fields, changes in which you do not track, looks strange and bugprone.
         // - Implementation of such behaviour adds excessive complexity to ChangeTracker baking algorithm.
-        assert (std::find (_trackedFields.begin (), _trackedFields.end (), copyOut.recordField) !=
-                _trackedFields.end ());
+        EMERGENCE_ASSERT (std::find (_trackedFields.begin (), _trackedFields.end (), copyOut.recordField) !=
+                          _trackedFields.end ());
     }
 #endif
 }
@@ -233,9 +232,9 @@ void OnChangeEventTrigger::BakeTrackedFields (const StandardLayout::Mapping &_re
     for (const StandardLayout::FieldId fieldId : _fields)
     {
         StandardLayout::Field field = _recordType.GetField (fieldId);
-        assert (field);
+        EMERGENCE_ASSERT (field);
         // TODO: Is there any way to add bit support without downgrading overall performance?
-        assert (field.GetArchetype () != StandardLayout::FieldArchetype::BIT);
+        EMERGENCE_ASSERT (field.GetArchetype () != StandardLayout::FieldArchetype::BIT);
         converted.emplace_back (TrackedZone {field.GetOffset (), field.GetSize ()});
     }
 
@@ -288,7 +287,7 @@ ChangeTracker::ChangeTracker (ChangeTracker &&_other) noexcept
 
 void ChangeTracker::BeginEdition (const void *_record) noexcept
 {
-    assert (_record);
+    EMERGENCE_ASSERT (_record);
     for (const TrackedZone &zone : trackedZones)
     {
         memcpy (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length);
@@ -297,7 +296,7 @@ void ChangeTracker::BeginEdition (const void *_record) noexcept
 
 void ChangeTracker::EndEdition (const void *_record) noexcept
 {
-    assert (_record);
+    EMERGENCE_ASSERT (_record);
     decltype (EventBinding::zoneMask) changedMask = 0u;
     decltype (EventBinding::zoneMask) currentZoneFlag = 1u;
 
@@ -464,7 +463,7 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
         }
     }
 
-    assert (zoneBuffer <= &*buffer.end ());
+    EMERGENCE_ASSERT (zoneBuffer <= &*buffer.end ());
 }
 
 void ChangeTracker::BakeBindings (const ChangeTracker::EventVector &_events) noexcept
@@ -488,8 +487,8 @@ void ChangeTracker::BakeBindings (const ChangeTracker::EventVector &_events) noe
                 }
 
                 // Assert that there is no intersections: otherwise baking algorithm above is incorrect.
-                assert (trackedZone.sourceOffset + trackedZone.length <= eventZone.offset ||
-                        eventZone.offset + eventZone.length <= trackedZone.sourceOffset);
+                EMERGENCE_ASSERT (trackedZone.sourceOffset + trackedZone.length <= eventZone.offset ||
+                                  eventZone.offset + eventZone.length <= trackedZone.sourceOffset);
             }
 
             currentZoneFlag <<= 1u;
@@ -516,11 +515,11 @@ void ChangeTracker::BakeBindings (const ChangeTracker::EventVector &_events) noe
             if (trackedZoneIterator == trackedZones.End ())
             {
                 // Looks like either "copy out only tracked" contract is broken or blocks aren't sorted properly.
-                assert (false);
+                EMERGENCE_ASSERT (false);
                 break;
             }
 
-            assert (trackedZoneIterator->sourceOffset >= copyOutIterator->sourceOffset);
+            EMERGENCE_ASSERT (trackedZoneIterator->sourceOffset >= copyOutIterator->sourceOffset);
             const std::size_t bufferOffset = trackedZoneIterator->buffer - &buffer.front ();
 
             copyOutIterator->sourceOffset =

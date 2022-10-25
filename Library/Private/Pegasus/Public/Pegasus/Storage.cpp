@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
 #include <cstring>
 
 #include <API/Common/Implementation/Iterator.hpp>
@@ -33,7 +32,7 @@ Storage::Allocator::~Allocator () noexcept
 
 void *Storage::Allocator::Next () noexcept
 {
-    assert (owner);
+    EMERGENCE_ASSERT (owner);
     if (current)
     {
         owner->InsertRecord (current);
@@ -46,7 +45,7 @@ void *Storage::Allocator::Next () noexcept
 Storage::Allocator::Allocator (Storage *_owner)
     : owner (_owner)
 {
-    assert (owner);
+    EMERGENCE_ASSERT (owner);
     owner->RegisterWriter ();
 }
 
@@ -103,8 +102,8 @@ Storage::Storage (StandardLayout::Mapping _recordMapping) noexcept
 
 Storage::~Storage () noexcept
 {
-    assert (writers == 0u);
-    assert (readers == 0u);
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u);
 
     // Destruct all existing records.
 
@@ -135,28 +134,28 @@ Storage::~Storage () noexcept
 
     for (auto &[index, mask] : hashIndices)
     {
-        assert (index->CanBeDropped ());
+        EMERGENCE_ASSERT (index->CanBeDropped ());
         index->~HashIndex ();
         hashIndexHeap.Release (index, sizeof (HashIndex));
     }
 
     for (auto &[index, mask] : orderedIndices)
     {
-        assert (index->CanBeDropped ());
+        EMERGENCE_ASSERT (index->CanBeDropped ());
         index->~OrderedIndex ();
         orderedIndexHeap.Release (index, sizeof (OrderedIndex));
     }
 
     for (auto &[index, mask] : signalIndices)
     {
-        assert (index->CanBeDropped ());
+        EMERGENCE_ASSERT (index->CanBeDropped ());
         index->~SignalIndex ();
         signalIndexHeap.Release (index, sizeof (SignalIndex));
     }
 
     for (auto &[index, mask] : volumetricIndices)
     {
-        assert (index->CanBeDropped ());
+        EMERGENCE_ASSERT (index->CanBeDropped ());
         index->~VolumetricIndex ();
         volumetricIndexHeap.Release (index, sizeof (VolumetricIndex));
     }
@@ -175,8 +174,8 @@ Storage::Allocator Storage::AllocateAndInsert () noexcept
 Handling::Handle<HashIndex> Storage::CreateHashIndex (
     const Container::Vector<StandardLayout::FieldId> &_indexedFields) noexcept
 {
-    assert (writers == 0u);
-    assert (readers == 0u);
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u);
     constexpr std::size_t DEFAULT_INITIAL_BUCKETS = 32u;
 
     auto placeholder = hashIndexHeap.GetAllocationGroup ().PlaceOnTop ();
@@ -197,8 +196,8 @@ Handling::Handle<HashIndex> Storage::CreateHashIndex (
 
 Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept
 {
-    assert (writers == 0u);
-    assert (readers == 0u);
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u);
 
     auto placeholder = orderedIndexHeap.GetAllocationGroup ().PlaceOnTop ();
     IndexHolder<OrderedIndex> &holder = orderedIndices.EmplaceBack (
@@ -241,8 +240,8 @@ Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fiel
 Handling::Handle<SignalIndex> Storage::CreateSignalIndex (
     StandardLayout::FieldId _indexedField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
-    assert (writers == 0u);
-    assert (readers == 0u);
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u);
 
     auto placeholder = signalIndexHeap.GetAllocationGroup ().PlaceOnTop ();
     IndexHolder<SignalIndex> &holder = signalIndices.EmplaceBack (
@@ -259,8 +258,8 @@ Handling::Handle<SignalIndex> Storage::CreateSignalIndex (
 Handling::Handle<VolumetricIndex> Storage::CreateVolumetricIndex (
     const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
 {
-    assert (writers == 0u);
-    assert (readers == 0u);
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u);
 
     auto placeholder = volumetricIndexHeap.GetAllocationGroup ().PlaceOnTop ();
     IndexHolder<VolumetricIndex> &holder = volumetricIndices.EmplaceBack (IndexHolder<VolumetricIndex> {
@@ -322,21 +321,21 @@ Storage::VolumetricIndexIterator Storage::EndVolumetricIndices () const noexcept
 void Storage::SetUnsafeReadAllowed (bool _allowed) noexcept
 {
     // Unsafe access should be carefully controlled by user, therefore there should be no set-set or unset-unset calls.
-    assert (unsafeReadAllowed != _allowed);
+    EMERGENCE_ASSERT (unsafeReadAllowed != _allowed);
     unsafeReadAllowed = _allowed;
 }
 
 void Storage::RegisterReader () noexcept
 {
     // Writers counter can not be changed by thread safe operations, therefore it's ok to check it here.
-    assert (writers == 0u || unsafeReadAllowed);
+    EMERGENCE_ASSERT (writers == 0u || unsafeReadAllowed);
     ++readers;
 }
 
 void Storage::RegisterWriter () noexcept
 {
-    assert (writers == 0u);
-    assert (readers == 0u || unsafeReadAllowed);
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u || unsafeReadAllowed);
     ++writers;
 }
 
@@ -347,7 +346,7 @@ void Storage::UnregisterReader () noexcept
 
 void Storage::UnregisterWriter () noexcept
 {
-    assert (writers == 1u);
+    EMERGENCE_ASSERT (writers == 1u);
     --writers;
 
     VisitEveryIndex (
@@ -359,8 +358,8 @@ void Storage::UnregisterWriter () noexcept
 
 void *Storage::AllocateRecord () noexcept
 {
-    assert (readers == 0u);
-    assert (writers == 1u);
+    EMERGENCE_ASSERT (readers == 0u);
+    EMERGENCE_ASSERT (writers == 1u);
 
     void *record = records.Acquire ();
     auto placeholder = records.GetAllocationGroup ().PlaceOnTop ();
@@ -370,9 +369,9 @@ void *Storage::AllocateRecord () noexcept
 
 void Storage::InsertRecord (const void *_record) noexcept
 {
-    assert (_record);
-    assert (readers == 0u);
-    assert (writers == 1u);
+    EMERGENCE_ASSERT (_record);
+    EMERGENCE_ASSERT (readers == 0u);
+    EMERGENCE_ASSERT (writers == 1u);
 
     VisitEveryIndex (
         [_record] (auto *_index, Constants::Storage::IndexedFieldMask /*unused*/)
@@ -383,9 +382,9 @@ void Storage::InsertRecord (const void *_record) noexcept
 
 void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexcept
 {
-    assert (_record);
-    assert (readers == 0u);
-    assert (writers == 1u);
+    EMERGENCE_ASSERT (_record);
+    EMERGENCE_ASSERT (readers == 0u);
+    EMERGENCE_ASSERT (writers == 1u);
 
     VisitEveryIndex (
         [this, _record, _requestedByIndex] (auto *_index, Constants::Storage::IndexedFieldMask /*unused*/)
@@ -402,15 +401,15 @@ void Storage::DeleteRecord (void *_record, const void *_requestedByIndex) noexce
 
 void Storage::BeginRecordEdition (const void *_record) noexcept
 {
-    assert (_record);
-    assert (editedRecordBackup);
-    assert (readers == 0u);
-    assert (writers == 1u);
+    EMERGENCE_ASSERT (_record);
+    EMERGENCE_ASSERT (editedRecordBackup);
+    EMERGENCE_ASSERT (readers == 0u);
+    EMERGENCE_ASSERT (writers == 1u);
 
     for (const IndexedField &indexedField : indexedFields)
     {
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        assert (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
+        EMERGENCE_ASSERT (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
         switch (indexedField.field.GetArchetype ())
         {
@@ -459,10 +458,10 @@ const void *Storage::GetEditedRecordBackup () const noexcept
 
 bool Storage::EndRecordEdition (const void *_record, const void *_requestedByIndex) noexcept
 {
-    assert (_record);
-    assert (editedRecordBackup);
-    assert (readers == 0u);
-    assert (writers == 1u);
+    EMERGENCE_ASSERT (_record);
+    EMERGENCE_ASSERT (editedRecordBackup);
+    EMERGENCE_ASSERT (readers == 0u);
+    EMERGENCE_ASSERT (writers == 1u);
 
     Constants::Storage::IndexedFieldMask changedIndexedFields = 0u;
     Constants::Storage::IndexedFieldMask fieldMask = 1u;
@@ -470,7 +469,7 @@ bool Storage::EndRecordEdition (const void *_record, const void *_requestedByInd
     for (const IndexedField &indexedField : indexedFields)
     {
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        assert (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
+        EMERGENCE_ASSERT (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
         if (!AreRecordValuesEqual (editedRecordBackup, _record, indexedField.field))
         {
@@ -603,7 +602,7 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex
                                            return _field.field.IsSame (_index.GetIndexedField ());                     \
                                        });                                                                             \
                                                                                                                        \
-    assert (fieldIterator != indexedFields.End ());                                                                    \
+    EMERGENCE_ASSERT (fieldIterator != indexedFields.End ());                                                                    \
     return 1u << (fieldIterator - indexedFields.Begin ())
     BUILD_SINGLE_FIELD_MASK;
 }
@@ -630,11 +629,11 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIn
         };
 
         auto minIterator = findField ((*iterator).minField);
-        assert (minIterator != indexedFields.End ());
+        EMERGENCE_ASSERT (minIterator != indexedFields.End ());
         indexMask |= 1u << (minIterator - indexedFields.Begin ());
 
         auto maxIterator = findField ((*iterator).maxField);
-        assert (maxIterator != indexedFields.End ());
+        EMERGENCE_ASSERT (maxIterator != indexedFields.End ());
         indexMask |= 1u << (maxIterator - indexedFields.Begin ());
     }
 
@@ -663,8 +662,8 @@ void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) 
                                       return _indexedField.field.IsSame (_field);
                                   });
 
-    assert (iterator != indexedFields.End ());
-    assert (iterator->usages > 0u);
+    EMERGENCE_ASSERT (iterator != indexedFields.End ());
+    EMERGENCE_ASSERT (iterator->usages > 0u);
     --iterator->usages;
 
     if (iterator->usages == 0u)
@@ -705,25 +704,25 @@ void Storage::VisitEveryIndex (Functor _functor) noexcept
 {
     for (auto &[index, mask] : hashIndices)
     {
-        assert (index);
+        EMERGENCE_ASSERT (index);
         _functor (index, mask);
     }
 
     for (auto &[index, mask] : orderedIndices)
     {
-        assert (index);
+        EMERGENCE_ASSERT (index);
         _functor (index, mask);
     }
 
     for (auto &[index, mask] : signalIndices)
     {
-        assert (index);
+        EMERGENCE_ASSERT (index);
         _functor (index, mask);
     }
 
     for (auto &[index, mask] : volumetricIndices)
     {
-        assert (index);
+        EMERGENCE_ASSERT (index);
         _functor (index, mask);
     }
 }

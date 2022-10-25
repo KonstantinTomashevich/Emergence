@@ -14,7 +14,7 @@ LongTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle<LongTermContain
     : container (std::move (_container)),
       allocator (container->collection.AllocateAndInsert ())
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 LongTermContainer::InsertQuery::Cursor LongTermContainer::InsertQuery::Execute () const noexcept
@@ -24,14 +24,14 @@ LongTermContainer::InsertQuery::Cursor LongTermContainer::InsertQuery::Execute (
 
 Handling::Handle<LongTermContainer> LongTermContainer::InsertQuery::GetContainer () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
 LongTermContainer::InsertQuery::InsertQuery (Handling::Handle<LongTermContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 LongTermContainer::FetchValueQuery::Cursor LongTermContainer::FetchValueQuery::Execute (
@@ -381,7 +381,7 @@ LongTermContainer::ModifyRayIntersectionQuery LongTermContainer::ModifyRayInters
 
 void LongTermContainer::LastReferenceUnregistered () noexcept
 {
-    assert (deck);
+    EMERGENCE_ASSERT (deck);
     deck->DetachContainer (this);
 }
 
@@ -488,8 +488,8 @@ RecordCollection::VolumetricRepresentation LongTermContainer::AcquireVolumetricR
             const auto representationDimension = *representationDimensionIterator;
             const auto &givenDimension = *givenDimensionIterator;
 
-            assert (givenDimension.globalMinBorder);
-            assert (givenDimension.globalMaxBorder);
+            EMERGENCE_ASSERT (givenDimension.globalMinBorder);
+            EMERGENCE_ASSERT (givenDimension.globalMaxBorder);
 
             const bool minFieldMatches =
                 representationDimension.minField.IsSame (typeMapping.GetField (givenDimension.minBorderField));

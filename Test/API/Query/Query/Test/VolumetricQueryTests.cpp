@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Query/Test/Data.hpp>
 #include <Query/Test/VolumetricQueryTests.hpp>
@@ -15,7 +15,7 @@ static Storage RequestBoundingBoxStorage (const Container::Vector<const void *> 
 {
     Storage storage {BoundingBox::Reflect ().mapping, _objects, {}};
 
-    assert (_sources > 0u);
+    EMERGENCE_ASSERT (_sources > 0u);
     if (_sources & FLAG_2D_SOURCE)
     {
         storage.sources.emplace_back (

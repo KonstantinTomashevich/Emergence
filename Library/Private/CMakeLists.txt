@@ -1,5 +1,4 @@
 add_subdirectory (APICommon)
-add_subdirectory (AssertSDL2)
 add_subdirectory (Celerity)
 add_subdirectory (DOTGraphExporter)
 add_subdirectory (Galleon)

@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include <Assert/Assert.hpp>
+
 #include <Container/StringBuilder.hpp>
 
 #include <Memory/Recording/Application/Client.hpp>
@@ -180,7 +182,7 @@ void UI::RenderEventsNearby (Client &_client)
                 return event->scope;
             }
 
-            assert (false);
+            EMERGENCE_ASSERT (false);
             return MISSING_GROUP_ID;
         }();
 
