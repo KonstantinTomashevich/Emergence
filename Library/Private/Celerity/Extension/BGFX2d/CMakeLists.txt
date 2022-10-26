@@ -1,6 +1,6 @@
 sober_library_begin (CelerityBGFX2d STATIC)
-    file (GLOB_RECURSE HEADERS "*.hpp" )
-    file (GLOB_RECURSE SOURCES "*.cpp")
+    file (GLOB_RECURSE HEADERS "Public/*.hpp" )
+    file (GLOB_RECURSE SOURCES "Public/*.cpp")
     list (APPEND SOURCES ${HEADERS})
 
     sober_library_set_sources ("${SOURCES}")
@@ -22,3 +22,6 @@ sober_library_begin (CelerityBGFX2d STATIC)
     sober_variant_begin (Original)
     sober_variant_end ()
 sober_library_end ()
+
+sober_naming_library_base_target (CelerityBGFX2d CELERITY_BGFX_2D_LIBRARY)
+register_asset_usage ("${CELERITY_BGFX_2D_LIBRARY}" "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Compiled" "BGFX2dAssets")
