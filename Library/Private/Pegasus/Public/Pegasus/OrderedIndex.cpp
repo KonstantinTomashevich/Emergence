@@ -351,7 +351,7 @@ OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (const OrderedIn
         [this, &_min, &_max] (auto _comparator)
         {
             EMERGENCE_ASSERT (!_min.boundValue || !_max.boundValue ||
-                    _comparator.Compare (_min.boundValue, _max.boundValue) <= 0);
+                              _comparator.Compare (_min.boundValue, _max.boundValue) <= 0);
             InternalLookupResult result {records.begin (), records.end ()};
 
             if (_min.boundValue)

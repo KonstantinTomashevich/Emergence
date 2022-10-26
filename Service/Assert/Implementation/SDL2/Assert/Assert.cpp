@@ -31,7 +31,7 @@ void SetIsAssertInteractive (bool _interactive) noexcept
     interactiveAssertEnabled = _interactive;
 }
 
-void AssertFailed (const char *_expression, const char *_file, size_t _line) noexcept
+void ReportCriticalError (const char *_expression, const char *_file, size_t _line) noexcept
 {
     EMERGENCE_LOG (CRITICAL_ERROR, "Expression: ", _expression, ". File: ", _file, ". Line: ", _line);
     if (interactiveAssertEnabled)

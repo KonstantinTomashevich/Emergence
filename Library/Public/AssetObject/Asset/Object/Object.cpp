@@ -35,7 +35,7 @@ static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
 
     EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).IsHandleValid ());
     EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetArchetype () ==
-            StandardLayout::FieldArchetype::UINT);
+                      StandardLayout::FieldArchetype::UINT);
     EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetSize () == sizeof (UniqueId));
 
     UniqueId firstId = 0u;

@@ -1453,8 +1453,8 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
 
     StandardLayout::Field selectionBaseField = _storage->GetRecordMapping ().GetField (_dimensions.front ().minField);
     EMERGENCE_ASSERT (selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::INT ||
-            selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::UINT ||
-            selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::FLOAT);
+                      selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::UINT ||
+                      selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::FLOAT);
 
 #define UNHANDLED_COMBINATION                                                                                          \
     EMERGENCE_ASSERT (false);                                                                                                    \
