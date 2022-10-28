@@ -14,8 +14,8 @@ include ("${CMAKE_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 # Must be called from root CMakeLists.txt, otherwise CTest configuration won't be placed into binary root.
 enable_testing ()
 
+add_subdirectory (ThirdParty)
 add_subdirectory (Service)
 add_subdirectory (Library)
 add_subdirectory (Test)
-add_subdirectory (ThirdParty)
 add_subdirectory (Executable)

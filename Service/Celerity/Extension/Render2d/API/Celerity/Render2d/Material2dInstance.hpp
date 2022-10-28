@@ -89,7 +89,9 @@ struct UniformSamplerValue final
     Memory::UniqueString assetId;
     Memory::UniqueString uniformName;
     UniqueId assetUserId = INVALID_UNIQUE_ID;
+
     Memory::UniqueString textureId;
+    uint8_t textureStage = 0u;
 
     struct Reflection final
     {
@@ -97,6 +99,7 @@ struct UniformSamplerValue final
         StandardLayout::FieldId uniformName;
         StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId textureId;
+        StandardLayout::FieldId textureStage;
         StandardLayout::Mapping mapping;
     };
 
