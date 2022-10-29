@@ -18,9 +18,20 @@
 
 #define INSERT_LONG_TERM(Type) _constructor.InsertLongTerm (Type::Reflect ().mapping)
 #define FETCH_VALUE_1F(Type, Field) _constructor.FetchValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define FETCH_VALUE_2F(Type, Field1, Field2)                                                                           \
+    _constructor.FetchValue (Type::Reflect ().mapping, {Type::Reflect ().Field1, Type::Reflect ().Field2})
+
 #define MODIFY_VALUE_1F(Type, Field) _constructor.ModifyValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define MODIFY_VALUE_2F(Type, Field1, Field2)                                                                          \
+    _constructor.ModifyValue (Type::Reflect ().mapping, {Type::Reflect ().Field1, Type::Reflect ().Field2})
+
 #define EDIT_VALUE_1F(Type, Field) _constructor.EditValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define EDIT_VALUE_2F(Type, Field, Field2)                                                                             \
+    _constructor.EditValue (Type::Reflect ().mapping, {Type::Reflect ().Field1, Type::Reflect ().Field2})
+
 #define REMOVE_VALUE_1F(Type, Field) _constructor.RemoveValue (Type::Reflect ().mapping, {Type::Reflect ().Field})
+#define REMOVE_VALUE_2F(Type, Field, Field2)                                                                           \
+    _constructor.RemoveValue (Type::Reflect ().mapping, {Type::Reflect ().Field1, Type::Reflect ().Field2})
 
 #define FETCH_ASCENDING_RANGE(Type, Field)                                                                             \
     _constructor.FetchAscendingRange (Type::Reflect ().mapping, Type::Reflect ().Field)

@@ -52,22 +52,13 @@ endfunction ()
 
 # Private function, should not be used outside of register_bgfx_shaders.
 # Registers custom command for compiling BGFX shader to SPIRV format.
-function (private_register_bgfx_spirv_shader SHADER_INPUT SHADER_OUTPUT)
+function (private_register_bgfx_spirv_shader SHADER_INPUT SHADER_TYPE SHADER_OUTPUT)
     get_filename_component (SHADER_INPUT_DIRECTORY "${SHADER_INPUT}" DIRECTORY)
     get_filename_component (SHADER_OUTPUT_DIRECTORY "${SHADER_OUTPUT}" DIRECTORY)
     file (MAKE_DIRECTORY "${SHADER_OUTPUT_DIRECTORY}")
 
-    if ("${SHADER_INPUT}" MATCHES ".*\\.fragment\\.sc")
-        set (TYPE "FRAGMENT")
-    elseif ("${SHADER_INPUT}" MATCHES ".*\\.vertex\\.sc")
-        set (TYPE "VERTEX")
-    else ()
-        message (WARNING "Shader ${SHADER_INPUT} is not getting compiled for SPIRV: unknown type.")
-        return ()
-    endif ()
-
     shaderc_parse (COMPILE_ARGUMENTS
-            FILE "${SHADER_INPUT}" "${TYPE}"
+            FILE "${SHADER_INPUT}" "${SHADER_TYPE}"
             # TODO: Support for shader includes.
             INCLUDES "${BGFX_DIR}/src"
             LINUX PROFILE spirv
@@ -91,11 +82,20 @@ function (register_bgfx_shaders SOURCE_DIRECTORY BINARY_DIRECTORY)
             continue ()
         endif ()
 
+        if ("${SHADER}" MATCHES ".*\\.fragment\\.sc")
+            set (TYPE "FRAGMENT")
+        elseif ("${SHADER}" MATCHES ".*\\.vertex\\.sc")
+            set (TYPE "VERTEX")
+        else ()
+            message (WARNING "Shader ${SHADER_INPUT} is not getting compiled: unknown type.")
+            continue ()
+        endif ()
+
         file (RELATIVE_PATH SHADER_RELATIVE "${SOURCE_DIRECTORY}" "${SHADER}")
-        string (REPLACE ".sc" ".bin" SHADER_RELATIVE_BIN "${SHADER_RELATIVE}")
+        string (REPLACE ".sc" ".spirv" SHADER_RELATIVE_BIN "${SHADER_RELATIVE}")
 
         # TODO: We're testing only SPIRV now, therefore other shader types are not supported by buildsystem.
         #       Implement support for other shader types.
-        private_register_bgfx_spirv_shader (${SHADER} "${BINARY_DIRECTORY}/SPIRV/${SHADER_RELATIVE_BIN}")
+        private_register_bgfx_spirv_shader (${SHADER} "${TYPE}" "${BINARY_DIRECTORY}/${SHADER_RELATIVE_BIN}")
     endforeach ()
 endfunction ()

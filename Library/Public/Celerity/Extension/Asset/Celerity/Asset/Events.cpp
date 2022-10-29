@@ -6,9 +6,15 @@ namespace Emergence::Celerity
 {
 using namespace Memory::Literals;
 
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (AssetRemovedNormalEvent, id);
+
 AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
                                                    const AssetReferenceBindingList &_bindings) noexcept
 {
+    _registrar.OnRemoveEvent ({{AssetRemovedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
+                               Asset::Reflect ().mapping,
+                               {{Asset::Reflect ().id, AssetRemovedNormalEvent::Reflect ().id}}});
+
     StandardLayout::MappingBuilder builder;
     AssetReferenceBindingEventMap eventMap;
 
