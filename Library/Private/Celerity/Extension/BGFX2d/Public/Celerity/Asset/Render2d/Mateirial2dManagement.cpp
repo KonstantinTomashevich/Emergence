@@ -3,6 +3,7 @@
 
 #include <bgfx/bgfx.h>
 
+#include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render2d/Material2d.hpp>
 #include <Celerity/Asset/Render2d/Material2dManagement.hpp>
@@ -87,6 +88,9 @@ Manager::Manager (TaskConstructor &_constructor,
     {
         shaderRootPaths.emplace_back (shaderRoot);
     }
+
+    _constructor.DependOn (AssetManagement::Checkpoint::ASSET_LOADING_STARTED);
+    _constructor.MakeDependencyOf (AssetManagement::Checkpoint::ASSET_LOADING_FINISHED);
 }
 
 void Manager::Execute () noexcept
@@ -124,6 +128,8 @@ void Manager::ProcessLoading () noexcept
         {
             event->state = LoadUniforms (asset->id);
         }
+
+        EMERGENCE_ASSERT (event->state != AssetState::LOADING);
     }
 }
 
@@ -430,7 +436,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
         return;
     }
 
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dManagement"})
+    _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dManager"})
         .SetExecutor<Manager> (_materialRootPaths, _shaderRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }
 } // namespace Emergence::Celerity::Material2dManagement

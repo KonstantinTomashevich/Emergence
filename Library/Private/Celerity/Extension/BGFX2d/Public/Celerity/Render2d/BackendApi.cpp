@@ -4,10 +4,10 @@
 
 #include <bimg/bimg.h>
 
-#include <bx/allocator.h>
 #include <bx/file.h>
 #include <bx/string.h>
 
+#include <Celerity/Render2d/BGFX/Allocator.hpp>
 #include <Celerity/Render2d/BackendApi.hpp>
 
 #include <Container/StringBuilder.hpp>
@@ -59,44 +59,6 @@ static uint32_t ExtractBgfxFlags (const Render2dBackendConfig &_config)
     }
 
     return flags;
-}
-
-class Allocator final : public bx::AllocatorI
-{
-public:
-    void *realloc (
-        void *_pointer, size_t _size, size_t _alignment, const char * /*unused*/, uint32_t /*unused*/) override;
-
-private:
-    Memory::Heap allocator {Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup::Root (),
-                                                               Memory::UniqueString {"Render2d::BGFX"}}};
-};
-
-void *Allocator::realloc (void *_pointer, size_t _size, size_t _alignment, const char * /*unused*/, uint32_t /*unused*/)
-{
-    _alignment = std::max (_alignment, sizeof (uintptr_t));
-    if (_size == 0u)
-    {
-        if (_pointer)
-        {
-            void *initialAddress = static_cast<uint8_t *> (_pointer) - _alignment;
-            allocator.Release (initialAddress, *static_cast<uintptr_t *> (initialAddress));
-        }
-
-        return nullptr;
-    }
-
-    if (!_pointer)
-    {
-        void *allocated = allocator.Acquire (_size + _alignment, _alignment);
-        *static_cast<uintptr_t *> (allocated) = _size;
-        return static_cast<uint8_t *> (allocated) + _alignment;
-    }
-
-    void *initialAddress = static_cast<uint8_t *> (_pointer) - _alignment;
-    void *newAddress = allocator.Resize (initialAddress, _alignment, *static_cast<uintptr_t *> (initialAddress), _size + _alignment);
-    *static_cast<uintptr_t *> (newAddress) = _size;
-    return static_cast<uint8_t *> (newAddress) + _alignment;
 }
 
 struct Callback final : bgfx::CallbackI
@@ -267,10 +229,14 @@ bool Render2dBackend::Init (const Render2dBackendConfig &_config,
 
     if (_profileMemory)
     {
-        static Allocator allocator;
-        init.allocator = &allocator;
+        BGFX::SetCurrentAllocator (BGFX::GetProfiledAllocator ());
+    }
+    else
+    {
+        BGFX::SetCurrentAllocator (BGFX::GetEfficientAllocator ());
     }
 
+    init.allocator = BGFX::GetCurrentAllocator ();
     static Callback callback;
     init.callback = &callback;
 

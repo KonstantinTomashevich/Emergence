@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <fstream>
 
+#include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render2d/Material2dInstance.hpp>
@@ -119,6 +120,9 @@ Manager::Manager (TaskConstructor &_constructor,
     {
         materialInstanceRoots.emplace_back (root);
     }
+
+    _constructor.DependOn (AssetManagement::Checkpoint::ASSET_LOADING_STARTED);
+    _constructor.MakeDependencyOf (AssetManagement::Checkpoint::ASSET_LOADING_FINISHED);
 }
 
 void Manager::Execute () noexcept
@@ -573,7 +577,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
         return;
     }
 
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dInstanceManagement"})
+    _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dInstanceManager"})
         .SetExecutor<Manager> (_materialInstanceRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }
 } // namespace Emergence::Celerity::Material2dInstanceManagement
