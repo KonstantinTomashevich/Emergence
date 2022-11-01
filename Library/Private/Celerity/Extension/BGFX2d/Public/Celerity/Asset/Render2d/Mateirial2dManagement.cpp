@@ -117,8 +117,9 @@ void Manager::ProcessLoading () noexcept
 
         auto eventCursor = insertAssetStateEvent.Execute ();
         auto *event = static_cast<AssetStateUpdateEventView *> (++eventCursor);
-
+        event->assetId = asset->id;
         event->state = LoadMaterial (asset->id);
+
         if (event->state == AssetState::READY)
         {
             event->state = LoadUniforms (asset->id);
@@ -227,7 +228,7 @@ AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
                         ERROR, "Material2dManagement: Unable to deserialize uniform bundle \"",
                         binaryUniformsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                         "\".");
-                    break;
+                    return AssetState::CORRUPTED;
                 }
 
                 RegisterUniform (_assetId, uniformItem);
@@ -238,7 +239,7 @@ AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
             return AssetState::READY;
         }
 
-        std::filesystem::path yamlUniformsPath = EMERGENCE_BUILD_STRING (root, "/", _assetId, ".yaml.bin");
+        std::filesystem::path yamlUniformsPath = EMERGENCE_BUILD_STRING (root, "/", _assetId, ".uniforms.yaml");
         if (std::filesystem::exists (yamlUniformsPath))
         {
             std::ifstream input {yamlUniformsPath};
@@ -258,6 +259,7 @@ AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
                 EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to deserialize uniform bundle \"",
                                yamlUniformsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                "\".");
+                return AssetState::CORRUPTED;
             }
 
             return AssetState::READY;
@@ -425,6 +427,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
         EMERGENCE_LOG (WARNING,
                        "Material2dManagement: Task not registered, because Material2d is not found "
                        "in state update map. Perhaps it is not referenced by anything?");
+        return;
     }
 
     _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dManagement"})
