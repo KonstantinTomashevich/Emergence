@@ -1,7 +1,7 @@
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Material2d.hpp>
 #include <Celerity/Render2d/Material2dInstance.hpp>
-#include <Celerity/Render2d/Sprite2d.hpp>
+#include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/Texture2d.hpp>
 
 namespace Emergence::Celerity
@@ -23,9 +23,9 @@ AssetReferenceBindingList GetRender2dAssetUsage () noexcept
                                                              Texture2d::Reflect ().mapping};
 
     AssetReferenceBinding &sprite2dBinding = binding.emplace_back ();
-    sprite2dBinding.objectType = Sprite2d::Reflect ().mapping;
-    sprite2dBinding.assetUserIdField = Sprite2d::Reflect ().assetUserId;
-    sprite2dBinding.references.emplace_back () = {Sprite2d::Reflect ().materialInstanceAssetId,
+    sprite2dBinding.objectType = Sprite2dComponent::Reflect ().mapping;
+    sprite2dBinding.assetUserIdField = Sprite2dComponent::Reflect ().assetUserId;
+    sprite2dBinding.references.emplace_back () = {Sprite2dComponent::Reflect ().materialInstanceAssetId,
                                                   Material2dInstance::Reflect ().mapping};
 
     return binding;
