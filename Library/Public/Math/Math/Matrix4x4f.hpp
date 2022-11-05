@@ -3,6 +3,7 @@
 #include <array>
 
 #include <Math/NoInitializationFlag.hpp>
+#include <Math/Vector4f.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -41,6 +42,8 @@ struct alignas (sizeof (float) * 4u) Matrix4x4f final
     Matrix4x4f operator* (const Matrix4x4f &_other) const noexcept;
 
     Matrix4x4f operator* (float _scalar) const noexcept;
+
+    Vector4f operator* (const Vector4f &_vector) const noexcept;
 
     Matrix4x4f &operator*= (float _scalar) noexcept;
 

@@ -3,6 +3,7 @@
 #include <array>
 
 #include <Math/NoInitializationFlag.hpp>
+#include <Math/Vector3f.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -41,6 +42,8 @@ struct Matrix3x3f final
     Matrix3x3f operator* (const Matrix3x3f &_other) const noexcept;
 
     Matrix3x3f operator* (float _scalar) const noexcept;
+
+    Vector3f operator* (const Vector3f &_vector) const noexcept;
 
     Matrix3x3f &operator*= (float _scalar) noexcept;
 

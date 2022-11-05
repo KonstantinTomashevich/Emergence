@@ -83,6 +83,13 @@ Matrix3x3f Matrix3x3f::operator* (float _scalar) const noexcept
     return result *= _scalar;
 }
 
+Vector3f Matrix3x3f::operator* (const Vector3f &_vector) const noexcept
+{
+    Vector3f result {NoInitializationFlag::Confirm ()};
+    glm_mat3_mulv (const_cast<Column *> (columns), const_cast<float *> (_vector.components), result.components);
+    return result;
+}
+
 Matrix3x3f &Matrix3x3f::operator*= (float _scalar) noexcept
 {
     glm_mat3_scale (columns, _scalar);

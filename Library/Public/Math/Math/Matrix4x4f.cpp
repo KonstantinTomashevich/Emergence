@@ -97,6 +97,13 @@ Matrix4x4f Matrix4x4f::operator* (float _scalar) const noexcept
     return result *= _scalar;
 }
 
+Vector4f Matrix4x4f::operator* (const Vector4f &_vector) const noexcept
+{
+    Vector4f result {NoInitializationFlag::Confirm ()};
+    glm_mat4_mulv (const_cast<Column *> (columns), const_cast<float *> (_vector.components), result.components);
+    return result;
+}
+
 Matrix4x4f &Matrix4x4f::operator*= (float _scalar) noexcept
 {
     glm_mat4_scale (columns, _scalar);
