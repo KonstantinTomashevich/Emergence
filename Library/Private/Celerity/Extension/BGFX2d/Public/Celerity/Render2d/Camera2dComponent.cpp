@@ -1,16 +1,16 @@
-#include <Celerity/Render2d/Camera2d.hpp>
+#include <Celerity/Render2d/Camera2dComponent.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const Camera2d::Reflection &Camera2d::Reflect () noexcept
+const Camera2dComponent::Reflection &Camera2dComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Camera2d);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Camera2dComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (size);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (orthographicSize);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -2,7 +2,7 @@
 
 #include <Celerity/Standard/UniqueId.hpp>
 
-#include <Math/Vector2f.hpp>
+#include <Math/AxisAlignedBox2d.hpp>
 
 #include <Memory/UniqueString.hpp>
 
@@ -10,14 +10,15 @@
 
 namespace Emergence::Celerity
 {
-struct Sprite2d final
+struct Sprite2dComponent final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
     UniqueId spriteId = INVALID_UNIQUE_ID;
     UniqueId assetUserId = INVALID_UNIQUE_ID;
 
     Memory::UniqueString materialInstanceAssetId;
-    Math::Vector2f uv;
+    Math::AxisAlignedBox2d uv;
+    Math::Vector2f halfSize;
     std::uint16_t layer = 0u;
 
     struct Reflection final
@@ -27,6 +28,7 @@ struct Sprite2d final
         StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId materialInstanceAssetId;
         StandardLayout::FieldId uv;
+        StandardLayout::FieldId halfSize;
         StandardLayout::FieldId layer;
         StandardLayout::Mapping mapping;
     };

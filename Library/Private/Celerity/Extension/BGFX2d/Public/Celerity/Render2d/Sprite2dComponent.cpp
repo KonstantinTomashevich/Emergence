@@ -1,19 +1,20 @@
-#include <Celerity/Render2d/Sprite2d.hpp>
+#include <Celerity/Render2d/Sprite2dComponent.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const Sprite2d::Reflection &Sprite2d::Reflect () noexcept
+const Sprite2dComponent::Reflection &Sprite2dComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2d);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (spriteId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceAssetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (uv);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (halfSize);
         EMERGENCE_MAPPING_REGISTER_REGULAR (layer);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
