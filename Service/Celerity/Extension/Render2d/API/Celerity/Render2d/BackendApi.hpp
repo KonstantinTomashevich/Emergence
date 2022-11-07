@@ -32,6 +32,8 @@ struct Render2dBackend final
                       void *_nativeDisplayType,
                       bool _profileMemory) noexcept;
 
+    static const Render2dBackendConfig &GetCurrentConfig () noexcept;
+
     static bool Update (const Render2dBackendConfig &_config) noexcept;
 
     static void Shutdown () noexcept;

@@ -2,9 +2,7 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-#include <Math/AxisAlignedBox2d.hpp>
-
-namespace Emergence::Celerity::Rendering2d
+namespace Emergence::Celerity::WorldRendering2d
 {
 struct Checkpoint final
 {
@@ -16,4 +14,4 @@ struct Checkpoint final
 };
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlignedBox2d &_worldBounds) noexcept;
-} // namespace Emergence::Celerity::Rendering2d
+} // namespace Emergence::Celerity::WorldRendering2d

@@ -16,17 +16,17 @@ struct Sprite2dComponent final
     UniqueId spriteId = INVALID_UNIQUE_ID;
     UniqueId assetUserId = INVALID_UNIQUE_ID;
 
-    Memory::UniqueString materialInstanceAssetId;
+    Memory::UniqueString materialInstanceId;
     Math::AxisAlignedBox2d uv;
     Math::Vector2f halfSize;
-    std::uint16_t layer = 0u;
+    uint16_t layer = 0u;
 
     struct Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId spriteId;
         StandardLayout::FieldId assetUserId;
-        StandardLayout::FieldId materialInstanceAssetId;
+        StandardLayout::FieldId materialInstanceId;
         StandardLayout::FieldId uv;
         StandardLayout::FieldId halfSize;
         StandardLayout::FieldId layer;

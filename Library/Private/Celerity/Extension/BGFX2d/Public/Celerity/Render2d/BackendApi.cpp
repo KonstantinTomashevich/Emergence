@@ -213,11 +213,14 @@ void Callback::captureFrame (const void * /*unused*/, uint32_t /*unused*/)
     // We do not support BGFX capture yet.
 }
 
+static Render2dBackendConfig currentConfig;
+
 bool Render2dBackend::Init (const Render2dBackendConfig &_config,
                             void *_nativeWindowHandle,
                             void *_nativeDisplayType,
                             bool _profileMemory) noexcept
 {
+    currentConfig = _config;
     bgfx::Init init;
     init.type = bgfx::RendererType::Count;
     init.resolution.width = _config.width;
@@ -240,12 +243,26 @@ bool Render2dBackend::Init (const Render2dBackendConfig &_config,
     static Callback callback;
     init.callback = &callback;
 
-    return bgfx::init (init);
+    if (bgfx::init (init))
+    {
+        bgfx::setViewClear (0, BGFX_CLEAR_COLOR, 0x000000FF, 1.0f, 0);
+        bgfx::setViewRect (0, 0, 0, _config.width, _config.height);
+        return true;
+    }
+
+    return false;
+}
+
+const Render2dBackendConfig &Render2dBackend::GetCurrentConfig () noexcept
+{
+    return currentConfig;
 }
 
 bool Render2dBackend::Update (const Render2dBackendConfig &_config) noexcept
 {
+    currentConfig = _config;
     bgfx::reset (_config.width, _config.height, ExtractBgfxFlags (_config));
+    bgfx::setViewRect (0, 0, 0, _config.width, _config.height);
     return true;
 }
 

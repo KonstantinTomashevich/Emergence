@@ -13,7 +13,7 @@ struct Material2d final
     Memory::UniqueString assetId;
     Memory::UniqueString vertexShader;
     Memory::UniqueString fragmentShader;
-    std::uintptr_t nativeHandle = 0u;
+    uintptr_t nativeHandle = 0u;
 
     struct Reflection final
     {
@@ -40,7 +40,7 @@ struct Uniform2d final
     Memory::UniqueString assetId;
     Memory::UniqueString name;
     Uniform2dType type = Uniform2dType::VECTOR_4F;
-    std::uintptr_t nativeHandle = 0u;
+    uintptr_t nativeHandle = 0u;
 
     struct Reflection final
     {

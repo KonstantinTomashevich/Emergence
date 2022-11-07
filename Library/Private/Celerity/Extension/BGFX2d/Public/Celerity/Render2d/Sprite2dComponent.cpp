@@ -12,7 +12,7 @@ const Sprite2dComponent::Reflection &Sprite2dComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (spriteId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceAssetId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (uv);
         EMERGENCE_MAPPING_REGISTER_REGULAR (halfSize);
         EMERGENCE_MAPPING_REGISTER_REGULAR (layer);

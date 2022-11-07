@@ -13,12 +13,12 @@ namespace Emergence::Celerity
 struct Camera2dComponent final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
-    Math::Vector2f orthographicSize;
+    float halfOrthographicSize = 0.0f;
 
     struct Reflection final
     {
         StandardLayout::FieldId objectId;
-        StandardLayout::FieldId orthographicSize;
+        StandardLayout::FieldId halfOrthographicSize;
         StandardLayout::Mapping mapping;
     };
 

@@ -11,7 +11,7 @@ const Material2dInstance::Reflection &Material2dInstance::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Material2dInstance);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (materialAssetId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (materialId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

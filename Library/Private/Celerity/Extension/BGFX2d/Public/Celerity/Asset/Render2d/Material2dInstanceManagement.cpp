@@ -274,7 +274,7 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
 
     materialInstance->assetId = _assetId;
     materialInstance->assetUserId = assetManager->GenerateAssetUserId ();
-    materialInstance->materialAssetId = header.material;
+    materialInstance->materialId = header.material;
 
     const AssetState dependencyState = SummarizeDependencyState (header.material, header.parent);
     if (dependencyState == AssetState::CORRUPTED || dependencyState == AssetState::MISSING)
@@ -305,7 +305,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
     const auto *materialInstance = static_cast<const Material2dInstance *> (*materialInstanceCursor);
     EMERGENCE_ASSERT (materialInstance);
 
-    const AssetState dependencyState = SummarizeDependencyState (materialInstance->materialAssetId, _parentAssetId);
+    const AssetState dependencyState = SummarizeDependencyState (materialInstance->materialId, _parentAssetId);
     if (dependencyState != AssetState::READY)
     {
         return dependencyState;
@@ -317,7 +317,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
         auto parentMaterialInstanceCursor = fetchMaterialInstanceById.Execute (&_parentAssetId);
         const auto *parentMaterialInstance = static_cast<const Material2dInstance *> (*parentMaterialInstanceCursor);
         EMERGENCE_ASSERT (parentMaterialInstance);
-        EMERGENCE_ASSERT (parentMaterialInstance->materialAssetId == materialInstance->materialAssetId);
+        EMERGENCE_ASSERT (parentMaterialInstance->materialId == materialInstance->materialId);
     }
 #endif
 

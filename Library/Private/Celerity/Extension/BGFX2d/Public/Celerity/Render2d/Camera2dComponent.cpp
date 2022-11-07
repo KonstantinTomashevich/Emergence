@@ -10,7 +10,7 @@ const Camera2dComponent::Reflection &Camera2dComponent::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Camera2dComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (orthographicSize);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (halfOrthographicSize);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

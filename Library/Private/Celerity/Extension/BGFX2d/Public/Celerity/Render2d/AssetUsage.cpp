@@ -13,7 +13,7 @@ AssetReferenceBindingList GetRender2dAssetUsage () noexcept
     AssetReferenceBinding &materialInstanceBinding = binding.emplace_back ();
     materialInstanceBinding.objectType = Material2dInstance::Reflect ().mapping;
     materialInstanceBinding.assetUserIdField = Material2dInstance::Reflect ().assetUserId;
-    materialInstanceBinding.references.emplace_back () = {Material2dInstance::Reflect ().materialAssetId,
+    materialInstanceBinding.references.emplace_back () = {Material2dInstance::Reflect ().materialId,
                                                           Material2d::Reflect ().mapping};
 
     AssetReferenceBinding &uniformSamplerValueBinding = binding.emplace_back ();
@@ -25,7 +25,7 @@ AssetReferenceBindingList GetRender2dAssetUsage () noexcept
     AssetReferenceBinding &sprite2dBinding = binding.emplace_back ();
     sprite2dBinding.objectType = Sprite2dComponent::Reflect ().mapping;
     sprite2dBinding.assetUserIdField = Sprite2dComponent::Reflect ().assetUserId;
-    sprite2dBinding.references.emplace_back () = {Sprite2dComponent::Reflect ().materialInstanceAssetId,
+    sprite2dBinding.references.emplace_back () = {Sprite2dComponent::Reflect ().materialInstanceId,
                                                   Material2dInstance::Reflect ().mapping};
 
     return binding;

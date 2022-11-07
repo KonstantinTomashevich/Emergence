@@ -20,13 +20,13 @@ struct Material2dInstance final
 {
     Memory::UniqueString assetId;
     UniqueId assetUserId = INVALID_UNIQUE_ID;
-    Memory::UniqueString materialAssetId;
+    Memory::UniqueString materialId;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId assetUserId;
-        StandardLayout::FieldId materialAssetId;
+        StandardLayout::FieldId materialId;
         StandardLayout::Mapping mapping;
     };
 

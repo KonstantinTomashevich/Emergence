@@ -68,7 +68,7 @@ void Application::LoadSettings () noexcept
 void Application::InitWindow () noexcept
 {
     EMERGENCE_LOG (INFO, "Application: Initializing window...");
-    uint64_t windowFlags = SDL_WINDOW_VULKAN;
+    uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
 
     if (settings.fullscreen)
     {
