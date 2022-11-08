@@ -64,13 +64,31 @@ function (private_register_bgfx_spirv_shader SHADER_INPUT SHADER_TYPE SHADER_OUT
             LINUX PROFILE spirv
             OUTPUT "${SHADER_OUTPUT}")
 
-    message (STATUS "### ${COMPILE_ARGUMENTS}")
-    add_custom_command (
-            MAIN_DEPENDENCY "${SHADER_INPUT}"
-            DEPENDS "${SHADER_INPUT_DIRECTORY}/varying.def.sc"
-            OUTPUT "${SHADER_OUTPUT}"
-            COMMAND "$<TARGET_FILE:shaderc>" ${COMPILE_ARGUMENTS}
-            COMMENT "Compiling ${SHADER_INPUT} for SPIRV...")
+    list (APPEND SHADER_COMPILATION_COMMANDS COMMAND "$<TARGET_FILE:shaderc>" ${COMPILE_ARGUMENTS})
+    set (SHADER_COMPILATION_COMMANDS "${SHADER_COMPILATION_COMMANDS}" PARENT_SCOPE)
+endfunction ()
+
+# Private function, should not be used outside of register_bgfx_shaders.
+# Registers custom command for compiling BGFX shader to DX11 format.
+function (private_register_bgfx_dx11_shader SHADER_INPUT SHADER_TYPE SHADER_OUTPUT)
+    get_filename_component (SHADER_OUTPUT_DIRECTORY "${SHADER_OUTPUT}" DIRECTORY)
+    file (MAKE_DIRECTORY "${SHADER_OUTPUT_DIRECTORY}")
+
+    if ("${SHADER_TYPE}" STREQUAL "FRAGMENT")
+        set (D3D_PREFIX "ps")
+    elseif ("${TYPE}" STREQUAL "VERTEX")
+        set (D3D_PREFIX "vs")
+    endif ()
+
+    shaderc_parse (COMPILE_ARGUMENTS
+            FILE "${SHADER_INPUT}" "${SHADER_TYPE}"
+            # TODO: Support for shader includes.
+            INCLUDES "${BGFX_DIR}/src"
+            WINDOWS PROFILE ${D3D_PREFIX}_5_0 O 3
+            OUTPUT "${SHADER_OUTPUT}")
+
+    list (APPEND SHADER_COMPILATION_COMMANDS COMMAND "$<TARGET_FILE:shaderc>" ${COMPILE_ARGUMENTS})
+    set (SHADER_COMPILATION_COMMANDS "${SHADER_COMPILATION_COMMANDS}" PARENT_SCOPE)
 endfunction ()
 
 # Registers custom commands for compiling all BGFX shaders from source directory.
@@ -92,10 +110,31 @@ function (register_bgfx_shaders SOURCE_DIRECTORY BINARY_DIRECTORY)
         endif ()
 
         file (RELATIVE_PATH SHADER_RELATIVE "${SOURCE_DIRECTORY}" "${SHADER}")
-        string (REPLACE ".sc" ".spirv" SHADER_RELATIVE_BIN "${SHADER_RELATIVE}")
 
-        # TODO: We're testing only SPIRV now, therefore other shader types are not supported by buildsystem.
+        # TODO: We're testing only SPIRV and DX11 now, therefore other shader types are not supported by buildsystem.
         #       Implement support for other shader types.
-        private_register_bgfx_spirv_shader (${SHADER} "${TYPE}" "${BINARY_DIRECTORY}/${SHADER_RELATIVE_BIN}")
+
+        string (REPLACE ".sc" ".spirv" SHADER_RELATIVE_BIN_SPIRV "${SHADER_RELATIVE}")
+        set (SPIRV_OUTPUT "${BINARY_DIRECTORY}/${SHADER_RELATIVE_BIN_SPIRV}")
+        private_register_bgfx_spirv_shader (${SHADER} "${TYPE}" "${SPIRV_OUTPUT}")
+        list (APPEND OUTPUTS "${SPIRV_OUTPUT}")
+
+        if (WIN32)
+            string (REPLACE ".sc" ".dx11" SHADER_RELATIVE_BIN_DX11 "${SHADER_RELATIVE}")
+            set (DX11_OUTPUT "${BINARY_DIRECTORY}/${SHADER_RELATIVE_BIN_DX11}")
+            private_register_bgfx_dx11_shader (${SHADER} "${TYPE}" "${BINARY_DIRECTORY}/${SHADER_RELATIVE_BIN_DX11}")
+            list (APPEND OUTPUTS "${DX11_OUTPUT}")
+        endif ()
+
+        get_filename_component (SHADER_DIRECTORY "${SHADER}" DIRECTORY)
+        add_custom_command (
+                MAIN_DEPENDENCY "${SHADER}"
+                DEPENDS "${SHADER_DIRECTORY}/varying.def.sc"
+                OUTPUT ${OUTPUTS}
+                ${SHADER_COMPILATION_COMMANDS}
+                COMMENT "Compiling ${SHADER}...")
+
+        unset (OUTPUTS)
+        unset (SHADER_COMPILATION_COMMANDS)
     endforeach ()
 endfunction ()
