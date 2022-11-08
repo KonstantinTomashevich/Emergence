@@ -9,6 +9,9 @@ struct Checkpoint final
 {
     Checkpoint () = delete;
 
+    /// \brief Before this checkpoint visual transforms are not ready for use, but new transforms may be added safely.
+    static const Memory::UniqueString STARTED;
+
     /// \brief After this checkpoint visual transforms are guaranteed to be ready for use.
     static const Memory::UniqueString FINISHED;
 };

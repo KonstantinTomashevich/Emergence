@@ -33,12 +33,12 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
 
     if (_use2d)
     {
-        HierarchyCleanup::Add2dToFixedUpdate (builder);
+        TransformHierarchyCleanup::Add2dToFixedUpdate (builder);
         RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario), true);
     }
     else
     {
-        HierarchyCleanup::Add3dToFixedUpdate (builder);
+        TransformHierarchyCleanup::Add3dToFixedUpdate (builder);
         RequestExecutor::Add3dToFixedUpdate (builder, std::move (_scenario), true);
     }
 

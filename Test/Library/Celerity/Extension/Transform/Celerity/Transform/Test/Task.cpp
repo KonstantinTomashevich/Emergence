@@ -281,8 +281,8 @@ void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder,
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
     if (_withHierarchyCleanup)
     {
-        constructor.DependOn (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-        constructor.MakeDependencyOf (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+        constructor.DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+        constructor.MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
     }
 
     constructor.SetExecutor<Executor<Math::Transform2d>> (std::move (_requests));
@@ -302,8 +302,8 @@ void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder,
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
     if (_withHierarchyCleanup)
     {
-        constructor.DependOn (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-        constructor.MakeDependencyOf (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+        constructor.DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+        constructor.MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
     }
 
     constructor.SetExecutor<Executor<Math::Transform3d>> (std::move (_requests));

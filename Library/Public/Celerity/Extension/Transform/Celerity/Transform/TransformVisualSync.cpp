@@ -57,6 +57,7 @@ TransformVisualSynchronizer<TransformComponentType>::TransformVisualSynchronizer
       editTransformById (EDIT_VALUE_1F (TransformComponentType, objectId)),
       editTransformsWithUpdateFlag (EDIT_SIGNAL (TransformComponentType, visualTransformSyncNeeded, true))
 {
+    _constructor.DependOn (VisualTransformSync::Checkpoint::STARTED);
     _constructor.MakeDependencyOf (VisualTransformSync::Checkpoint::FINISHED);
 }
 
@@ -120,10 +121,12 @@ void TransformVisualSynchronizer<TransformComponentType>::Execute () noexcept
 
 namespace VisualTransformSync
 {
+const Memory::UniqueString Checkpoint::STARTED {"TransformVisualSyncStarted"};
 const Memory::UniqueString Checkpoint::FINISHED {"TransformVisualSyncFinished"};
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform2dVisualSync"})
         .SetExecutor<TransformVisualSynchronizer<Transform2dComponent>> (
@@ -132,6 +135,7 @@ void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"})
         .SetExecutor<TransformVisualSynchronizer<Transform3dComponent>> (

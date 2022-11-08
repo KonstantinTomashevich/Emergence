@@ -252,7 +252,7 @@ void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
                                 objectId)
         .DependOn (Checkpoint::DISPATCH_STARTED)
         .MakeDependencyOf ("Input::NormalDispatcher"_us)
-        .MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 
     _pipelineBuilder.AddTask ("Input::NormalDispatcher"_us).SetExecutor<NormalInputDispatcher> (_inputAccumulator);
 }
