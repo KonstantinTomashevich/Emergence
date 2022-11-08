@@ -42,10 +42,12 @@ AxisAlignedBox2d operator* (const Matrix3x3f &_transformMatrix, const AxisAligne
                                      {_box.max.x, _box.max.y},
                                      {_box.min.x, _box.max.y}};
 
-    AxisAlignedBox2d result {Vector2f::ZERO, Vector2f::ZERO};
+    AxisAlignedBox2d result {{std::numeric_limits<float>::max (), std::numeric_limits<float>::max ()},
+                             {std::numeric_limits<float>::lowest (), std::numeric_limits<float>::lowest ()}};
+
     for (const Vector2f &probe : probes)
     {
-        const Vector3f transformed3f = _transformMatrix * Vector3f {probe.x, probe.y, 0.0f};
+        const Vector3f transformed3f = _transformMatrix * Vector3f {probe.x, probe.y, 1.0f};
         const Vector2f transformed {transformed3f.x, transformed3f.y};
 
         result.min.x = std::min (result.min.x, transformed.x);
