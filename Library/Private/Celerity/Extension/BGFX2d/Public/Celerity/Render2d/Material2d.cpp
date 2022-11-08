@@ -1,9 +1,17 @@
+#include <bgfx/bgfx.h>
+
 #include <Celerity/Render2d/Material2d.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
+Material2d::~Material2d () noexcept
+{
+    bgfx::ProgramHandle handle {static_cast<uint16_t> (nativeHandle)};
+    bgfx::destroy (handle);
+}
+
 const Material2d::Reflection &Material2d::Reflect () noexcept
 {
     static Reflection reflection = [] ()
@@ -17,6 +25,12 @@ const Material2d::Reflection &Material2d::Reflect () noexcept
     }();
 
     return reflection;
+}
+
+Uniform2d::~Uniform2d () noexcept
+{
+    bgfx::UniformHandle handle {static_cast<uint16_t> (nativeHandle)};
+    bgfx::destroy (handle);
 }
 
 const Uniform2d::Reflection &Uniform2d::Reflect () noexcept

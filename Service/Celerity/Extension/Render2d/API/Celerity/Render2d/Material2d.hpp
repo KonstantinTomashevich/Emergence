@@ -10,6 +10,18 @@ namespace Emergence::Celerity
 {
 struct Material2d final
 {
+    Material2d () noexcept = default;
+    
+    Material2d (const Material2d &_other) = delete;
+
+    Material2d (Material2d &&_other) = delete;
+
+    ~Material2d () noexcept;
+
+    Material2d &operator= (const Material2d &_other) = delete;
+
+    Material2d &operator= (Material2d &&_other) = delete;
+    
     Memory::UniqueString assetId;
     Memory::UniqueString vertexShader;
     Memory::UniqueString fragmentShader;
@@ -37,6 +49,18 @@ enum class Uniform2dType : uint8_t
 
 struct Uniform2d final
 {
+    Uniform2d () noexcept = default;
+    
+    Uniform2d (const Uniform2d &_other) = delete;
+
+    Uniform2d (Uniform2d &&_other) = delete;
+
+    ~Uniform2d () noexcept;
+
+    Uniform2d &operator= (const Uniform2d &_other) = delete;
+
+    Uniform2d &operator= (Uniform2d &&_other) = delete;
+    
     Memory::UniqueString assetId;
     Memory::UniqueString name;
     Uniform2dType type = Uniform2dType::VECTOR_4F;

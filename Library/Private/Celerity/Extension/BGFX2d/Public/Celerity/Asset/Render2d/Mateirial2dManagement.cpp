@@ -176,6 +176,7 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
 
     if (!loaded)
     {
+        EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to find material \"", _assetId, "\".");
         return AssetState::MISSING;
     }
 
@@ -408,15 +409,10 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
     for (auto uniformCursor = removeUniformById.Execute (&_assetId);
          const auto *uniform = static_cast<const Uniform2d *> (uniformCursor.ReadConst ()); ~uniformCursor)
     {
-        bgfx::UniformHandle handle {static_cast<uint16_t> (uniform->nativeHandle)};
-        bgfx::destroy (handle);
     }
 
-    if (auto materialCursor = removeMaterialById.Execute (&_assetId);
-        const auto *material = static_cast<const Material2d *> (materialCursor.ReadConst ()))
+    if (auto materialCursor = removeMaterialById.Execute (&_assetId); materialCursor.ReadConst ())
     {
-        bgfx::ProgramHandle handle {static_cast<uint16_t> (material->nativeHandle)};
-        bgfx::destroy (handle);
         ~materialCursor;
     }
 }

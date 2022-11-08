@@ -109,6 +109,13 @@ struct Callback final : bgfx::CallbackI
 
 void Callback::fatal (const char *_filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char *_str)
 {
+    if (_code == bgfx::Fatal::DebugCheck)
+    {
+        // Do not report debug checks as fatal. Instead, just log them as debug.
+        EMERGENCE_LOG (DEBUG, "BGFX debug check failed: ", _str, " (File: \"", _filePath, "\", Line: \"", _line, "\")");
+        return;
+    }
+
     ReportCriticalError (
         EMERGENCE_BUILD_STRING ("BGFX Error with code ", static_cast<std::underlying_type_t<bgfx::Fatal::Enum>> (_code),
                                 " and message \"", _str, "\"."),

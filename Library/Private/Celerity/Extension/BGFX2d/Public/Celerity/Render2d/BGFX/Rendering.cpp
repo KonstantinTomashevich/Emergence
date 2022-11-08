@@ -21,7 +21,7 @@ static const Vertex QUAD_VERTICES[4u] = {
     {{-1.0f, 1.0f}, {0.0f, 0.0f}},
     {{1.0f, 1.0f}, {1.0f, 0.0f}},
     {{1.0f, -1.0f}, {1.0f, 1.0f}},
-    {{-1.0f, 0.0f}, {0.0f, 1.0f}},
+    {{-1.0f, -1.0f}, {0.0f, 1.0f}},
 };
 
 static const uint16_t QUAD_INDICES[6u] = {2u, 1u, 0u, 0u, 3u, 2u};
@@ -49,7 +49,7 @@ void RenderingBackend::SubmitCamera (const Math::Transform2d &_transform,
 {
     float view[16u];
     bx::mtxSRT (view, _transform.scale.x, _transform.scale.y, 1.0f, 0.0f, 0.0f, _transform.rotation,
-                _transform.translation.x, _transform.translation.y, 0.0f);
+                _transform.translation.x, _transform.translation.y, 1.0f);
 
     float projection[16];
     bx::mtxOrtho (projection, -_halfOrthographicSize.x, _halfOrthographicSize.x, -_halfOrthographicSize.y,
@@ -208,7 +208,7 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
             uint16_t *indices = reinterpret_cast<uint16_t *> (indexBuffer.data) + static_cast<ptrdiff_t> (index * 6u);
             for (uint32_t indexIndex = 0u; indexIndex < 6u; ++indexIndex)
             {
-                indices[indexIndex] = QUAD_INDICES[indexIndex] + index;
+                indices[indexIndex] = QUAD_INDICES[indexIndex] + index * 4u;
             }
         }
 

@@ -154,8 +154,9 @@ AssetState Manager::StartLoading (Memory::UniqueString _assetId) noexcept
             Container::String pathString = path.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ();
             auto cursor = insertTextureLoadingState.Execute ();
             auto *state = static_cast<Texture2dLoadingState *> (++cursor);
-
+            state->assetId = _assetId;
             state->sourceFile = fopen (pathString.c_str (), "rb");
+
             if (!state->sourceFile)
             {
                 EMERGENCE_LOG (ERROR, "Texture2dManagement: Unable to open texture file \"", pathString, "\".");
@@ -166,7 +167,7 @@ AssetState Manager::StartLoading (Memory::UniqueString _assetId) noexcept
             state->size = static_cast<uint32_t> (ftell (state->sourceFile));
             fseek (state->sourceFile, 0u, SEEK_SET);
             state->data = static_cast<uint8_t *> (state->allocator.Acquire (state->size, alignof (uint8_t)));
-            return AssetState::READY;
+            return AssetState::LOADING;
         }
     }
 
@@ -257,11 +258,8 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
         ~textureLoadingStateCursor;
     }
 
-    if (auto textureCursor = removeTextureById.Execute (&_assetId);
-        const auto *texture = static_cast<const Texture2d *> (textureCursor.ReadConst ()))
+    if (auto textureCursor = removeTextureById.Execute (&_assetId); textureCursor.ReadConst ())
     {
-        bgfx::TextureHandle handle {static_cast<uint16_t> (texture->nativeHandle)};
-        bgfx::destroy (handle);
         ~textureCursor;
     }
 }

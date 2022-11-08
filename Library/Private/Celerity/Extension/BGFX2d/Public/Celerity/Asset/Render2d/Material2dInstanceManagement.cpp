@@ -186,7 +186,9 @@ AssetState Manager::GetDependencyState (Memory::UniqueString _assetId) noexcept
         return asset->state;
     }
 
-    return AssetState::MISSING;
+    // If asset not exist, it is not yet processed by manager,
+    // therefore we're returning loading state as default values that is neither error nor ready flag.
+    return AssetState::LOADING;
 }
 
 AssetState Manager::SummarizeDependencyState (Memory::UniqueString _materialId, Memory::UniqueString _parentId) noexcept
@@ -355,7 +357,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
 
         case Uniform2dType::MATRIX_3X3F:
         {
-            auto *uniformValue = static_cast<UniformMatrix3x3fValue *> (++insertVector4Cursor);
+            auto *uniformValue = static_cast<UniformMatrix3x3fValue *> (++insertMatrix3x3Cursor);
             uniformValue->assetId = _assetId;
             uniformValue->uniformName = value.name;
             uniformValue->value = value.matrix3x3f;
@@ -364,7 +366,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
 
         case Uniform2dType::MATRIX_4X4F:
         {
-            auto *uniformValue = static_cast<UniformMatrix4x4fValue *> (++insertVector4Cursor);
+            auto *uniformValue = static_cast<UniformMatrix4x4fValue *> (++insertMatrix4x4Cursor);
             uniformValue->assetId = _assetId;
             uniformValue->uniformName = value.name;
             uniformValue->value = value.matrix4x4f;
@@ -373,7 +375,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
 
         case Uniform2dType::SAMPLER:
         {
-            auto *uniformValue = static_cast<UniformSamplerValue *> (++insertVector4Cursor);
+            auto *uniformValue = static_cast<UniformSamplerValue *> (++insertSamplerCursor);
             uniformValue->assetId = _assetId;
             uniformValue->assetUserId = assetManager->GenerateAssetUserId ();
             uniformValue->uniformName = value.name;

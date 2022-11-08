@@ -6,6 +6,7 @@
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 namespace Emergence::Celerity::BoundsCalculation2d
@@ -95,6 +96,7 @@ BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
 
       fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId))
 {
+    _constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
     _constructor.DependOn (Rendering2d::Checkpoint::STARTED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
@@ -188,7 +190,7 @@ UniqueId BoundsCalculator::AscendToTransformRoot (UniqueId _childObjectId) noexc
         if (!transform)
         {
             // If transform hierarchy is broken, then there is no technical root.
-            EMERGENCE_ASSERT (false);
+            // It might happen for one frame when detached transform is getting removed.
             return INVALID_UNIQUE_ID;
         }
 
@@ -244,6 +246,11 @@ void BoundsCalculator::RequestRenderObjectUpdate (UniqueId _objectId, bool _upda
 void BoundsCalculator::OnTransformParentChanged (UniqueId _objectId, UniqueId _oldParentId) noexcept
 {
     const UniqueId oldRootId = AscendToTransformRoot (_oldParentId);
+    if (oldRootId == INVALID_UNIQUE_ID)
+    {
+        return;
+    }
+
     {
         auto oldRenderObjectCursor = modifyRenderObjectById.Execute (&oldRootId);
         auto *oldRenderObject = static_cast<RenderObject2dComponent *> (*oldRenderObjectCursor);
@@ -259,6 +266,7 @@ void BoundsCalculator::OnTransformParentChanged (UniqueId _objectId, UniqueId _o
     }
 
     const UniqueId newRootId = EnsureRenderObjectExistence (_objectId);
+    EMERGENCE_ASSERT (newRootId != INVALID_UNIQUE_ID);
     RequestRenderObjectUpdate (newRootId, true);
 
     for (auto cursor = editLocalBoundsByRenderObjectId.Execute (&oldRootId);
@@ -273,7 +281,10 @@ void BoundsCalculator::OnTransformParentChanged (UniqueId _objectId, UniqueId _o
 void BoundsCalculator::OnLocalVisualTransformChanged (UniqueId _objectId) noexcept
 {
     const UniqueId rootId = AscendToTransformRoot (_objectId);
-    RequestRenderObjectUpdate (rootId, _objectId != rootId);
+    if (rootId != INVALID_UNIQUE_ID)
+    {
+        RequestRenderObjectUpdate (rootId, _objectId != rootId);
+    }
 }
 
 void BoundsCalculator::UpdateLocalBounds () noexcept
@@ -350,7 +361,7 @@ void BoundsCalculator::UpdateRenderObjectBounds () noexcept
     }
 
     for (auto renderObjectCursor = editRenderObjectWithGlobalDirty.Execute ();
-         auto *renderObject = static_cast<RenderObject2dComponent *> (*renderObjectCursor);)
+         auto *renderObject = static_cast<RenderObject2dComponent *> (*renderObjectCursor); ++renderObjectCursor)
     {
         if (auto renderObjectTransformCursor = fetchTransformById.Execute (&renderObject->objectId);
             const auto *renderObjectTransform =
@@ -363,10 +374,33 @@ void BoundsCalculator::UpdateRenderObjectBounds () noexcept
     }
 }
 
+using namespace Memory::Literals;
+
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Render2dBoundsCalculator"}).SetExecutor<BoundsCalculator> ();
+
+    _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromNormal"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, RenderObject2dComponent,
+                                objectId)
+        .MakeDependencyOf ("CleanupRenderObject2dAfterTransformRemovalFromFixed"_us);
+
+    _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromFixed"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent,
+                                RenderObject2dComponent, objectId)
+        .MakeDependencyOf ("Render2dBoundsCalculator"_us);
+
+    _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromNormal"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, LocalBounds2dComponent,
+                                objectId)
+        .MakeDependencyOf ("CleanupLocalBounds2dAfterTransformRemovalFromFixed"_us);
+
+    _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromFixed"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent,
+                                LocalBounds2dComponent, objectId)
+        .MakeDependencyOf ("Render2dBoundsCalculator"_us);
+
+    _pipelineBuilder.AddTask ("Render2dBoundsCalculator"_us).SetExecutor<BoundsCalculator> ();
 }
 } // namespace Emergence::Celerity::BoundsCalculation2d

@@ -4,5 +4,5 @@
 
 namespace Emergence::Celerity
 {
-AssetReferenceBindingList GetRender2dAssetUsage () noexcept;
+void GetRender2dAssetUsage (AssetReferenceBindingList &_output) noexcept;
 } // namespace Emergence::Celerity
