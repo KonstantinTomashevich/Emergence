@@ -64,6 +64,11 @@ StringBuilder &StringBuilder::Append (char _value) noexcept
     SNPRINTF_APPEND ("%c");
 }
 
+StringBuilder &StringBuilder::Append (short _value) noexcept
+{
+    SNPRINTF_APPEND ("%hi");
+}
+
 StringBuilder &StringBuilder::Append (int _value) noexcept
 {
     SNPRINTF_APPEND ("%d");
@@ -77,6 +82,11 @@ StringBuilder &StringBuilder::Append (long _value) noexcept
 StringBuilder &StringBuilder::Append (long long int _value) noexcept
 {
     SNPRINTF_APPEND ("%lld");
+}
+
+StringBuilder &StringBuilder::Append (unsigned short _value) noexcept
+{
+    SNPRINTF_APPEND ("%hu");
 }
 
 StringBuilder &StringBuilder::Append (unsigned int _value) noexcept
