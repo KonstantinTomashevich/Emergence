@@ -49,7 +49,7 @@ void RenderingBackend::SubmitCamera (const Math::Transform2d &_transform,
 {
     float view[16u];
     bx::mtxSRT (view, _transform.scale.x, _transform.scale.y, 1.0f, 0.0f, 0.0f, _transform.rotation,
-                _transform.translation.x, _transform.translation.y, 1.0f);
+                -_transform.translation.x, -_transform.translation.y, 1.0f);
 
     float projection[16];
     bx::mtxOrtho (projection, -_halfOrthographicSize.x, _halfOrthographicSize.x, -_halfOrthographicSize.y,
@@ -196,7 +196,7 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
                 Vertex &vertex = vertices[vertexIndex];
                 const Math::Vector2f localPoint = QUAD_VERTICES[vertexIndex].translation * rect.halfSize;
                 const Math::Vector3f globalPoint3f =
-                    transformMatrix * Math::Vector3f {localPoint.x, localPoint.y, 0.0f};
+                    transformMatrix * Math::Vector3f {localPoint.x, localPoint.y, 1.0f};
 
                 vertex.translation.x = globalPoint3f.x;
                 vertex.translation.y = globalPoint3f.y;
