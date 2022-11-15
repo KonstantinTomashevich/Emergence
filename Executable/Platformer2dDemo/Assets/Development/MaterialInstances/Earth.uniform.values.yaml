@@ -1,0 +1,4 @@
+- name: colorTexture
+  type: 3
+  textureId: Earth.png
+  textureStage: 0

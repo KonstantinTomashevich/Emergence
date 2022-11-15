@@ -1,8 +1,40 @@
 #pragma once
 
+#include <fstream>
+
 #include <Application/Settings.hpp>
 
+#include <Celerity/World.hpp>
+
+#include <Memory/Recording/StreamSerializer.hpp>
+
+// TODO: Currently this demo is used for quick testing, therefore everything is added into Application file.
+//       Should be refactored into real demo later.
+
 struct SDL_Window;
+
+class WindowBackend final
+{
+public:
+    WindowBackend () noexcept = default;
+
+    WindowBackend (const WindowBackend &_other) = delete;
+
+    WindowBackend (WindowBackend &&_other) = delete;
+
+    ~WindowBackend () noexcept;
+
+    void Init (const Settings &_settings) noexcept;
+
+    [[nodiscard]] SDL_Window *GetWindow () const noexcept;
+
+    WindowBackend &operator= (const WindowBackend &_other) = delete;
+
+    WindowBackend &operator= (WindowBackend &&_other) = delete;
+
+private:
+    SDL_Window *window = nullptr;
+};
 
 class Application final
 {
@@ -13,7 +45,7 @@ public:
 
     Application (Application &&_other) = delete;
 
-    ~Application () noexcept;
+    ~Application () noexcept = default;
 
     void Run () noexcept;
 
@@ -26,8 +58,15 @@ private:
 
     void InitWindow () noexcept;
 
+    void InitWorld () noexcept;
+
     void EventLoop () noexcept;
 
-    SDL_Window *window = nullptr;
     Settings settings;
+    WindowBackend windowBackend;
+    Emergence::Celerity::World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
+
+    std::ofstream memoryEventOutput;
+    Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
+    Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 };
