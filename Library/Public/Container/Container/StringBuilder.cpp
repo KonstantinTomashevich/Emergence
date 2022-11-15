@@ -28,7 +28,7 @@ const char *StringBuilder::Get () const noexcept
     if (spaceLeft > 0u)                                                                                                \
     {                                                                                                                  \
         int symbolCount = snprintf (&buffer[count], spaceLeft, (Format), _value);                                      \
-        EMERGENCE_ASSERT (symbolCount >= 0);                                                        \
+        EMERGENCE_ASSERT (symbolCount >= 0);                                                                           \
         count += std::min (spaceLeft, static_cast<std::size_t> (symbolCount));                                         \
     }                                                                                                                  \
                                                                                                                        \

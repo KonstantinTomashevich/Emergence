@@ -151,7 +151,8 @@ SceneInitializer::SceneInitializer (Emergence::Celerity::TaskConstructor &_const
       modifyUrho3DScene (MODIFY_SINGLETON (Urho3DSceneSingleton))
 {
     _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _constructor.MakeDependencyOf (
+        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
 void SceneInitializer::Execute () noexcept
@@ -637,7 +638,8 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
     _constructor.DependOn (Emergence::Celerity::TransformVisualSync::Checkpoint::FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _constructor.MakeDependencyOf (
+        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
 void SceneUpdater::Execute ()

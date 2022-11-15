@@ -308,7 +308,7 @@ void HashIndex::OnRecordDeleted (const void *_record, const void *_recordBackup)
     HashIndex::RecordHashSetIterator HashIndex::DeleteRecordMyself##SwitchId (                                         \
         const RecordHashSetIterator &_position) noexcept                                                               \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (_position != records._##SwitchId.end ());                                                              \
+        EMERGENCE_ASSERT (_position != records._##SwitchId.end ());                                                    \
         const void *record = *_position;                                                                               \
                                                                                                                        \
         /* To erase record using iterator unordered multiset must calculate hash once more.                            \

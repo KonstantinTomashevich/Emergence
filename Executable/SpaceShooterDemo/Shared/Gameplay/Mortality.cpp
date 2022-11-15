@@ -176,7 +176,8 @@ CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constru
 {
     _constructor.DependOn (TaskNames::PROCESS_DAMAGE);
     // Because mortality is de facto last mechanics in the graph, we're taking care or hierarchy cleanup here.
-    _constructor.MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _constructor.MakeDependencyOf (
+        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
 void CorpseProcessor::Execute () noexcept

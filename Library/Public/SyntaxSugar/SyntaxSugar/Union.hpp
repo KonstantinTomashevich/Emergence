@@ -88,7 +88,7 @@ ReturnType VisitUnion2 (Functor _functor, Union &_union, size_t _switch)
         case 0u:                                                                                                       \
             return CallTarget##0(__VA_ARGS__);                                                                         \
         default:                                                                                                       \
-            EMERGENCE_ASSERT (SwitchSource == 1u);                                                                               \
+            EMERGENCE_ASSERT (SwitchSource == 1u);                                                                     \
             return CallTarget##1(__VA_ARGS__);                                                                         \
         }                                                                                                              \
     }()

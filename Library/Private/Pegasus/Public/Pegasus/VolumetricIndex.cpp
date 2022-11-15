@@ -1457,7 +1457,7 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
                       selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::FLOAT);
 
 #define UNHANDLED_COMBINATION                                                                                          \
-    EMERGENCE_ASSERT (false);                                                                                                    \
+    EMERGENCE_ASSERT (false);                                                                                          \
     return VolumetricTree<uint8_t, 1u> ({})
 
 #define HANDLE_DIMENSION_COUNT(Count)                                                                                  \

@@ -4,9 +4,9 @@
 
 #include <Container/Vector.hpp>
 
-#include <Math/Vector4f.hpp>
 #include <Math/Matrix3x3f.hpp>
 #include <Math/Matrix4x4f.hpp>
+#include <Math/Vector4f.hpp>
 
 #include <Memory/UniqueString.hpp>
 

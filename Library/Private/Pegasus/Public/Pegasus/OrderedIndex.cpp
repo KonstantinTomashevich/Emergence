@@ -115,7 +115,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_other.current),                                                                                    \
           end (_other.end)                                                                                             \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         ++index->activeCursors;                                                                                        \
         index->storage->RegisterReader ();                                                                             \
     }                                                                                                                  \
@@ -125,7 +125,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_other.current),                                                                                    \
           end (_other.end)                                                                                             \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         _other.index = nullptr;                                                                                        \
     }                                                                                                                  \
                                                                                                                        \
@@ -140,14 +140,14 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     const void *OrderedIndex::Cursor::operator* () const noexcept                                                      \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         return current != end ? *current : nullptr;                                                                    \
     }                                                                                                                  \
                                                                                                                        \
     OrderedIndex::Cursor &OrderedIndex::Cursor::operator++ () noexcept                                                 \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
-        EMERGENCE_ASSERT (current != end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current != end);                                                                             \
                                                                                                                        \
         ++current;                                                                                                     \
         return *this;                                                                                                  \
@@ -159,8 +159,8 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_begin),                                                                                            \
           end (_end)                                                                                                   \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
-        EMERGENCE_ASSERT (current <= end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current <= end);                                                                             \
                                                                                                                        \
         ++index->activeCursors;                                                                                        \
         index->storage->RegisterReader ();                                                                             \
@@ -172,7 +172,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_other.current),                                                                                    \
           end (_other.end)                                                                                             \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         _other.index = nullptr;                                                                                        \
     }                                                                                                                  \
                                                                                                                        \
@@ -192,14 +192,14 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     void *OrderedIndex::Cursor::operator* () noexcept                                                                  \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         return current != end ? const_cast<void *> (*current) : nullptr;                                               \
     }                                                                                                                  \
                                                                                                                        \
     OrderedIndex::Cursor &OrderedIndex::Cursor::operator~() noexcept                                                   \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
-        EMERGENCE_ASSERT (current != end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current != end);                                                                             \
                                                                                                                        \
         index->DeleteRecordMyself (current);                                                                           \
         ++current;                                                                                                     \
@@ -209,8 +209,8 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     OrderedIndex::Cursor &OrderedIndex::Cursor::operator++ () noexcept                                                 \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
-        EMERGENCE_ASSERT (current != end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current != end);                                                                             \
                                                                                                                        \
         if (index->storage->EndRecordEdition (*current, index))                                                        \
         {                                                                                                              \
@@ -228,8 +228,8 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_begin),                                                                                            \
           end (_end)                                                                                                   \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
-        EMERGENCE_ASSERT (current <= end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current <= end);                                                                             \
                                                                                                                        \
         ++index->activeCursors;                                                                                        \
         index->storage->RegisterWriter ();                                                                             \
@@ -238,7 +238,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     void OrderedIndex::Cursor::BeginRecordEdition () const noexcept                                                    \
     {                                                                                                                  \
-        EMERGENCE_ASSERT (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         if (current != end)                                                                                            \
         {                                                                                                              \
             index->storage->BeginRecordEdition (*current);                                                             \

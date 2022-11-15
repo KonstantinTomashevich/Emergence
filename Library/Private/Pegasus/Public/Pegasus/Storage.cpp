@@ -602,7 +602,7 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex
                                            return _field.field.IsSame (_index.GetIndexedField ());                     \
                                        });                                                                             \
                                                                                                                        \
-    EMERGENCE_ASSERT (fieldIterator != indexedFields.End ());                                                                    \
+    EMERGENCE_ASSERT (fieldIterator != indexedFields.End ());                                                          \
     return 1u << (fieldIterator - indexedFields.Begin ())
     BUILD_SINGLE_FIELD_MASK;
 }
