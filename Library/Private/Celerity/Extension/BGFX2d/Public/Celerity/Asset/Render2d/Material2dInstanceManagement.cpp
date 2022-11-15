@@ -148,7 +148,7 @@ void Manager::ProcessLoading () noexcept
             break;
         }
 
-        AssetState newState;
+        AssetState newState = AssetState::LOADING;
         bool needsInitialization = true;
 
         if (auto stateCursor = removeMaterialInstanceLoadingStateById.Execute (&asset->id);

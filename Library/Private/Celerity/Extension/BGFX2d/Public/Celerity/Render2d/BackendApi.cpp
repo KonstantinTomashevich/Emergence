@@ -1,11 +1,15 @@
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <bgfx/bgfx.h>
 
 #include <bimg/bimg.h>
 
+BEGIN_MUTING_WARNINGS
 #include <bx/file.h>
 #include <bx/string.h>
+END_MUTING_WARNINGS
 
 #include <Celerity/Render2d/BGFX/Allocator.hpp>
 #include <Celerity/Render2d/BackendApi.hpp>
@@ -129,7 +133,8 @@ void Callback::traceVargs (const char *_filePath, uint16_t _line, const char *_f
     va_list argListCopy;
     va_copy (argListCopy, _argList);
     std::size_t length = bx::snprintf (lastCharacter, sizeof (buffer), "%s (%d): ", _filePath, _line);
-    std::size_t total = length + bx::vsnprintf (lastCharacter + length, sizeof (buffer) - length, _format, argListCopy);
+    std::size_t total = length + bx::vsnprintf (lastCharacter + length, static_cast<int32_t> (sizeof (buffer) - length),
+                                                _format, argListCopy);
     va_end (argListCopy);
 
     EMERGENCE_ASSERT (sizeof (buffer) >= total);
@@ -252,9 +257,9 @@ bool Render2dBackend::Init (const Render2dBackendConfig &_config,
 
     if (bgfx::init (init))
     {
-        bgfx::setViewClear (0, BGFX_CLEAR_COLOR, 0x000000FF, 0.0f, 0);
-        bgfx::setViewRect (0, 0, 0, _config.width, _config.height);
-        bgfx::setViewMode (0, bgfx::ViewMode::Sequential);
+        bgfx::setViewClear (0u, BGFX_CLEAR_COLOR, 0x000000FF, 0.0f, 0u);
+        bgfx::setViewRect (0u, 0u, 0u, static_cast<uint16_t> (_config.width), static_cast<uint16_t> (_config.height));
+        bgfx::setViewMode (0u, bgfx::ViewMode::Sequential);
         return true;
     }
 
@@ -270,7 +275,7 @@ bool Render2dBackend::Update (const Render2dBackendConfig &_config) noexcept
 {
     currentConfig = _config;
     bgfx::reset (_config.width, _config.height, ExtractBgfxFlags (_config));
-    bgfx::setViewRect (0, 0, 0, _config.width, _config.height);
+    bgfx::setViewRect (0u, 0u, 0u, static_cast<uint16_t> (_config.width), static_cast<uint16_t> (_config.height));
     return true;
 }
 

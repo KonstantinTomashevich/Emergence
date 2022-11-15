@@ -5,6 +5,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 namespace Emergence::Celerity
 {
 struct Material2dInstanceAssetHeader final
@@ -43,7 +45,12 @@ struct UniformValueBundleItem final
     {
         Math::Vector4f vector4f {Math::NoInitializationFlag::Confirm ()};
         Math::Matrix3x3f matrix3x3f {Math::NoInitializationFlag::Confirm ()};
+
+        // This structure is only used during material deserialization,
+        // therefore we shouldn't worry about small waste of padding here.
+        BEGIN_IGNORING_PADDING_WARNING
         Math::Matrix4x4f matrix4x4f {Math::NoInitializationFlag::Confirm ()};
+        END_IGNORING_PADDING_WARNING
 
         struct
         {

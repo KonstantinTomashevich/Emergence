@@ -346,7 +346,7 @@ bgfx::ShaderHandle Manager::LoadShader (Memory::UniqueString _id, bool _isFragme
             std::streamsize fileSize = input.tellg ();
             input.seekg (0u, std::ios::beg);
 
-            const bgfx::Memory *shaderMemory = bgfx::alloc (fileSize + 1);
+            const bgfx::Memory *shaderMemory = bgfx::alloc (static_cast<uint32_t> (fileSize + 1u));
             input.read (reinterpret_cast<char *> (shaderMemory->data), fileSize);
             shaderMemory->data[shaderMemory->size - 1] = '\0';
             return bgfx::createShader (shaderMemory);
@@ -358,7 +358,7 @@ bgfx::ShaderHandle Manager::LoadShader (Memory::UniqueString _id, bool _isFragme
 
 bool Manager::RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBundleItem &_bundleItem) noexcept
 {
-    bgfx::UniformType::Enum uniformType;
+    bgfx::UniformType::Enum uniformType = bgfx::UniformType::Vec4;
     switch (_bundleItem.type)
     {
     case Uniform2dType::VECTOR_4F:

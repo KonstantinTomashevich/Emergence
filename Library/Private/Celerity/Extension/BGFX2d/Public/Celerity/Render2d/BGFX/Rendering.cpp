@@ -165,8 +165,8 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
         return;
     }
 
-    const uint32_t totalVertices = _rects.size () * 4u;
-    const uint32_t totalIndices = _rects.size () * 6u;
+    const auto totalVertices = static_cast<uint32_t> (_rects.size () * 4u);
+    const auto totalIndices = static_cast<uint32_t> (_rects.size () * 6u);
 
     const uint32_t availableVertices = bgfx::getAvailTransientVertexBuffer (totalVertices, vertexLayout);
     const uint32_t availableIndices = bgfx::getAvailTransientIndexBuffer (totalIndices, false);
@@ -208,7 +208,7 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
             uint16_t *indices = reinterpret_cast<uint16_t *> (indexBuffer.data) + static_cast<ptrdiff_t> (index * 6u);
             for (uint32_t indexIndex = 0u; indexIndex < 6u; ++indexIndex)
             {
-                indices[indexIndex] = QUAD_INDICES[indexIndex] + index * 4u;
+                indices[indexIndex] = static_cast<uint16_t> (QUAD_INDICES[indexIndex] + index * 4u);
             }
         }
 
