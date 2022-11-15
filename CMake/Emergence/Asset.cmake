@@ -13,9 +13,6 @@ function (register_asset_usage TARGET DIRECTORY_GLOBAL_PATH DEPLOY_RELATIVE_PATH
         set (CURRENT_MAPPING)
     endif ()
 
-    # TODO: Temporary to debug CMake on CI
-    message (STATUS "Linking ${DIRECTORY_GLOBAL_PATH} to ${DEPLOY_RELATIVE_PATH}")
-
     list (APPEND CURRENT_MAPPING "${DIRECTORY_GLOBAL_PATH}")
     list (APPEND CURRENT_MAPPING "${DEPLOY_RELATIVE_PATH}")
     set_target_properties ("${TARGET}" PROPERTIES ASSET_DIRECTORY_MAPPING "${CURRENT_MAPPING}")
@@ -29,6 +26,9 @@ function (private_deploy_direct_assets TARGET DEPLOY_ROOT)
         return ()
     endif ()
 
+    # Make sure that deploy root exists.
+    file (MAKE_DIRECTORY "${DEPLOY_ROOT}")
+
     list (LENGTH MAPPING MAPPING_LENGTH)
     if (MAPPING_LENGTH GREATER 0)
         math (EXPR LAST_INDEX "${MAPPING_LENGTH} - 2")
@@ -37,10 +37,6 @@ function (private_deploy_direct_assets TARGET DEPLOY_ROOT)
             list (GET MAPPING ${INDEX} SOURCE)
             math (EXPR "NEXT_INDEX" "${INDEX} + 1")
             list (GET MAPPING ${NEXT_INDEX} LOCAL_DESTINATION)
-
-            # TODO: Temporary to debug CMake on CI
-            message (STATUS "Trying to create a link from ${SOURCE} to ${DEPLOY_ROOT}/${LOCAL_DESTINATION}")
-
             file (CREATE_LINK "${SOURCE}" "${DEPLOY_ROOT}/${LOCAL_DESTINATION}" SYMBOLIC)
         endforeach ()
     endif ()
