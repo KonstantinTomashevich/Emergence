@@ -29,6 +29,7 @@ sober_library_begin (CelerityBGFX2d STATIC)
 sober_library_end ()
 
 set (ASSETS_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Assets")
+file (MAKE_DIRECTORY "${ASSETS_COMPILED_DIRECTORY}")
 file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Materials" "${ASSETS_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
 register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Assets/Shaders" "${ASSETS_COMPILED_DIRECTORY}/Shaders")
 sober_naming_library_base_target (CelerityBGFX2d CELERITY_BGFX_2D_LIBRARY)
