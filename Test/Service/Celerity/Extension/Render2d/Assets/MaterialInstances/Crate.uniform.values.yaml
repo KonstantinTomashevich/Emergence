@@ -1,0 +1,4 @@
+- name: colorTexture
+  type: 3
+  textureId: Crate.png
+  textureStage: 0

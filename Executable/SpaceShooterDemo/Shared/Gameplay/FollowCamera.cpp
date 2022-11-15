@@ -47,7 +47,7 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
 {
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
-    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::TransformVisualSync::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Urho3DUpdate::Checkpoint::STARTED);
 }

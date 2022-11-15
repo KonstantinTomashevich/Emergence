@@ -96,7 +96,7 @@ BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
 
       fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId))
 {
-    _constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     _constructor.DependOn (Rendering2d::Checkpoint::STARTED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);

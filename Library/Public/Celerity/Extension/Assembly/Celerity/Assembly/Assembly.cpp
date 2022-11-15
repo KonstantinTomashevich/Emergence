@@ -343,7 +343,7 @@ NormalAssembler::NormalAssembler (TaskConstructor &_constructor,
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
 {
     useLogicalTransform = false;
-    _constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
 }
 
 void NormalAssembler::Execute () noexcept

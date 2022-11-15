@@ -2,7 +2,7 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace Emergence::Celerity::VisualTransformSync
+namespace Emergence::Celerity::TransformVisualSync
 {
 /// \brief Contains checkpoints, supported by tasks from ::Add2dToNormalUpdate and ::Add3dToNormalUpdate.
 struct Checkpoint final
@@ -23,4 +23,4 @@ void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 /// \brief Adds tasks required to sync and interpolate visual 3d transforms from logical 3d transforms.
 /// \see TransformComponent
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
-} // namespace Emergence::Celerity::VisualTransformSync
+} // namespace Emergence::Celerity::TransformVisualSync

@@ -187,8 +187,11 @@ void WorldRenderer::CollectVisibleObjects () noexcept
                 for (auto spriteCursor = fetchSpriteByObjectId.Execute (&localBounds->objectId);
                      const auto *sprite = static_cast<const Sprite2dComponent *> (*spriteCursor); ++spriteCursor)
                 {
-                    GetBatch (sprite->layer, sprite->materialInstanceId)
-                        .rects.emplace_back (BGFX::RectData {worldTransform, sprite->uv, sprite->halfSize});
+                    if (sprite->visibilityMask & camera->visibilityMask)
+                    {
+                        GetBatch (sprite->layer, sprite->materialInstanceId)
+                            .rects.emplace_back (BGFX::RectData {worldTransform, sprite->uv, sprite->halfSize});
+                    }
                 }
             }
         }

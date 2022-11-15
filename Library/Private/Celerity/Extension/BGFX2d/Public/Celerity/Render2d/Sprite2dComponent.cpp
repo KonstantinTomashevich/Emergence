@@ -16,6 +16,7 @@ const Sprite2dComponent::Reflection &Sprite2dComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (uv);
         EMERGENCE_MAPPING_REGISTER_REGULAR (halfSize);
         EMERGENCE_MAPPING_REGISTER_REGULAR (layer);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (visibilityMask);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -634,7 +634,7 @@ SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) 
       fetchRenderSceneChangedCustomEvents (FETCH_SEQUENCE (RenderSceneChangedCustomToNormalEvent)),
       fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId))
 {
-    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::TransformVisualSync::Checkpoint::FINISHED);
     _constructor.DependOn (TaskNames::CLEANUP_UNUSED_NODES);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);

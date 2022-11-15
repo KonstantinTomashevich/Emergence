@@ -291,7 +291,7 @@ void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder,
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-    constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
+    constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor<Math::Transform2d>> (std::move (_requests));
 }
 
@@ -312,7 +312,7 @@ void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder,
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-    constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
+    constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor<Math::Transform3d>> (std::move (_requests));
 }
 } // namespace RequestExecutor

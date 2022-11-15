@@ -252,8 +252,9 @@ bool Render2dBackend::Init (const Render2dBackendConfig &_config,
 
     if (bgfx::init (init))
     {
-        bgfx::setViewClear (0, BGFX_CLEAR_COLOR, 0x000000FF, 1.0f, 0);
+        bgfx::setViewClear (0, BGFX_CLEAR_COLOR, 0x000000FF, 0.0f, 0);
         bgfx::setViewRect (0, 0, 0, _config.width, _config.height);
+        bgfx::setViewMode (0, bgfx::ViewMode::Sequential);
         return true;
     }
 
@@ -271,6 +272,11 @@ bool Render2dBackend::Update (const Render2dBackendConfig &_config) noexcept
     bgfx::reset (_config.width, _config.height, ExtractBgfxFlags (_config));
     bgfx::setViewRect (0, 0, 0, _config.width, _config.height);
     return true;
+}
+
+void Render2dBackend::TakePngScreenshot (const char *_outputFilePath) noexcept
+{
+    bgfx::requestScreenShot (BGFX_INVALID_HANDLE, _outputFilePath);
 }
 
 void Render2dBackend::Shutdown () noexcept

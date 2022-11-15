@@ -222,6 +222,7 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
 
 void RenderingBackend::EndFrame () noexcept
 {
+    bgfx::touch (0);
     bgfx::frame ();
     materialSubmitted = false;
 }

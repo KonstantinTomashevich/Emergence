@@ -14,11 +14,13 @@ struct Camera2dComponent final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
     float halfOrthographicSize = 0.0f;
+    std::uint64_t visibilityMask = ~0u;
 
     struct Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId halfOrthographicSize;
+        StandardLayout::FieldId visibilityMask;
         StandardLayout::Mapping mapping;
     };
 

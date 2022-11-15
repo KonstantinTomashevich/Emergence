@@ -28,4 +28,4 @@ sober_test_end ()
 
 sober_naming_test_collection (ExportGraph COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")
-ensure_test_shared_library_existence ()
+finish_test_setup ()

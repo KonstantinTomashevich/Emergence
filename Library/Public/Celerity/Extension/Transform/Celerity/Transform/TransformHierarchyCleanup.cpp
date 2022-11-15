@@ -2,6 +2,7 @@
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
@@ -75,6 +76,7 @@ DetachmentDetector::DetachmentDetector (TaskConstructor &_constructor,
 {
     _constructor.DependOn (Checkpoint::DETACHMENT_DETECTION_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_FINISHED);
+    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
 void DetachmentDetector::Execute () noexcept

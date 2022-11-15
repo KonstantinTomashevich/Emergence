@@ -195,7 +195,7 @@ void GameApplication::Start ()
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes ());
     Emergence::Celerity::TransformHierarchyCleanup::Add3dToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::VisualTransformSync::Add3dToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::TransformVisualSync::Add3dToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);

@@ -42,6 +42,12 @@ endfunction ()
 # Creates symlinks for all assets used by target and its linked targets in target runtime output directory.
 function (deploy_used_assets TARGET)
     get_target_property (DEPLOY_ROOT "${TARGET}" RUNTIME_OUTPUT_DIRECTORY)
+
+    # Fallback for deploying assets for targets without specified output directory.
+    if (DEPLOY_ROOT STREQUAL "DEPLOY_ROOT-NOTFOUND")
+        set (DEPLOY_ROOT ${CMAKE_CURRENT_BINARY_DIR})
+    endif ()
+
     private_deploy_direct_assets ("${TARGET}" "${DEPLOY_ROOT}")
     find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
 

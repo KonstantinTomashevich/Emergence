@@ -66,4 +66,4 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
     add_test (NAME "${RUNNER_TARGET}" COMMAND TestLogDriver $<TARGET_FILE:${RUNNER_TARGET}>)
 endforeach ()
 
-ensure_test_shared_library_existence ()
+finish_test_setup ()

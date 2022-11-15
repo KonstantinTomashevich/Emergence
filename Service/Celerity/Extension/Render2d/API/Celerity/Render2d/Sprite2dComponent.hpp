@@ -20,6 +20,7 @@ struct Sprite2dComponent final
     Math::AxisAlignedBox2d uv;
     Math::Vector2f halfSize;
     uint16_t layer = 0u;
+    std::uint64_t visibilityMask = ~0u;
 
     struct Reflection final
     {
@@ -30,6 +31,7 @@ struct Sprite2dComponent final
         StandardLayout::FieldId uv;
         StandardLayout::FieldId halfSize;
         StandardLayout::FieldId layer;
+        StandardLayout::FieldId visibilityMask;
         StandardLayout::Mapping mapping;
     };
 

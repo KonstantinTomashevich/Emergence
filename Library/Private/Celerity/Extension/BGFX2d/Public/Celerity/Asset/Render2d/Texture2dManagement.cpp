@@ -139,7 +139,11 @@ void Manager::ProcessLoading () noexcept
             auto *event = static_cast<AssetStateUpdateEventView *> (++eventCursor);
             event->assetId = asset->id;
             event->state = newState;
-            ~loadingStateCursor;
+
+            if (loadingState)
+            {
+                ~loadingStateCursor;
+            }
         }
     }
 }

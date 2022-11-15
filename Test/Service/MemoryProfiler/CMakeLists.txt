@@ -63,4 +63,4 @@ if (MSVC)
     target_compile_options (TestMemoryProfilerNone PRIVATE /EHa)
 endif ()
 
-ensure_test_shared_library_existence ()
+finish_test_setup ()

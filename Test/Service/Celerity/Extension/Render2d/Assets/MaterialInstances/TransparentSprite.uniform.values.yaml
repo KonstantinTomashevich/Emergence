@@ -1,0 +1,4 @@
+- name: colorTexture
+  type: 3
+  textureId: TransparentSprite.png
+  textureStage: 0

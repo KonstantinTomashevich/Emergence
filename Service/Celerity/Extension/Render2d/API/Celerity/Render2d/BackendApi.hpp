@@ -36,6 +36,8 @@ struct Render2dBackend final
 
     static bool Update (const Render2dBackendConfig &_config) noexcept;
 
+    static void TakePngScreenshot (const char *_outputFilePath) noexcept;
+
     static void Shutdown () noexcept;
 };
 } // namespace Emergence::Celerity
