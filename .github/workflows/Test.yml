@@ -48,7 +48,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Setup dependencies
         uses: ./.github/actions/SetupDependencies
