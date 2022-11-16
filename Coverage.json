@@ -46,6 +46,11 @@
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
     },
     {
+      "Prefix": "./Service/Assert/Implementation/",
+      "Action": "Exclude",
+      "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
+    },
+    {
       "Prefix": "./Test/Library/AssetObject/Asset/Object/Test/Helpers.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
