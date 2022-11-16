@@ -347,7 +347,7 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
         return;
     }
 
-    constexpr std::streamsize BUFFER_SIZE = static_cast<std::streamsize> (16u * 1024u);
+    constexpr auto BUFFER_SIZE = static_cast<std::streamsize> (16u * 1024u);
     std::streamsize read = 0u;
     std::array<uint8_t, BUFFER_SIZE> exampleBuffer;
     std::array<uint8_t, BUFFER_SIZE> testBuffer;

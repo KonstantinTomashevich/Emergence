@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <Celerity/Render2d/Test/Camera.hpp>
 #include <Celerity/Render2d/Test/Sprite.hpp>
 

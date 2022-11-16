@@ -212,8 +212,8 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
             }
         }
 
-        bgfx::setState (BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA | BGFX_STATE_CULL_CW |
-                        BGFX_STATE_MSAA);
+        bgfx::setState (BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G | BGFX_STATE_WRITE_B | BGFX_STATE_WRITE_A |
+                        BGFX_STATE_BLEND_ALPHA | BGFX_STATE_CULL_CW | BGFX_STATE_MSAA);
         bgfx::setVertexBuffer (0, &vertexBuffer);
         bgfx::setIndexBuffer (&indexBuffer);
         bgfx::submit (0u, currentMaterialProgramHandle);
