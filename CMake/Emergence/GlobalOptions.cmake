@@ -5,7 +5,7 @@ include_guard (GLOBAL)
 option (EMERGENCE_COMPILE_TIME_TRACE "Requests compiler to print time trace. Supported only on CLang." OFF)
 option (EMERGENCE_ENABLE_COVERAGE "Add compile and link time flags, that enable code coverage reporting." OFF)
 option (EMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS
-        "Specifies whether GPU dependant tests should be included into *Tests targets." ON)
+        "Specifies whether GPU dependant tests should be registered and built." ON)
 option (EMERGENCE_TREAT_WARNINGS_AS_ERRORS "Enables \"treat warnings as errors\" compiler policy for all targets." ON)
 
 # We can not add common compile options here, because they would affect third party libraries compilation.

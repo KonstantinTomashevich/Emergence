@@ -1,3 +1,7 @@
+if (NOT EMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS)
+    return ()
+endif ()
+
 sober_test_begin (CelerityRender2d)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
@@ -50,9 +54,6 @@ sober_naming_test_library (CelerityRender2d CELERITY_RENDER_2D_TEST_LIBRARY)
 sober_naming_library_base_target ("${CELERITY_RENDER_2D_TEST_LIBRARY}" CELERITY_RENDER_2D_TEST_LIBRARY_TARGET)
 register_asset_usage ("${CELERITY_RENDER_2D_TEST_LIBRARY_TARGET}" "${ASSETS_COMPILED_DIRECTORY}" "Render2dAssets")
 
-if (EMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS)
-    sober_naming_test_collection (CelerityRender2d COLLECTION_NAME)
-    add_dependencies (ServiceTests "${COLLECTION_NAME}")
-endif ()
-
+sober_naming_test_collection (CelerityRender2d COLLECTION_NAME)
+add_dependencies (ServiceTests "${COLLECTION_NAME}")
 finish_test_setup ()
