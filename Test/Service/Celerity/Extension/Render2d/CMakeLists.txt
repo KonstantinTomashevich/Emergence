@@ -50,6 +50,9 @@ sober_naming_test_library (CelerityRender2d CELERITY_RENDER_2D_TEST_LIBRARY)
 sober_naming_library_base_target ("${CELERITY_RENDER_2D_TEST_LIBRARY}" CELERITY_RENDER_2D_TEST_LIBRARY_TARGET)
 register_asset_usage ("${CELERITY_RENDER_2D_TEST_LIBRARY_TARGET}" "${ASSETS_COMPILED_DIRECTORY}" "Render2dAssets")
 
-sober_naming_test_collection (CelerityRender2d COLLECTION_NAME)
-add_dependencies (ServiceTests "${COLLECTION_NAME}")
+if (EMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS)
+    sober_naming_test_collection (CelerityRender2d COLLECTION_NAME)
+    add_dependencies (ServiceTests "${COLLECTION_NAME}")
+endif ()
+
 finish_test_setup ()
