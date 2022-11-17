@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Render2d/Texture2d.hpp>
+#include <Celerity/Asset/Render2d/Texture2dLoadingState.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

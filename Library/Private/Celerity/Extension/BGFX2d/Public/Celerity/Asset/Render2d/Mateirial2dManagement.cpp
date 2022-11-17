@@ -392,6 +392,12 @@ bool Manager::RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBun
     uniform->name = _bundleItem.name;
     uniform->type = _bundleItem.type;
     uniform->nativeHandle = uniformHandle.idx;
+
+    if (_bundleItem.type == Uniform2dType::SAMPLER)
+    {
+        uniform->textureStage = _bundleItem.textureStage;
+    }
+
     return true;
 }
 

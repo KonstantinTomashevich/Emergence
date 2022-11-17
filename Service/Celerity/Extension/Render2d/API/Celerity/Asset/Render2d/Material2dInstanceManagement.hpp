@@ -5,6 +5,12 @@
 
 namespace Emergence::Celerity::Material2dInstanceManagement
 {
+/// \brief Adds task for Material2dInstance asset loading and unloading in normal update pipeline.
+/// \details Inserted into asset loading, therefore has no specific checkpoints.
+///
+/// \param _materialInstanceRootPaths Known root folders for material instance search.
+/// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for Material2dInstance loading.
+/// \param _eventMap Event map generated as a result of asset events binding.
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         const Container::Vector<Memory::UniqueString> &_materialInstanceRootPaths,
                         uint64_t _maxLoadingTimePerFrameNs,

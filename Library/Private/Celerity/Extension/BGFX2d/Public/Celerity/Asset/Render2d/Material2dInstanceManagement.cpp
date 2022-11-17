@@ -5,6 +5,7 @@
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render2d/Material2dInstance.hpp>
+#include <Celerity/Asset/Render2d/Material2dInstanceLoadingState.hpp>
 #include <Celerity/Asset/Render2d/Material2dInstanceManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
@@ -380,7 +381,6 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
             uniformValue->assetUserId = assetManager->GenerateAssetUserId ();
             uniformValue->uniformName = value.name;
             uniformValue->textureId = value.textureId;
-            uniformValue->textureStage = value.textureStage;
             break;
         }
         }
@@ -515,8 +515,7 @@ void Manager::CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noex
         if (std::find_if (uniformValuesCollector.begin (), uniformValuesCollector.end (),
                           findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
         {
-            uniformValuesCollector.emplace_back (
-                UniformValueBundleItem {uniform->uniformName, uniform->textureId, uniform->textureStage});
+            uniformValuesCollector.emplace_back (UniformValueBundleItem {uniform->uniformName, uniform->textureId});
         }
     }
 }

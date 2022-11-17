@@ -1,7 +1,6 @@
 #include <Celerity/Asset/Render2d/Material2dInstance.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
-#include <utility>
 
 namespace Emergence::Celerity
 {
@@ -39,12 +38,10 @@ UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name, Math
 }
 
 UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name,
-                                                const Memory::UniqueString &_textureId,
-                                                uint8_t _textureStage) noexcept
+                                                const Memory::UniqueString &_textureId) noexcept
     : name (_name),
       type (Uniform2dType::SAMPLER),
-      textureId (_textureId),
-      textureStage (_textureStage)
+      textureId (_textureId)
 {
 }
 
@@ -70,23 +67,8 @@ const UniformValueBundleItem::Reflection &UniformValueBundleItem::Reflect () noe
 
         EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 3u);
         EMERGENCE_MAPPING_REGISTER_REGULAR (textureId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (textureStage);
         EMERGENCE_MAPPING_UNION_VARIANT_END ();
 
-        EMERGENCE_MAPPING_REGISTRATION_END ();
-    }();
-
-    return reflection;
-}
-
-const Material2dInstanceLoadingState::Reflection &Material2dInstanceLoadingState::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Material2dInstanceLoadingState);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (parentId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

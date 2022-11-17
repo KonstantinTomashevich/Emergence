@@ -4,6 +4,8 @@
 
 namespace Emergence::Celerity
 {
+// TODO: Implement common solution for asset pinning.
+
 /// \brief Describes state of an asset.
 enum class AssetState : uint8_t
 {

@@ -24,6 +24,11 @@ const Uniform2dBundleItem::Reflection &Uniform2dBundleItem::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Uniform2dBundleItem);
         EMERGENCE_MAPPING_REGISTER_REGULAR (name);
         EMERGENCE_MAPPING_REGISTER_REGULAR (type);
+
+        EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 0u);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (textureStage);
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
+
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

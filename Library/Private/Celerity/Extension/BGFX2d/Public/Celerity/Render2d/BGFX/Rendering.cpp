@@ -144,7 +144,7 @@ void RenderingBackend::SubmitMaterialInstance (Memory::UniqueString _materialIns
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
             const auto *uniform = static_cast<const Uniform2d *> (*uniformCursor))
         {
-            bgfx::setTexture (value->textureStage, {static_cast<uint16_t> (uniform->nativeHandle)},
+            bgfx::setTexture (uniform->textureStage, {static_cast<uint16_t> (uniform->nativeHandle)},
                               {static_cast<uint16_t> (texture->nativeHandle)});
         }
         else

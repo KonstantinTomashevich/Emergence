@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Render2d/Material2dInstance.hpp>
+#include <Celerity/Asset/Render2d/Material2dInstanceLoadingState.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Material2d.hpp>
 #include <Celerity/Render2d/Material2dInstance.hpp>

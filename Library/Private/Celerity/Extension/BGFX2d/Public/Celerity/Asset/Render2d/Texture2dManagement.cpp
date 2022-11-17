@@ -9,7 +9,7 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Texture2d.hpp>
+#include <Celerity/Asset/Render2d/Texture2dLoadingState.hpp>
 #include <Celerity/Asset/Render2d/Texture2dManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render2d/BGFX/Allocator.hpp>
