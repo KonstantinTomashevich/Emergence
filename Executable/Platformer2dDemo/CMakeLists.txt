@@ -15,6 +15,7 @@ file (MAKE_DIRECTORY "${GAME_ASSETS_TARGET}")
 file (CREATE_LINK "${GAME_ASSETS_SOURCE}/Materials" "${GAME_ASSETS_TARGET}/Materials" SYMBOLIC)
 file (CREATE_LINK "${GAME_ASSETS_SOURCE}/MaterialInstances" "${GAME_ASSETS_TARGET}/MaterialInstances" SYMBOLIC)
 file (CREATE_LINK "${GAME_ASSETS_SOURCE}/Textures" "${GAME_ASSETS_TARGET}/Textures" SYMBOLIC)
+
 register_bgfx_shaders ("${GAME_ASSETS_SOURCE}/Shaders" "${GAME_ASSETS_TARGET}/Shaders")
 register_asset_usage ("${GAME_NAME}GameLauncher" "${GAME_ASSETS_TARGET}" "GameAssets")
 deploy_used_assets ("${GAME_NAME}GameLauncher")

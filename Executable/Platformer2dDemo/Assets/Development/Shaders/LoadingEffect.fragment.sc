@@ -25,6 +25,6 @@ void main()
     float lightingFactor = darknessFactor + (lightFactor - darknessFactor) * lighting;
     vec4 sourceTextureColor = texture2D(colorTexture, v_texcoord0);
     vec3 lightedDiffuse = sourceTextureColor.rgb * lightingFactor;
-    
-	gl_FragColor = vec4(lightedDiffuse, sourceTextureColor.a);
+
+    gl_FragColor = vec4(lightedDiffuse, sourceTextureColor.a);
 }

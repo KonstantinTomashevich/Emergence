@@ -6,6 +6,7 @@
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
@@ -382,22 +383,26 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromNormal"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, RenderObject2dComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, RenderObject2dComponent,
                                 objectId)
+        .DependOn (Checkpoint::STARTED)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("CleanupRenderObject2dAfterTransformRemovalFromFixed"_us);
 
     _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedFixedToNormalEvent,
                                 RenderObject2dComponent, objectId)
         .MakeDependencyOf ("Render2dBoundsCalculator"_us);
 
     _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromNormal"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, LocalBounds2dComponent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, LocalBounds2dComponent,
                                 objectId)
+        .DependOn (Checkpoint::STARTED)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("CleanupLocalBounds2dAfterTransformRemovalFromFixed"_us);
 
     _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedToNormalEvent,
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedFixedToNormalEvent,
                                 LocalBounds2dComponent, objectId)
         .MakeDependencyOf ("Render2dBoundsCalculator"_us);
 

@@ -37,10 +37,10 @@ AxisAlignedBox2d Combine (const AxisAlignedBox2d &_first, const AxisAlignedBox2d
 
 AxisAlignedBox2d operator* (const Matrix3x3f &_transformMatrix, const AxisAlignedBox2d &_box) noexcept
 {
-    std::array<Vector2f, 4u> probes {Vector2f {_box.min.x, _box.min.y},
-                                     {_box.max.x, _box.min.y},
-                                     {_box.max.x, _box.max.y},
-                                     {_box.min.x, _box.max.y}};
+    const std::array<Vector2f, 4u> probes {Vector2f {_box.min.x, _box.min.y},
+                                           {_box.max.x, _box.min.y},
+                                           {_box.max.x, _box.max.y},
+                                           {_box.min.x, _box.max.y}};
 
     AxisAlignedBox2d result {{std::numeric_limits<float>::max (), std::numeric_limits<float>::max ()},
                              {std::numeric_limits<float>::lowest (), std::numeric_limits<float>::lowest ()}};

@@ -19,5 +19,5 @@ void main()
         lighting = flareStrength * (1.0 - pow(distanceToLight / flareRadius, flarePower));
     }
 
-	gl_FragColor = vec4(color.xyz, lighting);
+    gl_FragColor = vec4(color.xyz, lighting);
 }

@@ -187,7 +187,7 @@ AssetState Manager::GetDependencyState (Memory::UniqueString _assetId) noexcept
         return asset->state;
     }
 
-    // If asset not exist, it is not yet processed by manager,
+    // If asset does not exist, it is not yet processed by manager,
     // therefore we're returning loading state as default values that is neither error nor ready flag.
     return AssetState::LOADING;
 }
