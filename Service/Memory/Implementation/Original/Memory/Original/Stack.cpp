@@ -1,5 +1,6 @@
-#include <cassert>
 #include <cstdlib>
+
+#include <Assert/Assert.hpp>
 
 #include <Memory/Original/Stack.hpp>
 
@@ -34,7 +35,7 @@ Stack::~Stack () noexcept
 
 void *Stack::Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept
 {
-    assert (_chunkSize <= GetFreeSize ());
+    EMERGENCE_ASSERT (_chunkSize <= GetFreeSize ());
     if (uintptr_t alignmentStep = reinterpret_cast<uintptr_t> (head) % _alignAs)
     {
         const uintptr_t step = _alignAs - alignmentStep;
@@ -55,8 +56,8 @@ const void *Stack::Head () const noexcept
 
 void Stack::Release (const void *_newHead) noexcept
 {
-    assert (_newHead > start);
-    assert (_newHead <= head);
+    EMERGENCE_ASSERT (_newHead > start);
+    EMERGENCE_ASSERT (_newHead <= head);
 
     group.Release (static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (_newHead)));
     head = const_cast<void *> (_newHead);

@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 #include <cstring>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
@@ -53,8 +52,8 @@ Comparator<BaseComparator>::Comparator (const OrderedIndex *_index, BaseComparat
 template <typename BaseComparator>
 bool Comparator<BaseComparator>::operator() (const void *_firstRecord, const void *_secondRecord) const noexcept
 {
-    assert (_firstRecord);
-    assert (_secondRecord);
+    EMERGENCE_ASSERT (_firstRecord);
+    EMERGENCE_ASSERT (_secondRecord);
     return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord)) < 0;
 }
 
@@ -62,14 +61,14 @@ template <typename BaseComparator>
 bool Comparator<BaseComparator>::operator() (const RecordWithBackup &_firstRecord,
                                              const void *_secondRecord) const noexcept
 {
-    assert (_secondRecord);
+    EMERGENCE_ASSERT (_secondRecord);
     if (_firstRecord.record == _secondRecord)
     {
         return false;
     }
     else
     {
-        assert (_firstRecord.backup);
+        EMERGENCE_ASSERT (_firstRecord.backup);
         return baseComparator.Compare (GetValue (_firstRecord.backup), GetValue (_secondRecord)) < 0;
     }
 }
@@ -78,29 +77,29 @@ template <typename BaseComparator>
 bool Comparator<BaseComparator>::operator() (const void *_firstRecord,
                                              const RecordWithBackup &_secondRecord) const noexcept
 {
-    assert (_firstRecord);
+    EMERGENCE_ASSERT (_firstRecord);
     if (_secondRecord.record == _firstRecord)
     {
         return false;
     }
 
-    assert (_secondRecord.backup);
+    EMERGENCE_ASSERT (_secondRecord.backup);
     return baseComparator.Compare (GetValue (_firstRecord), GetValue (_secondRecord.backup)) < 0;
 }
 
 template <typename BaseComparator>
 bool Comparator<BaseComparator>::operator() (const OrderedIndex::Bound &_bound, const void *_record) const noexcept
 {
-    assert (_bound.boundValue);
-    assert (_record);
+    EMERGENCE_ASSERT (_bound.boundValue);
+    EMERGENCE_ASSERT (_record);
     return baseComparator.Compare (_bound.boundValue, GetValue (_record)) < 0;
 }
 
 template <typename BaseComparator>
 bool Comparator<BaseComparator>::operator() (const void *_record, const OrderedIndex::Bound &_bound) const noexcept
 {
-    assert (_record);
-    assert (_bound.boundValue);
+    EMERGENCE_ASSERT (_record);
+    EMERGENCE_ASSERT (_bound.boundValue);
     return baseComparator.Compare (GetValue (_record), _bound.boundValue) < 0;
 }
 
@@ -116,7 +115,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_other.current),                                                                                    \
           end (_other.end)                                                                                             \
     {                                                                                                                  \
-        assert (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         ++index->activeCursors;                                                                                        \
         index->storage->RegisterReader ();                                                                             \
     }                                                                                                                  \
@@ -126,7 +125,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_other.current),                                                                                    \
           end (_other.end)                                                                                             \
     {                                                                                                                  \
-        assert (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         _other.index = nullptr;                                                                                        \
     }                                                                                                                  \
                                                                                                                        \
@@ -141,14 +140,14 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     const void *OrderedIndex::Cursor::operator* () const noexcept                                                      \
     {                                                                                                                  \
-        assert (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         return current != end ? *current : nullptr;                                                                    \
     }                                                                                                                  \
                                                                                                                        \
     OrderedIndex::Cursor &OrderedIndex::Cursor::operator++ () noexcept                                                 \
     {                                                                                                                  \
-        assert (index);                                                                                                \
-        assert (current != end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current != end);                                                                             \
                                                                                                                        \
         ++current;                                                                                                     \
         return *this;                                                                                                  \
@@ -160,8 +159,8 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_begin),                                                                                            \
           end (_end)                                                                                                   \
     {                                                                                                                  \
-        assert (index);                                                                                                \
-        assert (current <= end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current <= end);                                                                             \
                                                                                                                        \
         ++index->activeCursors;                                                                                        \
         index->storage->RegisterReader ();                                                                             \
@@ -173,7 +172,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_other.current),                                                                                    \
           end (_other.end)                                                                                             \
     {                                                                                                                  \
-        assert (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         _other.index = nullptr;                                                                                        \
     }                                                                                                                  \
                                                                                                                        \
@@ -193,14 +192,14 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     void *OrderedIndex::Cursor::operator* () noexcept                                                                  \
     {                                                                                                                  \
-        assert (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         return current != end ? const_cast<void *> (*current) : nullptr;                                               \
     }                                                                                                                  \
                                                                                                                        \
     OrderedIndex::Cursor &OrderedIndex::Cursor::operator~() noexcept                                                   \
     {                                                                                                                  \
-        assert (index);                                                                                                \
-        assert (current != end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current != end);                                                                             \
                                                                                                                        \
         index->DeleteRecordMyself (current);                                                                           \
         ++current;                                                                                                     \
@@ -210,8 +209,8 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     OrderedIndex::Cursor &OrderedIndex::Cursor::operator++ () noexcept                                                 \
     {                                                                                                                  \
-        assert (index);                                                                                                \
-        assert (current != end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current != end);                                                                             \
                                                                                                                        \
         if (index->storage->EndRecordEdition (*current, index))                                                        \
         {                                                                                                              \
@@ -229,8 +228,8 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
           current (_begin),                                                                                            \
           end (_end)                                                                                                   \
     {                                                                                                                  \
-        assert (index);                                                                                                \
-        assert (current <= end);                                                                                       \
+        EMERGENCE_ASSERT (index);                                                                                      \
+        EMERGENCE_ASSERT (current <= end);                                                                             \
                                                                                                                        \
         ++index->activeCursors;                                                                                        \
         index->storage->RegisterWriter ();                                                                             \
@@ -239,7 +238,7 @@ const void *Comparator<BaseComparator>::GetValue (const void *_record) const noe
                                                                                                                        \
     void OrderedIndex::Cursor::BeginRecordEdition () const noexcept                                                    \
     {                                                                                                                  \
-        assert (index);                                                                                                \
+        EMERGENCE_ASSERT (index);                                                                                      \
         if (current != end)                                                                                            \
         {                                                                                                              \
             index->storage->BeginRecordEdition (*current);                                                             \
@@ -293,14 +292,14 @@ StandardLayout::Field OrderedIndex::GetIndexedField () const noexcept
 
 void OrderedIndex::Drop () noexcept
 {
-    assert (CanBeDropped ());
-    assert (storage);
+    EMERGENCE_ASSERT (CanBeDropped ());
+    EMERGENCE_ASSERT (storage);
     storage->DropIndex (*this);
 }
 
 OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
 {
-    assert (owner);
+    EMERGENCE_ASSERT (owner);
     DoWithCorrectComparator (owner->indexedField,
                              [this] (auto _comparator) -> void
                              {
@@ -309,25 +308,25 @@ OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
                              });
 
 #ifndef NDEBUG
-    assert (owner->massInsertionInProgress);
+    EMERGENCE_ASSERT (owner->massInsertionInProgress);
     owner->massInsertionInProgress = false;
 #endif
 }
 
 void OrderedIndex::MassInsertionExecutor::InsertRecord (const void *_record) noexcept
 {
-    assert (owner);
-    assert (_record);
+    EMERGENCE_ASSERT (owner);
+    EMERGENCE_ASSERT (_record);
     owner->records.emplace_back (_record);
 }
 
 OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner) noexcept
     : owner (_owner)
 {
-    assert (owner);
+    EMERGENCE_ASSERT (owner);
 
 #ifndef NDEBUG
-    assert (!owner->massInsertionInProgress);
+    EMERGENCE_ASSERT (!owner->massInsertionInProgress);
     owner->massInsertionInProgress = true;
 #endif
 }
@@ -341,7 +340,7 @@ OrderedIndex::OrderedIndex (Storage *_owner, StandardLayout::FieldId _indexedFie
       changedRecords (Memory::Profiler::AllocationGroup {"ChangedRecords"_us}),
       deletedRecordIndices (Memory::Profiler::AllocationGroup {"DeletedIndices"_us})
 {
-    assert (indexedField.IsHandleValid ());
+    EMERGENCE_ASSERT (indexedField.IsHandleValid ());
 }
 
 OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (const OrderedIndex::Bound &_min,
@@ -351,8 +350,8 @@ OrderedIndex::InternalLookupResult OrderedIndex::InternalLookup (const OrderedIn
         indexedField,
         [this, &_min, &_max] (auto _comparator)
         {
-            assert (!_min.boundValue || !_max.boundValue ||
-                    _comparator.Compare (_min.boundValue, _max.boundValue) <= 0);
+            EMERGENCE_ASSERT (!_min.boundValue || !_max.boundValue ||
+                              _comparator.Compare (_min.boundValue, _max.boundValue) <= 0);
             InternalLookupResult result {records.begin (), records.end ()};
 
             if (_min.boundValue)
@@ -381,12 +380,12 @@ Container::Vector<const void *>::const_iterator OrderedIndex::LocateRecord (cons
                                                                           Comparator (this, _comparator));
                                              });
 
-    assert (iterator != records.end ());
+    EMERGENCE_ASSERT (iterator != records.end ());
 
     while (*iterator != _record)
     {
         ++iterator;
-        assert (iterator != records.end ());
+        EMERGENCE_ASSERT (iterator != records.end ());
     }
 
     return iterator;
@@ -394,7 +393,7 @@ Container::Vector<const void *>::const_iterator OrderedIndex::LocateRecord (cons
 
 void OrderedIndex::InsertRecord (const void *_record) noexcept
 {
-    assert (_record);
+    EMERGENCE_ASSERT (_record);
     DoWithCorrectComparator (indexedField,
                              [this, _record] (auto _comparator)
                              {
@@ -411,37 +410,37 @@ OrderedIndex::MassInsertionExecutor OrderedIndex::StartMassInsertion () noexcept
 
 void OrderedIndex::OnRecordDeleted (const void *_record, const void *_recordBackup) noexcept
 {
-    assert (!hasEditCursor);
+    EMERGENCE_ASSERT (!hasEditCursor);
     auto iterator = LocateRecord (_record, _recordBackup);
-    assert (iterator != records.end ());
+    EMERGENCE_ASSERT (iterator != records.end ());
     records.erase (iterator);
 }
 
 void OrderedIndex::DeleteRecordMyself (const Container::Vector<const void *>::iterator &_position) noexcept
 {
-    assert (_position != records.end ());
+    EMERGENCE_ASSERT (_position != records.end ());
     std::size_t index = _position - records.begin ();
 
-    assert (deletedRecordIndices.empty () || index > deletedRecordIndices.back ());
+    EMERGENCE_ASSERT (deletedRecordIndices.empty () || index > deletedRecordIndices.back ());
     deletedRecordIndices.emplace_back (index);
     storage->DeleteRecord (const_cast<void *> (*_position), this);
 }
 
 void OrderedIndex::DeleteRecordMyself (const Container::Vector<const void *>::reverse_iterator &_position) noexcept
 {
-    assert (_position != records.rend ());
+    EMERGENCE_ASSERT (_position != records.rend ());
     std::size_t index = records.rend () - _position - 1u;
 
-    assert (deletedRecordIndices.empty () || index < deletedRecordIndices.front ());
+    EMERGENCE_ASSERT (deletedRecordIndices.empty () || index < deletedRecordIndices.front ());
     deletedRecordIndices.emplace (deletedRecordIndices.begin (), index);
     storage->DeleteRecord (const_cast<void *> (*_position), this);
 }
 
 void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBackup) noexcept
 {
-    assert (!hasEditCursor);
+    EMERGENCE_ASSERT (!hasEditCursor);
     auto iterator = LocateRecord (_record, _recordBackup);
-    assert (iterator != records.end ());
+    EMERGENCE_ASSERT (iterator != records.end ());
 
     changedRecords.emplace_back (ChangedRecordInfo {std::numeric_limits<std::size_t>::max (), (_record)});
     records.erase (iterator);
@@ -449,18 +448,18 @@ void OrderedIndex::OnRecordChanged (const void *_record, const void *_recordBack
 
 void OrderedIndex::OnRecordChangedByMe (const Container::Vector<const void *>::iterator &_position) noexcept
 {
-    assert (_position != records.end ());
+    EMERGENCE_ASSERT (_position != records.end ());
     std::size_t index = _position - records.begin ();
 
-    assert (changedRecords.empty () || index > changedRecords.back ().originalIndex);
+    EMERGENCE_ASSERT (changedRecords.empty () || index > changedRecords.back ().originalIndex);
     changedRecords.emplace_back (ChangedRecordInfo {index, *_position});
 }
 
 void OrderedIndex::OnRecordChangedByMe (const Container::Vector<const void *>::reverse_iterator &_position) noexcept
 {
-    assert (_position != records.rend ());
+    EMERGENCE_ASSERT (_position != records.rend ());
     std::size_t index = records.rend () - _position - 1u;
-    assert (changedRecords.empty () || index < changedRecords.front ().originalIndex);
+    EMERGENCE_ASSERT (changedRecords.empty () || index < changedRecords.front ().originalIndex);
     changedRecords.emplace (changedRecords.begin (), ChangedRecordInfo {index, *_position});
 }
 
@@ -494,7 +493,7 @@ void OrderedIndex::OnWriterClosed () noexcept
             }
             else
             {
-                assert (deletedRecordsIterator != deletedRecordsEnd);
+                EMERGENCE_ASSERT (deletedRecordsIterator != deletedRecordsEnd);
                 nextCheckpoint = *deletedRecordsIterator;
                 ++deletedRecordsIterator;
             }
@@ -509,7 +508,7 @@ void OrderedIndex::OnWriterClosed () noexcept
         auto offsetInterval = [this, &intervalBegin, &intervalEnd, &offset] () -> void
         {
             std::size_t intervalSize = intervalEnd - intervalBegin - 1u;
-            assert (intervalSize == 0u || intervalBegin + 1u < records.size ());
+            EMERGENCE_ASSERT (intervalSize == 0u || intervalBegin + 1u < records.size ());
 
 #ifndef NDEBUG
             // Interval begin can be out of bounds only if interval size is zero. It's ok, because memcpy skips

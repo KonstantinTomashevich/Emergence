@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Query/Test/Data.hpp>
 #include <Query/Test/SignalQueryTests.hpp>
@@ -21,7 +21,7 @@ static Storage RequestStorage (const Container::Vector<const void *> &_objects, 
 {
     Storage storage {Player::Reflect ().mapping, _objects, {}};
 
-    assert (_sources > 0u);
+    EMERGENCE_ASSERT (_sources > 0u);
     if (_sources & FLAG_PLAYER_ID_SOURCE)
     {
         storage.sources.emplace_back (Sources::Signal {

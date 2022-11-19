@@ -1,5 +1,6 @@
-#include <cassert>
 #include <cstdlib>
+
+#include <Assert/Assert.hpp>
 
 #include <Memory/Original/OrderedPool.hpp>
 
@@ -26,8 +27,8 @@ OrderedPool::AcquiredChunkConstIterator::~AcquiredChunkConstIterator () noexcept
 
 OrderedPool::AcquiredChunkConstIterator &OrderedPool::AcquiredChunkConstIterator::operator++ () noexcept
 {
-    assert (currentPage);
-    assert (currentChunk);
+    EMERGENCE_ASSERT (currentPage);
+    EMERGENCE_ASSERT (currentChunk);
 
     const void *pageEnd =
         GetPageChunksEnd (const_cast<AlignedPoolPage *> (currentPage), pool->chunkSize, pool->pageCapacity);
@@ -158,8 +159,8 @@ OrderedPool::OrderedPool (Profiler::AllocationGroup _group,
       pageCapacity (_pageCapacity),
       group (std::move (_group))
 {
-    assert (_pageCapacity > 0u);
-    assert (_chunkSize >= sizeof (Chunk));
+    EMERGENCE_ASSERT (_pageCapacity > 0u);
+    EMERGENCE_ASSERT (_chunkSize >= sizeof (Chunk));
 }
 
 OrderedPool::OrderedPool (OrderedPool &&_other) noexcept
@@ -252,7 +253,7 @@ void OrderedPool::Release (void *_chunk) noexcept
         topFreeChunk = chunk;
     }
 
-    assert (acquiredChunkCount > 0u);
+    EMERGENCE_ASSERT (acquiredChunkCount > 0u);
     --acquiredChunkCount;
 }
 
@@ -267,7 +268,7 @@ void OrderedPool::Shrink () noexcept
     {
         // Due to the ordering and shrink logic, this assertion should always be true.
         // It's left here to highlight that this case is impossible in current algorithm.
-        assert (currentFreeChunk >= GetPageChunksBegin (currentPage));
+        EMERGENCE_ASSERT (currentFreeChunk >= GetPageChunksBegin (currentPage));
 
         // Count free chunks that belong to this page.
         std::size_t pageFreeChunks = 0u;

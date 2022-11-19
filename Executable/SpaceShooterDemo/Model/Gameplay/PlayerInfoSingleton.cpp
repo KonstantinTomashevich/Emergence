@@ -1,10 +1,12 @@
+#include <Assert/Assert.hpp>
+
 #include <Gameplay/PlayerInfoSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 uintptr_t PlayerInfoSingleton::GeneratePlayerId () const noexcept
 {
-    assert (playerUidCounter != std::numeric_limits<decltype (playerUidCounter)::value_type>::max ());
+    EMERGENCE_ASSERT (playerUidCounter != std::numeric_limits<decltype (playerUidCounter)::value_type>::max ());
     return const_cast<PlayerInfoSingleton *> (this)->playerUidCounter++;
 }
 

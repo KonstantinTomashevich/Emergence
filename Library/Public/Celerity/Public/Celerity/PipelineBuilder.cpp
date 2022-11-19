@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/PipelineBuilder.hpp>
 
 #include <Log/Log.hpp>
@@ -327,7 +325,7 @@ TaskConstructor::TaskConstructor (PipelineBuilder *_parent, Memory::UniqueString
     : parent (_parent),
       heap {Memory::Profiler::AllocationGroup {_name}}
 {
-    assert (parent);
+    EMERGENCE_ASSERT (parent);
     task.name = _name;
 }
 
@@ -454,7 +452,7 @@ PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
           EventUsageMap {GetBuildTimeAllocationGroup ()},
       })
 {
-    assert (world);
+    EMERGENCE_ASSERT (world);
     for (const World::EventScheme &scheme : world->eventSchemes)
     {
         ImportEventScheme (scheme);
@@ -526,7 +524,7 @@ Pipeline *PipelineBuilder::End (VisualGraph::Graph *_visualGraphOutput, bool _ex
         break;
 
     case PipelineType::COUNT:
-        assert (false);
+        EMERGENCE_ASSERT (false);
         break;
     }
 

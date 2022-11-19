@@ -12,6 +12,7 @@ sober_library_begin ("${GAME_NAME}SharedTest" STATIC)
     sober_library_link_library (PUBLIC ${SHARED_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_PROFILER_STUB_TARGET})
 
+    sober_library_use_service (PER_VARIANT PRIVATE Assert)
     sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics)
     sober_library_use_service (PER_VARIANT PRIVATE JobDispatcher)
     sober_library_use_service (PER_VARIANT PRIVATE Log)
@@ -39,9 +40,7 @@ target_link_libraries ("${GAME_NAME}SharedTestLauncher" PUBLIC "${LIBRARY_TARGET
 set (RUNNER_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Test/Shared")
 set_target_properties ("${GAME_NAME}SharedTestLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")
-
 copy_required_shared_libraries ("${GAME_NAME}SharedTestLauncher")
-link_resources_for_development ("${RUNNER_OUTPUT_DIRECTORY}")
 
 add_test (NAME "Test${GAME_NAME}SharedRunner" COMMAND "${GAME_NAME}SharedTestLauncher"
         WORKING_DIRECTORY "${RUNNER_OUTPUT_DIRECTORY}")

@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
@@ -111,7 +109,7 @@ void World::RemovePipeline (Pipeline *_pipeline) noexcept
     }
 
     // Received pipeline from another world?
-    assert (false);
+    EMERGENCE_ASSERT (false);
 }
 
 void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
@@ -125,7 +123,7 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     constexpr uint64_t MAX_TIME_DELTA_NS = 1000000000u;
 
     const uint64_t currentTimeNs = Emergence::Time::NanosecondsSinceStartup ();
-    assert (currentTimeNs >= _time->realNormalTimeNs);
+    EMERGENCE_ASSERT (currentTimeNs >= _time->realNormalTimeNs);
     uint64_t realTimeDeltaNs = currentTimeNs - _time->realNormalTimeNs;
     _time->realNormalTimeNs = currentTimeNs;
 
@@ -141,7 +139,7 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
         _time->averageFullFrameRealDurationS.Push (_time->realNormalDurationS);
     }
 
-    assert (_time->timeSpeed >= 0.0f);
+    EMERGENCE_ASSERT (_time->timeSpeed >= 0.0f);
     float updateModeTimeScale = 1.0f;
 
     switch (_world->updateMode)
@@ -179,7 +177,7 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
         constexpr float VSYNC_EPSILON = 1e-3f;
         const float minimumRealStepTime = _time->averageFullFrameRealDurationS.Get () - VSYNC_EPSILON;
 
-        assert (!_time->targetFixedFrameDurationsS.Empty ());
+        EMERGENCE_ASSERT (!_time->targetFixedFrameDurationsS.Empty ());
         std::size_t selectedStepIndex = 0u;
 
         while (_time->targetFixedFrameDurationsS[selectedStepIndex] < minimumRealStepTime &&
@@ -229,8 +227,8 @@ Pipeline *World::AddPipeline (Memory::UniqueString _id,
                               PipelineType _type,
                               const Task::Collection &_collection) noexcept
 {
-    assert (!normalPipeline || _type != PipelineType::NORMAL);
-    assert (!fixedPipeline || _type != PipelineType::FIXED);
+    EMERGENCE_ASSERT (!normalPipeline || _type != PipelineType::NORMAL);
+    EMERGENCE_ASSERT (!fixedPipeline || _type != PipelineType::FIXED);
 
     auto placeholder = Memory::Profiler::AllocationGroup {pipelinePool.GetAllocationGroup (), _id}.PlaceOnTop ();
     auto *pipeline = new (pipelinePool.Acquire ()) Pipeline {_id, _type, _collection};
@@ -249,7 +247,7 @@ Pipeline *World::AddPipeline (Memory::UniqueString _id,
         break;
 
     case PipelineType::COUNT:
-        assert (false);
+        EMERGENCE_ASSERT (false);
         break;
     }
 
@@ -272,7 +270,7 @@ void WorldTestingUtility::RunNormalUpdateOnce (World &_world, uint64_t _timeDelt
     auto [time, world] = ExtractSingletons (_world);
     time->realNormalDurationS = static_cast<float> (_timeDeltaNs) * 1e-9f;
 
-    assert (time->timeSpeed >= 0.0f);
+    EMERGENCE_ASSERT (time->timeSpeed >= 0.0f);
     const auto scaledTimeDeltaNs = static_cast<uint64_t> (static_cast<float> (_timeDeltaNs) * time->timeSpeed);
 
     time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
@@ -291,7 +289,7 @@ void WorldTestingUtility::RunFixedUpdateOnce (World &_world) noexcept
     auto [time, world] = ExtractSingletons (_world);
 
     // Keep it simple, because we do not need death spiral avoidance there.
-    assert (!time->targetFixedFrameDurationsS.Empty ());
+    EMERGENCE_ASSERT (!time->targetFixedFrameDurationsS.Empty ());
     time->fixedDurationS = time->targetFixedFrameDurationsS[0u];
     const auto fixedDurationNs = static_cast<uint64_t> (time->fixedDurationS * 1e9f);
 

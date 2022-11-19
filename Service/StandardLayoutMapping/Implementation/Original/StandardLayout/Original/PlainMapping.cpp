@@ -1,8 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
 #include <cstdlib>
 #include <new>
+
+#include <Assert/Assert.hpp>
 
 #include <API/Common/Implementation/Iterator.hpp>
 
@@ -39,13 +40,13 @@ size_t FieldData::GetSize () const noexcept
 
 uint_fast8_t FieldData::GetBitOffset () const noexcept
 {
-    assert (archetype == FieldArchetype::BIT);
+    EMERGENCE_ASSERT (archetype == FieldArchetype::BIT);
     return bitOffset;
 }
 
 Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const noexcept
 {
-    assert (archetype == FieldArchetype::NESTED_OBJECT);
+    EMERGENCE_ASSERT (archetype == FieldArchetype::NESTED_OBJECT);
     return nestedObjectMapping;
 }
 
@@ -66,9 +67,9 @@ FieldData::FieldData (FieldData::StandardSeed _seed) noexcept
       size (_seed.size),
       name (_seed.name)
 {
-    assert (archetype != FieldArchetype::BIT);
-    assert (archetype != FieldArchetype::UNIQUE_STRING);
-    assert (archetype != FieldArchetype::NESTED_OBJECT);
+    EMERGENCE_ASSERT (archetype != FieldArchetype::BIT);
+    EMERGENCE_ASSERT (archetype != FieldArchetype::UNIQUE_STRING);
+    EMERGENCE_ASSERT (archetype != FieldArchetype::NESTED_OBJECT);
 }
 
 FieldData::FieldData (FieldData::BitSeed _seed) noexcept
@@ -97,7 +98,7 @@ FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
       name (_seed.name),
       nestedObjectMapping (std::move (_seed.nestedObjectMapping))
 {
-    assert (nestedObjectMapping);
+    EMERGENCE_ASSERT (nestedObjectMapping);
     size = nestedObjectMapping->GetObjectSize ();
 }
 
@@ -175,9 +176,9 @@ PlainMapping::ConditionalFieldIterator::ConditionalFieldIterator (const PlainMap
       currentField (_field),
       nextCondition (_owner->firstCondition)
 {
-    assert (currentField == owner->Begin () || currentField == owner->End ());
+    EMERGENCE_ASSERT (currentField == owner->Begin () || currentField == owner->End ());
     // Technically condition can not start from the first field because there is no possible source fields.
-    assert (!_owner->firstCondition || _owner->firstCondition->sinceField > 0u);
+    EMERGENCE_ASSERT (!_owner->firstCondition || _owner->firstCondition->sinceField > 0u);
 }
 
 void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
@@ -195,7 +196,7 @@ void PlainMapping::ConditionalFieldIterator::UpdateCondition () noexcept
 
         if (nextCondition && nextCondition->sinceField == currentFieldId)
         {
-            assert (nextCondition->popTo == topCondition);
+            EMERGENCE_ASSERT (nextCondition->popTo == topCondition);
 
             // If top condition is not satisfied, we're just moving until it is popped out.
             if (topConditionSatisfied)
@@ -242,7 +243,7 @@ void PlainMapping::ConditionalFieldIterator::UpdateWhetherTopConditionSatisfied 
         break;                                                                                                         \
                                                                                                                        \
     default:                                                                                                           \
-        assert (false);                                                                                                \
+        EMERGENCE_ASSERT (false);                                                                                      \
         topConditionSatisfied = true;                                                                                  \
     }                                                                                                                  \
     break;
@@ -336,8 +337,8 @@ const ConditionData *PlainMapping::GetFirstCondition () const noexcept
 
 FieldId PlainMapping::GetFieldId (const FieldData &_field) const
 {
-    assert (&_field >= Begin ());
-    assert (&_field < End ());
+    EMERGENCE_ASSERT (&_field >= Begin ());
+    EMERGENCE_ASSERT (&_field < End ());
     return &_field - Begin ();
 }
 
@@ -357,7 +358,7 @@ PlainMapping::PlainMapping (Memory::UniqueString _name, std::size_t _objectSize,
       objectAlignment (_objectAlignment),
       name (_name)
 {
-    assert (objectSize > 0u);
+    EMERGENCE_ASSERT (objectSize > 0u);
 }
 
 PlainMapping::~PlainMapping () noexcept
@@ -389,7 +390,7 @@ void PlainMapping::operator delete (void *_pointer) noexcept
 
 PlainMapping *PlainMapping::ChangeCapacity (std::size_t _newFieldCapacity) noexcept
 {
-    assert (_newFieldCapacity >= fieldCount);
+    EMERGENCE_ASSERT (_newFieldCapacity >= fieldCount);
     auto *newInstance = static_cast<PlainMapping *> (GetHeap ().Resize (
         this, alignof (PlainMapping), CalculateMappingSize (fieldCapacity), CalculateMappingSize (_newFieldCapacity)));
 
@@ -422,7 +423,7 @@ void PlainMappingBuilder::Begin (Memory::UniqueString _name,
                                  std::size_t _objectSize,
                                  std::size_t _objectAlignment) noexcept
 {
-    assert (!underConstruction);
+    EMERGENCE_ASSERT (!underConstruction);
     underConstruction = new (INITIAL_FIELD_CAPACITY) PlainMapping (_name, _objectSize, _objectAlignment);
     underConstruction->fieldCapacity = INITIAL_FIELD_CAPACITY;
     lastCondition = nullptr;
@@ -431,7 +432,7 @@ void PlainMappingBuilder::Begin (Memory::UniqueString _name,
 
 Handling::Handle<PlainMapping> PlainMappingBuilder::End () noexcept
 {
-    assert (underConstruction);
+    EMERGENCE_ASSERT (underConstruction);
     PlainMapping *finished = underConstruction->ChangeCapacity (underConstruction->fieldCount);
     underConstruction = nullptr;
     return finished;
@@ -439,20 +440,20 @@ Handling::Handle<PlainMapping> PlainMappingBuilder::End () noexcept
 
 void PlainMappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
 {
-    assert (underConstruction);
+    EMERGENCE_ASSERT (underConstruction);
     underConstruction->constructor = _constructor;
 }
 
 void PlainMappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
 {
-    assert (underConstruction);
+    EMERGENCE_ASSERT (underConstruction);
     underConstruction->destructor = _destructor;
 }
 
 std::pair<FieldId, FieldData *> PlainMappingBuilder::AllocateField () noexcept
 {
-    assert (underConstruction);
-    assert (underConstruction->fieldCount <= underConstruction->fieldCapacity);
+    EMERGENCE_ASSERT (underConstruction);
+    EMERGENCE_ASSERT (underConstruction->fieldCount <= underConstruction->fieldCapacity);
 
     if (underConstruction->fieldCount == underConstruction->fieldCapacity)
     {
@@ -468,8 +469,8 @@ void PlainMappingBuilder::PushCondition (FieldId _sourceField,
                                          ConditionalOperation _operation,
                                          std::uint64_t _argument) noexcept
 {
-    assert (_sourceField < underConstruction->fieldCount);
-    assert (underConstruction->GetField (_sourceField)->archetype == FieldArchetype::UINT);
+    EMERGENCE_ASSERT (_sourceField < underConstruction->fieldCount);
+    EMERGENCE_ASSERT (underConstruction->GetField (_sourceField)->archetype == FieldArchetype::UINT);
 
     auto *condition = new (ConditionData::GetPool ().Acquire ()) ConditionData {};
     condition->sinceField = underConstruction->fieldCount;
@@ -493,7 +494,7 @@ void PlainMappingBuilder::PushCondition (FieldId _sourceField,
 
 void PlainMappingBuilder::PopCondition () noexcept
 {
-    assert (topCondition);
+    EMERGENCE_ASSERT (topCondition);
     topCondition->untilField = underConstruction->fieldCount;
     topCondition = topCondition->popTo;
 }

@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/Event/EventRegistrar.hpp>
 
 #include <Container/HashMap.hpp>
@@ -9,9 +7,9 @@ namespace Emergence::Celerity
 EventRegistrar::EventRegistrar (World *_world) noexcept
     : world (_world)
 {
-    assert (world);
+    EMERGENCE_ASSERT (world);
     // There should be no pipelines, because events augment pipeline building process.
-    assert (world->pipelinePool.BeginAcquired () == world->pipelinePool.EndAcquired ());
+    EMERGENCE_ASSERT (world->pipelinePool.BeginAcquired () == world->pipelinePool.EndAcquired ());
 
     // In case we are reusing world and there are old schemes.
     for (World::EventScheme &scheme : world->eventSchemes)
@@ -51,7 +49,7 @@ EventRegistrar::~EventRegistrar () noexcept
                 }
 
                 [[maybe_unused]] bool inserted = iterator->second.TryEmplaceBack (&trigger);
-                assert (inserted);
+                EMERGENCE_ASSERT (inserted);
             }
 
             for (auto &[trackedType, events] : onChangeEventPerType)
@@ -70,7 +68,7 @@ EventRegistrar::~EventRegistrar () noexcept
 
 void EventRegistrar::CustomEvent (const ClearableEventSeed &_seed) noexcept
 {
-    assert (world);
+    EMERGENCE_ASSERT (world);
     AssertEventUniqueness (_seed.eventType);
     SelectScheme (_seed.route).custom.Acquire (World::CustomEventInfo {_seed.eventType, _seed.route});
 }
@@ -96,26 +94,26 @@ static void AddTrivialAutomatedEvent (Container::TypedOrderedPool<TrivialEventTr
 
     [[maybe_unused]] bool inserted = selectedRow->TryEmplaceBack (TrivialEventTrigger {
         _seed.trackedType, _registry.InsertShortTerm (_seed.eventType), _seed.route, _seed.copyOut});
-    assert (inserted);
+    EMERGENCE_ASSERT (inserted);
 }
 
 void EventRegistrar::OnAddEvent (const TrivialAutomatedEventSeed &_seed) noexcept
 {
-    assert (world);
+    EMERGENCE_ASSERT (world);
     AssertEventUniqueness (_seed.eventType);
     AddTrivialAutomatedEvent (SelectScheme (_seed.route).onAdd, _seed, world->registry);
 }
 
 void EventRegistrar::OnRemoveEvent (const TrivialAutomatedEventSeed &_seed) noexcept
 {
-    assert (world);
+    EMERGENCE_ASSERT (world);
     AssertEventUniqueness (_seed.eventType);
     AddTrivialAutomatedEvent (SelectScheme (_seed.route).onRemove, _seed, world->registry);
 }
 
 void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noexcept
 {
-    assert (world);
+    EMERGENCE_ASSERT (world);
     AssertEventUniqueness (_seed.eventType);
 
     OnChangeEventTrigger trigger {_seed.trackedType,
@@ -131,20 +129,20 @@ void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noe
 void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayout::Mapping &_type) const noexcept
 {
 #ifndef NDEBUG
-    assert (world);
+    EMERGENCE_ASSERT (world);
 
     for (World::EventScheme &scheme : world->eventSchemes)
     {
         for (const World::CustomEventInfo &info : scheme.custom)
         {
-            assert (info.type != _type);
+            EMERGENCE_ASSERT (info.type != _type);
         }
 
         for (const TrivialEventTriggerRow &row : scheme.onAdd)
         {
             for (const TrivialEventTrigger &trigger : row)
             {
-                assert (trigger.GetEventType () != _type);
+                EMERGENCE_ASSERT (trigger.GetEventType () != _type);
             }
         }
 
@@ -152,13 +150,13 @@ void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayou
         {
             for (const TrivialEventTrigger &trigger : row)
             {
-                assert (trigger.GetEventType () != _type);
+                EMERGENCE_ASSERT (trigger.GetEventType () != _type);
             }
         }
 
         for (const OnChangeEventTrigger &trigger : scheme.onChange)
         {
-            assert (trigger.GetEventType () != _type);
+            EMERGENCE_ASSERT (trigger.GetEventType () != _type);
         }
     }
 #endif

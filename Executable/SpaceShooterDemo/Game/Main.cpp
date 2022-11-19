@@ -122,6 +122,7 @@ GameApplication::GameApplication (Urho3D::Context *_context)
       memoryEventOutput ("MemoryRecording.track", std::ios::binary),
       memoryEventObserver (StartRecording (memoryEventSerializer, memoryEventOutput))
 {
+    Emergence::SetIsAssertInteractive (true);
     SubscribeToEvent (Urho3D::E_UPDATE, URHO3D_HANDLER (GameApplication, HandleUpdate));
     SubscribeToEvent (Urho3D::E_KEYDOWN, URHO3D_HANDLER (GameApplication, HandleKeyDown));
     SubscribeToEvent (Urho3D::E_KEYUP, URHO3D_HANDLER (GameApplication, HandleKeyUp));
@@ -177,7 +178,7 @@ void GameApplication::Start ()
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes ());
-    Emergence::Celerity::HierarchyCleanup::Add3dToFixedUpdate (pipelineBuilder);
+    Emergence::Celerity::TransformHierarchyCleanup::Add3dToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
@@ -193,8 +194,8 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes ());
-    Emergence::Celerity::HierarchyCleanup::Add3dToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::VisualTransformSync::Add3dToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::TransformHierarchyCleanup::Add3dToNormalUpdate (pipelineBuilder);
+    Emergence::Celerity::TransformVisualSync::Add3dToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);

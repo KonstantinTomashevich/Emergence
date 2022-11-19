@@ -593,7 +593,7 @@ PartitioningTree<Dimensions>::Node::~Node () noexcept
     // Ensure that all children are properly deleted by VolumetricTree::DeleteNode.
     for (std::size_t index = 0u; index < NODE_CHILDREN_COUNT; ++index)
     {
-        assert (!children[index]);
+        EMERGENCE_ASSERT (!children[index]);
     }
 #endif
 }

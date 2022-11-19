@@ -97,7 +97,7 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
     REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    builder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
+    builder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
     Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_normalConfiguratorTasks), std::move (_normalValidatorTasks));
     REQUIRE (builder.End ());

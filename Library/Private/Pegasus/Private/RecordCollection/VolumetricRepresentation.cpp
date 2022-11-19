@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Cursor.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
@@ -78,7 +76,7 @@ VolumetricRepresentation::~VolumetricRepresentation () noexcept
 VolumetricRepresentation::ShapeIntersectionReadCursor VolumetricRepresentation::ReadShapeIntersections (
     VolumetricRepresentation::Shape _shape) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
     Pegasus::VolumetricIndex::ShapeIntersectionReadCursor cursor = index->LookupShapeIntersectionToRead (_shape);
@@ -89,7 +87,7 @@ VolumetricRepresentation::ShapeIntersectionReadCursor VolumetricRepresentation::
 VolumetricRepresentation::ShapeIntersectionEditCursor VolumetricRepresentation::EditShapeIntersections (
     VolumetricRepresentation::Shape _shape) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
     Pegasus::VolumetricIndex::ShapeIntersectionEditCursor cursor = index->LookupShapeIntersectionToEdit (_shape);
@@ -100,7 +98,7 @@ VolumetricRepresentation::ShapeIntersectionEditCursor VolumetricRepresentation::
 VolumetricRepresentation::RayIntersectionReadCursor VolumetricRepresentation::ReadRayIntersections (
     VolumetricRepresentation::Ray _ray, float _rayLength) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
     Pegasus::VolumetricIndex::RayIntersectionReadCursor cursor = index->LookupRayIntersectionToRead (_ray, _rayLength);
@@ -110,7 +108,7 @@ VolumetricRepresentation::RayIntersectionReadCursor VolumetricRepresentation::Re
 VolumetricRepresentation::RayIntersectionEditCursor VolumetricRepresentation::EditRayIntersections (
     VolumetricRepresentation::Ray _ray, float _rayLength) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::VolumetricIndex *index = reinterpret_cast<Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
     Pegasus::VolumetricIndex::RayIntersectionEditCursor cursor = index->LookupRayIntersectionToEdit (_ray, _rayLength);
@@ -119,7 +117,7 @@ VolumetricRepresentation::RayIntersectionEditCursor VolumetricRepresentation::Ed
 
 VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionBegin () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::VolumetricIndex *index =
         reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
@@ -129,7 +127,7 @@ VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionB
 
 VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionEnd () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::VolumetricIndex *index =
         reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ();
 
@@ -139,13 +137,13 @@ VolumetricRepresentation::DimensionIterator VolumetricRepresentation::DimensionE
 
 const StandardLayout::Mapping &VolumetricRepresentation::GetTypeMapping () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle)->Get ()->GetRecordMapping ();
 }
 
 bool VolumetricRepresentation::CanBeDropped () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
     Pegasus::VolumetricIndex *index = realHandle.Get ();
 
@@ -159,7 +157,7 @@ bool VolumetricRepresentation::CanBeDropped () const noexcept
 
 void VolumetricRepresentation::Drop () noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::VolumetricIndex> *> (&handle);
     Pegasus::VolumetricIndex *index = realHandle.Get ();
 
@@ -197,7 +195,7 @@ VolumetricRepresentation &VolumetricRepresentation::operator= (VolumetricReprese
 
 VolumetricRepresentation::VolumetricRepresentation (void *_handle) noexcept
 {
-    assert (_handle);
+    EMERGENCE_ASSERT (_handle);
     static_assert (sizeof (handle) == sizeof (Handling::Handle<Pegasus::VolumetricIndex>));
     new (&handle) Handling::Handle<Pegasus::VolumetricIndex> (static_cast<Pegasus::VolumetricIndex *> (_handle));
 }

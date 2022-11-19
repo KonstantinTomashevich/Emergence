@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <Celerity/Model/TimeSingleton.hpp>
@@ -256,7 +254,7 @@ void MaterialInitializer::Execute () noexcept
         auto materialCursor = modifyMaterialById.Execute (&_id);
         if (auto *material = static_cast<DynamicsMaterial *> (*materialCursor))
         {
-            assert (!material->implementationHandle);
+            EMERGENCE_ASSERT (!material->implementationHandle);
 
             physx::PxMaterial *pxMaterial = pxWorld.physics->createMaterial (
                 material->staticFriction, material->dynamicFriction, material->restitution);
@@ -959,7 +957,7 @@ void BodyMassSynchronizer::Execute ()
             if (!material)
             {
                 // Shapes can not exist without material. How this happened?
-                assert (false);
+                EMERGENCE_ASSERT (false);
                 break;
             }
 
@@ -1109,7 +1107,7 @@ void SimulationExecutor::onContact (const physx::PxContactPairHeader &_pairHeade
 
         const auto *firstShape = static_cast<const CollisionShapeComponent *> (pair.shapes[0u]->userData);
         const auto *secondShape = static_cast<const CollisionShapeComponent *> (pair.shapes[1u]->userData);
-        assert (firstShape->sendContactEvents || secondShape->sendContactEvents);
+        EMERGENCE_ASSERT (firstShape->sendContactEvents || secondShape->sendContactEvents);
 
 #define FILL_EVENT                                                                                                     \
     event->firstObjectId = firstShape->objectId;                                                                       \
@@ -1174,7 +1172,7 @@ void SimulationExecutor::onTrigger (physx::PxTriggerPair *_pairs, physx::PxU32 _
         }
         else
         {
-            assert (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST);
+            EMERGENCE_ASSERT (pair.status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST);
             auto cursor = insertTriggerExitedEvents.Execute ();
             auto *event = static_cast<TriggerExitedEvent *> (++cursor);
             FILL_EVENT
@@ -1205,7 +1203,7 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
         if (!transform)
         {
             // Transformless body must've been removed by other routines.
-            assert (false);
+            EMERGENCE_ASSERT (false);
             continue;
         }
 
@@ -1285,7 +1283,7 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
             const Math::Vector3f &scale = transform->GetLogicalLocalTransform ().scale;
 
             // Currently, we assume that non-static bodies are attached to transform root elements only.
-            assert (transform->GetParentObjectId () == INVALID_UNIQUE_ID);
+            EMERGENCE_ASSERT (transform->GetParentObjectId () == INVALID_UNIQUE_ID);
             transform->SetLogicalLocalTransform ({FromPhysX (pxTransform.p), FromPhysX (pxTransform.q), scale});
         }
     };
@@ -1404,7 +1402,7 @@ static void ConstructPxShape (CollisionShapeComponent *_shape,
                               const physx::PxMaterial &_pxMaterial,
                               const Math::Vector3f &_worldScale) noexcept
 {
-    assert (!_shape->implementationHandle);
+    EMERGENCE_ASSERT (!_shape->implementationHandle);
     if ((_shape->geometry.type == CollisionGeometryType::SPHERE ||
          _shape->geometry.type == CollisionGeometryType::CAPSULE) &&
         (!Math::NearlyEqual (_worldScale.x, _worldScale.y) || !Math::NearlyEqual (_worldScale.y, _worldScale.z)))

@@ -91,7 +91,7 @@ void Configurator::Execute ()
         return;
     }
 
-    assert (framesIterator->frameIndex == currentFrameIndex);
+    EMERGENCE_ASSERT (framesIterator->frameIndex == currentFrameIndex);
     for (const ConfiguratorTask &task : framesIterator->tasks)
     {
         std::visit (
@@ -296,7 +296,7 @@ void Validator::Execute () noexcept
         return;
     }
 
-    assert (framesIterator->frameIndex == currentFrameIndex);
+    EMERGENCE_ASSERT (framesIterator->frameIndex == currentFrameIndex);
     for (const ValidatorTask &task : framesIterator->tasks)
     {
         std::visit (

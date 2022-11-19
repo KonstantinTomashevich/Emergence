@@ -1,7 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <atomic>
-#include <cassert>
+
+#include <Assert/Assert.hpp>
 
 #include <Container/HashSet.hpp>
 
@@ -61,7 +62,7 @@ static const char *RegisterValue (const std::string_view &_value)
         auto iterator = stringRegister.find (_value);
         if (iterator == stringRegister.end ())
         {
-            assert (_value.size () + 1u < STRING_STACK_SIZE);
+            EMERGENCE_ASSERT (_value.size () + 1u < STRING_STACK_SIZE);
             if (lastStack->GetFreeSize () < _value.size () + 1u)
             {
                 // Current stack is full, we need a new one.
@@ -71,7 +72,7 @@ static const char *RegisterValue (const std::string_view &_value)
             char *space = static_cast<char *> (lastStack->Acquire (_value.size () + 1u, 1u));
             strcpy (space, _value.data ());
             auto [insertionIterator, result] = stringRegister.emplace (space);
-            assert (result);
+            EMERGENCE_ASSERT (result);
             return insertionIterator->data ();
         }
 

@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Iterator.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
@@ -50,42 +50,42 @@ Mapping::Mapping (Mapping &&_other) noexcept
 std::size_t Mapping::GetObjectSize () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return handle->GetObjectSize ();
 }
 
 std::size_t Mapping::GetObjectAlignment () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return handle->GetObjectAlignment ();
 }
 
 Memory::UniqueString Mapping::GetName () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return handle->GetName ();
 }
 
 void Mapping::Construct (void *_address) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     handle->Construct (_address);
 }
 
 void Mapping::Destruct (void *_address) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     handle->Destruct (_address);
 }
 
 Field Mapping::GetField (FieldId _field) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return Field (const_cast<FieldData *> (handle->GetField (_field)));
 }
 
@@ -125,7 +125,7 @@ Mapping &Mapping::operator= (Mapping &&_other) noexcept
 Mapping::FieldIterator Mapping::Begin () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const FieldData *iterator = handle->Begin ();
     return FieldIterator (array_cast (iterator));
 }
@@ -133,7 +133,7 @@ Mapping::FieldIterator Mapping::Begin () const noexcept
 Mapping::FieldIterator Mapping::End () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const FieldData *iterator = handle->End ();
     return FieldIterator (array_cast (iterator));
 }
@@ -141,7 +141,7 @@ Mapping::FieldIterator Mapping::End () const noexcept
 ConditionalFieldIterator Mapping::BeginConditional (const void *_object) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const PlainMapping::ConditionalFieldIterator iterator = handle->BeginConditional (_object);
     return ConditionalFieldIterator (array_cast (iterator));
 }
@@ -149,7 +149,7 @@ ConditionalFieldIterator Mapping::BeginConditional (const void *_object) const n
 ConditionalFieldIterator Mapping::EndConditional () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const PlainMapping::ConditionalFieldIterator iterator = handle->EndConditional ();
     return ConditionalFieldIterator (array_cast (iterator));
 }
@@ -162,7 +162,7 @@ FieldId Mapping::GetFieldId (const Mapping::FieldIterator &_iterator) const noex
 FieldId Mapping::GetFieldId (const Field &_field) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return handle->GetFieldId (*reinterpret_cast<const FieldData *> (_field.handle));
 }
 

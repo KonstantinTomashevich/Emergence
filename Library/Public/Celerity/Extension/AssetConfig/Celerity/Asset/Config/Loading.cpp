@@ -136,7 +136,7 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
 
     AssetConfigLoadingStateSingleton::TypeState &state = *stateIterator;
     StandardLayout::Field nameField = state.type.GetField (state.nameField);
-    assert (nameField);
+    EMERGENCE_ASSERT (nameField);
 
     while (directoryIterator != std::filesystem::end (directoryIterator))
     {

@@ -16,6 +16,11 @@ namespace Emergence::Celerity
     EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentVisualLocalTransformChangedNormalEvent,     \
                                            UniqueId, objectId);                                                        \
                                                                                                                        \
+    EMERGENCE_CELERITY_EVENT2_DECLARATION (Transform##Dimension##dComponentParentChangedFixedToNormalEvent, UniqueId,  \
+                                           objectId, UniqueId, oldParentId);                                           \
+    EMERGENCE_CELERITY_EVENT2_DECLARATION (Transform##Dimension##dComponentParentChangedNormalEvent, UniqueId,         \
+                                           objectId, UniqueId, oldParentId);                                           \
+                                                                                                                       \
     EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentRemovedFixedEvent, UniqueId, objectId);     \
     EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentRemovedNormalEvent, UniqueId, objectId);    \
     EMERGENCE_CELERITY_EVENT1_DECLARATION (Transform##Dimension##dComponentRemovedFixedToNormalEvent, UniqueId,        \

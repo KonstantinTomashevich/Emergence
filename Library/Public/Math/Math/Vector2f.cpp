@@ -103,6 +103,11 @@ IMPLEMENT_SCALAR_ASSIGNMENT_OPERATOR (*)
 IMPLEMENT_SCALAR_OPERATOR (/)
 IMPLEMENT_SCALAR_ASSIGNMENT_OPERATOR (/)
 
+Vector2f Vector2f::operator- () const noexcept
+{
+    return {-x, -y};
+}
+
 const Vector2f::Reflection &Vector2f::Reflect () noexcept
 {
     static Reflection reflection = [] ()

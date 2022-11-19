@@ -17,7 +17,7 @@ IndexBase::IndexBase (class Storage *_storage) noexcept
     : storage (_storage),
       activeCursors (0u)
 {
-    assert (storage);
+    EMERGENCE_ASSERT (storage);
 }
 
 void IndexBase::LastReferenceUnregistered () noexcept

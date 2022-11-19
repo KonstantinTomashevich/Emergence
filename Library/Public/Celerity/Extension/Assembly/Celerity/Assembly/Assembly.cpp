@@ -169,7 +169,7 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
     if (!prototype->intermediateIdReplacement.empty ())
     {
         // Inherit intermediate id replacement from previous pass during other routine.
-        assert (prototype->intermediateIdReplacement.size () == keyStates.size ());
+        EMERGENCE_ASSERT (prototype->intermediateIdReplacement.size () == keyStates.size ());
 
         for (std::size_t index = 0u; index < keyStates.size (); ++index)
         {
@@ -207,7 +207,7 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
 
             for (const StandardLayout::Field &vectorField : binding.rotateVector3fs)
             {
-                assert (needRootObjectTransform);
+                EMERGENCE_ASSERT (needRootObjectTransform);
                 auto *vector = static_cast<Math::Vector3f *> (vectorField.GetValue (component));
                 *vector = Math::Rotate (*vector, rootObjectTransform.rotation);
             }
@@ -276,7 +276,7 @@ AssemblerBase::KeyState &AssemblerBase::GetKeyState (UniqueId _index) noexcept
         return GetObjectIdKeyState ();
     }
 
-    assert (_index < keyStates.size () - 1u);
+    EMERGENCE_ASSERT (_index < keyStates.size () - 1u);
     return keyStates[_index];
 }
 
@@ -343,7 +343,7 @@ NormalAssembler::NormalAssembler (TaskConstructor &_constructor,
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
 {
     useLogicalTransform = false;
-    _constructor.DependOn (VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
 }
 
 void NormalAssembler::Execute () noexcept

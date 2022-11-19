@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Memory/Recording/Event.hpp>
 
@@ -28,8 +28,8 @@ Event::Event (EventType _type, std::uint64_t _timeNs, GroupUID _group, std::uint
       group (_group),
       bytes (_bytes)
 {
-    assert (type == EventType::ALLOCATE || type == EventType::ACQUIRE || type == EventType::RELEASE ||
-            type == EventType::FREE);
+    EMERGENCE_ASSERT (type == EventType::ALLOCATE || type == EventType::ACQUIRE || type == EventType::RELEASE ||
+                      type == EventType::FREE);
 }
 
 Event::Event (std::uint64_t _timeNs, GroupUID _scope, UniqueString _markedId) noexcept

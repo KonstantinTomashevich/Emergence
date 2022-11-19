@@ -42,7 +42,7 @@
     Query::UnsafeFetchAccessToken::UnsafeFetchAccessToken (Query::UnsafeFetchAccessToken &&_other) noexcept            \
         : handle (_other.handle)                                                                                       \
     {                                                                                                                  \
-        assert (handle);                                                                                               \
+        EMERGENCE_ASSERT (handle);                                                                                     \
         _other.handle = nullptr;                                                                                       \
     }                                                                                                                  \
                                                                                                                        \
@@ -58,7 +58,7 @@
     Query::UnsafeFetchAccessToken::UnsafeFetchAccessToken (void *_handle) noexcept                                     \
         : handle (_handle)                                                                                             \
     {                                                                                                                  \
-        assert (handle);                                                                                               \
+        EMERGENCE_ASSERT (handle);                                                                                     \
         /* NOLINTNEXTLINE(bugprone-macro-parentheses): Types can not be enclosed. */                                   \
         static_cast<QueryImplementation *> (handle)->GetContainer ()->SetUnsafeFetchAllowed (true);                    \
     }                                                                                                                  \

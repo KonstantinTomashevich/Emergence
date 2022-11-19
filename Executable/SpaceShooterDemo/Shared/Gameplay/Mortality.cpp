@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
@@ -143,7 +141,7 @@ void DamageProcessor::Execute () noexcept
     for (auto eventCursor = fetchDamageEvents.Execute ();
          const auto *event = static_cast<const DamageEvent *> (*eventCursor); ++eventCursor)
     {
-        assert (event->amount >= 0.0f);
+        EMERGENCE_ASSERT (event->amount >= 0.0f);
         auto mortalCursor = editMortalById.Execute (&event->objectId);
 
         if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor);
@@ -178,7 +176,8 @@ CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constru
 {
     _constructor.DependOn (TaskNames::PROCESS_DAMAGE);
     // Because mortality is de facto last mechanics in the graph, we're taking care or hierarchy cleanup here.
-    _constructor.MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _constructor.MakeDependencyOf (
+        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
 void CorpseProcessor::Execute () noexcept
@@ -214,9 +213,9 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MortalComponent, objectId)
         .DependOn (TaskNames::PROCESS_CORPSES)
         // Because mortality is de facto last mechanics in the graph, we're taking care or hierarchy cleanup here.
-        .DependOn (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf (Checkpoint::FINISHED)
-        .MakeDependencyOf (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
 class DeathEffectTrigger final : public Emergence::Celerity::TaskExecutorBase<DeathEffectTrigger>

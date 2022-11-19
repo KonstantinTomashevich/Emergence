@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 
 #include <Pegasus/Storage.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
@@ -22,9 +21,9 @@ const Container::Vector<const void *> *PartitioningTree<Dimensions>::ShapeEnumer
 template <std::size_t Dimensions>
 void PartitioningTree<Dimensions>::ShapeEnumerator::EraseRecord (std::size_t _index) noexcept
 {
-    assert (tree);
-    assert (!stack.Empty ());
-    assert (_index < stack.Back ().node->children.size ());
+    EMERGENCE_ASSERT (tree);
+    EMERGENCE_ASSERT (!stack.Empty ());
+    EMERGENCE_ASSERT (_index < stack.Back ().node->children.size ());
     Container::EraseExchangingWithLast (stack.Back ().node->records, stack.Back ().node->records.begin () + _index);
     bool needToMove = false;
 
@@ -36,7 +35,7 @@ void PartitioningTree<Dimensions>::ShapeEnumerator::EraseRecord (std::size_t _in
         stack.PopBack ();
 
         --stack.Back ().node->childrenCount;
-        assert (stack.Back ().nextChildToVisit > 0u);
+        EMERGENCE_ASSERT (stack.Back ().nextChildToVisit > 0u);
         stack.Back ().node->children[stack.Back ().nextChildToVisit - 1u] = nullptr;
     }
 
@@ -74,7 +73,7 @@ PartitioningTree<Dimensions>::ShapeEnumerator::ShapeEnumerator (PartitioningTree
     : tree (_tree),
       shape (_shape)
 {
-    assert (tree);
+    EMERGENCE_ASSERT (tree);
     EnterNode (tree->root);
 }
 
@@ -110,9 +109,9 @@ void PartitioningTree<Dimensions>::ShapeEnumerator::EnterNode (Node *_node) noex
 template <std::size_t Dimensions>
 void PartitioningTree<Dimensions>::RayEnumerator::EraseRecord (std::size_t _index) noexcept
 {
-    assert (tree);
-    assert (!stack.Empty ());
-    assert (_index < stack.Back ()->children.size ());
+    EMERGENCE_ASSERT (tree);
+    EMERGENCE_ASSERT (!stack.Empty ());
+    EMERGENCE_ASSERT (_index < stack.Back ()->children.size ());
     Container::EraseExchangingWithLast (stack.Back ()->records, stack.Back ()->records.begin () + _index);
     bool needToMove = false;
 
@@ -125,7 +124,7 @@ void PartitioningTree<Dimensions>::RayEnumerator::EraseRecord (std::size_t _inde
 
         --stack.Back ()->childrenCount;
         const Index nextChildIndex = GetNextChildIndex ();
-        assert (nextChildIndex < NODE_CHILDREN_COUNT);
+        EMERGENCE_ASSERT (nextChildIndex < NODE_CHILDREN_COUNT);
         stack.Back ()->children[nextChildIndex] = nullptr;
     }
 
@@ -324,7 +323,7 @@ void PartitioningTree<Dimensions>::RayEnumerator::MoveToNextTarget () noexcept
                                                                       currentTargetNode[movementDimension] + 1u);
 
     // Last level is not supported here, because it is never really created, as it has no representable center.
-    assert (levelsCrossed > 0u);
+    EMERGENCE_ASSERT (levelsCrossed > 0u);
 
     const std::size_t maxLevelInStack = std::countr_zero (tree->border) - levelsCrossed;
     if (stack.GetCount () > maxLevelInStack)
@@ -343,9 +342,9 @@ template <std::size_t Dimensions>
 PartitioningTree<Dimensions>::PartitioningTree (Index _border) noexcept
     : border (_border)
 {
-    assert (border > 1u);
-    assert (std::has_single_bit (border));
-    assert (std::countr_zero (border) > 2);
+    EMERGENCE_ASSERT (border > 1u);
+    EMERGENCE_ASSERT (std::has_single_bit (border));
+    EMERGENCE_ASSERT (std::countr_zero (border) > 2);
 
     maxLevel = std::min (static_cast<Index> (std::max (2u, std::countr_zero (border) - 2u)),
                          static_cast<Index> (Constants::VolumetricIndex::MAX_LEVELS));
@@ -410,7 +409,7 @@ void PartitioningTree<Dimensions>::Insert (const void *_record, const Shape &_sh
             std::array<Index, Dimensions> center;
             const auto dividingShift = static_cast<Index> (currentLevel + 2u);
             const Index halfSize = border >> dividingShift;
-            assert (halfSize > 0u);
+            EMERGENCE_ASSERT (halfSize > 0u);
 
             for (std::size_t index = 0u; index < Dimensions; ++index)
             {
@@ -459,7 +458,7 @@ void PartitioningTree<Dimensions>::Erase (const void *_record, const Shape &_sha
     {
         auto iterator = std::find (current->records.begin (), current->records.end (), _record);
         // Otherwise tree integrity is broken: deterministic insertion algorithm should've put it here.
-        assert (iterator != current->records.end ());
+        EMERGENCE_ASSERT (iterator != current->records.end ());
         Container::EraseExchangingWithLast (current->records, iterator);
     };
 
@@ -473,7 +472,7 @@ void PartitioningTree<Dimensions>::Erase (const void *_record, const Shape &_sha
         }
 
         // Otherwise tree integrity is broken: deterministic insertion algorithm should've created this node.
-        assert (current->children[childIndex]);
+        EMERGENCE_ASSERT (current->children[childIndex]);
         current = current->children[childIndex];
         trace.EmplaceBack () = {current, childIndex};
         ++currentLevel;
@@ -564,7 +563,7 @@ template <typename Enumerator, typename Geometry, typename Inheritor>
 Inheritor &VolumetricTree<Unit, Dimensions>::EnumeratorWrapper<Enumerator, Geometry, Inheritor>::operator++ () noexcept
 {
     const Container::Vector<const void *> *recordsInNode = *enumerator;
-    assert (recordsInNode);
+    EMERGENCE_ASSERT (recordsInNode);
 
     while (true)
     {
@@ -595,7 +594,7 @@ template <typename Enumerator, typename Geometry, typename Inheritor>
 Inheritor &VolumetricTree<Unit, Dimensions>::EnumeratorWrapper<Enumerator, Geometry, Inheritor>::operator~() noexcept
 {
     const Container::Vector<const void *> *oldNode = *enumerator;
-    assert (oldNode);
+    EMERGENCE_ASSERT (oldNode);
     enumerator.EraseRecord (currentRecordIndex);
     const Container::Vector<const void *> *newNode = *enumerator;
 
@@ -989,7 +988,7 @@ const VolumetricIndex::Dimension &VolumetricIndex::DimensionIterator::operator* 
 
 bool VolumetricIndex::DimensionIterator::operator== (const VolumetricIndex::DimensionIterator &_other) const noexcept
 {
-    assert (index == _other.index);
+    EMERGENCE_ASSERT (index == _other.index);
     return dimensionIndex == _other.dimensionIndex;
 }
 
@@ -1016,7 +1015,7 @@ VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
     : index (_other.index),
       baseEnumerator (_other.baseEnumerator)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -1026,7 +1025,7 @@ VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
     : index (_other.index),
       baseEnumerator (std::move (_other.baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -1065,7 +1064,7 @@ VolumetricIndex::ShapeIntersectionReadCursor::ShapeIntersectionReadCursor (
     : index (_index),
       baseEnumerator (std::move (_baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -1075,7 +1074,7 @@ VolumetricIndex::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
     : index (_other.index),
       baseEnumerator (std::move (_other.baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -1141,7 +1140,7 @@ VolumetricIndex::ShapeIntersectionEditCursor::ShapeIntersectionEditCursor (
     : index (_index),
       baseEnumerator (std::move (_baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterWriter ();
 
@@ -1183,7 +1182,7 @@ VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
     : index (_other.index),
       baseEnumerator (_other.baseEnumerator)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -1193,7 +1192,7 @@ VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
     : index (_other.index),
       baseEnumerator (std::move (_other.baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -1232,7 +1231,7 @@ VolumetricIndex::RayIntersectionReadCursor::RayIntersectionReadCursor (
     : index (_index),
       baseEnumerator (std::move (_baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -1242,7 +1241,7 @@ VolumetricIndex::RayIntersectionEditCursor::RayIntersectionEditCursor (
     : index (_other.index),
       baseEnumerator (std::move (_other.baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -1308,7 +1307,7 @@ VolumetricIndex::RayIntersectionEditCursor::RayIntersectionEditCursor (
     : index (_index),
       baseEnumerator (std::move (_baseEnumerator))
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterWriter ();
 
@@ -1422,8 +1421,8 @@ VolumetricIndex::RayIntersectionEditCursor VolumetricIndex::LookupRayIntersectio
 
 void VolumetricIndex::Drop () noexcept
 {
-    assert (CanBeDropped ());
-    assert (storage);
+    EMERGENCE_ASSERT (CanBeDropped ());
+    EMERGENCE_ASSERT (storage);
     storage->DropIndex (*this);
 }
 
@@ -1431,7 +1430,7 @@ template <typename Unit, std::size_t Count>
 std::array<typename VolumetricTree<Unit, Count>::Dimension, Count> ConvertDimensions (
     Storage *_storage, const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions)
 {
-    assert (_dimensions.size () == Count);
+    EMERGENCE_ASSERT (_dimensions.size () == Count);
     std::array<typename VolumetricTree<Unit, Count>::Dimension, Count> result;
 
     for (std::size_t index = 0u; index < Count; ++index)
@@ -1449,16 +1448,16 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
     Storage *_storage, const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept
 {
     static_assert (Constants::VolumetricIndex::MAX_DIMENSIONS <= 3u);
-    assert (!_dimensions.empty ());
-    assert (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
+    EMERGENCE_ASSERT (!_dimensions.empty ());
+    EMERGENCE_ASSERT (_dimensions.size () <= Constants::VolumetricIndex::MAX_DIMENSIONS);
 
     StandardLayout::Field selectionBaseField = _storage->GetRecordMapping ().GetField (_dimensions.front ().minField);
-    assert (selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::INT ||
-            selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::UINT ||
-            selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::FLOAT);
+    EMERGENCE_ASSERT (selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::INT ||
+                      selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::UINT ||
+                      selectionBaseField.GetArchetype () == StandardLayout::FieldArchetype::FLOAT);
 
 #define UNHANDLED_COMBINATION                                                                                          \
-    assert (false);                                                                                                    \
+    EMERGENCE_ASSERT (false);                                                                                          \
     return VolumetricTree<uint8_t, 1u> ({})
 
 #define HANDLE_DIMENSION_COUNT(Count)                                                                                  \

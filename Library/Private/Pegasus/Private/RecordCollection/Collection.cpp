@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Iterator.hpp>
 
 #include <Pegasus/Storage.hpp>
@@ -98,7 +96,7 @@ Collection::Collection (Collection &&_other) noexcept
 {
     auto &internal = *new (&data) InternalData ();
     internal.storage = block_cast<InternalData> (_other.data).storage;
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     block_cast<InternalData> (_other.data).storage = nullptr;
 }
 
@@ -117,7 +115,7 @@ Collection::~Collection () noexcept
 Collection::Allocator Collection::AllocateAndInsert () noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::Allocator allocator = internal.storage->AllocateAndInsert ();
     return Allocator (array_cast (allocator));
 }
@@ -125,7 +123,7 @@ Collection::Allocator Collection::AllocateAndInsert () noexcept
 LinearRepresentation Collection::CreateLinearRepresentation (StandardLayout::FieldId _keyField) noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Handling::Handle<Pegasus::OrderedIndex> index = internal.storage->CreateOrderedIndex (_keyField);
     return LinearRepresentation (index.Get ());
 }
@@ -134,7 +132,7 @@ PointRepresentation Collection::CreatePointRepresentation (
     const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Handling::Handle<Pegasus::HashIndex> index = internal.storage->CreateHashIndex (_keyFields);
     return PointRepresentation (index.Get ());
 }
@@ -143,7 +141,7 @@ SignalRepresentation Collection::CreateSignalRepresentation (
     StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Handling::Handle<Pegasus::SignalIndex> index = internal.storage->CreateSignalIndex (_keyField, _signaledValue);
     return SignalRepresentation (index.Get ());
 }
@@ -152,7 +150,7 @@ VolumetricRepresentation Collection::CreateVolumetricRepresentation (
     const Container::Vector<DimensionDescriptor> &_dimensions) noexcept
 {
     auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     // Volumetric representation creation is rare operation, therefore it's ok to dynamically allocate vector here.
     Container::Vector<Pegasus::VolumetricIndex::DimensionDescriptor> convertedDimensions {_dimensions.get_allocator ()};
     convertedDimensions.reserve (_dimensions.size ());
@@ -174,14 +172,14 @@ VolumetricRepresentation Collection::CreateVolumetricRepresentation (
 const StandardLayout::Mapping &Collection::GetTypeMapping () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     return internal.storage->GetRecordMapping ();
 }
 
 Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::OrderedIndexIterator iterator = internal.storage->BeginOrderedIndices ();
 
     return LinearRepresentationIterator (array_cast (iterator));
@@ -190,7 +188,7 @@ Collection::LinearRepresentationIterator Collection::LinearRepresentationBegin (
 Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::OrderedIndexIterator iterator = internal.storage->EndOrderedIndices ();
 
     return LinearRepresentationIterator (array_cast (iterator));
@@ -199,7 +197,7 @@ Collection::LinearRepresentationIterator Collection::LinearRepresentationEnd () 
 Collection::PointRepresentationIterator Collection::PointRepresentationBegin () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::HashIndexIterator iterator = internal.storage->BeginHashIndices ();
     return PointRepresentationIterator (array_cast (iterator));
 }
@@ -207,7 +205,7 @@ Collection::PointRepresentationIterator Collection::PointRepresentationBegin () 
 Collection::PointRepresentationIterator Collection::PointRepresentationEnd () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::HashIndexIterator iterator = internal.storage->EndHashIndices ();
     return PointRepresentationIterator (array_cast (iterator));
 }
@@ -215,7 +213,7 @@ Collection::PointRepresentationIterator Collection::PointRepresentationEnd () co
 Collection::SignalRepresentationIterator Collection::SignalRepresentationBegin () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::SignalIndexIterator iterator = internal.storage->BeginSignalIndices ();
     return SignalRepresentationIterator (array_cast (iterator));
 }
@@ -223,7 +221,7 @@ Collection::SignalRepresentationIterator Collection::SignalRepresentationBegin (
 Collection::SignalRepresentationIterator Collection::SignalRepresentationEnd () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::SignalIndexIterator iterator = internal.storage->EndSignalIndices ();
     return SignalRepresentationIterator (array_cast (iterator));
 }
@@ -231,7 +229,7 @@ Collection::SignalRepresentationIterator Collection::SignalRepresentationEnd () 
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationBegin () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::VolumetricIndexIterator iterator = internal.storage->BeginVolumetricIndices ();
 
     return VolumetricRepresentationIterator (array_cast (iterator));
@@ -240,7 +238,7 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
 Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentationEnd () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     Pegasus::Storage::VolumetricIndexIterator iterator = internal.storage->EndVolumetricIndices ();
 
     return VolumetricRepresentationIterator (array_cast (iterator));
@@ -249,7 +247,7 @@ Collection::VolumetricRepresentationIterator Collection::VolumetricRepresentatio
 void Collection::SetUnsafeReadAllowed (bool _allowed) noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
-    assert (internal.storage);
+    EMERGENCE_ASSERT (internal.storage);
     internal.storage->SetUnsafeReadAllowed (_allowed);
 }
 

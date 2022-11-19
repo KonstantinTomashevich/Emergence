@@ -1,0 +1,14 @@
+- name: colorTexture
+  type: 3
+  textureId: Crate.png
+- name: darknessFactor_lightFactor_lightRadius_lightDistance
+  type: 0
+  vector4f:
+    x: 0.1
+    y: 1
+    z: 0.2
+    w: 0.3
+- name: angle
+  type: 0
+  vector4f:
+    x: 1

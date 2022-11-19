@@ -47,7 +47,7 @@ CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor
 {
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
-    _constructor.DependOn (Emergence::Celerity::VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::TransformVisualSync::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Urho3DUpdate::Checkpoint::STARTED);
 }
@@ -68,7 +68,7 @@ void CameraUpdater::Execute () noexcept
         if (auto *cameraTransform = static_cast<Emergence::Celerity::Transform3dComponent *> (*cameraTransformCursor))
         {
             // We assume that camera is always a top level citizen.
-            assert (cameraTransform->GetParentObjectId () == Emergence::Celerity::INVALID_UNIQUE_ID);
+            EMERGENCE_ASSERT (cameraTransform->GetParentObjectId () == Emergence::Celerity::INVALID_UNIQUE_ID);
             cameraTransform->SetVisualLocalTransform (unitTransform * followCameraSettings->cameraLocalTransform);
         }
     }

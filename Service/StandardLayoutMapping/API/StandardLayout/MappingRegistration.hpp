@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cassert>
 #include <cstdint>
+
+#include <Assert/Assert.hpp>
 
 #include <Container/Optional.hpp>
 #include <Container/StringBuilder.hpp>
@@ -187,7 +188,7 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     else
     {
         // Unfortunately, we cannot use static_assert here.
-        assert (false);
+        EMERGENCE_ASSERT (false);
         return 0u;
     }
 }

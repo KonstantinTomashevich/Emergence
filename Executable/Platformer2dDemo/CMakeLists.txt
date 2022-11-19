@@ -1,0 +1,21 @@
+set (GAME_NAME "Platformer2dDemo")
+set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
+set (GAME_ASSETS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Development")
+set (GAME_ASSETS_TARGET "${CMAKE_CURRENT_BINARY_DIR}/Assets/Development")
+
+file (GLOB_RECURSE GAME_SHADERS "${GAME_ASSETS_SOURCE}/*.sc")
+add_library ("${GAME_NAME}Shaders" INTERFACE ${GAME_SHADERS})
+
+add_subdirectory (Game)
+add_subdirectory (Logic)
+add_subdirectory (Model)
+add_subdirectory (Test)
+
+file (MAKE_DIRECTORY "${GAME_ASSETS_TARGET}")
+file (CREATE_LINK "${GAME_ASSETS_SOURCE}/Materials" "${GAME_ASSETS_TARGET}/Materials" SYMBOLIC)
+file (CREATE_LINK "${GAME_ASSETS_SOURCE}/MaterialInstances" "${GAME_ASSETS_TARGET}/MaterialInstances" SYMBOLIC)
+file (CREATE_LINK "${GAME_ASSETS_SOURCE}/Textures" "${GAME_ASSETS_TARGET}/Textures" SYMBOLIC)
+
+register_bgfx_shaders ("${GAME_ASSETS_SOURCE}/Shaders" "${GAME_ASSETS_TARGET}/Shaders")
+register_asset_usage ("${GAME_NAME}GameLauncher" "${GAME_ASSETS_TARGET}" "GameAssets")
+deploy_used_assets ("${GAME_NAME}GameLauncher")

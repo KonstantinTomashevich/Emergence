@@ -42,12 +42,12 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
 
     if (_use2d)
     {
-        VisualTransformSync::Add2dToNormalUpdate (builder);
+        TransformVisualSync::Add2dToNormalUpdate (builder);
         RequestExecutor::Add2dToNormalUpdate (builder, std::move (_normalRequests));
     }
     else
     {
-        VisualTransformSync::Add3dToNormalUpdate (builder);
+        TransformVisualSync::Add3dToNormalUpdate (builder);
         RequestExecutor::Add3dToNormalUpdate (builder, std::move (_normalRequests));
     }
 

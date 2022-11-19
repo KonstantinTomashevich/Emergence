@@ -21,6 +21,8 @@ sober_test_begin (Warehouse)
     sober_library_link_library (PRIVATE ${VISUALIZATION_LIBRARY_TARGET})
 
     sober_library_use_service (PER_VARIANT PRIVATE TestWarehouseVisualizationGraphs)
+    sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)
     sober_library_use_service (SHARED PRIVATE RecordCollection)
@@ -41,3 +43,4 @@ sober_test_end ()
 
 sober_naming_test_collection (Warehouse COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")
+finish_test_setup ()

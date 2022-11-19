@@ -366,7 +366,8 @@ void RunTest (Vector<KeyStateTrigger> _keyStateChangedTriggers,
     AddValidatorTask (pipelineBuilder, std::move (normalExpectations));
 
     Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
-    pipelineBuilder.AddCheckpoint (Emergence::Celerity::HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    pipelineBuilder.AddCheckpoint (
+        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
     pipelineBuilder.End ();
 
     pipelineBuilder.Begin ("FixedUpdate"_us, PipelineType::FIXED);

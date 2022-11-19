@@ -1,5 +1,6 @@
-#include <cassert>
 #include <cstring>
+
+#include <Assert/Assert.hpp>
 
 #include <Pegasus/RecordUtility.hpp>
 
@@ -9,7 +10,7 @@ bool AreRecordValuesEqual (const void *_firstRecord,
                            const void *_secondRecord,
                            const StandardLayout::Field &_field) noexcept
 {
-    assert (_field.IsHandleValid ());
+    EMERGENCE_ASSERT (_field.IsHandleValid ());
     return AreFieldValuesEqual (_field.GetValue (_firstRecord), _field.GetValue (_secondRecord), _field);
 }
 
@@ -17,7 +18,7 @@ bool AreFieldValuesEqual (const void *_firstRecordValue,
                           const void *_secondRecordValue,
                           const StandardLayout::Field &_field) noexcept
 {
-    assert (_field.IsHandleValid ());
+    EMERGENCE_ASSERT (_field.IsHandleValid ());
     return DoWithCorrectComparator (
         _field,
         [_firstRecordValue, _secondRecordValue] (const auto &_comparator)

@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Celerity/Physics/PhysXWorld.hpp>
 
@@ -48,8 +48,8 @@ PhysXWorld::~PhysXWorld () noexcept
 {
     if (foundation)
     {
-        assert (scene);
-        assert (physics);
+        EMERGENCE_ASSERT (scene);
+        EMERGENCE_ASSERT (physics);
 
         scene->release ();
         physics->release ();

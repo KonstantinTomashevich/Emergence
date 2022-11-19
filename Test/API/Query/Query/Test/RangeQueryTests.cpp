@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Query/Test/Data.hpp>
 #include <Query/Test/RangeQueryTests.hpp>
@@ -15,7 +15,7 @@ static Storage RequestPlayerStorage (const Container::Vector<const void *> &_obj
 {
     Storage storage {Player::Reflect ().mapping, _objects, {}};
 
-    assert (_sources > 0u);
+    EMERGENCE_ASSERT (_sources > 0u);
     if (_sources & FLAG_PLAYER_ID_SOURCE)
     {
         storage.sources.emplace_back (Sources::Range {"playerId", Player::Reflect ().id});

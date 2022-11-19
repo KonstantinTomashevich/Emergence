@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
-#include <cstring>
+#include <Assert/Assert.hpp>
 
 #include <Container/StringBuilder.hpp>
 
@@ -29,7 +28,7 @@ const char *StringBuilder::Get () const noexcept
     if (spaceLeft > 0u)                                                                                                \
     {                                                                                                                  \
         int symbolCount = snprintf (&buffer[count], spaceLeft, (Format), _value);                                      \
-        assert (symbolCount >= 0);                                                                                     \
+        EMERGENCE_ASSERT (symbolCount >= 0);                                                                           \
         count += std::min (spaceLeft, static_cast<std::size_t> (symbolCount));                                         \
     }                                                                                                                  \
                                                                                                                        \
@@ -65,6 +64,11 @@ StringBuilder &StringBuilder::Append (char _value) noexcept
     SNPRINTF_APPEND ("%c");
 }
 
+StringBuilder &StringBuilder::Append (short _value) noexcept
+{
+    SNPRINTF_APPEND ("%hi");
+}
+
 StringBuilder &StringBuilder::Append (int _value) noexcept
 {
     SNPRINTF_APPEND ("%d");
@@ -78,6 +82,11 @@ StringBuilder &StringBuilder::Append (long _value) noexcept
 StringBuilder &StringBuilder::Append (long long int _value) noexcept
 {
     SNPRINTF_APPEND ("%lld");
+}
+
+StringBuilder &StringBuilder::Append (unsigned short _value) noexcept
+{
+    SNPRINTF_APPEND ("%hu");
 }
 
 StringBuilder &StringBuilder::Append (unsigned int _value) noexcept
@@ -224,7 +233,7 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
 
 std::size_t StringBuilder::SpaceLeft () const noexcept
 {
-    assert (count < BUFFER_SIZE);
+    EMERGENCE_ASSERT (count < BUFFER_SIZE);
     return BUFFER_SIZE - count;
 }
 } // namespace Emergence::Container

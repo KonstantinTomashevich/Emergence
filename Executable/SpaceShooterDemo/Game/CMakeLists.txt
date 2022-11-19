@@ -19,6 +19,7 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_library_link_library (PRIVATE ${SHARED_TARGET})
     sober_library_link_library (PRIVATE PhysX)
 
+    sober_library_use_service (PER_VARIANT PRIVATE Assert)
     sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics)
     sober_library_use_service (PER_VARIANT PRIVATE ExportGraph)
     sober_library_use_service (PER_VARIANT PRIVATE JobDispatcher)
@@ -40,6 +41,4 @@ target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 
 set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Game")
-
 copy_required_shared_libraries ("${GAME_NAME}GameLauncher")
-link_resources_for_development ("${GAME_OUTPUT_DIRECTORY}/Game")

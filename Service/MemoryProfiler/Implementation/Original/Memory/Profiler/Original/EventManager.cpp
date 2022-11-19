@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Memory/Profiler/Original/EventManager.hpp>
 
@@ -111,7 +111,7 @@ const EventNode *EventManager::RequestNext (const EventNode *_current, const Pro
 {
     if (_current)
     {
-        assert (_current->observers != 0u);
+        EMERGENCE_ASSERT (_current->observers != 0u);
         EventNode *next = _current->next;
 
         if (next)
@@ -137,7 +137,7 @@ const EventNode *EventManager::RequestNext (const EventNode *_current, const Pro
 
 void EventManager::FinishObservation (const EventNode *_current, const ProfilingLock & /*unused*/) noexcept
 {
-    assert (observers > 0u);
+    EMERGENCE_ASSERT (observers > 0u);
     --observers;
 
     if (_current)
@@ -154,7 +154,7 @@ void EventManager::FinishObservation (const EventNode *_current, const Profiling
 
 void EventManager::RegisterNode (EventNode *_node) noexcept
 {
-    assert (_node);
+    EMERGENCE_ASSERT (_node);
     if (last)
     {
         last->next = _node;
@@ -162,7 +162,7 @@ void EventManager::RegisterNode (EventNode *_node) noexcept
     }
     else
     {
-        assert (!first);
+        EMERGENCE_ASSERT (!first);
         first = _node;
         last = _node;
     }

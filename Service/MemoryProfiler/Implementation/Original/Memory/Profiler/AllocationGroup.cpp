@@ -1,6 +1,6 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Iterator.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
 
@@ -70,7 +70,7 @@ AllocationGroup::~AllocationGroup () noexcept = default;
 
 AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return AllocationGroup::PlacedOnStack (handle);
 }
 

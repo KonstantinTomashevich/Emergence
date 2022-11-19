@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <StandardLayout/Original/PlainPatch.hpp>
 #include <StandardLayout/PatchBuilder.hpp>
@@ -9,8 +9,8 @@ namespace Emergence::StandardLayout
 {
 Patch PatchBuilder::FromDifference (const Mapping &_typeMapping, const void *_changed, const void *_initial) noexcept
 {
-    assert (_changed);
-    assert (_initial);
+    EMERGENCE_ASSERT (_changed);
+    EMERGENCE_ASSERT (_initial);
     PlainPatchBuilder builder;
     builder.Begin (_typeMapping);
 

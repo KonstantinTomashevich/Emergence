@@ -12,6 +12,8 @@ sober_test_begin (Memory)
     sober_library_link_library (PUBLIC ${CONTAINER_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
 
+    sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler Original FROZEN)
     sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
     sober_library_use_service (SHARED PRIVATE Testing)
@@ -27,3 +29,4 @@ sober_test_end ()
 
 sober_naming_test_collection (Memory COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")
+finish_test_setup ()

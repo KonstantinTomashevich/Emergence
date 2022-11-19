@@ -1,8 +1,9 @@
 #pragma once
 
 #include <array>
-#include <cassert>
 #include <concepts>
+
+#include <Assert/Assert.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
@@ -183,7 +184,7 @@ template <typename Item, std::size_t Capacity>
 InplaceVector<Item, Capacity>::InplaceVector (std::initializer_list<Item> _initializer) noexcept
     : count (_initializer.size ())
 {
-    assert (count <= Capacity);
+    EMERGENCE_ASSERT (count <= Capacity);
     for (std::size_t index = 0u; index < count; ++index)
     {
         new (&values[index]) Item (std::move (data (_initializer)[index]));
@@ -242,7 +243,7 @@ template <typename Item, std::size_t Capacity>
 template <typename... Args>
 Item &InplaceVector<Item, Capacity>::EmplaceBack (Args &&..._constructorArgs) noexcept
 {
-    assert (count < Capacity);
+    EMERGENCE_ASSERT (count < Capacity);
     Item *item = new (&values[count]) Item (std::forward<Args> (_constructorArgs)...);
     ++count;
     return *item;
@@ -266,7 +267,7 @@ template <typename... Args>
 Item &InplaceVector<Item, Capacity>::EmplaceAt (
     InplaceVector::Iterator _at, Args &&..._constructorArgs) noexcept requires std::is_nothrow_move_assignable_v<Item>
 {
-    assert (count < Capacity);
+    EMERGENCE_ASSERT (count < Capacity);
     if (_at == End ())
     {
         return EmplaceBack (std::forward<Args...> (_constructorArgs...));
@@ -305,7 +306,7 @@ template <typename Item, std::size_t Capacity>
 typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::EraseExchangingWithLast (
     const InplaceVector::Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>
 {
-    assert (_iterator < End ());
+    EMERGENCE_ASSERT (_iterator < End ());
     auto last = --End ();
 
     if (_iterator != last)
@@ -325,7 +326,7 @@ typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::
 template <typename Item, std::size_t Capacity>
 void InplaceVector<Item, Capacity>::DropLeading (std::size_t _amount) noexcept
 {
-    assert (_amount <= count);
+    EMERGENCE_ASSERT (_amount <= count);
     if (_amount >= count)
     {
         Clear ();
@@ -358,7 +359,7 @@ void InplaceVector<Item, Capacity>::DropLeading (std::size_t _amount) noexcept
 template <typename Item, std::size_t Capacity>
 void InplaceVector<Item, Capacity>::DropTrailing (std::size_t _amount) noexcept
 {
-    assert (_amount <= count);
+    EMERGENCE_ASSERT (_amount <= count);
     if (_amount >= count)
     {
         Clear ();
@@ -382,35 +383,35 @@ void InplaceVector<Item, Capacity>::DropTrailing (std::size_t _amount) noexcept
 template <typename Item, std::size_t Capacity>
 Item &InplaceVector<Item, Capacity>::Front () noexcept
 {
-    assert (!Empty ());
+    EMERGENCE_ASSERT (!Empty ());
     return values[0u];
 }
 
 template <typename Item, std::size_t Capacity>
 const Item &InplaceVector<Item, Capacity>::Front () const noexcept
 {
-    assert (!Empty ());
+    EMERGENCE_ASSERT (!Empty ());
     return values[0u];
 }
 
 template <typename Item, std::size_t Capacity>
 Item &InplaceVector<Item, Capacity>::Back () noexcept
 {
-    assert (!Empty ());
+    EMERGENCE_ASSERT (!Empty ());
     return values[count - 1u];
 }
 
 template <typename Item, std::size_t Capacity>
 const Item &InplaceVector<Item, Capacity>::Back () const noexcept
 {
-    assert (!Empty ());
+    EMERGENCE_ASSERT (!Empty ());
     return values[count - 1u];
 }
 
 template <typename Item, std::size_t Capacity>
 void InplaceVector<Item, Capacity>::PopBack () noexcept
 {
-    assert (!Empty ());
+    EMERGENCE_ASSERT (!Empty ());
     Back ().~Item ();
     --count;
 }
@@ -488,14 +489,14 @@ InplaceVector<Item, Capacity> &InplaceVector<Item, Capacity>::operator= (Inplace
 template <typename Item, std::size_t Capacity>
 const Item &InplaceVector<Item, Capacity>::operator[] (std::size_t _index) const noexcept
 {
-    assert (_index < GetCount ());
+    EMERGENCE_ASSERT (_index < GetCount ());
     return values[_index];
 }
 
 template <typename Item, std::size_t Capacity>
 Item &InplaceVector<Item, Capacity>::operator[] (std::size_t _index) noexcept
 {
-    assert (_index < GetCount ());
+    EMERGENCE_ASSERT (_index < GetCount ());
     return values[_index];
 }
 

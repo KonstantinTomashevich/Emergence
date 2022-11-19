@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cassert>
-
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
+
+#include <Assert/Assert.hpp>
 
 #include <Container/TypedOrderedPool.hpp>
 
@@ -432,7 +432,7 @@ template <typename Representation>
 Handling::Handle<LongTermContainer> LongTermContainer::RepresentationQueryBase<Representation>::GetContainer ()
     const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
@@ -442,6 +442,6 @@ LongTermContainer::RepresentationQueryBase<Representation>::RepresentationQueryB
     : container (std::move (_container)),
       representation (std::move (_representation))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 } // namespace Emergence::Galleon

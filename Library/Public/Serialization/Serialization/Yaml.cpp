@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
 
@@ -108,7 +108,7 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
 
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         // Only leaf values are supported.
-        assert (false);
+        EMERGENCE_ASSERT (false);
         break;
     }
 
@@ -231,7 +231,7 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
         case StandardLayout::FieldArchetype::BLOCK:
         {
             auto binary = _input.as<YAML::Binary> ();
-            assert (binary.data ());
+            EMERGENCE_ASSERT (binary.data ());
             memcpy (_address, binary.data (), std::min (binary.size (), _field.GetSize ()));
             break;
         }
@@ -242,7 +242,7 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
 
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
             // Only leaf values are supported.
-            assert (false);
+            EMERGENCE_ASSERT (false);
             break;
         }
     }
@@ -324,7 +324,7 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
             // Unsupported for patches.
-            assert (false);
+            EMERGENCE_ASSERT (false);
             break;
         }
     }

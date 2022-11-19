@@ -1,0 +1,5 @@
+sober_implementation_begin (BGFX)
+    sober_implementation_setup_target (STATIC "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+    sober_naming_variant_target (CelerityBGFX2d Original CELERITY_BGFX_2D_LIBRARY_TARGET)
+    sober_implementation_link_library ("${CELERITY_BGFX_2D_LIBRARY_TARGET}")
+sober_implementation_end ()

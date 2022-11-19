@@ -1,10 +1,10 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
-#include <cassert>
-
 BEGIN_MUTING_WARNINGS
 #include <xxhash.hpp>
 END_MUTING_WARNINGS
+
+#include <Assert/Assert.hpp>
 
 #include <Hashing/ByteHasher.hpp>
 
@@ -39,7 +39,7 @@ void ByteHasher::Append (uint8_t _byte) noexcept
 
 void ByteHasher::Append (const uint8_t *_bytes, std::size_t _count) noexcept
 {
-    assert (_bytes);
+    EMERGENCE_ASSERT (_bytes);
     block_cast<xxh::hash_state64_t> (data).update (_bytes, _count);
 }
 

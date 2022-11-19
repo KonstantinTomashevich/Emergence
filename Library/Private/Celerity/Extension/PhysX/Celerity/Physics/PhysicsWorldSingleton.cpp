@@ -1,3 +1,5 @@
+#include <Assert/Assert.hpp>
+
 #include <Celerity/Physics/PhysXWorld.hpp>
 #include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 
@@ -19,7 +21,7 @@ PhysicsWorldSingleton::~PhysicsWorldSingleton () noexcept
 
 uintptr_t PhysicsWorldSingleton::GenerateShapeId () const noexcept
 {
-    assert (shapeIdCounter != std::numeric_limits<decltype (shapeIdCounter)::value_type>::max ());
+    EMERGENCE_ASSERT (shapeIdCounter != std::numeric_limits<decltype (shapeIdCounter)::value_type>::max ());
     return const_cast<PhysicsWorldSingleton *> (this)->shapeIdCounter++;
 }
 

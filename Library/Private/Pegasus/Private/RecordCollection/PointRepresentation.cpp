@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <API/Common/Implementation/Cursor.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
@@ -59,7 +57,7 @@ PointRepresentation::~PointRepresentation () noexcept
 
 PointRepresentation::ReadCursor PointRepresentation::ReadPoint (PointRepresentation::Point _point) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::HashIndex *index = reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     Pegasus::HashIndex::ReadCursor cursor = index->LookupToRead ({_point});
     return ReadCursor (array_cast (cursor));
@@ -67,7 +65,7 @@ PointRepresentation::ReadCursor PointRepresentation::ReadPoint (PointRepresentat
 
 PointRepresentation::EditCursor PointRepresentation::EditPoint (PointRepresentation::Point _point) noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::HashIndex *index = reinterpret_cast<Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     Pegasus::HashIndex::EditCursor cursor = index->LookupToEdit ({_point});
     return EditCursor (array_cast (cursor));
@@ -75,7 +73,7 @@ PointRepresentation::EditCursor PointRepresentation::EditPoint (PointRepresentat
 
 PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldBegin () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::HashIndex *index = reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     auto iterator = index->GetIndexedFields ().Begin ();
     return KeyFieldIterator (array_cast (iterator));
@@ -83,7 +81,7 @@ PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldBegin () cons
 
 PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     Pegasus::HashIndex *index = reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ();
     auto iterator = index->GetIndexedFields ().End ();
     return KeyFieldIterator (array_cast (iterator));
@@ -91,13 +89,13 @@ PointRepresentation::KeyFieldIterator PointRepresentation::KeyFieldEnd () const 
 
 const StandardLayout::Mapping &PointRepresentation::GetTypeMapping () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle)->Get ()->GetRecordMapping ();
 }
 
 bool PointRepresentation::CanBeDropped () const noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
     Pegasus::HashIndex *index = realHandle.Get ();
 
@@ -111,7 +109,7 @@ bool PointRepresentation::CanBeDropped () const noexcept
 
 void PointRepresentation::Drop () noexcept
 {
-    assert (handle);
+    EMERGENCE_ASSERT (handle);
     const auto &realHandle = *reinterpret_cast<const Handling::Handle<Pegasus::HashIndex> *> (&handle);
     Pegasus::HashIndex *index = realHandle.Get ();
 
@@ -149,7 +147,7 @@ PointRepresentation &PointRepresentation::operator= (PointRepresentation &&_othe
 
 PointRepresentation::PointRepresentation (void *_handle) noexcept
 {
-    assert (_handle);
+    EMERGENCE_ASSERT (_handle);
     static_assert (sizeof (handle) == sizeof (Handling::Handle<Pegasus::HashIndex>));
     new (&handle) Handling::Handle<Pegasus::HashIndex> (static_cast<Pegasus::HashIndex *> (_handle));
 }

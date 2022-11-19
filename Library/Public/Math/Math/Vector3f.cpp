@@ -109,6 +109,11 @@ IMPLEMENT_SCALAR_ASSIGNMENT_OPERATOR (*)
 IMPLEMENT_SCALAR_OPERATOR (/)
 IMPLEMENT_SCALAR_ASSIGNMENT_OPERATOR (/)
 
+Vector3f Vector3f::operator- () const noexcept
+{
+    return {-x, -y, -z};
+}
+
 const Vector3f::Reflection &Vector3f::Reflect () noexcept
 {
     static Reflection reflection = [] ()

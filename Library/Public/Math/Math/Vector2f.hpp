@@ -64,6 +64,8 @@ struct alignas (float) Vector2f final
 
     Vector2f &operator/= (float _scalar) noexcept;
 
+    Vector2f operator- () const noexcept;
+
     union
     {
         float components[2u];

@@ -57,7 +57,8 @@ TransformVisualSynchronizer<TransformComponentType>::TransformVisualSynchronizer
       editTransformById (EDIT_VALUE_1F (TransformComponentType, objectId)),
       editTransformsWithUpdateFlag (EDIT_SIGNAL (TransformComponentType, visualTransformSyncNeeded, true))
 {
-    _constructor.MakeDependencyOf (VisualTransformSync::Checkpoint::FINISHED);
+    _constructor.DependOn (TransformVisualSync::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::FINISHED);
 }
 
 template <typename TransformComponentType>
@@ -118,13 +119,15 @@ void TransformVisualSynchronizer<TransformComponentType>::Execute () noexcept
     }
 }
 
-namespace VisualTransformSync
+namespace TransformVisualSync
 {
+const Memory::UniqueString Checkpoint::STARTED {"TransformVisualSyncStarted"};
 const Memory::UniqueString Checkpoint::FINISHED {"TransformVisualSyncFinished"};
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
+    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform2dVisualSync"})
         .SetExecutor<TransformVisualSynchronizer<Transform2dComponent>> (
             Transform2dComponentAddedFixedToNormalEvent::Reflect ().mapping);
@@ -132,10 +135,11 @@ void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (VisualTransformSync::Checkpoint::FINISHED);
+    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"})
         .SetExecutor<TransformVisualSynchronizer<Transform3dComponent>> (
             Transform3dComponentAddedFixedToNormalEvent::Reflect ().mapping);
 }
-} // namespace VisualTransformSync
+} // namespace TransformVisualSync
 } // namespace Emergence::Celerity

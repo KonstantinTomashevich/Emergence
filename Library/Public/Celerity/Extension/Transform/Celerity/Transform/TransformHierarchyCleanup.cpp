@@ -2,18 +2,19 @@
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::Celerity::HierarchyCleanup
+namespace Emergence::Celerity::TransformHierarchyCleanup
 {
+const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_STARTED {"TransformHierarchyCleanup::DetachedRemovalStarted"};
+const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_FINISHED {"TransformHierarchyCleanup::DetachedRemovalFinished"};
+
 const Memory::UniqueString Checkpoint::DETACHMENT_DETECTION_STARTED {
     "TransformHierarchyCleanup::DetachmentDetectionStarted"};
 const Memory::UniqueString Checkpoint::DETACHMENT_DETECTION_FINISHED {
     "TransformHierarchyCleanup::DetachmentDetectionFinished"};
-
-const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_STARTED {"TransformHierarchyCleanup::DetachedRemovalStarted"};
-const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_FINISHED {"TransformHierarchyCleanup::DetachedRemovalFinished"};
 
 namespace Tasks
 {
@@ -75,6 +76,7 @@ DetachmentDetector::DetachmentDetector (TaskConstructor &_constructor,
 {
     _constructor.DependOn (Checkpoint::DETACHMENT_DETECTION_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_FINISHED);
+    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
 void DetachmentDetector::Execute () noexcept
@@ -119,6 +121,7 @@ DetachedTransformRemover::DetachedTransformRemover (TaskConstructor &_constructo
 {
     _constructor.DependOn (Checkpoint::DETACHED_REMOVAL_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DETACHED_REMOVAL_FINISHED);
+    _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
 void DetachedTransformRemover::Execute () noexcept
@@ -136,11 +139,11 @@ void DetachedTransformRemover::Execute () noexcept
 
 static void AddCheckpoints (PipelineBuilder &_pipelineBuilder)
 {
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
+    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
 
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    _pipelineBuilder.AddCheckpoint (HierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
 }
 
 void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
@@ -194,4 +197,4 @@ void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
         .SetExecutor<DetachedTransformRemover> (Transform3dComponent::Reflect ().mapping,
                                                 Transform3dComponent::Reflect ().objectId);
 }
-} // namespace Emergence::Celerity::HierarchyCleanup
+} // namespace Emergence::Celerity::TransformHierarchyCleanup

@@ -1,5 +1,6 @@
 #include <bitset>
-#include <cassert>
+
+#include <Assert/Assert.hpp>
 
 #include <Container/HashMap.hpp>
 #include <Container/Optional.hpp>
@@ -183,7 +184,7 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
 
 Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
 {
-    assert (source);
+    EMERGENCE_ASSERT (source);
     if (Verify ())
     {
         Emergence::Task::Collection collection;
@@ -229,7 +230,7 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
                         {
                             const Node &checkpointTargetNode = nodes[checkpointTargetIndex];
                             // Checkpoints can not depend on other checkpoints.
-                            assert (checkpointTargetNode.sourceTaskIndex);
+                            EMERGENCE_ASSERT (checkpointTargetNode.sourceTaskIndex);
 
                             emplaceWithoutDuplication (
                                 collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
@@ -249,7 +250,7 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
 TaskRegister::UnwrappedDependencyMap TaskGraph::ExportUnwrappedDependencyMap () const noexcept
 {
     TaskRegister::UnwrappedDependencyMap map {GetDefaultAllocationGroup ()};
-    assert (source);
+    EMERGENCE_ASSERT (source);
     ReachabilityVisitor visitor;
 
     if (visitor.VisitGraph (*this))
@@ -346,13 +347,13 @@ bool TaskGraph::ReachabilityVisitor::VisitNode (const TaskGraph &_graph, std::si
         return true;
     }
 
-    assert (false);
+    EMERGENCE_ASSERT (false);
     return true;
 }
 
 bool TaskGraph::Verify () const noexcept
 {
-    assert (source);
+    EMERGENCE_ASSERT (source);
 
     // Firstly, we need to traverse graph using DFS to find circular dependencies and collect reachability matrix.
     ReachabilityVisitor visitor;
@@ -449,7 +450,7 @@ void TaskRegister::RegisterCheckpoint (Memory::UniqueString _name) noexcept
 
 void TaskRegister::RegisterResource (Memory::UniqueString _name) noexcept
 {
-    assert (std::find (resources.begin (), resources.end (), _name) == resources.end ());
+    EMERGENCE_ASSERT (std::find (resources.begin (), resources.end (), _name) == resources.end ());
     resources.emplace_back (_name);
 }
 
@@ -570,14 +571,14 @@ void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] Memory::UniqueStri
     if (taskIterator != tasks.end ())
     {
         EMERGENCE_LOG (CRITICAL_ERROR, "TaskGraph: Task name \"", _name, "\" is already occupied by other task!");
-        assert (false);
+        EMERGENCE_ASSERT (false);
     }
 
     auto checkpointIterator = std::find (checkpoints.begin (), checkpoints.end (), _name);
     if (checkpointIterator != checkpoints.end ())
     {
         EMERGENCE_LOG (CRITICAL_ERROR, "TaskGraph: Task name \"", _name, "\" is already occupied by other checkpoint!");
-        assert (false);
+        EMERGENCE_ASSERT (false);
     }
 #endif
 }

@@ -3,6 +3,9 @@
 #include <array>
 
 #include <Math/NoInitializationFlag.hpp>
+#include <Math/Vector3f.hpp>
+
+#include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Math
 {
@@ -40,6 +43,8 @@ struct Matrix3x3f final
 
     Matrix3x3f operator* (float _scalar) const noexcept;
 
+    Vector3f operator* (const Vector3f &_vector) const noexcept;
+
     Matrix3x3f &operator*= (float _scalar) noexcept;
 
     Matrix3x3f &operator= (const Matrix3x3f &_other) noexcept;
@@ -48,6 +53,38 @@ struct Matrix3x3f final
 
     using Column = float[3u];
 
-    Column columns[3u];
+    union
+    {
+        Column columns[3u];
+
+        struct
+        {
+            float m00;
+            float m01;
+            float m02;
+            float m10;
+            float m11;
+            float m12;
+            float m20;
+            float m21;
+            float m22;
+        };
+    };
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId m00;
+        StandardLayout::FieldId m01;
+        StandardLayout::FieldId m02;
+        StandardLayout::FieldId m10;
+        StandardLayout::FieldId m11;
+        StandardLayout::FieldId m12;
+        StandardLayout::FieldId m20;
+        StandardLayout::FieldId m21;
+        StandardLayout::FieldId m22;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 } // namespace Emergence::Math

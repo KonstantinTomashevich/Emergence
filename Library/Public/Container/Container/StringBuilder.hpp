@@ -70,6 +70,9 @@ public:
     StringBuilder &Append (char _value) noexcept;
 
     /// \brief Append given number to the buffer.
+    StringBuilder &Append (short _value) noexcept;
+
+    /// \brief Append given number to the buffer.
     StringBuilder &Append (int _value) noexcept;
 
     /// \brief Append given number to the buffer.
@@ -79,6 +82,8 @@ public:
     StringBuilder &Append (long long _value) noexcept;
 
     /// \brief Append given number to the buffer.
+    StringBuilder &Append (unsigned short _value) noexcept;
+
     StringBuilder &Append (unsigned _value) noexcept;
 
     /// \brief Append given number to the buffer.

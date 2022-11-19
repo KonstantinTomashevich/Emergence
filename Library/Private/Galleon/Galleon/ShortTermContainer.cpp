@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Galleon/CargoDeck.hpp>
 #include <Galleon/ShortTermContainer.hpp>
@@ -15,7 +15,7 @@ ShortTermContainer::InsertQuery::Cursor::~Cursor () noexcept
 
 void *ShortTermContainer::InsertQuery::Cursor::operator++ () noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     void *node = container->pool.Acquire ();
     container->SetNextNode (node, container->firstNode);
     container->firstNode = node;
@@ -28,7 +28,7 @@ void *ShortTermContainer::InsertQuery::Cursor::operator++ () noexcept
 ShortTermContainer::InsertQuery::Cursor::Cursor (Handling::Handle<ShortTermContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterWriteAccess ();
 }
 
@@ -39,21 +39,21 @@ ShortTermContainer::InsertQuery::Cursor ShortTermContainer::InsertQuery::Execute
 
 Handling::Handle<ShortTermContainer> ShortTermContainer::InsertQuery::GetContainer () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
 ShortTermContainer::InsertQuery::InsertQuery (Handling::Handle<ShortTermContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 ShortTermContainer::FetchQuery::Cursor::Cursor (const ShortTermContainer::FetchQuery::Cursor &_other) noexcept
     : container (_other.container),
       currentNode (_other.currentNode)
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterReadAccess ();
 }
 
@@ -74,14 +74,14 @@ ShortTermContainer::FetchQuery::Cursor::~Cursor () noexcept
 
 const void *ShortTermContainer::FetchQuery::Cursor::operator* () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return ShortTermContainer::GetNodeContent (currentNode);
 }
 
 ShortTermContainer::FetchQuery::Cursor &ShortTermContainer::FetchQuery::Cursor::operator++ () noexcept
 {
-    assert (container);
-    assert (currentNode);
+    EMERGENCE_ASSERT (container);
+    EMERGENCE_ASSERT (currentNode);
     currentNode = container->GetNextNode (currentNode);
     return *this;
 }
@@ -90,7 +90,7 @@ ShortTermContainer::FetchQuery::Cursor::Cursor (Handling::Handle<ShortTermContai
     : container (std::move (_container)),
       currentNode (container->firstNode)
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterReadAccess ();
 }
 
@@ -101,14 +101,14 @@ ShortTermContainer::FetchQuery::Cursor ShortTermContainer::FetchQuery::Execute (
 
 Handling::Handle<ShortTermContainer> ShortTermContainer::FetchQuery::GetContainer () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
 ShortTermContainer::FetchQuery::FetchQuery (Handling::Handle<ShortTermContainer> _container) noexcept
     : container ((std::move (_container)))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 ShortTermContainer::ModifyQuery::Cursor::Cursor (ShortTermContainer::ModifyQuery::Cursor &&_other) noexcept
@@ -130,14 +130,14 @@ ShortTermContainer::ModifyQuery::Cursor::~Cursor () noexcept
 
 void *ShortTermContainer::ModifyQuery::Cursor::operator* () noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return currentNode ? ShortTermContainer::GetNodeContent (currentNode) : nullptr;
 }
 
 ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor::operator++ () noexcept
 {
-    assert (container);
-    assert (currentNode);
+    EMERGENCE_ASSERT (container);
+    EMERGENCE_ASSERT (currentNode);
 
     previousNode = currentNode;
     currentNode = container->GetNextNode (currentNode);
@@ -146,8 +146,8 @@ ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor
 
 ShortTermContainer::ModifyQuery::Cursor &ShortTermContainer::ModifyQuery::Cursor::operator~() noexcept
 {
-    assert (container);
-    assert (currentNode);
+    EMERGENCE_ASSERT (container);
+    EMERGENCE_ASSERT (currentNode);
 
     void *next = container->GetNextNode (currentNode);
     container->typeMapping.Destruct (ShortTermContainer::GetNodeContent (currentNode));
@@ -170,7 +170,7 @@ ShortTermContainer::ModifyQuery::Cursor::Cursor (Handling::Handle<ShortTermConta
     : container (std::move (_container)),
       currentNode (container->firstNode)
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     container->accessCounter.RegisterWriteAccess ();
 }
 
@@ -181,14 +181,14 @@ ShortTermContainer::ModifyQuery::Cursor ShortTermContainer::ModifyQuery::Execute
 
 Handling::Handle<ShortTermContainer> ShortTermContainer::ModifyQuery::GetContainer () const noexcept
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
     return container;
 }
 
 ShortTermContainer::ModifyQuery::ModifyQuery (Handling::Handle<ShortTermContainer> _container) noexcept
     : container (std::move (_container))
 {
-    assert (container);
+    EMERGENCE_ASSERT (container);
 }
 
 ShortTermContainer::InsertQuery ShortTermContainer::Insert () noexcept
@@ -208,7 +208,7 @@ ShortTermContainer::ModifyQuery ShortTermContainer::Modify () noexcept
 
 void ShortTermContainer::LastReferenceUnregistered () noexcept
 {
-    assert (deck);
+    EMERGENCE_ASSERT (deck);
     deck->DetachContainer (this);
 }
 
@@ -233,7 +233,7 @@ ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mappin
             typeMapping.GetObjectSize () + sizeof (uintptr_t),
             typeMapping.GetObjectAlignment ())
 {
-    assert (typeMapping.GetObjectSize () % sizeof (uintptr_t) == 0u);
+    EMERGENCE_ASSERT (typeMapping.GetObjectSize () % sizeof (uintptr_t) == 0u);
 }
 
 ShortTermContainer::~ShortTermContainer () noexcept

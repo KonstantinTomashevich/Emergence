@@ -2,6 +2,7 @@
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/Test/Task.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
@@ -30,15 +31,16 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
     PipelineBuilder builder {&world};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     const std::size_t stepCount = _scenario.size ();
+    builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
 
     if (_use2d)
     {
-        HierarchyCleanup::Add2dToFixedUpdate (builder);
+        TransformHierarchyCleanup::Add2dToFixedUpdate (builder);
         RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario), true);
     }
     else
     {
-        HierarchyCleanup::Add3dToFixedUpdate (builder);
+        TransformHierarchyCleanup::Add3dToFixedUpdate (builder);
         RequestExecutor::Add3dToFixedUpdate (builder, std::move (_scenario), true);
     }
 

@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Container/StringBuilder.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
@@ -134,7 +132,7 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     auto &state = block_cast<PlainMappingBuilder> (data);
 
     const auto &nestedPlainMapping = block_cast<Handling::Handle<PlainMapping>> (_objectMapping.data);
-    assert (nestedPlainMapping);
+    EMERGENCE_ASSERT (nestedPlainMapping);
     FieldId objectFieldId = state.AddField (FieldData::NestedObjectSeed {_name, _offset, nestedPlainMapping.Get ()});
 
     // We need to simulate conditional iteration in order to copy conditions.
@@ -198,7 +196,7 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
             break;
         }
 
-        assert (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
+        EMERGENCE_ASSERT (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
     }
 
     // Pop till-the-end conditions of nested mapping.

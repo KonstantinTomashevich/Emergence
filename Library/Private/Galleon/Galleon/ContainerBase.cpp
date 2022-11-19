@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <Galleon/ContainerBase.hpp>
 
@@ -13,6 +13,6 @@ ContainerBase::ContainerBase (CargoDeck *_deck, StandardLayout::Mapping _typeMap
     : deck (_deck),
       typeMapping (std::move (_typeMapping))
 {
-    assert (deck);
+    EMERGENCE_ASSERT (deck);
 }
 } // namespace Emergence::Galleon

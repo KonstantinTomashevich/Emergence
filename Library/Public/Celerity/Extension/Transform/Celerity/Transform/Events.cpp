@@ -12,6 +12,11 @@ namespace Emergence::Celerity
     EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentVisualLocalTransformChangedNormalEvent,  \
                                               objectId);                                                               \
                                                                                                                        \
+    EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Transform##Dimension##dComponentParentChangedFixedToNormalEvent,         \
+                                              objectId, oldParentId);                                                  \
+    EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Transform##Dimension##dComponentParentChangedNormalEvent, objectId,      \
+                                              oldParentId);                                                            \
+                                                                                                                       \
     EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedFixedEvent, objectId);            \
     EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedNormalEvent, objectId);           \
     EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedFixedToNormalEvent, objectId);
@@ -49,6 +54,25 @@ IMPLEMENT_TRANSFORM_EVENTS (3)
          {},                                                                                                           \
          {{Transform##Dimension##dComponent::Reflect ().objectId,                                                      \
            Transform##Dimension##dComponentVisualLocalTransformChangedFixedToNormalEvent::Reflect ().objectId}}});     \
+                                                                                                                       \
+    _registrar.OnChangeEvent (                                                                                         \
+        {{Transform##Dimension##dComponentParentChangedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},           \
+         Transform##Dimension##dComponent::Reflect ().mapping,                                                         \
+         {Transform##Dimension##dComponent::Reflect ().parentObjectId},                                                \
+         {{Transform##Dimension##dComponent::Reflect ().parentObjectId,                                                \
+           Transform##Dimension##dComponentParentChangedNormalEvent::Reflect ().oldParentId}},                         \
+         {{Transform##Dimension##dComponent::Reflect ().objectId,                                                      \
+           Transform##Dimension##dComponentParentChangedNormalEvent::Reflect ().objectId}}});                          \
+                                                                                                                       \
+    _registrar.OnChangeEvent (                                                                                         \
+        {{Transform##Dimension##dComponentParentChangedFixedToNormalEvent::Reflect ().mapping,                         \
+          EventRoute::FROM_FIXED_TO_NORMAL},                                                                           \
+         Transform##Dimension##dComponent::Reflect ().mapping,                                                         \
+         {Transform##Dimension##dComponent::Reflect ().parentObjectId},                                                \
+         {{Transform##Dimension##dComponent::Reflect ().parentObjectId,                                                \
+           Transform##Dimension##dComponentParentChangedFixedToNormalEvent::Reflect ().oldParentId}},                  \
+         {{Transform##Dimension##dComponent::Reflect ().objectId,                                                      \
+           Transform##Dimension##dComponentParentChangedFixedToNormalEvent::Reflect ().objectId}}});                   \
                                                                                                                        \
     _registrar.OnRemoveEvent (                                                                                         \
         {{Transform##Dimension##dComponentRemovedFixedEvent::Reflect ().mapping, EventRoute::FIXED},                   \

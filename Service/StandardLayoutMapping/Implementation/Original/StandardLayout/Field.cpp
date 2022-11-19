@@ -1,4 +1,4 @@
-#include <cassert>
+#include <Assert/Assert.hpp>
 
 #include <StandardLayout/Field.hpp>
 #include <StandardLayout/Mapping.hpp>
@@ -35,37 +35,37 @@ Field::~Field () noexcept = default;
 
 FieldArchetype Field::GetArchetype () const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     return static_cast<const FieldData *> (handle)->GetArchetype ();
 }
 
 bool Field::IsProjected () const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     return static_cast<const FieldData *> (handle)->IsProjected ();
 }
 
 std::size_t Field::GetOffset () const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     return static_cast<const FieldData *> (handle)->GetOffset ();
 }
 
 std::size_t Field::GetSize () const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     return static_cast<const FieldData *> (handle)->GetSize ();
 }
 
 std::size_t Field::GetBitOffset () const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     return static_cast<const FieldData *> (handle)->GetBitOffset ();
 }
 
 Mapping Field::GetNestedObjectMapping () const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     Handling::Handle<PlainMapping> nestedMapping = static_cast<const FieldData *> (handle)->GetNestedObjectMapping ();
     return Mapping (array_cast (nestedMapping));
 }
@@ -82,13 +82,13 @@ void *Field::GetValue (void *_object) const noexcept
 
 const void *Field::GetValue (const void *_object) const noexcept
 {
-    assert (_object);
+    EMERGENCE_ASSERT (_object);
     return static_cast<const uint8_t *> (_object) + GetOffset ();
 }
 
 bool Field::IsSame (const Field &_other) const noexcept
 {
-    assert (IsHandleValid ());
+    EMERGENCE_ASSERT (IsHandleValid ());
     return handle == _other.handle;
 }
 

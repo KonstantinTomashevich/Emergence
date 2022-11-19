@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Pegasus/SignalIndex.hpp>
 #include <Pegasus/Storage.hpp>
 
@@ -11,7 +9,7 @@ SignalIndex::ReadCursor::ReadCursor (const SignalIndex::ReadCursor &_other) noex
     : index (_other.index),
       current (_other.current)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -20,7 +18,7 @@ SignalIndex::ReadCursor::ReadCursor (SignalIndex::ReadCursor &&_other) noexcept
     : index (_other.index),
       current (_other.current)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -35,14 +33,14 @@ SignalIndex::ReadCursor::~ReadCursor () noexcept
 
 const void *SignalIndex::ReadCursor::operator* () const noexcept
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     return current != index->signaledRecords.end () ? *current : nullptr;
 }
 
 SignalIndex::ReadCursor &SignalIndex::ReadCursor::operator++ () noexcept
 {
-    assert (index);
-    assert (current != index->signaledRecords.end ());
+    EMERGENCE_ASSERT (index);
+    EMERGENCE_ASSERT (current != index->signaledRecords.end ());
     ++current;
     return *this;
 }
@@ -51,7 +49,7 @@ SignalIndex::ReadCursor::ReadCursor (SignalIndex *_index) noexcept
     : index (_index),
       current (index->signaledRecords.begin ())
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -60,7 +58,7 @@ SignalIndex::EditCursor::EditCursor (SignalIndex::EditCursor &&_other) noexcept
     : index (_other.index),
       current (_other.current)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -80,14 +78,14 @@ SignalIndex::EditCursor::~EditCursor () noexcept
 
 void *SignalIndex::EditCursor::operator* () noexcept
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     return current != index->signaledRecords.end () ? const_cast<void *> (*current) : nullptr;
 }
 
 SignalIndex::EditCursor &SignalIndex::EditCursor::operator~() noexcept
 {
-    assert (index);
-    assert (current != index->signaledRecords.end ());
+    EMERGENCE_ASSERT (index);
+    EMERGENCE_ASSERT (current != index->signaledRecords.end ());
     index->DeleteRecordMyself (current);
     BeginRecordEdition ();
     return *this;
@@ -95,8 +93,8 @@ SignalIndex::EditCursor &SignalIndex::EditCursor::operator~() noexcept
 
 SignalIndex::EditCursor &SignalIndex::EditCursor::operator++ () noexcept
 {
-    assert (index);
-    assert (current != index->signaledRecords.end ());
+    EMERGENCE_ASSERT (index);
+    EMERGENCE_ASSERT (current != index->signaledRecords.end ());
 
     if (index->storage->EndRecordEdition (*current, index))
     {
@@ -115,7 +113,7 @@ SignalIndex::EditCursor::EditCursor (SignalIndex *_index) noexcept
     : index (_index),
       current (index->signaledRecords.begin ())
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterWriter ();
     BeginRecordEdition ();
@@ -123,7 +121,7 @@ SignalIndex::EditCursor::EditCursor (SignalIndex *_index) noexcept
 
 void SignalIndex::EditCursor::BeginRecordEdition () const noexcept
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     if (current != index->signaledRecords.end ())
     {
         index->storage->BeginRecordEdition (*current);
@@ -175,8 +173,8 @@ std::array<uint8_t, sizeof (uint64_t)> SignalIndex::GetSignaledValue () const
 
 void SignalIndex::Drop () noexcept
 {
-    assert (CanBeDropped ());
-    assert (storage);
+    EMERGENCE_ASSERT (CanBeDropped ());
+    EMERGENCE_ASSERT (storage);
     storage->DropIndex (*this);
 }
 
@@ -184,7 +182,7 @@ using namespace Memory::Literals;
 
 static size_t CalculateOffset (const StandardLayout::Field &_field)
 {
-    assert (_field.GetSize () <= sizeof (uint64_t));
+    EMERGENCE_ASSERT (_field.GetSize () <= sizeof (uint64_t));
     size_t offset = _field.GetOffset ();
 
     if (const size_t leftover = offset % sizeof (uint64_t))
@@ -192,7 +190,7 @@ static size_t CalculateOffset (const StandardLayout::Field &_field)
         offset -= sizeof (uint64_t) - leftover;
     }
 
-    assert (_field.GetOffset () + _field.GetSize () <= offset + sizeof (uint64_t));
+    EMERGENCE_ASSERT (_field.GetOffset () + _field.GetSize () <= offset + sizeof (uint64_t));
     return offset;
 }
 
@@ -208,7 +206,7 @@ static uint64_t CalculateMask (const StandardLayout::Field &_field, size_t _offs
     }
     else
     {
-        assert (_field.GetSize () + offsetDelta <= maskData.size ());
+        EMERGENCE_ASSERT (_field.GetSize () + offsetDelta <= maskData.size ());
         for (size_t index = 0u; index < _field.GetSize (); ++index)
         {
             maskData[index + offsetDelta] = 255u;
@@ -266,7 +264,7 @@ void SignalIndex::OnRecordDeleted (const void *_record, const void *_recordBacku
     if (IsSignaled (_recordBackup))
     {
         auto iterator = std::find (signaledRecords.begin (), signaledRecords.end (), _record);
-        assert (iterator != signaledRecords.end ());
+        EMERGENCE_ASSERT (iterator != signaledRecords.end ());
         Container::EraseExchangingWithLast (signaledRecords, iterator);
     }
 }
@@ -290,12 +288,12 @@ void SignalIndex::OnRecordChanged (const void *_record, const void *_recordBacku
     else if (!signaledNow && wasSignaled)
     {
         auto iterator = std::find (signaledRecords.begin (), signaledRecords.end (), _record);
-        assert (iterator != signaledRecords.end ());
+        EMERGENCE_ASSERT (iterator != signaledRecords.end ());
         Container::EraseExchangingWithLast (signaledRecords, iterator);
     }
     else
     {
-        assert (!signaledNow && !wasSignaled);
+        EMERGENCE_ASSERT (!signaledNow && !wasSignaled);
     }
 }
 
@@ -303,7 +301,7 @@ void SignalIndex::OnRecordChangedByMe (Container::Vector<const void *>::iterator
 {
     // If record was returned by signaled records iterator and indexed field was changed,
     // then the only possible transition is from signaled to unsignaled state.
-    assert (!IsSignaled (*_position));
+    EMERGENCE_ASSERT (!IsSignaled (*_position));
     Container::EraseExchangingWithLast (signaledRecords, _position);
 }
 

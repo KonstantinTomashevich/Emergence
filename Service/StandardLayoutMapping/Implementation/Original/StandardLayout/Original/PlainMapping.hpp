@@ -7,6 +7,8 @@
 #include <API/Common/Iterator.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <Assert/Assert.hpp>
+
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
 
@@ -306,7 +308,7 @@ FieldId PlainMappingBuilder::AddField (Seed _seed) noexcept
 {
     auto [fieldId, allocatedField] = AllocateField ();
     new (allocatedField) FieldData (_seed);
-    assert (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
+    EMERGENCE_ASSERT (allocatedField->GetOffset () + allocatedField->GetSize () <= underConstruction->objectSize);
     return fieldId;
 }
 } // namespace Emergence::StandardLayout

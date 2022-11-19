@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <Hashing/ByteHasher.hpp>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
@@ -17,14 +15,14 @@ const HashIndex::IndexedFieldVector &HashIndex::GetIndexedFields () const noexce
 
 void HashIndex::Drop () noexcept
 {
-    assert (CanBeDropped ());
-    assert (storage);
+    EMERGENCE_ASSERT (CanBeDropped ());
+    EMERGENCE_ASSERT (storage);
     storage->DropIndex (*this);
 }
 
 static size_t CalculateMask (const StandardLayout::Field &_field)
 {
-    assert (_field.GetSize () <= sizeof (size_t));
+    EMERGENCE_ASSERT (_field.GetSize () <= sizeof (size_t));
     std::array<uint8_t, sizeof (size_t)> byteRepresentation;
     std::fill (byteRepresentation.begin (), byteRepresentation.end (), uint8_t (0u));
 
@@ -110,7 +108,7 @@ bool HashIndex::DirectComparator::operator() (const HashIndex::LookupRequest &_r
 static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Field &_indexedField, const uint8_t *_value)
 {
     // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-    assert (_indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
+    EMERGENCE_ASSERT (_indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
     switch (_indexedField.GetArchetype ())
     {
@@ -166,8 +164,8 @@ static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Fiel
 
 std::size_t HashIndex::GenericHasher::operator() (const void *_record) const noexcept
 {
-    assert (owner);
-    assert (_record);
+    EMERGENCE_ASSERT (owner);
+    EMERGENCE_ASSERT (_record);
 
     Hashing::ByteHasher hasher;
     for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
@@ -185,8 +183,8 @@ std::size_t HashIndex::GenericHasher::operator() (const HashIndex::RecordWithBac
 
 std::size_t HashIndex::GenericHasher::operator() (const HashIndex::LookupRequest &_request) const noexcept
 {
-    assert (owner);
-    assert (_request.indexedFieldValues);
+    EMERGENCE_ASSERT (owner);
+    EMERGENCE_ASSERT (_request.indexedFieldValues);
 
     Hashing::ByteHasher hasher;
     const auto *currentFieldBegin = static_cast<const uint8_t *> (_request.indexedFieldValues);
@@ -214,15 +212,15 @@ bool HashIndex::GenericComparator::operator() (const void *_record,
 bool HashIndex::GenericComparator::operator() (const void *_record,
                                                const HashIndex::LookupRequest &_request) const noexcept
 {
-    assert (_record);
-    assert (_request.indexedFieldValues);
+    EMERGENCE_ASSERT (_record);
+    EMERGENCE_ASSERT (_request.indexedFieldValues);
 
     const auto *currentFieldBegin = static_cast<const uint8_t *> (_request.indexedFieldValues);
 
     for (const StandardLayout::Field &indexedField : owner->GetIndexedFields ())
     {
         // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        assert (indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
+        EMERGENCE_ASSERT (indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
 
         if (!AreFieldValuesEqual (indexedField.GetValue (_record), currentFieldBegin, indexedField))
         {
@@ -249,8 +247,8 @@ HashIndex::HashIndex (Storage *_owner,
     : IndexBase (_owner),
       changedNodes (Memory::Profiler::AllocationGroup {"ChangedNodes"_us})
 {
-    assert (!_indexedFields.empty ());
-    assert (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);
+    EMERGENCE_ASSERT (!_indexedFields.empty ());
+    EMERGENCE_ASSERT (_indexedFields.size () < Constants::HashIndex::MAX_INDEXED_FIELDS);
 
     std::size_t indexedFieldsCount = std::min (Constants::HashIndex::MAX_INDEXED_FIELDS, _indexedFields.size ());
     const StandardLayout::Mapping &recordMapping = storage->GetRecordMapping ();
@@ -258,7 +256,7 @@ HashIndex::HashIndex (Storage *_owner,
     for (std::size_t index = 0u; index < indexedFieldsCount; ++index)
     {
         StandardLayout::Field indexedField = recordMapping.GetField (_indexedFields[index]);
-        assert (indexedField.IsHandleValid ());
+        EMERGENCE_ASSERT (indexedField.IsHandleValid ());
         indexedFields.EmplaceBack (indexedField);
     }
 
@@ -292,7 +290,7 @@ void HashIndex::OnRecordDeleted (const void *_record, const void *_recordBackup)
         [_record, _recordBackup] (auto &_records)
         {
             auto iterator = _records.find (RecordWithBackup {_record, _recordBackup});
-            assert (iterator != _records.end ());
+            EMERGENCE_ASSERT (iterator != _records.end ());
 
             // To erase record using iterator unordered multiset must calculate hash once more.
             // But record, to which iterator points, could be changed, therefore hash could be incorrect.
@@ -310,7 +308,7 @@ void HashIndex::OnRecordDeleted (const void *_record, const void *_recordBackup)
     HashIndex::RecordHashSetIterator HashIndex::DeleteRecordMyself##SwitchId (                                         \
         const RecordHashSetIterator &_position) noexcept                                                               \
     {                                                                                                                  \
-        assert (_position != records._##SwitchId.end ());                                                              \
+        EMERGENCE_ASSERT (_position != records._##SwitchId.end ());                                                    \
         const void *record = *_position;                                                                               \
                                                                                                                        \
         /* To erase record using iterator unordered multiset must calculate hash once more.                            \
@@ -335,7 +333,7 @@ void HashIndex::OnRecordChanged (const void *_record, const void *_recordBackup)
         [this, _record, _recordBackup] (auto &_records)
         {
             auto iterator = _records.find (RecordWithBackup {_record, _recordBackup});
-            assert (iterator != _records.end ());
+            EMERGENCE_ASSERT (iterator != _records.end ());
 
             // To extract record using iterator unordered multiset must calculate hash once more.
             // But record, to which iterator points, could be changed, therefore hash could be incorrect.
@@ -377,7 +375,7 @@ void HashIndex::OnWriterClosed () noexcept
         {
             for (auto &changedNode : changedNodes)
             {
-                assert (changedNode);
+                EMERGENCE_ASSERT (changedNode);
                 _records.insert (std::move (changedNode));
             }
         },
@@ -391,7 +389,7 @@ HashIndex::ReadCursor::ReadCursor (const HashIndex::ReadCursor &_other) noexcept
       current (_other.current),
       end (_other.end)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -401,7 +399,7 @@ HashIndex::ReadCursor::ReadCursor (HashIndex::ReadCursor &&_other) noexcept
       current (_other.current),
       end (_other.end)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -416,14 +414,14 @@ HashIndex::ReadCursor::~ReadCursor () noexcept
 
 const void *HashIndex::ReadCursor::operator* () const noexcept
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     return current != end ? *current : nullptr;
 }
 
 HashIndex::ReadCursor &HashIndex::ReadCursor::operator++ () noexcept
 {
-    assert (index);
-    assert (current != end);
+    EMERGENCE_ASSERT (index);
+    EMERGENCE_ASSERT (current != end);
 
     ++current;
     return *this;
@@ -436,7 +434,7 @@ HashIndex::ReadCursor::ReadCursor (HashIndex *_index,
       current (_begin),
       end (_end)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterReader ();
 }
@@ -446,7 +444,7 @@ HashIndex::EditCursor::EditCursor (HashIndex::EditCursor &&_other) noexcept
       current (_other.current),
       end (_other.end)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     _other.index = nullptr;
 }
 
@@ -466,14 +464,14 @@ HashIndex::EditCursor::~EditCursor () noexcept
 
 void *HashIndex::EditCursor::operator* () noexcept
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     return current != end ? const_cast<void *> (*current) : nullptr;
 }
 
 HashIndex::EditCursor &HashIndex::EditCursor::operator~() noexcept
 {
-    assert (index);
-    assert (current != end);
+    EMERGENCE_ASSERT (index);
+    EMERGENCE_ASSERT (current != end);
 
     current = EMERGENCE_UNION2_SWITCH_CALL (index->implementationSwitch, index->DeleteRecordMyself, current);
     BeginRecordEdition ();
@@ -482,8 +480,8 @@ HashIndex::EditCursor &HashIndex::EditCursor::operator~() noexcept
 
 HashIndex::EditCursor &HashIndex::EditCursor::operator++ () noexcept
 {
-    assert (index);
-    assert (current != end);
+    EMERGENCE_ASSERT (index);
+    EMERGENCE_ASSERT (current != end);
 
     const void *record = *current;
     auto previous = current++;
@@ -504,7 +502,7 @@ HashIndex::EditCursor::EditCursor (HashIndex *_index,
       current (_begin),
       end (_end)
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     ++index->activeCursors;
     index->storage->RegisterWriter ();
     BeginRecordEdition ();
@@ -512,7 +510,7 @@ HashIndex::EditCursor::EditCursor (HashIndex *_index,
 
 void HashIndex::EditCursor::BeginRecordEdition () const noexcept
 {
-    assert (index);
+    EMERGENCE_ASSERT (index);
     if (current != end)
     {
         index->storage->BeginRecordEdition (*current);

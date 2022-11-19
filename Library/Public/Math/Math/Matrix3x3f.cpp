@@ -8,6 +8,8 @@
 #include <Math/Matrix3x3f.hpp>
 #include <Math/Transform2d.hpp>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 namespace Emergence::Math
 {
 static_assert (sizeof (Matrix3x3f) == sizeof (mat3));
@@ -81,6 +83,13 @@ Matrix3x3f Matrix3x3f::operator* (float _scalar) const noexcept
     return result *= _scalar;
 }
 
+Vector3f Matrix3x3f::operator* (const Vector3f &_vector) const noexcept
+{
+    Vector3f result {NoInitializationFlag::Confirm ()};
+    glm_mat3_mulv (const_cast<Column *> (columns), const_cast<float *> (_vector.components), result.components);
+    return result;
+}
+
 Matrix3x3f &Matrix3x3f::operator*= (float _scalar) noexcept
 {
     glm_mat3_scale (columns, _scalar);
@@ -99,5 +108,25 @@ Matrix3x3f &Matrix3x3f::operator= (Matrix3x3f &&_other) noexcept
     // We have trivial destructor, therefore we can just invoke constructor.
     new (this) Matrix3x3f (_other);
     return *this;
+}
+
+const Matrix3x3f::Reflection &Matrix3x3f::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Matrix3x3f);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m00);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m01);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m02);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m10);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m11);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m12);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m20);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m21);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (m22);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
 }
 } // namespace Emergence::Math

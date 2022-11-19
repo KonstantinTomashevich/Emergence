@@ -1,3 +1,5 @@
+#include <Assert/Assert.hpp>
+
 #include <Asset/Object/Object.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
@@ -31,10 +33,10 @@ static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
         return false;
     }
 
-    assert (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).IsHandleValid ());
-    assert (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetArchetype () ==
-            StandardLayout::FieldArchetype::UINT);
-    assert (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetSize () == sizeof (UniqueId));
+    EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).IsHandleValid ());
+    EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetArchetype () ==
+                      StandardLayout::FieldArchetype::UINT);
+    EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetSize () == sizeof (UniqueId));
 
     UniqueId firstId = 0u;
     UniqueId secondId = 0u;
