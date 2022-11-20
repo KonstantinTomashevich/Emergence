@@ -137,7 +137,7 @@ void GameApplication::Setup ()
     engineParameters_[Urho3D::EP_FULL_SCREEN] = false;
     engineParameters_[Urho3D::EP_WINDOW_RESIZABLE] = true;
     engineParameters_[Urho3D::EP_WINDOW_TITLE] = "Emergence Space Shooter Demo";
-    engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreAssets;GameAssets";
+    engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreResources;GameResources";
     engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "..";
 }
 
@@ -163,7 +163,7 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
     Emergence::Celerity::AssetConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
                                                                    PrepareAssetConfigTypeMeta ());
-    Emergence::Celerity::AssetConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameAssets",
+    Emergence::Celerity::AssetConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameResources",
                                                                               PrepareAssetConfigTypeMeta ());
     Emergence::Celerity::AssetObjectLoading::AddToLoadingPipeline (pipelineBuilder, PrepareAssetObjectTypeManifest ());
     InputInitialization::AddToLoadingPipeline (pipelineBuilder);

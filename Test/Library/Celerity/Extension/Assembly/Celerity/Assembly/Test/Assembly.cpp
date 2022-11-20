@@ -4,6 +4,7 @@
 #include <Celerity/Assembly/Test/Task.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Constants.hpp>
@@ -97,7 +98,8 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
     REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    builder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
     Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_normalConfiguratorTasks), std::move (_normalValidatorTasks));
     REQUIRE (builder.End ());

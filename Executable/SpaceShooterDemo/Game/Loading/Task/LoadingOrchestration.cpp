@@ -75,7 +75,7 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
 
 void LoadingOrchestrator::Execute () noexcept
 {
-    static const char *const assetObjectFolder = "../GameAssets/Objects/";
+    static const char *const assetObjectFolder = "../GameResources/Objects/";
 
     switch (stage)
     {

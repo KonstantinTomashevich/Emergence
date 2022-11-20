@@ -1,7 +1,7 @@
 sober_library_begin (CelerityBGFX2d STATIC)
     file (GLOB_RECURSE HEADERS "Public/*.hpp" )
     file (GLOB_RECURSE SOURCES "Public/*.cpp")
-    file (GLOB_RECURSE SHADERS "Assets/Shaders/*.sc")
+    file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")
 
     list (APPEND SOURCES ${HEADERS})
     list (APPEND SOURCES ${SHADERS})
@@ -28,10 +28,11 @@ sober_library_begin (CelerityBGFX2d STATIC)
     sober_variant_end ()
 sober_library_end ()
 
-set (ASSETS_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Assets")
-file (MAKE_DIRECTORY "${ASSETS_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Materials" "${ASSETS_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
-register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Assets/Shaders" "${ASSETS_COMPILED_DIRECTORY}/Shaders")
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
+file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Materials"
+        "${RESOURCES_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
+register_bgfx_shaders ("${RESOURCES_COMPILED_DIRECTORY}/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_library_base_target (CelerityBGFX2d CELERITY_BGFX_2D_LIBRARY)
-register_asset_usage ("${CELERITY_BGFX_2D_LIBRARY}" "${ASSETS_COMPILED_DIRECTORY}" "BGFX2dAssets")
+register_resource_usage ("${CELERITY_BGFX_2D_LIBRARY}" "${RESOURCES_COMPILED_DIRECTORY}" "BGFX2dResources")

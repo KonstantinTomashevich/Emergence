@@ -6,8 +6,8 @@ if ($args.Count -ne 1)
     exit -1
 }
 
-$IntermediatePath = "Assets/Intermediate"
-$ConvertedPath = "Assets/Converted"
+$IntermediatePath = "Resources/Intermediate"
+$ConvertedPath = "Resources/Converted"
 $ModelsPath = "$ConvertedPath/Models"
 
 if (-Not(Test-Path $ModelsPath -PathType Container))

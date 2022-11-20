@@ -151,8 +151,6 @@ SceneInitializer::SceneInitializer (Emergence::Celerity::TaskConstructor &_const
       modifyUrho3DScene (MODIFY_SINGLETON (Urho3DSceneSingleton))
 {
     _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.MakeDependencyOf (
-        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
 }
 
 void SceneInitializer::Execute () noexcept

@@ -7,6 +7,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
@@ -343,7 +344,7 @@ NormalAssembler::NormalAssembler (TaskConstructor &_constructor,
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
 {
     useLogicalTransform = false;
-    _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
 void NormalAssembler::Execute () noexcept
@@ -400,6 +401,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedNormalEvent, PrototypeComponent, objectId)
         .DependOn (Checkpoint::STARTED)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("Assembly::NormalUpdate"_us);
 
     // We don't care about fixed-to-normal transform removal events,
