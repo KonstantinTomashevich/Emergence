@@ -1,8 +1,8 @@
 #include <algorithm>
 
 #include <Celerity/Transform/Test/Task.hpp>
-#include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Constants.hpp>
 
