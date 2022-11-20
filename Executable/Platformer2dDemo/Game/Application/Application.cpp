@@ -89,7 +89,6 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
 {
     _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
     _constructor.DependOn (Emergence::Celerity::AssetManagement::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::TransformVisualSync::Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Emergence::Celerity::Rendering2d::Checkpoint::STARTED);
 }
 

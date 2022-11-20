@@ -204,6 +204,7 @@ static void AddCheckpoints (Emergence::Celerity::PipelineBuilder &_pipelineBuild
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Mortality");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (TaskNames::PROCESS_LIFETIME).SetExecutor<LifetimeProcessor> ();
     _pipelineBuilder.AddTask (TaskNames::PROCESS_DAMAGE).SetExecutor<DamageProcessor> ();
@@ -258,6 +259,7 @@ void DeathEffectTrigger::Execute () noexcept
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Mortality");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (TaskNames::TRIGGER_DEATH_EFFECT).SetExecutor<DeathEffectTrigger> ();
 }

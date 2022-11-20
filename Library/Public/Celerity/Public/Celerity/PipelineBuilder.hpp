@@ -286,6 +286,9 @@ public:
     /// \invariant Checkpoint name is unique.
     void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
+    /// \brief Calls TaskRegister::OpenVisualGroup for task visual grouping.
+    Flow::TaskRegister::VisualGroupNodePlaced OpenVisualGroup (Container::String _name) noexcept;
+
     /// \brief Finishes active pipeline routine.
     /// \param _visualGraphOutput If pipeline can be created and this parameter is not `nullptr`,
     ///                           pipeline visual graph will be assigned to the given address.

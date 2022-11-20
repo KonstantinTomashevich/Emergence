@@ -314,6 +314,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
 {
     using namespace Memory::Literals;
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("AssetManagement");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::ASSET_LOADING_STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::ASSET_LOADING_FINISHED);

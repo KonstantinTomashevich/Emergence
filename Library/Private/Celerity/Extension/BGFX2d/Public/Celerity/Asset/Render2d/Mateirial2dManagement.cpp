@@ -438,6 +438,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
         return;
     }
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Material2dManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dManager"})
         .SetExecutor<Manager> (_materialRootPaths, _shaderRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }

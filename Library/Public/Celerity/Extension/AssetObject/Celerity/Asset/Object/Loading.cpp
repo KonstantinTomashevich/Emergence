@@ -191,6 +191,7 @@ void LoadingProcessor::ProcessRequests (AssetObjectLoadingStateSingleton *_state
 
 void AddToLoadingPipeline (PipelineBuilder &_builder, Asset::Object::TypeManifest _typeManifest) noexcept
 {
+    auto visualGroup = _builder.OpenVisualGroup ("AssetObjectLoading");
     _builder.AddCheckpoint (Checkpoint::STARTED);
     _builder.AddCheckpoint (Checkpoint::FINISHED);
     _builder.AddTask ("AssetObjectLoadingProcessor"_us).SetExecutor<LoadingProcessor> (std::move (_typeManifest));

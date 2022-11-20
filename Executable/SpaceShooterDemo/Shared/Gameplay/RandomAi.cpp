@@ -188,6 +188,7 @@ void InputGenerator::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("RandomAi");
     _pipelineBuilder.AddTask ("RandomAi::AttachmentCreator"_us).SetExecutor<AttachmentCreator> ();
 
     _pipelineBuilder.AddTask ("RandomAi::RemoveAfterTransformRemoval"_us)

@@ -1489,6 +1489,7 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     using namespace Memory::Literals;
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("PhysicsSimulation");
     _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Simulation::Checkpoint::FINISHED);
 

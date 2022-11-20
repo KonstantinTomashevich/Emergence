@@ -166,6 +166,7 @@ void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilde
                            bool *_loadingFinishedOutput) noexcept
 {
     EMERGENCE_ASSERT (_loadingFinishedOutput);
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("LoadingOrchestration");
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"LoadingOrchestrator"})
         .SetExecutor<LoadingOrchestrator> (_loadingFinishedOutput);

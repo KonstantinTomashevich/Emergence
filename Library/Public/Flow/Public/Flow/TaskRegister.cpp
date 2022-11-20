@@ -72,14 +72,14 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
     graph.source = &_register;
     Container::HashMap<Memory::UniqueString, std::size_t> nameToNodeIndex {GetDefaultAllocationGroup ()};
 
-    for (Memory::UniqueString checkpoint : _register.checkpoints)
+    for (const TaskRegister::Checkpoint &checkpoint : _register.checkpoints)
     {
         Node &node = graph.nodes.emplace_back ();
-        node.name = checkpoint;
+        node.name = checkpoint.name;
 
-        if (!nameToNodeIndex.emplace (checkpoint, graph.nodes.size () - 1u).second)
+        if (!nameToNodeIndex.emplace (checkpoint.name, graph.nodes.size () - 1u).second)
         {
-            EMERGENCE_LOG (ERROR, "TaskGraph: Task|Checkpoint name \"", checkpoint, "\" is used more than once!");
+            EMERGENCE_LOG (ERROR, "TaskGraph: Task|Checkpoint name \"", checkpoint.name, "\" is used more than once!");
             noErrors = false;
         }
     }
@@ -436,22 +436,50 @@ bool TaskGraph::Verify () const noexcept
     return !anyDataRaces;
 }
 
+TaskRegister::VisualGroupNodePlaced::VisualGroupNodePlaced (TaskRegister::VisualGroupNodePlaced &&_other) noexcept
+    : parent (_other.parent)
+{
+    _other.parent = nullptr;
+}
+
+TaskRegister::VisualGroupNodePlaced::~VisualGroupNodePlaced () noexcept
+{
+    if (parent)
+    {
+        EMERGENCE_ASSERT (parent->currentVisualGroupNode < parent->visualGroupNodes.size ());
+        parent->currentVisualGroupNode = parent->visualGroupNodes[parent->currentVisualGroupNode].parentNode;
+    }
+}
+
+TaskRegister::VisualGroupNodePlaced::VisualGroupNodePlaced (TaskRegister *_parent,
+                                                            Container::String _groupName) noexcept
+    : parent (_parent)
+{
+    parent->visualGroupNodes.emplace_back () = {std::move (_groupName), parent->currentVisualGroupNode};
+    parent->currentVisualGroupNode = parent->visualGroupNodes.size () - 1u;
+}
+
 void TaskRegister::RegisterTask (Task _task) noexcept
 {
     AssertNodeNameUniqueness (_task.name);
-    tasks.emplace_back (std::move (_task));
+    tasks.emplace_back (std::move (_task)).visualGroupIndex = currentVisualGroupNode;
 }
 
 void TaskRegister::RegisterCheckpoint (Memory::UniqueString _name) noexcept
 {
     AssertNodeNameUniqueness (_name);
-    checkpoints.emplace_back (_name);
+    checkpoints.emplace_back () = {_name, currentVisualGroupNode};
 }
 
 void TaskRegister::RegisterResource (Memory::UniqueString _name) noexcept
 {
     EMERGENCE_ASSERT (std::find (resources.begin (), resources.end (), _name) == resources.end ());
     resources.emplace_back (_name);
+}
+
+TaskRegister::VisualGroupNodePlaced TaskRegister::OpenVisualGroup (Container::String _name) noexcept
+{
+    return VisualGroupNodePlaced {this, std::move (_name)};
 }
 
 VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noexcept
@@ -473,39 +501,54 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
     VisualGraph::Graph &pipelineGraph = root.subgraphs.emplace_back ();
     pipelineGraph.id = VISUAL_PIPELINE_GRAPH_ID;
+    Container::HashMap<Memory::UniqueString, std::size_t> groupIndexByName {GetDefaultAllocationGroup ()};
 
-    for (Memory::UniqueString checkpoint : checkpoints)
+    for (const Checkpoint &checkpoint : checkpoints)
     {
-        VisualGraph::Node &node = pipelineGraph.nodes.emplace_back ();
-        node.id = *checkpoint;
-        node.label = *checkpoint + VISUAL_CHECKPOINT_LABEL_SUFFIX;
+        VisualGraph::Graph &graph = FindVisualGraphForGroup (pipelineGraph, checkpoint.visualGroupIndex);
+        VisualGraph::Node &node = graph.nodes.emplace_back ();
+        node.id = *checkpoint.name;
+        node.label = *checkpoint.name + VISUAL_CHECKPOINT_LABEL_SUFFIX;
+        groupIndexByName.emplace (checkpoint.name, checkpoint.visualGroupIndex);
     }
 
     for (const Task &task : tasks)
     {
-        VisualGraph::Node &node = pipelineGraph.nodes.emplace_back ();
+        groupIndexByName.emplace (task.name, task.visualGroupIndex);
+    }
+
+    auto getPathByName = [this, &groupIndexByName] (Memory::UniqueString _name)
+    {
+        const std::size_t groupIndex = groupIndexByName[_name];
+        return GetVisualGraphPathForGroup (groupIndex) + *_name;
+    };
+
+    for (const Task &task : tasks)
+    {
+        VisualGraph::Graph &graph = FindVisualGraphForGroup (pipelineGraph, task.visualGroupIndex);
+        Container::String path = GetVisualGraphPathForGroup (task.visualGroupIndex) + *task.name;
+        VisualGraph::Node &node = graph.nodes.emplace_back ();
         node.id = *task.name;
         node.label = *task.name + VISUAL_TASK_LABEL_SUFFIX;
 
         if (_exportResources)
         {
-            auto addResourceEdge = [&root] (const Container::String &_task,
-                                            Memory::UniqueString _resource) -> VisualGraph::Edge &
+            auto addResourceEdge = [&root, &path] (Memory::UniqueString _resource) -> VisualGraph::Edge &
             {
                 VisualGraph::Edge &edge = root.edges.emplace_back ();
-                edge.from = VISUAL_PIPELINE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR += _task;
+                edge.from = VISUAL_PIPELINE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR += path;
                 edge.to = VISUAL_RESOURCE_GRAPH_ID + VisualGraph::NODE_PATH_SEPARATOR + *_resource;
                 return edge;
             };
 
             for (Memory::UniqueString resource : task.readAccess)
             {
-                addResourceEdge (node.id, resource).color = VISUAL_READ_ACCESS_COLOR;
+                addResourceEdge (resource).color = VISUAL_READ_ACCESS_COLOR;
             }
 
             for (Memory::UniqueString resource : task.writeAccess)
             {
-                addResourceEdge (node.id, resource).color = VISUAL_WRITE_ACCESS_COLOR;
+                addResourceEdge (resource).color = VISUAL_WRITE_ACCESS_COLOR;
             }
         }
 
@@ -518,12 +561,12 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
 
         for (Memory::UniqueString dependency : task.dependsOn)
         {
-            addDependencyEdge (Container::String {*dependency}, node.id);
+            addDependencyEdge (getPathByName (dependency), path);
         }
 
         for (Memory::UniqueString target : task.dependencyOf)
         {
-            addDependencyEdge (node.id, Container::String {*target});
+            addDependencyEdge (path, getPathByName (target));
         }
     }
 
@@ -574,12 +617,60 @@ void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] Memory::UniqueStri
         EMERGENCE_ASSERT (false);
     }
 
-    auto checkpointIterator = std::find (checkpoints.begin (), checkpoints.end (), _name);
+    auto checkpointIterator = std::find_if (checkpoints.begin (), checkpoints.end (),
+                                            [_name] (const Checkpoint &_checkpoint)
+                                            {
+                                                return _checkpoint.name == _name;
+                                            });
+
     if (checkpointIterator != checkpoints.end ())
     {
         EMERGENCE_LOG (CRITICAL_ERROR, "TaskGraph: Task name \"", _name, "\" is already occupied by other checkpoint!");
         EMERGENCE_ASSERT (false);
     }
 #endif
+}
+
+VisualGraph::Graph &TaskRegister::FindVisualGraphForGroup (VisualGraph::Graph &_root,
+                                                           std::size_t _groupIndex) const noexcept
+{
+    VisualGraph::Graph *targetGraph;
+    if (_groupIndex == std::numeric_limits<std::size_t>::max ())
+    {
+        return _root;
+    }
+
+    if (visualGroupNodes[_groupIndex].parentNode == std::numeric_limits<std::size_t>::max ())
+    {
+        targetGraph = &_root;
+    }
+    else
+    {
+        targetGraph = &FindVisualGraphForGroup (_root, visualGroupNodes[_groupIndex].parentNode);
+    }
+
+    for (VisualGraph::Graph &subgraph : targetGraph->subgraphs)
+    {
+        if (subgraph.id == visualGroupNodes[_groupIndex].groupName)
+        {
+            return subgraph;
+        }
+    }
+
+    VisualGraph::Graph &newGraph = targetGraph->subgraphs.emplace_back ();
+    newGraph.id = visualGroupNodes[_groupIndex].groupName;
+    newGraph.label = visualGroupNodes[_groupIndex].groupName + VISUAL_GROUP_LABEL_SUFFIX;
+    return newGraph;
+}
+
+Container::String TaskRegister::GetVisualGraphPathForGroup (std::size_t _groupIndex) const noexcept
+{
+    if (_groupIndex == std::numeric_limits<std::size_t>::max ())
+    {
+        return "";
+    }
+
+    return GetVisualGraphPathForGroup (visualGroupNodes[_groupIndex].parentNode) +
+           visualGroupNodes[_groupIndex].groupName + VisualGraph::NODE_PATH_SEPARATOR;
 }
 } // namespace Emergence::Flow

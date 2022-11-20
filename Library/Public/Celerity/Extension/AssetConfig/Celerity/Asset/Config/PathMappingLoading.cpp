@@ -144,6 +144,7 @@ void AddToLoadingPipeline (PipelineBuilder &_builder,
                            Container::String _assetRootPath,
                            const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
 {
+    auto visualGroup = _builder.OpenVisualGroup ("AssetConfigPathMappingLoading");
     _builder.AddCheckpoint (Checkpoint::STARTED);
     _builder.AddCheckpoint (Checkpoint::FINISHED);
     _builder.AddTask (Memory::UniqueString {"AssetConfigPathMappingLoader"})

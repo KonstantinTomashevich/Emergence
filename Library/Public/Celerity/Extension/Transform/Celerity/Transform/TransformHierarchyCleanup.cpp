@@ -76,7 +76,6 @@ DetachmentDetector::DetachmentDetector (TaskConstructor &_constructor,
 {
     _constructor.DependOn (Checkpoint::DETACHMENT_DETECTION_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_FINISHED);
-    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
 void DetachmentDetector::Execute () noexcept
@@ -148,6 +147,7 @@ static void AddCheckpoints (PipelineBuilder &_pipelineBuilder)
 
 void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
         .SetExecutor<DetachmentDetector> (Transform2dComponent::Reflect ().mapping,
@@ -161,6 +161,7 @@ void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
         .SetExecutor<DetachmentDetector> (Transform2dComponent::Reflect ().mapping,
@@ -174,6 +175,7 @@ void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
         .SetExecutor<DetachmentDetector> (Transform3dComponent::Reflect ().mapping,
@@ -187,6 +189,7 @@ void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
         .SetExecutor<DetachmentDetector> (Transform3dComponent::Reflect ().mapping,

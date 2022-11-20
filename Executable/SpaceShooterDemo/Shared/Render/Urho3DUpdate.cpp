@@ -865,6 +865,7 @@ void AddToNormalUpdate (Urho3D::Context *_context, Emergence::Celerity::Pipeline
 {
     using namespace Emergence::Memory::Literals;
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Urho3DUpdate");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 

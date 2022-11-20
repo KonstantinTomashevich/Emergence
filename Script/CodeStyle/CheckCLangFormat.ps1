@@ -1,9 +1,15 @@
 #!/usr/bin/env pwsh
 
-if ($args.Count -ne 0)
+if (($args.Count -gt 1) -or (($args.Count -eq 1) -and -not ($args[0] -eq "FixFormatting")))
 {
-    echo "Usage: <script>"
+    echo "Usage: <script> [FixFormatting]"
     exit -1
+}
+
+$RunArgument = "--dry-run"
+if (($args.Count -eq 1) -and ($args[0] -eq "FixFormatting"))
+{
+    $RunArgument = "-i"
 }
 
 $CLangFormatExecutable = "clang-format"
@@ -23,7 +29,7 @@ foreach ($RootChild in $RootChildren)
         $Sources = Get-ChildItem -Path $RootChild -Recurse -Include "*.cpp", "*.hpp" -Exclude "*.generated.cpp", "*.generated.hpp"
         foreach ($Source in $Sources)
         {
-            & $CLangFormatExecutable --Werror --dry-run $Source
+            & $CLangFormatExecutable --Werror $RunArgument $Source
             if (-not$?)
             {
                 $AllChecksSuccessful = $false

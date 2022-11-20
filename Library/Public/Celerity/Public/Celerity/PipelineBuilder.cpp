@@ -507,6 +507,11 @@ void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
     taskRegister.RegisterCheckpoint (_name);
 }
 
+Flow::TaskRegister::VisualGroupNodePlaced PipelineBuilder::OpenVisualGroup (Container::String _name) noexcept
+{
+    return taskRegister.OpenVisualGroup (std::move (_name));
+}
+
 Pipeline *PipelineBuilder::End (VisualGraph::Graph *_visualGraphOutput, bool _exportResourcesToGraph) noexcept
 {
     EventUsageMap &productionMap = eventProduction[static_cast<std::size_t> (currentPipelineType)];

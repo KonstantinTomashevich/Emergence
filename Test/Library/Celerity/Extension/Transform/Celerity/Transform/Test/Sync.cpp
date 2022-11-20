@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include <Celerity/Transform/Test/Task.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Constants.hpp>
@@ -39,6 +40,8 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
 
     REQUIRE (builder.End ());
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 
     if (_use2d)
     {
