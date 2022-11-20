@@ -325,6 +325,7 @@ void LevelGenerator::PlaceSpawn (float _x,
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("LevelGeneration");
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("LevelGenerator"_us).SetExecutor<LevelGenerator> ();
 }

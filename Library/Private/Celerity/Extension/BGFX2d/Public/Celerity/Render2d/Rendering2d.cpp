@@ -16,6 +16,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
 {
     using namespace Memory::Literals;
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 

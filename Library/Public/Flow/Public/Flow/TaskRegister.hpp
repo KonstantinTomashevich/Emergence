@@ -43,6 +43,10 @@ struct Task
 
     /// \brief Names of tasks, to which this task injects itself as dependency.
     Container::HashSet<Memory::UniqueString> dependencyOf {GetDefaultAllocationGroup ()};
+
+    /// \brief Internal field for registering to which visualization group this task belongs.
+    /// \warning Do not edit: it will be overridden during registration anyway.
+    std::size_t visualGroupIndex = std::numeric_limits<std::size_t>::max ();
 };
 
 /// \brief Allows user to register tasks and export result as task collection or visual graph.
@@ -67,6 +71,26 @@ public:
     ///          are dependencies of dependencies.
     using UnwrappedDependencyMap = Container::HashMap<Memory::UniqueString, Container::HashSet<Memory::UniqueString>>;
 
+    /// \brief RAII token for managing visualization groups.
+    class VisualGroupNodePlaced final
+    {
+    public:
+        VisualGroupNodePlaced (const VisualGroupNodePlaced &_other) = delete;
+
+        VisualGroupNodePlaced (VisualGroupNodePlaced &&_other) noexcept;
+
+        ~VisualGroupNodePlaced () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (VisualGroupNodePlaced);
+
+    private:
+        friend class TaskRegister;
+
+        VisualGroupNodePlaced (TaskRegister *_parent, Container::String _groupName) noexcept;
+
+        TaskRegister *parent;
+    };
+
     TaskRegister () = default;
 
     /// Copying task registers is counter-intuitive.
@@ -86,6 +110,9 @@ public:
     /// \brief Registers new resource with given name.
     /// \invariant Resource name should be unique.
     void RegisterResource (Memory::UniqueString _name) noexcept;
+
+    /// \brief Opens visualization group for task and checkpoint grouping, that will be closed with token destruction.
+    VisualGroupNodePlaced OpenVisualGroup (Container::String _name) noexcept;
 
     /// \brief Exports registered tasks, checkpoints and resources as visual graph.
     /// \param _exportResources Should resources be exported?
@@ -115,10 +142,30 @@ public:
 private:
     friend class TaskGraph;
 
+    struct Checkpoint final
+    {
+        Memory::UniqueString name;
+        std::size_t visualGroupIndex = std::numeric_limits<std::size_t>::max ();
+    };
+
+    struct VisualGroupNode
+    {
+        Container::String groupName;
+        std::size_t parentNode = std::numeric_limits<std::size_t>::max ();
+    };
+
     void AssertNodeNameUniqueness (Memory::UniqueString _name) const noexcept;
 
+    [[nodiscard]] VisualGraph::Graph &FindVisualGraphForGroup (VisualGraph::Graph &_root,
+                                                               std::size_t _groupIndex) const noexcept;
+
+    [[nodiscard]] Container::String GetVisualGraphPathForGroup (std::size_t _groupIndex) const noexcept;
+
     Container::Vector<Task> tasks {GetDefaultAllocationGroup ()};
-    Container::Vector<Memory::UniqueString> checkpoints {GetDefaultAllocationGroup ()};
+    Container::Vector<Checkpoint> checkpoints {GetDefaultAllocationGroup ()};
     Container::Vector<Memory::UniqueString> resources {GetDefaultAllocationGroup ()};
+
+    Container::Vector<VisualGroupNode> visualGroupNodes {GetDefaultAllocationGroup ()};
+    std::size_t currentVisualGroupNode = std::numeric_limits<std::size_t>::max ();
 };
 } // namespace Emergence::Flow

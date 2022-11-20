@@ -173,6 +173,7 @@ void MovementUpdater::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Movement");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 

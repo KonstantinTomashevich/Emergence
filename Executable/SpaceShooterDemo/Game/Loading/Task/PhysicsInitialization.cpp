@@ -65,6 +65,7 @@ using namespace Emergence::Memory::Literals;
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("PhysicsInitialization");
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("PhysicsInitializer"_us).SetExecutor<PhysicsInitializer> ();
 }

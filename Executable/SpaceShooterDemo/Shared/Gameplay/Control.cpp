@@ -108,6 +108,7 @@ void ControlSwitcher::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Control");
     _pipelineBuilder.AddTask ("Control::RemoveControllable"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, ControllableComponent,
                                 objectId)

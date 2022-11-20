@@ -381,6 +381,7 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder,
                        const CustomKeyVector &_allCustomKeys,
                        const TypeBindingVector &_fixedUpdateTypes) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Assembly");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, PrototypeComponent, objectId)

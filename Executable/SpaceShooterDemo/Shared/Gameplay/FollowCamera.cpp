@@ -93,6 +93,7 @@ bool CameraUpdater::FetchControlledUnitTransform (Emergence::Math::Transform3d &
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("FollowCamera");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("FollowCamera::Updater"_us).SetExecutor<CameraUpdater> ();

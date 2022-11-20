@@ -14,6 +14,7 @@ const Emergence::Memory::UniqueString Checkpoint::FINISHED {"NonFeatureSpecificC
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("NonFeatureSpecificComponentCleanup");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 

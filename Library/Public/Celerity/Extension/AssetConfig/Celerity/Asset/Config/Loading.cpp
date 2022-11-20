@@ -257,6 +257,7 @@ void AddToLoadingPipeline (PipelineBuilder &_builder,
                            std::uint64_t _maxLoadingTimePerFrameNs,
                            const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
 {
+    auto visualGroup = _builder.OpenVisualGroup ("AssetConfigLoading");
     _builder.AddCheckpoint (Checkpoint::STARTED);
     _builder.AddCheckpoint (Checkpoint::FINISHED);
     _builder.AddTask (Memory::UniqueString {"AssetConfigLoader"})

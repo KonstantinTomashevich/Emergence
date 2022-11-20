@@ -259,6 +259,7 @@ void WorldRenderer::PoolBatches () noexcept
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlignedBox2d &_worldBounds) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("WorldRendering2d");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"WorldRenderer2d"}).SetExecutor<WorldRenderer> (_worldBounds);

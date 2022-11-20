@@ -233,6 +233,7 @@ static void AddCheckpoints (Emergence::Celerity::PipelineBuilder &_pipelineBuild
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Input");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Input::RemoveFixedListeners"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, InputListenerComponent,
@@ -246,6 +247,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 void AddToNormalUpdate (InputAccumulator *_inputAccumulator,
                         Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Input");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Input::RemoveNormalListeners"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputListenerComponent,

@@ -102,6 +102,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 {
     using namespace Emergence::Memory::Literals;
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Damage");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 

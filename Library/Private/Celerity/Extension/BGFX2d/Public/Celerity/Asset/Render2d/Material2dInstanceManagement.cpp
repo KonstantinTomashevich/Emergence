@@ -578,6 +578,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
         return;
     }
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Material2dInstanceManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dInstanceManager"})
         .SetExecutor<Manager> (_materialInstanceRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }

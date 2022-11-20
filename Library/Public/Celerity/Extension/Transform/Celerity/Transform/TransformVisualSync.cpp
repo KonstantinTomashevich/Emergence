@@ -128,6 +128,7 @@ const Memory::UniqueString Checkpoint::FINISHED {"TransformVisualSyncFinished"};
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformVisualSync");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform2dVisualSync"})
@@ -137,6 +138,7 @@ void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformVisualSync");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"})

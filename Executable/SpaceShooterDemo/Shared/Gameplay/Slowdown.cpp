@@ -88,6 +88,7 @@ void SlowdownProcessor::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Slowdown");
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"Slowdown::Processor"})
         .SetExecutor<SlowdownProcessor> ();
 }

@@ -282,6 +282,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
         return;
     }
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Texture2dManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"Texture2dManager"})
         .SetExecutor<Manager> (_textureRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }
