@@ -421,4 +421,76 @@ TEST_CASE (TrivialSafeResourceUsageWithCollision)
     CHECK (result == expected);
 }
 
+TEST_CASE (VisualGrouping)
+{
+    using namespace Emergence::Flow::Test;
+
+    Emergence::Flow::TaskRegister taskRegister;
+
+    {
+        auto token = taskRegister.OpenVisualGroup ("A");
+        taskRegister.RegisterCheckpoint ("AStart"_us);
+        taskRegister.RegisterTask ({"AOne"_us, nullptr, {}, {}, {"AStart"_us}, {"AFinish"_us}});
+        taskRegister.RegisterTask ({"ATwo"_us, nullptr, {}, {}, {"AStart"_us}, {"AFinish"_us}});
+        taskRegister.RegisterCheckpoint ("AFinish"_us);
+    }
+
+    {
+        auto token = taskRegister.OpenVisualGroup ("B");
+        taskRegister.RegisterCheckpoint ("BStart"_us);
+        taskRegister.RegisterTask ({"BOne"_us, nullptr, {}, {}, {"BStart"_us}, {}});
+        taskRegister.RegisterTask ({"BTwo"_us, nullptr, {}, {}, {"BOne"_us}, {"BFinish"_us}});
+        taskRegister.RegisterCheckpoint ("BFinish"_us);
+    }
+
+    taskRegister.RegisterTask ({"Common"_us, nullptr, {}, {}, {"AFinish"_us, "BFinish"_us}, {}});
+    Emergence::VisualGraph::Graph result = taskRegister.ExportVisual (false);
+
+    Emergence::VisualGraph::Graph expected {{Emergence::Flow::TaskRegister::VISUAL_ROOT_GRAPH_ID},
+                                            {},
+                                            {
+                                                {{Emergence::Flow::TaskRegister::VISUAL_PIPELINE_GRAPH_ID},
+                                                 {},
+                                                 {
+                                                     {"A",
+                                                      "A (Group)",
+                                                      {},
+                                                      {{
+                                                          {"AStart", CheckpointNodeLabel ("AStart")},
+                                                          {"AFinish", CheckpointNodeLabel ("AFinish")},
+                                                          {"AOne", TaskNodeLabel ("AOne")},
+                                                          {"ATwo", TaskNodeLabel ("ATwo")},
+                                                      }},
+                                                      {}},
+                                                     {"B",
+                                                      "B (Group)",
+                                                      {},
+                                                      {{
+                                                          {"BStart", CheckpointNodeLabel ("BStart")},
+                                                          {"BFinish", CheckpointNodeLabel ("BFinish")},
+                                                          {"BOne", TaskNodeLabel ("BOne")},
+                                                          {"BTwo", TaskNodeLabel ("BTwo")},
+                                                      }},
+                                                      {}},
+                                                 },
+                                                 {{
+                                                     {"Common", TaskNodeLabel ("Common")},
+                                                 }},
+                                                 {
+                                                     {"A/AStart", "A/AOne", {}},
+                                                     {"A/AOne", "A/AFinish", {}},
+                                                     {"A/AStart", "A/ATwo", {}},
+                                                     {"A/ATwo", "A/AFinish", {}},
+                                                     {"B/BStart", "B/BOne", {}},
+                                                     {"B/BOne", "B/BTwo", {}},
+                                                     {"B/BTwo", "B/BFinish", {}},
+                                                     {"A/AFinish", "Common", {}},
+                                                     {"B/BFinish", "Common", {}},
+                                                 }},
+                                            },
+                                            {},
+                                            {}};
+    CHECK (result == expected);
+}
+
 END_SUITE

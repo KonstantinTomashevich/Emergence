@@ -659,7 +659,7 @@ VisualGraph::Graph &TaskRegister::FindVisualGraphForGroup (VisualGraph::Graph &_
 
     VisualGraph::Graph &newGraph = targetGraph->subgraphs.emplace_back ();
     newGraph.id = visualGroupNodes[_groupIndex].groupName;
-    newGraph.label = visualGroupNodes[_groupIndex].groupName;
+    newGraph.label = visualGroupNodes[_groupIndex].groupName + VISUAL_GROUP_LABEL_SUFFIX;
     return newGraph;
 }
 

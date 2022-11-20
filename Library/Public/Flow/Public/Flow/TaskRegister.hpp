@@ -61,6 +61,7 @@ public:
 
     inline static const Container::String VISUAL_TASK_LABEL_SUFFIX = " (Task)";
     inline static const Container::String VISUAL_CHECKPOINT_LABEL_SUFFIX = " (Checkpoint)";
+    inline static const Container::String VISUAL_GROUP_LABEL_SUFFIX = " (Group)";
 
     inline static const Container::String VISUAL_READ_ACCESS_COLOR = "#0000FFFF";
     inline static const Container::String VISUAL_WRITE_ACCESS_COLOR = "#FF0000FF";
