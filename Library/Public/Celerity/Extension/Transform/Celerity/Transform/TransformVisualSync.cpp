@@ -2,6 +2,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Scalar.hpp>
@@ -59,6 +60,7 @@ TransformVisualSynchronizer<TransformComponentType>::TransformVisualSynchronizer
 {
     _constructor.DependOn (TransformVisualSync::Checkpoint::STARTED);
     _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
 template <typename TransformComponentType>
@@ -126,8 +128,8 @@ const Memory::UniqueString Checkpoint::FINISHED {"TransformVisualSyncFinished"};
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
-    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform2dVisualSync"})
         .SetExecutor<TransformVisualSynchronizer<Transform2dComponent>> (
             Transform2dComponentAddedFixedToNormalEvent::Reflect ().mapping);
@@ -135,8 +137,8 @@ void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
-    _pipelineBuilder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Memory::UniqueString {"Transform3dVisualSync"})
         .SetExecutor<TransformVisualSynchronizer<Transform3dComponent>> (
             Transform3dComponentAddedFixedToNormalEvent::Reflect ().mapping);

@@ -76,7 +76,6 @@ DetachmentDetector::DetachmentDetector (TaskConstructor &_constructor,
 {
     _constructor.DependOn (Checkpoint::DETACHMENT_DETECTION_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_FINISHED);
-    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
 void DetachmentDetector::Execute () noexcept
