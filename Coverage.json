@@ -40,7 +40,7 @@
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
     },
     {
-      "Prefix": "./Library/Public/ResourceObject/Asset/Object/TypeManifest.cpp",
+      "Prefix": "./Library/Public/ResourceObject/Resource/Object/TypeManifest.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
@@ -51,7 +51,7 @@
       "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
     },
     {
-      "Prefix": "./Test/Library/ResourceObject/Asset/Object/Test/Helpers.cpp",
+      "Prefix": "./Test/Library/ResourceObject/Resource/Object/Test/Helpers.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when tests are passing."
