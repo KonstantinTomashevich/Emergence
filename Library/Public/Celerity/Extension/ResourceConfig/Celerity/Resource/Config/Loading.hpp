@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Resource/Config/TypeMeta.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Resource/Config/TypeMeta.hpp>
 
 namespace Emergence::Celerity::ResourceConfigLoading
 {

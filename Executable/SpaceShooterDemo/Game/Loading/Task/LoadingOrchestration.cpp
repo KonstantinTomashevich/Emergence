@@ -1,8 +1,8 @@
-#include <Celerity/Resource/Config/Loading.hpp>
-#include <Celerity/Resource/Config/Messages.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/DynamicsMaterial.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/Messages.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
 
@@ -115,7 +115,8 @@ void LoadingOrchestrator::Execute () noexcept
         if (!dynamicsMaterialsLoaded)
         {
             for (auto cursor = fetchResourceConfigResponse.Execute ();
-                 const auto *response = static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*cursor);
+                 const auto *response =
+                     static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*cursor);
                  ++cursor)
             {
                 if (response->type == Emergence::Celerity::DynamicsMaterial::Reflect ().mapping)

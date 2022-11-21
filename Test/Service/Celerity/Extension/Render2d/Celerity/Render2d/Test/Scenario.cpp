@@ -328,7 +328,8 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {200u});
     LOG ("Starting image check.");
 
-    std::ifstream exampleInput {EMERGENCE_BUILD_STRING ("Render2dResources/Expectation/", _id, ".png"), std::ios::binary};
+    std::ifstream exampleInput {EMERGENCE_BUILD_STRING ("Render2dResources/Expectation/", _id, ".png"),
+                                std::ios::binary};
     REQUIRE (exampleInput);
     std::ifstream testInput {EMERGENCE_BUILD_STRING (_id, ".png"), std::ios::binary};
     REQUIRE (testInput);

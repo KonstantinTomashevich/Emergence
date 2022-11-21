@@ -170,8 +170,8 @@ void LibraryLoader::LoadObjectDeclaration (const Container::String &_objectFolde
         auto indexInObjectListIterator = indexInObjectList.find (_objectName);
         if (indexInObjectListIterator == indexInObjectList.end ())
         {
-            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Found cyclic dependency during object \"", _objectName,
-                           "\" parent traversal!");
+            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Found cyclic dependency during object \"",
+                           _objectName, "\" parent traversal!");
         }
         else
         {
@@ -333,8 +333,8 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
 
     if (objectDataIterator == currentLibrary.objects.end ())
     {
-        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Object \"", objectItem.name,
-                       "\" is found in object list, but its declaration is not found in library.");
+        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Object \"",
+                       objectItem.name, "\" is found in object list, but its declaration is not found in library.");
         return;
     }
 
@@ -401,7 +401,8 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
         auto parentObjectDataIterator = currentLibrary.objects.find (objectData.declaration.parent);
         if (parentObjectDataIterator == currentLibrary.objects.end ())
         {
-            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
+            EMERGENCE_LOG (ERROR,
+                           "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
                            objectItem.name, "\", which is \"", objectData.declaration.parent, "\", is not found.");
             return;
         }

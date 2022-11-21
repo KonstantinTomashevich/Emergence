@@ -1,10 +1,10 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/Resource/Config/Loading.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
 #include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
