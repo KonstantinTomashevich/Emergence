@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Celerity/Asset/Config/TypeMeta.hpp>
+#include <Celerity/Resource/Config/TypeMeta.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace Emergence::Celerity::AssetConfigLoading
+namespace Emergence::Celerity::ResourceConfigLoading
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToLoadingPipeline.
 struct Checkpoint final
@@ -20,5 +20,5 @@ struct Checkpoint final
 /// \brief Adds task that executes loading routine: processes requests and loads configs.
 void AddToLoadingPipeline (PipelineBuilder &_builder,
                            std::uint64_t _maxLoadingTimePerFrameNs,
-                           const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept;
-} // namespace Emergence::Celerity::AssetConfigLoading
+                           const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept;
+} // namespace Emergence::Celerity::ResourceConfigLoading

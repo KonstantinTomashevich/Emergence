@@ -7,9 +7,9 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Contains public state of asset config loading routine.
+/// \brief Contains public state of resource config loading routine.
 /// \invariant Read-only for users: external changes are not expected by routine code.
-struct AssetConfigLoadingStateSingleton final
+struct ResourceConfigLoadingStateSingleton final
 {
     /// \brief Contains state and meta of one particular config type.
     struct TypeState final
@@ -20,7 +20,7 @@ struct AssetConfigLoadingStateSingleton final
         /// \brief Id of a field that contains config name.
         StandardLayout::FieldId nameField;
 
-        /// \brief Folder that contains config assets.
+        /// \brief Folder that contains config resources.
         Container::String folder;
 
         /// \brief Whether all configs of this type are loaded.

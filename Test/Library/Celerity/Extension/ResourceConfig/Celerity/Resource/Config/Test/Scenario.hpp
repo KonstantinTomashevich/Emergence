@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Celerity/Asset/Config/Test/Types.hpp>
+#include <Celerity/Resource/Config/Test/Types.hpp>
 
 #include <Container/String.hpp>
 #include <Container/Variant.hpp>

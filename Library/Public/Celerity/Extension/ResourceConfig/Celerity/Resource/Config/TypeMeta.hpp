@@ -4,8 +4,8 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Contains meta information about config type that is needed for asset config processing.
-struct AssetConfigTypeMeta final
+/// \brief Contains meta information about config type that is needed for resource config processing.
+struct ResourceConfigTypeMeta final
 {
     /// \brief Type of a config.
     StandardLayout::Mapping mapping;
@@ -15,4 +15,4 @@ struct AssetConfigTypeMeta final
 };
 } // namespace Emergence::Celerity
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Celerity::AssetConfigTypeMeta)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Celerity::ResourceConfigTypeMeta)

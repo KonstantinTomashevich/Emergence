@@ -8,13 +8,13 @@
 
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
-#include <Celerity/Asset/Config/Loading.hpp>
-#include <Celerity/Asset/Config/PathMappingLoading.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -35,7 +35,7 @@
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
-#include <Loading/Model/AssetConfigTypeMeta.hpp>
+#include <Loading/Model/ResourceConfigTypeMeta.hpp>
 #include <Loading/Model/ResourceObjectTypeManifest.hpp>
 #include <Loading/Task/InputInitialization.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
@@ -161,10 +161,10 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
-    Emergence::Celerity::AssetConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
-                                                                   PrepareAssetConfigTypeMeta ());
-    Emergence::Celerity::AssetConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameResources",
-                                                                              PrepareAssetConfigTypeMeta ());
+    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
+                                                                      PrepareResourceConfigTypeMeta ());
+    Emergence::Celerity::ResourceConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameResources",
+                                                                                 PrepareResourceConfigTypeMeta ());
     Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
                                                                       PrepareResourceObjectTypeManifest ());
     InputInitialization::AddToLoadingPipeline (pipelineBuilder);

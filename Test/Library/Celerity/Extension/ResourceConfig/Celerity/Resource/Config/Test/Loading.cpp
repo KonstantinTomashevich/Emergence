@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Config/Test/Scenario.hpp>
+#include <Celerity/Resource/Config/Test/Scenario.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
@@ -30,7 +30,7 @@ static const Emergence::Container::Vector<BuildingConfig> CHANGED_BUILDING_CONFI
     {"Barracks"_us, 100.0f, 125.0f, 60.0f},
 };
 
-BEGIN_SUITE (AssetConfigLoading)
+BEGIN_SUITE (ResourceConfigLoading)
 
 TEST_CASE (LoadAll)
 {

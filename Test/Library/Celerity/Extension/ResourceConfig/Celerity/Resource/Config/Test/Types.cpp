@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Config/Test/Types.hpp>
+#include <Celerity/Resource/Config/Test/Types.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

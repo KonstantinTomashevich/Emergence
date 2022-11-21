@@ -1,12 +1,11 @@
-#include <atomic>
 #include <filesystem>
 #include <fstream>
 
-#include <Celerity/Asset/Config/Loading.hpp>
-#include <Celerity/Asset/Config/LoadingStateSingleton.hpp>
-#include <Celerity/Asset/Config/Messages.hpp>
-#include <Celerity/Asset/Config/PathMappingLoading.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/LoadingStateSingleton.hpp>
+#include <Celerity/Resource/Config/Messages.hpp>
+#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 
 #include <Log/Log.hpp>
 
@@ -15,17 +14,17 @@
 
 #include <SyntaxSugar/Time.hpp>
 
-namespace Emergence::Celerity::AssetConfigLoading
+namespace Emergence::Celerity::ResourceConfigLoading
 {
-const Memory::UniqueString Checkpoint::STARTED {"AssetConfigLoadingStarted"};
-const Memory::UniqueString Checkpoint::FINISHED {"AssetConfigLoadingFinished"};
+const Memory::UniqueString Checkpoint::STARTED {"ResourceConfigLoadingStarted"};
+const Memory::UniqueString Checkpoint::FINISHED {"ResourceConfigLoadingFinished"};
 
 class Loader final : public TaskExecutorBase<Loader>
 {
 public:
     Loader (TaskConstructor &_constructor,
             std::uint64_t _maxLoadingTimePerFrameNs,
-            const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept;
+            const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept;
 
     void Execute () noexcept;
 
@@ -38,9 +37,9 @@ private:
         Emergence::Serialization::FieldNameLookupCache cache;
     };
 
-    bool ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingState, std::uint64_t _startTime) noexcept;
+    bool ProcessCurrentRequest (ResourceConfigLoadingStateSingleton *_loadingState, std::uint64_t _startTime) noexcept;
 
-    bool ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingState) noexcept;
+    bool ProcessPendingRequests (ResourceConfigLoadingStateSingleton *_loadingState) noexcept;
 
     ModifySingletonQuery modifyLoadingState;
     ModifySequenceQuery modifyRequest;
@@ -57,18 +56,18 @@ private:
 
 Loader::Loader (TaskConstructor &_constructor,
                 std::uint64_t _maxLoadingTimePerFrameNs,
-                const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
-    : modifyLoadingState (MODIFY_SINGLETON (AssetConfigLoadingStateSingleton)),
-      modifyRequest (MODIFY_SEQUENCE (AssetConfigRequest)),
-      modifyResponse (MODIFY_SEQUENCE (AssetConfigLoadedResponse)),
-      insertResponse (INSERT_SHORT_TERM (AssetConfigLoadedResponse)),
+                const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
+    : modifyLoadingState (MODIFY_SINGLETON (ResourceConfigLoadingStateSingleton)),
+      modifyRequest (MODIFY_SEQUENCE (ResourceConfigRequest)),
+      modifyResponse (MODIFY_SEQUENCE (ResourceConfigLoadedResponse)),
+      insertResponse (INSERT_SHORT_TERM (ResourceConfigLoadedResponse)),
       maxLoadingTimePerFrameNs (_maxLoadingTimePerFrameNs)
 {
     _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.DependOn (AssetConfigPathMappingLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (ResourceConfigPathMappingLoading::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 
-    for (const AssetConfigTypeMeta &meta : _supportedTypes)
+    for (const ResourceConfigTypeMeta &meta : _supportedTypes)
     {
         perTypeData.emplace_back (PerTypeData {meta.mapping, _constructor.InsertLongTerm (meta.mapping),
                                                _constructor.RemoveValue (meta.mapping, {meta.nameField}),
@@ -84,7 +83,7 @@ void Loader::Execute () noexcept
     }
 
     auto loadingStateCursor = modifyLoadingState.Execute ();
-    auto *loadingState = static_cast<AssetConfigLoadingStateSingleton *> (*loadingStateCursor);
+    auto *loadingState = static_cast<ResourceConfigLoadingStateSingleton *> (*loadingStateCursor);
 
     if (!loadingState->pathMappingLoaded)
     {
@@ -97,7 +96,8 @@ void Loader::Execute () noexcept
     }
 }
 
-bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingState, std::uint64_t _startTime) noexcept
+bool Loader::ProcessCurrentRequest (ResourceConfigLoadingStateSingleton *_loadingState,
+                                    std::uint64_t _startTime) noexcept
 {
     constexpr bool CONTINUE_ROUTINE = true;
     constexpr bool STOP_ROUTINE = false;
@@ -115,26 +115,26 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
 
     if (perTypeDataIterator == perTypeData.end ())
     {
-        EMERGENCE_LOG (ERROR, "AssetConfigLoading: Config type \"", requestedType.GetName (),
+        EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Config type \"", requestedType.GetName (),
                        "\" is not supported! Check loading task registration.");
         return CONTINUE_ROUTINE;
     }
 
     PerTypeData &perType = *perTypeDataIterator;
     auto stateIterator = std::find_if (_loadingState->typeStates.begin (), _loadingState->typeStates.end (),
-                                       [this] (const AssetConfigLoadingStateSingleton::TypeState &_state)
+                                       [this] (const ResourceConfigLoadingStateSingleton::TypeState &_state)
                                        {
                                            return _state.type == requestedType;
                                        });
 
     if (stateIterator == _loadingState->typeStates.end ())
     {
-        EMERGENCE_LOG (ERROR, "AssetConfigLoading: Config type \"", requestedType.GetName (),
-                       "\" is not supported! Check path mapping loading task registration and path mapping asset.");
+        EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Config type \"", requestedType.GetName (),
+                       "\" is not supported! Check path mapping loading task registration and path mapping resource.");
         return CONTINUE_ROUTINE;
     }
 
-    AssetConfigLoadingStateSingleton::TypeState &state = *stateIterator;
+    ResourceConfigLoadingStateSingleton::TypeState &state = *stateIterator;
     StandardLayout::Field nameField = state.type.GetField (state.nameField);
     EMERGENCE_ASSERT (nameField);
 
@@ -198,7 +198,7 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
 
             if (!loaded)
             {
-                EMERGENCE_LOG (ERROR, "AssetConfigLoading: Failed to load config from \"",
+                EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Failed to load config from \"",
                                entry.path ().string ().c_str (), "\"!");
             }
 
@@ -209,20 +209,20 @@ bool Loader::ProcessCurrentRequest (AssetConfigLoadingStateSingleton *_loadingSt
     }
 
     auto insertionCursor = insertResponse.Execute ();
-    static_cast<AssetConfigLoadedResponse *> (++insertionCursor)->type = requestedType;
+    static_cast<ResourceConfigLoadedResponse *> (++insertionCursor)->type = requestedType;
     state.loaded = true;
     return CONTINUE_ROUTINE;
 }
 
-bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingState) noexcept
+bool Loader::ProcessPendingRequests (ResourceConfigLoadingStateSingleton *_loadingState) noexcept
 {
     serving = false;
     auto requestCursor = modifyRequest.Execute ();
 
-    while (auto *request = static_cast<AssetConfigRequest *> (*requestCursor))
+    while (auto *request = static_cast<ResourceConfigRequest *> (*requestCursor))
     {
         bool loadingSkipped = false;
-        for (const AssetConfigLoadingStateSingleton::TypeState &state : _loadingState->typeStates)
+        for (const ResourceConfigLoadingStateSingleton::TypeState &state : _loadingState->typeStates)
         {
             if (state.type == request->type)
             {
@@ -231,7 +231,7 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
                 {
                     loadingSkipped = true;
                     auto insertionCursor = insertResponse.Execute ();
-                    static_cast<AssetConfigLoadedResponse *> (++insertionCursor)->type = state.type;
+                    static_cast<ResourceConfigLoadedResponse *> (++insertionCursor)->type = state.type;
                     break;
                 }
 
@@ -244,7 +244,7 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
 
         if (!loadingSkipped)
         {
-            EMERGENCE_LOG (ERROR, "AssetConfigLoading: Unable to find loading state for config type \"",
+            EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Unable to find loading state for config type \"",
                            request->type.GetName (), "\". Therefore this type cannot be loaded.");
             ~requestCursor;
         }
@@ -255,12 +255,12 @@ bool Loader::ProcessPendingRequests (AssetConfigLoadingStateSingleton *_loadingS
 
 void AddToLoadingPipeline (PipelineBuilder &_builder,
                            std::uint64_t _maxLoadingTimePerFrameNs,
-                           const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
+                           const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
 {
-    auto visualGroup = _builder.OpenVisualGroup ("AssetConfigLoading");
+    auto visualGroup = _builder.OpenVisualGroup ("ResourceConfigLoading");
     _builder.AddCheckpoint (Checkpoint::STARTED);
     _builder.AddCheckpoint (Checkpoint::FINISHED);
-    _builder.AddTask (Memory::UniqueString {"AssetConfigLoader"})
+    _builder.AddTask (Memory::UniqueString {"ResourceConfigLoader"})
         .SetExecutor<Loader> (_maxLoadingTimePerFrameNs, _supportedTypes);
 }
-} // namespace Emergence::Celerity::AssetConfigLoading
+} // namespace Emergence::Celerity::ResourceConfigLoading

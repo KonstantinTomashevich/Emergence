@@ -4,12 +4,12 @@
 #include <filesystem>
 #include <fstream>
 
-#include <Celerity/Asset/Config/Loading.hpp>
-#include <Celerity/Asset/Config/Messages.hpp>
-#include <Celerity/Asset/Config/PathMappingLoading.hpp>
-#include <Celerity/Asset/Config/Test/Scenario.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/Messages.hpp>
+#include <Celerity/Resource/Config/PathMappingLoading.hpp>
+#include <Celerity/Resource/Config/Test/Scenario.hpp>
 
 #include <Container/StringBuilder.hpp>
 
@@ -22,7 +22,7 @@
 
 namespace Emergence::Celerity::Test
 {
-static const char *const ENVIRONMENT_ROOT = "../Assets";
+static const char *const ENVIRONMENT_ROOT = "../Resources";
 
 class Executor final : public TaskExecutorBase<Executor>
 {
@@ -52,14 +52,14 @@ private:
 };
 
 Executor::Executor (TaskConstructor &_constructor, Container::Vector<Task> _tasks, bool *_isFinished) noexcept
-    : fetchLoadingResponse (FETCH_SEQUENCE (AssetConfigLoadedResponse)),
+    : fetchLoadingResponse (FETCH_SEQUENCE (ResourceConfigLoadedResponse)),
       fetchUnitConfigByAscendingId (FETCH_ASCENDING_RANGE (UnitConfig, id)),
       fetchBuildingConfigByAscendingId (FETCH_ASCENDING_RANGE (BuildingConfig, id)),
-      insertLoadingRequest (INSERT_SHORT_TERM (AssetConfigRequest)),
+      insertLoadingRequest (INSERT_SHORT_TERM (ResourceConfigRequest)),
       tasks (std::move (_tasks)),
       isFinished (_isFinished)
 {
-    _constructor.MakeDependencyOf (AssetConfigPathMappingLoading::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (ResourceConfigPathMappingLoading::Checkpoint::STARTED);
 }
 
 void Executor::Execute () noexcept
@@ -113,9 +113,9 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
     std::filesystem::create_directories (rootPath);
     if (_task.useBinaryFormat)
     {
-        std::ofstream output (rootPath / AssetConfigPathMappingLoading::BINARY_FILE_NAME, std::ios::binary);
+        std::ofstream output (rootPath / ResourceConfigPathMappingLoading::BINARY_FILE_NAME, std::ios::binary);
 
-        AssetConfigPathMappingLoading::ListItem item;
+        ResourceConfigPathMappingLoading::ListItem item;
         item.typeName = UnitConfig::Reflect ().mapping.GetName ();
         strcpy (item.folder.data (), _task.unitConfigFolder.c_str ());
         Serialization::Binary::SerializeObject (output, &item, decltype (item)::Reflect ().mapping);
@@ -126,11 +126,11 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
     }
     else
     {
-        std::ofstream output (rootPath / AssetConfigPathMappingLoading::YAML_FILE_NAME);
+        std::ofstream output (rootPath / ResourceConfigPathMappingLoading::YAML_FILE_NAME);
         Serialization::Yaml::ObjectBundleSerializer serializer {
-            AssetConfigPathMappingLoading::ListItem::Reflect ().mapping};
+            ResourceConfigPathMappingLoading::ListItem::Reflect ().mapping};
 
-        AssetConfigPathMappingLoading::ListItem item;
+        ResourceConfigPathMappingLoading::ListItem item;
         item.typeName = UnitConfig::Reflect ().mapping.GetName ();
         strcpy (item.folder.data (), _task.unitConfigFolder.c_str ());
         serializer.Next (&item);
@@ -151,7 +151,7 @@ bool Executor::ExecuteTask (const Tasks::LoadConfig &_task) noexcept
     if (!loadingRequestSent)
     {
         auto cursor = insertLoadingRequest.Execute ();
-        auto *request = static_cast<AssetConfigRequest *> (++cursor);
+        auto *request = static_cast<ResourceConfigRequest *> (++cursor);
         request->type = _task.type;
         request->forceReload = _task.forceReload;
 
@@ -162,7 +162,7 @@ bool Executor::ExecuteTask (const Tasks::LoadConfig &_task) noexcept
     }
 
     for (auto cursor = fetchLoadingResponse.Execute ();
-         const auto *response = static_cast<const AssetConfigLoadedResponse *> (*cursor); ++cursor)
+         const auto *response = static_cast<const ResourceConfigLoadedResponse *> (*cursor); ++cursor)
     {
         if (response->type == _task.type)
         {
@@ -231,7 +231,7 @@ using namespace Memory::Literals;
 
 void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept
 {
-    const Container::Vector<AssetConfigTypeMeta> typeMetas {
+    const Container::Vector<ResourceConfigTypeMeta> typeMetas {
         {UnitConfig::Reflect ().mapping, UnitConfig::Reflect ().id},
         {BuildingConfig::Reflect ().mapping, BuildingConfig::Reflect ().id},
     };
@@ -241,8 +241,8 @@ void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept
     bool scenarioFinished = false;
 
     builder.Begin ("LoadingUpdate"_us, PipelineType::CUSTOM);
-    AssetConfigPathMappingLoading::AddToLoadingPipeline (builder, ENVIRONMENT_ROOT, typeMetas);
-    AssetConfigLoading::AddToLoadingPipeline (builder, 16000000u, typeMetas);
+    ResourceConfigPathMappingLoading::AddToLoadingPipeline (builder, ENVIRONMENT_ROOT, typeMetas);
+    ResourceConfigLoading::AddToLoadingPipeline (builder, 16000000u, typeMetas);
     builder.AddTask ("Executor"_us).SetExecutor<Executor> (_tasks, &scenarioFinished);
     Pipeline *loadingUpdate = builder.End ();
     REQUIRE (loadingUpdate);

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Celerity/Asset/Config/TypeMeta.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Resource/Config/TypeMeta.hpp>
 
-namespace Emergence::Celerity::AssetConfigPathMappingLoading
+namespace Emergence::Celerity::ResourceConfigPathMappingLoading
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToLoadingPipeline.
 struct Checkpoint final
@@ -24,10 +24,10 @@ extern const char *const BINARY_FILE_NAME;
 /// \details YAML file is used only if binary file is not present.
 extern const char *const YAML_FILE_NAME;
 
-/// \brief Adds task that loads config path mapping and initializes AssetConfigLoadingStateSingleton.
+/// \brief Adds task that loads config path mapping and initializes ResourceConfigLoadingStateSingleton.
 void AddToLoadingPipeline (PipelineBuilder &_builder,
-                           Container::String _assetRootPath,
-                           const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept;
+                           Container::String _resourceRootPath,
+                           const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept;
 
 /// \brief Defines an item of config path mapping.
 struct ListItem final
@@ -39,7 +39,7 @@ struct ListItem final
     /// \invariant Type to item relationship is 1 to 1.
     Memory::UniqueString typeName;
 
-    /// \brief Path to folder with configs from asset root.
+    /// \brief Path to folder with configs from resource root.
     std::array<char, RELATIVE_PATH_MAX_LENGTH> folder;
 
     struct Reflection final
@@ -51,4 +51,4 @@ struct ListItem final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::Celerity::AssetConfigPathMappingLoading
+} // namespace Emergence::Celerity::ResourceConfigPathMappingLoading

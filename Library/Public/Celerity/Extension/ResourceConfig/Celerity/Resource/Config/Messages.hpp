@@ -7,7 +7,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Requests all configs of selected type to be loaded into the world.
-struct AssetConfigRequest final
+struct ResourceConfigRequest final
 {
     /// \brief Selected config type.
     StandardLayout::Mapping type;
@@ -25,7 +25,7 @@ struct AssetConfigRequest final
 };
 
 /// \brief Informs that all configs of given type are loaded into the world.
-struct AssetConfigLoadedResponse final
+struct ResourceConfigLoadedResponse final
 {
     /// \brief Type of configs that were loaded.
     StandardLayout::Mapping type;

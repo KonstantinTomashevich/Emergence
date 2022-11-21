@@ -1,8 +1,8 @@
 #include <Celerity/Physics/DynamicsMaterial.hpp>
 
-#include <Loading/Model/AssetConfigTypeMeta.hpp>
+#include <Loading/Model/ResourceConfigTypeMeta.hpp>
 
-Emergence::Container::Vector<Emergence::Celerity::AssetConfigTypeMeta> PrepareAssetConfigTypeMeta () noexcept
+Emergence::Container::Vector<Emergence::Celerity::ResourceConfigTypeMeta> PrepareResourceConfigTypeMeta () noexcept
 {
     return {
         {Emergence::Celerity::DynamicsMaterial::Reflect ().mapping,

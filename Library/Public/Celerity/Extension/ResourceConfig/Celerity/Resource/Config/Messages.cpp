@@ -1,14 +1,14 @@
-#include <Celerity/Asset/Config/Messages.hpp>
+#include <Celerity/Resource/Config/Messages.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const AssetConfigRequest::Reflection &AssetConfigRequest::Reflect () noexcept
+const ResourceConfigRequest::Reflection &ResourceConfigRequest::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AssetConfigRequest);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ResourceConfigRequest);
         EMERGENCE_MAPPING_REGISTER_REGULAR (forceReload);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -16,11 +16,11 @@ const AssetConfigRequest::Reflection &AssetConfigRequest::Reflect () noexcept
     return reflection;
 }
 
-const AssetConfigLoadedResponse::Reflection &AssetConfigLoadedResponse::Reflect () noexcept
+const ResourceConfigLoadedResponse::Reflection &ResourceConfigLoadedResponse::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AssetConfigLoadedResponse);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ResourceConfigLoadedResponse);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

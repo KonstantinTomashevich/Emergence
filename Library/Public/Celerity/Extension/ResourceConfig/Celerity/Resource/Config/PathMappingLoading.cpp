@@ -1,19 +1,19 @@
 #include <filesystem>
 #include <fstream>
 
-#include <Celerity/Asset/Config/LoadingStateSingleton.hpp>
-#include <Celerity/Asset/Config/PathMappingLoading.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Config/LoadingStateSingleton.hpp>
+#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 
 #include <Log/Log.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
 
-namespace Emergence::Celerity::AssetConfigPathMappingLoading
+namespace Emergence::Celerity::ResourceConfigPathMappingLoading
 {
-const Memory::UniqueString Checkpoint::STARTED {"AssetConfigPathMappingLoadingStarted"};
-const Memory::UniqueString Checkpoint::FINISHED {"AssetConfigPathMappingLoadingFinished"};
+const Memory::UniqueString Checkpoint::STARTED {"ResourceConfigPathMappingLoadingStarted"};
+const Memory::UniqueString Checkpoint::FINISHED {"ResourceConfigPathMappingLoadingFinished"};
 
 const char *const BINARY_FILE_NAME = "ConfigPathMapping.bin";
 const char *const YAML_FILE_NAME = "ConfigPathMapping.yaml";
@@ -23,30 +23,30 @@ class Loader final : public TaskExecutorBase<Loader>
 public:
     Loader (TaskConstructor &_constructor,
             Container::String _pathToAssetRoot,
-            const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept;
+            const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept;
 
     void Execute () noexcept;
 
 private:
-    void RegisterPathMapping (AssetConfigLoadingStateSingleton *_state, const ListItem &_item) const noexcept;
+    void RegisterPathMapping (ResourceConfigLoadingStateSingleton *_state, const ListItem &_item) const noexcept;
 
     ModifySingletonQuery modifyState;
 
     Container::String pathToAssetRoot;
-    Container::Vector<AssetConfigTypeMeta> supportedTypes {Memory::Profiler::AllocationGroup::Top ()};
+    Container::Vector<ResourceConfigTypeMeta> supportedTypes {Memory::Profiler::AllocationGroup::Top ()};
 };
 
 Loader::Loader (TaskConstructor &_constructor,
                 Container::String _pathToAssetRoot,
-                const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
-    : modifyState (MODIFY_SINGLETON (AssetConfigLoadingStateSingleton)),
+                const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
+    : modifyState (MODIFY_SINGLETON (ResourceConfigLoadingStateSingleton)),
       pathToAssetRoot (std::move (_pathToAssetRoot))
 {
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     supportedTypes.reserve (_supportedTypes.size ());
 
-    for (const AssetConfigTypeMeta &type : _supportedTypes)
+    for (const ResourceConfigTypeMeta &type : _supportedTypes)
     {
         supportedTypes.emplace_back (type);
     }
@@ -55,7 +55,7 @@ Loader::Loader (TaskConstructor &_constructor,
 void Loader::Execute () noexcept
 {
     auto stateCursor = modifyState.Execute ();
-    auto *state = static_cast<AssetConfigLoadingStateSingleton *> (*stateCursor);
+    auto *state = static_cast<ResourceConfigLoadingStateSingleton *> (*stateCursor);
 
     if (state->pathMappingLoaded)
     {
@@ -76,7 +76,7 @@ void Loader::Execute () noexcept
         {
             if (!Serialization::Binary::DeserializeObject (input, &item, ListItem::Reflect ().mapping))
             {
-                EMERGENCE_LOG (ERROR, "AssetConfigPathMappingLoading: Unable to deserialize config path mapping \"",
+                EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Unable to deserialize config path mapping \"",
                                binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                "\".");
                 break;
@@ -104,13 +104,13 @@ void Loader::Execute () noexcept
         deserializer.End ();
         if (!successful)
         {
-            EMERGENCE_LOG (ERROR, "AssetConfigPathMappingLoading: Unable to deserialize config path mapping \"",
+            EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Unable to deserialize config path mapping \"",
                            yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
         }
     }
     else
     {
-        EMERGENCE_LOG (ERROR, "AssetConfigPathMappingLoading: Unable to find path mapping file!");
+        EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Unable to find path mapping file!");
     }
 
     // Release all temporary occupied memory: after loading we don't need it.
@@ -123,13 +123,13 @@ void Loader::Execute () noexcept
     state->pathMappingLoaded = true;
 }
 
-void Loader::RegisterPathMapping (AssetConfigLoadingStateSingleton *_state, const ListItem &_item) const noexcept
+void Loader::RegisterPathMapping (ResourceConfigLoadingStateSingleton *_state, const ListItem &_item) const noexcept
 {
-    for (const AssetConfigTypeMeta &type : supportedTypes)
+    for (const ResourceConfigTypeMeta &type : supportedTypes)
     {
         if (type.mapping.GetName () == _item.typeName)
         {
-            AssetConfigLoadingStateSingleton::TypeState &typeState = _state->typeStates.emplace_back ();
+            ResourceConfigLoadingStateSingleton::TypeState &typeState = _state->typeStates.emplace_back ();
             typeState.type = type.mapping;
             typeState.nameField = type.nameField;
             typeState.folder = EMERGENCE_BUILD_STRING (pathToAssetRoot, "/", _item.folder.data ());
@@ -137,18 +137,18 @@ void Loader::RegisterPathMapping (AssetConfigLoadingStateSingleton *_state, cons
         }
     }
 
-    EMERGENCE_LOG (ERROR, "AssetConfigPathMappingLoading: Config type \"", _item.typeName, "\" is not supported!");
+    EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Config type \"", _item.typeName, "\" is not supported!");
 }
 
 void AddToLoadingPipeline (PipelineBuilder &_builder,
-                           Container::String _assetRootPath,
-                           const Container::Vector<AssetConfigTypeMeta> &_supportedTypes) noexcept
+                           Container::String _resourceRootPath,
+                           const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
 {
-    auto visualGroup = _builder.OpenVisualGroup ("AssetConfigPathMappingLoading");
+    auto visualGroup = _builder.OpenVisualGroup ("ResourceConfigPathMappingLoading");
     _builder.AddCheckpoint (Checkpoint::STARTED);
     _builder.AddCheckpoint (Checkpoint::FINISHED);
-    _builder.AddTask (Memory::UniqueString {"AssetConfigPathMappingLoader"})
-        .SetExecutor<Loader> (std::move (_assetRootPath), _supportedTypes);
+    _builder.AddTask (Memory::UniqueString {"ResourceConfigPathMappingLoader"})
+        .SetExecutor<Loader> (std::move (_resourceRootPath), _supportedTypes);
 }
 
 const ListItem::Reflection &ListItem::Reflect () noexcept
@@ -163,4 +163,4 @@ const ListItem::Reflection &ListItem::Reflect () noexcept
 
     return reflection;
 }
-} // namespace Emergence::Celerity::AssetConfigPathMappingLoading
+} // namespace Emergence::Celerity::ResourceConfigPathMappingLoading
