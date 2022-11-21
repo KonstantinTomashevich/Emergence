@@ -10,12 +10,12 @@
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Asset/Config/Loading.hpp>
 #include <Celerity/Asset/Config/PathMappingLoading.hpp>
-#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
@@ -36,7 +36,7 @@
 #include <Gameplay/Spawn.hpp>
 
 #include <Loading/Model/AssetConfigTypeMeta.hpp>
-#include <Loading/Model/AssetObjectTypeManifest.hpp>
+#include <Loading/Model/ResourceObjectTypeManifest.hpp>
 #include <Loading/Task/InputInitialization.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
 #include <Loading/Task/LoadingOrchestration.hpp>
@@ -165,7 +165,8 @@ void GameApplication::Start ()
                                                                    PrepareAssetConfigTypeMeta ());
     Emergence::Celerity::AssetConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameResources",
                                                                               PrepareAssetConfigTypeMeta ());
-    Emergence::Celerity::AssetObjectLoading::AddToLoadingPipeline (pipelineBuilder, PrepareAssetObjectTypeManifest ());
+    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
+                                                                      PrepareResourceObjectTypeManifest ());
     InputInitialization::AddToLoadingPipeline (pipelineBuilder);
     LevelGeneration::AddToLoadingPipeline (pipelineBuilder);
     PhysicsInitialization::AddToLoadingPipeline (pipelineBuilder);

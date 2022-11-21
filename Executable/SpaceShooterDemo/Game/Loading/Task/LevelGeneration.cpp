@@ -1,11 +1,11 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Asset/Config/Loading.hpp>
-#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/CollisionShapeComponent.hpp>
 #include <Celerity/Physics/PhysicsWorldSingleton.hpp>
 #include <Celerity/Physics/RigidBodyComponent.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Container/Optional.hpp>
@@ -109,7 +109,7 @@ LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_construct
       insertResponse (INSERT_SHORT_TERM (LevelGenerationFinishedResponse))
 {
     _constructor.DependOn (Emergence::Celerity::AssetConfigLoading::Checkpoint::FINISHED);
-    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::ResourceObjectLoading::Checkpoint::FINISHED);
     _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
