@@ -1,8 +1,8 @@
 #include <Assembly/AssemblerConfiguration.hpp>
 
-#include <Celerity/Physics/CollisionShapeComponent.hpp>
-#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
-#include <Celerity/Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics3d/CollisionShape3dComponent.hpp>
+#include <Celerity/Physics3d/PhysicsWorld3dSingleton.hpp>
+#include <Celerity/Physics3d/RigidBody3dComponent.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Gameplay/ControllableComponent.hpp>
@@ -21,7 +21,7 @@ using namespace Emergence::Celerity;
 
 static UniqueId GenerateShapeId (const void *_argument)
 {
-    return static_cast<const PhysicsWorldSingleton *> (_argument)->GenerateShapeId ();
+    return static_cast<const PhysicsWorld3dSingleton *> (_argument)->GenerateShapeId ();
 }
 
 static UniqueId GenerateModelId (const void *_argument)
@@ -45,7 +45,7 @@ CustomKeyVector GetAssemblerCustomKeys () noexcept
     CustomKeyVector customKeys {GetAssemblerConfigurationAllocationGroup ()};
 
     CustomKeyDescriptor &shapeIdKey = customKeys.emplace_back ();
-    shapeIdKey.singletonProviderType = PhysicsWorldSingleton::Reflect ().mapping;
+    shapeIdKey.singletonProviderType = PhysicsWorld3dSingleton::Reflect ().mapping;
     shapeIdKey.providerFunction = GenerateShapeId;
 
     CustomKeyDescriptor &modelIdKey = customKeys.emplace_back ();
@@ -64,15 +64,15 @@ TypeBindingVector GetFixedAssemblerTypes () noexcept
     TypeBindingVector types {GetAssemblerConfigurationAllocationGroup ()};
 
     TypeDescriptor &collisionShapeComponent = types.emplace_back ();
-    collisionShapeComponent.type = CollisionShapeComponent::Reflect ().mapping;
-    collisionShapeComponent.keys.emplace_back () = {CollisionShapeComponent::Reflect ().objectId,
+    collisionShapeComponent.type = CollisionShape3dComponent::Reflect ().mapping;
+    collisionShapeComponent.keys.emplace_back () = {CollisionShape3dComponent::Reflect ().objectId,
                                                     ASSEMBLY_OBJECT_ID_KEY_INDEX};
-    collisionShapeComponent.keys.emplace_back () = {CollisionShapeComponent::Reflect ().shapeId, SHAPE_ID_KEY};
+    collisionShapeComponent.keys.emplace_back () = {CollisionShape3dComponent::Reflect ().shapeId, SHAPE_ID_KEY};
 
     TypeDescriptor &rigidBodyComponent = types.emplace_back ();
-    rigidBodyComponent.type = RigidBodyComponent::Reflect ().mapping;
-    rigidBodyComponent.keys.emplace_back () = {RigidBodyComponent::Reflect ().objectId, ASSEMBLY_OBJECT_ID_KEY_INDEX};
-    rigidBodyComponent.rotateVector3fs.emplace_back (RigidBodyComponent::Reflect ().linearVelocity);
+    rigidBodyComponent.type = RigidBody3dComponent::Reflect ().mapping;
+    rigidBodyComponent.keys.emplace_back () = {RigidBody3dComponent::Reflect ().objectId, ASSEMBLY_OBJECT_ID_KEY_INDEX};
+    rigidBodyComponent.rotateVector3fs.emplace_back (RigidBody3dComponent::Reflect ().linearVelocity);
 
     TypeDescriptor &transform3dComponent = types.emplace_back ();
     transform3dComponent.type = Transform3dComponent::Reflect ().mapping;

@@ -1,3 +1,3 @@
 # Celerity: PhysX extension
 
-Implements [Physics extension](../../../../../Service/Celerity/Extension/Physics/README.md) using NVIDIA PhysX.
+Implements [Physics3d extension](../../../../../Service/Celerity/Extension/Physics3d/README.md) using NVIDIA PhysX.

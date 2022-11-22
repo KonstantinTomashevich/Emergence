@@ -1,5 +1,5 @@
 #include <Celerity/Model/WorldSingleton.hpp>
-#include <Celerity/Physics/DynamicsMaterial.hpp>
+#include <Celerity/Physics3d/DynamicsMaterial3d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Resource/Config/Loading.hpp>
 #include <Celerity/Resource/Config/Messages.hpp>
@@ -89,7 +89,7 @@ void LoadingOrchestrator::Execute () noexcept
         auto resourceConfigRequestCursor = insertResourceConfigRequest.Execute ();
         auto *dynamicsMaterialRequest =
             static_cast<Emergence::Celerity::ResourceConfigRequest *> (++resourceConfigRequestCursor);
-        dynamicsMaterialRequest->type = Emergence::Celerity::DynamicsMaterial::Reflect ().mapping;
+        dynamicsMaterialRequest->type = Emergence::Celerity::DynamicsMaterial3d::Reflect ().mapping;
 
         stage = LoadingStage::LOADING_LEVEL_ASSETS;
         break;
@@ -119,7 +119,7 @@ void LoadingOrchestrator::Execute () noexcept
                      static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*cursor);
                  ++cursor)
             {
-                if (response->type == Emergence::Celerity::DynamicsMaterial::Reflect ().mapping)
+                if (response->type == Emergence::Celerity::DynamicsMaterial3d::Reflect ().mapping)
                 {
                     dynamicsMaterialsLoaded = true;
                     break;

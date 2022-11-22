@@ -5,7 +5,7 @@
     maximumLifetimeS: 3.0
     corpseLifetimeS: 0.0
 
-- type: RigidBodyComponent
+- type: RigidBody3dComponent
   content:
     objectId: 0
     type: 2 # Dynamic
@@ -13,7 +13,7 @@
     linearVelocity:
       z: 25.0
 
-- type: CollisionShapeComponent
+- type: CollisionShape3dComponent
   content:
     objectId: 0
     shapeId: 0

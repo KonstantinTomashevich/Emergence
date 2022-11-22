@@ -1,5 +1,5 @@
-#include <Celerity/Physics/Events.hpp>
-#include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Physics3d/Events.hpp>
+#include <Celerity/Physics3d/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
@@ -35,8 +35,8 @@ private:
 };
 
 CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Celerity::ContactFoundEvent)),
-      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Celerity::TriggerEnteredEvent)),
+    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Celerity::Contact3dFoundEvent)),
+      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Celerity::Trigger3dEnteredEvent)),
 
       editDamageDealerById (EDIT_VALUE_1F (DamageDealerComponent, objectId)),
       removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
@@ -44,14 +44,15 @@ CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConst
       insertDamageEvent (INSERT_SHORT_TERM (DamageEvent))
 {
     _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.DependOn (Emergence::Celerity::Simulation::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::Physics3dSimulation::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
 void CollisionEventProcessor::Execute () noexcept
 {
     for (auto eventCursor = fetchContactFoundEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Celerity::ContactFoundEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const Emergence::Celerity::Contact3dFoundEvent *> (*eventCursor);
+         ++eventCursor)
     {
         if (event->initialContact)
         {
@@ -61,7 +62,7 @@ void CollisionEventProcessor::Execute () noexcept
     }
 
     for (auto eventCursor = fetchTriggerEnteredEvents.Execute ();
-         const auto *event = static_cast<const Emergence::Celerity::TriggerEnteredEvent *> (*eventCursor);
+         const auto *event = static_cast<const Emergence::Celerity::Trigger3dEnteredEvent *> (*eventCursor);
          ++eventCursor)
     {
         ProcessCollision (event->triggerObjectId, event->intruderObjectId);

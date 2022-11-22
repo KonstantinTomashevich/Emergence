@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <Celerity/Physics/PhysicsWorldSingleton.hpp>
+#include <Celerity/Physics3d/PhysicsWorld3dSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Gameplay/PhysicsConstant.hpp>
@@ -24,7 +24,7 @@ private:
 };
 
 PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorldSingleton))
+    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorld3dSingleton))
 {
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
@@ -37,7 +37,7 @@ void PhysicsInitializer::Execute () noexcept
     }
 
     auto worldCursor = modifyPhysicsWorld.Execute ();
-    auto *world = static_cast<Emergence::Celerity::PhysicsWorldSingleton *> (*worldCursor);
+    auto *world = static_cast<Emergence::Celerity::PhysicsWorld3dSingleton *> (*worldCursor);
 
     world->enableRemoteDebugger = false;
     strcpy (world->remoteDebuggerUrl.data (), "localhost");
