@@ -6,7 +6,7 @@
   content:
     objectId: 0
 
-- type: RigidBodyComponent
+- type: RigidBody3dComponent
   content:
     objectId: 0
     angularDamping: 0.99
@@ -15,7 +15,7 @@
     lockFlags: 40 # Lock angular velocity on X and Z axis.
 
 # Sphere for movement.
-- type: CollisionShapeComponent
+- type: CollisionShape3dComponent
   content:
     objectId: 0
     shapeId: 0
@@ -26,7 +26,7 @@
     collisionGroup: 2 # Fighter
 
 # Hit box for bullets.
-- type: CollisionShapeComponent
+- type: CollisionShape3dComponent
   content:
     objectId: 0
     shapeId: 1

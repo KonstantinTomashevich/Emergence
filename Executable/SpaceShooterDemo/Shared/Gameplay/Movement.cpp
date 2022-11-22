@@ -1,7 +1,7 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
-#include <Celerity/Physics/RigidBodyComponent.hpp>
-#include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Physics3d/RigidBody3dComponent.hpp>
+#include <Celerity/Physics3d/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
@@ -48,7 +48,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
       fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
-      editRigidBodyById (EDIT_VALUE_1F (Emergence::Celerity::RigidBodyComponent, objectId)),
+      editRigidBodyById (EDIT_VALUE_1F (Emergence::Celerity::RigidBody3dComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
@@ -57,7 +57,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
     _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
     _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::Simulation::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Physics3dSimulation::Checkpoint::STARTED);
 }
 
 void MovementUpdater::Execute () noexcept
@@ -93,12 +93,12 @@ void MovementUpdater::Execute () noexcept
         }
 
         auto bodyCursor = editRigidBodyById.Execute (&movement->objectId);
-        auto *body = static_cast<Emergence::Celerity::RigidBodyComponent *> (*bodyCursor);
+        auto *body = static_cast<Emergence::Celerity::RigidBody3dComponent *> (*bodyCursor);
 
         if (!body)
         {
             EMERGENCE_LOG (ERROR, "Movement: Unable to attach movement feature to object (id ", movement->objectId,
-                           ") without RigidBodyComponent!");
+                           ") without RigidBody3dComponent!");
 
             ~movementCursor;
             continue;

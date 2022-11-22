@@ -2,12 +2,12 @@
   content:
     objectId: 0
 
-- type: RigidBodyComponent
+- type: RigidBody3dComponent
   content:
     objectId: 0
     type: 0 # Static
 
-- type: CollisionShapeComponent
+- type: CollisionShape3dComponent
   content:
     objectId: 0
     shapeId: 0

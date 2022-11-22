@@ -1,5 +1,5 @@
-#include <Celerity/Physics/CollisionShapeComponent.hpp>
-#include <Celerity/Physics/RigidBodyComponent.hpp>
+#include <Celerity/Physics3d/CollisionShape3dComponent.hpp>
+#include <Celerity/Physics3d/RigidBody3dComponent.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
 #include <Gameplay/ControllableComponent.hpp>
@@ -21,11 +21,11 @@ Emergence::Resource::Object::TypeManifest PrepareResourceObjectTypeManifest () n
     typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});
     typeManifest.Register (DamageDealerComponent::Reflect ().mapping, {DamageDealerComponent::Reflect ().objectId});
 
-    typeManifest.Register (Emergence::Celerity::CollisionShapeComponent::Reflect ().mapping,
-                           {Emergence::Celerity::CollisionShapeComponent::Reflect ().shapeId});
+    typeManifest.Register (Emergence::Celerity::CollisionShape3dComponent::Reflect ().mapping,
+                           {Emergence::Celerity::CollisionShape3dComponent::Reflect ().shapeId});
 
-    typeManifest.Register (Emergence::Celerity::RigidBodyComponent::Reflect ().mapping,
-                           {Emergence::Celerity::RigidBodyComponent::Reflect ().objectId});
+    typeManifest.Register (Emergence::Celerity::RigidBody3dComponent::Reflect ().mapping,
+                           {Emergence::Celerity::RigidBody3dComponent::Reflect ().objectId});
 
     typeManifest.Register (Emergence::Celerity::Transform3dComponent::Reflect ().mapping,
                            {Emergence::Celerity::Transform3dComponent::Reflect ().objectId});

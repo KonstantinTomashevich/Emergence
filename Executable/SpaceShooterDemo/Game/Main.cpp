@@ -9,8 +9,8 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
-#include <Celerity/Physics/Events.hpp>
-#include <Celerity/Physics/Simulation.hpp>
+#include <Celerity/Physics3d/Events.hpp>
+#include <Celerity/Physics3d/Simulation.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Resource/Config/Loading.hpp>
@@ -180,7 +180,7 @@ void GameApplication::Start ()
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes ());
     Emergence::Celerity::TransformHierarchyCleanup::Add3dToFixedUpdate (pipelineBuilder);
-    Emergence::Celerity::Simulation::AddToFixedUpdate (pipelineBuilder);
+    Emergence::Celerity::Physics3dSimulation::AddToFixedUpdate (pipelineBuilder);
     Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);
