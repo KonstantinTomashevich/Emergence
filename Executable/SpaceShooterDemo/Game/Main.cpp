@@ -8,14 +8,14 @@
 
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
-#include <Celerity/Asset/Config/Loading.hpp>
-#include <Celerity/Asset/Config/PathMappingLoading.hpp>
-#include <Celerity/Asset/Object/Loading.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Physics/Events.hpp>
 #include <Celerity/Physics/Simulation.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/PathMappingLoading.hpp>
+#include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
@@ -35,8 +35,8 @@
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/Spawn.hpp>
 
-#include <Loading/Model/AssetConfigTypeMeta.hpp>
-#include <Loading/Model/AssetObjectTypeManifest.hpp>
+#include <Loading/Model/ResourceConfigTypeMeta.hpp>
+#include <Loading/Model/ResourceObjectTypeManifest.hpp>
 #include <Loading/Task/InputInitialization.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
 #include <Loading/Task/LoadingOrchestration.hpp>
@@ -137,7 +137,7 @@ void GameApplication::Setup ()
     engineParameters_[Urho3D::EP_FULL_SCREEN] = false;
     engineParameters_[Urho3D::EP_WINDOW_RESIZABLE] = true;
     engineParameters_[Urho3D::EP_WINDOW_TITLE] = "Emergence Space Shooter Demo";
-    engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreAssets;GameAssets";
+    engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreResources;GameResources";
     engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "..";
 }
 
@@ -161,11 +161,12 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
     pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
-    Emergence::Celerity::AssetConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
-                                                                   PrepareAssetConfigTypeMeta ());
-    Emergence::Celerity::AssetConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameAssets",
-                                                                              PrepareAssetConfigTypeMeta ());
-    Emergence::Celerity::AssetObjectLoading::AddToLoadingPipeline (pipelineBuilder, PrepareAssetObjectTypeManifest ());
+    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
+                                                                      PrepareResourceConfigTypeMeta ());
+    Emergence::Celerity::ResourceConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameResources",
+                                                                                 PrepareResourceConfigTypeMeta ());
+    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
+                                                                      PrepareResourceObjectTypeManifest ());
     InputInitialization::AddToLoadingPipeline (pipelineBuilder);
     LevelGeneration::AddToLoadingPipeline (pipelineBuilder);
     PhysicsInitialization::AddToLoadingPipeline (pipelineBuilder);

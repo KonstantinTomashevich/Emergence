@@ -41,18 +41,24 @@ sober_test_begin (CelerityRender2d)
     sober_test_variant_end ()
 sober_test_end ()
 
-set (ASSETS_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Assets")
-file (MAKE_DIRECTORY "${ASSETS_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Expectation" "${ASSETS_COMPILED_DIRECTORY}/Expectation" SYMBOLIC)
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Materials" "${ASSETS_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Assets/MaterialInstances"
-        "${ASSETS_COMPILED_DIRECTORY}/MaterialInstances" SYMBOLIC)
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Assets/Textures" "${ASSETS_COMPILED_DIRECTORY}/Textures" SYMBOLIC)
-register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Assets/Shaders" "${ASSETS_COMPILED_DIRECTORY}/Shaders")
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
+file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Expectation"
+        "${RESOURCES_COMPILED_DIRECTORY}/Expectation" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Materials"
+        "${RESOURCES_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/MaterialInstances"
+        "${RESOURCES_COMPILED_DIRECTORY}/MaterialInstances" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Textures" "${RESOURCES_COMPILED_DIRECTORY}/Textures" SYMBOLIC)
+register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_test_library (CelerityRender2d CELERITY_RENDER_2D_TEST_LIBRARY)
 sober_naming_library_base_target ("${CELERITY_RENDER_2D_TEST_LIBRARY}" CELERITY_RENDER_2D_TEST_LIBRARY_TARGET)
-register_asset_usage ("${CELERITY_RENDER_2D_TEST_LIBRARY_TARGET}" "${ASSETS_COMPILED_DIRECTORY}" "Render2dAssets")
+register_resource_usage ("${CELERITY_RENDER_2D_TEST_LIBRARY_TARGET}"
+        "${RESOURCES_COMPILED_DIRECTORY}" "Render2dResources")
 
 sober_naming_test_collection (CelerityRender2d COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")

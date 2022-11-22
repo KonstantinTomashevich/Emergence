@@ -328,7 +328,8 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {200u});
     LOG ("Starting image check.");
 
-    std::ifstream exampleInput {EMERGENCE_BUILD_STRING ("Render2dAssets/Expectation/", _id, ".png"), std::ios::binary};
+    std::ifstream exampleInput {EMERGENCE_BUILD_STRING ("Render2dResources/Expectation/", _id, ".png"),
+                                std::ios::binary};
     REQUIRE (exampleInput);
     std::ifstream testInput {EMERGENCE_BUILD_STRING (_id, ".png"), std::ios::binary};
     REQUIRE (testInput);
@@ -380,12 +381,12 @@ void ExecuteScenario (Scenario _scenario) noexcept
     }
 
     constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
-    static const Emergence::Memory::UniqueString testMaterialInstancesPath {"Render2dAssets/MaterialInstances"};
-    static const Emergence::Memory::UniqueString testMaterialsPath {"Render2dAssets/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {"BGFX2dAssets/Materials"};
-    static const Emergence::Memory::UniqueString testShadersPath {"Render2dAssets/Shaders"};
-    static const Emergence::Memory::UniqueString engineShadersPath {"BGFX2dAssets/Shaders"};
-    static const Emergence::Memory::UniqueString testTexturesPath {"Render2dAssets/Textures"};
+    static const Emergence::Memory::UniqueString testMaterialInstancesPath {"Render2dResources/MaterialInstances"};
+    static const Emergence::Memory::UniqueString testMaterialsPath {"Render2dResources/Materials"};
+    static const Emergence::Memory::UniqueString engineMaterialsPath {"BGFX2dResources/Materials"};
+    static const Emergence::Memory::UniqueString testShadersPath {"Render2dResources/Shaders"};
+    static const Emergence::Memory::UniqueString engineShadersPath {"BGFX2dResources/Shaders"};
+    static const Emergence::Memory::UniqueString testTexturesPath {"Render2dResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};

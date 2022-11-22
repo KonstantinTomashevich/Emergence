@@ -302,12 +302,12 @@ void Application::InitWorld () noexcept
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
 
     constexpr uint64_t MAX_LOADING_TIME_NS = 10000000;
-    static const Emergence::Memory::UniqueString gameMaterialInstancesPath {"../GameAssets/MaterialInstances"};
-    static const Emergence::Memory::UniqueString gameMaterialsPath {"../GameAssets/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {"../BGFX2dAssets/Materials"};
-    static const Emergence::Memory::UniqueString gameShadersPath {"../GameAssets/Shaders"};
-    static const Emergence::Memory::UniqueString engineShadersPath {"../BGFX2dAssets/Shaders"};
-    static const Emergence::Memory::UniqueString gameTexturesPath {"../GameAssets/Textures"};
+    static const Emergence::Memory::UniqueString gameMaterialInstancesPath {"../GameResources/MaterialInstances"};
+    static const Emergence::Memory::UniqueString gameMaterialsPath {"../GameResources/Materials"};
+    static const Emergence::Memory::UniqueString engineMaterialsPath {"../BGFX2dResources/Materials"};
+    static const Emergence::Memory::UniqueString gameShadersPath {"../GameResources/Shaders"};
+    static const Emergence::Memory::UniqueString engineShadersPath {"../BGFX2dResources/Shaders"};
+    static const Emergence::Memory::UniqueString gameTexturesPath {"../GameResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);

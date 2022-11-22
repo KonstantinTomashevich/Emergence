@@ -24,12 +24,6 @@
       "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
     },
     {
-      "Prefix": "./Library/Public/AssetObject/Asset/Object/TypeManifest.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 60.0,
-      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
-    },
-    {
       "Prefix": "./Library/Public/Celerity/Public/Celerity/Pipeline.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 24.0,
@@ -46,12 +40,18 @@
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
     },
     {
+      "Prefix": "./Library/Public/ResourceObject/Resource/Object/TypeManifest.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
+    },
+    {
       "Prefix": "./Service/Assert/Implementation/",
       "Action": "Exclude",
       "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
     },
     {
-      "Prefix": "./Test/Library/AssetObject/Asset/Object/Test/Helpers.cpp",
+      "Prefix": "./Test/Library/ResourceObject/Resource/Object/Test/Helpers.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when tests are passing."

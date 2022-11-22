@@ -1,10 +1,10 @@
-#include <Celerity/Asset/Config/Loading.hpp>
-#include <Celerity/Asset/Config/Messages.hpp>
-#include <Celerity/Asset/Object/Loading.hpp>
-#include <Celerity/Asset/Object/Messages.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics/DynamicsMaterial.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/Messages.hpp>
+#include <Celerity/Resource/Object/Loading.hpp>
+#include <Celerity/Resource/Object/Messages.hpp>
 
 #include <Loading/Model/Events.hpp>
 #include <Loading/Model/Messages.hpp>
@@ -34,17 +34,17 @@ public:
 private:
     Emergence::Celerity::ModifySingletonQuery modifyWorld;
 
-    Emergence::Celerity::FetchSequenceQuery fetchAssetConfigResponse;
-    Emergence::Celerity::FetchSequenceQuery fetchAssetObjectFolderResponse;
+    Emergence::Celerity::FetchSequenceQuery fetchResourceConfigResponse;
+    Emergence::Celerity::FetchSequenceQuery fetchResourceObjectFolderResponse;
     Emergence::Celerity::FetchSequenceQuery fetchLevelGenerationResponse;
 
-    Emergence::Celerity::InsertShortTermQuery insertAssetConfigRequest;
-    Emergence::Celerity::InsertShortTermQuery insertAssetObjectFolderRequest;
+    Emergence::Celerity::InsertShortTermQuery insertResourceConfigRequest;
+    Emergence::Celerity::InsertShortTermQuery insertResourceObjectFolderRequest;
     Emergence::Celerity::InsertShortTermQuery insertLevelGenerationRequest;
     Emergence::Celerity::InsertShortTermQuery insertLoadingFinishedEvent;
 
     LoadingStage stage = LoadingStage::NOT_STARTED;
-    bool assetObjectsLoaded = false;
+    bool resourceObjectsLoaded = false;
     bool dynamicsMaterialsLoaded = false;
 
     bool *loadingFinishedOutput = nullptr;
@@ -54,19 +54,19 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
                                           bool *_loadingFinishedOutput) noexcept
     : modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
-      fetchAssetConfigResponse (FETCH_SEQUENCE (Emergence::Celerity::AssetConfigLoadedResponse)),
-      fetchAssetObjectFolderResponse (FETCH_SEQUENCE (Emergence::Celerity::AssetObjectFolderLoadedResponse)),
+      fetchResourceConfigResponse (FETCH_SEQUENCE (Emergence::Celerity::ResourceConfigLoadedResponse)),
+      fetchResourceObjectFolderResponse (FETCH_SEQUENCE (Emergence::Celerity::ResourceObjectFolderLoadedResponse)),
       fetchLevelGenerationResponse (FETCH_SEQUENCE (LevelGenerationFinishedResponse)),
 
-      insertAssetConfigRequest (INSERT_SHORT_TERM (Emergence::Celerity::AssetConfigRequest)),
-      insertAssetObjectFolderRequest (INSERT_SHORT_TERM (Emergence::Celerity::AssetObjectFolderRequest)),
+      insertResourceConfigRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceConfigRequest)),
+      insertResourceObjectFolderRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceObjectFolderRequest)),
       insertLevelGenerationRequest (INSERT_SHORT_TERM (LevelGenerationRequest)),
       insertLoadingFinishedEvent (INSERT_SHORT_TERM (LoadingFinishedEvent)),
 
       loadingFinishedOutput (_loadingFinishedOutput)
 {
-    _constructor.DependOn (Emergence::Celerity::AssetConfigLoading::Checkpoint::FINISHED);
-    _constructor.DependOn (Emergence::Celerity::AssetObjectLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::ResourceConfigLoading::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::ResourceObjectLoading::Checkpoint::FINISHED);
     _constructor.DependOn (LevelGeneration::Checkpoint::FINISHED);
     _constructor.DependOn (PhysicsInitialization::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
@@ -75,20 +75,20 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
 
 void LoadingOrchestrator::Execute () noexcept
 {
-    static const char *const assetObjectFolder = "../GameAssets/Objects/";
+    static const char *const resourceObjectFolder = "../GameResources/Objects/";
 
     switch (stage)
     {
     case LoadingStage::NOT_STARTED:
     {
-        auto assetObjectRequestCursor = insertAssetObjectFolderRequest.Execute ();
-        auto *assetObjectRequest =
-            static_cast<Emergence::Celerity::AssetObjectFolderRequest *> (++assetObjectRequestCursor);
-        assetObjectRequest->folder = assetObjectFolder;
+        auto resourceObjectRequestCursor = insertResourceObjectFolderRequest.Execute ();
+        auto *resourceObjectRequest =
+            static_cast<Emergence::Celerity::ResourceObjectFolderRequest *> (++resourceObjectRequestCursor);
+        resourceObjectRequest->folder = resourceObjectFolder;
 
-        auto assetConfigRequestCursor = insertAssetConfigRequest.Execute ();
+        auto resourceConfigRequestCursor = insertResourceConfigRequest.Execute ();
         auto *dynamicsMaterialRequest =
-            static_cast<Emergence::Celerity::AssetConfigRequest *> (++assetConfigRequestCursor);
+            static_cast<Emergence::Celerity::ResourceConfigRequest *> (++resourceConfigRequestCursor);
         dynamicsMaterialRequest->type = Emergence::Celerity::DynamicsMaterial::Reflect ().mapping;
 
         stage = LoadingStage::LOADING_LEVEL_ASSETS;
@@ -97,16 +97,16 @@ void LoadingOrchestrator::Execute () noexcept
 
     case LoadingStage::LOADING_LEVEL_ASSETS:
     {
-        if (!assetObjectsLoaded)
+        if (!resourceObjectsLoaded)
         {
-            for (auto cursor = fetchAssetObjectFolderResponse.Execute ();
+            for (auto cursor = fetchResourceObjectFolderResponse.Execute ();
                  const auto *response =
-                     static_cast<const Emergence::Celerity::AssetObjectFolderLoadedResponse *> (*cursor);
+                     static_cast<const Emergence::Celerity::ResourceObjectFolderLoadedResponse *> (*cursor);
                  ++cursor)
             {
-                if (response->folder == assetObjectFolder)
+                if (response->folder == resourceObjectFolder)
                 {
-                    assetObjectsLoaded = true;
+                    resourceObjectsLoaded = true;
                     break;
                 }
             }
@@ -114,8 +114,9 @@ void LoadingOrchestrator::Execute () noexcept
 
         if (!dynamicsMaterialsLoaded)
         {
-            for (auto cursor = fetchAssetConfigResponse.Execute ();
-                 const auto *response = static_cast<const Emergence::Celerity::AssetConfigLoadedResponse *> (*cursor);
+            for (auto cursor = fetchResourceConfigResponse.Execute ();
+                 const auto *response =
+                     static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*cursor);
                  ++cursor)
             {
                 if (response->type == Emergence::Celerity::DynamicsMaterial::Reflect ().mapping)
@@ -126,7 +127,7 @@ void LoadingOrchestrator::Execute () noexcept
             }
         }
 
-        if (assetObjectsLoaded && dynamicsMaterialsLoaded)
+        if (resourceObjectsLoaded && dynamicsMaterialsLoaded)
         {
             auto levelGenerationRequestCursor = insertLevelGenerationRequest.Execute ();
             ++levelGenerationRequestCursor;
