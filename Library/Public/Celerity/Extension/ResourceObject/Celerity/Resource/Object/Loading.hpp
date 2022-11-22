@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Resource/Object/TypeManifest.hpp>
-
 #include <Celerity/PipelineBuilder.hpp>
+
+#include <Resource/Object/TypeManifest.hpp>
 
 namespace Emergence::Celerity::ResourceObjectLoading
 {

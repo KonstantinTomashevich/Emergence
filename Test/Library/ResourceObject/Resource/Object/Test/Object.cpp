@@ -1,7 +1,7 @@
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
 #include <Resource/Object/Test/Helpers.hpp>
 #include <Resource/Object/Test/Types.hpp>
-
-#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <Testing/Testing.hpp>
 

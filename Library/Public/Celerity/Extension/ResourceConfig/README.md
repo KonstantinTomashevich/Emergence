@@ -7,5 +7,5 @@ Storage folder assignment is done through special config path mapping file (`Con
 `ConfigPathMapping.yaml`), which is stored in resources root folder.
 
 `CelerityResourceConfig` provides API for loading configs by their type, which allows user to omit config storage
-details  in game code: these details are automatically loaded from config path mapping. Also, every config is loaded
+details in game code: these details are automatically loaded from config path mapping. Also, every config is loaded
 into the game world as long term object and might be indexed in any way user needs it. 

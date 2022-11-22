@@ -165,9 +165,9 @@ void PrepareEnvironment (const Container::Vector<FolderDefinition> &_folders)
 }
 } // namespace Emergence::Resource::Object::Test
 
+using namespace Emergence::Memory::Literals;
 using namespace Emergence::Resource::Object::Test;
 using namespace Emergence::Resource::Object;
-using namespace Emergence::Memory::Literals;
 
 BEGIN_SUITE (LibraryLoader)
 

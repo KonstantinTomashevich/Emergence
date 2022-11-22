@@ -1,10 +1,10 @@
-#include <Resource/Object/LibraryLoader.hpp>
-
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Resource/Object/LoadingStateSingleton.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
+
+#include <Resource/Object/LibraryLoader.hpp>
 
 namespace Emergence::Celerity::ResourceObjectLoading
 {
