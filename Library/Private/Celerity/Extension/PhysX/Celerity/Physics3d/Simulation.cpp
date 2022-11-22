@@ -44,7 +44,7 @@ namespace TaskNames
 
 static const Memory::UniqueString UPDATE_WORLD {"Physics3d::UpdateWorld"};
 
-static const Memory::UniqueString INITIALIZE_MATERIALS {"Physics:3d:InitializeMaterials"};
+static const Memory::UniqueString INITIALIZE_MATERIALS {"Physics3d::InitializeMaterials"};
 static const Memory::UniqueString SYNC_MATERIAL_CHANGES {"Physics3d::SyncMaterialChanges"};
 static const Memory::UniqueString APPLY_MATERIAL_DELETION {"Physics3d::ApplyMaterialDeletion"};
 
@@ -437,7 +437,7 @@ void ShapeInitializer::Execute ()
 
         if (!material)
         {
-            EMERGENCE_LOG (ERROR, "Physics: Unable to find DynamicsMaterial with id ", shape->materialId,
+            EMERGENCE_LOG (ERROR, "Physics3d: Unable to find DynamicsMaterial with id ", shape->materialId,
                            "! Shape, that attempts to use this material, will be deleted.");
 
             ~shapeCursor;
@@ -450,7 +450,7 @@ void ShapeInitializer::Execute ()
 
         if (!transform)
         {
-            EMERGENCE_LOG (ERROR, "Physics: Unable to add CollisionShape3dComponent to object with id ",
+            EMERGENCE_LOG (ERROR, "Physics3d: Unable to add CollisionShape3dComponent to object with id ",
                            shape->objectId, ", because it has no Transform3dComponent!");
 
             ~shapeCursor;
@@ -565,7 +565,7 @@ void ShapeChangesSynchronizer::ApplyShapeMaterialChanges () noexcept
             }
             else
             {
-                EMERGENCE_LOG (ERROR, "Physics: Unable to find DynamicsMaterial with id ", shape->materialId,
+                EMERGENCE_LOG (ERROR, "Physics3d: Unable to find DynamicsMaterial with id ", shape->materialId,
                                "! Shape, that attempts to use this material, will be deleted.");
 
                 ~shapeCursor;
@@ -596,7 +596,7 @@ void ShapeChangesSynchronizer::ApplyShapeGeometryChanges () noexcept
 
         if (!transform)
         {
-            EMERGENCE_LOG (ERROR, "Physics: Unable to update CollisionShape3dComponent to object with id ",
+            EMERGENCE_LOG (ERROR, "Physics3d: Unable to update CollisionShape3dComponent to object with id ",
                            shape->objectId, ", because it has no Transform3dComponent!");
 
             ~shapeCursor;
@@ -739,7 +739,7 @@ void BodyInitializer::Execute ()
 
         if (!transform)
         {
-            EMERGENCE_LOG (ERROR, "Physics: Unable to initialize RigidBody3dComponent on object with id ",
+            EMERGENCE_LOG (ERROR, "Physics3d: Unable to initialize RigidBody3dComponent on object with id ",
                            body->objectId, ", because it has no Transform3dComponent!");
 
             ~bodyCursor;
@@ -1354,7 +1354,7 @@ static bool UpdateShapeGeometry (const CollisionShape3dComponent *_shape, const 
     if (pxShape->getGeometryType () != ToPxGeometryType (_shape->geometry.type))
     {
         EMERGENCE_LOG (ERROR,
-                       "Physics: Unable to update CollisionShape3dComponent geometry, because changing geometry type "
+                       "Physics3d: Unable to update CollisionShape3dComponent geometry, because changing geometry type "
                        "is forbidden!");
         return false;
     }
@@ -1410,7 +1410,7 @@ static void ConstructPxShape (CollisionShape3dComponent *_shape,
          _shape->geometry.type == CollisionGeometry3dType::CAPSULE) &&
         (!Math::NearlyEqual (_worldScale.x, _worldScale.y) || !Math::NearlyEqual (_worldScale.y, _worldScale.z)))
     {
-        EMERGENCE_LOG (ERROR, "Physics: CollisionShape3dComponent's can only work with uniform scale!");
+        EMERGENCE_LOG (ERROR, "Physics3d: CollisionShape3dComponent's can only work with uniform scale!");
     }
 
     const physx::PxShapeFlags shapeFlags = CalculateShapeFlags (_shape);
@@ -1498,12 +1498,12 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
 
-    _pipelineBuilder.AddTask ("Physics::RemoveBodies"_us)
+    _pipelineBuilder.AddTask ("Physics3d::RemoveBodies"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, RigidBody3dComponent, objectId)
         .DependOn (Checkpoint::STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
 
-    _pipelineBuilder.AddTask ("Physics::RemoveShapes"_us)
+    _pipelineBuilder.AddTask ("Physics3d::RemoveShapes"_us)
         .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, CollisionShape3dComponent, objectId)
         .DependOn (Checkpoint::STARTED)
         .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
