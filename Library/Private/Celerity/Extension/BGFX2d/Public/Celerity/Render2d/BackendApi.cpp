@@ -128,7 +128,7 @@ void Callback::fatal (const char *_filePath, uint16_t _line, bgfx::Fatal::Enum _
 
 void Callback::traceVargs (const char *_filePath, uint16_t _line, const char *_format, va_list _argList)
 {
-    char buffer[2048];
+    char buffer[2048u];
     char *lastCharacter = buffer;
     va_list argListCopy;
     va_copy (argListCopy, _argList);

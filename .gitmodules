@@ -28,3 +28,6 @@
 [submodule "ThirdParty/debugbreak"]
 	path = ThirdParty/debugbreak
 	url = https://github.com/scottt/debugbreak.git
+[submodule "ThirdParty/box2d"]
+	path = ThirdParty/box2d
+	url = https://github.com/erincatto/box2d.git
