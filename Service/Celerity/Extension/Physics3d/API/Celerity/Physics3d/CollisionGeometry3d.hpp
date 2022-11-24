@@ -23,13 +23,13 @@ struct CollisionGeometry3d final
 
     union
     {
-        /// \details Used if ::type is CollisionGeometryType::BOX.
+        /// \details Used if ::type is CollisionGeometry3dType::BOX.
         Math::Vector3f boxHalfExtents;
 
-        /// \details Used if ::type is CollisionGeometryType::SPHERE.
+        /// \details Used if ::type is CollisionGeometry3dType::SPHERE.
         float sphereRadius;
 
-        /// \details Used if ::type is CollisionGeometryType::CAPSULE.
+        /// \details Used if ::type is CollisionGeometry3dType::CAPSULE.
         struct
         {
             float capsuleRadius;

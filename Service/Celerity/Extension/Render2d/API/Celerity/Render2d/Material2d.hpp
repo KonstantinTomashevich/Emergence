@@ -14,17 +14,7 @@ namespace Emergence::Celerity
 ///          uniforms. Parameter customization is done through Material2dInstance.
 struct Material2d final
 {
-    Material2d () noexcept = default;
-
-    Material2d (const Material2d &_other) = delete;
-
-    Material2d (Material2d &&_other) = delete;
-
-    ~Material2d () noexcept;
-
-    Material2d &operator= (const Material2d &_other) = delete;
-
-    Material2d &operator= (Material2d &&_other) = delete;
+    EMERGENCE_STATIONARY_DATA_TYPE (Material2d);
 
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;

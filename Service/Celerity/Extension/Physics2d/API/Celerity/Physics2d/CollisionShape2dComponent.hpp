@@ -2,11 +2,11 @@
 
 #include <API/Common/Shortcuts.hpp>
 
-#include <Celerity/Physics3d/CollisionGeometry3d.hpp>
+#include <Celerity/Physics2d/CollisionGeometry2d.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Quaternion.hpp>
-#include <Math/Vector3f.hpp>
+#include <Math/Vector2f.hpp>
 
 #include <Memory/UniqueString.hpp>
 
@@ -14,30 +14,30 @@ namespace Emergence::Celerity
 {
 /// \brief Represents collision shape, attached to an object.
 /// \details There could be multiple shapes, attached to the same object.
-struct CollisionShape3dComponent final
+struct CollisionShape2dComponent final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (CollisionShape3dComponent);
+    EMERGENCE_STATIONARY_DATA_TYPE (CollisionShape2dComponent);
 
     /// \brief Unique id of this shape component.
     /// \details Because there could be multiple shapes per object, we need another unique identification system.
-    /// \invariant Must be assigned using PhysicsWorld3dSingleton::GenerateShapeId.
+    /// \invariant Must be assigned using PhysicsWorld2dSingleton::GenerateShapeId.
     UniqueId shapeId = INVALID_UNIQUE_ID;
 
     /// \brief Id of an object to which this shape is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
 
-    /// \brief Shape additional rotation, local to object transform.
-    Math::Quaternion rotation = Math::Quaternion::IDENTITY;
-
     /// \brief Shape additional translation, local to object transform.
-    Math::Vector3f translation = Math::Vector3f::ZERO;
+    Math::Vector2f translation = Math::Vector2f::ZERO;
+
+    /// \brief Shape additional rotation, local to object transform.
+    float rotation = 0.0f;
 
     /// \brief Shape geometry. Can be resized any time in fixed pipeline.
     /// \invariant Geometry type cannot be changed after initialization!
-    CollisionGeometry3d geometry {.type = CollisionGeometry3dType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
+    CollisionGeometry2d geometry {.type = CollisionGeometry2dType::BOX, .boxHalfExtents = {0.5f, 0.5f}};
 
     /// \brief Shape physical material id.
-    /// \see DynamicsMaterial3d
+    /// \see DynamicsMaterial2d
     Memory::UniqueString materialId;
 
     /// \brief Whether this shape is enabled.

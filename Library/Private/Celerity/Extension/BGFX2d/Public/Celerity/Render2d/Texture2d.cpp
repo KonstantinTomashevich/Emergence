@@ -6,6 +6,8 @@
 
 namespace Emergence::Celerity
 {
+Texture2d::Texture2d () noexcept = default;
+
 Texture2d::~Texture2d () noexcept
 {
     bgfx::TextureHandle handle {static_cast<uint16_t> (nativeHandle)};
