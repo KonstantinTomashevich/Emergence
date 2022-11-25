@@ -12,35 +12,35 @@ struct B2_API b2BodyUserData
 {
     b2BodyUserData ()
     {
-        objectId = std::numeric_limits<std::uint64_t>::max ();
+        objectId = std::numeric_limits<uint64_t>::max ();
     }
 
-    std::uint64_t objectId;
+    uint64_t objectId;
 };
 
 struct B2_API b2FixtureUserData
 {
     b2FixtureUserData ()
     {
-        shapeId = std::numeric_limits<std::uint64_t>::max ();
+        shapeId = std::numeric_limits<uint64_t>::max ();
     }
 
-    std::uint64_t shapeId;
+    uint64_t shapeId;
 };
 
 struct B2_API b2JointUserData
 {
     b2JointUserData ()
     {
-        jointId = std::numeric_limits<std::uint64_t>::max ();
+        jointId = std::numeric_limits<uint64_t>::max ();
     }
 
-    std::uint64_t jointId;
+    uint64_t jointId;
 };
 
-B2_API void SetBox2dAllocators (void *(*_allocator) (std::int32_t), void (*_deallocator) (void *)) noexcept;
+B2_API void SetBox2dAllocators (void *(*_allocator) (int32_t), void (*_deallocator) (void *)) noexcept;
 
-B2_API void *b2Alloc (std::int32_t _size) noexcept;
+B2_API void *b2Alloc (int32_t _size) noexcept;
 
 B2_API void b2Free (void *_memory) noexcept;
 
