@@ -17,6 +17,9 @@
 #
 # XXHash uses some intrinsics, that are not guaranteed to be portable. There is no way to ignore
 # portability-simd-intrinsics only in ByteHasher.cpp, therefore it is ignored everywhere.
+#
+# We disable misc-const-correctness because it triggers on lots of local variables (more than 700 cases at the time
+# of writing this comment) and it's not really useful enough to fix all of this (at least now).
 Checks: >
   -*,
   bugprone-*,
@@ -33,6 +36,7 @@ Checks: >
   cppcoreguidelines-special-member-functions,
   llvm-namespace-comment,
   misc-*,
+  -misc-const-correctness,
   -misc-no-recursion,
   -misc-non-private-member-variables-in-classes,
   modernize-*,
