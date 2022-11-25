@@ -7,8 +7,10 @@
 #include "box2d/b2_settings.h"
 
 static void *(*selectedAllocator) (int32_t) = nullptr;
+
 static void (*selectedDeallocator) (void *) = nullptr;
-void (*selectedLogger) (const char *) = nullptr;
+
+static void (*selectedLogger) (const char *) = nullptr;
 
 B2_API void SetBox2dAllocators (void *(*_allocator) (int32_t), void (*_deallocator) (void *)) noexcept
 {

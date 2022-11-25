@@ -15,7 +15,7 @@ jobs:
         build_type: [ Release, Debug ]
         # Only Windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
-        os: [ windows-2022 ]
+        os: [ windows-2019 ]
         toolchain: [ CLangCL, MSVC ]
         include:
           # As of March 2022, there is a strange problem with llvm coverage on clang-cl 13.0 from VS 2022:
