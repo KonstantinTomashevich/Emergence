@@ -69,8 +69,8 @@ public:
     /// \return Reference to constructed item.
     /// \invariant ::GetCount is less that ::Capacity.
     template <typename... Args>
-    Item &EmplaceAt (Iterator _at,
-                     Args &&..._constructorArgs) noexcept requires std::is_nothrow_move_assignable_v<Item>;
+    Item &EmplaceAt (Iterator _at, Args &&..._constructorArgs) noexcept requires std::is_nothrow_move_assignable_v<Item>
+    ;
 
     /// \brief Resets vector to empty state.
     void Clear () noexcept;
@@ -78,8 +78,8 @@ public:
     /// \brief Move assigns last value to position of given iterator and decrements ::count.
     /// \return New ::End iterator.
     /// \invariant _iterator < ::End.
-    Iterator EraseExchangingWithLast (
-        const Iterator &_iterator) noexcept requires std::is_nothrow_move_assignable_v<Item>;
+    Iterator EraseExchangingWithLast (const Iterator &_iterator) noexcept
+        requires std::is_nothrow_move_assignable_v<Item>;
 
     /// \brief Erase first `_amount` elements **without** preserving element order (for performance).
     /// \invariant _amount <= ::GetCount.
@@ -264,8 +264,8 @@ bool InplaceVector<Item, Capacity>::TryEmplaceBack (Args &&..._constructorArgs) 
 
 template <typename Item, std::size_t Capacity>
 template <typename... Args>
-Item &InplaceVector<Item, Capacity>::EmplaceAt (
-    InplaceVector::Iterator _at, Args &&..._constructorArgs) noexcept requires std::is_nothrow_move_assignable_v<Item>
+Item &InplaceVector<Item, Capacity>::EmplaceAt (InplaceVector::Iterator _at, Args &&..._constructorArgs) noexcept
+    requires std::is_nothrow_move_assignable_v<Item>
 {
     EMERGENCE_ASSERT (count < Capacity);
     if (_at == End ())
@@ -430,8 +430,8 @@ typename InplaceVector<Item, Capacity>::ConstIterator InplaceVector<Item, Capaci
 }
 
 template <typename Item, std::size_t Capacity>
-bool InplaceVector<Item, Capacity>::operator== (
-    const InplaceVector &_other) const noexcept requires std::equality_comparable<Item>
+bool InplaceVector<Item, Capacity>::operator== (const InplaceVector &_other) const noexcept
+    requires std::equality_comparable<Item>
 {
     if (count != _other.count)
     {
