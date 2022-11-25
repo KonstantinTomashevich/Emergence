@@ -24,6 +24,7 @@ add_custom_target (InjectBox2dUserSettingsHeader
         "${CMAKE_CURRENT_SOURCE_DIR}/box2d/include/box2d"
         COMMENT "Copying user settings to box2d include path...")
 add_dependencies (box2d InjectBox2dUserSettingsHeader)
+add_dependencies (BuildTimeCodeGeneration InjectBox2dUserSettingsHeader)
 
 # CGLM
 add_subdirectory (cglm)
