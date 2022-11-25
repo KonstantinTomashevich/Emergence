@@ -1148,6 +1148,9 @@ static b2Shape::Type ToBox2d (CollisionGeometry2dType _type) noexcept
     case CollisionGeometry2dType::LINE:
         return b2Shape::e_edge;
     }
+
+    EMERGENCE_ASSERT (false);
+    return b2Shape::e_typeCount;
 }
 
 b2Filter ConstructBox2dFilter (uint8_t _collisionGroup, bool _sendContactEvents, bool _visibleToWorldQueries) noexcept
