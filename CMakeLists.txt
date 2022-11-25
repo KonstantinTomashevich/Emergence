@@ -15,11 +15,6 @@ include ("${CMAKE_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 enable_testing ()
 
 add_subdirectory (ThirdParty)
-
-if (NOT TARGET SDL2::SDL2)
-    message (FATAL_ERROR "How the fuck?")
-endif ()
-
 add_subdirectory (Service)
 add_subdirectory (Library)
 add_subdirectory (Test)
