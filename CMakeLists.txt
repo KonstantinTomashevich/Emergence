@@ -16,7 +16,7 @@ enable_testing ()
 
 add_subdirectory (ThirdParty)
 
-if (NOT TARGET SDL2)
+if (NOT TARGET SDL2::SDL2)
     message (FATAL_ERROR "How the fuck?")
 endif ()
 
