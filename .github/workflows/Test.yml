@@ -25,6 +25,16 @@ jobs:
           - build_type: Debug
             os: windows-2019
             toolchain: CLangCL
+          # To compensate for the exclusion below.
+          - build_type: Release
+            os: windows-2019
+            toolchain: CLangCL
+        exclude:
+          # As of August 2022, GitHub Actions got an update that introduced strange linker errors, that cannot
+          # be reproduced on my local machine. Therefore, I'm temporary disabling this matrix value.
+          - build_type: Release
+            os: windows-2022
+            toolchain: CLangCL
 
     defaults:
       run:
