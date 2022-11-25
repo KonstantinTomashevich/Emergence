@@ -12,5 +12,10 @@ sober_implementation_begin (SDL2)
     sober_implementation_link_library ("${LOG_API}")
     sober_implementation_link_library ("${SYNTAX_SUGAR_LIBRARY_TARGET}")
     sober_implementation_link_library (DebugBreak)
+
+    if (NOT TARGET SDL2)
+        message (FATAL_ERROR "Something has gone horribly wrong...")
+    endif ()
+
     sober_implementation_link_library (SDL2)
 sober_implementation_end ()
