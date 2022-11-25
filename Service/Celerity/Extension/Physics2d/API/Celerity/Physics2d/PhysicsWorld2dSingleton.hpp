@@ -39,7 +39,7 @@ struct PhysicsWorld2dSingleton final
 
     /// \brief Generates new unique id for a collision shape.
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateShapeId () const noexcept;
+    [[nodiscard]] uintptr_t GenerateShapeId () const noexcept;
 
     struct Reflection final
     {

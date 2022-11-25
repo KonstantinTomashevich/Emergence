@@ -15,6 +15,7 @@ END_MUTING_WARNINGS
 
 namespace Emergence::Celerity
 {
+// NOLINTNEXTLINE(modernize-use-equals-default): It's not actually trivial. Why linter thinks it is?
 PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept
 {
     block_cast<b2World *> (implementationBlock) = nullptr;

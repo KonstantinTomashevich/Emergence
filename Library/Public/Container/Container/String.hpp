@@ -4,6 +4,7 @@
 
 #include <Memory/Heap.hpp>
 
+// NOLINTNEXTLINE(modernize-concat-nested-namespaces): False positive?
 namespace Emergence::Container
 {
 using String = std::basic_string<char, std::char_traits<char>, Memory::HeapSTD<char>>;

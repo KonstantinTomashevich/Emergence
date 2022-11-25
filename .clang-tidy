@@ -2,6 +2,12 @@
 # In some situations (line UnorderedPool constructor) it's impossible to make parameters unswappable. There are several
 # cases like that, therefore bugprone-easily-swappable-parameters is disabled.
 #
+# We use assignment in if's in some cases to make code shorter and more readable.
+# Therefore, bugprone-assignment-in-if-condition check is disabled.
+#
+# In a lot of cases we initialize or assert optionals in some way, but bugprone-unchecked-optional-access is triggered
+# as there is no actual if-check near the usage. Therefore, we disable this check.
+#
 # Currently, `noexcept` means if function will throw something, program should just crash.
 # Therefore, we disable bugprone-exception-escape for now. Might be reconsidered later.
 # bugprone-unhandled-exception-at-new is disabled for the same reason.
@@ -23,9 +29,11 @@
 Checks: >
   -*,
   bugprone-*,
+  -bugprone-assignment-in-if-condition,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
   -bugprone-forward-declaration-namespace,
+  -bugprone-unchecked-optional-access,
   -bugprone-unhandled-exception-at-new,
   cppcoreguidelines-avoid-goto,
   cppcoreguidelines-interfaces-global-init,
