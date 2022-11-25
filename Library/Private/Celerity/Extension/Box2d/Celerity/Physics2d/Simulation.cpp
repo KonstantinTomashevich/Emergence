@@ -559,7 +559,7 @@ private:
 
     FetchValueQuery fetchMaterialById;
     ModifyValueQuery modifyBodyByObjectId;
-    ModifyValueQuery modifyShapeByObjectId;
+    FetchValueQuery fetchShapeByObjectId;
     FetchValueQuery fetchTransformByObjectId;
     Transform2dWorldAccessor transformWorldAccessor;
 
@@ -573,7 +573,7 @@ BodyInitializer::BodyInitializer (TaskConstructor &_constructor) noexcept
 
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial2d, id)),
       modifyBodyByObjectId (MODIFY_VALUE_1F (RigidBody2dComponent, objectId)),
-      modifyShapeByObjectId (MODIFY_VALUE_1F (CollisionShape2dComponent, objectId)),
+      fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShape2dComponent, objectId)),
       fetchTransformByObjectId (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
@@ -663,8 +663,8 @@ void BodyInitializer::Execute ()
         b2Body *box2dBody = box2dWorld->CreateBody (&bodyDefinition);
         body->implementationHandle = box2dBody;
 
-        for (auto shapeCursor = modifyShapeByObjectId.Execute (&body->objectId);
-             auto *shape = static_cast<CollisionShape2dComponent *> (*shapeCursor);)
+        for (auto shapeCursor = fetchShapeByObjectId.Execute (&body->objectId);
+             const auto *shape = static_cast<const CollisionShape2dComponent *> (*shapeCursor); ++shapeCursor)
         {
             // If shapes are initialized, then cleanup after body removal
             // wasn't executed or there is another body on this object.
@@ -673,14 +673,16 @@ void BodyInitializer::Execute ()
             if (auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
                 const auto *material = static_cast<const DynamicsMaterial2d *> (*materialCursor))
             {
-                ConstructBox2dShape (shape, box2dBody, material, logicalTransform.scale);
-                ++shapeCursor;
+                // We need to edit shape, because we're setting implementation handle. But we cannot register edition
+                // as it would trigger possibility of edition events for event validation pipeline, which would trigger
+                // an error, because these events are processed earlier.
+                ConstructBox2dShape (const_cast<CollisionShape2dComponent *> (shape), box2dBody, material,
+                                     logicalTransform.scale);
             }
             else
             {
-                EMERGENCE_LOG (ERROR, "Physics2d: Unable to find DynamicsMaterial2d with id ", shape->materialId,
-                               "! Shape, that attempts to use this material, will be deleted.");
-                ~shapeCursor;
+                // Should never happen, because materialless shapes are cleared by prior tasks.
+                EMERGENCE_ASSERT (false);
             }
         }
 
@@ -723,13 +725,13 @@ public:
 
 private:
     ModifySingletonQuery modifyBox2d;
-    EditValueQuery editShapeByObjectId;
+    FetchValueQuery fetchShapeByObjectId;
     FetchSequenceQuery fetchBodyRemovedEvents;
 };
 
 BodyDeleter::BodyDeleter (TaskConstructor &_constructor) noexcept
     : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
-      editShapeByObjectId (EDIT_VALUE_1F (CollisionShape2dComponent, objectId)),
+      fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShape2dComponent, objectId)),
       fetchBodyRemovedEvents (FETCH_SEQUENCE (RigidBody2dComponentRemovedEvent))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_BODIES);
@@ -740,11 +742,13 @@ void BodyDeleter::Execute ()
     for (auto eventCursor = fetchBodyRemovedEvents.Execute ();
          const auto *event = static_cast<const RigidBody2dComponentRemovedEvent *> (*eventCursor); ++eventCursor)
     {
-        for (auto shapeCursor = editShapeByObjectId.Execute (&event->objectId);
-             auto *shape = static_cast<CollisionShape2dComponent *> (*shapeCursor); ++shapeCursor)
+        for (auto shapeCursor = fetchShapeByObjectId.Execute (&event->objectId);
+             const auto *shape = static_cast<const CollisionShape2dComponent *> (*shapeCursor); ++shapeCursor)
         {
-            // Body deletes all its shapes.
-            shape->implementationHandle = nullptr;
+            // Body deletes all its shapes. We cannot edit shape and need const cast to change implementation handle,
+            // because edition will trigger event pipeline validation and trigger error as shape edition is processed
+            // earlier.
+            const_cast<CollisionShape2dComponent *> (shape)->implementationHandle = nullptr;
         }
     }
 }
@@ -813,11 +817,11 @@ public:
 
     void Execute ();
 
-    bool ShouldCollide (b2Fixture *fixtureA, b2Fixture *_fixtureB) noexcept override;
+    bool ShouldCollide (b2Fixture *_fixtureA, b2Fixture *_fixtureB) noexcept override;
 
-    void BeginContact (b2Contact *contact) noexcept override;
+    void BeginContact (b2Contact *_contact) noexcept override;
 
-    void EndContact (b2Contact *contact) noexcept override;
+    void EndContact (b2Contact *_contact) noexcept override;
 
 private:
     void SyncBodiesWithOutsideManipulations () noexcept;
