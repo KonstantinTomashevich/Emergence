@@ -88,7 +88,7 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: >
           cmake ${{github.workspace}} ${{env.CMAKE_GENERATOR}} ${{env.CMAKE_ENABLE_COVERAGE}}
-          -DEMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS=OFF
+          -DEMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS=OFF -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}
