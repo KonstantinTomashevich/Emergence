@@ -1,4 +1,11 @@
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <Assert/Assert.hpp>
+
+BEGIN_MUTING_WARNINGS
+#define B2_USER_SETTINGS
+#include <box2d/box2d.h>
+END_MUTING_WARNINGS
 
 #include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
 
@@ -8,9 +15,19 @@
 
 namespace Emergence::Celerity
 {
-PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept = default;
+PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept
+{
+    block_cast<b2World *> (implementationBlock) = nullptr;
+}
 
-PhysicsWorld2dSingleton::~PhysicsWorld2dSingleton () noexcept = default;
+PhysicsWorld2dSingleton::~PhysicsWorld2dSingleton () noexcept
+{
+    if (auto &worldPointer = block_cast<b2World *> (implementationBlock))
+    {
+        worldPointer->~b2World ();
+        b2Free (worldPointer);
+    }
+}
 
 uintptr_t PhysicsWorld2dSingleton::GenerateShapeId () const noexcept
 {

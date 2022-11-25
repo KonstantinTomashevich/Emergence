@@ -51,7 +51,7 @@ EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
 EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
     Trigger3dExitedEvent, triggerObjectId, triggerShapeId, intruderObjectId, intruderShapeId)
 
-void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
+void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept
 {
     // PhysicsWorld3dSingleton
 
@@ -61,7 +61,7 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
         physicsWorldTrackedFields.emplace_back (collisionMask);
     }
 
-    _registrar.OnChangeEvent ({{PhysicsWorld3dConfigurationChanged::Reflect ().mapping, Celerity::EventRoute::FIXED},
+    _registrar.OnChangeEvent ({{PhysicsWorld3dConfigurationChanged::Reflect ().mapping, EventRoute::FIXED},
                                PhysicsWorld3dSingleton::Reflect ().mapping,
                                physicsWorldTrackedFields,
                                {},
@@ -69,17 +69,17 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
 
     // DynamicsMaterial
 
-    _registrar.OnAddEvent ({{DynamicsMaterial3dAddedFixedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+    _registrar.OnAddEvent ({{DynamicsMaterial3dAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
                             DynamicsMaterial3d::Reflect ().mapping,
                             {{DynamicsMaterial3d::Reflect ().id, DynamicsMaterial3dAddedFixedEvent::Reflect ().id}}});
 
     _registrar.OnAddEvent (
-        {{DynamicsMaterial3dAddedCustomToFixedEvent::Reflect ().mapping, Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
+        {{DynamicsMaterial3dAddedCustomToFixedEvent::Reflect ().mapping, EventRoute::FROM_CUSTOM_TO_FIXED},
          DynamicsMaterial3d::Reflect ().mapping,
          {{DynamicsMaterial3d::Reflect ().id, DynamicsMaterial3dAddedCustomToFixedEvent::Reflect ().id}}});
 
     _registrar.OnChangeEvent (
-        {{DynamicsMaterial3dChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+        {{DynamicsMaterial3dChangedEvent::Reflect ().mapping, EventRoute::FIXED},
          DynamicsMaterial3d::Reflect ().mapping,
          {
              DynamicsMaterial3d::Reflect ().dynamicFriction,
@@ -91,7 +91,7 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
          {},
          {{DynamicsMaterial3d::Reflect ().id, DynamicsMaterial3dAddedFixedEvent::Reflect ().id}}});
 
-    _registrar.OnRemoveEvent ({{DynamicsMaterial3dRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+    _registrar.OnRemoveEvent ({{DynamicsMaterial3dRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
                                DynamicsMaterial3d::Reflect ().mapping,
                                {
                                    {DynamicsMaterial3d::Reflect ().id, DynamicsMaterial3dRemovedEvent::Reflect ().id},
@@ -101,53 +101,50 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
 
     // CollisionShape3dComponent
 
-    _registrar.OnAddEvent ({{CollisionShape3dComponentAddedFixedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+    _registrar.OnAddEvent ({{CollisionShape3dComponentAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
                             CollisionShape3dComponent::Reflect ().mapping,
                             {{CollisionShape3dComponent::Reflect ().shapeId,
                               CollisionShape3dComponentAddedFixedEvent::Reflect ().shapeId}}});
 
-    _registrar.OnAddEvent ({{CollisionShape3dComponentAddedCustomToFixedEvent::Reflect ().mapping,
-                             Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
-                            CollisionShape3dComponent::Reflect ().mapping,
-                            {{CollisionShape3dComponent::Reflect ().shapeId,
-                              CollisionShape3dComponentAddedCustomToFixedEvent::Reflect ().shapeId}}});
-
-    _registrar.OnChangeEvent (
-        {{CollisionShape3dComponentMaterialChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+    _registrar.OnAddEvent (
+        {{CollisionShape3dComponentAddedCustomToFixedEvent::Reflect ().mapping, EventRoute::FROM_CUSTOM_TO_FIXED},
          CollisionShape3dComponent::Reflect ().mapping,
-         {CollisionShape3dComponent::Reflect ().materialId},
-         {},
          {{CollisionShape3dComponent::Reflect ().shapeId,
-           CollisionShape3dComponentMaterialChangedEvent::Reflect ().shapeId}}});
+           CollisionShape3dComponentAddedCustomToFixedEvent::Reflect ().shapeId}}});
 
-    _registrar.OnChangeEvent (
-        {{CollisionShape3dComponentGeometryChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
-         CollisionShape3dComponent::Reflect ().mapping,
-         {
-             CollisionShape3dComponent::Reflect ().rotation,
-             CollisionShape3dComponent::Reflect ().translation,
-             CollisionShape3dComponent::Reflect ().geometry,
-         },
-         {},
-         {{CollisionShape3dComponent::Reflect ().shapeId,
-           CollisionShape3dComponentGeometryChangedEvent::Reflect ().shapeId}}});
+    _registrar.OnChangeEvent ({{CollisionShape3dComponentMaterialChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+                               CollisionShape3dComponent::Reflect ().mapping,
+                               {CollisionShape3dComponent::Reflect ().materialId},
+                               {},
+                               {{CollisionShape3dComponent::Reflect ().shapeId,
+                                 CollisionShape3dComponentMaterialChangedEvent::Reflect ().shapeId}}});
 
-    _registrar.OnChangeEvent (
-        {{CollisionShape3dComponentAttributesChangedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
-         CollisionShape3dComponent::Reflect ().mapping,
-         {
+    _registrar.OnChangeEvent ({{CollisionShape3dComponentGeometryChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+                               CollisionShape3dComponent::Reflect ().mapping,
+                               {
+                                   CollisionShape3dComponent::Reflect ().rotation,
+                                   CollisionShape3dComponent::Reflect ().translation,
+                                   CollisionShape3dComponent::Reflect ().geometry,
+                               },
+                               {},
+                               {{CollisionShape3dComponent::Reflect ().shapeId,
+                                 CollisionShape3dComponentGeometryChangedEvent::Reflect ().shapeId}}});
 
-             CollisionShape3dComponent::Reflect ().enabled,
-             CollisionShape3dComponent::Reflect ().trigger,
-             CollisionShape3dComponent::Reflect ().visibleToWorldQueries,
-             CollisionShape3dComponent::Reflect ().sendContactEvents,
-             CollisionShape3dComponent::Reflect ().collisionGroup,
-         },
-         {},
-         {{CollisionShape3dComponent::Reflect ().shapeId,
-           CollisionShape3dComponentAttributesChangedEvent::Reflect ().shapeId}}});
+    _registrar.OnChangeEvent ({{CollisionShape3dComponentAttributesChangedEvent::Reflect ().mapping, EventRoute::FIXED},
+                               CollisionShape3dComponent::Reflect ().mapping,
+                               {
 
-    _registrar.OnRemoveEvent ({{CollisionShape3dComponentRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+                                   CollisionShape3dComponent::Reflect ().enabled,
+                                   CollisionShape3dComponent::Reflect ().trigger,
+                                   CollisionShape3dComponent::Reflect ().visibleToWorldQueries,
+                                   CollisionShape3dComponent::Reflect ().sendContactEvents,
+                                   CollisionShape3dComponent::Reflect ().collisionGroup,
+                               },
+                               {},
+                               {{CollisionShape3dComponent::Reflect ().shapeId,
+                                 CollisionShape3dComponentAttributesChangedEvent::Reflect ().shapeId}}});
+
+    _registrar.OnRemoveEvent ({{CollisionShape3dComponentRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
                                CollisionShape3dComponent::Reflect ().mapping,
                                {
                                    {CollisionShape3dComponent::Reflect ().objectId,
@@ -159,21 +156,20 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
     // RigidBody3dComponent
 
     _registrar.OnAddEvent (
-        {{RigidBody3dComponentAddedFixedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+        {{RigidBody3dComponentAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
          RigidBody3dComponent::Reflect ().mapping,
          {{RigidBody3dComponent::Reflect ().objectId, RigidBody3dComponentAddedFixedEvent::Reflect ().objectId}}});
 
     _registrar.OnAddEvent (
-        {{RigidBody3dComponentAddedCustomToFixedEvent::Reflect ().mapping, Celerity::EventRoute::FROM_CUSTOM_TO_FIXED},
+        {{RigidBody3dComponentAddedCustomToFixedEvent::Reflect ().mapping, EventRoute::FROM_CUSTOM_TO_FIXED},
          RigidBody3dComponent::Reflect ().mapping,
          {{RigidBody3dComponent::Reflect ().objectId,
            RigidBody3dComponentAddedCustomToFixedEvent::Reflect ().objectId}}});
 
-    _registrar.CustomEvent (
-        {RigidBody3dComponentMassInvalidatedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent ({RigidBody3dComponentMassInvalidatedEvent::Reflect ().mapping, EventRoute::FIXED});
 
     _registrar.OnRemoveEvent (
-        {{RigidBody3dComponentRemovedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED},
+        {{RigidBody3dComponentRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
          RigidBody3dComponent::Reflect ().mapping,
          {
              {RigidBody3dComponent::Reflect ().objectId, RigidBody3dComponentRemovedEvent::Reflect ().objectId},
@@ -183,10 +179,10 @@ void RegisterPhysicsEvents (Celerity::EventRegistrar &_registrar) noexcept
 
     // Simulation.
 
-    _registrar.CustomEvent ({Contact3dFoundEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
-    _registrar.CustomEvent ({Contact3dPersistsEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
-    _registrar.CustomEvent ({Contact3dLostEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
-    _registrar.CustomEvent ({Trigger3dEnteredEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
-    _registrar.CustomEvent ({Trigger3dExitedEvent::Reflect ().mapping, Celerity::EventRoute::FIXED});
+    _registrar.CustomEvent ({Contact3dFoundEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.CustomEvent ({Contact3dPersistsEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.CustomEvent ({Contact3dLostEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.CustomEvent ({Trigger3dEnteredEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.CustomEvent ({Trigger3dExitedEvent::Reflect ().mapping, EventRoute::FIXED});
 }
 } // namespace Emergence::Celerity

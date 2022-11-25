@@ -35,7 +35,7 @@ struct PhysicsWorld2dSingleton final
     std::atomic_unsigned_lock_free shapeIdCounter = 0u;
 
     /// \brief Block with implementation-specific data.
-    std::array<uint8_t, 88u> implementationBlock;
+    std::array<uint8_t, sizeof (uintptr_t)> implementationBlock;
 
     /// \brief Generates new unique id for a collision shape.
     /// \details Intentionally const to allow simultaneous access from multiple tasks.

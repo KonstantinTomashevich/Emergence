@@ -35,22 +35,11 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentAddedFixedEvent, Uniq
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentAddedCustomToFixedEvent, UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT2_DECLARATION (
-    RigidBody2dComponentRemovedEvent, UniqueId, objectId, void *, implementationHandle);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentMassInvalidatedEvent, UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT5_DECLARATION (Contact2dFoundEvent,
-                                       UniqueId,
-                                       firstObjectId,
-                                       UniqueId,
-                                       firstShapeId,
-                                       UniqueId,
-                                       secondObjectId,
-                                       UniqueId,
-                                       secondShapeId,
-                                       bool,
-                                       initialContact);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentRemovedEvent, UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT4_DECLARATION (Contact2dPersistsEvent,
+EMERGENCE_CELERITY_EVENT4_DECLARATION (Contact2dFoundEvent,
                                        UniqueId,
                                        firstObjectId,
                                        UniqueId,
@@ -60,7 +49,7 @@ EMERGENCE_CELERITY_EVENT4_DECLARATION (Contact2dPersistsEvent,
                                        UniqueId,
                                        secondShapeId);
 
-EMERGENCE_CELERITY_EVENT5_DECLARATION (Contact2dLostEvent,
+EMERGENCE_CELERITY_EVENT4_DECLARATION (Contact2dLostEvent,
                                        UniqueId,
                                        firstObjectId,
                                        UniqueId,
@@ -68,9 +57,7 @@ EMERGENCE_CELERITY_EVENT5_DECLARATION (Contact2dLostEvent,
                                        UniqueId,
                                        secondObjectId,
                                        UniqueId,
-                                       secondShapeId,
-                                       bool,
-                                       lastContact);
+                                       secondShapeId);
 
 EMERGENCE_CELERITY_EVENT4_DECLARATION (Trigger2dEnteredEvent,
                                        UniqueId,
