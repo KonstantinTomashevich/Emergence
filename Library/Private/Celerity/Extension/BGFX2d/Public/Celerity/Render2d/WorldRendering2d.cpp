@@ -137,6 +137,8 @@ void WorldRenderer::Execute () noexcept
         CollectVisibleObjects (viewport->cameraObjectId, selectedCameraTransform, selectedCameraHalfOrthographicSize);
         SubmitBatches (viewport->nativeId, selectedCameraTransform, selectedCameraHalfOrthographicSize);
         PoolBatches ();
+
+        BGFX::RenderingBackend::TouchView (viewport->nativeId);
         viewportOrder.emplace_back (viewport->nativeId);
     }
 

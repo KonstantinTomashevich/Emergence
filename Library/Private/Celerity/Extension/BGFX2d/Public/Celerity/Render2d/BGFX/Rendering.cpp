@@ -49,7 +49,14 @@ void RenderingBackend::UpdateViewportConfiguration (const Viewport2d &_viewport)
     bgfx::resetView (_viewport.nativeId);
     bgfx::setViewRect (_viewport.nativeId, _viewport.x, _viewport.y, _viewport.width, _viewport.height);
     bgfx::setViewMode (_viewport.nativeId, bgfx::ViewMode::Sequential);
-    bgfx::setViewClear (_viewport.nativeId, BGFX_CLEAR_COLOR, _viewport.clearColor, 0.0f, 0u);
+
+    uint32_t clearFlags = 0u;
+    if (_viewport.clearColor)
+    {
+        clearFlags |= BGFX_CLEAR_COLOR;
+    }
+
+    bgfx::setViewClear (_viewport.nativeId, clearFlags, _viewport.clearColor, 0.0f, 0u);
 }
 
 void RenderingBackend::SubmitCamera (std::uint16_t _nativeViewportId,

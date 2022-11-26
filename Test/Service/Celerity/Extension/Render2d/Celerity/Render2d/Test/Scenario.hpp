@@ -14,8 +14,40 @@
 
 namespace Emergence::Celerity::Test
 {
+constexpr uint32_t WIDTH = 400u;
+constexpr uint32_t HEIGHT = 300u;
+
 namespace Tasks
 {
+struct CreateViewport final
+{
+    Memory::UniqueString name;
+    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
+    std::uint32_t x = 0u;
+    std::uint32_t y = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
+    std::uint32_t clearColor = 0u;
+    std::uint16_t sortIndex = 0u;
+};
+
+struct UpdateViewport final
+{
+    Memory::UniqueString name;
+    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
+    std::uint32_t x = 0u;
+    std::uint32_t y = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
+    std::uint32_t clearColor = 0u;
+    std::uint16_t sortIndex = 0u;
+};
+
+struct DeleteViewport final
+{
+    Memory::UniqueString name;
+};
+
 struct CreateCamera
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -31,11 +63,6 @@ struct UpdateCamera final
 };
 
 struct DeleteCamera final
-{
-    UniqueId objectId = INVALID_UNIQUE_ID;
-};
-
-struct SetCurrentCamera final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
 };
@@ -88,10 +115,12 @@ struct DeleteSprite final
 };
 }; // namespace Tasks
 
-using Task = Container::Variant<Tasks::CreateCamera,
+using Task = Container::Variant<Tasks::CreateViewport,
+                                Tasks::UpdateViewport,
+                                Tasks::DeleteViewport,
+                                Tasks::CreateCamera,
                                 Tasks::UpdateCamera,
                                 Tasks::DeleteCamera,
-                                Tasks::SetCurrentCamera,
                                 Tasks::CreateTransform,
                                 Tasks::UpdateTransform,
                                 Tasks::DeleteTransform,

@@ -37,7 +37,9 @@ struct Viewport2d final
     std::uint32_t height = 0u;
 
     /// \brief Clear color for this viewport.
-    uint32_t clearColor = 0x00000000;
+    /// \details If color is equal to 0x00000000, then viewport is processed as fully transparent and color clearing
+    ///          is disabled at all. This behaviour is required for things that need to overlap other things, like UI.
+    uint32_t clearColor = 0x000000FF;
 
     struct Reflection final
     {
