@@ -62,9 +62,11 @@ static void *Box2dEffectiveAllocation (std::int32_t _size) noexcept;
 
 static void Box2dEffectiveFree (void *_memory) noexcept;
 
-static b2Vec2 ToBox2d (const Math::Vector2f &_vector);
+static void Box2dLog (const char *_information) noexcept;
 
-static Math::Vector2f FromBox2d (const b2Vec2 &_vector);
+static b2Vec2 ToBox2d (const Math::Vector2f &_vector) noexcept;
+
+static Math::Vector2f FromBox2d (const b2Vec2 &_vector) noexcept;
 
 static b2Shape::Type ToBox2d (CollisionGeometry2dType _type) noexcept;
 
@@ -85,15 +87,15 @@ static bool UpdateShapeGeometryAndPose (const CollisionShape2dComponent *_shape,
 
 static void UpdateBoxGeometryAndPose (const CollisionShape2dComponent *_shape,
                                       const Math::Vector2f &_worldScale,
-                                      b2PolygonShape *_polygonShape);
+                                      b2PolygonShape *_polygonShape) noexcept;
 
 static void UpdateCircleGeometryAndPose (const CollisionShape2dComponent *_shape,
                                          const Math::Vector2f &_worldScale,
-                                         b2CircleShape *_circleShape);
+                                         b2CircleShape *_circleShape) noexcept;
 
 static void UpdateLineGeometryAndPose (const CollisionShape2dComponent *_shape,
                                        const Math::Vector2f &_worldScale,
-                                       b2EdgeShape *_lineShape);
+                                       b2EdgeShape *_lineShape) noexcept;
 
 static void ConstructBox2dShape (CollisionShape2dComponent *_shape,
                                  b2Body *_body,
@@ -149,6 +151,7 @@ void WorldUpdater::EnsurePhysicsWorldReady (const PhysicsWorld2dSingleton *_phys
             SetBox2dAllocators (Box2dEffectiveAllocation, Box2dEffectiveFree);
         }
 
+        SetBox2dLogger (Box2dLog);
         box2dWorld = new (b2Alloc (sizeof (b2World))) b2World {ToBox2d (_physicsWorld->gravity)};
     }
 }
@@ -533,7 +536,8 @@ void ShapeDeleter::Execute ()
         if (auto *fixture = static_cast<b2Fixture *> (event->implementationHandle))
         {
             auto bodyCursor = fetchBodyByObjectId.Execute (&event->objectId);
-            if (const auto *body = static_cast<const RigidBody2dComponent *> (*bodyCursor))
+            if (const auto *body = static_cast<const RigidBody2dComponent *> (*bodyCursor);
+                body && body->implementationHandle)
             {
                 static_cast<b2Body *> (body->implementationHandle)->DestroyFixture (fixture);
                 // Do not need to invalidate mass as it is invalidated automatically.
@@ -1044,6 +1048,7 @@ void SimulationExecutor::SyncBodiesWithOutsideManipulations () noexcept
             }
         }
 
+        // TODO: Technically, we need this only because scale might have been changed. Any way to optimise that?
         for (auto shapeCursor = fetchShapeByObjectId.Execute (&body->objectId);
              const auto *shape = static_cast<const CollisionShape2dComponent *> (*shapeCursor); ++shapeCursor)
         {
@@ -1125,12 +1130,17 @@ void Box2dEffectiveFree (void *_memory) noexcept
     free (_memory);
 }
 
-b2Vec2 ToBox2d (const Math::Vector2f &_vector)
+void Box2dLog (const char *_information) noexcept
+{
+    EMERGENCE_LOG (INFO, "Physics2d::Box2d: ", _information);
+}
+
+b2Vec2 ToBox2d (const Math::Vector2f &_vector) noexcept
 {
     return {_vector.x, _vector.y};
 }
 
-Math::Vector2f FromBox2d (const b2Vec2 &_vector)
+Math::Vector2f FromBox2d (const b2Vec2 &_vector) noexcept
 {
     return {_vector.x, _vector.y};
 }
@@ -1220,7 +1230,7 @@ bool UpdateShapeGeometryAndPose (const CollisionShape2dComponent *_shape, const 
 
 static void UpdateBoxGeometryAndPose (const CollisionShape2dComponent *_shape,
                                       const Math::Vector2f &_worldScale,
-                                      b2PolygonShape *_polygonShape)
+                                      b2PolygonShape *_polygonShape) noexcept
 {
     _polygonShape->SetAsBox (_shape->geometry.boxHalfExtents.x * _worldScale.x,
                              _shape->geometry.boxHalfExtents.y * _worldScale.y,
@@ -1229,7 +1239,7 @@ static void UpdateBoxGeometryAndPose (const CollisionShape2dComponent *_shape,
 
 static void UpdateCircleGeometryAndPose (const CollisionShape2dComponent *_shape,
                                          const Math::Vector2f &_worldScale,
-                                         b2CircleShape *_circleShape)
+                                         b2CircleShape *_circleShape) noexcept
 {
     _circleShape->m_radius = _shape->geometry.circleRadius * _worldScale.x;
     EMERGENCE_ASSERT (Math::NearlyEqual (_worldScale.x, _worldScale.y));
@@ -1238,7 +1248,7 @@ static void UpdateCircleGeometryAndPose (const CollisionShape2dComponent *_shape
 
 static void UpdateLineGeometryAndPose (const CollisionShape2dComponent *_shape,
                                        const Math::Vector2f &_worldScale,
-                                       b2EdgeShape *_lineShape)
+                                       b2EdgeShape *_lineShape) noexcept
 {
     const Math::Matrix3x3f localTransformMatrix =
         Math::Matrix3x3f {Math::Transform2d {Math::Vector2f::ZERO, 0.0f, _worldScale}} *

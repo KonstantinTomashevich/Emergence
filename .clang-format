@@ -27,7 +27,7 @@ Cpp11BracedListStyle: true
 IncludeBlocks: Preserve
 IndentCaseLabels: false
 IndentPPDirectives: AfterHash
-IndentRequiresClause: true
+IndentRequiresClause: false
 IndentWidth: 4
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
@@ -37,7 +37,7 @@ ObjCSpaceBeforeProtocolList: true
 PackConstructorInitializers: Never
 PointerAlignment: Right
 ReflowComments: true
-RequiresClausePosition: WithPreceding
+RequiresClausePosition: OwnLine
 SortIncludes: CaseSensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true

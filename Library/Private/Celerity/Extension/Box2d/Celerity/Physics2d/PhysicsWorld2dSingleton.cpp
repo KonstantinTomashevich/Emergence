@@ -23,7 +23,7 @@ PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept
 
 PhysicsWorld2dSingleton::~PhysicsWorld2dSingleton () noexcept
 {
-    if (auto &worldPointer = block_cast<b2World *> (implementationBlock))
+    if (auto *worldPointer = block_cast<b2World *> (implementationBlock))
     {
         worldPointer->~b2World ();
         b2Free (worldPointer);
