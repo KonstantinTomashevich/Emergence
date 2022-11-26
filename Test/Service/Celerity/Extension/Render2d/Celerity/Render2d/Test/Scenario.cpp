@@ -20,6 +20,7 @@
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/Test/Scenario.hpp>
+#include <Celerity/Render2d/Viewport2d.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -67,9 +68,6 @@ void ContextHolder::Frame () noexcept
 
 ContextHolder::ContextHolder () noexcept
 {
-    constexpr std::uint32_t WIDTH = 400u;
-    constexpr std::uint32_t HEIGHT = 300u;
-
     uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
     window =
         SDL_CreateWindow ("Platformed2dDemo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int> (WIDTH),
@@ -126,6 +124,9 @@ private:
     FetchSingletonQuery fetchAssetManager;
     ModifySingletonQuery modifyRender;
 
+    InsertLongTermQuery insertViewport;
+    ModifyValueQuery modifyViewport;
+
     InsertLongTermQuery insertCamera;
     ModifyValueQuery modifyCamera;
 
@@ -145,6 +146,9 @@ private:
 ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _scenario, bool *_finishedOutput) noexcept
     : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
       modifyRender (MODIFY_SINGLETON (Render2dSingleton)),
+
+      insertViewport (INSERT_LONG_TERM (Viewport2d)),
+      modifyViewport (MODIFY_VALUE_1F (Viewport2d, name)),
 
       insertCamera (INSERT_LONG_TERM (Camera2dComponent)),
       modifyCamera (MODIFY_VALUE_1F (Camera2dComponent, objectId)),
@@ -223,7 +227,43 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
             [this, assetManager] (const auto &_task)
             {
                 using Type = std::decay_t<decltype (_task)>;
-                if constexpr (std::is_same_v<Type, Tasks::CreateCamera>)
+                if constexpr (std::is_same_v<Type, Tasks::CreateViewport>)
+                {
+                    LOG ("Creating viewport \"", _task.name, "\".");
+                    auto cursor = insertViewport.Execute ();
+                    auto *viewport = static_cast<Viewport2d *> (++cursor);
+
+                    viewport->name = _task.name;
+                    viewport->cameraObjectId = _task.cameraObjectId;
+                    viewport->x = _task.x;
+                    viewport->y = _task.y;
+                    viewport->width = _task.width;
+                    viewport->height = _task.height;
+                    viewport->clearColor = _task.clearColor;
+                    viewport->sortIndex = _task.sortIndex;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::UpdateViewport>)
+                {
+                    LOG ("Updating viewport \"", _task.name, "\".");
+                    auto cursor = modifyViewport.Execute (&_task.name);
+                    auto *viewport = static_cast<Viewport2d *> (*cursor);
+
+                    viewport->cameraObjectId = _task.cameraObjectId;
+                    viewport->x = _task.x;
+                    viewport->y = _task.y;
+                    viewport->width = _task.width;
+                    viewport->height = _task.height;
+                    viewport->clearColor = _task.clearColor;
+                    viewport->sortIndex = _task.sortIndex;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::DeleteViewport>)
+                {
+                    LOG ("Deleting viewport \"", _task.name, "\".");
+                    auto cursor = modifyViewport.Execute (&_task.name);
+                    REQUIRE (*cursor);
+                    ~cursor;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateCamera>)
                 {
                     LOG ("Creating camera on object ", _task.objectId, ".");
                     auto cursor = insertCamera.Execute ();
@@ -246,13 +286,6 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto cursor = modifyCamera.Execute (&_task.objectId);
                     REQUIRE (*cursor);
                     ~cursor;
-                }
-                else if constexpr (std::is_same_v<Type, Tasks::SetCurrentCamera>)
-                {
-                    LOG ("Settings camera object id to ", _task.objectId, ".");
-                    auto renderCursor = modifyRender.Execute ();
-                    auto *render = static_cast<Render2dSingleton *> (*renderCursor);
-                    render->cameraObjectId = _task.objectId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::CreateTransform>)
                 {

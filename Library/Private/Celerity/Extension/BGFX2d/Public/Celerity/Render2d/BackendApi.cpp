@@ -254,16 +254,7 @@ bool Render2dBackend::Init (const Render2dBackendConfig &_config,
     init.allocator = BGFX::GetCurrentAllocator ();
     static Callback callback;
     init.callback = &callback;
-
-    if (bgfx::init (init))
-    {
-        bgfx::setViewClear (0u, BGFX_CLEAR_COLOR, 0x000000FF, 0.0f, 0u);
-        bgfx::setViewRect (0u, 0u, 0u, static_cast<uint16_t> (_config.width), static_cast<uint16_t> (_config.height));
-        bgfx::setViewMode (0u, bgfx::ViewMode::Sequential);
-        return true;
-    }
-
-    return false;
+    return bgfx::init (init);
 }
 
 const Render2dBackendConfig &Render2dBackend::GetCurrentConfig () noexcept
@@ -275,7 +266,6 @@ bool Render2dBackend::Update (const Render2dBackendConfig &_config) noexcept
 {
     currentConfig = _config;
     bgfx::reset (_config.width, _config.height, ExtractBgfxFlags (_config));
-    bgfx::setViewRect (0u, 0u, 0u, static_cast<uint16_t> (_config.width), static_cast<uint16_t> (_config.height));
     return true;
 }
 

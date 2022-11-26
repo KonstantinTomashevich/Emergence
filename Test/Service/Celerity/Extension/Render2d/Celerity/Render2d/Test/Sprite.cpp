@@ -24,9 +24,9 @@ TEST_CASE (CrateSprite)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -40,9 +40,9 @@ TEST_CASE (UV)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "Crate"_us, {{0.0f, 0.0f}, {0.5f, 0.5f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -56,9 +56,9 @@ TEST_CASE (TransparentSprite)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "TransparentSprite"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -72,9 +72,9 @@ TEST_CASE (MultipleSpritesOnOneObject)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "TransparentSprite"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -89,9 +89,9 @@ TEST_CASE (CustomShader)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "BaseFlare"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -105,9 +105,9 @@ TEST_CASE (MaterialInstanceInheritance)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "ChangedFlare"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -121,9 +121,9 @@ TEST_CASE (Layers)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "TransparentSprite"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
@@ -139,9 +139,9 @@ TEST_CASE (UpdateSprite)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
@@ -159,9 +159,9 @@ TEST_CASE (SpriteVisibilityMask)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, 1u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "TransparentSprite"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, 1u},
@@ -180,9 +180,9 @@ TEST_CASE (OutOfCamera)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{10.0f, 0.0f}}},
             CreateSprite {1u, 1u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
@@ -196,9 +196,9 @@ TEST_CASE (Translation)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{1.0f, 1.0f}}},
             CreateSprite {1u, 1u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
@@ -212,9 +212,9 @@ TEST_CASE (TranslationRotation)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{1.0f, 1.0f}, Emergence::Math::PI / 6.0f}},
             CreateSprite {1u, 1u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
@@ -228,9 +228,9 @@ TEST_CASE (TranslationRotationScale)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{1.0f, 1.0f}, Emergence::Math::PI / 6.0f, {2.0f, 3.0f}}},
             CreateSprite {1u, 1u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
@@ -244,9 +244,9 @@ TEST_CASE (TranslationChange)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{10.0f, 0.0f}}},
             CreateSprite {1u, 1u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
@@ -263,9 +263,9 @@ TEST_CASE (TransformHierarchy)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{-11.0f, 0.0f}}},
             CreateTransform {2u, 1u, {{10.0f, 0.0f}}},
@@ -280,9 +280,9 @@ TEST_CASE (TransformParentChange)
 {
     ExecuteScenario ({
         TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
-            SetCurrentCamera {0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{-11.0f, 0.0f}}},
             CreateTransform {2u, 1u, {{10.0f, 0.0f}}},

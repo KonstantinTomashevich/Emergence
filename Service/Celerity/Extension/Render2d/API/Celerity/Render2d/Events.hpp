@@ -10,5 +10,9 @@ EMERGENCE_CELERITY_EVENT2_DECLARATION (Sprite2dAddedNormalEvent, UniqueId, objec
 EMERGENCE_CELERITY_EVENT2_DECLARATION (Sprite2dSizeChangedNormalEvent, UniqueId, objectId, UniqueId, spriteId);
 EMERGENCE_CELERITY_EVENT1_DECLARATION (Sprite2dRemovedNormalEvent, UniqueId, objectId);
 
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Viewport2dAddedNormalEvent, Memory::UniqueString, name);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Viewport2dAddedCustomToNormalEvent, Memory::UniqueString, name);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (Viewport2dChangedNormalEvent, Memory::UniqueString, name);
+
 void RegisterRender2dEvents (EventRegistrar &_registrar) noexcept;
 } // namespace Emergence::Celerity

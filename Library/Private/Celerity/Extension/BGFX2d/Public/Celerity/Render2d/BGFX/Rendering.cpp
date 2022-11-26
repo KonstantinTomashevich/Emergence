@@ -44,7 +44,23 @@ RenderingBackend::RenderingBackend (TaskConstructor &_constructor) noexcept
         .end ();
 }
 
-void RenderingBackend::SubmitCamera (const Math::Transform2d &_transform,
+void RenderingBackend::UpdateViewportConfiguration (const Viewport2d &_viewport) noexcept
+{
+    bgfx::resetView (_viewport.nativeId);
+    bgfx::setViewRect (_viewport.nativeId, _viewport.x, _viewport.y, _viewport.width, _viewport.height);
+    bgfx::setViewMode (_viewport.nativeId, bgfx::ViewMode::Sequential);
+
+    uint32_t clearFlags = 0u;
+    if (_viewport.clearColor)
+    {
+        clearFlags |= BGFX_CLEAR_COLOR;
+    }
+
+    bgfx::setViewClear (_viewport.nativeId, clearFlags, _viewport.clearColor, 0.0f, 0u);
+}
+
+void RenderingBackend::SubmitCamera (std::uint16_t _nativeViewportId,
+                                     const Math::Transform2d &_transform,
                                      const Math::Vector2f &_halfOrthographicSize) noexcept
 {
     float view[16u];
@@ -54,7 +70,7 @@ void RenderingBackend::SubmitCamera (const Math::Transform2d &_transform,
     float projection[16];
     bx::mtxOrtho (projection, -_halfOrthographicSize.x, _halfOrthographicSize.x, -_halfOrthographicSize.y,
                   _halfOrthographicSize.y, 0.5f, 2.0f, 0.0f, bgfx::getCaps ()->homogeneousDepth);
-    bgfx::setViewTransform (0, view, projection);
+    bgfx::setViewTransform (_nativeViewportId, view, projection);
 }
 
 void RenderingBackend::SubmitMaterialInstance (Memory::UniqueString _materialInstanceId) noexcept
@@ -157,7 +173,7 @@ void RenderingBackend::SubmitMaterialInstance (Memory::UniqueString _materialIns
     materialSubmitted = true;
 }
 
-void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) noexcept
+void RenderingBackend::SubmitRects (std::uint16_t _nativeViewportId, const Container::Vector<RectData> &_rects) noexcept
 {
     if (!materialSubmitted)
     {
@@ -216,13 +232,31 @@ void RenderingBackend::SubmitRects (const Container::Vector<RectData> &_rects) n
                         BGFX_STATE_BLEND_ALPHA | BGFX_STATE_CULL_CW | BGFX_STATE_MSAA);
         bgfx::setVertexBuffer (0, &vertexBuffer);
         bgfx::setIndexBuffer (&indexBuffer);
-        bgfx::submit (0u, currentMaterialProgramHandle);
+        bgfx::submit (_nativeViewportId, currentMaterialProgramHandle);
     }
+}
+
+void RenderingBackend::TouchView (std::uint16_t _nativeViewportId) noexcept
+{
+    bgfx::touch (_nativeViewportId);
+}
+
+void RenderingBackend::SubmitViewOrder (const Container::Vector<uint16_t> &_viewOrder) noexcept
+{
+    EMERGENCE_ASSERT (!_viewOrder.empty ());
+    uint16_t minViewId = std::numeric_limits<uint16_t>::max ();
+
+    // View count is usually pretty small, therefore it is okay to search minimum value like that.
+    for (uint16_t viewId : _viewOrder)
+    {
+        minViewId = std::min (viewId, minViewId);
+    }
+
+    bgfx::setViewOrder (minViewId, _viewOrder.size (), _viewOrder.data ());
 }
 
 void RenderingBackend::EndFrame () noexcept
 {
-    bgfx::touch (0);
     bgfx::frame ();
     materialSubmitted = false;
 }

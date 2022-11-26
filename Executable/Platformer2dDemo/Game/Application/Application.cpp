@@ -26,6 +26,7 @@
 #include <Celerity/Render2d/Render2dSingleton.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
+#include <Celerity/Render2d/Viewport2d.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -65,6 +66,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchAssetManager;
     Emergence::Celerity::ModifySingletonQuery modifyRender;
 
+    Emergence::Celerity::InsertLongTermQuery insertViewport;
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertSprite;
@@ -80,6 +82,7 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
       fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
       modifyRender (MODIFY_SINGLETON (Emergence::Celerity::Render2dSingleton)),
 
+      insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport2d)),
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
       insertSprite (INSERT_LONG_TERM (Emergence::Celerity::Sprite2dComponent)),
@@ -117,7 +120,15 @@ void DemoScenarioExecutor::Execute () noexcept
         auto *camera = static_cast<Emergence::Celerity::Camera2dComponent *> (++cameraCursor);
         camera->objectId = cameraTransform->GetObjectId ();
         camera->halfOrthographicSize = 5.0f;
-        render->cameraObjectId = camera->objectId;
+
+        auto viewportCursor = insertViewport.Execute ();
+        auto *viewport = static_cast<Emergence::Celerity::Viewport2d *> (++viewportCursor);
+
+        viewport->name = "GameWorld"_us;
+        viewport->cameraObjectId = camera->objectId;
+        viewport->width = Emergence::Celerity::Render2dBackend::GetCurrentConfig ().width;
+        viewport->height = Emergence::Celerity::Render2dBackend::GetCurrentConfig ().height;
+        viewport->clearColor = 0xAAAAFFFF;
 
         for (std::size_t index = 0u; index < 20u; ++index)
         {
