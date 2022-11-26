@@ -15,7 +15,6 @@ const Render2dSingleton::Reflection &Render2dSingleton::Reflect () noexcept
     static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Render2dSingleton);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (cameraObjectId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

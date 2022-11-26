@@ -3,7 +3,7 @@
 #include <Celerity/Render2d/BackendApi.hpp>
 #include <Celerity/Render2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
-#include <Celerity/Render2d/Render2dSingleton.hpp>
+#include <Celerity/Render2d/Events.hpp>
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
@@ -31,16 +31,27 @@ private:
         Container::Vector<BGFX::RectData> rects;
     };
 
-    void CollectVisibleObjects () noexcept;
+    void ApplyViewportConfiguration () noexcept;
+
+    void CollectVisibleObjects (UniqueId _cameraObjectId,
+                                Math::Transform2d &_selectedCameraTransform,
+                                Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
 
     WorldRenderer::Batch &GetBatch (uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept;
 
-    void SubmitBatches () noexcept;
+    void SubmitBatches (std::uint16_t _viewportNativeId,
+                        const Math::Transform2d &_selectedCameraTransform,
+                        const Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
 
     void PoolBatches () noexcept;
 
-    FetchSingletonQuery fetchRenderSingleton;
+    FetchValueQuery fetchViewportByName;
+    FetchAscendingRangeQuery fetchViewportBySortIndexAscending;
     FetchValueQuery fetchCameraById;
+
+    FetchSequenceQuery fetchViewportAddedNormalEvent;
+    FetchSequenceQuery fetchViewportAddedCustomEvent;
+    FetchSequenceQuery fetchViewportChangedEvent;
 
     FetchValueQuery fetchTransformById;
     Transform2dWorldAccessor transformWorldAccessor;
@@ -49,12 +60,10 @@ private:
     FetchValueQuery fetchLocalBoundsByRenderObjectId;
     FetchValueQuery fetchSpriteByObjectId;
 
-    Math::Transform2d selectedCameraTransform;
-    Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
-
     BGFX::RenderingBackend renderingBackend;
     Container::Vector<Batch> batches {Memory::Profiler::AllocationGroup::Top ()};
     Container::Vector<Batch> batchPool {Memory::Profiler::AllocationGroup::Top ()};
+    Container::Vector<uint16_t> viewportOrder {Memory::Profiler::AllocationGroup::Top ()};
 };
 
 static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAlignedBox2d &_worldBounds)
@@ -90,8 +99,13 @@ static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAl
 }
 
 WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAlignedBox2d &_worldBounds) noexcept
-    : fetchRenderSingleton (FETCH_SINGLETON (Render2dSingleton)),
+    : fetchViewportByName (FETCH_VALUE_1F (Viewport2d, name)),
+      fetchViewportBySortIndexAscending (FETCH_ASCENDING_RANGE (Viewport2d, sortIndex)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),
+
+      fetchViewportAddedNormalEvent (FETCH_SEQUENCE (Viewport2dAddedNormalEvent)),
+      fetchViewportAddedCustomEvent (FETCH_SEQUENCE (Viewport2dAddedCustomToNormalEvent)),
+      fetchViewportChangedEvent (FETCH_SEQUENCE (Viewport2dChangedNormalEvent)),
 
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -112,20 +126,68 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
 
 void WorldRenderer::Execute () noexcept
 {
-    CollectVisibleObjects ();
-    SubmitBatches ();
-    PoolBatches ();
+    ApplyViewportConfiguration ();
+
+    for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
+         const auto *viewport = static_cast<const Viewport2d *> (*viewportCursor); ++viewportCursor)
+    {
+        Math::Transform2d selectedCameraTransform;
+        Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
+
+        CollectVisibleObjects (viewport->cameraObjectId, selectedCameraTransform, selectedCameraHalfOrthographicSize);
+        SubmitBatches (viewport->nativeId, selectedCameraTransform, selectedCameraHalfOrthographicSize);
+        PoolBatches ();
+        viewportOrder.emplace_back (viewport->nativeId);
+    }
+
+    if (!viewportOrder.empty ())
+    {
+        BGFX::RenderingBackend::SubmitViewOrder (viewportOrder);
+        viewportOrder.clear ();
+    }
+
+    renderingBackend.EndFrame ();
 }
 
-void WorldRenderer::CollectVisibleObjects () noexcept
+void WorldRenderer::ApplyViewportConfiguration () noexcept
 {
-    selectedCameraTransform = {};
-    selectedCameraHalfOrthographicSize = Math::Vector2f::ZERO;
+    auto applyViewportConfiguration = [this] (Memory::UniqueString _name)
+    {
+        auto cursor = fetchViewportByName.Execute (&_name);
+        if (const auto *viewport = static_cast<const Viewport2d *> (*cursor))
+        {
+            BGFX::RenderingBackend::UpdateViewportConfiguration (*viewport);
+        }
+        else
+        {
+            // Viewport already deleted.
+        }
+    };
 
-    auto renderCursor = fetchRenderSingleton.Execute ();
-    const auto *render = static_cast<const Render2dSingleton *> (*renderCursor);
+    for (auto eventCursor = fetchViewportAddedNormalEvent.Execute ();
+         const auto *event = static_cast<const Viewport2dAddedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        applyViewportConfiguration (event->name);
+    }
 
-    auto cameraCursor = fetchCameraById.Execute (&render->cameraObjectId);
+    for (auto eventCursor = fetchViewportAddedCustomEvent.Execute ();
+         const auto *event = static_cast<const Viewport2dAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        applyViewportConfiguration (event->name);
+    }
+
+    for (auto eventCursor = fetchViewportChangedEvent.Execute ();
+         const auto *event = static_cast<const Viewport2dChangedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        applyViewportConfiguration (event->name);
+    }
+}
+
+void WorldRenderer::CollectVisibleObjects (UniqueId _cameraObjectId,
+                                           Math::Transform2d &_selectedCameraTransform,
+                                           Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept
+{
+    auto cameraCursor = fetchCameraById.Execute (&_cameraObjectId);
     const auto *camera = static_cast<const Camera2dComponent *> (*cameraCursor);
 
     if (!camera)
@@ -133,7 +195,7 @@ void WorldRenderer::CollectVisibleObjects () noexcept
         return;
     }
 
-    auto cameraTransformCursor = fetchTransformById.Execute (&render->cameraObjectId);
+    auto cameraTransformCursor = fetchTransformById.Execute (&_cameraObjectId);
     const auto *cameraTransform = static_cast<const Transform2dComponent *> (*cameraTransformCursor);
 
     if (!cameraTransform)
@@ -141,14 +203,14 @@ void WorldRenderer::CollectVisibleObjects () noexcept
         return;
     }
 
-    selectedCameraTransform = cameraTransform->GetVisualWorldTransform (transformWorldAccessor);
+    _selectedCameraTransform = cameraTransform->GetVisualWorldTransform (transformWorldAccessor);
     const Render2dBackendConfig &backendConfig = Render2dBackend::GetCurrentConfig ();
     const float aspectRatio = static_cast<float> (backendConfig.width) / static_cast<float> (backendConfig.height);
-    selectedCameraHalfOrthographicSize = {camera->halfOrthographicSize * aspectRatio, camera->halfOrthographicSize};
+    _selectedCameraHalfOrthographicSize = {camera->halfOrthographicSize * aspectRatio, camera->halfOrthographicSize};
 
-    const Math::AxisAlignedBox2d localVisibilityBox {-selectedCameraHalfOrthographicSize,
-                                                     selectedCameraHalfOrthographicSize};
-    const Math::Matrix3x3f cameraTransformMatrix {selectedCameraTransform};
+    const Math::AxisAlignedBox2d localVisibilityBox {-_selectedCameraHalfOrthographicSize,
+                                                     _selectedCameraHalfOrthographicSize};
+    const Math::Matrix3x3f cameraTransformMatrix {_selectedCameraTransform};
     const Math::AxisAlignedBox2d globalVisibilityBox = cameraTransformMatrix * localVisibilityBox;
 
     struct
@@ -235,16 +297,18 @@ WorldRenderer::Batch &WorldRenderer::GetBatch (uint16_t _layer, Memory::UniqueSt
     return *batches.emplace (next, std::move (pooledBatch));
 }
 
-void WorldRenderer::SubmitBatches () noexcept
+void WorldRenderer::SubmitBatches (std::uint16_t _viewportNativeId,
+                                   const Math::Transform2d &_selectedCameraTransform,
+                                   const Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept
 {
-    decltype (renderingBackend)::SubmitCamera (selectedCameraTransform, selectedCameraHalfOrthographicSize);
+    BGFX::RenderingBackend::SubmitCamera (_viewportNativeId, _selectedCameraTransform,
+                                          _selectedCameraHalfOrthographicSize);
+
     for (const Batch &batch : batches)
     {
         renderingBackend.SubmitMaterialInstance (batch.materialInstanceId);
-        renderingBackend.SubmitRects (batch.rects);
+        renderingBackend.SubmitRects (_viewportNativeId, batch.rects);
     }
-
-    renderingBackend.EndFrame ();
 }
 
 void WorldRenderer::PoolBatches () noexcept

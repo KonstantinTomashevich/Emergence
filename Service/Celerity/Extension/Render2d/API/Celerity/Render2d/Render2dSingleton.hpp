@@ -9,9 +9,6 @@ namespace Emergence::Celerity
 /// \brief Contains common parameters of world 2d rendering.
 struct Render2dSingleton final
 {
-    /// \brief Id of the camera object that will be used for rendering.
-    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
-
     /// \invariant Do not access directly, use ::GenerateSprite2dId.
     std::atomic_unsigned_lock_free sprite2dIdCounter = 0u;
 
@@ -20,7 +17,6 @@ struct Render2dSingleton final
 
     struct Reflection final
     {
-        StandardLayout::FieldId cameraObjectId;
         StandardLayout::Mapping mapping;
     };
 

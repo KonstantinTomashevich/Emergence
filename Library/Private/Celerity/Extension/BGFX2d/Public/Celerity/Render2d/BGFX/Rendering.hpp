@@ -3,6 +3,7 @@
 #include <bgfx/bgfx.h>
 
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/Render2d/Viewport2d.hpp>
 
 #include <Math/AxisAlignedBox2d.hpp>
 #include <Math/Transform2d.hpp>
@@ -21,12 +22,18 @@ class RenderingBackend final
 public:
     RenderingBackend (TaskConstructor &_constructor) noexcept;
 
-    static void SubmitCamera (const Math::Transform2d &_transform,
+    static void UpdateViewportConfiguration (const Viewport2d &_viewport) noexcept;
+
+    static void SubmitCamera (std::uint16_t _nativeViewportId, const Math::Transform2d &_transform,
                               const Math::Vector2f &_halfOrthographicSize) noexcept;
 
     void SubmitMaterialInstance (Memory::UniqueString _materialInstanceId) noexcept;
 
-    void SubmitRects (const Container::Vector<RectData> &_rects) noexcept;
+    void SubmitRects (std::uint16_t _nativeViewportId, const Container::Vector<RectData> &_rects) noexcept;
+
+    static void TouchView (std::uint16_t _nativeViewportId) noexcept;
+
+    static void SubmitViewOrder (const Container::Vector<std::uint16_t> &_viewOrder) noexcept;
 
     void EndFrame () noexcept;
 
