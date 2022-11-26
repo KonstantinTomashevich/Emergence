@@ -437,7 +437,7 @@ void ShapeInitializer::Execute ()
 
         if (!material)
         {
-            EMERGENCE_LOG (ERROR, "Physics3d: Unable to find DynamicsMaterial with id ", shape->materialId,
+            EMERGENCE_LOG (ERROR, "Physics3d: Unable to find DynamicsMaterial3d with id ", shape->materialId,
                            "! Shape, that attempts to use this material, will be deleted.");
 
             ~shapeCursor;
@@ -565,7 +565,7 @@ void ShapeChangesSynchronizer::ApplyShapeMaterialChanges () noexcept
             }
             else
             {
-                EMERGENCE_LOG (ERROR, "Physics3d: Unable to find DynamicsMaterial with id ", shape->materialId,
+                EMERGENCE_LOG (ERROR, "Physics3d: Unable to find DynamicsMaterial3d with id ", shape->materialId,
                                "! Shape, that attempts to use this material, will be deleted.");
 
                 ~shapeCursor;

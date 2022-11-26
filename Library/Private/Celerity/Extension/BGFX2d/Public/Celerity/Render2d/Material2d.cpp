@@ -6,6 +6,8 @@
 
 namespace Emergence::Celerity
 {
+Material2d::Material2d () noexcept = default;
+
 Material2d::~Material2d () noexcept
 {
     bgfx::ProgramHandle handle {static_cast<uint16_t> (nativeHandle)};

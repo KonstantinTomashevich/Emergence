@@ -14,6 +14,9 @@ include ("${CMAKE_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 # Must be called from root CMakeLists.txt, otherwise CTest configuration won't be placed into binary root.
 enable_testing ()
 
+# We need this target to generate code for CheckCodeStyle workflow without actually building all projects.
+add_custom_target (BuildTimeCodeGeneration COMMENT "Generate all code that is usually generated during build process.")
+
 add_subdirectory (ThirdParty)
 add_subdirectory (Service)
 add_subdirectory (Library)

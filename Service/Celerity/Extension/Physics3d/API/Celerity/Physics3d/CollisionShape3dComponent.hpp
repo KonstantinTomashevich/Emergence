@@ -37,7 +37,7 @@ struct CollisionShape3dComponent final
     CollisionGeometry3d geometry {.type = CollisionGeometry3dType::BOX, .boxHalfExtents = {0.5f, 0.5f, 0.5f}};
 
     /// \brief Shape physical material id.
-    /// \see DynamicsMaterial
+    /// \see DynamicsMaterial3d
     Memory::UniqueString materialId;
 
     /// \brief Whether this shape is enabled.

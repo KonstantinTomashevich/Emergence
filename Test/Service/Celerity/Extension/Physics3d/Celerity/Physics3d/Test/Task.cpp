@@ -1,5 +1,3 @@
-#include <thread>
-
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -100,7 +98,7 @@ void Configurator::Execute ()
                 using Type = std::decay_t<decltype (_task)>;
                 if constexpr (std::is_same_v<Type, ConfiguratorTasks::AddDynamicsMaterial>)
                 {
-                    LOG ("Adding DynamicsMaterial with id \"", _task.id, "\".");
+                    LOG ("Adding DynamicsMaterial3d with id \"", _task.id, "\".");
                     auto cursor = insertMaterial.Execute ();
                     auto *material = static_cast<DynamicsMaterial3d *> (++cursor);
 
@@ -116,7 +114,7 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, ConfiguratorTasks::UpdateDynamicsMaterial>)
                 {
-                    LOG ("Updating DynamicsMaterial with id \"", _task.id, "\".");
+                    LOG ("Updating DynamicsMaterial3d with id \"", _task.id, "\".");
                     auto cursor = modifyMaterialById.Execute (&_task.id);
                     auto *material = static_cast<DynamicsMaterial3d *> (*cursor);
                     REQUIRE (material);
@@ -124,7 +122,7 @@ void Configurator::Execute ()
                 }
                 else if constexpr (std::is_same_v<Type, ConfiguratorTasks::RemoveDynamicsMaterial>)
                 {
-                    LOG ("Removing DynamicsMaterial with id \"", _task.id, "\".");
+                    LOG ("Removing DynamicsMaterial3d with id \"", _task.id, "\".");
                     auto cursor = modifyMaterialById.Execute (&_task.id);
                     REQUIRE (*cursor);
                     ~cursor;

@@ -1,7 +1,5 @@
-BasedOnStyle: Chromium
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
-# TODO: CLang-Format 14.0 from VS 2022 crashes if this option is enabled AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: None
 AlignEscapedNewlines: Right
 AlignOperands: Align
@@ -16,8 +14,9 @@ AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
-BreakBeforeBraces: Allman
+BasedOnStyle: Chromium
 BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
@@ -28,6 +27,7 @@ Cpp11BracedListStyle: true
 IncludeBlocks: Preserve
 IndentCaseLabels: false
 IndentPPDirectives: AfterHash
+IndentRequiresClause: false
 IndentWidth: 4
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
@@ -37,6 +37,7 @@ ObjCSpaceBeforeProtocolList: true
 PackConstructorInitializers: Never
 PointerAlignment: Right
 ReflowComments: true
+RequiresClausePosition: OwnLine
 SortIncludes: CaseSensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: true

@@ -151,7 +151,7 @@ const typename TransformComponent<Transform>::Reflection &TransformComponent<Tra
 {
     static Reflection reflection = [] ()
     {
-        constexpr const char *NAME = []() constexpr
+        constexpr const char *NAME = [] () constexpr
         {
             if constexpr (std::is_same_v<Transform, Math::Transform2d>)
             {
@@ -164,8 +164,7 @@ const typename TransformComponent<Transform>::Reflection &TransformComponent<Tra
             }
 
             return "TransformUnknownComponent";
-        }
-        ();
+        }();
 
         EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME (TransformComponent, NAME);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);

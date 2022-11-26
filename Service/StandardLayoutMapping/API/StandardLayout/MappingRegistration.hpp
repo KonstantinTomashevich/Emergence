@@ -111,14 +111,16 @@ void DefaultDestructor (void *_address)
 
 /// \brief Checks that type has static `Reflect` method for reflection-based logic.
 template <typename T>
-concept HasReflection = requires (T)
-{
-    {T::Reflect ()};
-};
+concept HasReflection = requires (T) {
+                            {
+                                T::Reflect ()
+                            };
+                        };
 
 /// \brief Checks that type is supported by ::RegisterRegularField function logic.
 template <typename T>
-concept RegularFieldType = std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
+concept RegularFieldType =
+    std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
     std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
     std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
     std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, Memory::UniqueString> ||
