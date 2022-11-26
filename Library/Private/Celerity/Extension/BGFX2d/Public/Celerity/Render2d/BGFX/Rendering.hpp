@@ -24,7 +24,8 @@ public:
 
     static void UpdateViewportConfiguration (const Viewport2d &_viewport) noexcept;
 
-    static void SubmitCamera (std::uint16_t _nativeViewportId, const Math::Transform2d &_transform,
+    static void SubmitCamera (std::uint16_t _nativeViewportId,
+                              const Math::Transform2d &_transform,
                               const Math::Vector2f &_halfOrthographicSize) noexcept;
 
     void SubmitMaterialInstance (Memory::UniqueString _materialInstanceId) noexcept;
