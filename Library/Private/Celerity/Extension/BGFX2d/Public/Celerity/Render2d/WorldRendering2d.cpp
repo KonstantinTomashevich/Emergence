@@ -418,8 +418,8 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         }
         else
         {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId, ".",
-                           value->uniformName, "\" cannot be submitted as it is not registered in material.");
+            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
+                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
         }
     }
 
@@ -436,8 +436,8 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         }
         else
         {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId, ".",
-                           value->uniformName, "\" cannot be submitted as it is not registered in material.");
+            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
+                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
         }
     }
 
@@ -454,8 +454,8 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         }
         else
         {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId, ".",
-                           value->uniformName, "\" cannot be submitted as it is not registered in material.");
+            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
+                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
         }
     }
 
@@ -467,8 +467,8 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
 
         if (!textureAsset || textureAsset->state != AssetState::READY)
         {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId, ".",
-                           value->uniformName,
+            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
+                           ".", value->uniformName,
                            "\" cannot be submitted as required texture is not loaded. Skipping material submit.");
             return;
         }
@@ -487,8 +487,8 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         }
         else
         {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId, ".",
-                           value->uniformName, "\" cannot be submitted as it is not registered in material.");
+            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
+                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
         }
     }
 
@@ -551,7 +551,7 @@ void WorldRenderer::SubmitRects (
     _render->renderer.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G |
                                 Render::Backend::STATE_WRITE_B | Render::Backend::STATE_WRITE_A |
                                 Render::Backend::STATE_BLEND_ALPHA | Render::Backend::STATE_CULL_CW |
-                                Render::Backend::STATE_WRITE_MSAA);
+                                Render::Backend::STATE_MSAA);
 
     _render->renderer.SubmitGeometry (_viewport->viewport, _program, vertexBuffer, indexBuffer);
 }

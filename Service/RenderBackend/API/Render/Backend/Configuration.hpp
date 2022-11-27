@@ -4,6 +4,9 @@
 
 namespace Emergence::Render::Backend
 {
+// TODO: Currently this service is tested by testing libraries that use it.
+//       It's okay while we have only 1 implementation, but we need separate test suite in the future.
+
 /// \brief Supported MSAA powers.
 enum class MultiSampleAntiAliasingType
 {
@@ -41,10 +44,7 @@ Memory::Profiler::AllocationGroup GetSharedAllocationGroup () noexcept;
 
 /// \brief Initializes rendering backend.
 /// \invariant Must be called only once per application execution.
-bool Init (const Config &_config,
-                  void *_nativeWindowHandle,
-                  void *_nativeDisplayType,
-                  bool _profileMemory) noexcept;
+bool Init (const Config &_config, void *_nativeWindowHandle, void *_nativeDisplayType, bool _profileMemory) noexcept;
 
 /// \return Last config passed to ::Init or ::Update.
 const Config &GetCurrentConfig () noexcept;

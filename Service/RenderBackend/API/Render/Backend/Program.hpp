@@ -6,15 +6,20 @@
 
 namespace Emergence::Render::Backend
 {
+/// \brief Represents linked render program for rendering geometries.
 class Program final
 {
 public:
     static const char *GetShaderSuffix () noexcept;
 
+    /// \brief Constructs default invalid object.
     Program () noexcept;
 
-    Program (const uint8_t *_vertexShaderData, std::uint64_t _vertexShaderSize,
-             const uint8_t *_fragmentShaderData, std::uint64_t _fragmentShaderSize) noexcept;
+    /// \brief Constructs program from given implementation-dependant data of vertex and fragment shaders.
+    Program (const uint8_t *_vertexShaderData,
+             std::uint64_t _vertexShaderSize,
+             const uint8_t *_fragmentShaderData,
+             std::uint64_t _fragmentShaderSize) noexcept;
 
     Program (const Program &_other) = delete;
 
@@ -22,6 +27,7 @@ public:
 
     ~Program () noexcept;
 
+    /// \return Whether program is correctly linked and ready to be used.
     [[nodiscard]] bool IsValid () const noexcept;
 
     Program &operator= (const Program &_other) = delete;

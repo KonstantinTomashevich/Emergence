@@ -5,12 +5,16 @@
 
 namespace Emergence::Render::Backend
 {
+/// \brief Temporary index buffer that will be automatically destructed after frame is rendered.
+/// \details Useful for drawing geometry that might change every frame. For example, batched 2d sprite or UI.
 class TransientIndexBuffer
 {
 public:
-    static uint32_t TruncateSizeToAvailability (uint32_t _size, bool _use32BitIndices);
+    /// \brief If there is not enough space to allocate buffer for required count, returns maximum possible count.
+    static uint32_t TruncateSizeToAvailability (uint32_t _indexCount, bool _use32BitIndices);
 
-    TransientIndexBuffer (uint32_t _size, bool _use32BitIndices) noexcept;
+    /// \brief Constructs temporary buffer for given count of indices using 32-bit indices if requested.
+    TransientIndexBuffer (uint32_t _indexCount, bool _use32BitIndices) noexcept;
 
     TransientIndexBuffer (const TransientIndexBuffer &_other) = delete;
 
@@ -18,8 +22,10 @@ public:
 
     ~TransientIndexBuffer () noexcept;
 
+    /// \return Pointer to buffer data.
     void *GetData () noexcept;
 
+    /// \return Pointer to buffer data.
     [[nodiscard]] const void *GetData () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (TransientIndexBuffer);

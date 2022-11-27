@@ -15,7 +15,7 @@ public:
         void *_pointer, size_t _size, size_t _alignment, const char * /*unused*/, uint32_t /*unused*/) override;
 
 private:
-    Memory::Heap allocator {GetAllocationGroup()};
+    Memory::Heap allocator {GetAllocationGroup ()};
 };
 
 bx::AllocatorI *GetProfiledAllocator () noexcept;

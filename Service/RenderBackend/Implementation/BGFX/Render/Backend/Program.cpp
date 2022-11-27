@@ -60,8 +60,10 @@ Program::Program () noexcept
     block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
 }
 
-Program::Program (const uint8_t *_vertexShaderData, std::uint64_t _vertexShaderSize,
-                  const uint8_t *_fragmentShaderData, std::uint64_t _fragmentShaderSize) noexcept
+Program::Program (const uint8_t *_vertexShaderData,
+                  std::uint64_t _vertexShaderSize,
+                  const uint8_t *_fragmentShaderData,
+                  std::uint64_t _fragmentShaderSize) noexcept
 {
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;

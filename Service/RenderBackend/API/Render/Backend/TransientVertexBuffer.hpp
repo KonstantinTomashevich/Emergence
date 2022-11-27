@@ -7,11 +7,15 @@
 
 namespace Emergence::Render::Backend
 {
+/// \brief Temporary vertex buffer that will be automatically destructed after frame is rendered.
+/// \details Useful for drawing geometry that might change every frame. For example, batched 2d sprite or UI.
 class TransientVertexBuffer
 {
 public:
+    /// \brief If there is not enough space to allocate buffer for required count, returns maximum possible count.
     static uint32_t TruncateSizeToAvailability (uint32_t _vertexCount, const VertexLayout &_layout);
 
+    /// \brief Constructs temporary buffer for given count of vertices using given vertex layout.
     TransientVertexBuffer (uint32_t _vertexCount, const VertexLayout &_layout) noexcept;
 
     TransientVertexBuffer (const TransientVertexBuffer &_other) = delete;
@@ -20,8 +24,10 @@ public:
 
     ~TransientVertexBuffer () noexcept;
 
+    /// \return Pointer to buffer data.
     void *GetData () noexcept;
 
+    /// \return Pointer to buffer data.
     [[nodiscard]] const void *GetData () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (TransientVertexBuffer);

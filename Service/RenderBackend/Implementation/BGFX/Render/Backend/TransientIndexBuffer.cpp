@@ -6,14 +6,14 @@
 
 namespace Emergence::Render::Backend
 {
-uint32_t TransientIndexBuffer::TruncateSizeToAvailability (uint32_t _vertexCount, bool _use32BitIndices)
+uint32_t TransientIndexBuffer::TruncateSizeToAvailability (uint32_t _indexCount, bool _use32BitIndices)
 {
-    return bgfx::getAvailTransientIndexBuffer (_vertexCount, _use32BitIndices);
+    return bgfx::getAvailTransientIndexBuffer (_indexCount, _use32BitIndices);
 }
 
-TransientIndexBuffer::TransientIndexBuffer (uint32_t _vertexCount, bool _use32BitIndices) noexcept
+TransientIndexBuffer::TransientIndexBuffer (uint32_t _indexCount, bool _use32BitIndices) noexcept
 {
-    bgfx::allocTransientIndexBuffer (&block_cast<bgfx::TransientIndexBuffer> (data), _vertexCount, _use32BitIndices);
+    bgfx::allocTransientIndexBuffer (&block_cast<bgfx::TransientIndexBuffer> (data), _indexCount, _use32BitIndices);
 }
 
 TransientIndexBuffer::~TransientIndexBuffer () noexcept = default;
