@@ -11,8 +11,10 @@ class Program final
 public:
     static const char *GetShaderSuffix () noexcept;
 
-    Program (const Container::Vector<uint8_t> &_vertexShaderData,
-             const Container::Vector<uint8_t> &_fragmentShaderData) noexcept;
+    Program () noexcept;
+
+    Program (const uint8_t *_vertexShaderData, std::uint64_t _vertexShaderSize,
+             const uint8_t *_fragmentShaderData, std::uint64_t _fragmentShaderSize) noexcept;
 
     Program (const Program &_other) = delete;
 

@@ -57,24 +57,24 @@ struct UniformValueBundleItem final
     Memory::UniqueString name;
 
     /// \brief Value type used for deserialization and correctness check.
-    Uniform2dType type = Uniform2dType::VECTOR_4F;
+    Render::Backend::UniformType type = Render::Backend::UniformType::VECTOR_4F;
 
     struct
     {
-        /// \brief Field for Uniform2dType::VECTOR_4F values.
+        /// \brief Field for Render::Backend::UniformType::VECTOR_4F values.
         Math::Vector4f vector4f {Math::NoInitializationFlag::Confirm ()};
 
-        /// \brief Field for Uniform2dType::MATRIX_3X3F values.
+        /// \brief Field for Render::Backend::UniformType::MATRIX_3X3F values.
         Math::Matrix3x3f matrix3x3f {Math::NoInitializationFlag::Confirm ()};
 
         // This structure is only used during material deserialization,
         // therefore we shouldn't worry about small waste of padding here.
         BEGIN_IGNORING_PADDING_WARNING
-        /// \brief Field for Uniform2dType::MATRIX_4X4F values.
+        /// \brief Field for Render::Backend::UniformType::MATRIX_4X4F values.
         Math::Matrix4x4f matrix4x4f {Math::NoInitializationFlag::Confirm ()};
         END_IGNORING_PADDING_WARNING
 
-        /// \brief Id of a texture for Uniform2dType::SAMPLER values.
+        /// \brief Id of a texture for Render::Backend::UniformType::SAMPLER values.
         Memory::UniqueString textureId;
     };
 

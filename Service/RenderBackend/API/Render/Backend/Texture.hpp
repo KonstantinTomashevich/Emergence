@@ -2,14 +2,14 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
-#include <Container/Vector.hpp>
-
 namespace Emergence::Render::Backend
 {
 class Texture final
 {
 public:
-    Texture (const Container::Vector<uint8_t> &_data) noexcept;
+    Texture () noexcept;
+
+    Texture (const uint8_t *_data, std::uint64_t _size) noexcept;
 
     Texture (const Texture &_other) = delete;
 

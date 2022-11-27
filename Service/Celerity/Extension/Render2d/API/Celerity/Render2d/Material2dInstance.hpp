@@ -43,7 +43,7 @@ struct Material2dInstance final
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Contains value for Uniform2dType::VECTOR_4F parameter. Part of Material2dInstance asset.
+/// \brief Contains value for Render::Backend::UniformType::VECTOR_4F parameter. Part of Material2dInstance asset.
 struct UniformVector4fValue final
 {
     /// \brief Id used to bind to Asset instance.
@@ -66,7 +66,7 @@ struct UniformVector4fValue final
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Contains value for Uniform2dType::MATRIX_3X3F parameter. Part of Material2dInstance asset.
+/// \brief Contains value for Render::Backend::UniformType::MATRIX_3X3F parameter. Part of Material2dInstance asset.
 struct UniformMatrix3x3fValue final
 {
     /// \brief Id used to bind to Asset instance.
@@ -89,7 +89,7 @@ struct UniformMatrix3x3fValue final
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Contains value for Uniform2dType::MATRIX_4X4F parameter. Part of Material2dInstance asset.
+/// \brief Contains value for Render::Backend::UniformType::MATRIX_4X4F parameter. Part of Material2dInstance asset.
 struct UniformMatrix4x4fValue final
 {
     /// \brief Id used to bind to Asset instance.
@@ -112,7 +112,7 @@ struct UniformMatrix4x4fValue final
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Contains value for Uniform2dType::SAMPLER parameter. Part of Material2dInstance asset.
+/// \brief Contains value for Render::Backend::UniformType::SAMPLER parameter. Part of Material2dInstance asset.
 struct UniformSamplerValue final
 {
     /// \brief Id used to bind to Asset instance.

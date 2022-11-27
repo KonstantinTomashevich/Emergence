@@ -36,6 +36,9 @@ struct Config final
     bool hiDpi = false;
 };
 
+/// \return Allocation group, used for all allocations made by render backend.
+Memory::Profiler::AllocationGroup GetSharedAllocationGroup () noexcept;
+
 /// \brief Initializes rendering backend.
 /// \invariant Must be called only once per application execution.
 bool Init (const Config &_config,

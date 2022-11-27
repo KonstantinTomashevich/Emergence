@@ -28,6 +28,11 @@ static bgfx::UniformType::Enum ToBGFX (UniformType _type)
     return bgfx::UniformType::Count;
 }
 
+Uniform::Uniform () noexcept
+{
+    block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
+}
+
 Uniform::Uniform (Memory::UniqueString _name, UniformType _type) noexcept
 {
     block_cast<uint16_t> (data) = bgfx::createUniform (*_name, ToBGFX (_type)).idx;
@@ -73,6 +78,11 @@ void Uniform::SetSampler (uint16_t _stage, const Texture &_texture) noexcept
     uint16_t handle = block_cast<uint16_t> (data);
     EMERGENCE_ASSERT (handle != bgfx::kInvalidHandle);
     bgfx::setTexture (_stage, bgfx::UniformHandle {handle}, bgfx::TextureHandle {block_cast<uint16_t> (_texture.data)});
+}
+
+bool Uniform::IsValid () const noexcept
+{
+    return block_cast<uint16_t> (data) != bgfx::kInvalidHandle;
 }
 
 Uniform &Uniform::operator= (Uniform &&_other) noexcept

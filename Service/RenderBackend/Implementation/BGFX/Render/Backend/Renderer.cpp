@@ -37,18 +37,18 @@ void Renderer::SubmitGeometry (const Viewport &_viewport,
                   bgfx::ProgramHandle {block_cast<uint16_t> (_program.data)});
 }
 
-void Renderer::Touch (Viewport &_viewport) noexcept
+void Renderer::Touch (const Viewport &_viewport) noexcept
 {
     bgfx::touch (static_cast<uint16_t> (block_cast<uint64_t> (_viewport.data)));
 }
 
-void Renderer::SubmitViewportOrder (const Container::Vector<Viewport *> &_viewports) noexcept
+void Renderer::SubmitViewportOrder (const Container::Vector<const Viewport *> &_viewports) noexcept
 {
     auto &rendererData = block_cast<RendererData> (data);
     rendererData.viewNativeIds.reserve (_viewports.size ());
     uint16_t minimum = std::numeric_limits<uint16_t>::max ();
 
-    for (Viewport *viewport : _viewports)
+    for (const Viewport *viewport : _viewports)
     {
         rendererData.viewNativeIds.emplace_back (static_cast<uint16_t> (block_cast<uint64_t> (viewport->data)));
         minimum = std::min (minimum, rendererData.viewNativeIds.back ());

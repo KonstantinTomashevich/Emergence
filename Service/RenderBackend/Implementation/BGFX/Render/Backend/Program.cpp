@@ -55,28 +55,33 @@ const char *Program::GetShaderSuffix () noexcept
     return ".unknown";
 }
 
-Program::Program (const Container::Vector<uint8_t> &_vertexShaderData,
-                  const Container::Vector<uint8_t> &_fragmentShaderData) noexcept
+Program::Program () noexcept
+{
+    block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
+}
+
+Program::Program (const uint8_t *_vertexShaderData, std::uint64_t _vertexShaderSize,
+                  const uint8_t *_fragmentShaderData, std::uint64_t _fragmentShaderSize) noexcept
 {
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
 
-    auto loadShader = [] (const Container::Vector<uint8_t> &_data)
+    auto loadShader = [] (const uint8_t *_data, std::uint64_t _size)
     {
-        const bgfx::Memory *shaderMemory = bgfx::alloc (static_cast<uint32_t> (_data.size () + 1u));
-        memcpy (shaderMemory->data, _data.data (), _data.size ());
+        const bgfx::Memory *shaderMemory = bgfx::alloc (static_cast<uint32_t> (_size + 1u));
+        memcpy (shaderMemory->data, _data, _size);
         shaderMemory->data[shaderMemory->size - 1] = '\0';
         return bgfx::createShader (shaderMemory);
     };
 
-    bgfx::ShaderHandle vertexShader = loadShader (_vertexShaderData);
+    bgfx::ShaderHandle vertexShader = loadShader (_vertexShaderData, _vertexShaderSize);
     if (!bgfx::isValid (vertexShader))
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Unable to load vertex shader from given data.");
         return;
     }
 
-    bgfx::ShaderHandle fragmentShader = loadShader (_fragmentShaderData);
+    bgfx::ShaderHandle fragmentShader = loadShader (_fragmentShaderData, _fragmentShaderSize);
     if (!bgfx::isValid (fragmentShader))
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Unable to load fragment shader from given data.");

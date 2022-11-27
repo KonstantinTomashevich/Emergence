@@ -42,11 +42,11 @@ struct Uniform2dBundleItem final
     Memory::UniqueString name;
 
     /// \brief Type of the uniform.
-    Uniform2dType type = Uniform2dType::VECTOR_4F;
+    Render::Backend::UniformType type = Render::Backend::UniformType::VECTOR_4F;
 
     union
     {
-        /// \brief Stage for uniforms of Uniform2dType::SAMPLER type.
+        /// \brief Stage for uniforms of Render::Backend::UniformType::SAMPLER type.
         uint8_t textureStage = 0u;
     };
 

@@ -118,14 +118,19 @@ VertexLayoutBuilder::VertexLayoutBuilder () noexcept = default;
 
 VertexLayoutBuilder::~VertexLayoutBuilder () noexcept = default;
 
-void VertexLayoutBuilder::Begin () noexcept
+VertexLayoutBuilder &VertexLayoutBuilder::Begin () noexcept
 {
-    new (data.data ()) bgfx::VertexLayout ();
+    auto *layout = new (data.data ()) bgfx::VertexLayout ();
+    layout->begin (bgfx::getRendererType ());
+    return *this;
 }
 
-void VertexLayoutBuilder::Add (Attribute _attribute, AttributeType _type, uint16_t _elementCount) noexcept
+VertexLayoutBuilder &VertexLayoutBuilder::Add (Attribute _attribute,
+                                               AttributeType _type,
+                                               uint16_t _elementCount) noexcept
 {
     block_cast<bgfx::VertexLayout> (data).add (ToBGFX (_attribute), _elementCount, ToBGFX (_type));
+    return *this;
 }
 
 VertexLayout VertexLayoutBuilder::End () noexcept

@@ -226,6 +226,11 @@ void Callback::captureFrame (const void * /*unused*/, uint32_t /*unused*/)
     // We do not support BGFX capture yet.
 }
 
+Memory::Profiler::AllocationGroup GetSharedAllocationGroup () noexcept
+{
+    return GetAllocationGroup ();
+}
+
 static Config currentConfig;
 
 bool Init (const Config &_config, void *_nativeWindowHandle, void *_nativeDisplayType, bool _profileMemory) noexcept

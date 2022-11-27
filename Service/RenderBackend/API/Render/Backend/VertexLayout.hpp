@@ -68,9 +68,9 @@ public:
 
     ~VertexLayoutBuilder () noexcept;
 
-    void Begin () noexcept;
+    VertexLayoutBuilder &Begin () noexcept;
 
-    void Add (Attribute _attribute, AttributeType _type, uint16_t _elementCount) noexcept;
+    VertexLayoutBuilder &Add (Attribute _attribute, AttributeType _type, uint16_t _elementCount) noexcept;
 
     VertexLayout End () noexcept;
 

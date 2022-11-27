@@ -347,7 +347,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
     {
         switch (value.type)
         {
-        case Uniform2dType::VECTOR_4F:
+        case Render::Backend::UniformType::VECTOR_4F:
         {
             auto *uniformValue = static_cast<UniformVector4fValue *> (++insertVector4Cursor);
             uniformValue->assetId = _assetId;
@@ -356,7 +356,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
             break;
         }
 
-        case Uniform2dType::MATRIX_3X3F:
+        case Render::Backend::UniformType::MATRIX_3X3F:
         {
             auto *uniformValue = static_cast<UniformMatrix3x3fValue *> (++insertMatrix3x3Cursor);
             uniformValue->assetId = _assetId;
@@ -365,7 +365,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
             break;
         }
 
-        case Uniform2dType::MATRIX_4X4F:
+        case Render::Backend::UniformType::MATRIX_4X4F:
         {
             auto *uniformValue = static_cast<UniformMatrix4x4fValue *> (++insertMatrix4x4Cursor);
             uniformValue->assetId = _assetId;
@@ -374,7 +374,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
             break;
         }
 
-        case Uniform2dType::SAMPLER:
+        case Render::Backend::UniformType::SAMPLER:
         {
             auto *uniformValue = static_cast<UniformSamplerValue *> (++insertSamplerCursor);
             uniformValue->assetId = _assetId;

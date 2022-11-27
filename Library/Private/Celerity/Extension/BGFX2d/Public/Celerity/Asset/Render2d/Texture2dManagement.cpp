@@ -2,17 +2,12 @@
 
 #include <filesystem>
 
-#include <bgfx/bgfx.h>
-
-#include <bimg/decode.h>
-
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render2d/Texture2dLoadingState.hpp>
 #include <Celerity/Asset/Render2d/Texture2dManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Render2d/BGFX/Allocator.hpp>
 #include <Celerity/Render2d/Texture2d.hpp>
 
 #include <Log/Log.hpp>
@@ -194,55 +189,20 @@ AssetState Manager::ContinueLoadingData (Texture2dLoadingState *_loadingState) n
     return _loadingState->read == _loadingState->size ? AssetState::READY : AssetState::LOADING;
 }
 
-static void ImageReleaseCallback (void * /*unused*/, void *_userData)
-{
-    bimg::imageFree (static_cast<bimg::ImageContainer *> (_userData));
-}
-
 AssetState Manager::FinishLoading (Texture2dLoadingState *_loadingState) noexcept
 {
-    bimg::ImageContainer *imageContainer =
-        bimg::imageParse (BGFX::GetCurrentAllocator (), _loadingState->data, _loadingState->size);
-
-    if (!imageContainer)
+    Render::Backend::Texture nativeTexture {_loadingState->data, _loadingState->size};
+    if (!nativeTexture.IsValid ())
     {
-        EMERGENCE_LOG (ERROR, "Texture2dManagement: Unable to parse texture data for texture \"",
-                       _loadingState->assetId, "\".");
-        return AssetState::CORRUPTED;
-    }
-
-    // We expect simple 2d texture, not something complex.
-    EMERGENCE_ASSERT (!imageContainer->m_cubeMap);
-    EMERGENCE_ASSERT (imageContainer->m_depth == 1u);
-
-    if (!bgfx::isTextureValid (0, false, imageContainer->m_numLayers,
-                               static_cast<bgfx::TextureFormat::Enum> (imageContainer->m_format),
-                               BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE))
-    {
-        EMERGENCE_LOG (ERROR, "Texture2dManagement: Unable to parse texture \"", _loadingState->assetId,
-                       "\", because it's data is invalid.");
-        return AssetState::CORRUPTED;
-    }
-
-    const bgfx::Memory *memory =
-        bgfx::makeRef (imageContainer->m_data, imageContainer->m_size, ImageReleaseCallback, imageContainer);
-
-    bgfx::TextureHandle handle = bgfx::createTexture2D (
-        static_cast<uint16_t> (imageContainer->m_width), static_cast<uint16_t> (imageContainer->m_height),
-        1u < imageContainer->m_numMips, imageContainer->m_numLayers,
-        static_cast<bgfx::TextureFormat::Enum> (imageContainer->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
-        memory);
-
-    if (!bgfx::isValid (handle))
-    {
-        EMERGENCE_LOG (ERROR, "Texture2dManagement: Failed to create texture \"", _loadingState->assetId, "\".");
+        EMERGENCE_LOG (ERROR, "Texture2dManagement: Failed to load texture \"", _loadingState->assetId,
+                       "\" from data.");
         return AssetState::CORRUPTED;
     }
 
     auto insertTextureCursor = insertTexture.Execute ();
     auto *texture = static_cast<Texture2d *> (++insertTextureCursor);
     texture->assetId = _loadingState->assetId;
-    texture->nativeHandle = static_cast<uint64_t> (handle.idx);
+    texture->texture = std::move (nativeTexture);
     return AssetState::READY;
 }
 

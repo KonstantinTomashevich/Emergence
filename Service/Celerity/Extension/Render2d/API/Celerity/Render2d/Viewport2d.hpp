@@ -2,6 +2,8 @@
 
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Render/Backend/Viewport.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
@@ -9,8 +11,6 @@ namespace Emergence::Celerity
 /// \brief Configures output surface for 2d rendering. Having multiple viewports is supported.
 struct Viewport2d final
 {
-    Viewport2d () noexcept;
-
     /// \invariant Must be unique among other viewports.
     Memory::UniqueString name;
 
@@ -19,10 +19,6 @@ struct Viewport2d final
 
     /// \brief Used to sort viewports in case of overlap.
     std::uint16_t sortIndex = 0u;
-
-    /// \brief Native identifier used to pass data to rendering backend.
-    /// \details Generated automatically, do not override.
-    std::uint16_t nativeId = 0u;
 
     /// \brief Leftmost coordinate of the viewport in window coordinates. Zero is the window left border.
     std::uint32_t x = 0u;
@@ -41,12 +37,16 @@ struct Viewport2d final
     ///          is disabled at all. This behaviour is required for things that need to overlap other things, like UI.
     uint32_t clearColor = 0x000000FF;
 
+    /// \brief Underlying implementation object.
+    /// \details Field is mutable, because render backend objects are technically handles and by modifying them
+    ///          we work with underlying implementation that operates under different read-write ruleset.
+    mutable Render::Backend::Viewport viewport;
+
     struct Reflection final
     {
         StandardLayout::FieldId name;
         StandardLayout::FieldId cameraObjectId;
         StandardLayout::FieldId sortIndex;
-        StandardLayout::FieldId nativeId;
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
         StandardLayout::FieldId width;

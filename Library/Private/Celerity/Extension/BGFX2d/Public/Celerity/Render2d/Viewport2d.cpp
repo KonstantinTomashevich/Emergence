@@ -4,15 +4,6 @@
 
 namespace Emergence::Celerity
 {
-Viewport2d::Viewport2d () noexcept
-{
-    // TODO: It is temporary solution for generation native ids.
-    //       It will later be rewritten when rendering backend logic will be extracted from Render2d extension.
-    static std::atomic_unsigned_lock_free nativeIdGenerator;
-    EMERGENCE_ASSERT (nativeIdGenerator != std::numeric_limits<decltype (nativeIdGenerator)::value_type>::max ());
-    nativeId = nativeIdGenerator++;
-}
-
 const Viewport2d::Reflection &Viewport2d::Reflect () noexcept
 {
     static const Reflection reflection = [] ()
@@ -21,7 +12,6 @@ const Viewport2d::Reflection &Viewport2d::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (name);
         EMERGENCE_MAPPING_REGISTER_REGULAR (cameraObjectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (sortIndex);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (nativeId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (x);
         EMERGENCE_MAPPING_REGISTER_REGULAR (y);
         EMERGENCE_MAPPING_REGISTER_REGULAR (width);

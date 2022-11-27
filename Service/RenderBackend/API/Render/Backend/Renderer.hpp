@@ -38,9 +38,9 @@ public:
                          const TransientVertexBuffer &_vertices,
                          const TransientIndexBuffer &_indices) noexcept;
 
-    void Touch (class Viewport &_viewport) noexcept;
+    void Touch (const Viewport &_viewport) noexcept;
 
-    void SubmitViewportOrder (const Container::Vector<Viewport *> &_viewports) noexcept;
+    void SubmitViewportOrder (const Container::Vector<const Viewport *> &_viewports) noexcept;
 
     void SubmitFrame () noexcept;
 

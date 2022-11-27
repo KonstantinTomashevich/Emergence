@@ -16,7 +16,9 @@ enum class ViewportSortMode
 class Viewport final
 {
 public:
-    Viewport (class Renderer *_context) noexcept;
+    Viewport () noexcept;
+
+    Viewport (class Renderer &_context) noexcept;
 
     Viewport (const Viewport &_other) = delete;
 
@@ -31,7 +33,7 @@ public:
                               ViewportSortMode _sortMode,
                               std::uint32_t _clearColor) noexcept;
 
-    void SubmitOrthographicView (const Math::Transform2d &_view, const Math::Vector2f &_halfOrthographicSize);
+    void SubmitOrthographicView (const Math::Transform2d &_view, const Math::Vector2f &_halfOrthographicSize) noexcept;
 
     Viewport &operator= (const Viewport &_other) = delete;
 

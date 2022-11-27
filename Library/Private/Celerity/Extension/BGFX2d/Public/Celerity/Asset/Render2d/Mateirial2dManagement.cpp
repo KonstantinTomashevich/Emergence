@@ -1,8 +1,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include <bgfx/bgfx.h>
-
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render2d/Material2d.hpp>
@@ -10,6 +8,8 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Log/Log.hpp>
+
+#include <Render/Backend/Configuration.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
@@ -36,7 +36,7 @@ private:
 
     AssetState LoadUniforms (Memory::UniqueString _assetId) noexcept;
 
-    bgfx::ShaderHandle LoadShader (Memory::UniqueString _id, bool _isFragment) noexcept;
+    Container::Vector<uint8_t> LoadShaderFile (const Container::String &_file) noexcept;
 
     bool RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBundleItem &_bundleItem) noexcept;
 
@@ -186,30 +186,19 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
     material->vertexShader = materialAsset.vertexShader;
     material->fragmentShader = materialAsset.fragmentShader;
 
-    bgfx::ShaderHandle vertexShader = LoadShader (material->vertexShader, false);
-    if (!bgfx::isValid (vertexShader))
-    {
-        EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to load vertex shader \"", material->vertexShader, "\".");
-        return AssetState::CORRUPTED;
-    }
+    const Container::Vector<uint8_t> vertexShader =
+        LoadShaderFile (EMERGENCE_BUILD_STRING (material->vertexShader, ".vertex"));
+    const Container::Vector<uint8_t> fragmentShader =
+        LoadShaderFile (EMERGENCE_BUILD_STRING (material->fragmentShader, ".fragment"));
+    material->program = {vertexShader.data (), vertexShader.size (), fragmentShader.data (), fragmentShader.size ()};
 
-    bgfx::ShaderHandle fragmentShader = LoadShader (material->fragmentShader, true);
-    if (!bgfx::isValid (fragmentShader))
-    {
-        EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to load fragment shader \"", material->fragmentShader,
-                       "\".");
-        return AssetState::CORRUPTED;
-    }
-
-    bgfx::ProgramHandle program = bgfx::createProgram (vertexShader, fragmentShader, true);
-    if (!bgfx::isValid (program))
+    if (!material->program.IsValid ())
     {
         EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to create program for material \"", material->assetId,
                        "\".");
         return AssetState::CORRUPTED;
     }
 
-    material->nativeHandle = program.idx;
     return AssetState::READY;
 }
 
@@ -276,110 +265,33 @@ AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
     return AssetState::MISSING;
 }
 
-bgfx::ShaderHandle Manager::LoadShader (Memory::UniqueString _id, bool _isFragment) noexcept
+Container::Vector<uint8_t> Manager::LoadShaderFile (const Container::String &_file) noexcept
 {
-    const char *typeSuffix = _isFragment ? ".fragment" : ".vertex";
-    const char *platformSuffix = nullptr;
-
-    switch (bgfx::getRendererType ())
-    {
-    case bgfx::RendererType::Noop:
-        platformSuffix = ".noop";
-        break;
-
-    case bgfx::RendererType::Agc:
-        platformSuffix = ".agc";
-        break;
-
-    case bgfx::RendererType::Direct3D9:
-        platformSuffix = ".dx9";
-        break;
-
-    case bgfx::RendererType::Direct3D11:
-    case bgfx::RendererType::Direct3D12:
-        platformSuffix = ".dx11";
-        break;
-
-    case bgfx::RendererType::Gnm:
-        platformSuffix = ".pssl";
-        break;
-
-    case bgfx::RendererType::Metal:
-        platformSuffix = ".metal";
-        break;
-
-    case bgfx::RendererType::Nvn:
-        platformSuffix = ".nvn";
-        break;
-
-    case bgfx::RendererType::OpenGLES:
-        platformSuffix = ".essl";
-        break;
-
-    case bgfx::RendererType::OpenGL:
-        platformSuffix = ".glsl";
-        break;
-
-    case bgfx::RendererType::Vulkan:
-        platformSuffix = ".spirv";
-        break;
-
-    case bgfx::RendererType::WebGPU:
-        platformSuffix = ".wssl";
-        break;
-
-    case bgfx::RendererType::Count:
-        break;
-    }
-
-    if (!platformSuffix)
-    {
-        return bgfx::ShaderHandle {bgfx::kInvalidHandle};
-    }
-
+    Container::Vector<uint8_t> result {Render::Backend::GetSharedAllocationGroup ()};
     for (Memory::UniqueString shaderRoot : shaderRootPaths)
     {
-        std::filesystem::path shaderPath = EMERGENCE_BUILD_STRING (shaderRoot, "/", _id, typeSuffix, platformSuffix);
+        std::filesystem::path shaderPath =
+            EMERGENCE_BUILD_STRING (shaderRoot, "/", _file, Render::Backend::Program::GetShaderSuffix ());
+
         if (std::filesystem::exists (shaderPath))
         {
             std::ifstream input {shaderPath, std::ios::binary | std::ios::ate};
             std::streamsize fileSize = input.tellg ();
             input.seekg (0u, std::ios::beg);
 
-            const bgfx::Memory *shaderMemory = bgfx::alloc (static_cast<uint32_t> (fileSize + 1u));
-            input.read (reinterpret_cast<char *> (shaderMemory->data), fileSize);
-            shaderMemory->data[shaderMemory->size - 1] = '\0';
-            return bgfx::createShader (shaderMemory);
+            result.resize (fileSize);
+            input.read (reinterpret_cast<char *> (result.data ()), fileSize);
+            break;
         }
     }
 
-    return bgfx::ShaderHandle {bgfx::kInvalidHandle};
+    return result;
 }
 
 bool Manager::RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBundleItem &_bundleItem) noexcept
 {
-    bgfx::UniformType::Enum uniformType = bgfx::UniformType::Vec4;
-    switch (_bundleItem.type)
-    {
-    case Uniform2dType::VECTOR_4F:
-        uniformType = bgfx::UniformType::Vec4;
-        break;
-
-    case Uniform2dType::MATRIX_3X3F:
-        uniformType = bgfx::UniformType::Mat3;
-        break;
-
-    case Uniform2dType::MATRIX_4X4F:
-        uniformType = bgfx::UniformType::Mat4;
-        break;
-
-    case Uniform2dType::SAMPLER:
-        uniformType = bgfx::UniformType::Sampler;
-        break;
-    }
-
-    bgfx::UniformHandle uniformHandle = bgfx::createUniform (*_bundleItem.name, uniformType);
-    if (!bgfx::isValid (uniformHandle))
+    Render::Backend::Uniform nativeUniform {_bundleItem.name, _bundleItem.type};
+    if (!nativeUniform.IsValid ())
     {
         EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to register uniform \"", _bundleItem.name, "\".");
         return false;
@@ -391,9 +303,9 @@ bool Manager::RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBun
     uniform->assetId = _assetId;
     uniform->name = _bundleItem.name;
     uniform->type = _bundleItem.type;
-    uniform->nativeHandle = uniformHandle.idx;
+    uniform->uniform = std::move (nativeUniform);
 
-    if (_bundleItem.type == Uniform2dType::SAMPLER)
+    if (_bundleItem.type == Render::Backend::UniformType::SAMPLER)
     {
         uniform->textureStage = _bundleItem.textureStage;
     }

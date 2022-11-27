@@ -25,14 +25,14 @@ UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name, cons
 
 UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name, Math::Matrix3x3f _value) noexcept
     : name (_name),
-      type (Uniform2dType::MATRIX_3X3F),
+      type (Render::Backend::UniformType::MATRIX_3X3F),
       matrix3x3f (std::move (_value))
 {
 }
 
 UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name, Math::Matrix4x4f _value) noexcept
     : name (_name),
-      type (Uniform2dType::MATRIX_4X4F),
+      type (Render::Backend::UniformType::MATRIX_4X4F),
       matrix4x4f (std::move (_value))
 {
 }
@@ -40,7 +40,7 @@ UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name, Math
 UniformValueBundleItem::UniformValueBundleItem (Memory::UniqueString _name,
                                                 const Memory::UniqueString &_textureId) noexcept
     : name (_name),
-      type (Uniform2dType::SAMPLER),
+      type (Render::Backend::UniformType::SAMPLER),
       textureId (_textureId)
 {
 }

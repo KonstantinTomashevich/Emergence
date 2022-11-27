@@ -13,7 +13,6 @@
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
-#include <Celerity/Render2d/BackendApi.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/Events.hpp>
 #include <Celerity/Render2d/Render2dSingleton.hpp>
@@ -26,6 +25,8 @@
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/World.hpp>
+
+#include <Render/Backend/Configuration.hpp>
 
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -91,18 +92,18 @@ ContextHolder::ContextHolder () noexcept
     void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
 #endif
 
-    Emergence::Celerity::Render2dBackendConfig config;
+    Emergence::Render::Backend::Config config;
     config.width = WIDTH;
     config.height = HEIGHT;
     config.vsync = true;
-    Emergence::Celerity::Render2dBackend::Init (config, nativeWindowHandle, nativeDisplayType, false);
+    Emergence::Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
 }
 
 ContextHolder::~ContextHolder () noexcept
 {
     if (window)
     {
-        Emergence::Celerity::Render2dBackend::Shutdown ();
+        Emergence::Render::Backend::Shutdown ();
         SDL_DestroyWindow (window);
     }
 
@@ -210,7 +211,7 @@ void ScenarioExecutor::Execute () noexcept
     else if (auto *screenShotPoint = std::get_if<ScreenShotPoint> (&scenario[currentPointIndex]))
     {
         LOG ("Taking screen shot \"", screenShotPoint->screenShotId, "\"...");
-        Render2dBackend::TakePngScreenshot (EMERGENCE_BUILD_STRING (screenShotPoint->screenShotId, ".png"));
+        Emergence::Render::Backend::TakePngScreenshot (EMERGENCE_BUILD_STRING (screenShotPoint->screenShotId, ".png"));
         pendingScreenShot = screenShotPoint->screenShotId;
         ++currentPointIndex;
     }

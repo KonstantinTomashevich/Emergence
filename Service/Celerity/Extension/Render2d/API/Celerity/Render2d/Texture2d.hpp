@@ -2,6 +2,8 @@
 
 #include <Memory/UniqueString.hpp>
 
+#include <Render/Backend/Texture.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
@@ -9,18 +11,17 @@ namespace Emergence::Celerity
 /// \brief Represents successfully loaded 2d texture asset.
 struct Texture2d final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (Texture2d);
-
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
 
-    /// \brief Implementation-specific native handle.
-    uint64_t nativeHandle = 0u;
+    /// \brief Underlying implementation object.
+    /// \details Field is mutable, because render backend objects are technically handles and by modifying them
+    ///          we work with underlying implementation that operates under different read-write ruleset.
+    mutable Render::Backend::Texture texture;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
-        StandardLayout::FieldId nativeHandle;
         StandardLayout::Mapping mapping;
     };
 

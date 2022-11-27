@@ -13,18 +13,22 @@
 
 namespace Emergence::Render::Backend
 {
+Texture::Texture () noexcept
+{
+    block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
+}
+
 static void ImageReleaseCallback (void * /*unused*/, void *_userData)
 {
     bimg::imageFree (static_cast<bimg::ImageContainer *> (_userData));
 }
 
-Texture::Texture (const Container::Vector<uint8_t> &_data) noexcept
+Texture::Texture (const uint8_t *_data, const std::uint64_t _size) noexcept
 {
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
 
-    bimg::ImageContainer *imageContainer = bimg::imageParse (GetCurrentAllocator (), _data.data (), data.size ());
-
+    bimg::ImageContainer *imageContainer = bimg::imageParse (GetCurrentAllocator (), _data, _size);
     if (!imageContainer)
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Unable to parse texture data!");

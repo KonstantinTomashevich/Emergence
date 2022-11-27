@@ -19,7 +19,6 @@
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
-#include <Celerity/Render2d/BackendApi.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/Events.hpp>
 #include <Celerity/Render2d/Material2dInstance.hpp>
@@ -33,6 +32,8 @@
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Constants.hpp>
+
+#include <Render/Backend/Configuration.hpp>
 
 #include <Serialization/Yaml.hpp>
 
@@ -126,8 +127,8 @@ void DemoScenarioExecutor::Execute () noexcept
 
         viewport->name = "GameWorld"_us;
         viewport->cameraObjectId = camera->objectId;
-        viewport->width = Emergence::Celerity::Render2dBackend::GetCurrentConfig ().width;
-        viewport->height = Emergence::Celerity::Render2dBackend::GetCurrentConfig ().height;
+        viewport->width = Emergence::Render::Backend::GetCurrentConfig ().width;
+        viewport->height = Emergence::Render::Backend::GetCurrentConfig ().height;
         viewport->clearColor = 0xAAAAFFFF;
 
         for (std::size_t index = 0u; index < 20u; ++index)
@@ -199,7 +200,7 @@ WindowBackend::~WindowBackend () noexcept
 {
     if (window)
     {
-        Emergence::Celerity::Render2dBackend::Shutdown ();
+        Emergence::Render::Backend::Shutdown ();
         SDL_DestroyWindow (window);
     }
 
@@ -237,11 +238,11 @@ void WindowBackend::Init (const Settings &_settings) noexcept
     void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
 #endif
 
-    Emergence::Celerity::Render2dBackendConfig config;
+    Emergence::Render::Backend::Config config;
     config.width = _settings.width;
     config.height = _settings.height;
     config.vsync = _settings.vsync;
-    Emergence::Celerity::Render2dBackend::Init (config, nativeWindowHandle, nativeDisplayType, false);
+    Emergence::Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
 }
 
 SDL_Window *WindowBackend::GetWindow () const noexcept

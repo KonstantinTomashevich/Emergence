@@ -1,7 +1,9 @@
 sober_service_begin (CelerityRender2d)
+    sober_naming_service_target (RenderBackend RENDER_BACKEND_API_TARGET)
     sober_naming_variant_target (CelerityAsset Original CELERITY_ASSET_TARGET)
     sober_naming_variant_target (Celerity Original CELERITY_TARGET)
 
+    sober_service_add_api_dependency (${RENDER_BACKEND_API_TARGET})
     sober_service_add_api_dependency (${CELERITY_ASSET_TARGET})
     sober_service_add_api_dependency (${CELERITY_TARGET})
 

@@ -4,6 +4,9 @@
 
 #include <Memory/UniqueString.hpp>
 
+#include <Render/Backend/Program.hpp>
+#include <Render/Backend/Uniform.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
@@ -14,8 +17,6 @@ namespace Emergence::Celerity
 ///          uniforms. Parameter customization is done through Material2dInstance.
 struct Material2d final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (Material2d);
-
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
 
@@ -27,52 +28,25 @@ struct Material2d final
     /// \invariant Cannot be changed.
     Memory::UniqueString fragmentShader;
 
-    /// \brief Implementation-specific native handle.
-    uintptr_t nativeHandle = 0u;
+    /// \brief Underlying implementation object.
+    /// \details Field is mutable, because render backend objects are technically handles and by modifying them
+    ///          we work with underlying implementation that operates under different read-write ruleset.
+    mutable Render::Backend::Program program;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId vertexShader;
         StandardLayout::FieldId fragmentShader;
-        StandardLayout::FieldId nativeHandle;
         StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Defines supported uniform types.
-enum class Uniform2dType : uint8_t
-{
-    /// \brief 4 dimensional vector.
-    VECTOR_4F = 0u,
-
-    /// \brief 3x3 sized matrix.
-    MATRIX_3X3F,
-
-    /// \brief 4x4 sized matrix.
-    MATRIX_4X4F,
-
-    /// \brief 2d texture sampler.
-    SAMPLER,
-};
-
 /// \brief Represents parameter supported by Material2d. Part of Material2d asset.
 struct Uniform2d final
 {
-    Uniform2d () noexcept = default;
-
-    Uniform2d (const Uniform2d &_other) = delete;
-
-    Uniform2d (Uniform2d &&_other) = delete;
-
-    ~Uniform2d () noexcept;
-
-    Uniform2d &operator= (const Uniform2d &_other) = delete;
-
-    Uniform2d &operator= (Uniform2d &&_other) = delete;
-
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
 
@@ -82,14 +56,16 @@ struct Uniform2d final
 
     /// \brief Value type that can be stored in this uniform.
     /// \invariant Cannot be changed.
-    Uniform2dType type = Uniform2dType::VECTOR_4F;
+    Render::Backend::UniformType type = Render::Backend::UniformType::VECTOR_4F;
 
-    /// \brief Implementation-specific native handle.
-    uintptr_t nativeHandle = 0u;
+    /// \brief Underlying implementation object.
+    /// \details Field is mutable, because render backend objects are technically handles and by modifying them
+    ///          we work with underlying implementation that operates under different read-write ruleset.
+    mutable Render::Backend::Uniform uniform;
 
     union
     {
-        /// \brief Stage to which texture of Uniform2dType::SAMPLER will be passed.
+        /// \brief Stage to which texture of Render::Backend::UniformType::SAMPLER will be passed.
         /// \details Allowed to be changed during runtime.
         uint8_t textureStage = 0u;
     };
@@ -99,7 +75,6 @@ struct Uniform2d final
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId name;
         StandardLayout::FieldId type;
-        StandardLayout::FieldId nativeHandle;
         StandardLayout::FieldId textureStage;
         StandardLayout::Mapping mapping;
     };

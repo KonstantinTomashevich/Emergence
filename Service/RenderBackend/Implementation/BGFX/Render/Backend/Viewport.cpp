@@ -9,9 +9,14 @@
 
 namespace Emergence::Render::Backend
 {
-Viewport::Viewport (class Renderer *_context) noexcept
+Viewport::Viewport () noexcept
 {
-    block_cast<uint64_t> (data) = reinterpret_cast<RendererData *> (_context)->viewportIndexCounter++;
+    block_cast<uint64_t> (data) = std::numeric_limits<std::uint64_t>::max ();
+}
+
+Viewport::Viewport (class Renderer &_context) noexcept
+{
+    block_cast<uint64_t> (data) = reinterpret_cast<RendererData *> (&_context)->viewportIndexCounter++;
 }
 
 Viewport::Viewport (Viewport &&_other) noexcept
@@ -58,7 +63,8 @@ void Viewport::SubmitConfiguration (std::uint32_t _x,
     bgfx::setViewClear (nativeId, clearFlags, _clearColor, 0.0f, 0u);
 }
 
-void Viewport::SubmitOrthographicView (const Math::Transform2d &_view, const Math::Vector2f &_halfOrthographicSize)
+void Viewport::SubmitOrthographicView (const Math::Transform2d &_view,
+                                       const Math::Vector2f &_halfOrthographicSize) noexcept
 {
     auto nativeId = static_cast<uint16_t> (block_cast<uint64_t> (data));
     float view[16u];

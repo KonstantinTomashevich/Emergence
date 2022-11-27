@@ -29,6 +29,8 @@ enum class UniformType : uint8_t
 class Uniform final
 {
 public:
+    Uniform () noexcept;
+
     Uniform (Memory::UniqueString _name, UniformType _type) noexcept;
 
     Uniform (const Uniform &_other) = delete;
@@ -44,6 +46,8 @@ public:
     void SetMatrix4x4f (const Math::Matrix4x4f &_value) noexcept;
 
     void SetSampler (uint16_t _stage, const Texture &_texture) noexcept;
+
+    [[nodiscard]] bool IsValid () const noexcept;
 
     Uniform &operator= (const Uniform &_other) = delete;
 
