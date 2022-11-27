@@ -38,6 +38,8 @@ public:
     Viewport &operator= (Viewport &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    friend class Renderer;
+
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
 };
 } // namespace Emergence::Render::Backend

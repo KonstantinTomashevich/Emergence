@@ -29,7 +29,7 @@ enum class Attribute : uint8_t
 
 enum class AttributeType : uint8_t
 {
-    INT8 = 0u,
+    UINT8 = 0u,
     INT16,
     HALF_FLOAT,
     FLOAT
@@ -38,8 +38,6 @@ enum class AttributeType : uint8_t
 class VertexLayout final
 {
 public:
-    VertexLayout () noexcept;
-
     VertexLayout (const VertexLayout &_other) = delete;
 
     VertexLayout (VertexLayout &&_other) noexcept;
@@ -51,9 +49,12 @@ public:
     VertexLayout &operator= (VertexLayout &&_other) noexcept;
 
 private:
+    friend class TransientVertexBuffer;
     friend class VertexLayoutBuilder;
 
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 11u);
+
+    VertexLayout (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 
 class VertexLayoutBuilder final

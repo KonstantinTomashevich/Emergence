@@ -50,6 +50,6 @@ public:
     Uniform &operator= (Uniform &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
 };
 } // namespace Emergence::Render::Backend

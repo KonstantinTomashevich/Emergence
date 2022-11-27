@@ -49,6 +49,8 @@ public:
     Renderer &operator= (Renderer &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    friend class Viewport;
+
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 5u);
 };
 } // namespace Emergence::Render::Backend

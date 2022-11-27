@@ -20,13 +20,15 @@ public:
 
     ~Program () noexcept;
 
-    bool IsValid () const noexcept;
+    [[nodiscard]] bool IsValid () const noexcept;
 
     Program &operator= (const Program &_other) = delete;
 
     Program &operator= (Program &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    friend class Renderer;
+
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t));
 };
 } // namespace Emergence::Render::Backend

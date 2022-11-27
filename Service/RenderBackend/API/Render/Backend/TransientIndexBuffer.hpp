@@ -18,15 +18,15 @@ public:
 
     ~TransientIndexBuffer () noexcept;
 
-    bool IsValid () const noexcept;
-
     void *GetData () noexcept;
 
-    const void *GetData () const noexcept;
+    [[nodiscard]] const void *GetData () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (TransientIndexBuffer);
 
 private:
+    friend class Renderer;
+
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
 };
 } // namespace Emergence::Render::Backend
