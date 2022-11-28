@@ -22,10 +22,13 @@ Renderer::~Renderer () noexcept
     block_cast<RendererData> (data).~RendererData ();
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
 void Renderer::SetState (uint64_t _state) noexcept
 {
     bgfx::setState (_state);
 }
+
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
 void Renderer::SubmitGeometry (const Viewport &_viewport,
                                const Program &_program,
                                const TransientVertexBuffer &_vertices,
@@ -37,6 +40,7 @@ void Renderer::SubmitGeometry (const Viewport &_viewport,
                   bgfx::ProgramHandle {block_cast<uint16_t> (_program.data)});
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
 void Renderer::Touch (const Viewport &_viewport) noexcept
 {
     bgfx::touch (static_cast<uint16_t> (block_cast<uint64_t> (_viewport.data)));
@@ -59,6 +63,7 @@ void Renderer::SubmitViewportOrder (const Container::Vector<const Viewport *> &_
     rendererData.viewNativeIds.clear ();
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
 void Renderer::SubmitFrame () noexcept
 {
     bgfx::frame ();

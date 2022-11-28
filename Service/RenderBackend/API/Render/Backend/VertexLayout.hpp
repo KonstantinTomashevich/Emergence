@@ -71,7 +71,7 @@ public:
 
     VertexLayoutBuilder (VertexLayoutBuilder &&_other) = delete;
 
-    ~VertexLayoutBuilder () noexcept;
+    ~VertexLayoutBuilder () noexcept; // NOLINT(performance-trivially-destructible): Implementation-specific.
 
     /// \brief Begin building new layout.
     VertexLayoutBuilder &Begin () noexcept;

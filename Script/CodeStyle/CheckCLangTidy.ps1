@@ -17,7 +17,7 @@ if (-Not(Test-Path $CompilationDatabase -PathType Leaf))
 
 # Not all distributions provide run-clang-tidy.py script, therefore we download it manually.
 $ClangTidyScriptUri =
-"https://raw.githubusercontent.com/llvm-mirror/clang-tools-extra/master/clang-tidy/tool/run-clang-tidy.py"
+"https://raw.githubusercontent.com/llvm/llvm-project/main/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py"
 
 $CLangTidyScript = "$env:TEMP\run-clang-tidy.py"
 Invoke-WebRequest -Uri $ClangTidyScriptUri -OutFile $CLangTidyScript
@@ -28,7 +28,7 @@ if (-Not(Test-Path $CLangTidyScript -PathType Leaf))
     exit -3
 }
 
-python $CLangTidyScript files="Executable|Library|Service|Test" -p="$BuildDirectory"
+python $CLangTidyScript files="Executable|Library|Service|Test" -p "$BuildDirectory"
 if ($?)
 {
     exit 0

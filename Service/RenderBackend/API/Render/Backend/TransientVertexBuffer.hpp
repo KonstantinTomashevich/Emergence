@@ -22,7 +22,7 @@ public:
 
     TransientVertexBuffer (TransientVertexBuffer &&_other) = delete;
 
-    ~TransientVertexBuffer () noexcept;
+    ~TransientVertexBuffer () noexcept; // NOLINT(performance-trivially-destructible): Implementation-specific.
 
     /// \return Pointer to buffer data.
     void *GetData () noexcept;

@@ -20,7 +20,7 @@ public:
 
     TransientIndexBuffer (TransientIndexBuffer &&_other) = delete;
 
-    ~TransientIndexBuffer () noexcept;
+    ~TransientIndexBuffer () noexcept; // NOLINT(performance-trivially-destructible): Implementation-specific.
 
     /// \return Pointer to buffer data.
     void *GetData () noexcept;

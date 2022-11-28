@@ -32,7 +32,7 @@ public:
 
     Viewport (Viewport &&_other) noexcept;
 
-    ~Viewport () noexcept;
+    ~Viewport () noexcept; // NOLINT(performance-trivially-destructible): Implementation-specific.
 
     /// \brief Submits viewport configuration.
     /// \param _x Leftmost coordinate in window coordinate system.
