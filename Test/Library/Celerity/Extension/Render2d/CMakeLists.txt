@@ -1,0 +1,45 @@
+if (NOT EMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS)
+    return ()
+endif ()
+
+file (GLOB_RECURSE SOURCES *.cpp)
+file (GLOB_RECURSE HEADERS *.hpp)
+file (GLOB_RECURSE SHADERS *.sc)
+
+add_executable (TestCelerityRender2dOriginal ${SOURCES} ${HEADERS} ${SHADERS})
+add_test (NAME "TestCelerityRender2dOriginal" COMMAND TestCelerityRender2dOriginal)
+add_dependencies (LibraryTests TestCelerityRender2dOriginal)
+target_include_directories (TestCelerityRender2dOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+sober_naming_variant_target (CelerityRender2d Original CELERITY_RENDER_2D_LIBRARY_TARGET)
+sober_naming_implementation_target (RenderBackend BGFX RENDER_BACKEND_BGFX_TARGET)
+
+target_link_libraries (TestCelerityRender2dOriginal PUBLIC
+        ${CELERITY_RENDER_2D_LIBRARY_TARGET}
+        ${RENDER_BACKEND_BGFX_TARGET}
+        SDL2
+        SDL2main)
+link_celerity_with_dependencies (TestCelerityRender2dOriginal)
+
+# On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
+if (MSVC)
+    target_compile_options (TestCelerityRender2dOriginal PRIVATE /EHa)
+endif ()
+
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
+file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Expectation"
+        "${RESOURCES_COMPILED_DIRECTORY}/Expectation" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Materials"
+        "${RESOURCES_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/MaterialInstances"
+        "${RESOURCES_COMPILED_DIRECTORY}/MaterialInstances" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Textures" "${RESOURCES_COMPILED_DIRECTORY}/Textures" SYMBOLIC)
+register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
+
+register_resource_usage (TestCelerityRender2dOriginal "${RESOURCES_COMPILED_DIRECTORY}" "Render2dTestResources")
+copy_required_shared_libraries (TestCelerityRender2dOriginal)
+deploy_used_resources (TestCelerityRender2dOriginal)

@@ -26,6 +26,9 @@
 #
 # We disable misc-const-correctness because it triggers on lots of local variables (more than 700 cases at the time
 # of writing this comment) and it's not really useful enough to fix all of this (at least now).
+#
+# Unfortunately, we need to, I hope temporary, disable modernize-use-nullptr
+# as it crashes clang-tidy from Visual Studio locally.
 Checks: >
   -*,
   bugprone-*,
@@ -50,6 +53,7 @@ Checks: >
   modernize-*,
   -modernize-avoid-c-arrays,
   -modernize-replace-disallow-copy-and-assign-macro,
+  -modernize-use-nullptr,
   -modernize-use-trailing-return-type,
   performance-*,
   portability-*,
