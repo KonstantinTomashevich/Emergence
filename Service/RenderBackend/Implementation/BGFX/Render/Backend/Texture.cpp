@@ -28,7 +28,9 @@ Texture::Texture (const uint8_t *_data, const std::uint64_t _size) noexcept
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
 
-    bimg::ImageContainer *imageContainer = bimg::imageParse (GetCurrentAllocator (), _data, _size);
+    bimg::ImageContainer *imageContainer =
+        bimg::imageParse (GetCurrentAllocator (), _data, static_cast<uint32_t> (_size));
+
     if (!imageContainer)
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Unable to parse texture data!");

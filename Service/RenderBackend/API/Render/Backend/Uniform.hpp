@@ -56,7 +56,7 @@ public:
 
     /// \brief Submits given texture to given stage.
     /// \invariant Uniform was constructed with UniformType::SAMPLER.
-    void SetSampler (uint16_t _stage, const Texture &_texture) noexcept;
+    void SetSampler (uint8_t _stage, const Texture &_texture) noexcept;
 
     [[nodiscard]] bool IsValid () const noexcept;
 

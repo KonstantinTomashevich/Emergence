@@ -73,7 +73,7 @@ void Uniform::SetMatrix4x4f (const Math::Matrix4x4f &_value) noexcept
     bgfx::setUniform (bgfx::UniformHandle {handle}, _value.columns);
 }
 
-void Uniform::SetSampler (uint16_t _stage, const Texture &_texture) noexcept
+void Uniform::SetSampler (uint8_t _stage, const Texture &_texture) noexcept
 {
     uint16_t handle = block_cast<uint16_t> (data);
     EMERGENCE_ASSERT (handle != bgfx::kInvalidHandle);

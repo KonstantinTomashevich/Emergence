@@ -77,7 +77,7 @@ public:
     VertexLayoutBuilder &Begin () noexcept;
 
     /// \brief Push new attribute to layout. It will be registered after the previous attribute.
-    VertexLayoutBuilder &Add (Attribute _attribute, AttributeType _type, uint16_t _elementCount) noexcept;
+    VertexLayoutBuilder &Add (Attribute _attribute, AttributeType _type, uint8_t _elementCount) noexcept;
 
     /// \brief Finish building layout.
     VertexLayout End () noexcept;

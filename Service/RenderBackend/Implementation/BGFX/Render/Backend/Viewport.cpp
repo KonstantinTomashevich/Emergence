@@ -35,9 +35,10 @@ void Viewport::SubmitConfiguration (std::uint32_t _x,
 {
     auto nativeId = static_cast<uint16_t> (block_cast<uint64_t> (data));
     bgfx::resetView (nativeId);
-    bgfx::setViewRect (nativeId, _x, _y, _width, _height);
+    bgfx::setViewRect (nativeId, static_cast<uint16_t> (_x), static_cast<uint16_t> (_y), static_cast<uint16_t> (_width),
+                       static_cast<uint16_t> (_height));
 
-    uint32_t clearFlags = 0u;
+    uint16_t clearFlags = 0u;
     if (_clearColor)
     {
         clearFlags |= BGFX_CLEAR_COLOR;

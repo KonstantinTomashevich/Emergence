@@ -54,7 +54,8 @@ void Renderer::SubmitViewportOrder (const Container::Vector<const Viewport *> &_
         minimum = std::min (minimum, rendererData.viewNativeIds.back ());
     }
 
-    bgfx::setViewOrder (minimum, rendererData.viewNativeIds.size (), rendererData.viewNativeIds.data ());
+    bgfx::setViewOrder (minimum, static_cast<uint16_t> (rendererData.viewNativeIds.size ()),
+                        rendererData.viewNativeIds.data ());
     rendererData.viewNativeIds.clear ();
 }
 
