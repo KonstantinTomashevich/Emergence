@@ -22,7 +22,6 @@ sober_library_begin ("${GAME_NAME}Game" STATIC)
     sober_library_link_library (PRIVATE SDL2main)
 
     sober_library_use_service (PER_VARIANT PRIVATE Assert)
-    sober_library_use_service (PER_VARIANT PRIVATE CelerityRender2d)
     sober_library_use_service (PER_VARIANT PRIVATE ExportGraph)
     sober_library_use_service (PER_VARIANT PRIVATE JobDispatcher)
     sober_library_use_service (PER_VARIANT PRIVATE Log)

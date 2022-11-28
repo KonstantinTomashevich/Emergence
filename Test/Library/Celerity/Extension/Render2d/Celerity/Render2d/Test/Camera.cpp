@@ -4,14 +4,6 @@
 
 #include <Testing/Testing.hpp>
 
-namespace Emergence::Celerity::Test
-{
-bool CameraTestIncludeMarker () noexcept
-{
-    return true;
-}
-} // namespace Emergence::Celerity::Test
-
 using namespace Emergence::Celerity::Test::Tasks;
 using namespace Emergence::Celerity::Test;
 using namespace Emergence::Celerity;

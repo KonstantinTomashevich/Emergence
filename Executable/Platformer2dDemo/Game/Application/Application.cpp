@@ -316,9 +316,9 @@ void Application::InitWorld () noexcept
     constexpr uint64_t MAX_LOADING_TIME_NS = 10000000;
     static const Emergence::Memory::UniqueString gameMaterialInstancesPath {"../GameResources/MaterialInstances"};
     static const Emergence::Memory::UniqueString gameMaterialsPath {"../GameResources/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {"../BGFX2dResources/Materials"};
+    static const Emergence::Memory::UniqueString engineMaterialsPath {"../Render2dResources/Materials"};
     static const Emergence::Memory::UniqueString gameShadersPath {"../GameResources/Shaders"};
-    static const Emergence::Memory::UniqueString engineShadersPath {"../BGFX2dResources/Shaders"};
+    static const Emergence::Memory::UniqueString engineShadersPath {"../Render2dResources/Shaders"};
     static const Emergence::Memory::UniqueString gameTexturesPath {"../GameResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
 

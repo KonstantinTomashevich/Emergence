@@ -1,17 +1,8 @@
 #include <Celerity/Render2d/Test/Scenario.hpp>
-#include <Celerity/Render2d/Test/Sprite.hpp>
 
 #include <Math/Constants.hpp>
 
 #include <Testing/Testing.hpp>
-
-namespace Emergence::Celerity::Test
-{
-bool SpriteTestIncludeMarker () noexcept
-{
-    return true;
-}
-} // namespace Emergence::Celerity::Test
 
 using namespace Emergence::Celerity::Test::Tasks;
 using namespace Emergence::Celerity::Test;
