@@ -10,6 +10,10 @@ namespace Emergence::Render::Backend
 class Program final
 {
 public:
+    /// \brief Implementation-dependant suffix for shader files.
+    /// \details Useful if implementation hides different library integrations under the hood
+    ///          (both Vulkan and DirectX, for example). In these case suffix suggests which
+    ///          shader format is expected by specifying the correct suffix for shader binaries.
     static const char *GetShaderSuffix () noexcept;
 
     /// \brief Constructs default invalid object.

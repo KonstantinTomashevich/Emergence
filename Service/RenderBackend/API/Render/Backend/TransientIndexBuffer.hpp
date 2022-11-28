@@ -6,7 +6,7 @@
 namespace Emergence::Render::Backend
 {
 /// \brief Temporary index buffer that will be automatically destructed after frame is rendered.
-/// \details Useful for drawing geometry that might change every frame. For example, batched 2d sprite or UI.
+/// \details Useful for drawing geometry that might change every frame. For example, batched 2d sprites or UI.
 class TransientIndexBuffer
 {
 public:
