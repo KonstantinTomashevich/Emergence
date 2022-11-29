@@ -1,4 +1,4 @@
-#include <Celerity/Render2d/Viewport.hpp>
+#include <Celerity/Render/Foundation/Viewport.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

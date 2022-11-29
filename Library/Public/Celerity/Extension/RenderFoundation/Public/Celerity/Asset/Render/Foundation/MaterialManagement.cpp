@@ -3,8 +3,8 @@
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Material.hpp>
-#include <Celerity/Asset/Render2d/MaterialManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/Material.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Log/Log.hpp>
@@ -343,7 +343,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     if (iterator == _eventMap.stateUpdate.end ())
     {
         EMERGENCE_LOG (WARNING,
-                       "MaterialManagement: Task not registered, because Material2d is not found "
+                       "MaterialManagement: Task not registered, because Material is not found "
                        "in state update map. Perhaps it is not referenced by anything?");
         return;
     }

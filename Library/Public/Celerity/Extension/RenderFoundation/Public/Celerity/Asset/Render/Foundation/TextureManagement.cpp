@@ -5,10 +5,10 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/TextureLoadingState.hpp>
-#include <Celerity/Asset/Render2d/TextureManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/TextureLoadingState.hpp>
+#include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Render2d/Texture.hpp>
+#include <Celerity/Render/Foundation/Texture.hpp>
 
 #include <Log/Log.hpp>
 
@@ -194,8 +194,7 @@ AssetState Manager::FinishLoading (TextureLoadingState *_loadingState) noexcept
     Render::Backend::Texture nativeTexture {_loadingState->data, _loadingState->size};
     if (!nativeTexture.IsValid ())
     {
-        EMERGENCE_LOG (ERROR, "TextureManagement: Failed to load texture \"", _loadingState->assetId,
-                       "\" from data.");
+        EMERGENCE_LOG (ERROR, "TextureManagement: Failed to load texture \"", _loadingState->assetId, "\" from data.");
         return AssetState::CORRUPTED;
     }
 
@@ -237,7 +236,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     if (iterator == _eventMap.stateUpdate.end ())
     {
         EMERGENCE_LOG (WARNING,
-                       "TextureManagement: Task not registered, because Texture2d is not found "
+                       "TextureManagement: Task not registered, because Texture is not found "
                        "in state update map. Perhaps it is not referenced by anything?");
         return;
     }

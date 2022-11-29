@@ -44,7 +44,7 @@ struct Material final
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Represents parameter supported by Material2d. Part of Material2d asset.
+/// \brief Represents parameter supported by Material. Part of Material asset.
 struct Uniform final
 {
     /// \brief Id used to bind to Asset instance.

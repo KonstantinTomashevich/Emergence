@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Render2d/MaterialInstance.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

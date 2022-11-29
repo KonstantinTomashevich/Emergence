@@ -10,7 +10,7 @@ namespace Emergence::Celerity::MaterialManagement
 ///
 /// \param _materialRootPaths Known root folders for material search.
 /// \param _shaderRootPaths Known root folders for shader search.
-/// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for Material2d loading.
+/// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for Material loading.
 /// \param _eventMap Event map generated as a result of asset events binding.
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         const Container::Vector<Memory::UniqueString> &_materialRootPaths,

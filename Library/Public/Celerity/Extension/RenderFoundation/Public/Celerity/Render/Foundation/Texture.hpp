@@ -8,7 +8,7 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Represents successfully loaded 2d texture asset.
+/// \brief Represents successfully loaded texture asset.
 struct Texture final
 {
     /// \brief Id used to bind to Asset instance.

@@ -1,4 +1,4 @@
-#include <Celerity/Asset/Render2d/MaterialInstanceLoadingState.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstanceLoadingState.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

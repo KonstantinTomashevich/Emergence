@@ -4,9 +4,9 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/MaterialInstance.hpp>
-#include <Celerity/Asset/Render2d/MaterialInstanceLoadingState.hpp>
-#include <Celerity/Asset/Render2d/MaterialInstanceManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstanceLoadingState.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Log/Log.hpp>

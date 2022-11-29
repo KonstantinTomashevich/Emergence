@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Render2d/Material.hpp>
-#include <Celerity/Render2d/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/Material.hpp>
+#include <Celerity/Render/Foundation/MaterialInstance.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 

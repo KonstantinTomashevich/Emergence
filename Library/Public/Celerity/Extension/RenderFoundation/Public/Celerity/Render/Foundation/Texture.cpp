@@ -1,4 +1,4 @@
-#include <Celerity/Render2d/Texture.hpp>
+#include <Celerity/Render/Foundation/Texture.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

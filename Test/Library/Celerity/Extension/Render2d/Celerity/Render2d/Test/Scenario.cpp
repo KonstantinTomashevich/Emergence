@@ -6,12 +6,15 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/MaterialInstanceManagement.hpp>
-#include <Celerity/Asset/Render2d/MaterialManagement.hpp>
-#include <Celerity/Asset/Render2d/TextureManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/Foundation/AssetUsage.hpp>
+#include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/Events.hpp>
@@ -19,7 +22,6 @@
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/Test/Scenario.hpp>
-#include <Celerity/Render2d/Viewport.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -405,6 +407,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
     Emergence::Celerity::World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
     Emergence::Celerity::AssetReferenceBindingList binding {Emergence::Celerity::GetAssetBindingAllocationGroup ()};
     Emergence::Celerity::GetRender2dAssetUsage (binding);
+    Emergence::Celerity::GetRenderFoundationAssetUsage (binding);
     Emergence::Celerity::AssetReferenceBindingEventMap assetReferenceBindingEventMap;
 
     {
@@ -412,6 +415,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
         assetReferenceBindingEventMap = Emergence::Celerity::RegisterAssetEvents (registrar, binding);
         Emergence::Celerity::RegisterTransform2dEvents (registrar);
         Emergence::Celerity::RegisterRender2dEvents (registrar);
+        Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
     }
 
     constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
@@ -435,8 +439,8 @@ void ExecuteScenario (Scenario _scenario) noexcept
         pipelineBuilder, {testMaterialsPath, engineMaterialsPath}, {testShadersPath, engineShadersPath},
         MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath},
-                                                                 MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
+                                                               assetReferenceBindingEventMap);
     Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);

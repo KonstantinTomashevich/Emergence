@@ -1,15 +1,14 @@
-#include <Celerity/Render2d/Material.hpp>
+#include <Celerity/Asset/Render/Foundation/Material.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const Material::Reflection &Material::Reflect () noexcept
+const MaterialAssetHeader::Reflection &MaterialAssetHeader::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Material);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialAssetHeader);
         EMERGENCE_MAPPING_REGISTER_REGULAR (vertexShader);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fragmentShader);
         EMERGENCE_MAPPING_REGISTRATION_END ();
@@ -18,12 +17,11 @@ const Material::Reflection &Material::Reflect () noexcept
     return reflection;
 }
 
-const Uniform::Reflection &Uniform::Reflect () noexcept
+const UniformBundleItem::Reflection &UniformBundleItem::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Uniform);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (UniformBundleItem);
         EMERGENCE_MAPPING_REGISTER_REGULAR (name);
         EMERGENCE_MAPPING_REGISTER_REGULAR (type);
 

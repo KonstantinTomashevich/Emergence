@@ -11,21 +11,23 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/MaterialInstanceManagement.hpp>
-#include <Celerity/Asset/Render2d/MaterialManagement.hpp>
-#include <Celerity/Asset/Render2d/TextureManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/Foundation/AssetUsage.hpp>
+#include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/Events.hpp>
-#include <Celerity/Render2d/MaterialInstance.hpp>
 #include <Celerity/Render2d/Render2dSingleton.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
-#include <Celerity/Render2d/Viewport.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -185,6 +187,7 @@ static Emergence::Celerity::AssetReferenceBindingList GetAssetReferenceBindingLi
 {
     Emergence::Celerity::AssetReferenceBindingList binding {Emergence::Celerity::GetAssetBindingAllocationGroup ()};
     Emergence::Celerity::GetRender2dAssetUsage (binding);
+    Emergence::Celerity::GetRenderFoundationAssetUsage (binding);
     return binding;
 }
 
@@ -307,8 +310,9 @@ void Application::InitWorld () noexcept
         Emergence::Celerity::RegisterAssemblyEvents (registrar);
         assetReferenceBindingEventMap =
             Emergence::Celerity::RegisterAssetEvents (registrar, GetAssetReferenceBindingList ());
-        Emergence::Celerity::RegisterTransform2dEvents (registrar);
         Emergence::Celerity::RegisterRender2dEvents (registrar);
+        Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
+        Emergence::Celerity::RegisterTransform2dEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
