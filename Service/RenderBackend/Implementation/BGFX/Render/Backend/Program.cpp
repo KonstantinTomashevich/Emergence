@@ -119,6 +119,11 @@ bool Program::IsValid () const noexcept
     return block_cast<uint16_t> (data) != bgfx::kInvalidHandle;
 }
 
+ProgramId Program::GetId () const noexcept
+{
+    return static_cast<uint64_t> (block_cast<uint16_t> (data));
+}
+
 Program &Program::operator= (Program &&_other) noexcept
 {
     if (this != &_other)

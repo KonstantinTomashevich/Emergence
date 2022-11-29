@@ -108,7 +108,7 @@ private:
 
     Container::Vector<Batch> batches {Memory::Profiler::AllocationGroup::Top ()};
     Container::Vector<Batch> batchPool {Memory::Profiler::AllocationGroup::Top ()};
-    Container::Vector<const Render::Backend::Viewport *> viewportOrder {Memory::Profiler::AllocationGroup::Top ()};
+    Container::Vector<Render::Backend::ViewportId> viewportOrder {Memory::Profiler::AllocationGroup::Top ()};
 
     Render::Backend::VertexLayout vertexLayout;
 };
@@ -209,11 +209,8 @@ void WorldRenderer::Execute () noexcept
         }
 
         PoolBatches ();
-        render->renderer.Touch (viewport->viewport);
-        // Technically speaking, collecting viewports like that is dangerous and may lead to memory corruption.
-        // But in this case task holds fetch access to Viewport and modify access to RenderBackend API, therefore
-        // in this particular case this operation is safe. But we should use such tricks only if there is no other way.
-        viewportOrder.emplace_back (&viewport->viewport);
+        render->renderer.Touch (viewport->viewport.GetId ());
+        viewportOrder.emplace_back (viewport->viewport.GetId ());
     }
 
     if (!viewportOrder.empty ())
@@ -483,7 +480,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_vi
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
             const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
-            uniform->uniform.SetSampler (uniform->textureStage, texture->texture);
+            uniform->uniform.SetSampler (uniform->textureStage, texture->texture.GetId ());
         }
         else
         {
@@ -553,7 +550,7 @@ void WorldRenderer::SubmitRects (
                                 Render::Backend::STATE_BLEND_ALPHA | Render::Backend::STATE_CULL_CW |
                                 Render::Backend::STATE_MSAA);
 
-    _render->renderer.SubmitGeometry (_viewport->viewport, _program, vertexBuffer, indexBuffer);
+    _render->renderer.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
 }
 
 void WorldRenderer::PoolBatches () noexcept

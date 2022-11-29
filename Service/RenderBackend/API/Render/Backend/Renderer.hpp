@@ -51,17 +51,17 @@ public:
     void SetState (uint64_t _state) noexcept;
 
     /// \brief Submits given geometry to given viewport that will be rendered using given program.
-    void SubmitGeometry (const Viewport &_viewport,
-                         const Program &_program,
+    void SubmitGeometry (ViewportId _viewport,
+                         ProgramId _program,
                          const TransientVertexBuffer &_vertices,
                          const TransientIndexBuffer &_indices) noexcept;
 
     /// \brief Informs backend that given viewport is still in use, even if no geometries were submitted to it.
     /// \details Needed to trigger internal procedures like color and depth clearing.
-    void Touch (const Viewport &_viewport) noexcept;
+    void Touch (ViewportId _viewport) noexcept;
 
     /// \brief Submits order in which viewports should be renderer in case of overlap.
-    void SubmitViewportOrder (const Container::Vector<const Viewport *> &_viewports) noexcept;
+    void SubmitViewportOrder (const Container::Vector<ViewportId> &_viewports) noexcept;
 
     /// \brief Informs backend that all render commands for given frame were executed and result can be presented.
     void SubmitFrame () noexcept;

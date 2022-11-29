@@ -6,6 +6,9 @@
 
 namespace Emergence::Render::Backend
 {
+/// \brief Unique identifier used to reference existing Viewport.
+using ViewportId = std::uint64_t;
+
 /// \brief Enumerates supported sort modes. Sort mode defines how geometries are sorted inside viewport.
 enum class ViewportSortMode
 {
@@ -50,6 +53,9 @@ public:
 
     /// \brief Submits view and projection matrices for this viewport using orthographic projection.
     void SubmitOrthographicView (const Math::Transform2d &_view, const Math::Vector2f &_halfOrthographicSize) noexcept;
+
+    /// \brief Unique identifier of this viewport.
+    [[nodiscard]] ViewportId GetId () const noexcept;
 
     Viewport &operator= (const Viewport &_other) = delete;
 
