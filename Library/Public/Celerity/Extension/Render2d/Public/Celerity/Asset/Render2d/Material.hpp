@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Celerity/Render2d/Material2d.hpp>
+#include <Celerity/Render2d/Material.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -10,7 +10,7 @@ namespace Emergence::Celerity
 /// \invariant Path to material header file is <material root folder>/<material id>.material.<format extension>,
 ///            where material root folder is any registered root folder for materials, material id is any string
 ///            that may include '/' for folder grouping, and format extension is either yaml or bin.
-struct Material2dAssetHeader final
+struct MaterialAssetHeader final
 {
     /// \brief Id of a fragment shader used by this material.
     /// \details Shaders reside in shader root folders and their ids are allowed to contain '/',
@@ -36,7 +36,7 @@ struct Material2dAssetHeader final
 /// \invariant Path to uniforms bundle file is <material root folder>/<material id>.uniforms.<format extension>,
 ///            where material root folder is any registered root folder for materials, material id is any string
 ///            that may include '/' for folder grouping, and format extension is either yaml or bin.
-struct Uniform2dBundleItem final
+struct UniformBundleItem final
 {
     /// \brief Name of the uniform.
     Memory::UniqueString name;

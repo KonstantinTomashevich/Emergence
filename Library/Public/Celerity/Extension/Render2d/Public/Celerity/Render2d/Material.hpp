@@ -14,8 +14,8 @@ namespace Emergence::Celerity
 /// \brief Represents successfully loaded material asset.
 /// \details Materials are used to bind shader programs and define uniforms supported by these shader programs.
 ///          That means that materials define how object is rendered and provide customizable parameters as
-///          uniforms. Parameter customization is done through Material2dInstance.
-struct Material2d final
+///          uniforms. Parameter customization is done through MaterialInstance.
+struct Material final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -45,7 +45,7 @@ struct Material2d final
 };
 
 /// \brief Represents parameter supported by Material2d. Part of Material2d asset.
-struct Uniform2d final
+struct Uniform final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;

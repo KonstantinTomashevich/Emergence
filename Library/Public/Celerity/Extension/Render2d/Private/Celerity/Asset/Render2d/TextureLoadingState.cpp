@@ -1,10 +1,10 @@
-#include <Celerity/Asset/Render2d/Texture2dLoadingState.hpp>
+#include <Celerity/Asset/Render2d/TextureLoadingState.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-Texture2dLoadingState::~Texture2dLoadingState () noexcept
+TextureLoadingState::~TextureLoadingState () noexcept
 {
     if (data)
     {
@@ -18,11 +18,11 @@ Texture2dLoadingState::~Texture2dLoadingState () noexcept
     }
 }
 
-const Texture2dLoadingState::Reflection &Texture2dLoadingState::Reflect () noexcept
+const TextureLoadingState::Reflection &TextureLoadingState::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Texture2dLoadingState);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TextureLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (data);
         EMERGENCE_MAPPING_REGISTER_REGULAR (size);

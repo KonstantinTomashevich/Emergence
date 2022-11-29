@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Render2d/Material2d.hpp>
-#include <Celerity/Render2d/Material2dInstance.hpp>
+#include <Celerity/Render2d/Material.hpp>
+#include <Celerity/Render2d/MaterialInstance.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -15,7 +15,7 @@ namespace Emergence::Celerity
 ///            where material instance root folder is any registered root folder for material instances,
 ///            material instance id is any string that may include '/' for folder grouping,
 ///            and format extension is either yaml or bin.
-struct Material2dInstanceAssetHeader final
+struct MaterialInstanceAssetHeader final
 {
     /// \brief Parent material instances id if parent exists for this instance.
     /// \details Material instance inheritance feature allows material instances to inherit and override values

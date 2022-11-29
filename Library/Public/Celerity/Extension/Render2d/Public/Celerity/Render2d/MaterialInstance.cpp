@@ -1,14 +1,14 @@
-#include <Celerity/Render2d/Material2dInstance.hpp>
+#include <Celerity/Render2d/MaterialInstance.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const Material2dInstance::Reflection &Material2dInstance::Reflect () noexcept
+const MaterialInstance::Reflection &MaterialInstance::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Material2dInstance);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialInstance);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (materialId);

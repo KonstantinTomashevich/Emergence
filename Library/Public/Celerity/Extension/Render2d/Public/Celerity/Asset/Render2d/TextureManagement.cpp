@@ -5,16 +5,16 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Texture2dLoadingState.hpp>
-#include <Celerity/Asset/Render2d/Texture2dManagement.hpp>
+#include <Celerity/Asset/Render2d/TextureLoadingState.hpp>
+#include <Celerity/Asset/Render2d/TextureManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Render2d/Texture2d.hpp>
+#include <Celerity/Render2d/Texture.hpp>
 
 #include <Log/Log.hpp>
 
 #include <SyntaxSugar/Time.hpp>
 
-namespace Emergence::Celerity::Texture2dManagement
+namespace Emergence::Celerity::TextureManagement
 {
 class Manager : public TaskExecutorBase<Manager>
 {
@@ -31,9 +31,9 @@ private:
 
     AssetState StartLoading (Memory::UniqueString _assetId) noexcept;
 
-    static AssetState ContinueLoadingData (Texture2dLoadingState *_loadingState) noexcept;
+    static AssetState ContinueLoadingData (TextureLoadingState *_loadingState) noexcept;
 
-    AssetState FinishLoading (Texture2dLoadingState *_loadingState) noexcept;
+    AssetState FinishLoading (TextureLoadingState *_loadingState) noexcept;
 
     void ProcessUnloading () noexcept;
 
@@ -60,10 +60,10 @@ Manager::Manager (TaskConstructor &_constructor,
       fetchAssetRemovedEvents (FETCH_SEQUENCE (AssetRemovedNormalEvent)),
       fetchAssetByTypeNumberAndState (FETCH_VALUE_2F (Asset, typeNumber, state)),
 
-      insertTexture (INSERT_LONG_TERM (Texture2d)),
-      insertTextureLoadingState (INSERT_LONG_TERM (Texture2dLoadingState)),
-      removeTextureById (REMOVE_VALUE_1F (Texture2d, assetId)),
-      modifyTextureLoadingStateById (MODIFY_VALUE_1F (Texture2dLoadingState, assetId)),
+      insertTexture (INSERT_LONG_TERM (Texture)),
+      insertTextureLoadingState (INSERT_LONG_TERM (TextureLoadingState)),
+      removeTextureById (REMOVE_VALUE_1F (Texture, assetId)),
+      modifyTextureLoadingStateById (MODIFY_VALUE_1F (TextureLoadingState, assetId)),
 
       maxLoadingTimePerFrameNs (_maxLoadingTimePerFrameNs)
 {
@@ -87,7 +87,7 @@ void Manager::ProcessLoading () noexcept
 {
     struct
     {
-        StandardLayout::Mapping mapping = Texture2d::Reflect ().mapping;
+        StandardLayout::Mapping mapping = Texture::Reflect ().mapping;
         AssetState state = AssetState::LOADING;
     } loadingMaterialsParameter;
 
@@ -115,7 +115,7 @@ void Manager::ProcessLoading () noexcept
         }
 
         auto loadingStateCursor = modifyTextureLoadingStateById.Execute (&asset->id);
-        auto *loadingState = static_cast<Texture2dLoadingState *> (*loadingStateCursor);
+        auto *loadingState = static_cast<TextureLoadingState *> (*loadingStateCursor);
 
         while (newState == AssetState::LOADING &&
                Emergence::Time::NanosecondsSinceStartup () - startTime < maxLoadingTimePerFrameNs)
@@ -152,13 +152,13 @@ AssetState Manager::StartLoading (Memory::UniqueString _assetId) noexcept
         {
             Container::String pathString = path.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ();
             auto cursor = insertTextureLoadingState.Execute ();
-            auto *state = static_cast<Texture2dLoadingState *> (++cursor);
+            auto *state = static_cast<TextureLoadingState *> (++cursor);
             state->assetId = _assetId;
             state->sourceFile = fopen (pathString.c_str (), "rb");
 
             if (!state->sourceFile)
             {
-                EMERGENCE_LOG (ERROR, "Texture2dManagement: Unable to open texture file \"", pathString, "\".");
+                EMERGENCE_LOG (ERROR, "TextureManagement: Unable to open texture file \"", pathString, "\".");
                 return AssetState::CORRUPTED;
             }
 
@@ -173,14 +173,14 @@ AssetState Manager::StartLoading (Memory::UniqueString _assetId) noexcept
     return AssetState::MISSING;
 }
 
-AssetState Manager::ContinueLoadingData (Texture2dLoadingState *_loadingState) noexcept
+AssetState Manager::ContinueLoadingData (TextureLoadingState *_loadingState) noexcept
 {
     static constexpr uint32_t CHUNK_SIZE = 16u * 1024u;
     const uint32_t toRead = std::min (CHUNK_SIZE, _loadingState->size - _loadingState->read);
 
     if (fread (_loadingState->data + _loadingState->read, 1u, toRead, _loadingState->sourceFile) != toRead)
     {
-        EMERGENCE_LOG (ERROR, "Texture2dManagement: Encountered IO error while reading texture \"",
+        EMERGENCE_LOG (ERROR, "TextureManagement: Encountered IO error while reading texture \"",
                        _loadingState->assetId, "\" data.");
         return AssetState::CORRUPTED;
     }
@@ -189,18 +189,18 @@ AssetState Manager::ContinueLoadingData (Texture2dLoadingState *_loadingState) n
     return _loadingState->read == _loadingState->size ? AssetState::READY : AssetState::LOADING;
 }
 
-AssetState Manager::FinishLoading (Texture2dLoadingState *_loadingState) noexcept
+AssetState Manager::FinishLoading (TextureLoadingState *_loadingState) noexcept
 {
     Render::Backend::Texture nativeTexture {_loadingState->data, _loadingState->size};
     if (!nativeTexture.IsValid ())
     {
-        EMERGENCE_LOG (ERROR, "Texture2dManagement: Failed to load texture \"", _loadingState->assetId,
+        EMERGENCE_LOG (ERROR, "TextureManagement: Failed to load texture \"", _loadingState->assetId,
                        "\" from data.");
         return AssetState::CORRUPTED;
     }
 
     auto insertTextureCursor = insertTexture.Execute ();
-    auto *texture = static_cast<Texture2d *> (++insertTextureCursor);
+    auto *texture = static_cast<Texture *> (++insertTextureCursor);
     texture->assetId = _loadingState->assetId;
     texture->texture = std::move (nativeTexture);
     return AssetState::READY;
@@ -233,17 +233,17 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         uint64_t _maxLoadingTimePerFrameNs,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
-    auto iterator = _eventMap.stateUpdate.find (Texture2d::Reflect ().mapping);
+    auto iterator = _eventMap.stateUpdate.find (Texture::Reflect ().mapping);
     if (iterator == _eventMap.stateUpdate.end ())
     {
         EMERGENCE_LOG (WARNING,
-                       "Material2dManagement: Task not registered, because Texture2d is not found "
+                       "TextureManagement: Task not registered, because Texture2d is not found "
                        "in state update map. Perhaps it is not referenced by anything?");
         return;
     }
 
-    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Texture2dManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Texture2dManager"})
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TextureManagement");
+    _pipelineBuilder.AddTask (Memory::UniqueString {"TextureManager"})
         .SetExecutor<Manager> (_textureRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }
-} // namespace Emergence::Celerity::Texture2dManagement
+} // namespace Emergence::Celerity::TextureManagement

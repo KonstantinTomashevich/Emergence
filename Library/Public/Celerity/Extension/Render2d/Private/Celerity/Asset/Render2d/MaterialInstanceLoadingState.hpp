@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Render2d/Material2d.hpp>
-#include <Celerity/Render2d/Material2dInstance.hpp>
+#include <Celerity/Render2d/Material.hpp>
+#include <Celerity/Render2d/MaterialInstance.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -9,7 +9,7 @@
 
 namespace Emergence::Celerity
 {
-struct Material2dInstanceLoadingState final
+struct MaterialInstanceLoadingState final
 {
     Memory::UniqueString assetId;
     UniqueId assetUserId;

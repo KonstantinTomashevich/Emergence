@@ -4,9 +4,9 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Material2dInstance.hpp>
-#include <Celerity/Asset/Render2d/Material2dInstanceLoadingState.hpp>
-#include <Celerity/Asset/Render2d/Material2dInstanceManagement.hpp>
+#include <Celerity/Asset/Render2d/MaterialInstance.hpp>
+#include <Celerity/Asset/Render2d/MaterialInstanceLoadingState.hpp>
+#include <Celerity/Asset/Render2d/MaterialInstanceManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Log/Log.hpp>
@@ -16,7 +16,7 @@
 
 #include <SyntaxSugar/Time.hpp>
 
-namespace Emergence::Celerity::Material2dInstanceManagement
+namespace Emergence::Celerity::MaterialInstanceManagement
 {
 class Manager : public TaskExecutorBase<Manager>
 {
@@ -78,7 +78,7 @@ private:
     const uint64_t maxLoadingTimePerFrameNs;
     Container::Vector<UniformValueBundleItem> uniformValuesCollector {Memory::Profiler::AllocationGroup::Top ()};
 
-    Serialization::FieldNameLookupCache instanceHeaderLookupCache {Material2dInstanceAssetHeader::Reflect ().mapping};
+    Serialization::FieldNameLookupCache instanceHeaderLookupCache {MaterialInstanceAssetHeader::Reflect ().mapping};
     Serialization::Yaml::ObjectBundleDeserializer uniformValueBundleDeserializer {
         UniformValueBundleItem::Reflect ().mapping};
 };
@@ -94,21 +94,21 @@ Manager::Manager (TaskConstructor &_constructor,
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
       fetchAssetByTypeNumberAndState (FETCH_VALUE_2F (Asset, typeNumber, state)),
 
-      insertMaterialInstanceLoadingState (INSERT_LONG_TERM (Material2dInstanceLoadingState)),
-      insertMaterialInstance (INSERT_LONG_TERM (Material2dInstance)),
+      insertMaterialInstanceLoadingState (INSERT_LONG_TERM (MaterialInstanceLoadingState)),
+      insertMaterialInstance (INSERT_LONG_TERM (MaterialInstance)),
       insertUniformVector4fValue (INSERT_LONG_TERM (UniformVector4fValue)),
       insertUniformMatrix3x3fValue (INSERT_LONG_TERM (UniformMatrix3x3fValue)),
       insertUniformMatrix4x4fValue (INSERT_LONG_TERM (UniformMatrix4x4fValue)),
       insertUniformSamplerValue (INSERT_LONG_TERM (UniformSamplerValue)),
 
-      fetchMaterialInstanceById (FETCH_VALUE_1F (Material2dInstance, assetId)),
+      fetchMaterialInstanceById (FETCH_VALUE_1F (MaterialInstance, assetId)),
       fetchUniformVector4fValueById (FETCH_VALUE_1F (UniformVector4fValue, assetId)),
       fetchUniformMatrix3x3fValueById (FETCH_VALUE_1F (UniformMatrix3x3fValue, assetId)),
       fetchUniformMatrix4x4fValueById (FETCH_VALUE_1F (UniformMatrix4x4fValue, assetId)),
       fetchUniformSamplerValueById (FETCH_VALUE_1F (UniformSamplerValue, assetId)),
 
-      removeMaterialInstanceLoadingStateById (REMOVE_VALUE_1F (Material2dInstanceLoadingState, assetId)),
-      removeMaterialInstanceById (REMOVE_VALUE_1F (Material2dInstance, assetId)),
+      removeMaterialInstanceLoadingStateById (REMOVE_VALUE_1F (MaterialInstanceLoadingState, assetId)),
+      removeMaterialInstanceById (REMOVE_VALUE_1F (MaterialInstance, assetId)),
       removeUniformVector4fValueById (REMOVE_VALUE_1F (UniformVector4fValue, assetId)),
       removeUniformMatrix3x3fValueById (REMOVE_VALUE_1F (UniformMatrix3x3fValue, assetId)),
       removeUniformMatrix4x4fValueById (REMOVE_VALUE_1F (UniformMatrix4x4fValue, assetId)),
@@ -136,7 +136,7 @@ void Manager::ProcessLoading () noexcept
 {
     struct
     {
-        StandardLayout::Mapping mapping = Material2dInstance::Reflect ().mapping;
+        StandardLayout::Mapping mapping = MaterialInstance::Reflect ().mapping;
         AssetState state = AssetState::LOADING;
     } loadingMaterialsParameter;
 
@@ -153,7 +153,7 @@ void Manager::ProcessLoading () noexcept
         bool needsInitialization = true;
 
         if (auto stateCursor = removeMaterialInstanceLoadingStateById.Execute (&asset->id);
-            const auto *loadingState = static_cast<const Material2dInstanceLoadingState *> (stateCursor.ReadConst ()))
+            const auto *loadingState = static_cast<const MaterialInstanceLoadingState *> (stateCursor.ReadConst ()))
         {
             needsInitialization = false;
             newState = TryFinalizeLoading (asset->id, loadingState->parentId);
@@ -224,7 +224,7 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
     const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
 
     Unload (_assetId);
-    Material2dInstanceAssetHeader header;
+    MaterialInstanceAssetHeader header;
     bool headerFound = false;
 
     for (Memory::UniqueString root : materialInstanceRoots)
@@ -236,9 +236,9 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
             std::ifstream input {binaryPath, std::ios::binary};
 
             if (!Serialization::Binary::DeserializeObject (input, &header,
-                                                           Material2dInstanceAssetHeader::Reflect ().mapping))
+                                                           MaterialInstanceAssetHeader::Reflect ().mapping))
             {
-                EMERGENCE_LOG (ERROR, "Material2dInstanceManagement: Unable to load header from \"",
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to load header from \"",
                                binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                "\".");
                 return AssetState::CORRUPTED;
@@ -253,7 +253,7 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
 
             if (!Serialization::Yaml::DeserializeObject (input, &header, instanceHeaderLookupCache))
             {
-                EMERGENCE_LOG (ERROR, "Material2dInstanceManagement: Unable to load header from \"",
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to load header from \"",
                                yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
                 return AssetState::CORRUPTED;
             }
@@ -267,13 +267,13 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
 
     if (!*header.material)
     {
-        EMERGENCE_LOG (ERROR, "Material2dInstanceManager: Material instance \"", _assetId,
+        EMERGENCE_LOG (ERROR, "MaterialInstanceManager: Material instance \"", _assetId,
                        "\" is not attached to any material!");
         return AssetState::CORRUPTED;
     }
 
     auto materialInstanceInsertCursor = insertMaterialInstance.Execute ();
-    auto *materialInstance = static_cast<Material2dInstance *> (++materialInstanceInsertCursor);
+    auto *materialInstance = static_cast<MaterialInstance *> (++materialInstanceInsertCursor);
 
     materialInstance->assetId = _assetId;
     materialInstance->assetUserId = assetManager->GenerateAssetUserId ();
@@ -294,7 +294,7 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
     }
 
     auto loadingStateInsertCursor = insertMaterialInstanceLoadingState.Execute ();
-    auto *loadingState = static_cast<Material2dInstanceLoadingState *> (++loadingStateInsertCursor);
+    auto *loadingState = static_cast<MaterialInstanceLoadingState *> (++loadingStateInsertCursor);
 
     loadingState->assetId = _assetId;
     loadingState->assetUserId = assetManager->GenerateAssetUserId ();
@@ -305,7 +305,7 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
 AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::UniqueString _parentAssetId) noexcept
 {
     auto materialInstanceCursor = fetchMaterialInstanceById.Execute (&_assetId);
-    const auto *materialInstance = static_cast<const Material2dInstance *> (*materialInstanceCursor);
+    const auto *materialInstance = static_cast<const MaterialInstance *> (*materialInstanceCursor);
     EMERGENCE_ASSERT (materialInstance);
 
     const AssetState dependencyState = SummarizeDependencyState (materialInstance->materialId, _parentAssetId);
@@ -318,7 +318,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
     if (*_parentAssetId)
     {
         auto parentMaterialInstanceCursor = fetchMaterialInstanceById.Execute (&_parentAssetId);
-        const auto *parentMaterialInstance = static_cast<const Material2dInstance *> (*parentMaterialInstanceCursor);
+        const auto *parentMaterialInstance = static_cast<const MaterialInstance *> (*parentMaterialInstanceCursor);
         EMERGENCE_ASSERT (parentMaterialInstance);
         EMERGENCE_ASSERT (parentMaterialInstance->materialId == materialInstance->materialId);
     }
@@ -399,7 +399,7 @@ AssetState Manager::LoadInstanceValuesIntoCollector (Memory::UniqueString _asset
         {
             if (item.name == uniformItem.name)
             {
-                EMERGENCE_LOG (ERROR, "Material2dInstanceManagement: Material instance \"", _assetId,
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Material instance \"", _assetId,
                                "\" has several values with name \"", item.name, "\".");
                 return false;
             }
@@ -425,7 +425,7 @@ AssetState Manager::LoadInstanceValuesIntoCollector (Memory::UniqueString _asset
                                                                UniformValueBundleItem::Reflect ().mapping))
                 {
                     EMERGENCE_LOG (
-                        ERROR, "Material2dInstanceManagement: Unable to deserialize uniform values \"",
+                        ERROR, "MaterialInstanceManagement: Unable to deserialize uniform values \"",
                         binaryUniformsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                         "\".");
                     return AssetState::CORRUPTED;
@@ -456,7 +456,7 @@ AssetState Manager::LoadInstanceValuesIntoCollector (Memory::UniqueString _asset
             uniformValueBundleDeserializer.End ();
             if (!successful)
             {
-                EMERGENCE_LOG (ERROR, "Material2dInstanceManagement: Unable to deserialize uniform values \"",
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to deserialize uniform values \"",
                                yamlUniformsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                "\".");
                 return AssetState::CORRUPTED;
@@ -569,17 +569,17 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         uint64_t _maxLoadingTimePerFrameNs,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
-    auto iterator = _eventMap.stateUpdate.find (Material2dInstance::Reflect ().mapping);
+    auto iterator = _eventMap.stateUpdate.find (MaterialInstance::Reflect ().mapping);
     if (iterator == _eventMap.stateUpdate.end ())
     {
         EMERGENCE_LOG (WARNING,
-                       "Material2dInstanceManagement: Task not registered, because Material2dInstance  "
+                       "MaterialInstanceManagement: Task not registered, because MaterialInstance  "
                        "is not found in state update map. Perhaps it is not referenced by anything?");
         return;
     }
 
-    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Material2dInstanceManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dInstanceManager"})
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("MaterialInstanceManagement");
+    _pipelineBuilder.AddTask (Memory::UniqueString {"MaterialInstanceManager"})
         .SetExecutor<Manager> (_materialInstanceRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }
-} // namespace Emergence::Celerity::Material2dInstanceManagement
+} // namespace Emergence::Celerity::MaterialInstanceManagement

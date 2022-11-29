@@ -8,8 +8,8 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Configures output surface for 2d rendering. Having multiple viewports is supported.
-struct Viewport2d final
+/// \brief Configures output surface for rendering. Having multiple viewports is supported.
+struct Viewport final
 {
     /// \invariant Must be unique among other viewports.
     Memory::UniqueString name;

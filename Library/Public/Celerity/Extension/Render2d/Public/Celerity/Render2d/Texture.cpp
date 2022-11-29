@@ -1,14 +1,14 @@
-#include <Celerity/Render2d/Texture2d.hpp>
+#include <Celerity/Render2d/Texture.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const Texture2d::Reflection &Texture2d::Reflect () noexcept
+const Texture::Reflection &Texture::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Texture2d);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Texture);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

@@ -11,9 +11,9 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Material2dInstanceManagement.hpp>
-#include <Celerity/Asset/Render2d/Material2dManagement.hpp>
-#include <Celerity/Asset/Render2d/Texture2dManagement.hpp>
+#include <Celerity/Asset/Render2d/MaterialInstanceManagement.hpp>
+#include <Celerity/Asset/Render2d/MaterialManagement.hpp>
+#include <Celerity/Asset/Render2d/TextureManagement.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilder.hpp>
@@ -21,11 +21,11 @@
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/Events.hpp>
-#include <Celerity/Render2d/Material2dInstance.hpp>
+#include <Celerity/Render2d/MaterialInstance.hpp>
 #include <Celerity/Render2d/Render2dSingleton.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
-#include <Celerity/Render2d/Viewport2d.hpp>
+#include <Celerity/Render2d/Viewport.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -83,7 +83,7 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
       fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
       modifyRender (MODIFY_SINGLETON (Emergence::Celerity::Render2dSingleton)),
 
-      insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport2d)),
+      insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport)),
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
       insertSprite (INSERT_LONG_TERM (Emergence::Celerity::Sprite2dComponent)),
@@ -123,7 +123,7 @@ void DemoScenarioExecutor::Execute () noexcept
         camera->halfOrthographicSize = 5.0f;
 
         auto viewportCursor = insertViewport.Execute ();
-        auto *viewport = static_cast<Emergence::Celerity::Viewport2d *> (++viewportCursor);
+        auto *viewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);
 
         viewport->name = "GameWorld"_us;
         viewport->cameraObjectId = camera->objectId;
@@ -326,14 +326,14 @@ void Application::InitWorld () noexcept
     Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, GetAssetReferenceBindingList (),
                                                              assetReferenceBindingEventMap);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::Material2dInstanceManagement::AddToNormalUpdate (
+    Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, {gameMaterialInstancesPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
-    Emergence::Celerity::Material2dManagement::AddToNormalUpdate (
+    Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, {gameMaterialsPath, engineMaterialsPath}, {gameShadersPath, engineShadersPath},
         MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Emergence::Celerity::Texture2dManagement::AddToNormalUpdate (pipelineBuilder, {gameTexturesPath},
-                                                                 MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {gameTexturesPath}, MAX_LOADING_TIME_NS,
+                                                               assetReferenceBindingEventMap);
     Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("DemoScenarioExecutor"_us).SetExecutor<DemoScenarioExecutor> ();
     const bool normalPipelineRegistered = pipelineBuilder.End ();

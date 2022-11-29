@@ -3,9 +3,9 @@
 #include <Celerity/Asset/AssetReferenceBinding.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace Emergence::Celerity::Material2dManagement
+namespace Emergence::Celerity::MaterialManagement
 {
-/// \brief Adds task for Material2d asset loading and unloading in normal update pipeline.
+/// \brief Adds task for Material asset loading and unloading in normal update pipeline.
 /// \details Inserted into asset loading, therefore has no specific checkpoints.
 ///
 /// \param _materialRootPaths Known root folders for material search.
@@ -17,4 +17,4 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         const Container::Vector<Memory::UniqueString> &_shaderRootPaths,
                         uint64_t _maxLoadingTimePerFrameNs,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept;
-} // namespace Emergence::Celerity::Material2dManagement
+} // namespace Emergence::Celerity::MaterialManagement

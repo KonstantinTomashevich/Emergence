@@ -3,14 +3,14 @@
 #include <Celerity/Render2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/Events.hpp>
-#include <Celerity/Render2d/Material2d.hpp>
-#include <Celerity/Render2d/Material2dInstance.hpp>
+#include <Celerity/Render2d/Material.hpp>
+#include <Celerity/Render2d/MaterialInstance.hpp>
 #include <Celerity/Render2d/Render2dSingleton.hpp>
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
-#include <Celerity/Render2d/Texture2d.hpp>
-#include <Celerity/Render2d/Viewport2d.hpp>
+#include <Celerity/Render2d/Texture.hpp>
+#include <Celerity/Render2d/Viewport.hpp>
 #include <Celerity/Render2d/WorldRendering2d.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
@@ -63,16 +63,16 @@ private:
 
     void ApplyViewportConfiguration (Render2dSingleton *_render) noexcept;
 
-    void CollectVisibleObjects (const Viewport2d *_viewport,
+    void CollectVisibleObjects (const Viewport *_viewport,
                                 Math::Transform2d &_selectedCameraTransform,
                                 Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
 
     WorldRenderer::Batch &GetBatch (uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept;
 
-    void SubmitBatch (Render2dSingleton *_render, const Viewport2d *_viewport, const Batch &_batch) noexcept;
+    void SubmitBatch (Render2dSingleton *_render, const Viewport *_viewport, const Batch &_batch) noexcept;
 
     void SubmitRects (Render2dSingleton *_render,
-                      const Viewport2d *_viewport,
+                      const Viewport *_viewport,
                       const Render::Backend::Program &_program,
                       const Container::Vector<RectData> &_rects) noexcept;
 
@@ -148,13 +148,13 @@ static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAl
 WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAlignedBox2d &_worldBounds) noexcept
     : modifyRenderSingleton (MODIFY_SINGLETON (Render2dSingleton)),
 
-      fetchViewportByName (FETCH_VALUE_1F (Viewport2d, name)),
-      fetchViewportBySortIndexAscending (FETCH_ASCENDING_RANGE (Viewport2d, sortIndex)),
+      fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
+      fetchViewportBySortIndexAscending (FETCH_ASCENDING_RANGE (Viewport, sortIndex)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),
 
-      fetchViewportAddedNormalEvent (FETCH_SEQUENCE (Viewport2dAddedNormalEvent)),
-      fetchViewportAddedCustomEvent (FETCH_SEQUENCE (Viewport2dAddedCustomToNormalEvent)),
-      fetchViewportChangedEvent (FETCH_SEQUENCE (Viewport2dChangedNormalEvent)),
+      fetchViewportAddedNormalEvent (FETCH_SEQUENCE (ViewportAddedNormalEvent)),
+      fetchViewportAddedCustomEvent (FETCH_SEQUENCE (ViewportAddedCustomToNormalEvent)),
+      fetchViewportChangedEvent (FETCH_SEQUENCE (ViewportChangedNormalEvent)),
 
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -165,11 +165,11 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
       fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId)),
 
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
-      fetchMaterialInstanceById (FETCH_VALUE_1F (Material2dInstance, assetId)),
-      fetchMaterialById (FETCH_VALUE_1F (Material2d, assetId)),
-      fetchTextureById (FETCH_VALUE_1F (Texture2d, assetId)),
+      fetchMaterialInstanceById (FETCH_VALUE_1F (MaterialInstance, assetId)),
+      fetchMaterialById (FETCH_VALUE_1F (Material, assetId)),
+      fetchTextureById (FETCH_VALUE_1F (Texture, assetId)),
 
-      fetchUniformByAssetIdAndName (FETCH_VALUE_2F (Uniform2d, assetId, name)),
+      fetchUniformByAssetIdAndName (FETCH_VALUE_2F (Uniform, assetId, name)),
       fetchUniformVector4fByInstanceId (FETCH_VALUE_1F (UniformVector4fValue, assetId)),
       fetchUniformMatrix3x3fByInstanceId (FETCH_VALUE_1F (UniformMatrix3x3fValue, assetId)),
       fetchUniformMatrix4x4fByInstanceId (FETCH_VALUE_1F (UniformMatrix4x4fValue, assetId)),
@@ -195,7 +195,7 @@ void WorldRenderer::Execute () noexcept
     ApplyViewportConfiguration (render);
 
     for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
-         const auto *viewport = static_cast<const Viewport2d *> (*viewportCursor); ++viewportCursor)
+         const auto *viewport = static_cast<const Viewport *> (*viewportCursor); ++viewportCursor)
     {
         Math::Transform2d selectedCameraTransform;
         Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
@@ -211,7 +211,7 @@ void WorldRenderer::Execute () noexcept
         PoolBatches ();
         render->renderer.Touch (viewport->viewport);
         // Technically speaking, collecting viewports like that is dangerous and may lead to memory corruption.
-        // But in this case task holds fetch access to Viewport2d and modify access to RenderBackend API, therefore
+        // But in this case task holds fetch access to Viewport and modify access to RenderBackend API, therefore
         // in this particular case this operation is safe. But we should use such tricks only if there is no other way.
         viewportOrder.emplace_back (&viewport->viewport);
     }
@@ -230,7 +230,7 @@ void WorldRenderer::ApplyViewportConfiguration (Render2dSingleton *_render) noex
     auto applyViewportConfiguration = [this, _render] (Memory::UniqueString _name, bool _initialize)
     {
         auto cursor = fetchViewportByName.Execute (&_name);
-        if (const auto *viewport = static_cast<const Viewport2d *> (*cursor))
+        if (const auto *viewport = static_cast<const Viewport *> (*cursor))
         {
             if (_initialize)
             {
@@ -248,25 +248,25 @@ void WorldRenderer::ApplyViewportConfiguration (Render2dSingleton *_render) noex
     };
 
     for (auto eventCursor = fetchViewportAddedNormalEvent.Execute ();
-         const auto *event = static_cast<const Viewport2dAddedNormalEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const ViewportAddedNormalEvent *> (*eventCursor); ++eventCursor)
     {
         applyViewportConfiguration (event->name, true);
     }
 
     for (auto eventCursor = fetchViewportAddedCustomEvent.Execute ();
-         const auto *event = static_cast<const Viewport2dAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const ViewportAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
     {
         applyViewportConfiguration (event->name, true);
     }
 
     for (auto eventCursor = fetchViewportChangedEvent.Execute ();
-         const auto *event = static_cast<const Viewport2dChangedNormalEvent *> (*eventCursor); ++eventCursor)
+         const auto *event = static_cast<const ViewportChangedNormalEvent *> (*eventCursor); ++eventCursor)
     {
         applyViewportConfiguration (event->name, false);
     }
 }
 
-void WorldRenderer::CollectVisibleObjects (const Viewport2d *_viewport,
+void WorldRenderer::CollectVisibleObjects (const Viewport *_viewport,
                                            Math::Transform2d &_selectedCameraTransform,
                                            Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept
 {
@@ -379,7 +379,7 @@ WorldRenderer::Batch &WorldRenderer::GetBatch (uint16_t _layer, Memory::UniqueSt
     return *batches.emplace (next, std::move (pooledBatch));
 }
 
-void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_viewport, const Batch &_batch) noexcept
+void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_viewport, const Batch &_batch) noexcept
 {
     auto assetCursor = fetchAssetById.Execute (&_batch.materialInstanceId);
     const auto *asset = static_cast<const Asset *> (*assetCursor);
@@ -392,11 +392,11 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
     }
 
     auto materialInstanceCursor = fetchMaterialInstanceById.Execute (&_batch.materialInstanceId);
-    const auto *materialInstance = static_cast<const Material2dInstance *> (*materialInstanceCursor);
+    const auto *materialInstance = static_cast<const MaterialInstance *> (*materialInstanceCursor);
     EMERGENCE_ASSERT (materialInstance);
 
     auto materialCursor = fetchMaterialById.Execute (&materialInstance->materialId);
-    const auto *material = static_cast<const Material2d *> (*materialCursor);
+    const auto *material = static_cast<const Material *> (*materialCursor);
     EMERGENCE_ASSERT (material);
 
     struct
@@ -412,7 +412,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         uniformQuery.name = value->uniformName;
 
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform2d *> (*uniformCursor))
+            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
             uniform->uniform.SetVector4f (value->value);
         }
@@ -430,7 +430,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         uniformQuery.name = value->uniformName;
 
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform2d *> (*uniformCursor))
+            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
             uniform->uniform.SetMatrix3x3f (value->value);
         }
@@ -448,7 +448,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         uniformQuery.name = value->uniformName;
 
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform2d *> (*uniformCursor))
+            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
             uniform->uniform.SetMatrix4x4f (value->value);
         }
@@ -474,14 +474,14 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
         }
 
         auto textureCursor = fetchTextureById.Execute (&value->textureId);
-        const auto *texture = static_cast<const Texture2d *> (*textureCursor);
+        const auto *texture = static_cast<const Texture *> (*textureCursor);
         EMERGENCE_ASSERT (texture);
 
         uniformQuery.assetId = material->assetId;
         uniformQuery.name = value->uniformName;
 
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform2d *> (*uniformCursor))
+            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
             uniform->uniform.SetSampler (uniform->textureStage, texture->texture);
         }
@@ -497,7 +497,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport2d *_
 
 void WorldRenderer::SubmitRects (
     Render2dSingleton *_render,
-    const Viewport2d *_viewport,
+    const Viewport *_viewport,
     const Render::Backend::Program &_program,
     const Container::Vector<Emergence::Celerity::WorldRendering2d::RectData> &_rects) noexcept
 {

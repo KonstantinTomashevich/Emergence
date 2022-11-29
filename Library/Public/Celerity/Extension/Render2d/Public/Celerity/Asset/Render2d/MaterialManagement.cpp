@@ -3,8 +3,8 @@
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Material2d.hpp>
-#include <Celerity/Asset/Render2d/Material2dManagement.hpp>
+#include <Celerity/Asset/Render2d/Material.hpp>
+#include <Celerity/Asset/Render2d/MaterialManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Log/Log.hpp>
@@ -16,7 +16,7 @@
 
 #include <SyntaxSugar/Time.hpp>
 
-namespace Emergence::Celerity::Material2dManagement
+namespace Emergence::Celerity::MaterialManagement
 {
 class Manager final : public TaskExecutorBase<Manager>
 {
@@ -38,7 +38,7 @@ private:
 
     Container::Vector<uint8_t> LoadShaderFile (const Container::String &_file) noexcept;
 
-    bool RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBundleItem &_bundleItem) noexcept;
+    bool RegisterUniform (Memory::UniqueString _assetId, const UniformBundleItem &_bundleItem) noexcept;
 
     void ProcessUnloading () noexcept;
 
@@ -57,8 +57,8 @@ private:
     Container::Vector<Memory::UniqueString> shaderRootPaths {Memory::Profiler::AllocationGroup::Top ()};
     const uint64_t maxLoadingTimePerFrameNs;
 
-    Serialization::FieldNameLookupCache materialAssetLookupCache {Material2dAssetHeader::Reflect ().mapping};
-    Serialization::Yaml::ObjectBundleDeserializer uniformBundleDeserializer {Uniform2dBundleItem::Reflect ().mapping};
+    Serialization::FieldNameLookupCache materialAssetLookupCache {MaterialAssetHeader::Reflect ().mapping};
+    Serialization::Yaml::ObjectBundleDeserializer uniformBundleDeserializer {UniformBundleItem::Reflect ().mapping};
 };
 
 Manager::Manager (TaskConstructor &_constructor,
@@ -70,10 +70,10 @@ Manager::Manager (TaskConstructor &_constructor,
       fetchAssetRemovedEvents (FETCH_SEQUENCE (AssetRemovedNormalEvent)),
       fetchAssetByTypeNumberAndState (FETCH_VALUE_2F (Asset, typeNumber, state)),
 
-      insertMaterial (INSERT_LONG_TERM (Material2d)),
-      insertUniform (INSERT_LONG_TERM (Uniform2d)),
-      removeMaterialById (REMOVE_VALUE_1F (Material2d, assetId)),
-      removeUniformById (REMOVE_VALUE_1F (Uniform2d, assetId)),
+      insertMaterial (INSERT_LONG_TERM (Material)),
+      insertUniform (INSERT_LONG_TERM (Uniform)),
+      removeMaterialById (REMOVE_VALUE_1F (Material, assetId)),
+      removeUniformById (REMOVE_VALUE_1F (Uniform, assetId)),
 
       maxLoadingTimePerFrameNs (_maxLoadingTimePerFrameNs)
 {
@@ -103,7 +103,7 @@ void Manager::ProcessLoading () noexcept
 {
     struct
     {
-        StandardLayout::Mapping mapping = Material2d::Reflect ().mapping;
+        StandardLayout::Mapping mapping = Material::Reflect ().mapping;
         AssetState state = AssetState::LOADING;
     } loadingMaterialsParameter;
 
@@ -135,7 +135,7 @@ void Manager::ProcessLoading () noexcept
 
 AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
 {
-    Material2dAssetHeader materialAsset;
+    MaterialAssetHeader materialAsset;
     bool loaded = false;
 
     for (Memory::UniqueString root : materialRootPaths)
@@ -145,10 +145,10 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
         {
             std::ifstream input {binaryMaterialPath, std::ios::binary};
             if (!Serialization::Binary::DeserializeObject (input, &materialAsset,
-                                                           Material2dAssetHeader::Reflect ().mapping))
+                                                           MaterialAssetHeader::Reflect ().mapping))
             {
                 EMERGENCE_LOG (
-                    ERROR, "Material2dManagement: Unable to load material from \"",
+                    ERROR, "MaterialManagement: Unable to load material from \"",
                     binaryMaterialPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
                 return AssetState::CORRUPTED;
             }
@@ -163,7 +163,7 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
             std::ifstream input {yamlMaterialPath};
             if (!Serialization::Yaml::DeserializeObject (input, &materialAsset, materialAssetLookupCache))
             {
-                EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to load material from \"",
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to load material from \"",
                                yamlMaterialPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                "\".");
                 return AssetState::CORRUPTED;
@@ -176,12 +176,12 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
 
     if (!loaded)
     {
-        EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to find material \"", _assetId, "\".");
+        EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find material \"", _assetId, "\".");
         return AssetState::MISSING;
     }
 
     auto materialCursor = insertMaterial.Execute ();
-    auto *material = static_cast<Material2d *> (++materialCursor);
+    auto *material = static_cast<Material *> (++materialCursor);
     material->assetId = _assetId;
     material->vertexShader = materialAsset.vertexShader;
     material->fragmentShader = materialAsset.fragmentShader;
@@ -194,8 +194,7 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
 
     if (!material->program.IsValid ())
     {
-        EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to create program for material \"", material->assetId,
-                       "\".");
+        EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to create program for material \"", material->assetId, "\".");
         return AssetState::CORRUPTED;
     }
 
@@ -204,7 +203,7 @@ AssetState Manager::LoadMaterial (Memory::UniqueString _assetId) noexcept
 
 AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
 {
-    Uniform2dBundleItem uniformItem;
+    UniformBundleItem uniformItem;
     for (Memory::UniqueString root : materialRootPaths)
     {
         std::filesystem::path binaryUniformsPath = EMERGENCE_BUILD_STRING (root, "/", _assetId, ".uniforms.bin");
@@ -218,10 +217,10 @@ AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
             while (input)
             {
                 if (!Serialization::Binary::DeserializeObject (input, &uniformItem,
-                                                               Uniform2dBundleItem::Reflect ().mapping))
+                                                               UniformBundleItem::Reflect ().mapping))
                 {
                     EMERGENCE_LOG (
-                        ERROR, "Material2dManagement: Unable to deserialize uniform bundle \"",
+                        ERROR, "MaterialManagement: Unable to deserialize uniform bundle \"",
                         binaryUniformsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                         "\".");
                     return AssetState::CORRUPTED;
@@ -252,7 +251,7 @@ AssetState Manager::LoadUniforms (Memory::UniqueString _assetId) noexcept
             uniformBundleDeserializer.End ();
             if (!successful)
             {
-                EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to deserialize uniform bundle \"",
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to deserialize uniform bundle \"",
                                yamlUniformsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                "\".");
                 return AssetState::CORRUPTED;
@@ -288,17 +287,17 @@ Container::Vector<uint8_t> Manager::LoadShaderFile (const Container::String &_fi
     return result;
 }
 
-bool Manager::RegisterUniform (Memory::UniqueString _assetId, const Uniform2dBundleItem &_bundleItem) noexcept
+bool Manager::RegisterUniform (Memory::UniqueString _assetId, const UniformBundleItem &_bundleItem) noexcept
 {
     Render::Backend::Uniform nativeUniform {_bundleItem.name, _bundleItem.type};
     if (!nativeUniform.IsValid ())
     {
-        EMERGENCE_LOG (ERROR, "Material2dManagement: Unable to register uniform \"", _bundleItem.name, "\".");
+        EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to register uniform \"", _bundleItem.name, "\".");
         return false;
     }
 
     auto cursor = insertUniform.Execute ();
-    auto *uniform = static_cast<Uniform2d *> (++cursor);
+    auto *uniform = static_cast<Uniform *> (++cursor);
 
     uniform->assetId = _assetId;
     uniform->name = _bundleItem.name;
@@ -324,8 +323,7 @@ void Manager::ProcessUnloading () noexcept
 
 void Manager::Unload (Memory::UniqueString _assetId) noexcept
 {
-    for (auto uniformCursor = removeUniformById.Execute (&_assetId);
-         const auto *uniform = static_cast<const Uniform2d *> (uniformCursor.ReadConst ()); ~uniformCursor)
+    for (auto uniformCursor = removeUniformById.Execute (&_assetId); uniformCursor.ReadConst (); ~uniformCursor)
     {
     }
 
@@ -341,17 +339,17 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         uint64_t _maxLoadingTimePerFrameNs,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
-    auto iterator = _eventMap.stateUpdate.find (Material2d::Reflect ().mapping);
+    auto iterator = _eventMap.stateUpdate.find (Material::Reflect ().mapping);
     if (iterator == _eventMap.stateUpdate.end ())
     {
         EMERGENCE_LOG (WARNING,
-                       "Material2dManagement: Task not registered, because Material2d is not found "
+                       "MaterialManagement: Task not registered, because Material2d is not found "
                        "in state update map. Perhaps it is not referenced by anything?");
         return;
     }
 
-    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Material2dManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Material2dManager"})
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("MaterialManagement");
+    _pipelineBuilder.AddTask (Memory::UniqueString {"MaterialManager"})
         .SetExecutor<Manager> (_materialRootPaths, _shaderRootPaths, _maxLoadingTimePerFrameNs, iterator->second);
 }
-} // namespace Emergence::Celerity::Material2dManagement
+} // namespace Emergence::Celerity::MaterialManagement

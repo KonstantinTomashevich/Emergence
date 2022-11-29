@@ -6,19 +6,19 @@
 
 namespace Emergence::Celerity
 {
-struct Texture2dLoadingState final
+struct TextureLoadingState final
 {
-    Texture2dLoadingState () noexcept = default;
+    TextureLoadingState () noexcept = default;
 
-    Texture2dLoadingState (const Texture2dLoadingState &_other) = delete;
+    TextureLoadingState (const TextureLoadingState &_other) = delete;
 
-    Texture2dLoadingState (Texture2dLoadingState &&_other) = delete;
+    TextureLoadingState (TextureLoadingState &&_other) = delete;
 
-    ~Texture2dLoadingState () noexcept;
+    ~TextureLoadingState () noexcept;
 
-    Texture2dLoadingState &operator= (const Texture2dLoadingState &_other) = delete;
+    TextureLoadingState &operator= (const TextureLoadingState &_other) = delete;
 
-    Texture2dLoadingState &operator= (Texture2dLoadingState &&_other) = delete;
+    TextureLoadingState &operator= (TextureLoadingState &&_other) = delete;
 
     Memory::UniqueString assetId;
     Memory::Heap allocator {Memory::Profiler::AllocationGroup::Top ()};

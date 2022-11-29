@@ -6,9 +6,9 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Material2dInstanceManagement.hpp>
-#include <Celerity/Asset/Render2d/Material2dManagement.hpp>
-#include <Celerity/Asset/Render2d/Texture2dManagement.hpp>
+#include <Celerity/Asset/Render2d/MaterialInstanceManagement.hpp>
+#include <Celerity/Asset/Render2d/MaterialManagement.hpp>
+#include <Celerity/Asset/Render2d/TextureManagement.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -19,7 +19,7 @@
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/Test/Scenario.hpp>
-#include <Celerity/Render2d/Viewport2d.hpp>
+#include <Celerity/Render2d/Viewport.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -148,8 +148,8 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
     : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
       modifyRender (MODIFY_SINGLETON (Render2dSingleton)),
 
-      insertViewport (INSERT_LONG_TERM (Viewport2d)),
-      modifyViewport (MODIFY_VALUE_1F (Viewport2d, name)),
+      insertViewport (INSERT_LONG_TERM (Viewport)),
+      modifyViewport (MODIFY_VALUE_1F (Viewport, name)),
 
       insertCamera (INSERT_LONG_TERM (Camera2dComponent)),
       modifyCamera (MODIFY_VALUE_1F (Camera2dComponent, objectId)),
@@ -232,7 +232,7 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                 {
                     LOG ("Creating viewport \"", _task.name, "\".");
                     auto cursor = insertViewport.Execute ();
-                    auto *viewport = static_cast<Viewport2d *> (++cursor);
+                    auto *viewport = static_cast<Viewport *> (++cursor);
 
                     viewport->name = _task.name;
                     viewport->cameraObjectId = _task.cameraObjectId;
@@ -247,7 +247,7 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                 {
                     LOG ("Updating viewport \"", _task.name, "\".");
                     auto cursor = modifyViewport.Execute (&_task.name);
-                    auto *viewport = static_cast<Viewport2d *> (*cursor);
+                    auto *viewport = static_cast<Viewport *> (*cursor);
 
                     viewport->cameraObjectId = _task.cameraObjectId;
                     viewport->x = _task.x;
@@ -429,13 +429,13 @@ void ExecuteScenario (Scenario _scenario) noexcept
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::Material2dInstanceManagement::AddToNormalUpdate (
+    Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, {testMaterialInstancesPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
-    Emergence::Celerity::Material2dManagement::AddToNormalUpdate (
+    Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, {testMaterialsPath, engineMaterialsPath}, {testShadersPath, engineShadersPath},
         MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Emergence::Celerity::Texture2dManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath},
+    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath},
                                                                  MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
