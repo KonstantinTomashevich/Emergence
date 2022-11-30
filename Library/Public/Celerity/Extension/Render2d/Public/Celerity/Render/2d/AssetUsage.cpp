@@ -1,6 +1,6 @@
+#include <Celerity/Render/2d/AssetUsage.hpp>
+#include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
-#include <Celerity/Render2d/AssetUsage.hpp>
-#include <Celerity/Render2d/Sprite2dComponent.hpp>
 
 namespace Emergence::Celerity
 {

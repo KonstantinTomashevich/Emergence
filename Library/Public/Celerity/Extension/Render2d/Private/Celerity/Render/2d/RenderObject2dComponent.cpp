@@ -1,4 +1,4 @@
-#include <Celerity/Render2d/RenderObject2dComponent.hpp>
+#include <Celerity/Render/2d/RenderObject2dComponent.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

@@ -1,5 +1,11 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/2d/BoundsCalculation2d.hpp>
+#include <Celerity/Render/2d/Camera2dComponent.hpp>
+#include <Celerity/Render/2d/RenderObject2dComponent.hpp>
+#include <Celerity/Render/2d/Sprite2dComponent.hpp>
+#include <Celerity/Render/2d/World2dRenderPass.hpp>
+#include <Celerity/Render/2d/WorldRendering2d.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
@@ -7,12 +13,6 @@
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Texture.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
-#include <Celerity/Render2d/BoundsCalculation2d.hpp>
-#include <Celerity/Render2d/Camera2dComponent.hpp>
-#include <Celerity/Render2d/RenderObject2dComponent.hpp>
-#include <Celerity/Render2d/Sprite2dComponent.hpp>
-#include <Celerity/Render2d/World2dRenderPass.hpp>
-#include <Celerity/Render2d/WorldRendering2d.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 

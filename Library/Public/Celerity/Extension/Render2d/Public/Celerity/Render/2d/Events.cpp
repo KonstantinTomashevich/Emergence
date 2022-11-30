@@ -1,5 +1,5 @@
-#include <Celerity/Render2d/Events.hpp>
-#include <Celerity/Render2d/Sprite2dComponent.hpp>
+#include <Celerity/Render/2d/Events.hpp>
+#include <Celerity/Render/2d/Sprite2dComponent.hpp>
 
 namespace Emergence::Celerity
 {

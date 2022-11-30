@@ -1,9 +1,9 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/2d/BoundsCalculation2d.hpp>
+#include <Celerity/Render/2d/Events.hpp>
+#include <Celerity/Render/2d/RenderObject2dComponent.hpp>
+#include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
-#include <Celerity/Render2d/BoundsCalculation2d.hpp>
-#include <Celerity/Render2d/Events.hpp>
-#include <Celerity/Render2d/RenderObject2dComponent.hpp>
-#include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>

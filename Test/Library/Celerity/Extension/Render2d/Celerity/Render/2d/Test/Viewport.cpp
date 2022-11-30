@@ -1,4 +1,4 @@
-#include <Celerity/Render2d/Test/Scenario.hpp>
+#include <Celerity/Render/2d/Test/Scenario.hpp>
 
 #include <Testing/Testing.hpp>
 

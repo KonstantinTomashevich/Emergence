@@ -1,4 +1,4 @@
-#include <Celerity/Render2d/World2dRenderPass.hpp>
+#include <Celerity/Render/2d/World2dRenderPass.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
