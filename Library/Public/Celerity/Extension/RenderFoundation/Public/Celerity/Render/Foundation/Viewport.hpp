@@ -8,14 +8,14 @@
 
 namespace Emergence::Celerity
 {
+// TODO: Rework viewports into fully fledged render target system?
+
 /// \brief Configures output surface for rendering. Having multiple viewports is supported.
 struct Viewport final
 {
+    /// \brief Readable name for this viewport.
     /// \invariant Must be unique among other viewports.
     Memory::UniqueString name;
-
-    /// \brief Id of the camera object that will be used for rendering.
-    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
 
     /// \brief Used to sort viewports in case of overlap.
     std::uint16_t sortIndex = 0u;
@@ -36,6 +36,9 @@ struct Viewport final
     /// \details If color is equal to 0x00000000, then viewport is processed as fully transparent and color clearing
     ///          is disabled at all. This behaviour is required for things that need to overlap other things, like UI.
     uint32_t clearColor = 0x000000FF;
+
+    /// \brief Defines how submitted render commands are sorted by viewport.
+    Render::Backend::ViewportSortMode sortMode = Render::Backend::ViewportSortMode::SEQUENTIAL;
 
     /// \brief Underlying implementation object.
     /// \details Field is mutable, because render backend objects are technically handles and by modifying them

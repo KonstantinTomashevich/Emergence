@@ -23,6 +23,7 @@
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/Test/Scenario.hpp>
+#include <Celerity/Render2d/World2dRenderPass.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -129,7 +130,9 @@ private:
     ModifySingletonQuery modifyRender;
 
     InsertLongTermQuery insertViewport;
+    InsertLongTermQuery insertWorldPass;
     ModifyValueQuery modifyViewport;
+    ModifyValueQuery modifyWorldPass;
 
     InsertLongTermQuery insertCamera;
     ModifyValueQuery modifyCamera;
@@ -152,7 +155,9 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
       modifyRender (MODIFY_SINGLETON (Render2dSingleton)),
 
       insertViewport (INSERT_LONG_TERM (Viewport)),
+      insertWorldPass (INSERT_LONG_TERM (World2dRenderPass)),
       modifyViewport (MODIFY_VALUE_1F (Viewport, name)),
+      modifyWorldPass (MODIFY_VALUE_1F (World2dRenderPass, name)),
 
       insertCamera (INSERT_LONG_TERM (Camera2dComponent)),
       modifyCamera (MODIFY_VALUE_1F (Camera2dComponent, objectId)),
@@ -238,13 +243,18 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto *viewport = static_cast<Viewport *> (++cursor);
 
                     viewport->name = _task.name;
-                    viewport->cameraObjectId = _task.cameraObjectId;
                     viewport->x = _task.x;
                     viewport->y = _task.y;
                     viewport->width = _task.width;
                     viewport->height = _task.height;
                     viewport->clearColor = _task.clearColor;
                     viewport->sortIndex = _task.sortIndex;
+
+                    auto passCursor = insertWorldPass.Execute ();
+                    auto *pass = static_cast<World2dRenderPass *> (++passCursor);
+
+                    pass->name = viewport->name;
+                    pass->cameraObjectId = _task.cameraObjectId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::UpdateViewport>)
                 {
@@ -252,13 +262,16 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto cursor = modifyViewport.Execute (&_task.name);
                     auto *viewport = static_cast<Viewport *> (*cursor);
 
-                    viewport->cameraObjectId = _task.cameraObjectId;
                     viewport->x = _task.x;
                     viewport->y = _task.y;
                     viewport->width = _task.width;
                     viewport->height = _task.height;
                     viewport->clearColor = _task.clearColor;
                     viewport->sortIndex = _task.sortIndex;
+
+                    auto passCursor = modifyWorldPass.Execute (&_task.name);
+                    auto *pass = static_cast<World2dRenderPass *> (*passCursor);
+                    pass->cameraObjectId = _task.cameraObjectId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::DeleteViewport>)
                 {

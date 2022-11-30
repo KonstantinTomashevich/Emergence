@@ -6,6 +6,7 @@ namespace Emergence::Celerity
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ViewportAddedNormalEvent, name);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ViewportAddedCustomToNormalEvent, name);
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ViewportChangedNormalEvent, name);
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (ViewportRemovedNormalEvent, name);
 
 void RegisterRenderFoundationEvents (EventRegistrar &_registrar) noexcept
 {
@@ -30,5 +31,9 @@ void RegisterRenderFoundationEvents (EventRegistrar &_registrar) noexcept
                                },
                                {},
                                {{Viewport::Reflect ().name, ViewportAddedNormalEvent::Reflect ().name}}});
+
+    _registrar.OnRemoveEvent ({{ViewportRemovedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
+                               Viewport::Reflect ().mapping,
+                               {{Viewport::Reflect ().name, ViewportRemovedNormalEvent::Reflect ().name}}});
 }
 } // namespace Emergence::Celerity

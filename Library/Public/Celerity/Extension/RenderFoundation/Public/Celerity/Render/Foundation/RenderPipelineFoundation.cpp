@@ -54,8 +54,7 @@ void ViewportSynchronizer::Execute () noexcept
         {
             viewport->viewport = Render::Backend::Viewport {renderFoundation->renderer};
             viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    Render::Backend::ViewportSortMode::SEQUENTIAL,
-                                                    viewport->clearColor);
+                                                    viewport->sortMode, viewport->clearColor);
         }
     }
 
@@ -67,8 +66,7 @@ void ViewportSynchronizer::Execute () noexcept
         {
             viewport->viewport = Render::Backend::Viewport {renderFoundation->renderer};
             viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    Render::Backend::ViewportSortMode::SEQUENTIAL,
-                                                    viewport->clearColor);
+                                                    viewport->sortMode, viewport->clearColor);
         }
     }
 
@@ -79,8 +77,7 @@ void ViewportSynchronizer::Execute () noexcept
         if (const auto *viewport = static_cast<const Viewport *> (*cursor))
         {
             viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    Render::Backend::ViewportSortMode::SEQUENTIAL,
-                                                    viewport->clearColor);
+                                                    viewport->sortMode, viewport->clearColor);
         }
     }
 }

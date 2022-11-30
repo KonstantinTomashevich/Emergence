@@ -29,6 +29,7 @@
 #include <Celerity/Render2d/Render2dSingleton.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
+#include <Celerity/Render2d/World2dRenderPass.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -71,6 +72,7 @@ private:
     Emergence::Celerity::ModifySingletonQuery modifyRender;
 
     Emergence::Celerity::InsertLongTermQuery insertViewport;
+    Emergence::Celerity::InsertLongTermQuery insertWorldPass;
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertSprite;
@@ -87,6 +89,7 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
       modifyRender (MODIFY_SINGLETON (Emergence::Celerity::Render2dSingleton)),
 
       insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport)),
+      insertWorldPass (INSERT_LONG_TERM (Emergence::Celerity::World2dRenderPass)),
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
       insertSprite (INSERT_LONG_TERM (Emergence::Celerity::Sprite2dComponent)),
@@ -129,10 +132,15 @@ void DemoScenarioExecutor::Execute () noexcept
         auto *viewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);
 
         viewport->name = "GameWorld"_us;
-        viewport->cameraObjectId = camera->objectId;
         viewport->width = Emergence::Render::Backend::GetCurrentConfig ().width;
         viewport->height = Emergence::Render::Backend::GetCurrentConfig ().height;
         viewport->clearColor = 0xAAAAFFFF;
+
+        auto worldPassCursor = insertWorldPass.Execute ();
+        auto *worldPass = static_cast<Emergence::Celerity::World2dRenderPass *> (++worldPassCursor);
+
+        worldPass->name = viewport->name;
+        worldPass->cameraObjectId = camera->objectId;
 
         for (std::size_t index = 0u; index < 20u; ++index)
         {

@@ -12,6 +12,7 @@
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
+#include <Celerity/Render2d/World2dRenderPass.hpp>
 #include <Celerity/Render2d/WorldRendering2d.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
@@ -63,6 +64,7 @@ private:
     };
 
     void CollectVisibleObjects (const Viewport *_viewport,
+                                UniqueId _cameraObjectId,
                                 Math::Transform2d &_selectedCameraTransform,
                                 Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
 
@@ -80,7 +82,8 @@ private:
     void PoolBatches () noexcept;
 
     FetchSingletonQuery fetchRenderFoundation;
-    FetchAscendingRangeQuery fetchViewportBySortIndexAscending;
+    FetchAscendingRangeQuery fetchRenderPassesByNameAscending;
+    FetchValueQuery fetchViewportByName;
     FetchValueQuery fetchCameraById;
 
     FetchValueQuery fetchTransformById;
@@ -141,7 +144,8 @@ static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAl
 
 WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAlignedBox2d &_worldBounds) noexcept
     : fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
-      fetchViewportBySortIndexAscending (FETCH_ASCENDING_RANGE (Viewport, sortIndex)),
+      fetchRenderPassesByNameAscending (FETCH_ASCENDING_RANGE (World2dRenderPass, name)),
+      fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
@@ -184,15 +188,23 @@ void WorldRenderer::Execute () noexcept
     const auto *renderFoundation = static_cast<const RenderFoundationSingleton *> (*renderFoundationCursor);
     Render::Backend::SubmissionAgent agent = renderFoundation->renderer.BeginSubmission ();
 
-    for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
-         const auto *viewport = static_cast<const Viewport *> (*viewportCursor); ++viewportCursor)
+    for (auto passCursor = fetchRenderPassesByNameAscending.Execute (nullptr, nullptr);
+         const auto *pass = static_cast<const World2dRenderPass *> (*passCursor); ++passCursor)
     {
+        auto viewportCursor = fetchViewportByName.Execute (&pass->name);
+        const auto *viewport = static_cast<const Viewport *> (*viewportCursor);
+
+        if (!viewport)
+        {
+            continue;
+        }
+
         Math::Transform2d selectedCameraTransform;
         Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
+        CollectVisibleObjects (viewport, pass->cameraObjectId, selectedCameraTransform,
+                               selectedCameraHalfOrthographicSize);
 
-        CollectVisibleObjects (viewport, selectedCameraTransform, selectedCameraHalfOrthographicSize);
         viewport->viewport.SubmitOrthographicView (selectedCameraTransform, selectedCameraHalfOrthographicSize);
-
         for (const Batch &batch : batches)
         {
             SubmitBatch (agent, viewport, batch);
@@ -204,10 +216,11 @@ void WorldRenderer::Execute () noexcept
 }
 
 void WorldRenderer::CollectVisibleObjects (const Viewport *_viewport,
+                                           UniqueId _cameraObjectId,
                                            Math::Transform2d &_selectedCameraTransform,
                                            Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept
 {
-    auto cameraCursor = fetchCameraById.Execute (&_viewport->cameraObjectId);
+    auto cameraCursor = fetchCameraById.Execute (&_cameraObjectId);
     const auto *camera = static_cast<const Camera2dComponent *> (*cameraCursor);
 
     if (!camera)
@@ -215,7 +228,7 @@ void WorldRenderer::CollectVisibleObjects (const Viewport *_viewport,
         return;
     }
 
-    auto cameraTransformCursor = fetchTransformById.Execute (&_viewport->cameraObjectId);
+    auto cameraTransformCursor = fetchTransformById.Execute (&_cameraObjectId);
     const auto *cameraTransform = static_cast<const Transform2dComponent *> (*cameraTransformCursor);
 
     if (!cameraTransform)
@@ -506,9 +519,18 @@ void WorldRenderer::PoolBatches () noexcept
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlignedBox2d &_worldBounds) noexcept
 {
+    using namespace Memory::Literals;
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("WorldRendering2d");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-    _pipelineBuilder.AddTask (Memory::UniqueString {"WorldRenderer2d"}).SetExecutor<WorldRenderer> (_worldBounds);
+
+    _pipelineBuilder.AddTask ("ClearWorld2dRenderPassesAfterViewportRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (ViewportRemovedNormalEvent, World2dRenderPass, name)
+        .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
+        .DependOn (Checkpoint::STARTED)
+        .MakeDependencyOf ("WorldRenderer2d"_us);
+
+    _pipelineBuilder.AddTask ("WorldRenderer2d"_us).SetExecutor<WorldRenderer> (_worldBounds);
 }
 } // namespace Emergence::Celerity::WorldRendering2d
