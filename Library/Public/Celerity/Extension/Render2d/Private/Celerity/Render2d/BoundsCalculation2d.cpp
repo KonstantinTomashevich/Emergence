@@ -3,7 +3,6 @@
 #include <Celerity/Render2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render2d/Events.hpp>
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
-#include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
@@ -100,10 +99,8 @@ BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
 {
     _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
-    _constructor.DependOn (Rendering2d::Checkpoint::STARTED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Rendering2d::Checkpoint::FINISHED);
 }
 
 void BoundsCalculator::Execute () noexcept

@@ -10,21 +10,15 @@
 
 namespace Emergence::Celerity::Rendering2d
 {
-const Memory::UniqueString Checkpoint::STARTED {"Rendering2dStarted"};
-const Memory::UniqueString Checkpoint::FINISHED {"Rendering2dFinished"};
-
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlignedBox2d &_worldBounds) noexcept
 {
     using namespace Memory::Literals;
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
-    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
-    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("CleanupCamera2dComponentAfterTransformRemovalFromNormal"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, Camera2dComponent,
                                 objectId)
-        .DependOn (Checkpoint::STARTED)
         .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
         .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("CleanupCamera2dComponentAfterTransformRemovalFromFixed"_us);
@@ -37,7 +31,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
     _pipelineBuilder.AddTask ("CleanupSprite2dComponentAfterTransformRemovalFromNormal"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, Sprite2dComponent,
                                 objectId)
-        .DependOn (Checkpoint::STARTED)
         .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
         .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("CleanupSprite2dComponentAfterTransformRemovalFromFixed"_us);

@@ -10,7 +10,6 @@
 #include <Celerity/Render2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
-#include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/World2dRenderPass.hpp>
 #include <Celerity/Render2d/WorldRendering2d.hpp>
@@ -23,9 +22,6 @@
 
 namespace Emergence::Celerity::WorldRendering2d
 {
-const Memory::UniqueString Checkpoint::STARTED {"WorldRendering2dStarted"};
-const Memory::UniqueString Checkpoint::FINISHED {"WorldRendering2dFinished"};
-
 struct RectData final
 {
     Math::Transform2d transform;
@@ -174,11 +170,7 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
                         .End ())
 {
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::VIEWPORT_SYNC_FINISHED);
-    _constructor.DependOn (Rendering2d::Checkpoint::STARTED);
-    _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (BoundsCalculation2d::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Rendering2d::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_FINISHED);
 }
 
@@ -522,13 +514,10 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
     using namespace Memory::Literals;
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("WorldRendering2d");
-    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
-    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("ClearWorld2dRenderPassesAfterViewportRemoval"_us)
         .AS_CASCADE_REMOVER_1F (ViewportRemovedNormalEvent, World2dRenderPass, name)
         .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
-        .DependOn (Checkpoint::STARTED)
         .MakeDependencyOf ("WorldRenderer2d"_us);
 
     _pipelineBuilder.AddTask ("WorldRenderer2d"_us).SetExecutor<WorldRenderer> (_worldBounds);
