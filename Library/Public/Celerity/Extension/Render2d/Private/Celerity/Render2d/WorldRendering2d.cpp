@@ -69,9 +69,11 @@ private:
 
     WorldRenderer::Batch &GetBatch (uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept;
 
-    void SubmitBatch (Render2dSingleton *_render, const Viewport *_viewport, const Batch &_batch) noexcept;
+    void SubmitBatch (Render::Backend::SubmissionAgent &_agent,
+                      const Viewport *_viewport,
+                      const Batch &_batch) noexcept;
 
-    void SubmitRects (Render2dSingleton *_render,
+    void SubmitRects (Render::Backend::SubmissionAgent &_agent,
                       const Viewport *_viewport,
                       const Render::Backend::Program &_program,
                       const Container::Vector<RectData> &_rects) noexcept;
@@ -194,23 +196,26 @@ void WorldRenderer::Execute () noexcept
     auto *render = static_cast<Render2dSingleton *> (*renderCursor);
     ApplyViewportConfiguration (render);
 
-    for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
-         const auto *viewport = static_cast<const Viewport *> (*viewportCursor); ++viewportCursor)
     {
-        Math::Transform2d selectedCameraTransform;
-        Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
-
-        CollectVisibleObjects (viewport, selectedCameraTransform, selectedCameraHalfOrthographicSize);
-        viewport->viewport.SubmitOrthographicView (selectedCameraTransform, selectedCameraHalfOrthographicSize);
-
-        for (const Batch &batch : batches)
+        Render::Backend::SubmissionAgent agent = render->renderer.BeginSubmission ();
+        for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
+             const auto *viewport = static_cast<const Viewport *> (*viewportCursor); ++viewportCursor)
         {
-            SubmitBatch (render, viewport, batch);
-        }
+            Math::Transform2d selectedCameraTransform;
+            Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
 
-        PoolBatches ();
-        render->renderer.Touch (viewport->viewport.GetId ());
-        viewportOrder.emplace_back (viewport->viewport.GetId ());
+            CollectVisibleObjects (viewport, selectedCameraTransform, selectedCameraHalfOrthographicSize);
+            viewport->viewport.SubmitOrthographicView (selectedCameraTransform, selectedCameraHalfOrthographicSize);
+
+            for (const Batch &batch : batches)
+            {
+                SubmitBatch (agent, viewport, batch);
+            }
+
+            PoolBatches ();
+            agent.Touch (viewport->viewport.GetId ());
+            viewportOrder.emplace_back (viewport->viewport.GetId ());
+        }
     }
 
     if (!viewportOrder.empty ())
@@ -376,7 +381,9 @@ WorldRenderer::Batch &WorldRenderer::GetBatch (uint16_t _layer, Memory::UniqueSt
     return *batches.emplace (next, std::move (pooledBatch));
 }
 
-void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_viewport, const Batch &_batch) noexcept
+void WorldRenderer::SubmitBatch (Render::Backend::SubmissionAgent &_agent,
+                                 const Viewport *_viewport,
+                                 const Batch &_batch) noexcept
 {
     auto assetCursor = fetchAssetById.Execute (&_batch.materialInstanceId);
     const auto *asset = static_cast<const Asset *> (*assetCursor);
@@ -411,7 +418,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_vi
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
             const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
-            uniform->uniform.SetVector4f (value->value);
+            _agent.SetVector4f (uniform->uniform.GetId (), value->value);
         }
         else
         {
@@ -429,7 +436,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_vi
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
             const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
-            uniform->uniform.SetMatrix3x3f (value->value);
+            _agent.SetMatrix3x3f (uniform->uniform.GetId (), value->value);
         }
         else
         {
@@ -447,7 +454,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_vi
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
             const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
-            uniform->uniform.SetMatrix4x4f (value->value);
+            _agent.SetMatrix4x4f (uniform->uniform.GetId (), value->value);
         }
         else
         {
@@ -480,7 +487,7 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_vi
         if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
             const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
         {
-            uniform->uniform.SetSampler (uniform->textureStage, texture->texture.GetId ());
+            _agent.SetSampler (uniform->uniform.GetId (), uniform->textureStage, texture->texture.GetId ());
         }
         else
         {
@@ -489,11 +496,11 @@ void WorldRenderer::SubmitBatch (Render2dSingleton *_render, const Viewport *_vi
         }
     }
 
-    SubmitRects (_render, _viewport, material->program, _batch.rects);
+    SubmitRects (_agent, _viewport, material->program, _batch.rects);
 }
 
 void WorldRenderer::SubmitRects (
-    Render2dSingleton *_render,
+    Render::Backend::SubmissionAgent &_agent,
     const Viewport *_viewport,
     const Render::Backend::Program &_program,
     const Container::Vector<Emergence::Celerity::WorldRendering2d::RectData> &_rects) noexcept
@@ -545,12 +552,11 @@ void WorldRenderer::SubmitRects (
         }
     }
 
-    _render->renderer.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G |
-                                Render::Backend::STATE_WRITE_B | Render::Backend::STATE_WRITE_A |
-                                Render::Backend::STATE_BLEND_ALPHA | Render::Backend::STATE_CULL_CW |
-                                Render::Backend::STATE_MSAA);
+    _agent.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G | Render::Backend::STATE_WRITE_B |
+                     Render::Backend::STATE_WRITE_A | Render::Backend::STATE_BLEND_ALPHA |
+                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA);
 
-    _render->renderer.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
+    _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
 }
 
 void WorldRenderer::PoolBatches () noexcept

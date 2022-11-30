@@ -10,7 +10,7 @@ namespace Emergence::Render::Backend
 {
 struct RendererData final
 {
-    std::uint64_t viewportIndexCounter = 0u;
+    std::atomic_unsigned_lock_free viewportIndexCounter = 0u;
     Container::Vector<uint16_t> viewNativeIds {GetAllocationGroup ()};
 };
 } // namespace Emergence::Render::Backend

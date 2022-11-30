@@ -52,32 +52,9 @@ Uniform::~Uniform () noexcept
     }
 }
 
-void Uniform::SetVector4f (const Math::Vector4f &_value) noexcept
+UniformId Uniform::GetId () const noexcept
 {
-    uint16_t handle = block_cast<uint16_t> (data);
-    EMERGENCE_ASSERT (handle != bgfx::kInvalidHandle);
-    bgfx::setUniform (bgfx::UniformHandle {handle}, _value.components);
-}
-
-void Uniform::SetMatrix3x3f (const Math::Matrix3x3f &_value) noexcept
-{
-    uint16_t handle = block_cast<uint16_t> (data);
-    EMERGENCE_ASSERT (handle != bgfx::kInvalidHandle);
-    bgfx::setUniform (bgfx::UniformHandle {handle}, _value.columns);
-}
-
-void Uniform::SetMatrix4x4f (const Math::Matrix4x4f &_value) noexcept
-{
-    uint16_t handle = block_cast<uint16_t> (data);
-    EMERGENCE_ASSERT (handle != bgfx::kInvalidHandle);
-    bgfx::setUniform (bgfx::UniformHandle {handle}, _value.columns);
-}
-
-void Uniform::SetSampler (uint8_t _stage, TextureId _texture) noexcept
-{
-    uint16_t handle = block_cast<uint16_t> (data);
-    EMERGENCE_ASSERT (handle != bgfx::kInvalidHandle);
-    bgfx::setTexture (_stage, bgfx::UniformHandle {handle}, bgfx::TextureHandle {static_cast<uint16_t> (_texture)});
+    return block_cast<uint16_t> (data);
 }
 
 bool Uniform::IsValid () const noexcept

@@ -22,6 +22,9 @@ enum class ViewportSortMode
     DEPTH_DESCENDING,
 };
 
+/// \brief Represents a render surface on output window to which geometries can be submitted.
+/// \details Working with different viewports from different threads is thread safe,
+///          but working with one viewport from multiple threads is not.
 class Viewport final
 {
 public:

@@ -1,15 +1,14 @@
 #pragma once
 
-#include <Math/Matrix3x3f.hpp>
-#include <Math/Matrix4x4f.hpp>
-#include <Math/Vector4f.hpp>
-
 #include <Memory/UniqueString.hpp>
 
 #include <Render/Backend/Texture.hpp>
 
 namespace Emergence::Render::Backend
 {
+/// \brief Unique identifier used to reference existing Uniform.
+using UniformId = std::uint64_t;
+
 /// \brief Defines supported uniform types.
 enum class UniformType : uint8_t
 {
@@ -42,21 +41,8 @@ public:
 
     ~Uniform () noexcept;
 
-    /// \brief Sets given value to uniform.
-    /// \invariant Uniform was constructed with UniformType::VECTOR_4F.
-    void SetVector4f (const Math::Vector4f &_value) noexcept;
-
-    /// \brief Sets given value to uniform.
-    /// \invariant Uniform was constructed with UniformType::MATRIX_3X3F.
-    void SetMatrix3x3f (const Math::Matrix3x3f &_value) noexcept;
-
-    /// \brief Sets given value to uniform.
-    /// \invariant Uniform was constructed with UniformType::MATRIX_4X4F.
-    void SetMatrix4x4f (const Math::Matrix4x4f &_value) noexcept;
-
-    /// \brief Submits given texture to given stage.
-    /// \invariant Uniform was constructed with UniformType::SAMPLER.
-    void SetSampler (uint8_t _stage, TextureId _texture) noexcept;
+    /// \brief Unique identifier of this uniform.
+    [[nodiscard]] UniformId GetId () const noexcept;
 
     [[nodiscard]] bool IsValid () const noexcept;
 
