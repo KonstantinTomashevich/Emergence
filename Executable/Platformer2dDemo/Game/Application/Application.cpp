@@ -21,6 +21,7 @@
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
@@ -95,7 +96,7 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
 {
     _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
     _constructor.DependOn (Emergence::Celerity::AssetManagement::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::Rendering2d::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
 }
 
 void DemoScenarioExecutor::Execute () noexcept
@@ -335,6 +336,7 @@ void Application::InitWorld () noexcept
     Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, {gameMaterialsPath, engineMaterialsPath}, {gameShadersPath, engineShadersPath},
         MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {gameTexturesPath}, MAX_LOADING_TIME_NS,
                                                                assetReferenceBindingEventMap);

@@ -106,12 +106,15 @@ public:
     ~Renderer () noexcept;
 
     /// \brief Creates new submission agent for thread that needs it.
+    /// \details Thread safe.
     SubmissionAgent BeginSubmission () noexcept;
 
     /// \brief Submits order in which viewports should be renderer in case of overlap.
+    /// \warning Not thread safe.
     void SubmitViewportOrder (const Container::Vector<ViewportId> &_viewports) noexcept;
 
     /// \brief Informs backend that all render commands for given frame were executed and result can be presented.
+    /// \warning Not thread safe.
     void SubmitFrame () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (Renderer);

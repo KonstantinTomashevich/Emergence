@@ -11,9 +11,6 @@ namespace Emergence::Celerity
 /// \brief Contains common parameters of world 2d rendering.
 struct Render2dSingleton final
 {
-    /// \brief Underlying implementation object.
-    Render::Backend::Renderer renderer;
-
     /// \invariant Do not access directly, use ::GenerateSprite2dId.
     std::atomic_unsigned_lock_free sprite2dIdCounter = 0u;
 

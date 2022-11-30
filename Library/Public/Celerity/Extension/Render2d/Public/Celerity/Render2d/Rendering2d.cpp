@@ -4,6 +4,7 @@
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
 #include <Celerity/Render2d/WorldRendering2d.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
@@ -24,6 +25,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, Camera2dComponent,
                                 objectId)
         .DependOn (Checkpoint::STARTED)
+        .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
         .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("CleanupCamera2dComponentAfterTransformRemovalFromFixed"_us);
 
@@ -36,6 +38,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, Sprite2dComponent,
                                 objectId)
         .DependOn (Checkpoint::STARTED)
+        .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
         .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
         .MakeDependencyOf ("CleanupSprite2dComponentAfterTransformRemovalFromFixed"_us);
 

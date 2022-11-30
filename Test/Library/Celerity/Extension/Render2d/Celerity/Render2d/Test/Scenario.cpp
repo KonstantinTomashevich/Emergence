@@ -14,6 +14,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Render2d/AssetUsage.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
@@ -168,7 +169,7 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
     _constructor.DependOn (AssetManagement::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (
         Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    _constructor.MakeDependencyOf (Rendering2d::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
     _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
@@ -438,6 +439,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
     Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, {testMaterialsPath, engineMaterialsPath}, {testShadersPath, engineShadersPath},
         MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
                                                                assetReferenceBindingEventMap);

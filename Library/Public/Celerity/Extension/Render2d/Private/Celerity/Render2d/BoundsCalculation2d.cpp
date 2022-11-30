@@ -1,4 +1,5 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render2d/Events.hpp>
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
@@ -98,6 +99,7 @@ BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
       fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId))
 {
     _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
+    _constructor.DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
     _constructor.DependOn (Rendering2d::Checkpoint::STARTED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);

@@ -3,11 +3,12 @@
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/RenderFoundationSingleton.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Texture.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Render2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render2d/Camera2dComponent.hpp>
-#include <Celerity/Render2d/Render2dSingleton.hpp>
 #include <Celerity/Render2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render2d/Rendering2d.hpp>
 #include <Celerity/Render2d/Sprite2dComponent.hpp>
@@ -61,8 +62,6 @@ private:
         Container::Vector<RectData> rects;
     };
 
-    void ApplyViewportConfiguration (Render2dSingleton *_render) noexcept;
-
     void CollectVisibleObjects (const Viewport *_viewport,
                                 Math::Transform2d &_selectedCameraTransform,
                                 Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
@@ -80,15 +79,9 @@ private:
 
     void PoolBatches () noexcept;
 
-    ModifySingletonQuery modifyRenderSingleton;
-
-    FetchValueQuery fetchViewportByName;
+    FetchSingletonQuery fetchRenderFoundation;
     FetchAscendingRangeQuery fetchViewportBySortIndexAscending;
     FetchValueQuery fetchCameraById;
-
-    FetchSequenceQuery fetchViewportAddedNormalEvent;
-    FetchSequenceQuery fetchViewportAddedCustomEvent;
-    FetchSequenceQuery fetchViewportChangedEvent;
 
     FetchValueQuery fetchTransformById;
     Transform2dWorldAccessor transformWorldAccessor;
@@ -110,7 +103,6 @@ private:
 
     Container::Vector<Batch> batches {Memory::Profiler::AllocationGroup::Top ()};
     Container::Vector<Batch> batchPool {Memory::Profiler::AllocationGroup::Top ()};
-    Container::Vector<Render::Backend::ViewportId> viewportOrder {Memory::Profiler::AllocationGroup::Top ()};
 
     Render::Backend::VertexLayout vertexLayout;
 };
@@ -148,15 +140,9 @@ static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAl
 }
 
 WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAlignedBox2d &_worldBounds) noexcept
-    : modifyRenderSingleton (MODIFY_SINGLETON (Render2dSingleton)),
-
-      fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
+    : fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchViewportBySortIndexAscending (FETCH_ASCENDING_RANGE (Viewport, sortIndex)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),
-
-      fetchViewportAddedNormalEvent (FETCH_SEQUENCE (ViewportAddedNormalEvent)),
-      fetchViewportAddedCustomEvent (FETCH_SEQUENCE (ViewportAddedCustomToNormalEvent)),
-      fetchViewportChangedEvent (FETCH_SEQUENCE (ViewportChangedNormalEvent)),
 
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -183,88 +169,37 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
                         .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
                         .End ())
 {
+    _constructor.DependOn (RenderPipelineFoundation::Checkpoint::VIEWPORT_SYNC_FINISHED);
     _constructor.DependOn (Rendering2d::Checkpoint::STARTED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (BoundsCalculation2d::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Rendering2d::Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_FINISHED);
 }
 
 void WorldRenderer::Execute () noexcept
 {
-    auto renderCursor = modifyRenderSingleton.Execute ();
-    auto *render = static_cast<Render2dSingleton *> (*renderCursor);
-    ApplyViewportConfiguration (render);
+    auto renderFoundationCursor = fetchRenderFoundation.Execute ();
+    const auto *renderFoundation = static_cast<const RenderFoundationSingleton *> (*renderFoundationCursor);
+    Render::Backend::SubmissionAgent agent = renderFoundation->renderer.BeginSubmission ();
 
+    for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
+         const auto *viewport = static_cast<const Viewport *> (*viewportCursor); ++viewportCursor)
     {
-        Render::Backend::SubmissionAgent agent = render->renderer.BeginSubmission ();
-        for (auto viewportCursor = fetchViewportBySortIndexAscending.Execute (nullptr, nullptr);
-             const auto *viewport = static_cast<const Viewport *> (*viewportCursor); ++viewportCursor)
+        Math::Transform2d selectedCameraTransform;
+        Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
+
+        CollectVisibleObjects (viewport, selectedCameraTransform, selectedCameraHalfOrthographicSize);
+        viewport->viewport.SubmitOrthographicView (selectedCameraTransform, selectedCameraHalfOrthographicSize);
+
+        for (const Batch &batch : batches)
         {
-            Math::Transform2d selectedCameraTransform;
-            Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
-
-            CollectVisibleObjects (viewport, selectedCameraTransform, selectedCameraHalfOrthographicSize);
-            viewport->viewport.SubmitOrthographicView (selectedCameraTransform, selectedCameraHalfOrthographicSize);
-
-            for (const Batch &batch : batches)
-            {
-                SubmitBatch (agent, viewport, batch);
-            }
-
-            PoolBatches ();
-            agent.Touch (viewport->viewport.GetId ());
-            viewportOrder.emplace_back (viewport->viewport.GetId ());
+            SubmitBatch (agent, viewport, batch);
         }
-    }
 
-    if (!viewportOrder.empty ())
-    {
-        render->renderer.SubmitViewportOrder (viewportOrder);
-        viewportOrder.clear ();
-    }
-
-    render->renderer.SubmitFrame ();
-}
-
-void WorldRenderer::ApplyViewportConfiguration (Render2dSingleton *_render) noexcept
-{
-    auto applyViewportConfiguration = [this, _render] (Memory::UniqueString _name, bool _initialize)
-    {
-        auto cursor = fetchViewportByName.Execute (&_name);
-        if (const auto *viewport = static_cast<const Viewport *> (*cursor))
-        {
-            if (_initialize)
-            {
-                viewport->viewport = Render::Backend::Viewport {_render->renderer};
-            }
-
-            viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    Render::Backend::ViewportSortMode::SEQUENTIAL,
-                                                    viewport->clearColor);
-        }
-        else
-        {
-            // Viewport already deleted.
-        }
-    };
-
-    for (auto eventCursor = fetchViewportAddedNormalEvent.Execute ();
-         const auto *event = static_cast<const ViewportAddedNormalEvent *> (*eventCursor); ++eventCursor)
-    {
-        applyViewportConfiguration (event->name, true);
-    }
-
-    for (auto eventCursor = fetchViewportAddedCustomEvent.Execute ();
-         const auto *event = static_cast<const ViewportAddedCustomToNormalEvent *> (*eventCursor); ++eventCursor)
-    {
-        applyViewportConfiguration (event->name, true);
-    }
-
-    for (auto eventCursor = fetchViewportChangedEvent.Execute ();
-         const auto *event = static_cast<const ViewportChangedNormalEvent *> (*eventCursor); ++eventCursor)
-    {
-        applyViewportConfiguration (event->name, false);
+        PoolBatches ();
+        agent.Touch (viewport->viewport.GetId ());
     }
 }
 
