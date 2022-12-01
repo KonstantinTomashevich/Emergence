@@ -1,3 +1,8 @@
+# PhysX is the only implementation now, so we cannot declare the service if it is not found.
+if (NOT TARGET PhysX)
+    return ()
+endif ()
+
 sober_test_begin (CelerityPhysics3d)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
