@@ -15,12 +15,14 @@ sober_library_begin (CelerityRender2d STATIC)
 
     sober_naming_variant_target (Celerity Original CELERITY_LIBRARY_TARGET)
     sober_naming_variant_target (CelerityAsset Original CELERITY_ASSET_LIBRARY_TARGET)
+    sober_naming_variant_target (CelerityRenderFoundation Original CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET)
     sober_naming_variant_target (CelerityTransform Original CELERITY_TRANSFORM_LIBRARY_TARGET)
     sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 
     sober_library_link_library (PRIVATE "${SERIALIZATION_LIBRARY_TARGET}")
     sober_library_link_library (PUBLIC "${CELERITY_ASSET_LIBRARY_TARGET}")
     sober_library_link_library (PUBLIC "${CELERITY_LIBRARY_TARGET}")
+    sober_library_link_library (PUBLIC "${CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET}")
     sober_library_link_library (PUBLIC "${CELERITY_TRANSFORM_LIBRARY_TARGET}")
 
     sober_variant_begin (Original)

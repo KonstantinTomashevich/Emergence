@@ -4,6 +4,9 @@
 
 namespace Emergence::Render::Backend
 {
+/// \brief Unique identifier used to reference existing Texture.
+using TextureId = std::uint64_t;
+
 /// \brief Represents loaded texture that can be submitted to sampler.
 class Texture final
 {
@@ -22,6 +25,9 @@ public:
 
     /// \return Whether texture is successfully loaded and ready to be used.
     [[nodiscard]] bool IsValid () const noexcept;
+
+    /// \brief Unique identifier of this texture.
+    [[nodiscard]] TextureId GetId () const noexcept;
 
     Texture &operator= (const Texture &_other) = delete;
 

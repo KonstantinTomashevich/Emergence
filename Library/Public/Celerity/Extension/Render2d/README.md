@@ -1,8 +1,7 @@
 # Celerity: Render2d extension
 
-Provides 2d rendering features on top of [RenderBackend service](../../../../../Service/RenderBackend/README.md):
+Provides 2d rendering features on top of [RenderBackend service](../../../../../Service/RenderBackend/README.md)
+and [RenderFoundation extension](../RenderFoundation/README.md):
 
-- Sprite rendering.
-- Material system with full shader and uniform customization.
-- Material instance system with inheritance.
-- Materials, material instances and textures are automatically managed through asset routine.
+- Sprite rendering with batching.
+- Camera with attachment support.

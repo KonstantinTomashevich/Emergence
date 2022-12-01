@@ -6,6 +6,9 @@
 
 namespace Emergence::Render::Backend
 {
+/// \brief Unique identifier used to reference existing Program.
+using ProgramId = std::uint64_t;
+
 /// \brief Represents linked render program for rendering geometries.
 class Program final
 {
@@ -33,6 +36,9 @@ public:
 
     /// \return Whether program is correctly linked and ready to be used.
     [[nodiscard]] bool IsValid () const noexcept;
+
+    /// \brief Unique identifier of this program.
+    [[nodiscard]] ProgramId GetId () const noexcept;
 
     Program &operator= (const Program &_other) = delete;
 

@@ -78,6 +78,11 @@ void Viewport::SubmitOrthographicView (const Math::Transform2d &_view,
     bgfx::setViewTransform (nativeId, view, projection);
 }
 
+ViewportId Viewport::GetId () const noexcept
+{
+    return block_cast<uint64_t> (data);
+}
+
 Viewport &Viewport::operator= (Viewport &&_other) noexcept
 {
     data = _other.data;

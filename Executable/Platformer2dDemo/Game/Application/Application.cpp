@@ -11,21 +11,25 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/Asset/Render2d/Material2dInstanceManagement.hpp>
-#include <Celerity/Asset/Render2d/Material2dManagement.hpp>
-#include <Celerity/Asset/Render2d/Texture2dManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
-#include <Celerity/Render2d/AssetUsage.hpp>
-#include <Celerity/Render2d/Camera2dComponent.hpp>
-#include <Celerity/Render2d/Events.hpp>
-#include <Celerity/Render2d/Material2dInstance.hpp>
-#include <Celerity/Render2d/Render2dSingleton.hpp>
-#include <Celerity/Render2d/Rendering2d.hpp>
-#include <Celerity/Render2d/Sprite2dComponent.hpp>
-#include <Celerity/Render2d/Viewport2d.hpp>
+#include <Celerity/Render/2d/AssetUsage.hpp>
+#include <Celerity/Render/2d/Camera2dComponent.hpp>
+#include <Celerity/Render/2d/Events.hpp>
+#include <Celerity/Render/2d/Render2dSingleton.hpp>
+#include <Celerity/Render/2d/Rendering2d.hpp>
+#include <Celerity/Render/2d/Sprite2dComponent.hpp>
+#include <Celerity/Render/2d/World2dRenderPass.hpp>
+#include <Celerity/Render/Foundation/AssetUsage.hpp>
+#include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
+#include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -68,6 +72,7 @@ private:
     Emergence::Celerity::ModifySingletonQuery modifyRender;
 
     Emergence::Celerity::InsertLongTermQuery insertViewport;
+    Emergence::Celerity::InsertLongTermQuery insertWorldPass;
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertSprite;
@@ -83,7 +88,8 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
       fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
       modifyRender (MODIFY_SINGLETON (Emergence::Celerity::Render2dSingleton)),
 
-      insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport2d)),
+      insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport)),
+      insertWorldPass (INSERT_LONG_TERM (Emergence::Celerity::World2dRenderPass)),
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
       insertSprite (INSERT_LONG_TERM (Emergence::Celerity::Sprite2dComponent)),
@@ -93,7 +99,7 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
 {
     _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
     _constructor.DependOn (Emergence::Celerity::AssetManagement::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (Emergence::Celerity::Rendering2d::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
 }
 
 void DemoScenarioExecutor::Execute () noexcept
@@ -123,13 +129,18 @@ void DemoScenarioExecutor::Execute () noexcept
         camera->halfOrthographicSize = 5.0f;
 
         auto viewportCursor = insertViewport.Execute ();
-        auto *viewport = static_cast<Emergence::Celerity::Viewport2d *> (++viewportCursor);
+        auto *viewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);
 
         viewport->name = "GameWorld"_us;
-        viewport->cameraObjectId = camera->objectId;
         viewport->width = Emergence::Render::Backend::GetCurrentConfig ().width;
         viewport->height = Emergence::Render::Backend::GetCurrentConfig ().height;
         viewport->clearColor = 0xAAAAFFFF;
+
+        auto worldPassCursor = insertWorldPass.Execute ();
+        auto *worldPass = static_cast<Emergence::Celerity::World2dRenderPass *> (++worldPassCursor);
+
+        worldPass->name = viewport->name;
+        worldPass->cameraObjectId = camera->objectId;
 
         for (std::size_t index = 0u; index < 20u; ++index)
         {
@@ -185,6 +196,7 @@ static Emergence::Celerity::AssetReferenceBindingList GetAssetReferenceBindingLi
 {
     Emergence::Celerity::AssetReferenceBindingList binding {Emergence::Celerity::GetAssetBindingAllocationGroup ()};
     Emergence::Celerity::GetRender2dAssetUsage (binding);
+    Emergence::Celerity::GetRenderFoundationAssetUsage (binding);
     return binding;
 }
 
@@ -307,8 +319,9 @@ void Application::InitWorld () noexcept
         Emergence::Celerity::RegisterAssemblyEvents (registrar);
         assetReferenceBindingEventMap =
             Emergence::Celerity::RegisterAssetEvents (registrar, GetAssetReferenceBindingList ());
-        Emergence::Celerity::RegisterTransform2dEvents (registrar);
         Emergence::Celerity::RegisterRender2dEvents (registrar);
+        Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
+        Emergence::Celerity::RegisterTransform2dEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
@@ -326,14 +339,15 @@ void Application::InitWorld () noexcept
     Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, GetAssetReferenceBindingList (),
                                                              assetReferenceBindingEventMap);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::Material2dInstanceManagement::AddToNormalUpdate (
+    Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, {gameMaterialInstancesPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
-    Emergence::Celerity::Material2dManagement::AddToNormalUpdate (
+    Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, {gameMaterialsPath, engineMaterialsPath}, {gameShadersPath, engineShadersPath},
         MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Emergence::Celerity::Texture2dManagement::AddToNormalUpdate (pipelineBuilder, {gameTexturesPath},
-                                                                 MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {gameTexturesPath}, MAX_LOADING_TIME_NS,
+                                                               assetReferenceBindingEventMap);
     Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("DemoScenarioExecutor"_us).SetExecutor<DemoScenarioExecutor> ();
     const bool normalPipelineRegistered = pipelineBuilder.End ();

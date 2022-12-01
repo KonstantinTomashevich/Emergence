@@ -1,3 +1,5 @@
+#include <Assert/Assert.hpp>
+
 #include <bgfx/bgfx.h>
 
 #include <Render/Backend/Renderer.hpp>
@@ -7,14 +9,87 @@
 
 namespace Emergence::Render::Backend
 {
+SubmissionAgent::SubmissionAgent (SubmissionAgent &&_other) noexcept
+{
+    data = _other.data;
+    block_cast<bgfx::Encoder *> (_other.data) = nullptr;
+}
+
+SubmissionAgent::~SubmissionAgent () noexcept
+{
+    if (auto *encoder = block_cast<bgfx::Encoder *> (data))
+    {
+        bgfx::end (encoder);
+    }
+}
+
+void SubmissionAgent::SetState (uint64_t _state) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    encoder->setState (_state);
+}
+
+void SubmissionAgent::SubmitGeometry (ViewportId _viewport,
+                                      ProgramId _program,
+                                      const TransientVertexBuffer &_vertices,
+                                      const TransientIndexBuffer &_indices) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    encoder->setVertexBuffer (0, &block_cast<bgfx::TransientVertexBuffer> (_vertices.data));
+    encoder->setIndexBuffer (&block_cast<bgfx::TransientIndexBuffer> (_indices.data));
+    encoder->submit (static_cast<uint16_t> (_viewport), bgfx::ProgramHandle {static_cast<uint16_t> (_program)});
+}
+
+void SubmissionAgent::Touch (ViewportId _viewport) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    encoder->touch (static_cast<uint16_t> (_viewport));
+}
+
+void SubmissionAgent::SetVector4f (UniformId _uniform, const Math::Vector4f &_value) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    EMERGENCE_ASSERT (_uniform != bgfx::kInvalidHandle);
+    encoder->setUniform ({static_cast<uint16_t> (_uniform)}, &_value);
+}
+
+void SubmissionAgent::SetMatrix3x3f (UniformId _uniform, const Math::Matrix3x3f &_value) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    EMERGENCE_ASSERT (_uniform != bgfx::kInvalidHandle);
+    encoder->setUniform ({static_cast<uint16_t> (_uniform)}, &_value);
+}
+
+void SubmissionAgent::SetMatrix4x4f (UniformId _uniform, const Math::Matrix4x4f &_value) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    EMERGENCE_ASSERT (_uniform != bgfx::kInvalidHandle);
+    encoder->setUniform ({static_cast<uint16_t> (_uniform)}, &_value);
+}
+
+void SubmissionAgent::SetSampler (UniformId _uniform, uint8_t _stage, TextureId _texture) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    EMERGENCE_ASSERT (_uniform != bgfx::kInvalidHandle);
+    EMERGENCE_ASSERT (_texture != bgfx::kInvalidHandle);
+    encoder->setTexture (_stage, {static_cast<uint16_t> (_uniform)}, {static_cast<uint16_t> (_texture)});
+}
+
+SubmissionAgent::SubmissionAgent (void *_pointer) noexcept
+{
+    block_cast<bgfx::Encoder *> (data) = static_cast<bgfx::Encoder *> (_pointer);
+}
+
 Renderer::Renderer () noexcept
 {
     new (data.data ()) RendererData ();
-}
-
-Renderer::Renderer (Renderer &&_other) noexcept
-{
-    new (data.data ()) RendererData (std::move (block_cast<RendererData> (_other.data)));
 }
 
 Renderer::~Renderer () noexcept
@@ -23,38 +98,20 @@ Renderer::~Renderer () noexcept
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
-void Renderer::SetState (uint64_t _state) noexcept
+SubmissionAgent Renderer::BeginSubmission () noexcept
 {
-    bgfx::setState (_state);
+    return SubmissionAgent {bgfx::begin ()};
 }
 
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
-void Renderer::SubmitGeometry (const Viewport &_viewport,
-                               const Program &_program,
-                               const TransientVertexBuffer &_vertices,
-                               const TransientIndexBuffer &_indices) noexcept
-{
-    bgfx::setVertexBuffer (0, &block_cast<bgfx::TransientVertexBuffer> (_vertices.data));
-    bgfx::setIndexBuffer (&block_cast<bgfx::TransientIndexBuffer> (_indices.data));
-    bgfx::submit (static_cast<uint16_t> (block_cast<uint64_t> (_viewport.data)),
-                  bgfx::ProgramHandle {block_cast<uint16_t> (_program.data)});
-}
-
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Being non-static is a part of the API.
-void Renderer::Touch (const Viewport &_viewport) noexcept
-{
-    bgfx::touch (static_cast<uint16_t> (block_cast<uint64_t> (_viewport.data)));
-}
-
-void Renderer::SubmitViewportOrder (const Container::Vector<const Viewport *> &_viewports) noexcept
+void Renderer::SubmitViewportOrder (const Container::Vector<ViewportId> &_viewports) noexcept
 {
     auto &rendererData = block_cast<RendererData> (data);
     rendererData.viewNativeIds.reserve (_viewports.size ());
     uint16_t minimum = std::numeric_limits<uint16_t>::max ();
 
-    for (const Viewport *viewport : _viewports)
+    for (ViewportId viewport : _viewports)
     {
-        rendererData.viewNativeIds.emplace_back (static_cast<uint16_t> (block_cast<uint64_t> (viewport->data)));
+        rendererData.viewNativeIds.emplace_back (static_cast<uint16_t> (viewport));
         minimum = std::min (minimum, rendererData.viewNativeIds.back ());
     }
 
@@ -67,16 +124,5 @@ void Renderer::SubmitViewportOrder (const Container::Vector<const Viewport *> &_
 void Renderer::SubmitFrame () noexcept
 {
     bgfx::frame ();
-}
-
-Renderer &Renderer::operator= (Renderer &&_other) noexcept
-{
-    if (this != &_other)
-    {
-        this->~Renderer ();
-        new (this) Renderer (std::move (_other));
-    }
-
-    return *this;
 }
 } // namespace Emergence::Render::Backend

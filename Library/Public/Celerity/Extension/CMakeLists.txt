@@ -1,6 +1,7 @@
 add_subdirectory (Assembly)
 add_subdirectory (Asset)
 add_subdirectory (Render2d)
+add_subdirectory (RenderFoundation)
 add_subdirectory (ResourceConfig)
 add_subdirectory (ResourceObject)
 add_subdirectory (Transform)
