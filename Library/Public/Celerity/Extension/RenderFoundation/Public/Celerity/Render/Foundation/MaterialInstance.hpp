@@ -14,8 +14,6 @@
 
 namespace Emergence::Celerity
 {
-struct Material;
-
 // TODO: Implement runtime material instance creation.
 
 /// \brief Contains parameters for rendering with associated Material.

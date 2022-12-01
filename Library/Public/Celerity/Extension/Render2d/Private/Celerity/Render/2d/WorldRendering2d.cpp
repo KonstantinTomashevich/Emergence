@@ -191,6 +191,7 @@ void WorldRenderer::Execute () noexcept
             continue;
         }
 
+        EMERGENCE_ASSERT (viewport->sortMode == Render::Backend::ViewportSortMode::SEQUENTIAL);
         Math::Transform2d selectedCameraTransform;
         Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
         CollectVisibleObjects (viewport, pass->cameraObjectId, selectedCameraTransform,

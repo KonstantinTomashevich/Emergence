@@ -8,17 +8,7 @@ namespace Emergence::Celerity
 {
 struct TextureLoadingState final
 {
-    TextureLoadingState () noexcept = default;
-
-    TextureLoadingState (const TextureLoadingState &_other) = delete;
-
-    TextureLoadingState (TextureLoadingState &&_other) = delete;
-
-    ~TextureLoadingState () noexcept;
-
-    TextureLoadingState &operator= (const TextureLoadingState &_other) = delete;
-
-    TextureLoadingState &operator= (TextureLoadingState &&_other) = delete;
+    EMERGENCE_STATIONARY_DATA_TYPE (TextureLoadingState);
 
     Memory::UniqueString assetId;
     Memory::Heap allocator {Memory::Profiler::AllocationGroup::Top ()};

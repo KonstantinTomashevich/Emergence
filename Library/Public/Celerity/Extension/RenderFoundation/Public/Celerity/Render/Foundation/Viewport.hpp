@@ -48,13 +48,13 @@ struct Viewport final
     struct Reflection final
     {
         StandardLayout::FieldId name;
-        StandardLayout::FieldId cameraObjectId;
         StandardLayout::FieldId sortIndex;
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
         StandardLayout::FieldId clearColor;
+        StandardLayout::FieldId sortMode;
         StandardLayout::Mapping mapping;
     };
 

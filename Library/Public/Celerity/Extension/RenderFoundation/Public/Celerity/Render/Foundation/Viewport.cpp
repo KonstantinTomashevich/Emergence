@@ -16,6 +16,7 @@ const Viewport::Reflection &Viewport::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (width);
         EMERGENCE_MAPPING_REGISTER_REGULAR (height);
         EMERGENCE_MAPPING_REGISTER_REGULAR (clearColor);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (sortMode);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

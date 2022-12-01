@@ -28,6 +28,7 @@ void RegisterRenderFoundationEvents (EventRegistrar &_registrar) noexcept
                                    Viewport::Reflect ().width,
                                    Viewport::Reflect ().height,
                                    Viewport::Reflect ().clearColor,
+                                   Viewport::Reflect ().sortMode,
                                },
                                {},
                                {{Viewport::Reflect ().name, ViewportAddedNormalEvent::Reflect ().name}}});

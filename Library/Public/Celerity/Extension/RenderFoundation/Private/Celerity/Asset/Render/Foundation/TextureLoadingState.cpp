@@ -4,6 +4,8 @@
 
 namespace Emergence::Celerity
 {
+TextureLoadingState::TextureLoadingState () noexcept = default;
+
 TextureLoadingState::~TextureLoadingState () noexcept
 {
     if (data)
