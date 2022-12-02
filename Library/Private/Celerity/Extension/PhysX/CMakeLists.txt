@@ -1,3 +1,8 @@
+# We cannot build this library unless PhysX is found.
+if (NOT TARGET PhysX)
+    return ()
+endif ()
+
 sober_library_begin (CelerityPhysX STATIC)
     file (GLOB_RECURSE HEADERS "*.hpp" )
     file (GLOB_RECURSE SOURCES "*.cpp")
