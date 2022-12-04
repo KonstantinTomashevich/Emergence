@@ -66,13 +66,47 @@ struct InputEvent final
 class FrameInputAccumulator final
 {
 public:
+    class EventIterator final
+    {
+    public:
+        EventIterator (const EventIterator &_other) noexcept = default;
+
+        EventIterator (EventIterator &&_other) noexcept = default;
+
+        ~EventIterator () noexcept = default;
+
+        [[nodiscard]] const InputEvent &operator* () const noexcept;
+
+        EventIterator &operator++ () noexcept;
+
+        bool operator== (const EventIterator &_other) const noexcept;
+
+        bool operator!= (const EventIterator &_other) const noexcept;
+
+        EventIterator &operator= (const EventIterator &_other) noexcept = default;
+
+        EventIterator &operator= (EventIterator &&_other) noexcept = default;
+
+        /// \warning Invalidates other iterators!
+        EventIterator &operator~() noexcept;
+
+    private:
+        friend class FrameInputAccumulator;
+
+        EventIterator (Container::Vector<InputEvent> *_eventsVector,
+                       Container::Vector<InputEvent>::iterator _baseIterator) noexcept;
+
+        Container::Vector<InputEvent> *eventsVector;
+        Container::Vector<InputEvent>::iterator baseIterator;
+    };
+
     void SetCurrentQualifiersMask (QualifiersMask _mask) noexcept;
 
     [[nodiscard]] QualifiersMask GetCurrentQualifiersMask () const noexcept;
 
-    // TODO: More sophisticated API that allows events to be consumed.
-    //       For example, to prevent game to reacting to click twice: in UI and in triggers.
-    [[nodiscard]] const Container::Vector<InputEvent> &GetEvents () const noexcept;
+    [[nodiscard]] EventIterator EventsBegin () noexcept;
+
+    [[nodiscard]] EventIterator EventsEnd () noexcept;
 
     void RecordEvent (const InputEvent &_event) noexcept;
 

@@ -18,5 +18,5 @@ struct Checkpoint final
 
 void AddToFixedUpdate (PipelineBuilder &_builder) noexcept;
 
-void AddToNormalUpdate (PipelineBuilder &_builder, const FrameInputAccumulator *_inputAccumulator) noexcept;
+void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_inputAccumulator) noexcept;
 } // namespace Emergence::Celerity::Input

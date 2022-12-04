@@ -105,7 +105,7 @@ void FixedInputProcessor::Execute () noexcept
 class NormalInputProcessor final : public TaskExecutorBase<NormalInputProcessor>, public InputProcessorBase
 {
 public:
-    NormalInputProcessor (TaskConstructor &_constructor, const FrameInputAccumulator *_inputAccumulator) noexcept;
+    NormalInputProcessor (TaskConstructor &_constructor, FrameInputAccumulator *_inputAccumulator) noexcept;
 
     void Execute () noexcept;
 
@@ -122,11 +122,11 @@ private:
     EditValueQuery editKeyTriggerByScanCode;
     EditSignalQuery editKeyTriggersOnState;
 
-    const FrameInputAccumulator *inputAccumulator;
+    FrameInputAccumulator *inputAccumulator;
 };
 
 NormalInputProcessor::NormalInputProcessor (TaskConstructor &_constructor,
-                                            const FrameInputAccumulator *_inputAccumulator) noexcept
+                                            FrameInputAccumulator *_inputAccumulator) noexcept
     : InputProcessorBase (_constructor),
       modifyInputActionHolders (MODIFY_SEQUENCE (InputActionHolder)),
       insertActionHolder (INSERT_SHORT_TERM (InputActionHolder)),
@@ -150,8 +150,11 @@ void NormalInputProcessor::Execute () noexcept
 
 void NormalInputProcessor::ProcessAccumulatedInput () noexcept
 {
-    for (const InputEvent &event : inputAccumulator->GetEvents ())
+    for (auto iterator = inputAccumulator->EventsBegin(); iterator != inputAccumulator->EventsEnd();)
     {
+        const InputEvent &event = *iterator;
+        bool consume = false;
+
         switch (event.type)
         {
         case InputEventType::KEYBOARD:
@@ -179,6 +182,8 @@ void NormalInputProcessor::ProcessAccumulatedInput () noexcept
                 if (stateMatches && qualifiersMatch && canBeTriggered)
                 {
                     SendAction (keyTrigger->actionToSend, keyTrigger->dispatchType);
+                    consume = true;
+
                     if (onStateAndNotTriggered)
                     {
                         keyTrigger->triggeredThisFrame = true;
@@ -194,6 +199,15 @@ void NormalInputProcessor::ProcessAccumulatedInput () noexcept
         case InputEventType::MOUSE_WHEEL:
             // There is no triggers for mouse events right now.
             break;
+        }
+
+        if (consume)
+        {
+            ~iterator;
+        }
+        else
+        {
+            ++iterator;
         }
     }
 
@@ -276,7 +290,7 @@ void AddToFixedUpdate (PipelineBuilder &_builder) noexcept
     _builder.AddTask ("InputProcessor"_us).SetExecutor<FixedInputProcessor> ();
 }
 
-void AddToNormalUpdate (PipelineBuilder &_builder, const FrameInputAccumulator *_inputAccumulator) noexcept
+void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_inputAccumulator) noexcept
 {
     using namespace Memory::Literals;
     auto visualGroup = _builder.OpenVisualGroup ("Input");
