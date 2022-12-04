@@ -4,6 +4,16 @@
 
 namespace Emergence::Celerity
 {
+void FrameInputAccumulator::SetCurrentQualifiersMask (QualifiersMask _mask) noexcept
+{
+    qualifiersMask = _mask;
+}
+
+QualifiersMask FrameInputAccumulator::GetCurrentQualifiersMask () const noexcept
+{
+    return qualifiersMask;
+}
+
 const Container::Vector<InputEvent> &FrameInputAccumulator::GetEvents () const noexcept
 {
     return events;

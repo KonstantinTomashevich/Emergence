@@ -9,8 +9,10 @@ sober_library_begin (CelerityInput STATIC)
     sober_library_use_service (EXPECTED PRIVATE Log)
 
     sober_naming_variant_target (Celerity Original CELERITY_LIBRARY_TARGET)
+    sober_naming_variant_target (CelerityTransform Original CELERITY_TRANSFORM_LIBRARY_TARGET)
 
     sober_library_link_library (PUBLIC "${CELERITY_LIBRARY_TARGET}")
+    sober_library_link_library (PUBLIC "${CELERITY_TRANSFORM_LIBRARY_TARGET}")
 
     sober_variant_begin (Original)
     sober_variant_end ()

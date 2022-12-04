@@ -66,13 +66,20 @@ struct InputEvent final
 class FrameInputAccumulator final
 {
 public:
-    const Container::Vector<InputEvent> &GetEvents () const noexcept;
+    void SetCurrentQualifiersMask (QualifiersMask _mask) noexcept;
+
+    [[nodiscard]] QualifiersMask GetCurrentQualifiersMask () const noexcept;
+
+    // TODO: More sophisticated API that allows events to be consumed.
+    //       For example, to prevent game to reacting to click twice: in UI and in triggers.
+    [[nodiscard]] const Container::Vector<InputEvent> &GetEvents () const noexcept;
 
     void RecordEvent (const InputEvent &_event) noexcept;
 
     void Clear () noexcept;
 
 private:
+    QualifiersMask qualifiersMask = 0u;
     Container::Vector<InputEvent> events {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"FrameInputAccumulator"}}};
 };

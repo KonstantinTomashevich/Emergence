@@ -7,6 +7,8 @@
 
 namespace Emergence::Celerity
 {
+// TODO: Think about mouse triggers.
+
 enum class KeyTriggerType : uint8_t
 {
     ON_STATE = 0u,
@@ -16,22 +18,28 @@ enum class KeyTriggerType : uint8_t
 struct KeyTrigger final
 {
     InputAction actionToSend;
-
     ScanCode triggerCode = 0u;
+    QualifiersMask expectedQualifiers = 0u;
     KeyState triggerTargetState = KeyState::DOWN;
     KeyTriggerType triggerType = KeyTriggerType::ON_STATE;
     InputActionDispatchType dispatchType = InputActionDispatchType::NORMAL;
 
     KeyState currentKeyState = KeyState::UP;
+    union
+    {
+        bool triggeredThisFrame = false;
+    };
 
     struct Reflection final
     {
         StandardLayout::FieldId actionToSend;
         StandardLayout::FieldId triggerCode;
+        StandardLayout::FieldId expectedQualifiers;
         StandardLayout::FieldId triggerTargetState;
         StandardLayout::FieldId triggerType;
         StandardLayout::FieldId dispatchType;
         StandardLayout::FieldId currentKeyState;
+        StandardLayout::FieldId triggeredThisFrame;
         StandardLayout::Mapping mapping;
     };
 

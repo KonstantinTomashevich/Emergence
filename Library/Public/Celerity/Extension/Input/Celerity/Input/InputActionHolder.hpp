@@ -6,6 +6,9 @@
 
 namespace Emergence::Celerity
 {
+/// \details Stored in short term container because holders lifetime usually ends when action is dispatched,
+///          unless it is a InputActionDispatchType::FIXED_PERSISTENT. Fixed persistent holders are removed
+///          during next normal frame after being dispatched.
 struct InputActionHolder
 {
     InputAction action;
