@@ -51,6 +51,14 @@ struct MouseWheelEvent final
 
 struct InputEvent final
 {
+    InputEvent (uint64_t _timeNs, const KeyboardEvent &_event) noexcept;
+
+    InputEvent (uint64_t _timeNs, const MouseButtonEvent &_event) noexcept;
+
+    InputEvent (uint64_t _timeNs, const MouseMotionEvent &_event) noexcept;
+
+    InputEvent (uint64_t _timeNs, const MouseWheelEvent &_event) noexcept;
+
     InputEventType type;
     uint64_t timeNs = 0u;
 

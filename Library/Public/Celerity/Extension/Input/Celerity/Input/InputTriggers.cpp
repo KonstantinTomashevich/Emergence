@@ -10,8 +10,8 @@ const KeyTrigger::Reflection &KeyTrigger::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (KeyTrigger);
         EMERGENCE_MAPPING_REGISTER_REGULAR (actionToSend);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (triggerCode);
         EMERGENCE_MAPPING_REGISTER_REGULAR (expectedQualifiers);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (triggerCode);
         EMERGENCE_MAPPING_REGISTER_REGULAR (triggerTargetState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (triggerType);
         EMERGENCE_MAPPING_REGISTER_REGULAR (dispatchType);

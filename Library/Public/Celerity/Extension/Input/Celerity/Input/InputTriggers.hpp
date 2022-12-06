@@ -18,8 +18,8 @@ enum class KeyTriggerType : uint8_t
 struct KeyTrigger final
 {
     InputAction actionToSend;
-    ScanCode triggerCode = 0u;
     QualifiersMask expectedQualifiers = 0u;
+    ScanCode triggerCode = 0u;
     KeyState triggerTargetState = KeyState::DOWN;
     KeyTriggerType triggerType = KeyTriggerType::ON_STATE;
     InputActionDispatchType dispatchType = InputActionDispatchType::NORMAL;
@@ -33,8 +33,8 @@ struct KeyTrigger final
     struct Reflection final
     {
         StandardLayout::FieldId actionToSend;
-        StandardLayout::FieldId triggerCode;
         StandardLayout::FieldId expectedQualifiers;
+        StandardLayout::FieldId triggerCode;
         StandardLayout::FieldId triggerTargetState;
         StandardLayout::FieldId triggerType;
         StandardLayout::FieldId dispatchType;

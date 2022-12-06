@@ -4,6 +4,34 @@
 
 namespace Emergence::Celerity
 {
+InputEvent::InputEvent (uint64_t _timeNs, const KeyboardEvent &_event) noexcept
+    : type (InputEventType::KEYBOARD),
+      timeNs (_timeNs),
+      keyboard (_event)
+{
+}
+
+InputEvent::InputEvent (uint64_t _timeNs, const MouseButtonEvent &_event) noexcept
+    : type (InputEventType::MOUSE_BUTTON),
+      timeNs (_timeNs),
+      mouseButton (_event)
+{
+}
+
+InputEvent::InputEvent (uint64_t _timeNs, const MouseMotionEvent &_event) noexcept
+    : type (InputEventType::MOUSE_MOTION),
+      timeNs (_timeNs),
+      mouseMotion (_event)
+{
+}
+
+InputEvent::InputEvent (uint64_t _timeNs, const MouseWheelEvent &_event) noexcept
+    : type (InputEventType::MOUSE_WHEEL),
+      timeNs (_timeNs),
+      mouseWheel (_event)
+{
+}
+
 const InputEvent &FrameInputAccumulator::EventIterator::operator* () const noexcept
 {
     EMERGENCE_ASSERT (eventsVector && baseIterator != eventsVector->end ());
