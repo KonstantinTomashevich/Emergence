@@ -40,10 +40,6 @@
     collisionGroup: 4 # Hit box
     trigger: 1
 
-- type: InputListenerComponent
-  content:
-    objectId: 0
-
 - type: MovementComponent
   content:
     objectId: 0

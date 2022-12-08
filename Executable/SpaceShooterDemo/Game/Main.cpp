@@ -9,6 +9,7 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
+#include <Celerity/Input/Input.hpp>
 #include <Celerity/Physics3d/Events.hpp>
 #include <Celerity/Physics3d/Simulation.hpp>
 #include <Celerity/Pipeline.hpp>
@@ -42,8 +43,6 @@
 #include <Loading/Task/LoadingOrchestration.hpp>
 #include <Loading/Task/PhysicsInitialization.hpp>
 
-#include <Input/Input.hpp>
-
 #include <Log/Log.hpp>
 
 #include <Memory/Profiler/Capture.hpp>
@@ -51,6 +50,8 @@
 
 #include <Render/Events.hpp>
 #include <Render/Urho3DUpdate.hpp>
+
+#include <SyntaxSugar/Time.hpp>
 
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Core/CoreEvents.h>
@@ -110,7 +111,7 @@ private:
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
-    InputAccumulator inputAccumulator;
+    Emergence::Celerity::FrameInputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
 
     Emergence::Celerity::Pipeline *loadingPipeline = nullptr;
@@ -179,9 +180,9 @@ void GameApplication::Start ()
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes ());
+    Emergence::Celerity::Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add3dToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Physics3dSimulation::AddToFixedUpdate (pipelineBuilder);
-    Input::AddToFixedUpdate (pipelineBuilder);
     Mortality::AddToFixedUpdate (pipelineBuilder);
     Movement::AddToFixedUpdate (pipelineBuilder);
     NonFeatureSpecificComponentCleanup::AddToFixedUpdate (pipelineBuilder);
@@ -195,10 +196,10 @@ void GameApplication::Start ()
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes ());
+    Emergence::Celerity::Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
     Emergence::Celerity::TransformHierarchyCleanup::Add3dToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::TransformVisualSync::Add3dToNormalUpdate (pipelineBuilder);
     FollowCamera::AddToNormalUpdate (pipelineBuilder);
-    Input::AddToNormalUpdate (&inputAccumulator, pipelineBuilder);
     Mortality::AddToNormalUpdate (pipelineBuilder);
     Urho3DUpdate::AddToNormalUpdate (GetContext (), pipelineBuilder);
     pipelineBuilder.End (&pipelineVisualGraph);
@@ -233,35 +234,24 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
 
 void GameApplication::HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
 {
-    if (_eventData[Urho3D::KeyDown::P_REPEAT].GetBool ())
-    {
-        return;
-    }
-
-    InputEvent event;
-    event.type = InputType::KEYBOARD;
-    event.keyboard = {
-        static_cast<ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
-        static_cast<KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
-        true,
-        static_cast<QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
-    };
-
-    inputAccumulator.PostEvent (event);
+    inputAccumulator.RecordEvent (Emergence::Celerity::InputEvent {
+        Emergence::Time::NanosecondsSinceStartup (),
+        Emergence::Celerity::KeyboardEvent {
+            static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
+            static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
+            static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
+            Emergence::Celerity::KeyState::DOWN, _eventData[Urho3D::KeyDown::P_REPEAT].GetBool ()}});
 }
 
 void GameApplication::HandleKeyUp (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
 {
-    InputEvent event;
-    event.type = InputType::KEYBOARD;
-    event.keyboard = {
-        static_cast<ScanCode> (_eventData[Urho3D::KeyUp::P_SCANCODE].GetInt ()),
-        static_cast<KeyCode> (_eventData[Urho3D::KeyUp::P_KEY].GetInt ()),
-        false,
-        static_cast<QualifiersMask> (_eventData[Urho3D::KeyUp::P_QUALIFIERS].GetInt ()),
-    };
-
-    inputAccumulator.PostEvent (event);
+    inputAccumulator.RecordEvent (Emergence::Celerity::InputEvent {
+        Emergence::Time::NanosecondsSinceStartup (),
+        Emergence::Celerity::KeyboardEvent {
+            static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
+            static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
+            static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
+            Emergence::Celerity::KeyState::UP, _eventData[Urho3D::KeyDown::P_REPEAT].GetBool ()}});
 }
 
 BEGIN_MUTING_WARNINGS

@@ -1,4 +1,6 @@
 #include <Celerity/Assembly/Assembly.hpp>
+#include <Celerity/Input/Input.hpp>
+#include <Celerity/Input/InputActionComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Physics3d/RigidBody3dComponent.hpp>
 #include <Celerity/Physics3d/Simulation.hpp>
@@ -12,9 +14,6 @@
 #include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
 #include <Gameplay/MovementComponent.hpp>
-
-#include <Input/Input.hpp>
-#include <Input/InputListenerComponent.hpp>
 
 #include <Log/Log.hpp>
 
@@ -37,7 +36,7 @@ public:
 private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::RemoveAscendingRangeQuery removeMovementByAscendingId;
-    Emergence::Celerity::FetchValueQuery fetchInputListenerById;
+    Emergence::Celerity::FetchValueQuery fetchInputActionById;
     Emergence::Celerity::EditValueQuery editRigidBodyById;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
@@ -47,7 +46,7 @@ private:
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
-      fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
+      fetchInputActionById (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId)),
       editRigidBodyById (EDIT_VALUE_1F (Emergence::Celerity::RigidBody3dComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
@@ -55,7 +54,7 @@ MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constru
 {
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED);
-    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Emergence::Celerity::Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::Physics3dSimulation::Checkpoint::STARTED);
 }
@@ -80,18 +79,6 @@ void MovementUpdater::Execute () noexcept
             continue;
         }
 
-        auto inputListenerCursor = fetchInputListenerById.Execute (&movement->objectId);
-        const auto *inputListener = static_cast<const InputListenerComponent *> (*inputListenerCursor);
-
-        if (!inputListener)
-        {
-            EMERGENCE_LOG (ERROR, "Movement: Unable to attach movement feature to object (id ", movement->objectId,
-                           ") without InputListenerComponent!");
-
-            ~movementCursor;
-            continue;
-        }
-
         auto bodyCursor = editRigidBodyById.Execute (&movement->objectId);
         auto *body = static_cast<Emergence::Celerity::RigidBody3dComponent *> (*bodyCursor);
 
@@ -107,15 +94,17 @@ void MovementUpdater::Execute () noexcept
         Emergence::Math::Vector3f linearFactor = Emergence::Math::Vector3f::ZERO;
         Emergence::Math::Vector3f angularFactor = Emergence::Math::Vector3f::ZERO;
 
-        for (const InputAction &action : inputListener->actions)
+        for (auto actionCursor = fetchInputActionById.Execute (&movement->objectId);
+             const auto *action = static_cast<const Emergence::Celerity::InputActionComponent *> (*actionCursor);
+             ++actionCursor)
         {
-            if (action.id == InputConstant::MOTION_FACTOR_ACTION)
+            if (action->action.id == InputConstant::MOTION_FACTOR_ACTION)
             {
-                linearFactor += {action.real[0u], action.real[1u], action.real[2u]};
+                linearFactor += {action->action.real[0u], action->action.real[1u], action->action.real[2u]};
             }
-            else if (action.id == InputConstant::ROTATION_FACTOR_ACTION)
+            else if (action->action.id == InputConstant::ROTATION_FACTOR_ACTION)
             {
-                angularFactor += {action.real[0u], action.real[1u], action.real[2u]};
+                angularFactor += {action->action.real[0u], action->action.real[1u], action->action.real[2u]};
             }
         }
 

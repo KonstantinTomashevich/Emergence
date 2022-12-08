@@ -1,3 +1,5 @@
+#include <Celerity/Input/Input.hpp>
+#include <Celerity/Input/InputActionComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
@@ -6,9 +8,6 @@
 #include <Gameplay/Shooting.hpp>
 #include <Gameplay/Slowdown.hpp>
 #include <Gameplay/SlowdownSingleton.hpp>
-
-#include <Input/Input.hpp>
-#include <Input/InputListenerComponent.hpp>
 
 #include <Math/Easing.hpp>
 #include <Math/Scalar.hpp>
@@ -27,7 +26,7 @@ private:
     Emergence::Celerity::ModifySingletonQuery modifySlowdown;
 
     Emergence::Celerity::FetchSignalQuery fetchControlledObject;
-    Emergence::Celerity::FetchValueQuery fetchInputListenerById;
+    Emergence::Celerity::FetchValueQuery fetchInputActionByObjectId;
 };
 
 SlowdownProcessor::SlowdownProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -35,9 +34,9 @@ SlowdownProcessor::SlowdownProcessor (Emergence::Celerity::TaskConstructor &_con
       modifySlowdown (MODIFY_SINGLETON (SlowdownSingleton)),
 
       fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByLocalPlayer, true)),
-      fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId))
+      fetchInputActionByObjectId (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId))
 {
-    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Emergence::Celerity::Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
     _constructor.MakeDependencyOf (Shooting::Checkpoint::STARTED);
 }
 
@@ -54,16 +53,15 @@ void SlowdownProcessor::Execute () noexcept
         auto controllableCursor = fetchControlledObject.Execute ();
         if (const auto *controllable = static_cast<const ControllableComponent *> (*controllableCursor))
         {
-            auto inputListenerCursor = fetchInputListenerById.Execute (&controllable->objectId);
-            if (const auto *inputListener = static_cast<const InputListenerComponent *> (*inputListenerCursor))
+            for (auto inputActionCursor = fetchInputActionByObjectId.Execute (&controllable->objectId);
+                 const auto *inputAction =
+                     static_cast<const Emergence::Celerity::InputActionComponent *> (*inputActionCursor);
+                 ++inputActionCursor)
             {
-                for (const InputAction &action : inputListener->actions)
+                if (inputAction->action.id == InputConstant::SLOWDOWN_ACTION)
                 {
-                    if (action.id == InputConstant::SLOWDOWN_ACTION)
-                    {
-                        slowdown->endTimeNs = time->fixedTimeNs + slowdown->durationNs;
-                        break;
-                    }
+                    slowdown->endTimeNs = time->fixedTimeNs + slowdown->durationNs;
+                    break;
                 }
             }
         }
