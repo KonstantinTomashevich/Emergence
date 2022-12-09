@@ -100,12 +100,12 @@ void ControlSwitcher::Execute () noexcept
                 {
                     controllable->controlledByLocalPlayer = true;
                     auto subscriptionCursor = insertInputSubscription.Execute ();
-                    
+
                     auto *movementSubscription =
                         static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++subscriptionCursor);
                     movementSubscription->objectId = controllable->objectId;
                     movementSubscription->group = InputConstant::MOVEMENT_ACTION_GROUP;
-                    
+
                     auto *fightSubscription =
                         static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++subscriptionCursor);
                     fightSubscription->objectId = controllable->objectId;

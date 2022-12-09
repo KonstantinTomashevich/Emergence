@@ -19,7 +19,7 @@ const KeyTrigger::Reflection &KeyTrigger::Reflect () noexcept
 
         EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (triggerType, 0u);
         EMERGENCE_MAPPING_REGISTER_REGULAR (triggeredThisFrame);
-        EMERGENCE_MAPPING_UNION_VARIANT_END();
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
 
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

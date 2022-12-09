@@ -49,34 +49,34 @@ void InputInitializer::Execute () noexcept
         std::array<float, Emergence::Celerity::InputAction::MAX_REAL_PARAMETERS> {0.0f, 0.0f, 1.0f}};
     forwardTrigger->triggerCode = SDL_SCANCODE_W;
     forwardTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
-    
+
     auto *backwardTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
     backwardTrigger->actionToSend = {
         InputConstant::MOVEMENT_ACTION_GROUP, InputConstant::MOTION_FACTOR_ACTION,
         std::array<float, Emergence::Celerity::InputAction::MAX_REAL_PARAMETERS> {0.0f, 0.0f, -1.0f}};
     backwardTrigger->triggerCode = SDL_SCANCODE_S;
     backwardTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
-    
+
     auto *rightTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
     rightTrigger->actionToSend = {
         InputConstant::MOVEMENT_ACTION_GROUP, InputConstant::ROTATION_FACTOR_ACTION,
         std::array<float, Emergence::Celerity::InputAction::MAX_REAL_PARAMETERS> {0.0f, 1.0f, 0.0f}};
     rightTrigger->triggerCode = SDL_SCANCODE_D;
     rightTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
-    
+
     auto *leftTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
     leftTrigger->actionToSend = {
         InputConstant::MOVEMENT_ACTION_GROUP, InputConstant::ROTATION_FACTOR_ACTION,
         std::array<float, Emergence::Celerity::InputAction::MAX_REAL_PARAMETERS> {0.0f, -1.0f, 0.0f}};
     leftTrigger->triggerCode = SDL_SCANCODE_A;
     leftTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
-    
+
     auto *fireTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
     fireTrigger->actionToSend = {InputConstant::FIGHT_ACTION_GROUP, InputConstant::FIRE_ACTION};
     fireTrigger->triggerCode = SDL_SCANCODE_Q;
     fireTrigger->triggerType = Emergence::Celerity::KeyTriggerType::ON_STATE_CHANGED;
     fireTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
-    
+
     auto *slowdownTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
     slowdownTrigger->actionToSend = {InputConstant::FIGHT_ACTION_GROUP, InputConstant::SLOWDOWN_ACTION};
     slowdownTrigger->triggerCode = SDL_SCANCODE_E;

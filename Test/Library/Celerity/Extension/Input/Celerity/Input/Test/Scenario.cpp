@@ -191,7 +191,8 @@ void ExpectationValidator::Execute () noexcept
     ++frameIndex;
 }
 
-void ExecuteScenario (const Container::Vector<Update> &_updates, Container::Vector<KeyTriggerSetup> _keyTriggers) noexcept
+void ExecuteScenario (const Container::Vector<Update> &_updates,
+                      Container::Vector<KeyTriggerSetup> _keyTriggers) noexcept
 {
     using namespace Memory::Literals;
 
