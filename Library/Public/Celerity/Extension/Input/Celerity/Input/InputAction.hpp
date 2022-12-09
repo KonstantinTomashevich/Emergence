@@ -26,7 +26,7 @@ enum class InputActionDispatchType : uint8_t
     FIXED_PERSISTENT,
 };
 
-/// \brief Describes input action with unique id and optional discrete or real parameters.
+/// \brief Describes input action with gameplay-specific id and optional discrete or real parameters.
 struct InputAction final
 {
     /// \brief Maximum count of discrete parameters.
@@ -50,7 +50,7 @@ struct InputAction final
     /// \brief Groups are used categorize actions so one object can subscribe to all actions from required group.
     Memory::UniqueString group;
 
-    /// \brief Action id is unique identifier that has game logic related meaning and is independent of physical input.
+    /// \brief Action id is unique identifier that has gameplay-related meaning and is independent of physical input.
     /// \details For example, "SwitchWeapon", "Fire", "Crouch" and so on.
     Memory::UniqueString id;
 

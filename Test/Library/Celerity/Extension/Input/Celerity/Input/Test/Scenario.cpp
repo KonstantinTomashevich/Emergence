@@ -5,6 +5,7 @@
 #include <Celerity/Input/Test/Scenario.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -235,6 +236,11 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
     FrameInputAccumulator inputAccumulator;
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
+
+    // Add external checkpoints to which input is connected.
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+
     builder.AddTask ("ExpectationValidator"_us).SetExecutor<ExpectationValidator> (std::move (fixedExpectations));
     builder.AddTask ("SubscriptionManager"_us)
         .SetExecutor<SubscriptionManager> (std::move (fixedSubscriptionsToAdd), std::move (fixedSubscriptionsToRemove));
@@ -242,6 +248,11 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
     REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
+
+    // Add external checkpoints to which input is connected.
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+
     builder.AddTask ("ExternalActionInserter"_us)
         .SetExecutor<ExternalActionInserter> (std::move (normalExternalActions));
     builder.AddTask ("ExpectationValidator"_us).SetExecutor<ExpectationValidator> (std::move (normalExpectations));

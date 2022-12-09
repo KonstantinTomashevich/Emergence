@@ -8,12 +8,14 @@
 namespace Emergence::Celerity
 {
 /// \brief Used to deliver InputAction to object that subscribed to actions using InputSubscriptionComponent.
+/// \details Although this component lifetime is exactly one update, it is still placed into long term storage
+///          in order to be properly indexed.
 struct InputActionComponent final
 {
     /// \brief Id of an object that receives the event.
     UniqueId objectId = INVALID_UNIQUE_ID;
 
-    /// \brief Event that is passed to subscriber object.
+    /// \brief Action that is passed to subscriber object.
     InputAction action;
 
     struct Reflection final

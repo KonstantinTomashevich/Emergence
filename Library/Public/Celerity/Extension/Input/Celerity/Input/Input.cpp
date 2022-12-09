@@ -5,6 +5,7 @@
 #include <Celerity/Input/InputTriggers.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 namespace Emergence::Celerity::Input
 {
@@ -166,13 +167,13 @@ void NormalInputProcessor::ProcessAccumulatedInput () noexcept
                 EMERGENCE_ASSERT (keyTrigger->currentKeyState != event.keyboard.keyState);
                 keyTrigger->currentKeyState = event.keyboard.keyState;
 
+                const bool stateMatches = keyTrigger->triggerTargetState == keyTrigger->currentKeyState;
+                const bool qualifiersMatch = keyTrigger->expectedQualifiers == event.keyboard.qualifiersMask;
+
                 const bool onStateChanged = keyTrigger->triggerType == KeyTriggerType::ON_STATE_CHANGED;
                 const bool onStateAndNotTriggered =
                     !keyTrigger->triggeredThisFrame && keyTrigger->triggerType == KeyTriggerType::ON_STATE;
                 const bool canBeTriggered = onStateChanged || onStateAndNotTriggered;
-
-                const bool stateMatches = keyTrigger->triggerTargetState == keyTrigger->currentKeyState;
-                const bool qualifiersMatch = keyTrigger->expectedQualifiers == event.keyboard.qualifiersMask;
 
                 if (stateMatches && qualifiersMatch && canBeTriggered)
                 {
@@ -276,10 +277,19 @@ void AddToFixedUpdate (PipelineBuilder &_builder) noexcept
     auto visualGroup = _builder.OpenVisualGroup ("Input");
     AddCheckpoints (_builder);
 
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransformRemoval"_us)
+    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform2dRemoval"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedFixedEvent, InputSubscriptionComponent,
                                 objectId)
         .DependOn (Checkpoint::ACTION_DISPATCH_STARTED)
+        // In fixed update, removal is usually done at the end of the frame after mortality feature,
+        // which is usually dependent on input processing, therefore we need to make these removers
+        // dependencies of hierarchy cleanup.
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED)
+        .MakeDependencyOf ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us);
+
+    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, InputSubscriptionComponent,
+                                objectId)
         .MakeDependencyOf ("InputProcessor"_us);
 
     _builder.AddTask ("InputProcessor"_us).SetExecutor<FixedInputProcessor> ();
@@ -291,10 +301,16 @@ void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_input
     auto visualGroup = _builder.OpenVisualGroup ("Input");
     AddCheckpoints (_builder);
 
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransformRemoval"_us)
+    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform2dRemoval"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, InputSubscriptionComponent,
                                 objectId)
         .DependOn (Checkpoint::ACTION_DISPATCH_STARTED)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
+        .MakeDependencyOf ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us);
+
+    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputSubscriptionComponent,
+                                objectId)
         .MakeDependencyOf ("InputProcessor"_us);
 
     _builder.AddTask ("InputProcessor"_us).SetExecutor<NormalInputProcessor> (_inputAccumulator);

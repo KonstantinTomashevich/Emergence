@@ -75,13 +75,13 @@ void InputInitializer::Execute () noexcept
     fireTrigger->actionToSend = {InputConstant::FIGHT_ACTION_GROUP, InputConstant::FIRE_ACTION};
     fireTrigger->triggerCode = SDL_SCANCODE_Q;
     fireTrigger->triggerType = Emergence::Celerity::KeyTriggerType::ON_STATE_CHANGED;
-    fireTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
+    fireTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_INSTANT;
 
     auto *slowdownTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
     slowdownTrigger->actionToSend = {InputConstant::FIGHT_ACTION_GROUP, InputConstant::SLOWDOWN_ACTION};
     slowdownTrigger->triggerCode = SDL_SCANCODE_E;
     slowdownTrigger->triggerType = Emergence::Celerity::KeyTriggerType::ON_STATE_CHANGED;
-    slowdownTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
+    slowdownTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_INSTANT;
 }
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

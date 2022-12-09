@@ -14,7 +14,7 @@ struct Checkpoint final
     static const Memory::UniqueString ACTION_DISPATCH_STARTED;
 
     /// \brief Action dispatch finishes before this checkpoint
-    ///        and external mechanics can insert custom InputActionComponent's.
+    ///        and external features can insert custom InputActionComponent's.
     static const Memory::UniqueString CUSTOM_ACTION_COMPONENT_INSERT_ALLOWED;
 
     /// \brief Insertion of custom InputActionComponent's finishes before this checkpoint
