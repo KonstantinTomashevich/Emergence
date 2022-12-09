@@ -12,6 +12,7 @@
 #include <Celerity/Physics2d/Test/Task.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Testing/Testing.hpp>
@@ -401,6 +402,11 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
     }
 
     PipelineBuilder builder {&world};
+
+    // Add external checkpoints to which physics is connected.
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     Physics2dSimulation::AddToFixedUpdate (builder);
 

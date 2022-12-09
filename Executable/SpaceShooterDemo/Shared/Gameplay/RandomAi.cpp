@@ -1,5 +1,7 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
+#include <Celerity/Input/Input.hpp>
+#include <Celerity/Input/InputActionComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -13,9 +15,6 @@
 #include <Gameplay/RandomAi.hpp>
 #include <Gameplay/RandomAiComponent.hpp>
 #include <Gameplay/RandomSingleton.hpp>
-
-#include <Input/Input.hpp>
-#include <Input/InputListenerComponent.hpp>
 
 #include <Log/Log.hpp>
 
@@ -80,7 +79,7 @@ private:
     Emergence::Celerity::ModifySingletonQuery modifyRandom;
 
     Emergence::Celerity::ModifyAscendingRangeQuery modifyRandomAiByIdAscending;
-    Emergence::Celerity::EditValueQuery editInputListenerById;
+    Emergence::Celerity::InsertLongTermQuery insertInputAction;
 
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
@@ -92,13 +91,13 @@ InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_construct
       modifyRandom (MODIFY_SINGLETON (RandomSingleton)),
 
       modifyRandomAiByIdAscending (MODIFY_ASCENDING_RANGE (RandomAiComponent, objectId)),
-      editInputListenerById (EDIT_VALUE_1F (InputListenerComponent, objectId)),
+      insertInputAction (INSERT_LONG_TERM (Emergence::Celerity::InputActionComponent)),
 
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor)
 {
-    _constructor.DependOn (Input::Checkpoint::LISTENERS_PUSH_ALLOWED);
-    _constructor.MakeDependencyOf (Input::Checkpoint::LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Emergence::Celerity::Input::Checkpoint::CUSTOM_ACTION_COMPONENT_INSERT_ALLOWED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
 }
 
 void InputGenerator::Execute () noexcept
@@ -132,17 +131,6 @@ void InputGenerator::Execute () noexcept
             continue;
         }
 
-        auto inputListenerCursor = editInputListenerById.Execute (&randomAi->objectId);
-        auto *inputListener = static_cast<InputListenerComponent *> (*inputListenerCursor);
-
-        if (!inputListener)
-        {
-            EMERGENCE_LOG (ERROR, "RandomAi: Unable to attach random ai to object with id ", randomAi->objectId,
-                           " that has no InputListenerComponent!");
-            ~randomAiCursor;
-            continue;
-        }
-
         const Emergence::Math::Transform3d &worldTransform =
             transform->GetLogicalWorldTransform (transformWorldAccessor);
         constexpr float TARGET_TOLERANCE_SQUARED = 0.01f;
@@ -168,18 +156,26 @@ void InputGenerator::Execute () noexcept
             (randomAi->currentTargetPoint - worldTransform.translation).Normalize ();
 
         const float angle = Emergence::Math::SignedAngle (currentForward, targetForward);
-        InputAction rotationAction {InputConstant::MOVEMENT_ACTION_GROUP, InputConstant::ROTATION_FACTOR_ACTION};
+        Emergence::Celerity::InputAction rotationAction {InputConstant::MOVEMENT_ACTION_GROUP,
+                                                         InputConstant::ROTATION_FACTOR_ACTION};
         rotationAction.real = {0.0f, angle < 0.0f ? -1.0f : 1.0f, 0.0f};
-        inputListener->actions.TryEmplaceBack (rotationAction);
 
-        InputAction movementAction {InputConstant::MOVEMENT_ACTION_GROUP, InputConstant::MOTION_FACTOR_ACTION};
+        Emergence::Celerity::InputAction movementAction {InputConstant::MOVEMENT_ACTION_GROUP,
+                                                         InputConstant::MOTION_FACTOR_ACTION};
         movementAction.real = {0.0f, 0.0f, 1.0f};
-        inputListener->actions.TryEmplaceBack (movementAction);
+
+        auto inputActionCursor = insertInputAction.Execute ();
+        *static_cast<Emergence::Celerity::InputActionComponent *> (++inputActionCursor) = {randomAi->objectId,
+                                                                                           rotationAction};
+        *static_cast<Emergence::Celerity::InputActionComponent *> (++inputActionCursor) = {randomAi->objectId,
+                                                                                           movementAction};
 
         if (random->Next () < time->fixedDurationS * randomAi->averageShotsPerS)
         {
-            const InputAction action {InputConstant::FIGHT_ACTION_GROUP, InputConstant::FIRE_ACTION};
-            inputListener->actions.TryEmplaceBack (action);
+            const Emergence::Celerity::InputAction action {InputConstant::FIGHT_ACTION_GROUP,
+                                                           InputConstant::FIRE_ACTION};
+            *static_cast<Emergence::Celerity::InputActionComponent *> (++inputActionCursor) = {randomAi->objectId,
+                                                                                               action};
         }
 
         ++randomAiCursor;

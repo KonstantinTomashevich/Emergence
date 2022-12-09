@@ -8,8 +8,6 @@
 #include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 
-#include <Input/InputListenerComponent.hpp>
-
 #include <Loading/Model/ResourceObjectTypeManifest.hpp>
 
 #include <Render/ParticleEffectComponent.hpp>
@@ -29,8 +27,6 @@ Emergence::Resource::Object::TypeManifest PrepareResourceObjectTypeManifest () n
 
     typeManifest.Register (Emergence::Celerity::Transform3dComponent::Reflect ().mapping,
                            {Emergence::Celerity::Transform3dComponent::Reflect ().objectId});
-
-    typeManifest.Register (InputListenerComponent::Reflect ().mapping, {InputListenerComponent::Reflect ().objectId});
 
     typeManifest.Register (MortalComponent::Reflect ().mapping, {MortalComponent::Reflect ().objectId});
     typeManifest.Register (MovementComponent::Reflect ().mapping, {MovementComponent::Reflect ().objectId});

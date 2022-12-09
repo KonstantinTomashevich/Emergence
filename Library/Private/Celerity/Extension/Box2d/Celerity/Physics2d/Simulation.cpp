@@ -11,6 +11,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Log/Log.hpp>
@@ -1321,11 +1322,16 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddTask ("Physics2d::RemoveBodies"_us)
         .AS_CASCADE_REMOVER_1F (Transform2dComponentRemovedFixedEvent, RigidBody2dComponent, objectId)
         .DependOn (Checkpoint::STARTED)
+        // In fixed update, removal is usually done at the end of the frame after mortality feature,
+        // which is usually dependent on physics simulation, therefore we need to make these removers
+        // dependencies of hierarchy cleanup.
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED)
         .MakeDependencyOf (TaskNames::SYNC_MATERIAL_CHANGES);
 
     _pipelineBuilder.AddTask ("Physics2d::RemoveShapes"_us)
         .AS_CASCADE_REMOVER_1F (Transform2dComponentRemovedFixedEvent, CollisionShape2dComponent, objectId)
         .DependOn (Checkpoint::STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED)
         .MakeDependencyOf (TaskNames::SYNC_MATERIAL_CHANGES);
 
     _pipelineBuilder.AddTask (TaskNames::SYNC_MATERIAL_CHANGES).SetExecutor<MaterialChangesSynchronizer> ();

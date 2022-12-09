@@ -1,5 +1,7 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
+#include <Celerity/Input/Input.hpp>
+#include <Celerity/Input/InputActionComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -13,9 +15,6 @@
 #include <Gameplay/ShooterComponent.hpp>
 #include <Gameplay/Shooting.hpp>
 #include <Gameplay/Spawn.hpp>
-
-#include <Input/Input.hpp>
-#include <Input/InputListenerComponent.hpp>
 
 #include <Log/Log.hpp>
 
@@ -41,7 +40,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
 
     Emergence::Celerity::ModifyAscendingRangeQuery modifyShootersByCoolingDownUntil;
-    Emergence::Celerity::FetchValueQuery fetchInputListenerById;
+    Emergence::Celerity::FetchValueQuery fetchInputActionById;
     Emergence::Celerity::FetchValueQuery fetchTransformById;
     Emergence::Celerity::Transform3dWorldAccessor transformWorldAccessor;
 
@@ -54,7 +53,7 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
       modifyShootersByCoolingDownUntil (MODIFY_ASCENDING_RANGE (ShooterComponent, coolingDownUntilNs)),
-      fetchInputListenerById (FETCH_VALUE_1F (InputListenerComponent, objectId)),
+      fetchInputActionById (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId)),
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
@@ -62,7 +61,7 @@ ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_con
       insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent))
 {
     _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.DependOn (Input::Checkpoint::LISTENERS_READ_ALLOWED);
+    _constructor.DependOn (Emergence::Celerity::Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
 
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::STARTED);
@@ -82,21 +81,11 @@ void ShootingProcessor::Execute () noexcept
     for (auto shooterCursor = modifyShootersByCoolingDownUntil.Execute (nullptr, &time->fixedTimeNs);
          auto *shooter = static_cast<ShooterComponent *> (*shooterCursor);)
     {
-        auto inputListenerCursor = fetchInputListenerById.Execute (&shooter->objectId);
-        const auto *inputListener = static_cast<const InputListenerComponent *> (*inputListenerCursor);
-
-        if (!inputListener)
+        for (auto actionCursor = fetchInputActionById.Execute (&shooter->objectId);
+             const auto *action = static_cast<const Emergence::Celerity::InputActionComponent *> (*actionCursor);
+             ++actionCursor)
         {
-            EMERGENCE_LOG (ERROR, "Shooting: Unable to attach shooting feature to object (id ", shooter->objectId,
-                           ") without InputListenerComponent!");
-
-            ~shooterCursor;
-            continue;
-        }
-
-        for (const InputAction &action : inputListener->actions)
-        {
-            if (action.id == InputConstant::FIRE_ACTION)
+            if (action->action.id == InputConstant::FIRE_ACTION)
             {
                 shooter->coolingDownUntilNs = time->fixedTimeNs + shooter->coolDownNs;
                 Emergence::Math::Transform3d bulletTransform {Emergence::Math::NoInitializationFlag::Confirm ()};

@@ -1,3 +1,5 @@
+#include <Celerity/Input/Input.hpp>
+#include <Celerity/Input/InputSubscriptionComponent.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 
@@ -8,9 +10,6 @@
 #include <Gameplay/NonFeatureSpecificComponentCleanup.hpp>
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/Spawn.hpp>
-
-#include <Input/Input.hpp>
-#include <Input/InputSingleton.hpp>
 
 namespace Control
 {
@@ -24,8 +23,10 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::ModifySingletonQuery modifyInput;
     Emergence::Celerity::FetchSingletonQuery fetchPlayerInfo;
+
+    Emergence::Celerity::InsertLongTermQuery insertInputSubscription;
+    Emergence::Celerity::RemoveValueQuery removeInputSubscriptionByObjectId;
 
     Emergence::Celerity::FetchValueQuery fetchAlignmentById;
     Emergence::Celerity::RemoveValueQuery removeControllableById;
@@ -35,8 +36,10 @@ private:
 };
 
 ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyInput (MODIFY_SINGLETON (InputSingleton)),
-      fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
+    : fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
+
+      insertInputSubscription (INSERT_LONG_TERM (Emergence::Celerity::InputSubscriptionComponent)),
+      removeInputSubscriptionByObjectId (REMOVE_VALUE_1F (Emergence::Celerity::InputSubscriptionComponent, objectId)),
 
       fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
       removeControllableById (REMOVE_VALUE_1F (ControllableComponent, objectId)),
@@ -45,7 +48,7 @@ ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constru
       editControlled (EDIT_SIGNAL (ControllableComponent, controlledByLocalPlayer, true))
 
 {
-    _constructor.MakeDependencyOf (Input::Checkpoint::DISPATCH_STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Input::Checkpoint::ACTION_DISPATCH_STARTED);
     _constructor.DependOn (NonFeatureSpecificComponentCleanup::Checkpoint::FINISHED);
 
     // We are consciously adding one-frame delay from object spawn to control takeover.
@@ -56,13 +59,10 @@ ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constru
 
 void ControlSwitcher::Execute () noexcept
 {
-    auto inputCursor = modifyInput.Execute ();
-    auto *input = static_cast<InputSingleton *> (*inputCursor);
-
     auto playerInfoCursor = fetchPlayerInfo.Execute ();
     const auto *playerInfo = static_cast<const PlayerInfoSingleton *> (*playerInfoCursor);
 
-    const bool playerControlsAnyUnit = [this, input, playerInfo] ()
+    const bool playerControlsAnyUnit = [this, playerInfo] ()
     {
         auto controllableCursor = editControlled.Execute ();
         if (auto *controllable = static_cast<ControllableComponent *> (*controllableCursor))
@@ -75,7 +75,12 @@ void ControlSwitcher::Execute () noexcept
                     return true;
                 }
 
-                input->UnsubscribeFixed (controllable->objectId);
+                auto subscriptionCursor = removeInputSubscriptionByObjectId.Execute (&controllable->objectId);
+                while (subscriptionCursor.ReadConst ())
+                {
+                    ~subscriptionCursor;
+                }
+
                 controllable->controlledByLocalPlayer = false;
             }
         }
@@ -94,10 +99,17 @@ void ControlSwitcher::Execute () noexcept
                 if (alignment->playerId == playerInfo->localPlayerUid)
                 {
                     controllable->controlledByLocalPlayer = true;
-                    input->fixedSubscriptions.EmplaceBack () = {InputConstant::MOVEMENT_ACTION_GROUP,
-                                                                controllable->objectId};
-                    input->fixedSubscriptions.EmplaceBack () = {InputConstant::FIGHT_ACTION_GROUP,
-                                                                controllable->objectId};
+                    auto subscriptionCursor = insertInputSubscription.Execute ();
+
+                    auto *movementSubscription =
+                        static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++subscriptionCursor);
+                    movementSubscription->objectId = controllable->objectId;
+                    movementSubscription->group = InputConstant::MOVEMENT_ACTION_GROUP;
+
+                    auto *fightSubscription =
+                        static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++subscriptionCursor);
+                    fightSubscription->objectId = controllable->objectId;
+                    fightSubscription->group = InputConstant::FIGHT_ACTION_GROUP;
 
                     break;
                 }

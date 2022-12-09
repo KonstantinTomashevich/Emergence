@@ -1,16 +1,25 @@
-#include <Input/InputAction.hpp>
+#include <Celerity/Input/InputAction.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
-                          const Emergence::Memory::UniqueString &_id) noexcept
+namespace Emergence::Celerity
+{
+InputAction::InputAction () noexcept
+{
+    // Fill everything with zero's for stable equality check.
+    discrete.fill (0);
+}
+
+InputAction::InputAction (const Memory::UniqueString &_group, const Memory::UniqueString &_id) noexcept
     : group (_group),
       id (_id)
 {
+    // Fill everything with zero's for stable equality check.
+    discrete.fill (0);
 }
 
-InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
-                          const Emergence::Memory::UniqueString &_id,
+InputAction::InputAction (const Memory::UniqueString &_group,
+                          const Memory::UniqueString &_id,
                           const std::array<int32_t, MAX_DISCRETE_PARAMETERS> &_discrete) noexcept
     : group (_group),
       id (_id)
@@ -18,8 +27,8 @@ InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
     discrete = _discrete;
 }
 
-InputAction::InputAction (const Emergence::Memory::UniqueString &_group,
-                          const Emergence::Memory::UniqueString &_id,
+InputAction::InputAction (const Memory::UniqueString &_group,
+                          const Memory::UniqueString &_id,
                           const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept
     : group (_group),
       id (_id)
@@ -53,3 +62,4 @@ const InputAction::Reflection &InputAction::Reflect () noexcept
 
     return reflection;
 }
+} // namespace Emergence::Celerity

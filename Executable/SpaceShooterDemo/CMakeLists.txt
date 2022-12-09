@@ -22,7 +22,6 @@ add_custom_target (SpaceShooterDemoConvertIntermediateResources
 add_subdirectory (Game)
 add_subdirectory (Model)
 add_subdirectory (Shared)
-add_subdirectory (Test)
 
 register_resource_usage ("${GAME_NAME}GameLauncher" "${URHO3D_HOME}/share/Resources/CoreData" "Urho3DCoreResources")
 register_resource_usage ("${GAME_NAME}GameLauncher" "${GAME_RESOURCES}" "GameResources")

@@ -11,8 +11,6 @@
 #include <Gameplay/MovementComponent.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 
-#include <Input/InputListenerComponent.hpp>
-
 #include <Render/ParticleEffectComponent.hpp>
 #include <Render/RenderSceneSingleton.hpp>
 #include <Render/StaticModelComponent.hpp>
@@ -104,11 +102,6 @@ TypeBindingVector GetFixedAssemblerTypes () noexcept
     shooterComponent.keys.emplace_back () = {ShooterComponent::Reflect ().objectId, ASSEMBLY_OBJECT_ID_KEY_INDEX};
     shooterComponent.keys.emplace_back () = {ShooterComponent::Reflect ().shootingPointObjectId,
                                              ASSEMBLY_OBJECT_ID_KEY_INDEX};
-
-    TypeDescriptor &inputListenerComponent = types.emplace_back ();
-    inputListenerComponent.type = InputListenerComponent::Reflect ().mapping;
-    inputListenerComponent.keys.emplace_back () = {InputListenerComponent::Reflect ().objectId,
-                                                   ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     return types;
 }
