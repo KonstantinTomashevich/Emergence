@@ -100,5 +100,6 @@ void FrameInputAccumulator::RecordEvent (const InputEvent &_event) noexcept
 void FrameInputAccumulator::Clear () noexcept
 {
     events.clear ();
+    qualifiersMask = 0u;
 }
 } // namespace Emergence::Celerity

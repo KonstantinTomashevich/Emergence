@@ -6,17 +6,21 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Stores input action and its dispatch setting until action is dispatched to subscribers.
 /// \details Stored in short term container because holders lifetime usually ends when action is dispatched,
 ///          unless it is a InputActionDispatchType::FIXED_PERSISTENT. Fixed persistent holders are removed
 ///          during next normal frame after being dispatched.
 struct InputActionHolder
 {
+    /// \brief Action to be dispatched.
     InputAction action;
 
+    /// \brief Describes how action should be dispatched.
     InputActionDispatchType dispatchType = InputActionDispatchType::NORMAL;
 
     union
     {
+        /// \brief Internal value for InputActionDispatchType::FIXED_PERSISTENT logic.
         bool fixedDispatchDone = false;
     };
 

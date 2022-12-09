@@ -223,6 +223,9 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
         }
     }
 
+    auto *input = GetSubsystem<Urho3D::Input> ();
+    inputAccumulator.SetCurrentQualifiersMask (
+        static_cast<Emergence::Celerity::QualifiersMask> (input->GetQualifiers ()));
     world.Update ();
     inputAccumulator.Clear ();
 
@@ -234,24 +237,34 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
 
 void GameApplication::HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
 {
+    if (_eventData[Urho3D::KeyDown::P_REPEAT].GetBool ())
+    {
+        return;
+    }
+
     inputAccumulator.RecordEvent (Emergence::Celerity::InputEvent {
         Emergence::Time::NanosecondsSinceStartup (),
         Emergence::Celerity::KeyboardEvent {
             static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
             static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
             static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
-            Emergence::Celerity::KeyState::DOWN, _eventData[Urho3D::KeyDown::P_REPEAT].GetBool ()}});
+            Emergence::Celerity::KeyState::DOWN}});
 }
 
 void GameApplication::HandleKeyUp (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
 {
+    if (_eventData[Urho3D::KeyDown::P_REPEAT].GetBool ())
+    {
+        return;
+    }
+
     inputAccumulator.RecordEvent (Emergence::Celerity::InputEvent {
         Emergence::Time::NanosecondsSinceStartup (),
         Emergence::Celerity::KeyboardEvent {
             static_cast<Emergence::Celerity::KeyCode> (_eventData[Urho3D::KeyDown::P_KEY].GetInt ()),
             static_cast<Emergence::Celerity::ScanCode> (_eventData[Urho3D::KeyDown::P_SCANCODE].GetInt ()),
             static_cast<Emergence::Celerity::QualifiersMask> (_eventData[Urho3D::KeyDown::P_QUALIFIERS].GetInt ()),
-            Emergence::Celerity::KeyState::UP, _eventData[Urho3D::KeyDown::P_REPEAT].GetBool ()}});
+            Emergence::Celerity::KeyState::UP}});
 }
 
 BEGIN_MUTING_WARNINGS

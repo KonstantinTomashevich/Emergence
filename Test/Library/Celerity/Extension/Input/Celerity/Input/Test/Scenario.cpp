@@ -109,7 +109,7 @@ SubscriptionManager::SubscriptionManager (
     Container::Vector<Container::Vector<SubscriptionInfo>> _subscriptionsToAdd,
     Container::Vector<Container::Vector<SubscriptionInfo>> _subscriptionsToRemove) noexcept
     : insertSubscription (INSERT_LONG_TERM (InputSubscriptionComponent)),
-      removeSubscriptionByObjectIdAndGroupId (REMOVE_VALUE_2F (InputSubscriptionComponent, objectId, groupId)),
+      removeSubscriptionByObjectIdAndGroupId (REMOVE_VALUE_2F (InputSubscriptionComponent, objectId, group)),
 
       subscriptionsToAdd (std::move (_subscriptionsToAdd)),
       subscriptionsToRemove (std::move (_subscriptionsToRemove))
@@ -127,7 +127,7 @@ void SubscriptionManager::Execute () noexcept
         auto insertCursor = insertSubscription.Execute ();
         auto *subscription = static_cast<InputSubscriptionComponent *> (++insertCursor);
         subscription->objectId = info.objectId;
-        subscription->groupId = info.groupId;
+        subscription->group = info.groupId;
     }
 
     for (const SubscriptionInfo &info : subscriptionsToRemove[frameIndex])

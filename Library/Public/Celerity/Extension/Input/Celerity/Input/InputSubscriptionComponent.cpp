@@ -10,7 +10,7 @@ const InputSubscriptionComponent::Reflection &InputSubscriptionComponent::Reflec
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (InputSubscriptionComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (groupId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (group);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -31,7 +31,7 @@ protected:
 };
 
 InputProcessorBase::InputProcessorBase (TaskConstructor &_constructor) noexcept
-    : fetchSubscriptionByGroupId (FETCH_VALUE_1F (InputSubscriptionComponent, groupId)),
+    : fetchSubscriptionByGroupId (FETCH_VALUE_1F (InputSubscriptionComponent, group)),
       insertActionComponent (INSERT_LONG_TERM (InputActionComponent)),
       removeActionComponents (REMOVE_ASCENDING_RANGE (InputActionComponent, objectId))
 {
@@ -150,7 +150,7 @@ void NormalInputProcessor::Execute () noexcept
 
 void NormalInputProcessor::ProcessAccumulatedInput () noexcept
 {
-    for (auto iterator = inputAccumulator->EventsBegin(); iterator != inputAccumulator->EventsEnd();)
+    for (auto iterator = inputAccumulator->EventsBegin (); iterator != inputAccumulator->EventsEnd ();)
     {
         const InputEvent &event = *iterator;
         bool consume = false;
@@ -159,32 +159,29 @@ void NormalInputProcessor::ProcessAccumulatedInput () noexcept
         {
         case InputEventType::KEYBOARD:
         {
-            if (!event.keyboard.repeat)
+            for (auto keyTriggerCursor = editKeyTriggerByScanCode.Execute (&event.keyboard.scanCode);
+                 auto *keyTrigger = static_cast<KeyTrigger *> (*keyTriggerCursor); ++keyTriggerCursor)
             {
-                for (auto keyTriggerCursor = editKeyTriggerByScanCode.Execute (&event.keyboard.scanCode);
-                     auto *keyTrigger = static_cast<KeyTrigger *> (*keyTriggerCursor); ++keyTriggerCursor)
+                // We're skipping repeats, so this should never happen.
+                EMERGENCE_ASSERT (keyTrigger->currentKeyState != event.keyboard.keyState);
+                keyTrigger->currentKeyState = event.keyboard.keyState;
+
+                const bool onStateChanged = keyTrigger->triggerType == KeyTriggerType::ON_STATE_CHANGED;
+                const bool onStateAndNotTriggered =
+                    !keyTrigger->triggeredThisFrame && keyTrigger->triggerType == KeyTriggerType::ON_STATE;
+                const bool canBeTriggered = onStateChanged || onStateAndNotTriggered;
+
+                const bool stateMatches = keyTrigger->triggerTargetState == keyTrigger->currentKeyState;
+                const bool qualifiersMatch = keyTrigger->expectedQualifiers == event.keyboard.qualifiersMask;
+
+                if (stateMatches && qualifiersMatch && canBeTriggered)
                 {
-                    // We're skipping repeats, so this should never happen.
-                    EMERGENCE_ASSERT (keyTrigger->currentKeyState != event.keyboard.keyState);
-                    keyTrigger->currentKeyState = event.keyboard.keyState;
+                    SendAction (keyTrigger->actionToSend, keyTrigger->dispatchType);
+                    consume = true;
 
-                    const bool onStateChanged = keyTrigger->triggerType == KeyTriggerType::ON_STATE_CHANGED;
-                    const bool onStateAndNotTriggered =
-                        !keyTrigger->triggeredThisFrame && keyTrigger->triggerType == KeyTriggerType::ON_STATE;
-                    const bool canBeTriggered = onStateChanged || onStateAndNotTriggered;
-
-                    const bool stateMatches = keyTrigger->triggerTargetState == keyTrigger->currentKeyState;
-                    const bool qualifiersMatch = keyTrigger->expectedQualifiers == event.keyboard.qualifiersMask;
-
-                    if (stateMatches && qualifiersMatch && canBeTriggered)
+                    if (onStateAndNotTriggered)
                     {
-                        SendAction (keyTrigger->actionToSend, keyTrigger->dispatchType);
-                        consume = true;
-
-                        if (onStateAndNotTriggered)
-                        {
-                            keyTrigger->triggeredThisFrame = true;
-                        }
+                        keyTrigger->triggeredThisFrame = true;
                     }
                 }
             }

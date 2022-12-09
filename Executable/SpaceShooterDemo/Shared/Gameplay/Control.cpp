@@ -104,12 +104,12 @@ void ControlSwitcher::Execute () noexcept
                     auto *movementSubscription =
                         static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++subscriptionCursor);
                     movementSubscription->objectId = controllable->objectId;
-                    movementSubscription->groupId = InputConstant::MOVEMENT_ACTION_GROUP;
+                    movementSubscription->group = InputConstant::MOVEMENT_ACTION_GROUP;
                     
                     auto *fightSubscription =
                         static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++subscriptionCursor);
                     fightSubscription->objectId = controllable->objectId;
-                    fightSubscription->groupId = InputConstant::FIGHT_ACTION_GROUP;
+                    fightSubscription->group = InputConstant::FIGHT_ACTION_GROUP;
 
                     break;
                 }
