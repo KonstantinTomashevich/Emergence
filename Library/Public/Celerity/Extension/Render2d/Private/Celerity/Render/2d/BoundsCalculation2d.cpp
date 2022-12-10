@@ -381,21 +381,11 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
     _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromNormal"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, RenderObject2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
-        .MakeDependencyOf ("CleanupRenderObject2dAfterTransformRemovalFromFixed"_us);
-
-    _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedToNormalEvent, RenderObject2dComponent, objectId)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromNormal"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, LocalBounds2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
-        .MakeDependencyOf ("CleanupLocalBounds2dAfterTransformRemovalFromFixed"_us);
-
-    _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedToNormalEvent, LocalBounds2dComponent, objectId)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("BoundsCalculation2d");

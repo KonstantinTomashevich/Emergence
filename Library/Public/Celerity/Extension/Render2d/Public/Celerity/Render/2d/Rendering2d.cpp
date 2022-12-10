@@ -17,11 +17,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
     _pipelineBuilder.AddTask ("CleanupCamera2dComponentAfterTransformRemovalFromNormal"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, Camera2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
-        .MakeDependencyOf ("CleanupCamera2dComponentAfterTransformRemovalFromFixed"_us);
-
-    _pipelineBuilder.AddTask ("CleanupCamera2dComponentAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedToNormalEvent, Camera2dComponent, objectId)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("CleanupSprite2dComponentAfterTransformRemovalFromNormal"_us)
@@ -30,12 +25,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
         // We delay removal processing in asset management by one frame, because otherwise
         // we won't be able to delete Sprite2dComponent after AssetManagement.
-        .DependOn(AssetManagement::Checkpoint::FINISHED)
-        .MakeDependencyOf ("CleanupSprite2dComponentAfterTransformRemovalFromFixed"_us);
-
-    _pipelineBuilder.AddTask ("CleanupSprite2dComponentAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedToNormalEvent, Sprite2dComponent, objectId)
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+        .DependOn(AssetManagement::Checkpoint::FINISHED);
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
     BoundsCalculation2d::AddToNormalUpdate (_pipelineBuilder);
