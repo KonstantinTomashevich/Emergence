@@ -146,5 +146,3 @@ struct hash<Emergence::StandardLayout::Mapping>
     }
 };
 } // namespace std
-
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::StandardLayout::Mapping)

@@ -98,7 +98,6 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
           EDIT_VALUE_2F (Emergence::Celerity::UniformVector4fValue, assetId, uniformName))
 {
     _constructor.DependOn (Emergence::Celerity::AssetManagement::Checkpoint::FINISHED);
-    _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Emergence::Celerity::TransformVisualSync::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
 }

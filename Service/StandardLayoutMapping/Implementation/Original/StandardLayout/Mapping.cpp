@@ -7,9 +7,7 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
-namespace Emergence
-{
-namespace StandardLayout
+namespace Emergence::StandardLayout
 {
 using FieldIterator = Mapping::FieldIterator;
 
@@ -198,15 +196,4 @@ Mapping::FieldIterator end (const Mapping &_mapping) noexcept
 {
     return _mapping.End ();
 }
-} // namespace StandardLayout
-
-namespace Memory
-{
-using namespace Literals;
-
-Profiler::AllocationGroup DefaultAllocationGroup<StandardLayout::Mapping>::Get () noexcept
-{
-    return Profiler::AllocationGroup {"MappingReflection"_us};
-}
-} // namespace Memory
-} // namespace Emergence
+} // namespace Emergence::StandardLayout
