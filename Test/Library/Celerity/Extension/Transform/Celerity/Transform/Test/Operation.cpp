@@ -1,4 +1,5 @@
 #include <Celerity/Transform/Test/Task.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Math/Constants.hpp>
 
@@ -16,6 +17,8 @@ void OperationsTest (RequestExecutor::RequestPacket _scenario, bool _use2d)
     PipelineBuilder builder {&world};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     if (_use2d)
     {
         RequestExecutor::Add2dToFixedUpdate (builder, {std::move (_scenario)});

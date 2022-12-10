@@ -12,6 +12,7 @@
 #include <Celerity/Physics3d/Test/Task.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Testing/Testing.hpp>
@@ -63,6 +64,7 @@ Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<Con
       insertShape (INSERT_LONG_TERM (CollisionShape3dComponent)),
       modifyShapeByShapeId (MODIFY_VALUE_1F (CollisionShape3dComponent, shapeId))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Physics3dSimulation::Checkpoint::STARTED);
 }
 
@@ -414,11 +416,13 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
         EventRegistrar registrar {&world};
         RegisterPhysicsEvents (registrar);
         RegisterTransform3dEvents (registrar);
+        RegisterTransformCommonEvents (registrar);
     }
 
     PipelineBuilder builder {&world};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     Physics3dSimulation::AddToFixedUpdate (builder);
+    TransformHierarchyCleanup::Add3dToFixedUpdate (builder);
 
     builder.AddTask ("Configurator"_us).SetExecutor<Configurator> (std::move (_configuratorFrames));
     builder.AddTask ("Validator"_us).SetExecutor<Validator> (std::move (_validatorFrames));

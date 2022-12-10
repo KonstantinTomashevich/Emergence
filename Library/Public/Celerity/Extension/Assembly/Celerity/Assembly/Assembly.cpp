@@ -302,6 +302,7 @@ FixedAssembler::FixedAssembler (TaskConstructor &_constructor,
       fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
       fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
 }
 
 void FixedAssembler::Execute () noexcept
@@ -344,6 +345,7 @@ NormalAssembler::NormalAssembler (TaskConstructor &_constructor,
       fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
 {
     useLogicalTransform = false;
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }
 
@@ -382,13 +384,13 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder,
                        const CustomKeyVector &_allCustomKeys,
                        const TypeBindingVector &_fixedUpdateTypes) noexcept
 {
+    _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, PrototypeComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Assembly");
     AddCheckpoints (_pipelineBuilder);
-    _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
-        .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, PrototypeComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        .MakeDependencyOf ("Assembly::FixedUpdate"_us);
-
     _pipelineBuilder.AddTask ("Assembly::FixedUpdate"_us)
         .SetExecutor<FixedAssembler> (_allCustomKeys, _fixedUpdateTypes);
 }
@@ -397,16 +399,16 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         const CustomKeyVector &_allCustomKeys,
                         const TypeBindingVector &_normalUpdateTypes) noexcept
 {
-    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
-        .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedNormalEvent, PrototypeComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
-        .MakeDependencyOf ("Assembly::NormalUpdate"_us);
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, PrototypeComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     // We don't care about fixed-to-normal transform removal events,
     // because in this case prototype will be removed through the special task in fixed update.
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Assembly");
+    AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Assembly::NormalUpdate"_us)
         .SetExecutor<NormalAssembler> (_allCustomKeys, _normalUpdateTypes);
 }

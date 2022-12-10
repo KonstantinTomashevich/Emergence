@@ -64,6 +64,7 @@ Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<Con
       insertShape (INSERT_LONG_TERM (CollisionShape2dComponent)),
       modifyShapeByShapeId (MODIFY_VALUE_1F (CollisionShape2dComponent, shapeId))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Physics2dSimulation::Checkpoint::STARTED);
 }
 
@@ -399,16 +400,13 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
         EventRegistrar registrar {&world};
         RegisterPhysicsEvents (registrar);
         RegisterTransform2dEvents (registrar);
+        RegisterTransformCommonEvents (registrar);
     }
 
     PipelineBuilder builder {&world};
-
-    // Add external checkpoints to which physics is connected.
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     Physics2dSimulation::AddToFixedUpdate (builder);
+    TransformHierarchyCleanup::Add2dToFixedUpdate (builder);
 
     builder.AddTask ("Configurator"_us).SetExecutor<Configurator> (std::move (_configuratorFrames));
     builder.AddTask ("Validator"_us).SetExecutor<Validator> (std::move (_validatorFrames));

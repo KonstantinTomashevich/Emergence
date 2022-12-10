@@ -115,6 +115,7 @@ SubscriptionManager::SubscriptionManager (
       subscriptionsToAdd (std::move (_subscriptionsToAdd)),
       subscriptionsToRemove (std::move (_subscriptionsToRemove))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Input::Checkpoint::ACTION_DISPATCH_STARTED);
 }
 
@@ -238,8 +239,8 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
 
     // Add external checkpoints to which input is connected.
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     builder.AddTask ("ExpectationValidator"_us).SetExecutor<ExpectationValidator> (std::move (fixedExpectations));
     builder.AddTask ("SubscriptionManager"_us)
@@ -250,8 +251,8 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
 
     // Add external checkpoints to which input is connected.
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     builder.AddTask ("ExternalActionInserter"_us)
         .SetExecutor<ExternalActionInserter> (std::move (normalExternalActions));

@@ -68,6 +68,8 @@ void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
     }
 
     PipelineBuilder builder {&world};
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
 
     Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
@@ -93,12 +95,15 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
 
     PipelineBuilder builder {&world};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
     Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_fixedConfiguratorTasks), std::move (_fixedValidatorTasks));
     REQUIRE (builder.End ());
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
     builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
     Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes ());
     AddConfiguratorAndValidator (builder, std::move (_normalConfiguratorTasks), std::move (_normalValidatorTasks));

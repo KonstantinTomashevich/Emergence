@@ -7,6 +7,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
@@ -184,13 +185,13 @@ void InputGenerator::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("RandomAi::RemoveOnTransformCleanup"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, RandomAiComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("RandomAi");
     _pipelineBuilder.AddTask ("RandomAi::AttachmentCreator"_us).SetExecutor<AttachmentCreator> ();
-
-    _pipelineBuilder.AddTask ("RandomAi::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, RandomAiComponent, objectId)
-        .MakeDependencyOf ("RandomAi::InputGenerator"_us);
-
     _pipelineBuilder.AddTask ("RandomAi::InputGenerator"_us).SetExecutor<InputGenerator> ();
 }
 } // namespace RandomAi

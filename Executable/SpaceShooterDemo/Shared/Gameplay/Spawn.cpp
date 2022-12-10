@@ -5,10 +5,10 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
-#include <Gameplay/NonFeatureSpecificComponentCleanup.hpp>
 #include <Gameplay/Spawn.hpp>
 #include <Gameplay/SpawnComponent.hpp>
 
@@ -32,7 +32,7 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
 
-    Emergence::Celerity::FetchSequenceQuery fetchTransformRemovedEvents;
+    Emergence::Celerity::FetchSequenceQuery fetchTransformCleanupEvents;
 
     Emergence::Celerity::RemoveValueQuery removeSpawnById;
     Emergence::Celerity::ModifyAscendingRangeQuery modifySpawnByCoolingDownUntil;
@@ -51,7 +51,8 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
-      fetchTransformRemovedEvents (FETCH_SEQUENCE (Emergence::Celerity::Transform3dComponentRemovedFixedEvent)),
+      // We use transform cleanup instead of transform removal, because it makes easier to position task in graph.
+      fetchTransformCleanupEvents (FETCH_SEQUENCE (Emergence::Celerity::TransformNodeCleanupFixedEvent)),
 
       removeSpawnById (REMOVE_VALUE_1F (SpawnComponent, objectId)),
       modifySpawnByCoolingDownUntil (MODIFY_ASCENDING_RANGE (SpawnComponent, spawnCoolingDownUntilNs)),
@@ -74,7 +75,7 @@ SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_construct
       insertAlignment (INSERT_LONG_TERM (AlignmentComponent))
 {
     _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.DependOn (NonFeatureSpecificComponentCleanup::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::STARTED);
 }
@@ -87,9 +88,8 @@ void SpawnProcessor::Execute () noexcept
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Celerity::Transform3dComponentRemovedFixedEvent *> (*eventCursor);
+    for (auto eventCursor = fetchTransformCleanupEvents.Execute ();
+         const auto *event = static_cast<const Emergence::Celerity::TransformNodeCleanupFixedEvent *> (*eventCursor);
          ++eventCursor)
     {
         // If deleted transform was spawned, clear it from owner spawn.
@@ -178,15 +178,14 @@ void SpawnProcessor::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Spawn::RemoveSpawns"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, SpawnComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Spawn");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-
-    _pipelineBuilder.AddTask ("Spawn::RemoveSpawns"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, SpawnComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        .MakeDependencyOf ("Spawn::Process"_us);
-
     _pipelineBuilder.AddTask ("Spawn::Process"_us).SetExecutor<SpawnProcessor> ();
 }
 } // namespace Spawn

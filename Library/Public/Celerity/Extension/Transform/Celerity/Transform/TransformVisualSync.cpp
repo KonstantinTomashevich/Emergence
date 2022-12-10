@@ -58,10 +58,9 @@ TransformVisualSynchronizer<TransformComponentType>::TransformVisualSynchronizer
       editTransformById (EDIT_VALUE_1F (TransformComponentType, objectId)),
       editTransformsWithUpdateFlag (EDIT_SIGNAL (TransformComponentType, visualTransformSyncNeeded, true))
 {
-    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (TransformVisualSync::Checkpoint::STARTED);
     _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
 }
 
 template <typename TransformComponentType>

@@ -154,6 +154,7 @@ void GameApplication::Start ()
         Emergence::Celerity::RegisterAssemblyEvents (registrar);
         Emergence::Celerity::RegisterPhysicsEvents (registrar);
         Emergence::Celerity::RegisterTransform3dEvents (registrar);
+        Emergence::Celerity::RegisterTransformCommonEvents (registrar);
         RegisterGameplayEvents (registrar);
         RegisterRenderEvents (registrar);
     }

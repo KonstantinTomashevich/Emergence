@@ -125,6 +125,7 @@ WorldUpdater::WorldUpdater (TaskConstructor &_constructor) noexcept
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorld2dSingleton)),
       fetchConfigurationChangedEvents (FETCH_SEQUENCE (PhysicsWorld2dConfigurationChanged))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::STARTED);
 }
 
@@ -1313,27 +1314,21 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     using namespace Memory::Literals;
 
+    _pipelineBuilder.AddTask ("Physics2d::RemoveBodies"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, RigidBody2dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
+    _pipelineBuilder.AddTask ("Physics2d::RemoveShapes"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, CollisionShape2dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Physics2dSimulation");
     _pipelineBuilder.AddCheckpoint (Physics2dSimulation::Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Physics2dSimulation::Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
-
-    _pipelineBuilder.AddTask ("Physics2d::RemoveBodies"_us)
-        .AS_CASCADE_REMOVER_1F (Transform2dComponentRemovedFixedEvent, RigidBody2dComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        // In fixed update, removal is usually done at the end of the frame after mortality feature,
-        // which is usually dependent on physics simulation, therefore we need to make these removers
-        // dependencies of hierarchy cleanup.
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED)
-        .MakeDependencyOf (TaskNames::SYNC_MATERIAL_CHANGES);
-
-    _pipelineBuilder.AddTask ("Physics2d::RemoveShapes"_us)
-        .AS_CASCADE_REMOVER_1F (Transform2dComponentRemovedFixedEvent, CollisionShape2dComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED)
-        .MakeDependencyOf (TaskNames::SYNC_MATERIAL_CHANGES);
-
     _pipelineBuilder.AddTask (TaskNames::SYNC_MATERIAL_CHANGES).SetExecutor<MaterialChangesSynchronizer> ();
     _pipelineBuilder.AddTask (TaskNames::APPLY_MATERIAL_DELETION).SetExecutor<MaterialDeleter> ();
 

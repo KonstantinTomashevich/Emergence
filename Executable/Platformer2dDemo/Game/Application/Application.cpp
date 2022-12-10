@@ -97,8 +97,8 @@ DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor
       editUniformVector4fByAssetIdAndName (
           EDIT_VALUE_2F (Emergence::Celerity::UniformVector4fValue, assetId, uniformName))
 {
-    _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
     _constructor.DependOn (Emergence::Celerity::AssetManagement::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::TransformVisualSync::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Emergence::Celerity::RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
 }
 
@@ -322,6 +322,7 @@ void Application::InitWorld () noexcept
         Emergence::Celerity::RegisterRender2dEvents (registrar);
         Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
         Emergence::Celerity::RegisterTransform2dEvents (registrar);
+        Emergence::Celerity::RegisterTransformCommonEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};

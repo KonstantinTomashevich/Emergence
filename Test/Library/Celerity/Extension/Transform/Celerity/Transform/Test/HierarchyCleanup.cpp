@@ -13,7 +13,7 @@ namespace Emergence::Celerity::Test
 using namespace Memory::Literals;
 using namespace Requests;
 
-void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _scenario, bool _use2d)
+void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _scenario, bool _fixed, bool _use2d)
 {
     World world {"TestWorld"_us};
     {
@@ -26,29 +26,59 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
         {
             RegisterTransform3dEvents (registrar);
         }
+
+        RegisterTransformCommonEvents (registrar);
     }
 
     PipelineBuilder builder {&world};
-    builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     const std::size_t stepCount = _scenario.size ();
-    builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
 
-    if (_use2d)
+    if (_fixed)
     {
-        TransformHierarchyCleanup::Add2dToFixedUpdate (builder);
-        RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario), true);
+        builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
+        builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
+
+        if (_use2d)
+        {
+            TransformHierarchyCleanup::Add2dToFixedUpdate (builder);
+            RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario));
+        }
+        else
+        {
+            TransformHierarchyCleanup::Add3dToFixedUpdate (builder);
+            RequestExecutor::Add3dToFixedUpdate (builder, std::move (_scenario));
+        }
     }
     else
     {
-        TransformHierarchyCleanup::Add3dToFixedUpdate (builder);
-        RequestExecutor::Add3dToFixedUpdate (builder, std::move (_scenario), true);
+        builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
+        builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
+        builder.AddCheckpoint (TransformVisualSync::Checkpoint::FINISHED);
+
+        if (_use2d)
+        {
+            TransformHierarchyCleanup::Add2dToNormalUpdate (builder);
+            RequestExecutor::Add2dToNormalUpdate (builder, std::move (_scenario));
+        }
+        else
+        {
+            TransformHierarchyCleanup::Add3dToNormalUpdate (builder);
+            RequestExecutor::Add3dToNormalUpdate (builder, std::move (_scenario));
+        }
     }
 
     REQUIRE (builder.End ());
 
     for (std::size_t index = 0u; index < stepCount; ++index)
     {
-        WorldTestingUtility::RunFixedUpdateOnce (world);
+        if (_fixed)
+        {
+            WorldTestingUtility::RunFixedUpdateOnce (world);
+        }
+        else
+        {
+            WorldTestingUtility::RunNormalUpdateOnce (world, 16000000u);
+        }
     }
 }
 
@@ -126,40 +156,78 @@ using namespace Emergence::Celerity;
 using namespace Emergence::Celerity::Test;
 using namespace Emergence::Celerity::Test::Requests;
 
-BEGIN_SUITE (HierarchyCleanup2d)
+BEGIN_SUITE (HierarchyCleanupFixed2d)
 
 TEST_CASE (OneLevel)
 {
-    HierarchyCleanupTest (ONE_LEVEL_TEST, true);
+    HierarchyCleanupTest (ONE_LEVEL_TEST, true, true);
 }
 
 TEST_CASE (MultipleLevels)
 {
-    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, true);
+    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, true, true);
 }
 
 TEST_CASE (IntermediateTransformRemoval)
 {
-    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, true);
+    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, true, true);
 }
 
 END_SUITE
 
-BEGIN_SUITE (HierarchyCleanup3d)
+BEGIN_SUITE (HierarchyCleanupNormal2d)
 
 TEST_CASE (OneLevel)
 {
-    HierarchyCleanupTest (ONE_LEVEL_TEST, false);
+    HierarchyCleanupTest (ONE_LEVEL_TEST, false, true);
 }
 
 TEST_CASE (MultipleLevels)
 {
-    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, false);
+    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, false, true);
 }
 
 TEST_CASE (IntermediateTransformRemoval)
 {
-    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, false);
+    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, false, true);
+}
+
+END_SUITE
+
+BEGIN_SUITE (HierarchyCleanupFixed3d)
+
+TEST_CASE (OneLevel)
+{
+    HierarchyCleanupTest (ONE_LEVEL_TEST, true, false);
+}
+
+TEST_CASE (MultipleLevels)
+{
+    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, true, false);
+}
+
+TEST_CASE (IntermediateTransformRemoval)
+{
+    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, true, false);
+}
+
+END_SUITE
+
+BEGIN_SUITE (HierarchyCleanupNormal3d)
+
+TEST_CASE (OneLevel)
+{
+    HierarchyCleanupTest (ONE_LEVEL_TEST, false, false);
+}
+
+TEST_CASE (MultipleLevels)
+{
+    HierarchyCleanupTest (MULTIPLE_LEVELS_TEST, false, false);
+}
+
+TEST_CASE (IntermediateTransformRemoval)
+{
+    HierarchyCleanupTest (INTERMEDIATE_TRANSFORM_REMOVAL_TEST, false, false);
 }
 
 END_SUITE

@@ -274,44 +274,32 @@ void Executor<Transform>::Execute () noexcept
     ++executionIndex;
 }
 
-void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder,
-                         Container::Vector<RequestPacket> _requests,
-                         bool _withHierarchyCleanup) noexcept
+void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-    if (_withHierarchyCleanup)
-    {
-        constructor.DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-        constructor.MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
-    }
-
+    constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor<Math::Transform2d>> (std::move (_requests));
 }
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
+    constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor<Math::Transform2d>> (std::move (_requests));
 }
 
-void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder,
-                         Container::Vector<RequestPacket> _requests,
-                         bool _withHierarchyCleanup) noexcept
+void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
-    if (_withHierarchyCleanup)
-    {
-        constructor.DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-        constructor.MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
-    }
-
+    constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor<Math::Transform3d>> (std::move (_requests));
 }
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<RequestPacket> _requests) noexcept
 {
     TaskConstructor constructor = _pipelineBuilder.AddTask (Memory::UniqueString {"TransformRequestExecutor"});
+    constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     constructor.SetExecutor<Executor<Math::Transform3d>> (std::move (_requests));
 }
