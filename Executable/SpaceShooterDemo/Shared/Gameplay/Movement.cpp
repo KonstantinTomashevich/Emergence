@@ -7,8 +7,8 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
-#include <Celerity/Transform/TransformWorldAccessor.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>

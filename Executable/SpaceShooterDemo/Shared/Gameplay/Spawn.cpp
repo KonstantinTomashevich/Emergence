@@ -89,8 +89,7 @@ void SpawnProcessor::Execute () noexcept
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     for (auto eventCursor = fetchTransformCleanupEvents.Execute ();
-         const auto *event =
-             static_cast<const Emergence::Celerity::TransformNodeCleanupFixedEvent *> (*eventCursor);
+         const auto *event = static_cast<const Emergence::Celerity::TransformNodeCleanupFixedEvent *> (*eventCursor);
          ++eventCursor)
     {
         // If deleted transform was spawned, clear it from owner spawn.

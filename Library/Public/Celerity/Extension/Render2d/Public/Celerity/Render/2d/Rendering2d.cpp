@@ -1,3 +1,4 @@
+#include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
@@ -6,7 +7,6 @@
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
-#include <Celerity/Asset/AssetManagement.hpp>
 
 namespace Emergence::Celerity::Rendering2d
 {
@@ -25,7 +25,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
         // We delay removal processing in asset management by one frame, because otherwise
         // we won't be able to delete Sprite2dComponent after AssetManagement.
-        .DependOn(AssetManagement::Checkpoint::FINISHED);
+        .DependOn (AssetManagement::Checkpoint::FINISHED);
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
     BoundsCalculation2d::AddToNormalUpdate (_pipelineBuilder);
