@@ -26,6 +26,8 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
         {
             RegisterTransform3dEvents (registrar);
         }
+
+        RegisterTransformCommonEvents (registrar);
     }
 
     PipelineBuilder builder {&world};
@@ -36,12 +38,12 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
     if (_use2d)
     {
         TransformHierarchyCleanup::Add2dToFixedUpdate (builder);
-        RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario), true);
+        RequestExecutor::Add2dToFixedUpdate (builder, std::move (_scenario));
     }
     else
     {
         TransformHierarchyCleanup::Add3dToFixedUpdate (builder);
-        RequestExecutor::Add3dToFixedUpdate (builder, std::move (_scenario), true);
+        RequestExecutor::Add3dToFixedUpdate (builder, std::move (_scenario));
     }
 
     REQUIRE (builder.End ());

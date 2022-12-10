@@ -4,25 +4,29 @@
 namespace Emergence::Celerity
 {
 #define IMPLEMENT_TRANSFORM_EVENTS(Dimension)                                                                          \
-    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentAddedFixedToNormalEvent, objectId);      \
-    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentAddedNormalEvent, objectId);             \
+    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentAddedFixedToNormalEvent, objectId)       \
+    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentAddedNormalEvent, objectId)              \
                                                                                                                        \
     EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (                                                                         \
         Transform##Dimension##dComponentVisualLocalTransformChangedFixedToNormalEvent, objectId);                      \
     EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentVisualLocalTransformChangedNormalEvent,  \
-                                              objectId);                                                               \
+                                              objectId)                                                                \
                                                                                                                        \
     EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Transform##Dimension##dComponentParentChangedFixedToNormalEvent,         \
-                                              objectId, oldParentId);                                                  \
+                                              objectId, oldParentId)                                                   \
     EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Transform##Dimension##dComponentParentChangedNormalEvent, objectId,      \
-                                              oldParentId);                                                            \
+                                              oldParentId)                                                             \
                                                                                                                        \
-    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedFixedEvent, objectId);            \
-    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedNormalEvent, objectId);           \
-    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedFixedToNormalEvent, objectId);
+    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedFixedEvent, objectId)             \
+    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedNormalEvent, objectId)            \
+    EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Transform##Dimension##dComponentRemovedFixedToNormalEvent, objectId)
 
 IMPLEMENT_TRANSFORM_EVENTS (2)
 IMPLEMENT_TRANSFORM_EVENTS (3)
+
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TransformNodeCleanupFixedEvent, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TransformNodeCleanupFixedToNormalEvent, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TransformNodeCleanupNormalEvent, objectId)
 
 #define REGISTER_TRANSFORM_EVENTS(Dimension)                                                                           \
     _registrar.OnAddEvent ({{Transform##Dimension##dComponentAddedFixedToNormalEvent::Reflect ().mapping,              \
@@ -100,5 +104,13 @@ void RegisterTransform2dEvents (EventRegistrar &_registrar) noexcept
 void RegisterTransform3dEvents (EventRegistrar &_registrar) noexcept
 {
     REGISTER_TRANSFORM_EVENTS (3);
+}
+
+void RegisterTransformCommonEvents (EventRegistrar &_registrar) noexcept
+{
+    _registrar.CustomEvent ({TransformNodeCleanupFixedEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.CustomEvent (
+        {TransformNodeCleanupFixedToNormalEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL});
+    _registrar.CustomEvent ({TransformNodeCleanupNormalEvent::Reflect ().mapping, EventRoute::NORMAL});
 }
 } // namespace Emergence::Celerity

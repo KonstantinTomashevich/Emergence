@@ -108,15 +108,13 @@ namespace RequestExecutor
 using RequestPacket = Container::Vector<Request>;
 
 void Add2dToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                         Container::Vector<RequestPacket> _requests,
-                         bool _withHierarchyCleanup = false) noexcept;
+                         Container::Vector<RequestPacket> _requests) noexcept;
 
 void Add2dToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                           Container::Vector<RequestPacket> _requests) noexcept;
 
 void Add3dToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                         Container::Vector<RequestPacket> _requests,
-                         bool _withHierarchyCleanup = false) noexcept;
+                         Container::Vector<RequestPacket> _requests) noexcept;
 
 void Add3dToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
                           Container::Vector<RequestPacket> _requests) noexcept;

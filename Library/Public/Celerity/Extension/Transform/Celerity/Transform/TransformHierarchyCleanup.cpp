@@ -2,202 +2,245 @@
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
-#include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity::TransformHierarchyCleanup
 {
-const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_STARTED {"TransformHierarchyCleanup::DetachedRemovalStarted"};
-const Memory::UniqueString Checkpoint::DETACHED_REMOVAL_FINISHED {"TransformHierarchyCleanup::DetachedRemovalFinished"};
-
-const Memory::UniqueString Checkpoint::DETACHMENT_DETECTION_STARTED {
-    "TransformHierarchyCleanup::DetachmentDetectionStarted"};
-const Memory::UniqueString Checkpoint::DETACHMENT_DETECTION_FINISHED {
-    "TransformHierarchyCleanup::DetachmentDetectionFinished"};
+const Memory::UniqueString Checkpoint::STARTED {"TransformHierarchyCleanup::Started"};
+const Memory::UniqueString Checkpoint::CLEANUP_STARTED {"TransformHierarchyCleanup::CleanupStarted"};
+const Memory::UniqueString Checkpoint::FINISHED {"TransformHierarchyCleanup::Finished"};
 
 namespace Tasks
 {
-static const Memory::UniqueString DETACHMENT_DETECTOR {"TransformHierarchyCleanup::DetachmentDetector"};
+static const Memory::UniqueString CLEANUP_SCHEDULER {"TransformHierarchyCleanup::CleanupScheduler"};
 
-static const Memory::UniqueString DETACHED_TRANSFORM_REMOVER {"TransformHierarchyCleanup::DetachedTransformRemover"};
+static const Memory::UniqueString TRANSFORM_CLEANER {"TransformHierarchyCleanup::TransformCleaner"};
 } // namespace Tasks
 
-struct DetachmentMessage final
+struct TransformCleanedUpMarkerComponent final
 {
-    UniqueId transformId;
+    UniqueId objectId = INVALID_UNIQUE_ID;
 
     struct Reflection final
     {
-        StandardLayout::FieldId transformId;
+        StandardLayout::FieldId objectId;
         StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;
 };
 
-const DetachmentMessage::Reflection &DetachmentMessage::Reflect () noexcept
+const TransformCleanedUpMarkerComponent::Reflection &TransformCleanedUpMarkerComponent::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (DetachmentMessage);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (transformId);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TransformCleanedUpMarkerComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;
 }
 
-class DetachmentDetector final : public TaskExecutorBase<DetachmentDetector>
+class CleanupScheduler final : public TaskExecutorBase<CleanupScheduler>
 {
 public:
-    DetachmentDetector (TaskConstructor &_constructor,
-                        const StandardLayout::Mapping &_transformType,
-                        StandardLayout::FieldId _parentObjectIdField,
-                        const StandardLayout::Mapping &_removalEventType) noexcept;
+    CleanupScheduler (TaskConstructor &_constructor,
+                      const StandardLayout::Mapping &_componentMapping,
+                      StandardLayout::FieldId _idField,
+                      StandardLayout::FieldId _parentField,
+                      const StandardLayout::Mapping &_removalEventMapping,
+                      const Container::Vector<StandardLayout::Mapping> &_cleanupEventMappings) noexcept;
 
     void Execute () noexcept;
 
 private:
-    void FindDetachedTransforms (UniqueId _parentObjectId) noexcept;
+    void ScheduleCleanup (UniqueId _objectId) noexcept;
 
-    FetchSequenceQuery fetchTransformRemovedEvents;
-    FetchValueQuery fetchTransformByParentObjectId;
-    InsertShortTermQuery insertDetachmentMessage;
+    FetchSequenceQuery fetchRemovalEvents;
+    FetchValueQuery fetchComponentByParent;
+    RemoveValueQuery removeTransformCleanedUpMarker;
+    Container::Vector<InsertShortTermQuery> insertCleanupEvent {Memory::Profiler::AllocationGroup::Top ()};
+    StandardLayout::Field componentObjectIdField;
 };
 
-DetachmentDetector::DetachmentDetector (TaskConstructor &_constructor,
-                                        const StandardLayout::Mapping &_transformType,
-                                        StandardLayout::FieldId _parentObjectIdField,
-                                        const StandardLayout::Mapping &_removalEventType) noexcept
-    : fetchTransformRemovedEvents (_constructor.FetchSequence (_removalEventType)),
-      fetchTransformByParentObjectId (_constructor.FetchValue (_transformType, {_parentObjectIdField})),
-      insertDetachmentMessage (INSERT_SHORT_TERM (DetachmentMessage))
+CleanupScheduler::CleanupScheduler (TaskConstructor &_constructor,
+                                    const StandardLayout::Mapping &_componentMapping,
+                                    StandardLayout::FieldId _idField,
+                                    StandardLayout::FieldId _parentField,
+                                    const StandardLayout::Mapping &_removalEventMapping,
+                                    const Container::Vector<StandardLayout::Mapping> &_cleanupEventMappings) noexcept
+    : fetchRemovalEvents (_constructor.FetchSequence (_removalEventMapping)),
+      fetchComponentByParent (_constructor.FetchValue (_componentMapping, {_parentField})),
+      removeTransformCleanedUpMarker (REMOVE_VALUE_1F (TransformCleanedUpMarkerComponent, objectId)),
+      componentObjectIdField (_componentMapping.GetField (_idField))
 {
-    _constructor.DependOn (Checkpoint::DETACHMENT_DETECTION_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_FINISHED);
+    insertCleanupEvent.reserve (_cleanupEventMappings.size ());
+    for (const StandardLayout::Mapping &mapping : _cleanupEventMappings)
+    {
+        insertCleanupEvent.emplace_back (_constructor.InsertShortTerm (mapping));
+    }
+
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::CLEANUP_STARTED);
 }
 
-void DetachmentDetector::Execute () noexcept
+void CleanupScheduler::Execute () noexcept
 {
-    for (auto eventCursor = fetchTransformRemovedEvents.Execute (); const void *event = *eventCursor; ++eventCursor)
+    for (auto removalEventCursor = fetchRemovalEvents.Execute ();
+         const auto *removedId = static_cast<const UniqueId *> (*removalEventCursor); ++removalEventCursor)
     {
-        FindDetachedTransforms (*static_cast<const UniqueId *> (event));
+        ScheduleCleanup (*removedId);
     }
 }
 
-void DetachmentDetector::FindDetachedTransforms (UniqueId _parentObjectId) noexcept
+void CleanupScheduler::ScheduleCleanup (UniqueId _objectId) noexcept
 {
-    for (auto cursor = fetchTransformByParentObjectId.Execute (&_parentObjectId);
-         const auto *transform = static_cast<const Transform2dComponent *> (*cursor); ++cursor)
+    if (auto cursor = removeTransformCleanedUpMarker.Execute (&_objectId); cursor.ReadConst ())
     {
-        FindDetachedTransforms (transform->GetObjectId ());
-        auto messageCursor = insertDetachmentMessage.Execute ();
-        auto *message = static_cast<DetachmentMessage *> (++messageCursor);
-        message->transformId = transform->GetObjectId ();
+        // Transform was removed by cleanup logic, therefore cleanup already happened.
+        ~cursor;
+        return;
+    }
+
+    for (auto &query : insertCleanupEvent)
+    {
+        auto cursor = query.Execute ();
+        *static_cast<UniqueId *> (++cursor) = _objectId;
+    }
+
+    for (auto childCursor = fetchComponentByParent.Execute (&_objectId); const void *component = *childCursor;
+         ++childCursor)
+    {
+        ScheduleCleanup (*static_cast<const UniqueId *> (componentObjectIdField.GetValue (component)));
     }
 }
 
-class DetachedTransformRemover final : public TaskExecutorBase<DetachedTransformRemover>
+class TransformCleaner final : public TaskExecutorBase<TransformCleaner>
 {
 public:
-    DetachedTransformRemover (TaskConstructor &_constructor,
-                              const StandardLayout::Mapping &_transformType,
-                              StandardLayout::FieldId _objectIdField) noexcept;
+    TransformCleaner (TaskConstructor &_constructor,
+                      const StandardLayout::Mapping &_componentMapping,
+                      StandardLayout::FieldId _idField,
+                      const StandardLayout::Mapping &_cleanupEventMapping) noexcept;
 
     void Execute () noexcept;
 
 private:
-    ModifySequenceQuery modifyDetachmentMessages;
-    RemoveValueQuery removeTransformById;
+    FetchSequenceQuery fetchCleanupEvents;
+    RemoveValueQuery removeComponentById;
+    InsertLongTermQuery insertTransformCleanedUpMarker;
 };
 
-DetachedTransformRemover::DetachedTransformRemover (TaskConstructor &_constructor,
-                                                    const StandardLayout::Mapping &_transformType,
-                                                    StandardLayout::FieldId _objectIdField) noexcept
-    : modifyDetachmentMessages (MODIFY_SEQUENCE (DetachmentMessage)),
-      removeTransformById (_constructor.RemoveValue (_transformType, {_objectIdField}))
+TransformCleaner::TransformCleaner (TaskConstructor &_constructor,
+                                    const StandardLayout::Mapping &_componentMapping,
+                                    StandardLayout::FieldId _idField,
+                                    const StandardLayout::Mapping &_cleanupEventMapping) noexcept
+    : fetchCleanupEvents (_constructor.FetchSequence (_cleanupEventMapping)),
+      removeComponentById (_constructor.RemoveValue (_componentMapping, {_idField})),
+      insertTransformCleanedUpMarker (INSERT_LONG_TERM (TransformCleanedUpMarkerComponent))
 {
-    _constructor.DependOn (Checkpoint::DETACHED_REMOVAL_STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::DETACHED_REMOVAL_FINISHED);
-    _constructor.MakeDependencyOf (Checkpoint::DETACHMENT_DETECTION_STARTED);
+    _constructor.DependOn (Checkpoint::CLEANUP_STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }
 
-void DetachedTransformRemover::Execute () noexcept
+void TransformCleaner::Execute () noexcept
 {
-    for (auto messageCursor = modifyDetachmentMessages.Execute ();
-         auto *message = static_cast<DetachmentMessage *> (*messageCursor); ~messageCursor)
+    auto markerCursor = insertTransformCleanedUpMarker.Execute ();
+    for (auto eventCursor = fetchCleanupEvents.Execute ();
+         const auto *cleanupId = static_cast<const UniqueId *> (*eventCursor); ++eventCursor)
     {
-        auto transformCursor = removeTransformById.Execute (&message->transformId);
-        if (transformCursor.ReadConst ())
+        if (auto removalCursor = removeComponentById.Execute (cleanupId); removalCursor.ReadConst ())
         {
-            ~transformCursor;
+            ~removalCursor;
+            static_cast<TransformCleanedUpMarkerComponent *> (++markerCursor)->objectId = *cleanupId;
         }
     }
 }
 
 static void AddCheckpoints (PipelineBuilder &_pipelineBuilder)
 {
-    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
-    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_FINISHED);
-
-    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
-    _pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::CLEANUP_STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
 }
 
 void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
-    _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
-        .SetExecutor<DetachmentDetector> (Transform2dComponent::Reflect ().mapping,
-                                          Transform2dComponent::Reflect ().parentObjectId,
-                                          Transform2dComponentRemovedFixedEvent::Reflect ().mapping);
 
-    _pipelineBuilder.AddTask (Tasks::DETACHED_TRANSFORM_REMOVER)
-        .SetExecutor<DetachedTransformRemover> (Transform2dComponent::Reflect ().mapping,
-                                                Transform2dComponent::Reflect ().objectId);
+    _pipelineBuilder.AddTask (Tasks::CLEANUP_SCHEDULER)
+        .SetExecutor<CleanupScheduler> (
+            Transform2dComponent::Reflect ().mapping, Transform2dComponent::Reflect ().objectId,
+            Transform2dComponent::Reflect ().parentObjectId, Transform2dComponentRemovedFixedEvent::Reflect ().mapping,
+            Container::Vector<StandardLayout::Mapping> {
+                TransformNodeCleanupFixedEvent::Reflect ().mapping,
+                TransformNodeCleanupFixedToNormalEvent::Reflect ().mapping,
+            });
+
+    _pipelineBuilder.AddTask (Tasks::TRANSFORM_CLEANER)
+        .SetExecutor<TransformCleaner> (Transform2dComponent::Reflect ().mapping,
+                                        Transform2dComponent::Reflect ().objectId,
+                                        TransformNodeCleanupFixedEvent::Reflect ().mapping);
 }
 
 void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
-    _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
-        .SetExecutor<DetachmentDetector> (Transform2dComponent::Reflect ().mapping,
-                                          Transform2dComponent::Reflect ().parentObjectId,
-                                          Transform2dComponentRemovedNormalEvent::Reflect ().mapping);
 
-    _pipelineBuilder.AddTask (Tasks::DETACHED_TRANSFORM_REMOVER)
-        .SetExecutor<DetachedTransformRemover> (Transform2dComponent::Reflect ().mapping,
-                                                Transform2dComponent::Reflect ().objectId);
+    _pipelineBuilder.AddTask (Tasks::CLEANUP_SCHEDULER)
+        .SetExecutor<CleanupScheduler> (
+            Transform2dComponent::Reflect ().mapping, Transform2dComponent::Reflect ().objectId,
+            Transform2dComponent::Reflect ().parentObjectId, Transform2dComponentRemovedNormalEvent::Reflect ().mapping,
+            Container::Vector<StandardLayout::Mapping> {
+                TransformNodeCleanupNormalEvent::Reflect ().mapping,
+            });
+
+    _pipelineBuilder.AddTask (Tasks::TRANSFORM_CLEANER)
+        .SetExecutor<TransformCleaner> (Transform2dComponent::Reflect ().mapping,
+                                        Transform2dComponent::Reflect ().objectId,
+                                        TransformNodeCleanupNormalEvent::Reflect ().mapping);
 }
 
 void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
-    _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
-        .SetExecutor<DetachmentDetector> (Transform3dComponent::Reflect ().mapping,
-                                          Transform3dComponent::Reflect ().parentObjectId,
-                                          Transform3dComponentRemovedFixedEvent::Reflect ().mapping);
+    
+    _pipelineBuilder.AddTask (Tasks::CLEANUP_SCHEDULER)
+        .SetExecutor<CleanupScheduler> (
+            Transform3dComponent::Reflect ().mapping, Transform3dComponent::Reflect ().objectId,
+            Transform3dComponent::Reflect ().parentObjectId, Transform3dComponentRemovedFixedEvent::Reflect ().mapping,
+            Container::Vector<StandardLayout::Mapping> {
+                TransformNodeCleanupFixedEvent::Reflect ().mapping,
+                TransformNodeCleanupFixedToNormalEvent::Reflect ().mapping,
+            });
 
-    _pipelineBuilder.AddTask (Tasks::DETACHED_TRANSFORM_REMOVER)
-        .SetExecutor<DetachedTransformRemover> (Transform3dComponent::Reflect ().mapping,
-                                                Transform3dComponent::Reflect ().objectId);
+    _pipelineBuilder.AddTask (Tasks::TRANSFORM_CLEANER)
+        .SetExecutor<TransformCleaner> (Transform3dComponent::Reflect ().mapping,
+                                        Transform3dComponent::Reflect ().objectId,
+                                        TransformNodeCleanupFixedEvent::Reflect ().mapping);
 }
 
 void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TransformHierarchyCleanup");
     AddCheckpoints (_pipelineBuilder);
-    _pipelineBuilder.AddTask (Tasks::DETACHMENT_DETECTOR)
-        .SetExecutor<DetachmentDetector> (Transform3dComponent::Reflect ().mapping,
-                                          Transform3dComponent::Reflect ().parentObjectId,
-                                          Transform3dComponentRemovedNormalEvent::Reflect ().mapping);
 
-    _pipelineBuilder.AddTask (Tasks::DETACHED_TRANSFORM_REMOVER)
-        .SetExecutor<DetachedTransformRemover> (Transform3dComponent::Reflect ().mapping,
-                                                Transform3dComponent::Reflect ().objectId);
+    _pipelineBuilder.AddTask (Tasks::CLEANUP_SCHEDULER)
+        .SetExecutor<CleanupScheduler> (
+            Transform3dComponent::Reflect ().mapping, Transform3dComponent::Reflect ().objectId,
+            Transform3dComponent::Reflect ().parentObjectId, Transform3dComponentRemovedNormalEvent::Reflect ().mapping,
+            Container::Vector<StandardLayout::Mapping> {
+                TransformNodeCleanupNormalEvent::Reflect ().mapping,
+            });
+
+    _pipelineBuilder.AddTask (Tasks::TRANSFORM_CLEANER)
+        .SetExecutor<TransformCleaner> (Transform3dComponent::Reflect ().mapping,
+                                        Transform3dComponent::Reflect ().objectId,
+                                        TransformNodeCleanupNormalEvent::Reflect ().mapping);
 }
 } // namespace Emergence::Celerity::TransformHierarchyCleanup

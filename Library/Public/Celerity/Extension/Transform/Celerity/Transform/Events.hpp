@@ -29,7 +29,13 @@ namespace Emergence::Celerity
 DECLARE_TRANSFORM_EVENTS (2)
 DECLARE_TRANSFORM_EVENTS (3)
 
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TransformNodeCleanupFixedEvent, UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TransformNodeCleanupFixedToNormalEvent, UniqueId, objectId);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TransformNodeCleanupNormalEvent, UniqueId, objectId);
+
 void RegisterTransform2dEvents (EventRegistrar &_registrar) noexcept;
 
 void RegisterTransform3dEvents (EventRegistrar &_registrar) noexcept;
+
+void RegisterTransformCommonEvents (EventRegistrar &_registrar) noexcept;
 } // namespace Emergence::Celerity

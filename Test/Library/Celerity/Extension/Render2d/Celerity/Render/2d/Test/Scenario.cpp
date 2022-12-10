@@ -428,6 +428,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
         Emergence::Celerity::EventRegistrar registrar {&world};
         assetReferenceBindingEventMap = Emergence::Celerity::RegisterAssetEvents (registrar, binding);
         Emergence::Celerity::RegisterTransform2dEvents (registrar);
+        Emergence::Celerity::RegisterTransformCommonEvents (registrar);
         Emergence::Celerity::RegisterRender2dEvents (registrar);
         Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
     }

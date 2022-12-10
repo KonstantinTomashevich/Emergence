@@ -414,6 +414,7 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
         EventRegistrar registrar {&world};
         RegisterPhysicsEvents (registrar);
         RegisterTransform3dEvents (registrar);
+        RegisterTransformCommonEvents (registrar);
     }
 
     PipelineBuilder builder {&world};

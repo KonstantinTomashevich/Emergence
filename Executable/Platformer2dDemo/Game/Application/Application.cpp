@@ -322,6 +322,7 @@ void Application::InitWorld () noexcept
         Emergence::Celerity::RegisterRender2dEvents (registrar);
         Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
         Emergence::Celerity::RegisterTransform2dEvents (registrar);
+        Emergence::Celerity::RegisterTransformCommonEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};

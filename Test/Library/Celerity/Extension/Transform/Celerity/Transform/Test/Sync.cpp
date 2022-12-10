@@ -29,6 +29,8 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
     PipelineBuilder builder {&world};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     if (_use2d)
     {
         RequestExecutor::Add2dToFixedUpdate (builder, std::move (_fixedRequests));
@@ -40,8 +42,7 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
 
     REQUIRE (builder.End ());
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED);
-    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::DETACHMENT_DETECTION_STARTED);
+    builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     if (_use2d)
     {
