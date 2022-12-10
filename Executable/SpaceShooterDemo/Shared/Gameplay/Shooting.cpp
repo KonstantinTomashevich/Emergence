@@ -132,7 +132,7 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
         .AS_CASCADE_REMOVER_1F (DeathFixedEvent, ShooterComponent, objectId)
         .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
 
-    _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
+    _pipelineBuilder.AddTask ("Shooting::RemoveOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, ShooterComponent, objectId)
         .DependOn ("Shooting::RemoveAfterDeath"_us)
         .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);

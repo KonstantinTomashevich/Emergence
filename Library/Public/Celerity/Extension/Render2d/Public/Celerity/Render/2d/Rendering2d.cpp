@@ -14,12 +14,12 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
 {
     using namespace Memory::Literals;
 
-    _pipelineBuilder.AddTask ("CleanupCamera2dComponentAfterTransformRemovalFromNormal"_us)
+    _pipelineBuilder.AddTask ("RemoveCamera2dComponentOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, Camera2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
-    _pipelineBuilder.AddTask ("CleanupSprite2dComponentAfterTransformRemovalFromNormal"_us)
+    _pipelineBuilder.AddTask ("RemoveSprite2dComponentOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, Sprite2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)

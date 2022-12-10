@@ -185,7 +185,7 @@ void InputGenerator::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddTask ("RandomAi::RemoveAfterTransformRemoval"_us)
+    _pipelineBuilder.AddTask ("RandomAi::RemoveOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, RandomAiComponent, objectId)
         .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);

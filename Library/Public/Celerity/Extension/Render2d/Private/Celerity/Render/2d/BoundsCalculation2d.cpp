@@ -378,12 +378,12 @@ using namespace Memory::Literals;
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddTask ("CleanupRenderObject2dAfterTransformRemovalFromNormal"_us)
+    _pipelineBuilder.AddTask ("RemoveRenderObject2dOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, RenderObject2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
-    _pipelineBuilder.AddTask ("CleanupLocalBounds2dAfterTransformRemovalFromNormal"_us)
+    _pipelineBuilder.AddTask ("RemoveLocalBounds2dOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, LocalBounds2dComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);

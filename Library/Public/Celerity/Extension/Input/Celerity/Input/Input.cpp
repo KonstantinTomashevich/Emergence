@@ -277,7 +277,7 @@ void AddToFixedUpdate (PipelineBuilder &_builder) noexcept
 {
     using namespace Memory::Literals;
 
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransformRemoval"_us)
+    _builder.AddTask ("RemoveInputSubscriptionComponentOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, InputSubscriptionComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
@@ -291,7 +291,7 @@ void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_input
 {
     using namespace Memory::Literals;
 
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransformRemoval"_us)
+    _builder.AddTask ("RemoveInputSubscriptionComponentOnTransformCleanup"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, InputSubscriptionComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
