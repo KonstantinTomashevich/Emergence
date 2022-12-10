@@ -4,9 +4,9 @@
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
-#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Asset/AssetManagement.hpp>
 
 namespace Emergence::Celerity::Rendering2d
 {
@@ -14,32 +14,30 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
 {
     using namespace Memory::Literals;
 
-    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
-
     _pipelineBuilder.AddTask ("CleanupCamera2dComponentAfterTransformRemovalFromNormal"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, Camera2dComponent,
-                                objectId)
-        .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
-        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, Camera2dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
         .MakeDependencyOf ("CleanupCamera2dComponentAfterTransformRemovalFromFixed"_us);
 
     _pipelineBuilder.AddTask ("CleanupCamera2dComponentAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedFixedToNormalEvent, Camera2dComponent,
-                                objectId)
-        .MakeDependencyOf (BoundsCalculation2d::Checkpoint::STARTED);
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedToNormalEvent, Camera2dComponent, objectId)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask ("CleanupSprite2dComponentAfterTransformRemovalFromNormal"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, Sprite2dComponent,
-                                objectId)
-        .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
-        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, Sprite2dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
+        // We delay removal processing in asset management by one frame, because otherwise
+        // we won't be able to delete Sprite2dComponent after AssetManagement.
+        .DependOn(AssetManagement::Checkpoint::FINISHED)
         .MakeDependencyOf ("CleanupSprite2dComponentAfterTransformRemovalFromFixed"_us);
 
     _pipelineBuilder.AddTask ("CleanupSprite2dComponentAfterTransformRemovalFromFixed"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedFixedToNormalEvent, Sprite2dComponent,
-                                objectId)
-        .MakeDependencyOf (BoundsCalculation2d::Checkpoint::STARTED);
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedToNormalEvent, Sprite2dComponent, objectId)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
     BoundsCalculation2d::AddToNormalUpdate (_pipelineBuilder);
     WorldRendering2d::AddToNormalUpdate (_pipelineBuilder, _worldBounds);
 }

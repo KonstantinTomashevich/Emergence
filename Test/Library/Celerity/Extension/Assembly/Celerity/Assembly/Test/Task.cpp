@@ -5,6 +5,7 @@
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Container/StringBuilder.hpp>
 
@@ -42,6 +43,7 @@ Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<Con
 
       tasks (std::move (_tasks))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Assembly::Checkpoint::STARTED);
 }
 

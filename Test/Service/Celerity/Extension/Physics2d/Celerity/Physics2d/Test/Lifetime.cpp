@@ -101,7 +101,9 @@ TEST_CASE (CleanupAfterTransformRemoval)
                                  CheckCollisionShapeExistence {0u, true},
                                  CheckCollisionShapeExistence {1u, true},
                              }},
-                            {1u,
+                            // We need to give TransformHierarchyCleanup one frame of delay, because configurator is
+                            // executed right after TransformHierarchyCleanup.
+                            {2u,
                              {
                                  CheckRigidBodyExistence {0u, false},
                                  CheckRigidBodyExistence {1u, true},

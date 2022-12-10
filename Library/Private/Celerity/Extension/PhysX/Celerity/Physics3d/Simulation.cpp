@@ -13,6 +13,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Log/Log.hpp>
@@ -111,6 +112,7 @@ WorldUpdater::WorldUpdater (TaskConstructor &_constructor) noexcept
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorld3dSingleton)),
       fetchConfigurationChangedEvents (FETCH_SEQUENCE (PhysicsWorld3dConfigurationChanged))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::STARTED);
 }
 
@@ -1492,22 +1494,21 @@ void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     using namespace Memory::Literals;
 
+    _pipelineBuilder.AddTask ("Physics3d::RemoveBodies"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, RigidBody3dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
+    _pipelineBuilder.AddTask ("Physics3d::RemoveShapes"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, CollisionShape3dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Physics3dSimulation");
     _pipelineBuilder.AddCheckpoint (Physics3dSimulation::Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Physics3dSimulation::Checkpoint::FINISHED);
 
     _pipelineBuilder.AddTask (TaskNames::UPDATE_WORLD).SetExecutor<WorldUpdater> ();
-
-    _pipelineBuilder.AddTask ("Physics3d::RemoveBodies"_us)
-        .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, RigidBody3dComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
-
-    _pipelineBuilder.AddTask ("Physics3d::RemoveShapes"_us)
-        .AS_CASCADE_REMOVER_1F (Transform3dComponentRemovedFixedEvent, CollisionShape3dComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        .MakeDependencyOf (TaskNames::INITIALIZE_MATERIALS);
-
     _pipelineBuilder.AddTask (TaskNames::INITIALIZE_MATERIALS).SetExecutor<MaterialInitializer> ();
     _pipelineBuilder.AddTask (TaskNames::SYNC_MATERIAL_CHANGES).SetExecutor<MaterialChangesSynchronizer> ();
     _pipelineBuilder.AddTask (TaskNames::APPLY_MATERIAL_DELETION).SetExecutor<MaterialDeleter> ();

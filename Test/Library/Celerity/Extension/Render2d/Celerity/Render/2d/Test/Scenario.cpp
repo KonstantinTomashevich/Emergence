@@ -172,8 +172,7 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
       finishedOutput (_finishedOutput)
 {
     _constructor.DependOn (AssetManagement::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (
-        Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED);
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
     _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
 }

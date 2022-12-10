@@ -73,6 +73,7 @@ FixedInputProcessor::FixedInputProcessor (TaskConstructor &_constructor) noexcep
     : InputProcessorBase (_constructor),
       modifyInputActionHolders (MODIFY_SEQUENCE (InputActionHolder))
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::ACTION_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::CUSTOM_ACTION_COMPONENT_INSERT_ALLOWED);
     _constructor.MakeDependencyOf (Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
@@ -137,6 +138,7 @@ NormalInputProcessor::NormalInputProcessor (TaskConstructor &_constructor,
 
       inputAccumulator (_inputAccumulator)
 {
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::ACTION_DISPATCH_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::CUSTOM_ACTION_COMPONENT_INSERT_ALLOWED);
     _constructor.MakeDependencyOf (Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
@@ -274,45 +276,28 @@ static void AddCheckpoints (PipelineBuilder &_builder)
 void AddToFixedUpdate (PipelineBuilder &_builder) noexcept
 {
     using namespace Memory::Literals;
+
+    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, InputSubscriptionComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _builder.OpenVisualGroup ("Input");
     AddCheckpoints (_builder);
-
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform2dRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedFixedEvent, InputSubscriptionComponent,
-                                objectId)
-        .DependOn (Checkpoint::ACTION_DISPATCH_STARTED)
-        // In fixed update, removal is usually done at the end of the frame after mortality feature,
-        // which is usually dependent on input processing, therefore we need to make these removers
-        // dependencies of hierarchy cleanup.
-        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_STARTED)
-        .MakeDependencyOf ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us);
-
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, InputSubscriptionComponent,
-                                objectId)
-        .MakeDependencyOf ("InputProcessor"_us);
-
     _builder.AddTask ("InputProcessor"_us).SetExecutor<FixedInputProcessor> ();
 }
 
 void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_inputAccumulator) noexcept
 {
     using namespace Memory::Literals;
+
+    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, InputSubscriptionComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _builder.OpenVisualGroup ("Input");
     AddCheckpoints (_builder);
-
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform2dRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform2dComponentRemovedNormalEvent, InputSubscriptionComponent,
-                                objectId)
-        .DependOn (Checkpoint::ACTION_DISPATCH_STARTED)
-        .DependOn (TransformHierarchyCleanup::Checkpoint::DETACHED_REMOVAL_FINISHED)
-        .MakeDependencyOf ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us);
-
-    _builder.AddTask ("CleanupInputSubscriptionComponentAfterTransform3dRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedNormalEvent, InputSubscriptionComponent,
-                                objectId)
-        .MakeDependencyOf ("InputProcessor"_us);
-
     _builder.AddTask ("InputProcessor"_us).SetExecutor<NormalInputProcessor> (_inputAccumulator);
 }
 } // namespace Emergence::Celerity::Input
