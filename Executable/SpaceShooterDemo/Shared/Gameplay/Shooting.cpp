@@ -7,11 +7,11 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
-#include <Gameplay/Mortality.hpp>
 #include <Gameplay/ShooterComponent.hpp>
 #include <Gameplay/Shooting.hpp>
 #include <Gameplay/Spawn.hpp>
@@ -128,20 +128,18 @@ bool ShootingProcessor::TryFetchBulletTransform (Emergence::Celerity::UniqueId _
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Shooting::RemoveAfterDeath"_us)
+        .AS_CASCADE_REMOVER_1F (DeathFixedEvent, ShooterComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+
+    _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, ShooterComponent, objectId)
+        .DependOn ("Shooting::RemoveAfterDeath"_us)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Shooting");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-
-    _pipelineBuilder.AddTask ("Shooting::RemoveAfterDeath"_us)
-        .AS_CASCADE_REMOVER_1F (DeathFixedEvent, ShooterComponent, objectId)
-        .DependOn (Checkpoint::STARTED)
-        // We process deaths from the previous frame, because mortality is processed during the end of frame.
-        .MakeDependencyOf (Mortality::Checkpoint::STARTED);
-
-    _pipelineBuilder.AddTask ("Shooting::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, ShooterComponent, objectId)
-        .DependOn ("Shooting::RemoveAfterDeath"_us)
-        .MakeDependencyOf ("Shooting::Processor"_us);
 
     _pipelineBuilder.AddTask ("Shooting::Processor"_us).SetExecutor<ShootingProcessor> ();
 }

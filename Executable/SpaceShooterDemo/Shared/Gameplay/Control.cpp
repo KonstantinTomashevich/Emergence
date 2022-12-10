@@ -2,12 +2,12 @@
 #include <Celerity/Input/InputSubscriptionComponent.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Gameplay/AlignmentComponent.hpp>
 #include <Gameplay/Control.hpp>
 #include <Gameplay/ControllableComponent.hpp>
 #include <Gameplay/InputConstant.hpp>
-#include <Gameplay/NonFeatureSpecificComponentCleanup.hpp>
 #include <Gameplay/PlayerInfoSingleton.hpp>
 #include <Gameplay/Spawn.hpp>
 
@@ -49,7 +49,7 @@ ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constru
 
 {
     _constructor.MakeDependencyOf (Emergence::Celerity::Input::Checkpoint::ACTION_DISPATCH_STARTED);
-    _constructor.DependOn (NonFeatureSpecificComponentCleanup::Checkpoint::FINISHED);
+    _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
 
     // We are consciously adding one-frame delay from object spawn to control takeover.
     // Because otherwise we would need to add delay to all other actions, triggered by
@@ -120,12 +120,12 @@ void ControlSwitcher::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Control");
     _pipelineBuilder.AddTask ("Control::RemoveControllable"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, ControllableComponent,
-                                objectId)
-        .MakeDependencyOf ("Control::Switch"_us);
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, ControllableComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
 
+    auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Control");
     _pipelineBuilder.AddTask ("Control::Switch"_us).SetExecutor<ControlSwitcher> ();
 }
 } // namespace Control

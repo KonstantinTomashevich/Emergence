@@ -3,11 +3,11 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Gameplay/Damage.hpp>
 #include <Gameplay/DamageDealerComponent.hpp>
 #include <Gameplay/Events.hpp>
-#include <Gameplay/Mortality.hpp>
 
 namespace Damage
 {
@@ -103,16 +103,14 @@ void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) n
 {
     using namespace Emergence::Memory::Literals;
 
+    _pipelineBuilder.AddTask ("Damage::RemoveDamageDealers"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, DamageDealerComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Damage");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-
-    _pipelineBuilder.AddTask ("Damage::RemoveDamageDealers"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, DamageDealerComponent,
-                                objectId)
-        // Deletion is done after mortality to avoid unneeded graph complications due to event processing.
-        .DependOn (Mortality::Checkpoint::FINISHED);
-
     _pipelineBuilder.AddTask ("Damage::ApplyFromCollision"_us).SetExecutor<CollisionEventProcessor> ();
 }
 } // namespace Damage

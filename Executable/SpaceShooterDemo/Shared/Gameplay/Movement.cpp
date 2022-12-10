@@ -8,10 +8,10 @@
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 
 #include <Gameplay/Events.hpp>
 #include <Gameplay/InputConstant.hpp>
-#include <Gameplay/Mortality.hpp>
 #include <Gameplay/Movement.hpp>
 #include <Gameplay/MovementComponent.hpp>
 
@@ -162,22 +162,18 @@ void MovementUpdater::Execute () noexcept
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
+    _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
+        .AS_CASCADE_REMOVER_1F (DeathFixedEvent, MovementComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
+
+    _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupFixedEvent, MovementComponent, objectId)
+        .DependOn ("Movement::RemoveAfterDeath"_us)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Movement");
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-
-    _pipelineBuilder.AddTask ("Movement::RemoveAfterDeath"_us)
-        .AS_CASCADE_REMOVER_1F (DeathFixedEvent, MovementComponent, objectId)
-        .DependOn (Emergence::Celerity::Assembly::Checkpoint::FINISHED)
-        .DependOn (Checkpoint::STARTED)
-        // We process deaths from the previous frame, because mortality is processed during the end of frame.
-        .MakeDependencyOf (Mortality::Checkpoint::STARTED);
-
-    _pipelineBuilder.AddTask ("Movement::RemoveAfterTransformRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::Transform3dComponentRemovedFixedEvent, MovementComponent, objectId)
-        .DependOn ("Movement::RemoveAfterDeath"_us)
-        .MakeDependencyOf ("Movement::Update"_us);
-
     _pipelineBuilder.AddTask ("Movement::Update"_us).SetExecutor<MovementUpdater> ();
 }
 } // namespace Movement
