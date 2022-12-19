@@ -3,6 +3,8 @@
 #include <Celerity/Standard/UniqueId.hpp>
 #include <Celerity/Input/InputAction.hpp>
 
+#include <Container/String.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity

@@ -13,10 +13,13 @@ struct Font final
 
     float size = 12.0f;
 
+    uintptr_t nativeHandle = 0u;
+
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId size;
+        StandardLayout::FieldId nativeHandle;
         StandardLayout::Mapping mapping;
     };
 

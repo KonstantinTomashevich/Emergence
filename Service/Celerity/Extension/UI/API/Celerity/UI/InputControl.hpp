@@ -11,7 +11,7 @@ namespace Emergence::Celerity
 {
 enum class InputControlType
 {
-    TEXT,
+    TEXT = 0u,
     INT,
     FLOAT
 };
@@ -38,6 +38,10 @@ struct InputControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId type;
+
+        StandardLayout::FieldId onChangedAction;
+        StandardLayout::FieldId onChangedActionDispatch;
+
         StandardLayout::FieldId utf8TextValue;
         StandardLayout::FieldId intValue;
         StandardLayout::FieldId floatValue;

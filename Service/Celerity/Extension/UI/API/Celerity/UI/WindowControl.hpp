@@ -2,6 +2,8 @@
 
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Container/String.hpp>
+
 #include <Math/Vector2f.hpp>
 
 #include <StandardLayout/Mapping.hpp>
