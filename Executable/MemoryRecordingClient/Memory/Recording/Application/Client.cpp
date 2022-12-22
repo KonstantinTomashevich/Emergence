@@ -38,7 +38,7 @@ Client::Client () noexcept
     ImGui::GetIO ().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     ImGui::StyleColorsDark ();
-    ImGui_ImplSDL2_InitForSDLRenderer (window);
+    ImGui_ImplSDL2_InitForSDLRenderer (window, renderer);
     ImGui_ImplSDLRenderer_Init (renderer);
 }
 
