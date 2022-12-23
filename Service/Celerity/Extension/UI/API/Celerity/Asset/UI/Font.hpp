@@ -2,18 +2,24 @@
 
 #include <Celerity/Standard/UniqueId.hpp>
 
+#include <Render/Backend/Texture.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
+constexpr char FONT_SIZE_SEPARATOR = '#';
+
 struct Font final
 {
+    EMERGENCE_STATIONARY_DATA_TYPE (Font);
+
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
 
-    float size = 12.0f;
+    Render::Backend::Texture atlasTexture;
 
-    uintptr_t nativeHandle = 0u;
+    void *nativeHandle = nullptr;
 
     struct Reflection final
     {
