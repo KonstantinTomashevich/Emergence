@@ -6,19 +6,15 @@
 
 namespace Emergence::Celerity
 {
-struct UIRenderPass final
+struct UIAssetPin final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (UIRenderPass);
-
-    /// \brief Name of the viewport to which this pass is attached.
-    Memory::UniqueString name;
-
-    void *nativeContext = nullptr;
+    UniqueId assetUserId = INVALID_UNIQUE_ID;
+    Memory::UniqueString materialId;
 
     struct Reflection final
     {
-        StandardLayout::FieldId name;
-        StandardLayout::FieldId nativeContext;
+        StandardLayout::FieldId assetUserId;
+        StandardLayout::FieldId materialId;
         StandardLayout::Mapping mapping;
     };
 

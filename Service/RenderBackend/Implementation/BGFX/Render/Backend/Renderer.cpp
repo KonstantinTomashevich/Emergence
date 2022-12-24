@@ -23,6 +23,14 @@ SubmissionAgent::~SubmissionAgent () noexcept
     }
 }
 
+void SubmissionAgent::SetScissor (uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    encoder->setScissor (static_cast<uint16_t> (_x), static_cast<uint16_t> (_y), static_cast<uint16_t> (_width),
+                         static_cast<uint16_t> (_height));
+}
+
 void SubmissionAgent::SetState (uint64_t _state) noexcept
 {
     auto *encoder = block_cast<bgfx::Encoder *> (data);
@@ -39,6 +47,23 @@ void SubmissionAgent::SubmitGeometry (ViewportId _viewport,
     EMERGENCE_ASSERT (encoder);
     encoder->setVertexBuffer (0, &block_cast<bgfx::TransientVertexBuffer> (_vertices.data));
     encoder->setIndexBuffer (&block_cast<bgfx::TransientIndexBuffer> (_indices.data));
+    encoder->submit (static_cast<uint16_t> (_viewport), bgfx::ProgramHandle {static_cast<uint16_t> (_program)});
+}
+
+void SubmissionAgent::SubmitGeometry (ViewportId _viewport,
+                                      ProgramId _program,
+                                      const TransientVertexBuffer &_vertices,
+                                      uint32_t _verticesOffset,
+                                      uint32_t _verticesCount,
+                                      const TransientIndexBuffer &_indices,
+                                      uint32_t _indicesOffset,
+                                      uint32_t _indicesCount) noexcept
+{
+    auto *encoder = block_cast<bgfx::Encoder *> (data);
+    EMERGENCE_ASSERT (encoder);
+    encoder->setVertexBuffer (0, &block_cast<bgfx::TransientVertexBuffer> (_vertices.data), _verticesOffset,
+                              _verticesCount);
+    encoder->setIndexBuffer (&block_cast<bgfx::TransientIndexBuffer> (_indices.data), _indicesOffset, _indicesCount);
     encoder->submit (static_cast<uint16_t> (_viewport), bgfx::ProgramHandle {static_cast<uint16_t> (_program)});
 }
 

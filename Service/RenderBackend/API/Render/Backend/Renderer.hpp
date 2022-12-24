@@ -70,6 +70,9 @@ public:
     /// \invariant Uniform was constructed with UniformType::SAMPLER.
     void SetSampler (UniformId _uniform, uint8_t _stage, TextureId _texture) noexcept;
 
+    /// \brief Sets screen rect scissor for the next submit.
+    void SetScissor (uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height) noexcept;
+
     /// \brief Sets current state that controls what is written and how. See STATE_* constants.
     void SetState (uint64_t _state) noexcept;
 
@@ -78,6 +81,17 @@ public:
                          ProgramId _program,
                          const TransientVertexBuffer &_vertices,
                          const TransientIndexBuffer &_indices) noexcept;
+
+    /// \brief Custom version of SubmitGeometry that allows user to submit
+    ///        parts of the buffers by specifying custom offset and count.
+    void SubmitGeometry (ViewportId _viewport,
+                         ProgramId _program,
+                         const TransientVertexBuffer &_vertices,
+                         uint32_t _verticesOffset,
+                         uint32_t _verticesCount,
+                         const TransientIndexBuffer &_indices,
+                         uint32_t _indicesOffset,
+                         uint32_t _indicesCount) noexcept;
 
     /// \brief Informs backend that given viewport is still in use, even if no geometries were submitted to it.
     /// \details Needed to trigger internal procedures like color and depth clearing.

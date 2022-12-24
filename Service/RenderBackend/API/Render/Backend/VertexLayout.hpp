@@ -77,7 +77,11 @@ public:
     VertexLayoutBuilder &Begin () noexcept;
 
     /// \brief Push new attribute to layout. It will be registered after the previous attribute.
-    VertexLayoutBuilder &Add (Attribute _attribute, AttributeType _type, uint8_t _elementCount) noexcept;
+    /// \param _normalized GPU will convert integer type values into [0.0; 1.0] range values.
+    VertexLayoutBuilder &Add (Attribute _attribute,
+                              AttributeType _type,
+                              uint8_t _elementCount,
+                              bool _normalized = false) noexcept;
 
     /// \brief Finish building layout.
     VertexLayout End () noexcept;
