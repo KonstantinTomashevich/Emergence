@@ -23,6 +23,7 @@
 #include <Celerity/UI/UIProcessing.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 #include <Celerity/UI/UIStyle.hpp>
+#include <Celerity/UI/UI.hpp>
 #include <Celerity/UI/WindowControl.hpp>
 
 #include <imgui.h>
@@ -34,9 +35,6 @@
 namespace Emergence::Celerity::UIProcessing
 {
 using namespace Memory::Literals;
-
-const Memory::UniqueString Checkpoint::STARTED {"UIInputStarted"};
-const Memory::UniqueString Checkpoint::FINISHED {"UIInputFinished"};
 
 struct NodeInfo final
 {
@@ -562,8 +560,8 @@ UIProcessor::UIProcessor (TaskConstructor &_constructor,
       inputAccumulator (_inputAccumulator),
       styleApplier (_constructor)
 {
-    _constructor.DependOn (Checkpoint::STARTED);
-    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.DependOn (UI::Checkpoint::UPDATE_STARTED);
+    _constructor.MakeDependencyOf (UI::Checkpoint::UPDATE_FINISHED);
 
     // We produce input actions and would like to dispatch them right away.
     _constructor.MakeDependencyOf (Input::Checkpoint::ACTION_DISPATCH_STARTED);
@@ -1267,8 +1265,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         FrameInputAccumulator *_inputAccumulator,
                         const KeyCodeMapping &_keyCodeMapping) noexcept
 {
-    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
-    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask ("UIProcessor"_us).SetExecutor<UIProcessor> (_inputAccumulator, _keyCodeMapping);
 }
 } // namespace Emergence::Celerity::UIProcessing

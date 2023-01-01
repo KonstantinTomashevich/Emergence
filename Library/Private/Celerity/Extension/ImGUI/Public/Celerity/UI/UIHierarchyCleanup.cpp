@@ -6,9 +6,9 @@
 #include <Celerity/UI/ImageControl.hpp>
 #include <Celerity/UI/InputControl.hpp>
 #include <Celerity/UI/LabelControl.hpp>
+#include <Celerity/UI/UI.hpp>
 #include <Celerity/UI/UIHierarchyCleanup.hpp>
 #include <Celerity/UI/UINode.hpp>
-#include <Celerity/UI/UIProcessing.hpp>
 #include <Celerity/UI/WindowControl.hpp>
 
 namespace Emergence::Celerity::UIHierarchyCleanup
@@ -64,6 +64,7 @@ Detector::Detector (TaskConstructor &_constructor) noexcept
       fetchNodeByParentId (FETCH_VALUE_1F (UINode, parentId)),
       insertCleanupMessage (INSERT_SHORT_TERM (UICleanupMessage))
 {
+    _constructor.DependOn (UI::Checkpoint::HIERARCHY_CLEANUP_STARTED);
 }
 
 void Detector::Execute () noexcept
@@ -120,7 +121,8 @@ Remover::Remover (TaskConstructor &_constructor) noexcept
       removeWindowByNodeId (REMOVE_VALUE_1F (WindowControl, nodeId))
 {
     _constructor.DependOn (TaskNames::DETECTOR);
-    _constructor.MakeDependencyOf (UIProcessing::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (UI::Checkpoint::HIERARCHY_CLEANUP_FINISHED);
+    _constructor.MakeDependencyOf (UI::Checkpoint::UPDATE_STARTED);
 }
 
 void Remover::Execute () noexcept

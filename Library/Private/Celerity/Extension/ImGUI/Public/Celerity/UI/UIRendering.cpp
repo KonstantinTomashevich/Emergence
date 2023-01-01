@@ -8,8 +8,8 @@
 #include <Celerity/Render/Foundation/RenderFoundationSingleton.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
+#include <Celerity/UI/UI.hpp>
 #include <Celerity/UI/UIAssetPin.hpp>
-#include <Celerity/UI/UIProcessing.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 #include <Celerity/UI/UIRendering.hpp>
 
@@ -85,8 +85,10 @@ UIRenderer::UIRenderer (TaskConstructor &_constructor) noexcept
               .End ())
 {
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::VIEWPORT_SYNC_FINISHED);
-    _constructor.DependOn (UIProcessing::Checkpoint::FINISHED);
+    _constructor.DependOn (UI::Checkpoint::RENDER_STARTED);
+    _constructor.DependOn (UI::Checkpoint::UPDATE_STARTED);
     _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_FINISHED);
+    _constructor.MakeDependencyOf (UI::Checkpoint::RENDER_FINISHED);
 }
 
 void UIRenderer::Execute ()
