@@ -13,11 +13,14 @@ struct UIRenderPass final
     /// \brief Name of the viewport to which this pass is attached.
     Memory::UniqueString name;
 
+    Memory::UniqueString defaultStyleId;
+
     void *nativeContext = nullptr;
 
     struct Reflection final
     {
         StandardLayout::FieldId name;
+        StandardLayout::FieldId defaultStyleId;
         StandardLayout::FieldId nativeContext;
         StandardLayout::Mapping mapping;
     };

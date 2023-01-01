@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Celerity/Standard/UniqueId.hpp>
+#include <Celerity/Input/InputAction.hpp>
+#include <Celerity/UI/ContainerControl.hpp>
 
 #include <Container/String.hpp>
 
@@ -23,11 +25,17 @@ struct WindowControl final
     bool hasTitleBar = true;
     bool pack = false;
 
+    bool open = true;
+    ContainerControlLayout layout = ContainerControlLayout::VERTICAL;
+
     Math::Vector2f anchor;
     int32_t x = 0;
     int32_t y = 0;
     uint32_t width = 0u;
     uint32_t height = 0u;
+
+    InputAction onClosedAction;
+    InputActionDispatchType onClosedActionDispatch = InputActionDispatchType::NORMAL;
 
     struct Reflection final
     {
@@ -41,11 +49,17 @@ struct WindowControl final
         StandardLayout::FieldId hasTitleBar;
         StandardLayout::FieldId pack;
 
+        StandardLayout::FieldId open;
+        StandardLayout::FieldId layout;
+
         StandardLayout::FieldId anchor;
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
+
+        StandardLayout::FieldId onClosedAction;
+        StandardLayout::FieldId onClosedActionDispatch;
         StandardLayout::Mapping mapping;
     };
 

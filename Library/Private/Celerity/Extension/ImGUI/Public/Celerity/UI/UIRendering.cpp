@@ -9,6 +9,7 @@
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/UI/UIAssetPin.hpp>
+#include <Celerity/UI/UIProcessing.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 #include <Celerity/UI/UIRendering.hpp>
 
@@ -75,14 +76,16 @@ UIRenderer::UIRenderer (TaskConstructor &_constructor) noexcept
       fetchRenderPasses (FETCH_ASCENDING_RANGE (UIRenderPass, name)),
       fetchViewportById (FETCH_VALUE_1F (Viewport, name)),
 
-      imGUIVertexLayout (Render::Backend::VertexLayoutBuilder {}
-                        .Begin ()
-                        .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
-                        .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
-                        .Add (Render::Backend::Attribute::COLOR_0, Render::Backend::AttributeType::UINT8, 4u, true)
-                        .End ())
+      imGUIVertexLayout (
+          Render::Backend::VertexLayoutBuilder {}
+              .Begin ()
+              .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
+              .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
+              .Add (Render::Backend::Attribute::COLOR_0, Render::Backend::AttributeType::UINT8, 4u, true)
+              .End ())
 {
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::VIEWPORT_SYNC_FINISHED);
+    _constructor.DependOn (UIProcessing::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_FINISHED);
 }
 

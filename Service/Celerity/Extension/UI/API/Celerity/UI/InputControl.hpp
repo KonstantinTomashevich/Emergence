@@ -30,7 +30,7 @@ struct InputControl final
     union
     {
         std::array<char, MAX_TEXT_LENGTH> utf8TextValue;
-        int64_t intValue;
+        int32_t intValue;
         float floatValue;
     };
 

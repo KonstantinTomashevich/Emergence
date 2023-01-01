@@ -9,7 +9,7 @@ const UIStyleColorProperty::Reflection &UIStyleColorProperty::Reflect () noexcep
     static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UIStyleColorProperty);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (styleId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (property);
         EMERGENCE_MAPPING_REGISTER_REGULAR (red);
         EMERGENCE_MAPPING_REGISTER_REGULAR (green);
@@ -26,7 +26,7 @@ const UIStyleFloatProperty::Reflection &UIStyleFloatProperty::Reflect () noexcep
     static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UIStyleFloatProperty);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (styleId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (property);
         EMERGENCE_MAPPING_REGISTER_REGULAR (value);
         EMERGENCE_MAPPING_REGISTRATION_END ();
@@ -40,7 +40,7 @@ const UIStyleFloatPairProperty::Reflection &UIStyleFloatPairProperty::Reflect ()
     static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UIStyleFloatPairProperty);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (styleId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (property);
         EMERGENCE_MAPPING_REGISTER_REGULAR (x);
         EMERGENCE_MAPPING_REGISTER_REGULAR (y);
@@ -55,7 +55,7 @@ const UIStyleFontProperty::Reflection &UIStyleFontProperty::Reflect () noexcept
     static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UIStyleFontProperty);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (styleId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fontId);
         EMERGENCE_MAPPING_REGISTRATION_END ();

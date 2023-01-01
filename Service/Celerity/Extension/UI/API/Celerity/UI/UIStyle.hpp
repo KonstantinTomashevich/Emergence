@@ -32,7 +32,7 @@ enum class UIStyleColorPropertyName
     HEADER_HOVERED,
     HEADER_ACTIVE,
     SEPARATOR,
-    SEPARATOR_HOVER,
+    SEPARATOR_HOVERED,
     SEPARATOR_ACTIVE,
     RESIZE_GRIP,
     RESIZE_GRIP_HOVERED,
@@ -46,7 +46,7 @@ enum class UIStyleColorPropertyName
 
 struct UIStyleColorProperty final
 {
-    UniqueId nodeId = INVALID_UNIQUE_ID;
+    Memory::UniqueString styleId;
     UIStyleColorPropertyName property = UIStyleColorPropertyName::TEXT;
 
     union
@@ -64,7 +64,7 @@ struct UIStyleColorProperty final
 
     struct Reflection final
     {
-        StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId styleId;
         StandardLayout::FieldId property;
         StandardLayout::FieldId red;
         StandardLayout::FieldId green;
@@ -96,13 +96,13 @@ enum class UIStyleFloatPropertyName
 
 struct UIStyleFloatProperty final
 {
-    UniqueId nodeId = INVALID_UNIQUE_ID;
+    Memory::UniqueString styleId;
     UIStyleFloatPropertyName property = UIStyleFloatPropertyName::ALPHA;
     float value = 0.0f;
 
     struct Reflection final
     {
-        StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId styleId;
         StandardLayout::FieldId property;
         StandardLayout::FieldId value;
         StandardLayout::Mapping mapping;
@@ -124,14 +124,14 @@ enum class UIStyleFloatPairPropertyName
 
 struct UIStyleFloatPairProperty final
 {
-    UniqueId nodeId = INVALID_UNIQUE_ID;
+    Memory::UniqueString styleId;
     UIStyleFloatPairPropertyName property = UIStyleFloatPairPropertyName::WINDOW_PADDING;
     float x = 0.0f;
     float y = 0.0f;
 
     struct Reflection final
     {
-        StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId styleId;
         StandardLayout::FieldId property;
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
@@ -143,13 +143,13 @@ struct UIStyleFloatPairProperty final
 
 struct UIStyleFontProperty final
 {
-    UniqueId nodeId = INVALID_UNIQUE_ID;
+    Memory::UniqueString styleId;
     UniqueId assetUserId = INVALID_UNIQUE_ID;
     Memory::UniqueString fontId;
 
     struct Reflection final
     {
-        StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId styleId;
         StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId fontId;
         StandardLayout::Mapping mapping;

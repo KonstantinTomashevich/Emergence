@@ -22,6 +22,7 @@ const UIRenderPass::Reflection &UIRenderPass::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UIRenderPass);
         EMERGENCE_MAPPING_REGISTER_REGULAR (name);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (defaultStyleId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (nativeContext);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

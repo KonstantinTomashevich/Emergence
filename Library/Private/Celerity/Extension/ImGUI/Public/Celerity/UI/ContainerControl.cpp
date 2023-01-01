@@ -14,6 +14,7 @@ const ContainerControl::Reflection &ContainerControl::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (layout);
         EMERGENCE_MAPPING_REGISTER_REGULAR (width);
         EMERGENCE_MAPPING_REGISTER_REGULAR (height);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (border);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
