@@ -9,7 +9,7 @@
 
 namespace Emergence::Celerity
 {
-enum class InputControlType
+enum class InputControlType : uint8_t
 {
     TEXT = 0u,
     INT,

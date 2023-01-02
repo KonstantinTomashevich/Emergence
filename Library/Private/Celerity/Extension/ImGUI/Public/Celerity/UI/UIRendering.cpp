@@ -21,6 +21,7 @@ namespace Emergence::Celerity::UIRendering
 {
 static const Memory::UniqueString MATERIAL_ID {"ImGUI"};
 static const Memory::UniqueString TEXTURE_UNIFORM_NAME {"colorTexture"};
+static const Memory::UniqueString HAS_TEXTURE_UNIFORM_NAME {"hasColorTexture"};
 
 class UIRenderer final : public TaskExecutorBase<UIRenderer>
 {
@@ -38,11 +39,14 @@ private:
 
     bool FetchMaterialProgram (Render::Backend::ProgramId &_idOutput) noexcept;
 
-    bool FetchTextureUniform (Render::Backend::UniformId &_idOutput, uint8_t &_textureStageOutput) noexcept;
+    bool FetchTextureUniform (Render::Backend::UniformId &_hasTextureIdOutput,
+                              Render::Backend::UniformId &_textureIdOutput,
+                              uint8_t &_textureStageOutput) noexcept;
 
     void ProcessRenderPass (const UIRenderPass *_renderPass,
                             Render::Backend::SubmissionAgent &_agent,
                             Render::Backend::ProgramId _programId,
+                            Render::Backend::UniformId _hasTextureUniformId,
                             Render::Backend::UniformId _textureUniformId,
                             uint8_t _textureStage) noexcept;
 
@@ -93,17 +97,18 @@ UIRenderer::UIRenderer (TaskConstructor &_constructor) noexcept
 
 void UIRenderer::Execute ()
 {
-    if (IsAssetPinExists ())
+    if (!IsAssetPinExists ())
     {
         CreateAssetPin ();
     }
 
     Render::Backend::ProgramId programId;
     Render::Backend::UniformId textureUniformId;
+    Render::Backend::UniformId hasTextureUniformId;
     uint8_t textureStage;
 
     if (!CheckMaterialAssetStatus () || !FetchMaterialProgram (programId) ||
-        !FetchTextureUniform (textureUniformId, textureStage))
+        !FetchTextureUniform (hasTextureUniformId, textureUniformId, textureStage))
     {
         return;
     }
@@ -115,7 +120,7 @@ void UIRenderer::Execute ()
     for (auto renderPassCursor = fetchRenderPasses.Execute (nullptr, nullptr);
          const auto *renderPass = static_cast<const UIRenderPass *> (*renderPassCursor); ++renderPassCursor)
     {
-        ProcessRenderPass (renderPass, agent, programId, textureUniformId, textureStage);
+        ProcessRenderPass (renderPass, agent, programId, hasTextureUniformId, textureUniformId, textureStage);
     }
 }
 
@@ -158,7 +163,9 @@ bool UIRenderer::FetchMaterialProgram (Render::Backend::ProgramId &_idOutput) no
     return false;
 }
 
-bool UIRenderer::FetchTextureUniform (Render::Backend::UniformId &_idOutput, uint8_t &_textureStageOutput) noexcept
+bool UIRenderer::FetchTextureUniform (Render::Backend::UniformId &_hasTextureIdOutput,
+                                      Render::Backend::UniformId &_textureIdOutput,
+                                      uint8_t &_textureStageOutput) noexcept
 {
     struct
     {
@@ -167,13 +174,27 @@ bool UIRenderer::FetchTextureUniform (Render::Backend::UniformId &_idOutput, uin
     } uniformQuery;
 
     uniformQuery.assetId = MATERIAL_ID;
+    uniformQuery.name = HAS_TEXTURE_UNIFORM_NAME;
+
+    if (auto cursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
+        const auto *uniform = static_cast<const Uniform *> (*cursor))
+    {
+        EMERGENCE_ASSERT (uniform->type == Render::Backend::UniformType::VECTOR_4F);
+        _hasTextureIdOutput = uniform->uniform.GetId ();
+    }
+    else
+    {
+        return false;
+    }
+
+    uniformQuery.assetId = MATERIAL_ID;
     uniformQuery.name = TEXTURE_UNIFORM_NAME;
 
     if (auto cursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
         const auto *uniform = static_cast<const Uniform *> (*cursor))
     {
         EMERGENCE_ASSERT (uniform->type == Render::Backend::UniformType::SAMPLER);
-        _idOutput = uniform->uniform.GetId ();
+        _textureIdOutput = uniform->uniform.GetId ();
         _textureStageOutput = uniform->textureStage;
         return true;
     }
@@ -184,6 +205,7 @@ bool UIRenderer::FetchTextureUniform (Render::Backend::UniformId &_idOutput, uin
 void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
                                     Render::Backend::SubmissionAgent &_agent,
                                     Render::Backend::ProgramId _programId,
+                                    Render::Backend::UniformId _hasTextureUniformId,
                                     Render::Backend::UniformId _textureUniformId,
                                     uint8_t _textureStage) noexcept
 {
@@ -211,16 +233,16 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
     }
 
     const float frameBufferWidth = data->DisplaySize.x * data->FramebufferScale.x;
-    const float frameBufferHeight = data->DisplaySize.x * data->FramebufferScale.y;
+    const float frameBufferHeight = data->DisplaySize.y * data->FramebufferScale.y;
 
     if (frameBufferWidth <= 0.0f || frameBufferHeight <= 0.0f)
     {
         return;
     }
 
-    const Math::Vector2f halfOrthographicSize {data->DisplaySize.x * 0.5f, data->DisplaySize.y * 0.5f};
+    const Math::Vector2f halfOrthographicSize {data->DisplaySize.x * 0.5f, -data->DisplaySize.y * 0.5f};
     const Math::Transform2d viewTransform {
-        {data->DisplayPos.x + halfOrthographicSize.x, data->DisplayPos.y + halfOrthographicSize.y}, 0.0f, {1.0f, 1.0f}};
+        {data->DisplayPos.x + halfOrthographicSize.x, data->DisplayPos.y - halfOrthographicSize.y}, 0.0f, {1.0f, 1.0f}};
     viewport->viewport.SubmitOrthographicView (viewTransform, halfOrthographicSize);
 
     for (int listIndex = 0u; listIndex < data->CmdListsCount; ++listIndex)
@@ -285,8 +307,16 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
                                  Render::Backend::STATE_MSAA | Render::Backend::STATE_BLEND_ALPHA);
 
                 static_assert (sizeof (Render::Backend::TextureId) == sizeof (ImTextureID));
-                _agent.SetSampler (_textureUniformId, _textureStage,
-                                   *reinterpret_cast<const Render::Backend::TextureId *> (&command.TextureId));
+                if (command.TextureId)
+                {
+                    _agent.SetVector4f (_hasTextureUniformId, Math::Vector4f::ONE);
+                    _agent.SetSampler (_textureUniformId, _textureStage,
+                                       *reinterpret_cast<const Render::Backend::TextureId *> (&command.TextureId));
+                }
+                else
+                {
+                    _agent.SetVector4f (_hasTextureUniformId, Math::Vector4f::ZERO);
+                }
 
                 _agent.SubmitGeometry (viewport->viewport.GetId (), _programId, vertexBuffer, command.VtxOffset,
                                        totalVertices - command.VtxOffset, indexBuffer, command.IdxOffset,

@@ -54,9 +54,15 @@ AssetFileLoadingStatus AssetFileLoadingState::ContinueLoading (uint32_t _chunkSi
 
 const AssetFileLoadingState::Reflection &AssetFileLoadingState::Reflect () noexcept
 {
-    static Reflection reflection = [] ()
+    static Reflection reflection = InstancedReflect (Memory::UniqueString {"AssetFileLoadingState"});
+    return reflection;
+}
+
+AssetFileLoadingState::Reflection AssetFileLoadingState::InstancedReflect (Memory::UniqueString _name) noexcept
+{
+    Reflection reflection = [_name] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (AssetFileLoadingState);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME (AssetFileLoadingState, _name);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (data);
         EMERGENCE_MAPPING_REGISTER_REGULAR (size);

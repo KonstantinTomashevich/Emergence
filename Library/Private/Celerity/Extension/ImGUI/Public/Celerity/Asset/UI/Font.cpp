@@ -10,7 +10,11 @@ Font::Font () noexcept = default;
 
 Font::~Font () noexcept
 {
-    delete static_cast<ImFontAtlas *> (nativeHandle);
+    if (nativeHandle)
+    {
+        static_cast<ImFontAtlas *> (nativeHandle)->~ImFontAtlas ();
+        ImGui::MemFree (nativeHandle);
+    }
 }
 
 const Font::Reflection &Font::Reflect () noexcept

@@ -32,6 +32,13 @@ InputEvent::InputEvent (uint64_t _timeNs, const MouseWheelEvent &_event) noexcep
 {
 }
 
+InputEvent::InputEvent (uint64_t _timeNs, const TextInputEvent &_event) noexcept
+    : type (InputEventType::TEXT_INPUT),
+      timeNs (_timeNs),
+      textInput (_event)
+{
+}
+
 const InputEvent &FrameInputAccumulator::EventIterator::operator* () const noexcept
 {
     EMERGENCE_ASSERT (eventsVector && baseIterator != eventsVector->end ());

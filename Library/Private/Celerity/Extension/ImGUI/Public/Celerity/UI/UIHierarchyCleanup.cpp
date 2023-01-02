@@ -1,3 +1,4 @@
+#include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/UI/ButtonControl.hpp>
 #include <Celerity/UI/CheckboxControl.hpp>
@@ -120,6 +121,10 @@ Remover::Remover (TaskConstructor &_constructor) noexcept
       removeNodeByNodeId (REMOVE_VALUE_1F (UINode, nodeId)),
       removeWindowByNodeId (REMOVE_VALUE_1F (WindowControl, nodeId))
 {
+    // We delay removal processing in asset management by one frame, because otherwise
+    // we won't be able to delete ImageControl after AssetManagement.
+    _constructor.DependOn (AssetManagement::Checkpoint::FINISHED);
+
     _constructor.DependOn (TaskNames::DETECTOR);
     _constructor.MakeDependencyOf (UI::Checkpoint::HIERARCHY_CLEANUP_FINISHED);
     _constructor.MakeDependencyOf (UI::Checkpoint::UPDATE_STARTED);

@@ -19,6 +19,7 @@ sober_library_begin ("${GAME_NAME}Logic" STATIC)
     sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PRIVATE Memory)
     sober_library_use_service (EXPECTED PRIVATE MemoryProfiler)
+    sober_library_use_service (EXPECTED PRIVATE CelerityUI)
 
     sober_variant_begin (Original)
     sober_variant_end ()

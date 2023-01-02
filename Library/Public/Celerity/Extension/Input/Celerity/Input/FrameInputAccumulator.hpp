@@ -14,6 +14,7 @@ enum class InputEventType
     MOUSE_BUTTON,
     MOUSE_MOTION,
     MOUSE_WHEEL,
+    TEXT_INPUT,
 };
 
 /// \brief Stores information about keyboard input event.
@@ -80,6 +81,16 @@ struct MouseWheelEvent final
     float y = 0.0f;
 };
 
+/// \brief Stores information about text input from keyboard or other sources (like Android keyboard widget).
+struct TextInputEvent final
+{
+    /// \brief Maximum amount of bytes per one input event.
+    static constexpr size_t TEXT_BUFFER_SIZE = 32u;
+
+    /// \brief Input text encoded in utf8 format with zero terminator.
+    std::array<char, TEXT_BUFFER_SIZE> utf8Value;
+};
+
 /// \brief Universal structure for storing information about physical input.
 struct InputEvent final
 {
@@ -90,6 +101,8 @@ struct InputEvent final
     InputEvent (uint64_t _timeNs, const MouseMotionEvent &_event) noexcept;
 
     InputEvent (uint64_t _timeNs, const MouseWheelEvent &_event) noexcept;
+
+    InputEvent (uint64_t _timeNs, const TextInputEvent &_event) noexcept;
 
     /// \brief Type of event that is stored inside.
     InputEventType type;
@@ -103,6 +116,7 @@ struct InputEvent final
         MouseButtonEvent mouseButton;
         MouseMotionEvent mouseMotion;
         MouseWheelEvent mouseWheel;
+        TextInputEvent textInput;
     };
 };
 

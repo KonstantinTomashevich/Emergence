@@ -28,7 +28,9 @@ struct WindowControl final
     bool open = true;
     ContainerControlLayout layout = ContainerControlLayout::VERTICAL;
 
-    Math::Vector2f anchor;
+    Math::Vector2f anchor = Math::Vector2f::ZERO;
+    Math::Vector2f pivot = Math::Vector2f::ZERO;
+
     int32_t x = 0;
     int32_t y = 0;
     uint32_t width = 0u;
@@ -53,6 +55,8 @@ struct WindowControl final
         StandardLayout::FieldId layout;
 
         StandardLayout::FieldId anchor;
+        StandardLayout::FieldId pivot;
+
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
         StandardLayout::FieldId width;

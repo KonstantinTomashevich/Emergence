@@ -4,12 +4,14 @@
 
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/UI/Font.hpp>
+#include <Celerity/Asset/UI/FontUtility.hpp>
 #include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionHolder.hpp>
 #include <Celerity/Input/Keyboard.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Texture.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/UI/ButtonControl.hpp>
@@ -18,17 +20,18 @@
 #include <Celerity/UI/ImageControl.hpp>
 #include <Celerity/UI/InputControl.hpp>
 #include <Celerity/UI/LabelControl.hpp>
-#include <Celerity/UI/UIAssetPin.hpp>
+#include <Celerity/UI/UI.hpp>
 #include <Celerity/UI/UINode.hpp>
 #include <Celerity/UI/UIProcessing.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 #include <Celerity/UI/UIStyle.hpp>
-#include <Celerity/UI/UI.hpp>
 #include <Celerity/UI/WindowControl.hpp>
 
 #include <imgui.h>
 
 #include <Log/Log.hpp>
+
+#include <Math/Scalar.hpp>
 
 #include <Memory/Stack.hpp>
 
@@ -92,7 +95,10 @@ NodeOrderingStack::Sequence::Sequence (NodeOrderingStack *_stack) noexcept
 NodeOrderingStack::Sequence::~Sequence () noexcept
 {
     EMERGENCE_ASSERT (stack->stack.Head () == sequenceEnd);
-    stack->stack.Release (sequenceBegin);
+    if (sequenceBegin != sequenceEnd)
+    {
+        stack->stack.Release (sequenceBegin);
+    }
 }
 
 void NodeOrderingStack::Sequence::Add (UniqueId _nodeId, uint64_t _sortIndex) noexcept
@@ -481,7 +487,7 @@ public:
     void Execute ();
 
 private:
-    static void *CreateContext () noexcept;
+    static void CreateContext (UIRenderPass *_renderPass) noexcept;
 
     void SubmitInput (const Viewport *_viewport) noexcept;
 
@@ -566,8 +572,11 @@ UIProcessor::UIProcessor (TaskConstructor &_constructor,
     // We produce input actions and would like to dispatch them right away.
     _constructor.MakeDependencyOf (Input::Checkpoint::ACTION_DISPATCH_STARTED);
 
-    keyMap[_keyCodeMapping.keyEscape] = ImGuiKey_Escape;
+    // We work with render passes, so we need to be dependency of render pipeline.
+    _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
+
     keyMap[_keyCodeMapping.keyReturn] = ImGuiKey_Enter;
+    keyMap[_keyCodeMapping.keyEscape] = ImGuiKey_Escape;
     keyMap[_keyCodeMapping.keyBackspace] = ImGuiKey_Backspace;
     keyMap[_keyCodeMapping.keyTab] = ImGuiKey_Tab;
     keyMap[_keyCodeMapping.keyExclaim] = ImGuiKey_1;
@@ -838,43 +847,50 @@ void UIProcessor::Execute ()
 
         if (!renderPass->nativeContext)
         {
-            renderPass->nativeContext = CreateContext ();
+            CreateContext (renderPass);
         }
 
         ImGui::SetCurrentContext (static_cast<ImGuiContext *> (renderPass->nativeContext));
         ImGuiIO &io = ImGui::GetIO ();
         io.DisplaySize = {static_cast<float> (viewport->width), static_cast<float> (viewport->height)};
         io.DisplayFramebufferScale = {1.0f, 1.0f};
-        io.DeltaTime = time->realNormalDurationS;
+
+        // If delta time is zero (due to breakpoint, for example), supply fake delta time.
+        // ImGUI crashes if delta time is zero.
+        io.DeltaTime = Math::NearlyEqual (time->realNormalDurationS, 0.0f) ? 0.01f : time->realNormalDurationS;
+
         SubmitInput (viewport);
         ImGui::NewFrame ();
 
-        const StyleApplier::Context styleContext {&styleApplier, renderPass->defaultStyleId};
-        NodeOrderingStack::Sequence orderingSequence {&nodeOrderingStack};
-
-        for (auto windowCursor = fetchWindowControlByViewport.Execute (&viewport->name);
-             const auto *window = static_cast<const WindowControl *> (*windowCursor); ++windowCursor)
         {
-            auto nodeCursor = fetchNodeByNodeId.Execute (&window->nodeId);
-            const auto *node = static_cast<const UINode *> (*nodeCursor);
-            EMERGENCE_ASSERT (node);
-            EMERGENCE_ASSERT (node->parentId == INVALID_UNIQUE_ID);
-            orderingSequence.Add (node->nodeId, node->sortIndex);
-        }
+            const StyleApplier::Context styleContext {&styleApplier, renderPass->defaultStyleId};
+            NodeOrderingStack::Sequence orderingSequence {&nodeOrderingStack};
 
-        orderingSequence.Sort ();
-        for (const NodeInfo &info : orderingSequence)
-        {
-            auto nodeCursor = fetchNodeByNodeId.Execute (&info.nodeId);
-            const auto *node = static_cast<const UINode *> (*nodeCursor);
-            ProcessNode (node);
+            for (auto windowCursor = fetchWindowControlByViewport.Execute (&viewport->name);
+                 const auto *window = static_cast<const WindowControl *> (*windowCursor); ++windowCursor)
+            {
+                auto nodeCursor = fetchNodeByNodeId.Execute (&window->nodeId);
+                const auto *node = static_cast<const UINode *> (*nodeCursor);
+                EMERGENCE_ASSERT (node);
+                EMERGENCE_ASSERT (node->parentId == INVALID_UNIQUE_ID);
+                orderingSequence.Add (node->nodeId, node->sortIndex);
+            }
+
+            orderingSequence.Sort ();
+            for (const NodeInfo &info : orderingSequence)
+            {
+                auto nodeCursor = fetchNodeByNodeId.Execute (&info.nodeId);
+                const auto *node = static_cast<const UINode *> (*nodeCursor);
+                ProcessNode (node);
+            }
         }
 
         ConsumeInput ();
+        ImGui::Render ();
     }
 }
 
-void *UIProcessor::CreateContext () noexcept
+void UIProcessor::CreateContext (UIRenderPass *_renderPass) noexcept
 {
     ImGuiContext *context = ImGui::CreateContext ();
     ImGuiIO &io = ImGui::GetIO ();
@@ -882,8 +898,15 @@ void *UIProcessor::CreateContext () noexcept
     io.BackendPlatformName = "Emergence::Celerity::UI";
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
+    // Disable automatic setting saving.
+    io.IniFilename = nullptr;
+
     // TODO: Add clipboard implementation using SDL2?
-    return context;
+
+    _renderPass->nativeContext = context;
+    _renderPass->defaultFontTexture = BakeFontAtlas (io.Fonts);
+
+    // TODO: Attach allocation profiling.
 }
 
 void UIProcessor::SubmitInput (const Viewport *_viewport) noexcept
@@ -902,12 +925,30 @@ void UIProcessor::SubmitInput (const Viewport *_viewport) noexcept
         switch (event.type)
         {
         case InputEventType::KEYBOARD:
-            EMERGENCE_ASSERT (keyMap.contains (event.keyboard.keyCode));
-            io.AddKeyEvent (keyMap.at (event.keyboard.keyCode), event.keyboard.keyState == KeyState::DOWN);
+        {
+            if (auto mapIterator = keyMap.find (event.keyboard.keyCode); mapIterator != keyMap.end ())
+            {
+                const ImGuiKey imGuiKey = mapIterator->second;
+                io.AddKeyEvent (imGuiKey, event.keyboard.keyState == KeyState::DOWN);
+                io.SetKeyEventNativeData (imGuiKey, static_cast<int> (event.keyboard.keyCode),
+                                          static_cast<int> (event.keyboard.scanCode));
+            }
+            else
+            {
+                EMERGENCE_LOG (ERROR, "UI: Encountered unknown key input -- { keyCode = ", event.keyboard.keyCode,
+                               ", scanCode = ", event.keyboard.scanCode, " }.");
+            }
+
             break;
+        }
 
         case InputEventType::MOUSE_BUTTON:
-            if (isInViewport (event.mouseButton.mouseX, event.mouseButton.mouseY))
+            // We need to detect clicks only when they are inside viewport, but releases should be visible to all
+            // viewports. Otherwise, it is possible for viewport to be in a false-dragging situation, when user
+            // actually stopped pressing left mouse button, but viewport didn't receive it and will continue drag&drop
+            // when user cursor returns into it.
+            if (event.mouseButton.state == KeyState::UP ||
+                isInViewport (event.mouseButton.mouseX, event.mouseButton.mouseY))
             {
                 switch (event.mouseButton.button)
                 {
@@ -944,6 +985,10 @@ void UIProcessor::SubmitInput (const Viewport *_viewport) noexcept
         case InputEventType::MOUSE_WHEEL:
             io.AddMouseWheelEvent (event.mouseWheel.x, event.mouseWheel.y);
             break;
+
+        case InputEventType::TEXT_INPUT:
+            io.AddInputCharactersUTF8 (event.textInput.utf8Value.data ());
+            break;
         }
     }
 }
@@ -967,6 +1012,10 @@ void UIProcessor::ConsumeInput () noexcept
         case InputEventType::MOUSE_WHEEL:
             consume = io.WantCaptureMouse;
             break;
+
+        case InputEventType::TEXT_INPUT:
+            consume = io.WantTextInput;
+            break;
         }
 
         if (consume)
@@ -989,42 +1038,59 @@ void UIProcessor::ProcessNode (const UINode *_node) noexcept
         const auto *button = static_cast<const ButtonControl *> (*buttonCursor))
     {
         ProcessControl (button);
-    }
-    else if (auto checkboxCursor = editCheckboxControlByNodeId.Execute (&_node->nodeId);
-             auto *checkbox = static_cast<CheckboxControl *> (*checkboxCursor))
-    {
-        ProcessControl (checkbox);
-    }
-    else if (auto containerCursor = fetchContainerControlByNodeId.Execute (&_node->nodeId);
-             const auto *container = static_cast<const ContainerControl *> (*containerCursor))
-    {
-        ProcessControl (container);
-    }
-    else if (auto imageCursor = fetchImageControlByNodeId.Execute (&_node->nodeId);
-             const auto *image = static_cast<const ImageControl *> (*imageCursor))
-    {
-        ProcessControl (image);
-    }
-    else if (auto inputCursor = editInputControlByNodeId.Execute (&_node->nodeId);
-             auto *input = static_cast<InputControl *> (*inputCursor))
-    {
-        ProcessControl (input);
-    }
-    else if (auto labelCursor = fetchLabelControlByNodeId.Execute (&_node->nodeId);
-             const auto *label = static_cast<const LabelControl *> (*labelCursor))
-    {
-        ProcessControl (label);
-    }
-    else if (auto windowCursor = editWindowControlByNodeId.Execute (&_node->nodeId);
-             auto *window = static_cast<WindowControl *> (*windowCursor))
-    {
-        ProcessControl (window);
-    }
-    else
-    {
-        EMERGENCE_LOG (WARNING, "UI: Node ", _node->nodeId, " has no control attached to it!");
+        ImGui::PopID ();
+        return;
     }
 
+    if (auto checkboxCursor = editCheckboxControlByNodeId.Execute (&_node->nodeId);
+        auto *checkbox = static_cast<CheckboxControl *> (*checkboxCursor))
+    {
+        ProcessControl (checkbox);
+        ImGui::PopID ();
+        return;
+    }
+
+    if (auto containerCursor = fetchContainerControlByNodeId.Execute (&_node->nodeId);
+        const auto *container = static_cast<const ContainerControl *> (*containerCursor))
+    {
+        ProcessControl (container);
+        ImGui::PopID ();
+        return;
+    }
+
+    if (auto imageCursor = fetchImageControlByNodeId.Execute (&_node->nodeId);
+        const auto *image = static_cast<const ImageControl *> (*imageCursor))
+    {
+        ProcessControl (image);
+        ImGui::PopID ();
+        return;
+    }
+
+    if (auto inputCursor = editInputControlByNodeId.Execute (&_node->nodeId);
+        auto *input = static_cast<InputControl *> (*inputCursor))
+    {
+        ProcessControl (input);
+        ImGui::PopID ();
+        return;
+    }
+
+    if (auto labelCursor = fetchLabelControlByNodeId.Execute (&_node->nodeId);
+        const auto *label = static_cast<const LabelControl *> (*labelCursor))
+    {
+        ProcessControl (label);
+        ImGui::PopID ();
+        return;
+    }
+
+    if (auto windowCursor = editWindowControlByNodeId.Execute (&_node->nodeId);
+        auto *window = static_cast<WindowControl *> (*windowCursor))
+    {
+        ProcessControl (window);
+        ImGui::PopID ();
+        return;
+    }
+
+    EMERGENCE_LOG (WARNING, "UI: Node ", _node->nodeId, " has no control attached to it!");
     ImGui::PopID ();
 }
 
@@ -1202,9 +1268,19 @@ void UIProcessor::ProcessControl (WindowControl *_control) noexcept
     const auto anchorX = static_cast<int32_t> (ImGui::GetIO ().DisplaySize.x * _control->anchor.x);
     const auto anchorY = static_cast<int32_t> (ImGui::GetIO ().DisplaySize.y * _control->anchor.y);
 
-    ImGui::SetNextWindowPos ({static_cast<float> (anchorX + _control->x), static_cast<float> (anchorY + _control->y)});
-    ImGui::SetNextWindowSize ({static_cast<float> (_control->width), static_cast<float> (_control->height)});
+    const auto pivotX = -static_cast<int32_t> (static_cast<float> (_control->width) * _control->pivot.x);
+    const auto pivotY = -static_cast<int32_t> (static_cast<float> (_control->height) * _control->pivot.y);
 
+    // Setting next window position resets window drag&drop feature,
+    // therefore we need to detect dragging and stop settings window position when it happens.
+    if (!_control->movable || !ImGui::IsMouseDragging (ImGuiMouseButton_Left))
+    {
+        ImGui::SetNextWindowPos (
+            {static_cast<float> (anchorX + pivotX + _control->x), static_cast<float> (anchorY + pivotY + _control->y)},
+            ImGuiCond_Always);
+    }
+
+    ImGui::SetNextWindowSize ({static_cast<float> (_control->width), static_cast<float> (_control->height)});
     if (ImGui::Begin (_control->title.c_str (), _control->closable ? &_control->open : nullptr, flags))
     {
         NodeOrderingStack::Sequence orderingSequence {&nodeOrderingStack};
@@ -1226,11 +1302,17 @@ void UIProcessor::ProcessControl (WindowControl *_control) noexcept
         holder->dispatchType = _control->onClosedActionDispatch;
     }
 
-    _control->x = static_cast<int32_t> (ImGui::GetWindowPos ().x) - anchorX;
-    _control->y = static_cast<int32_t> (ImGui::GetWindowPos ().y) - anchorY;
+    _control->x = static_cast<int32_t> (ImGui::GetWindowPos ().x) - anchorX - pivotX;
+    _control->y = static_cast<int32_t> (ImGui::GetWindowPos ().y) - anchorY - pivotY;
 
-    _control->width = static_cast<uint32_t> (ImGui::GetWindowWidth ());
-    _control->height = static_cast<uint32_t> (ImGui::GetWindowHeight ());
+    // We do not read values from collapsed windows in order to
+    // be able to restore original size when windows appear again.
+    if (!ImGui::IsWindowCollapsed ())
+    {
+        _control->width = static_cast<uint32_t> (ImGui::GetWindowWidth ());
+        _control->height = static_cast<uint32_t> (ImGui::GetWindowHeight ());
+    }
+
     ImGui::End ();
 }
 

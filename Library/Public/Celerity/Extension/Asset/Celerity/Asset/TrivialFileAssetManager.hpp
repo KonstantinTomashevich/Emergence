@@ -40,6 +40,8 @@ public:
     void Execute () noexcept;
 
 private:
+    static const AssetFileLoadingState::Reflection &InstancedAssetFileLoadingStateReflection () noexcept;
+
     void ProcessLoading () noexcept;
 
     AssetState StartLoading (Memory::UniqueString _assetId) noexcept;
@@ -72,9 +74,10 @@ TrivialFileAssetManager<Successor>::TrivialFileAssetManager (
       fetchAssetRemovedEvents (FETCH_SEQUENCE (AssetRemovedNormalEvent)),
       fetchAssetByTypeNumberAndState (FETCH_VALUE_2F (Asset, typeNumber, state)),
 
-      insertAssetFileLoadingState (INSERT_LONG_TERM (AssetFileLoadingState)),
+      insertAssetFileLoadingState (_constructor.InsertLongTerm (InstancedAssetFileLoadingStateReflection ().mapping)),
       removeAssetById (REMOVE_VALUE_1F (Successor::AssetType, assetId)),
-      modifyAssetFileLoadingStateById (MODIFY_VALUE_1F (AssetFileLoadingState, assetId)),
+      modifyAssetFileLoadingStateById (_constructor.ModifyValue (
+          InstancedAssetFileLoadingStateReflection ().mapping, {InstancedAssetFileLoadingStateReflection ().assetId})),
 
       maxLoadingTimePerFrameNs (_maxLoadingTimePerFrameNs)
 {
@@ -93,6 +96,16 @@ void TrivialFileAssetManager<Successor>::Execute () noexcept
 {
     ProcessLoading ();
     ProcessUnloading ();
+}
+
+template <typename Successor>
+const AssetFileLoadingState::Reflection &
+TrivialFileAssetManager<Successor>::InstancedAssetFileLoadingStateReflection () noexcept
+{
+    static AssetFileLoadingState::Reflection reflection =
+        AssetFileLoadingState::InstancedReflect (Memory::UniqueString {
+            EMERGENCE_BUILD_STRING (Successor::AssetType::Reflect ().mapping.GetName (), "AssetFileLoadingState")});
+    return reflection;
 }
 
 template <typename Successor>

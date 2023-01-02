@@ -23,6 +23,8 @@ const WindowControl::Reflection &WindowControl::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (layout);
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (anchor);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (pivot);
+
         EMERGENCE_MAPPING_REGISTER_REGULAR (x);
         EMERGENCE_MAPPING_REGISTER_REGULAR (y);
         EMERGENCE_MAPPING_REGISTER_REGULAR (width);

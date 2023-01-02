@@ -63,5 +63,10 @@ struct AssetFileLoadingState final
     };
 
     static const Reflection &Reflect () noexcept;
+
+    /// \brief Creates new instance of reflection structure with given name.
+    /// \details We need to instantiate state containers to avoid collision between different asset loading
+    ///          pipelines that use this structure. See usage in TrivialFileAssetManager as an example.
+    static Reflection InstancedReflect (Memory::UniqueString _name) noexcept;
 };
 } // namespace Emergence::Celerity

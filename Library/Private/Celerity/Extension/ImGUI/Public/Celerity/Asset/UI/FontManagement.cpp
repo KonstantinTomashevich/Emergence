@@ -8,6 +8,7 @@
 #include <Celerity/Asset/TrivialFileAssetManager.hpp>
 #include <Celerity/Asset/UI/Font.hpp>
 #include <Celerity/Asset/UI/FontManagement.hpp>
+#include <Celerity/Asset/UI/FontUtility.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <imgui.h>
@@ -67,22 +68,16 @@ AssetState Manager::FinishLoading (AssetFileLoadingState *_loadingState) noexcep
     EMERGENCE_ASSERT (!Math::NearlyEqual (fontSize, 0.0f));
 
     auto *fontAtlas = new (ImGui::MemAlloc (sizeof (ImFontAtlas))) ImFontAtlas ();
-    fontAtlas->AddFontFromMemoryTTF (_loadingState->data, static_cast<int> (_loadingState->size), fontSize);
-    // Data is moved to font atlas.
-    _loadingState->data = nullptr;
+    // We need to reallocate data through ImGui allocation routine, so its ownership can be transferred to atlas.
+    void *imGuiData = ImGui::MemAlloc (_loadingState->size);
+    memcpy (imGuiData, _loadingState->data, _loadingState->size);
+    fontAtlas->AddFontFromMemoryTTF (imGuiData, static_cast<int> (_loadingState->size), fontSize);
 
     auto insertFontCursor = insertFont.Execute ();
     auto *font = static_cast<Font *> (++insertFontCursor);
     font->assetId = _loadingState->assetId;
     font->nativeHandle = fontAtlas;
-
-    unsigned char *textureData;
-    int textureWidth;
-    int textureHeight;
-    fontAtlas->GetTexDataAsRGBA32 (&textureData, &textureWidth, &textureHeight);
-    EMERGENCE_ASSERT (textureData);
-
-    font->atlasTexture = Render::Backend::Texture (textureData, textureWidth, textureHeight);
+    font->atlasTexture = BakeFontAtlas (fontAtlas);
     return AssetState::READY;
 }
 

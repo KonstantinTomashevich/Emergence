@@ -23,8 +23,8 @@ enum class KeyState : uint8_t
 /// \brief Contains key codes for all supported keys on keyboard. Must be initialized by IO backend.
 struct KeyCodeMapping final
 {
-    KeyCode keyEscape;
     KeyCode keyReturn;
+    KeyCode keyEscape;
     KeyCode keyBackspace;
     KeyCode keyTab;
     KeyCode keyExclaim;
