@@ -1,9 +1,21 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Assert/Assert.hpp>
 
 #include <Celerity/Input/FrameInputAccumulator.hpp>
 
 namespace Emergence::Celerity
 {
+bool TextInputEvent::operator== (const TextInputEvent &_other) const noexcept
+{
+    return strcmp (utf8Value.data (), _other.utf8Value.data ()) == 0;
+}
+
+bool TextInputEvent::operator!= (const TextInputEvent &_other) const noexcept
+{
+    return !(*this == _other);
+}
+
 InputEvent::InputEvent (uint64_t _timeNs, const KeyboardEvent &_event) noexcept
     : type (InputEventType::KEYBOARD),
       timeNs (_timeNs),
@@ -37,6 +49,39 @@ InputEvent::InputEvent (uint64_t _timeNs, const TextInputEvent &_event) noexcept
       timeNs (_timeNs),
       textInput (_event)
 {
+}
+
+bool InputEvent::operator== (const InputEvent &_other) const noexcept
+{
+    if (type != _other.type || timeNs != _other.timeNs)
+    {
+        return false;
+    }
+
+    switch (type)
+    {
+    case InputEventType::KEYBOARD:
+        return keyboard == _other.keyboard;
+
+    case InputEventType::MOUSE_BUTTON:
+        return mouseButton == _other.mouseButton;
+
+    case InputEventType::MOUSE_MOTION:
+        return mouseMotion == _other.mouseMotion;
+
+    case InputEventType::MOUSE_WHEEL:
+        return mouseWheel == _other.mouseWheel;
+
+    case InputEventType::TEXT_INPUT:
+        return textInput == _other.textInput;
+    }
+
+    return false;
+}
+
+bool InputEvent::operator!= (const InputEvent &_other) const noexcept
+{
+    return !(*this == _other);
 }
 
 const InputEvent &FrameInputAccumulator::EventIterator::operator* () const noexcept

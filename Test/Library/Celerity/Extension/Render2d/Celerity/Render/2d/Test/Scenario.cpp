@@ -74,9 +74,9 @@ void ContextHolder::Frame () noexcept
 ContextHolder::ContextHolder () noexcept
 {
     uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
-    window =
-        SDL_CreateWindow ("Platformed2dDemo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int> (WIDTH),
-                          static_cast<int> (HEIGHT), static_cast<SDL_WindowFlags> (windowFlags));
+    window = SDL_CreateWindow ("Celerity::Render tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                               static_cast<int> (WIDTH), static_cast<int> (HEIGHT),
+                               static_cast<SDL_WindowFlags> (windowFlags));
 
     SDL_SysWMinfo windowsManagerInfo;
     SDL_VERSION (&windowsManagerInfo.version);
@@ -96,11 +96,11 @@ ContextHolder::ContextHolder () noexcept
     void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
 #endif
 
-    Emergence::Render::Backend::Config config;
+    Render::Backend::Config config;
     config.width = WIDTH;
     config.height = HEIGHT;
     config.vsync = true;
-    Emergence::Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
+    Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
 }
 
 ContextHolder::~ContextHolder () noexcept
@@ -417,19 +417,19 @@ void ExecuteScenario (Scenario _scenario) noexcept
 {
     using namespace Memory::Literals;
 
-    Emergence::Celerity::World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
-    Emergence::Celerity::AssetReferenceBindingList binding {Emergence::Celerity::GetAssetBindingAllocationGroup ()};
-    Emergence::Celerity::GetRender2dAssetUsage (binding);
-    Emergence::Celerity::GetRenderFoundationAssetUsage (binding);
-    Emergence::Celerity::AssetReferenceBindingEventMap assetReferenceBindingEventMap;
+    World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
+    AssetReferenceBindingList binding {GetAssetBindingAllocationGroup ()};
+    GetRender2dAssetUsage (binding);
+    GetRenderFoundationAssetUsage (binding);
+    AssetReferenceBindingEventMap assetReferenceBindingEventMap;
 
     {
-        Emergence::Celerity::EventRegistrar registrar {&world};
-        assetReferenceBindingEventMap = Emergence::Celerity::RegisterAssetEvents (registrar, binding);
-        Emergence::Celerity::RegisterTransform2dEvents (registrar);
-        Emergence::Celerity::RegisterTransformCommonEvents (registrar);
-        Emergence::Celerity::RegisterRender2dEvents (registrar);
-        Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
+        EventRegistrar registrar {&world};
+        assetReferenceBindingEventMap = RegisterAssetEvents (registrar, binding);
+        RegisterTransform2dEvents (registrar);
+        RegisterTransformCommonEvents (registrar);
+        RegisterRender2dEvents (registrar);
+        RegisterRenderFoundationEvents (registrar);
     }
 
     constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
@@ -441,22 +441,22 @@ void ExecuteScenario (Scenario _scenario) noexcept
     static const Emergence::Memory::UniqueString testTexturesPath {"Render2dTestResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
 
-    Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+    PipelineBuilder pipelineBuilder {&world};
     bool scenarioFinished = false;
 
-    pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
-    Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
-    Emergence::Celerity::TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
-        pipelineBuilder, {testMaterialInstancesPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
-    Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
-        pipelineBuilder, {testMaterialsPath, engineMaterialsPath}, {testShadersPath, engineShadersPath},
-        MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
-    Emergence::Celerity::RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    Emergence::Celerity::Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
-                                                               assetReferenceBindingEventMap);
-    Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
+    pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
+    AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
+    TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
+    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialInstancesPath}, MAX_LOADING_TIME_NS,
+                                                   assetReferenceBindingEventMap);
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
+                                           {testShadersPath, engineShadersPath}, MAX_LOADING_TIME_NS,
+                                           assetReferenceBindingEventMap);
+    RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
+    Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
+                                          assetReferenceBindingEventMap);
+    TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);
     REQUIRE (pipelineBuilder.End ());

@@ -24,6 +24,10 @@ struct InputActionHolder
         bool fixedDispatchDone = false;
     };
 
+    bool operator== (const InputActionHolder &_other) const;
+
+    bool operator!= (const InputActionHolder &_other) const;
+
     struct Reflection final
     {
         StandardLayout::FieldId action;

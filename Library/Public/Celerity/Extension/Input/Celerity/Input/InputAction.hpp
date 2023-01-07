@@ -47,6 +47,12 @@ struct InputAction final
                  const Memory::UniqueString &_id,
                  const std::array<float, MAX_REAL_PARAMETERS> &_real) noexcept;
 
+    InputAction (const InputAction &_other) noexcept;
+
+    InputAction (InputAction &&_other) noexcept;
+
+    ~InputAction() = default;
+
     /// \brief Groups are used categorize actions so one object can subscribe to all actions from required group.
     Memory::UniqueString group;
 
@@ -61,11 +67,17 @@ struct InputAction final
 
         /// \brief Action real parameters if any.
         std::array<float, MAX_REAL_PARAMETERS> real;
+
+        static_assert (sizeof (discrete) == sizeof (real));
     };
 
     bool operator== (const InputAction &_other) const;
 
     bool operator!= (const InputAction &_other) const;
+
+    InputAction &operator= (const InputAction &_other) noexcept;
+
+    InputAction &operator= (InputAction &&_other) noexcept;
 
     struct Reflection final
     {

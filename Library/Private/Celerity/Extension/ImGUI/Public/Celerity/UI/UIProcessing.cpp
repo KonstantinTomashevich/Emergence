@@ -913,11 +913,14 @@ void UIProcessor::Execute ()
             for (auto windowCursor = fetchWindowControlByViewport.Execute (&viewport->name);
                  const auto *window = static_cast<const WindowControl *> (*windowCursor); ++windowCursor)
             {
-                auto nodeCursor = fetchNodeByNodeId.Execute (&window->nodeId);
-                const auto *node = static_cast<const UINode *> (*nodeCursor);
-                EMERGENCE_ASSERT (node);
-                EMERGENCE_ASSERT (node->parentId == INVALID_UNIQUE_ID);
-                orderingSequence.Add (node->nodeId, node->sortIndex);
+                if (auto nodeCursor = fetchNodeByNodeId.Execute (&window->nodeId);
+                    // Window might be in pending removal state: node is
+                    // already removed and window will be removed next frame.
+                    const auto *node = static_cast<const UINode *> (*nodeCursor))
+                {
+                    EMERGENCE_ASSERT (node->parentId == INVALID_UNIQUE_ID);
+                    orderingSequence.Add (node->nodeId, node->sortIndex);
+                }
             }
 
             orderingSequence.Sort ();
@@ -994,6 +997,9 @@ void UIProcessor::SubmitInput (const Viewport *_viewport) noexcept
             if (event.mouseButton.state == KeyState::UP ||
                 isInViewport (event.mouseButton.mouseX, event.mouseButton.mouseY))
             {
+                io.AddMousePosEvent (static_cast<float> (event.mouseButton.mouseX),
+                                     static_cast<float> (event.mouseButton.mouseY));
+
                 switch (event.mouseButton.button)
                 {
                 case MouseButton::LEFT:
@@ -1143,10 +1149,13 @@ void UIProcessor::ProcessControl (const ButtonControl *_control) noexcept
     if (ImGui::Button (_control->label.c_str (),
                        {static_cast<float> (_control->width), static_cast<float> (_control->height)}))
     {
-        auto holderCursor = insertInputActionHolder.Execute ();
-        auto *holder = static_cast<InputActionHolder *> (++holderCursor);
-        holder->action = _control->onClickAction;
-        holder->dispatchType = _control->onClickActionDispatch;
+        if (*_control->onClickAction.id)
+        {
+            auto holderCursor = insertInputActionHolder.Execute ();
+            auto *holder = static_cast<InputActionHolder *> (++holderCursor);
+            holder->action = _control->onClickAction;
+            holder->dispatchType = _control->onClickActionDispatch;
+        }
     }
 }
 
@@ -1154,11 +1163,14 @@ void UIProcessor::ProcessControl (CheckboxControl *_control) noexcept
 {
     if (ImGui::Checkbox (_control->label.c_str (), &_control->checked))
     {
-        auto holderCursor = insertInputActionHolder.Execute ();
-        auto *holder = static_cast<InputActionHolder *> (++holderCursor);
-        holder->action = _control->onChangedAction;
-        holder->action.discrete[0u] = _control->checked ? 1u : 0u;
-        holder->dispatchType = _control->onChangedActionDispatch;
+        if (*_control->onChangedAction.id)
+        {
+            auto holderCursor = insertInputActionHolder.Execute ();
+            auto *holder = static_cast<InputActionHolder *> (++holderCursor);
+            holder->action = _control->onChangedAction;
+            holder->action.discrete[0u] = _control->checked ? 1u : 0u;
+            holder->dispatchType = _control->onChangedActionDispatch;
+        }
     }
 }
 
@@ -1226,12 +1238,15 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
     {
     case InputControlType::TEXT:
         if (ImGui::InputText (_control->label.c_str (), _control->utf8TextValue.data (),
-                              _control->utf8TextValue.size () - 1u))
+                              _control->utf8TextValue.size () - 1u, ImGuiInputTextFlags_AutoSelectAll))
         {
-            auto holderCursor = insertInputActionHolder.Execute ();
-            auto *holder = static_cast<InputActionHolder *> (++holderCursor);
-            holder->action = _control->onChangedAction;
-            holder->dispatchType = _control->onChangedActionDispatch;
+            if (*_control->onChangedAction.id)
+            {
+                auto holderCursor = insertInputActionHolder.Execute ();
+                auto *holder = static_cast<InputActionHolder *> (++holderCursor);
+                holder->action = _control->onChangedAction;
+                holder->dispatchType = _control->onChangedActionDispatch;
+            }
         }
 
         break;
@@ -1241,11 +1256,14 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
         int valueHolder = static_cast<int> (_control->intValue);
         if (ImGui::InputInt (_control->label.c_str (), &valueHolder))
         {
-            auto holderCursor = insertInputActionHolder.Execute ();
-            auto *holder = static_cast<InputActionHolder *> (++holderCursor);
-            holder->action = _control->onChangedAction;
-            holder->action.discrete[0u] = static_cast<int32_t> (_control->intValue);
-            holder->dispatchType = _control->onChangedActionDispatch;
+            if (*_control->onChangedAction.id)
+            {
+                auto holderCursor = insertInputActionHolder.Execute ();
+                auto *holder = static_cast<InputActionHolder *> (++holderCursor);
+                holder->action = _control->onChangedAction;
+                holder->action.discrete[0u] = static_cast<int32_t> (valueHolder);
+                holder->dispatchType = _control->onChangedActionDispatch;
+            }
         }
 
         _control->intValue = static_cast<int32_t> (valueHolder);
@@ -1255,11 +1273,14 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
     case InputControlType::FLOAT:
         if (ImGui::InputFloat (_control->label.c_str (), &_control->floatValue))
         {
-            auto holderCursor = insertInputActionHolder.Execute ();
-            auto *holder = static_cast<InputActionHolder *> (++holderCursor);
-            holder->action = _control->onChangedAction;
-            holder->action.real[0u] = _control->floatValue;
-            holder->dispatchType = _control->onChangedActionDispatch;
+            if (*_control->onChangedAction.id)
+            {
+                auto holderCursor = insertInputActionHolder.Execute ();
+                auto *holder = static_cast<InputActionHolder *> (++holderCursor);
+                holder->action = _control->onChangedAction;
+                holder->action.real[0u] = _control->floatValue;
+                holder->dispatchType = _control->onChangedActionDispatch;
+            }
         }
 
         break;
@@ -1338,7 +1359,7 @@ void UIProcessor::ProcessControl (WindowControl *_control) noexcept
         ProcessChildControls (orderingSequence, _control->layout);
     }
 
-    if (!_control->open)
+    if (!_control->open && *_control->onClosedAction.id)
     {
         auto holderCursor = insertInputActionHolder.Execute ();
         auto *holder = static_cast<InputActionHolder *> (++holderCursor);

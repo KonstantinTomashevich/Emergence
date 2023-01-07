@@ -4,6 +4,16 @@
 
 namespace Emergence::Celerity
 {
+bool InputActionHolder::operator== (const InputActionHolder &_other) const
+{
+    return action == _other.action && dispatchType == _other.dispatchType;
+}
+
+bool InputActionHolder::operator!= (const InputActionHolder &_other) const
+{
+    return !(*this == _other);
+}
+
 const InputActionHolder::Reflection &InputActionHolder::Reflect () noexcept
 {
     static Reflection reflection = [] ()
