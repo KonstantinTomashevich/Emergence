@@ -32,6 +32,11 @@ private:
     InsertLongTermQuery insertLabel;
     InsertLongTermQuery insertWindow;
 
+    InsertLongTermQuery insertColorProperty;
+    InsertLongTermQuery insertFloatProperty;
+    InsertLongTermQuery insertFloatPairProperty;
+    InsertLongTermQuery insertFontProperty;
+
     RemoveValueQuery removeNodeById;
 
     uint64_t currentFrameIndex = 0u;
@@ -53,6 +58,11 @@ ControlManager::ControlManager (TaskConstructor &_constructor, Container::Vector
       insertLabel (INSERT_LONG_TERM (LabelControl)),
       insertWindow (INSERT_LONG_TERM (WindowControl)),
 
+      insertColorProperty (INSERT_LONG_TERM (UIStyleColorProperty)),
+      insertFloatProperty (INSERT_LONG_TERM (UIStyleFloatProperty)),
+      insertFloatPairProperty (INSERT_LONG_TERM (UIStyleFloatPairProperty)),
+      insertFontProperty (INSERT_LONG_TERM (UIStyleFontProperty)),
+
       removeNodeById (REMOVE_VALUE_1F (UINode, nodeId)),
 
       frames (std::move (_frames))
@@ -63,7 +73,7 @@ ControlManager::ControlManager (TaskConstructor &_constructor, Container::Vector
 
 void ControlManager::Execute () noexcept
 {
-    if (currentFrameIndex > frames.size ())
+    if (currentFrameIndex >= frames.size ())
     {
         return;
     }
@@ -78,6 +88,7 @@ void ControlManager::Execute () noexcept
         node->nodeId = _nodeId;
         node->parentId = _parentId;
         node->styleId = _styleId;
+        node->sortIndex = _nodeId;
     };
 
     for (const Task &task : frames[currentFrameIndex])
@@ -232,6 +243,46 @@ void ControlManager::Execute () noexcept
 
                     window->onClosedAction = _task.onClosedAction;
                     window->onClosedActionDispatch = _task.onClosedActionDispatch;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateStyleColorProperty>)
+                {
+                    LOG ("Creating color property for style \"", _task.styleId, "\"...");
+                    auto propertyCursor = insertColorProperty.Execute();
+                    auto *property = static_cast<UIStyleColorProperty *>(++propertyCursor);
+                    property->styleId = _task.styleId;
+                    property->property = _task.property;
+                    property->red = _task.red;
+                    property->green = _task.green;
+                    property->blue = _task.blue;
+                    property->alpha = _task.alpha;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFloatProperty>)
+                {
+                    LOG ("Creating float property for style \"", _task.styleId, "\"...");
+                    auto propertyCursor = insertFloatProperty.Execute();
+                    auto *property = static_cast<UIStyleFloatProperty *>(++propertyCursor);
+                    property->styleId = _task.styleId;
+                    property->property = _task.property;
+                    property->value = _task.value;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFloatPairProperty>)
+                {
+                    LOG ("Creating float pair property for style \"", _task.styleId, "\"...");
+                    auto propertyCursor = insertFloatPairProperty.Execute();
+                    auto *property = static_cast<UIStyleFloatPairProperty *>(++propertyCursor);
+                    property->styleId = _task.styleId;
+                    property->property = _task.property;
+                    property->x = _task.x;
+                    property->y = _task.y;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFontProperty>)
+                {
+                    LOG ("Creating float property for style \"", _task.styleId, "\"...");
+                    auto propertyCursor = insertFontProperty.Execute();
+                    auto *property = static_cast<UIStyleFontProperty *>(++propertyCursor);
+                    property->styleId = _task.styleId;
+                    property->assetUserId = assetManager->GenerateAssetUserId();
+                    property->fontId = _task.fontId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::RemoveControl>)
                 {

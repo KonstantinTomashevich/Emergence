@@ -12,9 +12,11 @@ sober_test_begin (CelerityUI)
     sober_library_include_directory (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
 
     sober_naming_variant_target (CelerityRenderFoundation Original CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET)
+    sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
     sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_LIBRARY_TARGET)
 
     sober_library_link_library (PUBLIC ${CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET})
+    sober_library_link_library (PUBLIC ${FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC SDL2)
     sober_library_link_library (PUBLIC SDL2main)
@@ -41,6 +43,22 @@ sober_test_begin (CelerityUI)
         sober_variant_freeze_implementation (TestCelerityUIImplementationStrings ImGUI)
     sober_test_variant_end ()
 sober_test_end ()
+
+sober_naming_test_library (CelerityUI TEST_CELERITY_UI_LIBRARY)
+sober_naming_library_base_target ("${TEST_CELERITY_UI_LIBRARY}" TEST_CELERITY_UI_LIBRARY_TARGET)
+
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
+file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Expectation"
+        "${RESOURCES_COMPILED_DIRECTORY}/Expectation" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Fonts"
+        "${RESOURCES_COMPILED_DIRECTORY}/Fonts" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Textures"
+        "${RESOURCES_COMPILED_DIRECTORY}/Textures" SYMBOLIC)
+register_resource_usage ("${TEST_CELERITY_UI_LIBRARY_TARGET}" "${RESOURCES_COMPILED_DIRECTORY}" "UITestResources")
 
 sober_naming_test_collection (CelerityUI COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")

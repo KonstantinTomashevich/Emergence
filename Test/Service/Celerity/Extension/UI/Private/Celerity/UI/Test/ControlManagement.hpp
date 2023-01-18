@@ -8,6 +8,7 @@
 #include <Celerity/UI/InputControl.hpp>
 #include <Celerity/UI/LabelControl.hpp>
 #include <Celerity/UI/WindowControl.hpp>
+#include <Celerity/UI/UIStyle.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
@@ -145,6 +146,37 @@ struct CreateWindow final
     InputActionDispatchType onClosedActionDispatch = InputActionDispatchType::NORMAL;
 };
 
+struct CreateStyleColorProperty final
+{
+    Memory::UniqueString styleId;
+    UIStyleColorPropertyName property = UIStyleColorPropertyName::TEXT;
+    float red = 0.0f;
+    float green = 0.0f;
+    float blue = 0.0f;
+    float alpha = 1.0f;
+};
+
+struct CreateStyleFloatProperty final
+{
+    Memory::UniqueString styleId;
+    UIStyleFloatPropertyName property = UIStyleFloatPropertyName::ALPHA;
+    float value = 0.0f;
+};
+
+struct CreateStyleFloatPairProperty final
+{
+    Memory::UniqueString styleId;
+    UIStyleFloatPairPropertyName property = UIStyleFloatPairPropertyName::WINDOW_PADDING;
+    float x = 0.0f;
+    float y = 0.0f;
+};
+
+struct CreateStyleFontProperty final
+{
+    Memory::UniqueString styleId;
+    Memory::UniqueString fontId;
+};
+
 struct RemoveControl final
 {
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -159,6 +191,10 @@ using Task = Container::Variant<Tasks::CreateViewport,
                                 Tasks::CreateInput,
                                 Tasks::CreateLabel,
                                 Tasks::CreateWindow,
+                                Tasks::CreateStyleColorProperty,
+                                Tasks::CreateStyleFloatProperty,
+                                Tasks::CreateStyleFloatPairProperty,
+                                Tasks::CreateStyleFontProperty,
                                 Tasks::RemoveControl>;
 
 using Frame = Container::Vector<Task>;

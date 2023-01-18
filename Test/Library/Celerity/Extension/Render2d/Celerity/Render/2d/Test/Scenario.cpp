@@ -30,6 +30,8 @@
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/World.hpp>
 
+#include <FileSystem/Test/Utility.hpp>
+
 #include <Render/Backend/Configuration.hpp>
 
 #include <SDL.h>
@@ -374,43 +376,11 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     }
 
     LOG ("Giving renderer some time to write image...");
-    std::this_thread::sleep_for (std::chrono::milliseconds {200u});
+    std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    std::ifstream exampleInput {EMERGENCE_BUILD_STRING ("Render2dTestResources/Expectation/", _id, ".png"),
-                                std::ios::binary};
-    REQUIRE (exampleInput);
-    std::ifstream testInput {EMERGENCE_BUILD_STRING (_id, ".png"), std::ios::binary};
-    REQUIRE (testInput);
-
-    exampleInput.seekg (0u, std::ios::end);
-    std::streamsize exampleSize = exampleInput.tellg ();
-    exampleInput.seekg (0u, std::ios::beg);
-
-    testInput.seekg (0u, std::ios::end);
-    std::streamsize testSize = testInput.tellg ();
-    testInput.seekg (0u, std::ios::beg);
-
-    CHECK_EQUAL (exampleSize, testSize);
-    if (exampleSize != testSize)
-    {
-        return;
-    }
-
-    constexpr auto BUFFER_SIZE = static_cast<std::streamsize> (16u * 1024u);
-    std::streamsize read = 0u;
-    std::array<uint8_t, BUFFER_SIZE> exampleBuffer;
-    std::array<uint8_t, BUFFER_SIZE> testBuffer;
-
-    while (read < exampleSize)
-    {
-        const std::streamsize toRead = std::min (BUFFER_SIZE, exampleSize - read);
-        read += toRead;
-
-        REQUIRE (exampleInput.read (reinterpret_cast<char *> (exampleBuffer.data ()), toRead));
-        REQUIRE (testInput.read (reinterpret_cast<char *> (testBuffer.data ()), toRead));
-        CHECK (memcmp (exampleBuffer.data (), testBuffer.data (), toRead) == 0);
-    }
+    FileSystem::Test::ExpectFilesEqual (EMERGENCE_BUILD_STRING ("Render2dTestResources/Expectation/", _id, ".png"),
+                                        EMERGENCE_BUILD_STRING (_id, ".png"));
 }
 
 void ExecuteScenario (Scenario _scenario) noexcept

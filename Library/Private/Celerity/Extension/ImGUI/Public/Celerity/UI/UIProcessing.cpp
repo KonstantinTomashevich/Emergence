@@ -277,10 +277,6 @@ StyleApplier::Context::Context (StyleApplier *_applier, Memory::UniqueString _st
             ImGui::PushStyleColor (ImGuiCol_CheckMark, color);
             break;
 
-        case UIStyleColorPropertyName::SLIDER_GRAB:
-            ImGui::PushStyleColor (ImGuiCol_SliderGrab, color);
-            break;
-
         case UIStyleColorPropertyName::BUTTON:
             ImGui::PushStyleColor (ImGuiCol_Button, color);
             break;
@@ -305,18 +301,6 @@ StyleApplier::Context::Context (StyleApplier *_applier, Memory::UniqueString _st
             ImGui::PushStyleColor (ImGuiCol_HeaderActive, color);
             break;
 
-        case UIStyleColorPropertyName::SEPARATOR:
-            ImGui::PushStyleColor (ImGuiCol_Separator, color);
-            break;
-
-        case UIStyleColorPropertyName::SEPARATOR_HOVERED:
-            ImGui::PushStyleColor (ImGuiCol_SeparatorHovered, color);
-            break;
-
-        case UIStyleColorPropertyName::SEPARATOR_ACTIVE:
-            ImGui::PushStyleColor (ImGuiCol_SeparatorActive, color);
-            break;
-
         case UIStyleColorPropertyName::RESIZE_GRIP:
             ImGui::PushStyleColor (ImGuiCol_ResizeGrip, color);
             break;
@@ -327,26 +311,6 @@ StyleApplier::Context::Context (StyleApplier *_applier, Memory::UniqueString _st
 
         case UIStyleColorPropertyName::RESIZE_GRIP_ACTIVE:
             ImGui::PushStyleColor (ImGuiCol_ResizeGripActive, color);
-            break;
-
-        case UIStyleColorPropertyName::TAB:
-            ImGui::PushStyleColor (ImGuiCol_Tab, color);
-            break;
-
-        case UIStyleColorPropertyName::TAB_HOVERED:
-            ImGui::PushStyleColor (ImGuiCol_TabHovered, color);
-            break;
-
-        case UIStyleColorPropertyName::TAB_ACTIVE:
-            ImGui::PushStyleColor (ImGuiCol_TabActive, color);
-            break;
-
-        case UIStyleColorPropertyName::TAB_UNFOCUSED:
-            ImGui::PushStyleColor (ImGuiCol_TabUnfocused, color);
-            break;
-
-        case UIStyleColorPropertyName::TAB_UNFOCUSED_ACTIVE:
-            ImGui::PushStyleColor (ImGuiCol_TabUnfocusedActive, color);
             break;
         }
     }
@@ -408,10 +372,6 @@ StyleApplier::Context::Context (StyleApplier *_applier, Memory::UniqueString _st
         case UIStyleFloatPropertyName::GRAB_ROUNDING:
             ImGui::PushStyleVar (ImGuiStyleVar_GrabRounding, property->value);
             break;
-
-        case UIStyleFloatPropertyName::TAB_ROUNDING:
-            ImGui::PushStyleVar (ImGuiStyleVar_TabRounding, property->value);
-            break;
         }
     }
 
@@ -443,10 +403,6 @@ StyleApplier::Context::Context (StyleApplier *_applier, Memory::UniqueString _st
 
         case UIStyleFloatPairPropertyName::BUTTON_TEXT_ALIGN:
             ImGui::PushStyleVar (ImGuiStyleVar_ButtonTextAlign, {property->x, property->y});
-            break;
-
-        case UIStyleFloatPairPropertyName::SELECTABLE_TEXT_ALIGN:
-            ImGui::PushStyleVar (ImGuiStyleVar_SelectableTextAlign, {property->x, property->y});
             break;
         }
     }

@@ -18,7 +18,6 @@
 #include <Celerity/UI/UI.hpp>
 
 #include <Testing/Testing.hpp>
-#include <utility>
 
 namespace Emergence::Celerity::Test
 {
@@ -46,7 +45,7 @@ struct Frame
     UpdateResultCheck::Frame resultCheckFrame;
 };
 
-void ExecuteScenario (const Container::Vector<Frame> &_frames)
+static void ExecuteScenario (const Container::Vector<Frame> &_frames)
 {
     using namespace Memory::Literals;
 

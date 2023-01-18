@@ -11,4 +11,9 @@ const char *GetUIBackendShaderPath () noexcept
 {
     return "ImGUIResources/Shaders";
 }
+
+const char *GetUIBackendScreenshotPrefix () noexcept
+{
+    return "ImGUI";
+}
 } // namespace Emergence::Celerity::Test

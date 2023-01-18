@@ -24,24 +24,15 @@ enum class UIStyleColorPropertyName
     SCROLLBAR_GRAB_HOVERED,
     SCROLLBAR_GRAB_ACTIVE,
     CHECK_MARK,
-    SLIDER_GRAB,
     BUTTON,
     BUTTON_HOVERED,
     BUTTON_ACTIVE,
     HEADER,
     HEADER_HOVERED,
     HEADER_ACTIVE,
-    SEPARATOR,
-    SEPARATOR_HOVERED,
-    SEPARATOR_ACTIVE,
     RESIZE_GRIP,
     RESIZE_GRIP_HOVERED,
     RESIZE_GRIP_ACTIVE,
-    TAB,
-    TAB_HOVERED,
-    TAB_ACTIVE,
-    TAB_UNFOCUSED,
-    TAB_UNFOCUSED_ACTIVE,
 };
 
 struct UIStyleColorProperty final
@@ -91,7 +82,6 @@ enum class UIStyleFloatPropertyName
     SCROLLBAR_ROUNDING,
     GRAB_MIN_SIZE,
     GRAB_ROUNDING,
-    TAB_ROUNDING,
 };
 
 struct UIStyleFloatProperty final
@@ -119,7 +109,6 @@ enum class UIStyleFloatPairPropertyName
     ITEM_SPACING,
     ITEM_INNER_SPACING,
     BUTTON_TEXT_ALIGN,
-    SELECTABLE_TEXT_ALIGN,
 };
 
 struct UIStyleFloatPairProperty final
