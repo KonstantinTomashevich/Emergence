@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Celerity/Asset/AssetReferenceBinding.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::UIRendering

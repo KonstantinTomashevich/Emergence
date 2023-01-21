@@ -1,5 +1,5 @@
 sober_library_begin (CelerityImGUI STATIC)
-    file (GLOB_RECURSE HEADERS "Public/*.hpp" )
+    file (GLOB_RECURSE HEADERS "Public/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp")
     file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")
 

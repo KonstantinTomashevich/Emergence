@@ -49,14 +49,14 @@ struct UIStyleColorProperty final
     {
         struct
         {
-            float red = 0.0f;
-            float green = 0.0f;
-            float blue = 0.0f;
-            float alpha = 1.0f;
+            float red;
+            float green;
+            float blue;
+            float alpha;
         };
 
         /// \brief Value that is assigned to property in RGBA format.
-        float rgba[4u];
+        float rgba[4u] {0.0f, 0.0f, 0.0f, 0.0f};
     };
 
     struct Reflection final

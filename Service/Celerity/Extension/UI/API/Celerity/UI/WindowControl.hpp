@@ -55,10 +55,10 @@ struct WindowControl final
     /// \brief Point of the window that is attached to defined viewport translation. Defined as ratio to window size.
     Math::Vector2f pivot = Math::Vector2f::ZERO;
 
-    /// \brief Window translation first component, relative to ::anchor and ::pivot.
+    /// \brief Window translation horizontal component, relative to ::anchor and ::pivot.
     int32_t x = 0;
 
-    /// \brief Window translation second component, relative to ::anchor and ::pivot.
+    /// \brief Window translation vertical component, relative to ::anchor and ::pivot.
     int32_t y = 0;
 
     /// \brief Target window width.

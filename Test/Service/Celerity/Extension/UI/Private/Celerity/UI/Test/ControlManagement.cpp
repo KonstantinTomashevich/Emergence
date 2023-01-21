@@ -277,7 +277,7 @@ void ControlManager::Execute () noexcept
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFontProperty>)
                 {
-                    LOG ("Creating float property for style \"", _task.styleId, "\"...");
+                    LOG ("Creating font property for style \"", _task.styleId, "\"...");
                     auto propertyCursor = insertFontProperty.Execute ();
                     auto *property = static_cast<UIStyleFontProperty *> (++propertyCursor);
                     property->styleId = _task.styleId;

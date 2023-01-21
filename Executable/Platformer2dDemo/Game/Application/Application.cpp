@@ -854,7 +854,7 @@ void Application::EventLoop () noexcept
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
             {
-                Emergence::Celerity::MouseButton button;
+                Emergence::Celerity::MouseButton button = Emergence::Celerity::MouseButton::LEFT;
                 switch (event.button.button)
                 {
                 case SDL_BUTTON_LEFT:

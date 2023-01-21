@@ -71,9 +71,9 @@ Texture::Texture (const uint8_t *_data, std::uint64_t _width, std::uint64_t _hei
 {
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
-    bgfx::TextureHandle handle = bgfx::createTexture2D (static_cast<uint16_t> (_width), static_cast<uint16_t> (_height),
-                                                        false, 1u, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_NONE,
-                                                        bgfx::copy (_data, _width * _height * 4u));
+    bgfx::TextureHandle handle = bgfx::createTexture2D (
+        static_cast<uint16_t> (_width), static_cast<uint16_t> (_height), false, 1u, bgfx::TextureFormat::BGRA8,
+        BGFX_TEXTURE_NONE, bgfx::copy (_data, static_cast<uint32_t> (_width * _height * 4u)));
 
     if (!bgfx::isValid (handle))
     {

@@ -30,7 +30,7 @@ public:
     ///
     /// \param _constructor Task constructor used to create queries and establish graph dependencies.
     /// \param _rootPaths Paths to directories where assets of required type might be stored.
-    /// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for Font loading.
+    /// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for asset loading.
     /// \param _stateUpdateEvent Type of event used to sent state update info.
     TrivialFileAssetManager (TaskConstructor &_constructor,
                              const Container::Vector<Memory::UniqueString> &_rootPaths,
