@@ -314,7 +314,7 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
         return dependencyState;
     }
 
-#ifdef EMERGENCE_ASSERT
+#ifdef EMERGENCE_ASSERT_ENABLED
     if (*_parentAssetId)
     {
         auto parentMaterialInstanceCursor = fetchMaterialInstanceById.Execute (&_parentAssetId);

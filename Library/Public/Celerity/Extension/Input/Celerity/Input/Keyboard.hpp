@@ -75,13 +75,19 @@ struct KeyCodeMapping final
     KeyCode keyF;
     KeyCode keyG;
     KeyCode keyH;
+
+    // NOLINTNEXTLINE(misc-confusable-identifiers): What can we do, they are keys after all.
     KeyCode keyI;
+
     KeyCode keyJ;
     KeyCode keyK;
     KeyCode keyL;
     KeyCode keyM;
     KeyCode keyN;
+
+    // NOLINTNEXTLINE(misc-confusable-identifiers): What can we do, they are keys after all.
     KeyCode keyO;
+
     KeyCode keyP;
     KeyCode keyQ;
     KeyCode keyR;

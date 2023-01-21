@@ -908,8 +908,6 @@ void UIProcessor::CreateContext (UIRenderPass *_renderPass) noexcept
 
     _renderPass->nativeContext = context;
     _renderPass->defaultFontTexture = BakeFontAtlas (io.Fonts);
-
-    // TODO: Attach allocation profiling.
 }
 
 void UIProcessor::SubmitInput (const Viewport *_viewport) noexcept
@@ -1182,6 +1180,7 @@ void UIProcessor::ProcessControl (const ImageControl *_control) noexcept
     EMERGENCE_ASSERT (texture);
 
     const Render::Backend::TextureId textureId = texture->texture.GetId ();
+    // NOLINTNEXTLINE(misc-misplaced-const): This const is only needed for style.
     const ImTextureID imGUITextureId = *reinterpret_cast<const ImTextureID *> (&textureId);
 
     ImGui::Image (imGUITextureId, {static_cast<float> (_control->width), static_cast<float> (_control->height)},
