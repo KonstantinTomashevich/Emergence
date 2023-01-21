@@ -31,7 +31,7 @@ const UIStyleFloatProperty::Reflection &UIStyleFloatProperty::Reflect () noexcep
         EMERGENCE_MAPPING_REGISTER_REGULAR (value);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
-    
+
     return reflection;
 }
 
@@ -46,7 +46,7 @@ const UIStyleFloatPairProperty::Reflection &UIStyleFloatPairProperty::Reflect ()
         EMERGENCE_MAPPING_REGISTER_REGULAR (y);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
-    
+
     return reflection;
 }
 
@@ -60,7 +60,7 @@ const UIStyleFontProperty::Reflection &UIStyleFontProperty::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (fontId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
-    
+
     return reflection;
 }
 } // namespace Emergence::Celerity

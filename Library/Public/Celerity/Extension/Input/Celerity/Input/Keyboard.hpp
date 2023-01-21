@@ -60,7 +60,7 @@ struct KeyCodeMapping final
     KeyCode keyGreater;
     KeyCode keyQuestion;
     KeyCode keyAt;
-    
+
     KeyCode keyLeftBracket;
     KeyCode keyBackSlash;
     KeyCode keyRightBracket;

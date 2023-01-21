@@ -7,8 +7,8 @@
 #include <Celerity/UI/ImageControl.hpp>
 #include <Celerity/UI/InputControl.hpp>
 #include <Celerity/UI/LabelControl.hpp>
-#include <Celerity/UI/WindowControl.hpp>
 #include <Celerity/UI/UIStyle.hpp>
+#include <Celerity/UI/WindowControl.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>

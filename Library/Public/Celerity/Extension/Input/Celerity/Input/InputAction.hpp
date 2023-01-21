@@ -51,7 +51,7 @@ struct InputAction final
 
     InputAction (InputAction &&_other) noexcept;
 
-    ~InputAction() = default;
+    ~InputAction () = default;
 
     /// \brief Groups are used categorize actions so one object can subscribe to all actions from required group.
     Memory::UniqueString group;

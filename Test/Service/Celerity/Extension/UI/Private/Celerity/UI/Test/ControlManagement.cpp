@@ -247,8 +247,8 @@ void ControlManager::Execute () noexcept
                 else if constexpr (std::is_same_v<Type, Tasks::CreateStyleColorProperty>)
                 {
                     LOG ("Creating color property for style \"", _task.styleId, "\"...");
-                    auto propertyCursor = insertColorProperty.Execute();
-                    auto *property = static_cast<UIStyleColorProperty *>(++propertyCursor);
+                    auto propertyCursor = insertColorProperty.Execute ();
+                    auto *property = static_cast<UIStyleColorProperty *> (++propertyCursor);
                     property->styleId = _task.styleId;
                     property->property = _task.property;
                     property->red = _task.red;
@@ -259,8 +259,8 @@ void ControlManager::Execute () noexcept
                 else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFloatProperty>)
                 {
                     LOG ("Creating float property for style \"", _task.styleId, "\"...");
-                    auto propertyCursor = insertFloatProperty.Execute();
-                    auto *property = static_cast<UIStyleFloatProperty *>(++propertyCursor);
+                    auto propertyCursor = insertFloatProperty.Execute ();
+                    auto *property = static_cast<UIStyleFloatProperty *> (++propertyCursor);
                     property->styleId = _task.styleId;
                     property->property = _task.property;
                     property->value = _task.value;
@@ -268,8 +268,8 @@ void ControlManager::Execute () noexcept
                 else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFloatPairProperty>)
                 {
                     LOG ("Creating float pair property for style \"", _task.styleId, "\"...");
-                    auto propertyCursor = insertFloatPairProperty.Execute();
-                    auto *property = static_cast<UIStyleFloatPairProperty *>(++propertyCursor);
+                    auto propertyCursor = insertFloatPairProperty.Execute ();
+                    auto *property = static_cast<UIStyleFloatPairProperty *> (++propertyCursor);
                     property->styleId = _task.styleId;
                     property->property = _task.property;
                     property->x = _task.x;
@@ -278,10 +278,10 @@ void ControlManager::Execute () noexcept
                 else if constexpr (std::is_same_v<Type, Tasks::CreateStyleFontProperty>)
                 {
                     LOG ("Creating float property for style \"", _task.styleId, "\"...");
-                    auto propertyCursor = insertFontProperty.Execute();
-                    auto *property = static_cast<UIStyleFontProperty *>(++propertyCursor);
+                    auto propertyCursor = insertFontProperty.Execute ();
+                    auto *property = static_cast<UIStyleFontProperty *> (++propertyCursor);
                     property->styleId = _task.styleId;
-                    property->assetUserId = assetManager->GenerateAssetUserId();
+                    property->assetUserId = assetManager->GenerateAssetUserId ();
                     property->fontId = _task.fontId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::RemoveControl>)

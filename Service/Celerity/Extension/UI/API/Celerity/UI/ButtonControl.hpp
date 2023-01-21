@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Standard/UniqueId.hpp>
 #include <Celerity/Input/InputAction.hpp>
+#include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/String.hpp>
 
