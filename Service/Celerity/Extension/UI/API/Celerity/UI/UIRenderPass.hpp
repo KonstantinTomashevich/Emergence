@@ -8,6 +8,8 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Attachment to Viewport that directs render commands for UI rendering into this viewport.
+/// \invariant Only one render pass attachment per Viewport is supported!
 struct UIRenderPass final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (UIRenderPass);
@@ -15,8 +17,10 @@ struct UIRenderPass final
     /// \brief Name of the viewport to which this pass is attached.
     Memory::UniqueString name;
 
+    /// \brief Id of the default style that will be applied to the top level nodes unless they specified their style.
     Memory::UniqueString defaultStyleId;
 
+    /// \brief Native implementation context, if any.
     void *nativeContext = nullptr;
 
     /// \brief Texture for default font atlas.

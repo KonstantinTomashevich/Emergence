@@ -6,6 +6,7 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Enumerates supported style properties that have color type.
 enum class UIStyleColorPropertyName
 {
     TEXT = 0u,
@@ -35,9 +36,13 @@ enum class UIStyleColorPropertyName
     RESIZE_GRIP_ACTIVE,
 };
 
+/// \brief Attaches property of color type to a style.
 struct UIStyleColorProperty final
 {
+    /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
+
+    /// \brief Target property name.
     UIStyleColorPropertyName property = UIStyleColorPropertyName::TEXT;
 
     union
@@ -50,6 +55,7 @@ struct UIStyleColorProperty final
             float alpha = 1.0f;
         };
 
+        /// \brief Value that is assigned to property in RGBA format.
         float rgba[4u];
     };
 
@@ -67,6 +73,7 @@ struct UIStyleColorProperty final
     static const Reflection &Reflect () noexcept;
 };
 
+/// \brief Enumerates supported style properties that have float type.
 enum class UIStyleFloatPropertyName
 {
     ALPHA,
@@ -84,10 +91,16 @@ enum class UIStyleFloatPropertyName
     GRAB_ROUNDING,
 };
 
+/// \brief Attaches property of float type to a style.
 struct UIStyleFloatProperty final
 {
+    /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
+
+    /// \brief Target property name.
     UIStyleFloatPropertyName property = UIStyleFloatPropertyName::ALPHA;
+
+    /// \brief Value that is assigned to property.
     float value = 0.0f;
 
     struct Reflection final
@@ -101,6 +114,7 @@ struct UIStyleFloatProperty final
     static const Reflection &Reflect () noexcept;
 };
 
+/// \brief Enumerates supported style properties that have float pair type.
 enum class UIStyleFloatPairPropertyName
 {
     WINDOW_PADDING,
@@ -111,11 +125,19 @@ enum class UIStyleFloatPairPropertyName
     BUTTON_TEXT_ALIGN,
 };
 
+/// \brief Attaches property of float pair type to a style.
 struct UIStyleFloatPairProperty final
 {
+    /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
+
+    /// \brief Target property name.
     UIStyleFloatPairPropertyName property = UIStyleFloatPairPropertyName::WINDOW_PADDING;
+
+    /// \brief First component of the value that is assigned to property.
     float x = 0.0f;
+
+    /// \brief Second component of the value that is assigned to property.
     float y = 0.0f;
 
     struct Reflection final
@@ -130,10 +152,17 @@ struct UIStyleFloatPairProperty final
     static const Reflection &Reflect () noexcept;
 };
 
+/// \brief Defines font that is attached to given style.
+/// \invariant Only one font attachment per style is allowed.
 struct UIStyleFontProperty final
 {
+    /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
+
+    /// \brief Asset user id is required, because we reference font asset.
     UniqueId assetUserId = INVALID_UNIQUE_ID;
+
+    /// \brief Id of a font asset to be used.
     Memory::UniqueString fontId;
 
     struct Reflection final

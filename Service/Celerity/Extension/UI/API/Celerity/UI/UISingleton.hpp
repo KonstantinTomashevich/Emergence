@@ -6,6 +6,7 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Contains common parameters for UI extension.
 struct UISingleton final
 {
     /// \brief Whether Emergence MemoryProfiler should be enabled for UI allocations.

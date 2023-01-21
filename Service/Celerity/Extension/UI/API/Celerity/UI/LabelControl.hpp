@@ -8,9 +8,13 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Represents control that displays simple text.
 struct LabelControl final
 {
+    /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
+
+    /// \brief Text that is displayed.
     Container::Utf8String label;
 
     struct Reflection final

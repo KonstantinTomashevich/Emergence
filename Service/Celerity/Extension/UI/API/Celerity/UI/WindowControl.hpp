@@ -12,31 +12,65 @@
 
 namespace Emergence::Celerity
 {
+/// \brief Represents window: special instance of ContainerControl that is always a toplevel node of hierarchy.
+/// \invariant Windows and only windows can be controls of toplevel nodes.
 struct WindowControl final
 {
+    /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
+
+    /// \brief Name of the viewport in which this window is rendered.
     Memory::UniqueString viewportName;
+
+    /// \brief Window title if any.
     Container::Utf8String title;
 
+    /// \brief Whether this window can be closed.
     bool closable = true;
+
+    /// \brief Whether this window can be minimized.
     bool minimizable = true;
+
+    /// \brief Whether this window can be resized.
     bool resizable = true;
+
+    /// \brief Whether this window can be moved around.
     bool movable = true;
+
+    /// \brief Whether this window title bar is visible.
     bool hasTitleBar = true;
+
+    /// \brief If true, window will be automatically resized to fit all the elements.
     bool pack = false;
 
+    /// \brief Whether window is open right now.
     bool open = true;
+
+    /// \brief Defines how children are positioned inside window.
     ContainerControlLayout layout = ContainerControlLayout::VERTICAL;
 
+    /// \brief Point of the viewport to which this window position is attached. Defined as ratio to viewport size.
     Math::Vector2f anchor = Math::Vector2f::ZERO;
+
+    /// \brief Point of the window that is attached to defined viewport translation. Defined as ratio to window size.
     Math::Vector2f pivot = Math::Vector2f::ZERO;
 
+    /// \brief Window translation first component, relative to ::anchor and ::pivot.
     int32_t x = 0;
+
+    /// \brief Window translation second component, relative to ::anchor and ::pivot.
     int32_t y = 0;
+
+    /// \brief Target window width.
     uint32_t width = 0u;
+
+    /// \brief Target window height.
     uint32_t height = 0u;
 
+    /// \brief Input action that will be sent in InputActionHolder on window close.
     InputAction onClosedAction;
+
+    /// \brief Dispatch type for ::onClosedAction.
     InputActionDispatchType onClosedActionDispatch = InputActionDispatchType::NORMAL;
 
     struct Reflection final
