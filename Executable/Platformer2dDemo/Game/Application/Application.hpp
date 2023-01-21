@@ -4,6 +4,7 @@
 
 #include <Application/Settings.hpp>
 
+#include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/World.hpp>
 
 #include <Memory/Recording/StreamSerializer.hpp>
@@ -62,11 +63,17 @@ private:
 
     void EventLoop () noexcept;
 
+    [[nodiscard]] uint64_t SDLTicksToTime (uint64_t _ticks) const noexcept;
+
     Settings settings;
     WindowBackend windowBackend;
+    Emergence::Celerity::FrameInputAccumulator inputAccumulator;
     Emergence::Celerity::World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
 
     std::ofstream memoryEventOutput;
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
+
+    uint64_t sdlInitTimeNs = 0u;
+    uint64_t sdlTicksAfterInit = 0u;
 };

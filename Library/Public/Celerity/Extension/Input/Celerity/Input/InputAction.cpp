@@ -36,6 +36,36 @@ InputAction::InputAction (const Memory::UniqueString &_group,
     real = _real;
 }
 
+InputAction::InputAction (const InputAction &_other) noexcept
+    : group (_other.group),
+      id (_other.id),
+      discrete (_other.discrete)
+{
+}
+
+InputAction::InputAction (InputAction &&_other) noexcept
+    : group (_other.group),
+      id (_other.id),
+      discrete (_other.discrete)
+{
+}
+
+InputAction &InputAction::operator= (const InputAction &_other) noexcept
+{
+    group = _other.group;
+    id = _other.id;
+    discrete = _other.discrete;
+    return *this;
+}
+
+InputAction &InputAction::operator= (InputAction &&_other) noexcept
+{
+    group = _other.group;
+    id = _other.id;
+    discrete = _other.discrete;
+    return *this;
+}
+
 bool InputAction::operator== (const InputAction &_other) const
 {
     return id == _other.id && group == _other.group &&

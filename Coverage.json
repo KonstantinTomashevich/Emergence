@@ -24,6 +24,23 @@
       "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
     },
     {
+      "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/FrameInputAccumulator.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 50.0,
+      "Reason": "Frame input accumulator logic is covered by GPU dependant tests, therefore coverage on CI is low."
+    },
+    {
+      "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/FrameInputAccumulator.hpp",
+      "Action": "Exclude",
+      "Reason": "Frame input accumulator logic is covered by GPU dependant tests, therefore coverage on CI is low."
+    },
+    {
+      "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/InputAction.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 70.0,
+      "Reason": "Input action equality logic is covered by GPU dependant tests, therefore coverage on CI is low."
+    },
+    {
       "Prefix": "./Library/Public/Celerity/Public/Celerity/Pipeline.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 24.0,

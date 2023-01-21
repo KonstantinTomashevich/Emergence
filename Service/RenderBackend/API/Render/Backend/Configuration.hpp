@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include <Memory/Profiler/AllocationGroup.hpp>
+
 namespace Emergence::Render::Backend
 {
 // TODO: Currently this service is tested by testing libraries that use it.

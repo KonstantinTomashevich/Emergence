@@ -38,18 +38,20 @@ add_subdirectory (doctest)
 
 # ImGUI
 # ImGUI is not using CMake, therefore we need to add our own library target.
-add_library (SDL2ImGUI STATIC
+add_library (ImGUI STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_draw.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_tables.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_widgets.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_widgets.cpp")
+
+target_include_directories (ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
+
+add_library (SDL2ImGUI STATIC
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdl.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdlrenderer.cpp")
 
-target_include_directories (SDL2ImGUI PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
-        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
-target_link_libraries (SDL2ImGUI PUBLIC SDL2)
+target_include_directories (SDL2ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
+target_link_libraries (SDL2ImGUI PUBLIC ImGUI SDL2)
 
 # SDL2
 # TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?

@@ -56,7 +56,7 @@ const void *Stack::Head () const noexcept
 
 void Stack::Release (const void *_newHead) noexcept
 {
-    EMERGENCE_ASSERT (_newHead > start);
+    EMERGENCE_ASSERT (_newHead >= start);
     EMERGENCE_ASSERT (_newHead <= head);
 
     group.Release (static_cast<size_t> (reinterpret_cast<uintptr_t> (head) - reinterpret_cast<uintptr_t> (_newHead)));

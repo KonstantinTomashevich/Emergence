@@ -1,0 +1,5 @@
+sober_implementation_begin (ImGUI)
+    sober_implementation_setup_target (STATIC "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+    sober_naming_variant_target (CelerityImGUI Original CELERITY_IMGUI_LIBRARY_TARGET)
+    sober_implementation_link_library ("${CELERITY_IMGUI_LIBRARY_TARGET}")
+sober_implementation_end ()

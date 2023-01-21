@@ -10,7 +10,7 @@ namespace Emergence::Celerity
 /// \details Stored in short term container because holders lifetime usually ends when action is dispatched,
 ///          unless it is an InputActionDispatchType::FIXED_PERSISTENT. Fixed persistent holders are removed
 ///          during next normal frame after being dispatched.
-struct InputActionHolder
+struct InputActionHolder final
 {
     /// \brief Action to be dispatched.
     InputAction action;
@@ -23,6 +23,10 @@ struct InputActionHolder
         /// \brief Internal value for InputActionDispatchType::FIXED_PERSISTENT logic.
         bool fixedDispatchDone = false;
     };
+
+    bool operator== (const InputActionHolder &_other) const;
+
+    bool operator!= (const InputActionHolder &_other) const;
 
     struct Reflection final
     {

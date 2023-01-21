@@ -14,6 +14,7 @@ enum class InputEventType
     MOUSE_BUTTON,
     MOUSE_MOTION,
     MOUSE_WHEEL,
+    TEXT_INPUT,
 };
 
 /// \brief Stores information about keyboard input event.
@@ -30,6 +31,10 @@ struct KeyboardEvent final
 
     /// \brief New state of the key affected by this event.
     KeyState keyState = KeyState::DOWN;
+
+    bool operator== (const KeyboardEvent &_other) const noexcept = default;
+
+    bool operator!= (const KeyboardEvent &_other) const noexcept = default;
 };
 
 // TODO: Support for multiple mouses?
@@ -52,6 +57,10 @@ struct MouseButtonEvent final
     /// \brief How many clicks happened?
     /// \details Useful for catching double-clicks.
     uint8_t clicks = 0;
+
+    bool operator== (const MouseButtonEvent &_other) const noexcept = default;
+
+    bool operator!= (const MouseButtonEvent &_other) const noexcept = default;
 };
 
 /// \brief Stores information about mouse motion related event.
@@ -68,6 +77,10 @@ struct MouseMotionEvent final
 
     /// \brief Mouse Y coordinate after motion happened, relative to the window.
     int32_t newY = 0;
+
+    bool operator== (const MouseMotionEvent &_other) const noexcept = default;
+
+    bool operator!= (const MouseMotionEvent &_other) const noexcept = default;
 };
 
 /// \brief Stores information about mouse wheel related event.
@@ -78,6 +91,24 @@ struct MouseWheelEvent final
 
     /// \brief Vertical wheel movement.
     float y = 0.0f;
+
+    bool operator== (const MouseWheelEvent &_other) const noexcept = default;
+
+    bool operator!= (const MouseWheelEvent &_other) const noexcept = default;
+};
+
+/// \brief Stores information about text input from keyboard or other sources (like Android keyboard widget).
+struct TextInputEvent final
+{
+    /// \brief Maximum amount of bytes per one input event.
+    static constexpr size_t TEXT_BUFFER_SIZE = 32u;
+
+    /// \brief Input text encoded in utf8 format with zero terminator.
+    std::array<char, TEXT_BUFFER_SIZE> utf8Value {"\0"};
+
+    bool operator== (const TextInputEvent &_other) const noexcept;
+
+    bool operator!= (const TextInputEvent &_other) const noexcept;
 };
 
 /// \brief Universal structure for storing information about physical input.
@@ -91,6 +122,8 @@ struct InputEvent final
 
     InputEvent (uint64_t _timeNs, const MouseWheelEvent &_event) noexcept;
 
+    InputEvent (uint64_t _timeNs, const TextInputEvent &_event) noexcept;
+
     /// \brief Type of event that is stored inside.
     InputEventType type;
 
@@ -103,7 +136,12 @@ struct InputEvent final
         MouseButtonEvent mouseButton;
         MouseMotionEvent mouseMotion;
         MouseWheelEvent mouseWheel;
+        TextInputEvent textInput;
     };
+
+    bool operator== (const InputEvent &_other) const noexcept;
+
+    bool operator!= (const InputEvent &_other) const noexcept;
 };
 
 /// \brief Storage for input events that happened during last frame and need to be processed.

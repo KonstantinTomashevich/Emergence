@@ -195,7 +195,8 @@ void NormalInputProcessor::ProcessAccumulatedInput () noexcept
         case InputEventType::MOUSE_BUTTON:
         case InputEventType::MOUSE_MOTION:
         case InputEventType::MOUSE_WHEEL:
-            // There is no triggers for mouse events right now.
+        case InputEventType::TEXT_INPUT:
+            // There is no triggers for mouse and text input events right now.
             break;
         }
 

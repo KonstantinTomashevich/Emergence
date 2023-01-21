@@ -127,9 +127,10 @@ VertexLayoutBuilder &VertexLayoutBuilder::Begin () noexcept
 
 VertexLayoutBuilder &VertexLayoutBuilder::Add (Attribute _attribute,
                                                AttributeType _type,
-                                               uint8_t _elementCount) noexcept
+                                               uint8_t _elementCount,
+                                               bool _normalized) noexcept
 {
-    block_cast<bgfx::VertexLayout> (data).add (ToBGFX (_attribute), _elementCount, ToBGFX (_type));
+    block_cast<bgfx::VertexLayout> (data).add (ToBGFX (_attribute), _elementCount, ToBGFX (_type), _normalized);
     return *this;
 }
 

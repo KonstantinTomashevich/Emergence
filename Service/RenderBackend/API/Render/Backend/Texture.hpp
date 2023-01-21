@@ -17,6 +17,10 @@ public:
     /// \brief Constructs texture from given data. Data format is implementation-dependant.
     Texture (const uint8_t *_data, std::uint64_t _size) noexcept;
 
+    /// \brief Constructs texture from given RGBA32 data.
+    /// \details Data ownership is not transferred to texture. Instead, data is copied.
+    Texture (const uint8_t *_data, std::uint64_t _width, std::uint64_t _height) noexcept;
+
     Texture (const Texture &_other) = delete;
 
     Texture (Texture &&_other) noexcept;

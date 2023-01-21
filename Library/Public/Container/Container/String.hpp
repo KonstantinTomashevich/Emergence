@@ -9,6 +9,8 @@ namespace Emergence::Container
 {
 using String = std::basic_string<char, std::char_traits<char>, Memory::HeapSTD<char>>;
 
+using Utf8String = std::basic_string<char, std::char_traits<char>, Memory::HeapSTD<char>>;
+
 namespace Literals
 {
 inline String operator"" _s (const char *_string, [[maybe_unused]] size_t _size)

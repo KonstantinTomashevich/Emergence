@@ -12,10 +12,12 @@ add_dependencies (LibraryTests TestCelerityRender2dOriginal)
 target_include_directories (TestCelerityRender2dOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_variant_target (CelerityRender2d Original CELERITY_RENDER_2D_LIBRARY_TARGET)
+sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
 sober_naming_implementation_target (RenderBackend BGFX RENDER_BACKEND_BGFX_TARGET)
 
 target_link_libraries (TestCelerityRender2dOriginal PUBLIC
         ${CELERITY_RENDER_2D_LIBRARY_TARGET}
+        ${FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET}
         ${RENDER_BACKEND_BGFX_TARGET}
         SDL2
         SDL2main)

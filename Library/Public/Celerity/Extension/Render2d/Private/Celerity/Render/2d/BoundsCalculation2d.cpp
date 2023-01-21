@@ -169,7 +169,7 @@ void BoundsCalculator::EnsureLocalBoundsExistence (UniqueId _objectId) noexcept
     }
 
     // Get the appropriate render object.
-    UniqueId renderObjectId = EnsureRenderObjectExistence (_objectId);
+    [[maybe_unused]] const UniqueId renderObjectId = EnsureRenderObjectExistence (_objectId);
     EMERGENCE_ASSERT (renderObjectId != INVALID_UNIQUE_ID);
 
     // Create local bounds as they do not exist.
