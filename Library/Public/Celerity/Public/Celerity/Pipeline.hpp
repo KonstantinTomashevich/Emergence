@@ -50,7 +50,7 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Pipeline);
 
 private:
-    friend class World;
+    friend class WorldView;
 
     explicit Pipeline (Memory::UniqueString _id, PipelineType _type, const Task::Collection &_collection);
 

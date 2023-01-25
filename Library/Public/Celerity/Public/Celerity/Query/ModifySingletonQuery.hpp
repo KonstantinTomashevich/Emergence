@@ -30,9 +30,12 @@ public:
         /// Prepared query constructs its cursors.
         friend class ModifySingletonQuery;
 
-        explicit Cursor (Warehouse::ModifySingletonQuery::Cursor _source, ChangeTracker *_changeTracker) noexcept;
+        explicit Cursor (Warehouse::ModifySingletonQuery::Cursor _source,
+                         OnChangeEventTriggerInstanceRow *_onChangeEvents,
+                         ChangeTracker *_changeTracker) noexcept;
 
         Warehouse::ModifySingletonQuery::Cursor source;
+        OnChangeEventTriggerInstanceRow *onChangeEvents;
         ChangeTracker *changeTracker;
     };
 
@@ -42,9 +45,12 @@ private:
     /// TaskConstructor constructs prepared queries wrappers.
     friend class TaskConstructor;
 
-    explicit ModifySingletonQuery (Warehouse::ModifySingletonQuery _source, ChangeTracker *_changeTracker) noexcept;
+    explicit ModifySingletonQuery (Warehouse::ModifySingletonQuery _source,
+                                   OnChangeEventTriggerInstanceRow *_onChangeEvents,
+                                   ChangeTracker *_changeTracker) noexcept;
 
     Warehouse::ModifySingletonQuery source;
+    OnChangeEventTriggerInstanceRow *onChangeEvents;
     ChangeTracker *changeTracker;
 };
 } // namespace Emergence::Celerity

@@ -161,7 +161,7 @@ void GameApplication::Start ()
 
     Emergence::VisualGraph::Graph pipelineVisualGraph;
 
-    Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+    Emergence::Celerity::PipelineBuilder pipelineBuilder {world.GetRootView ()};
     pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
     Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
                                                                       PrepareResourceConfigTypeMeta ());
@@ -219,7 +219,7 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
         loadingPipeline->Execute ();
         if (loadingFinished)
         {
-            world.RemovePipeline (loadingPipeline);
+            world.GetRootView()->RemovePipeline (loadingPipeline);
             loadingPipeline = nullptr;
         }
     }

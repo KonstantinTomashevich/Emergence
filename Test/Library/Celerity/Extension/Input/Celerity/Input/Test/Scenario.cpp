@@ -233,7 +233,7 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
     }
 
     World world {"TestWorld"_us, WorldConfiguration {}};
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     FrameInputAccumulator inputAccumulator;
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);

@@ -260,11 +260,11 @@ private:
     Memory::Heap heap;
 };
 
-/// \brief Provides API for building World Pipeline's.
+/// \brief Provides API for building WorldView Pipeline's.
 class PipelineBuilder final
 {
 public:
-    explicit PipelineBuilder (World *_targetWorld) noexcept;
+    explicit PipelineBuilder (WorldView *_targetWorldView) noexcept;
 
     PipelineBuilder (const PipelineBuilder &_other) = delete;
 
@@ -272,7 +272,7 @@ public:
 
     ~PipelineBuilder () = default;
 
-    /// \brief Begin building new Pipeline for associated world.
+    /// \brief Begin building new Pipeline for associated world view.
     /// \return Whether building routine was successfully started. Building routine fails when user tries to create
     ///         second normal or second fixed pipeline.
     bool Begin (Memory::UniqueString _id, PipelineType _type) noexcept;
@@ -326,7 +326,7 @@ private:
     /// \details Adds clearing task for all ::sharedEventTypes, that are consumed in current pipeline.
     void PostProcessSharedEventRoutine (const EventUsageMap &_consumption);
 
-    World *world;
+    WorldView *worldView;
     Memory::UniqueString currentPipelineId;
     PipelineType currentPipelineType;
     Memory::Profiler::AllocationGroup currentPipelineAllocationGroup;

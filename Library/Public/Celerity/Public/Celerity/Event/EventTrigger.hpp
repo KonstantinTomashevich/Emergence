@@ -82,11 +82,11 @@ public:
 
 protected:
     EventTriggerBase (StandardLayout::Mapping _trackedType,
-                      Warehouse::InsertShortTermQuery _inserter,
+                      StandardLayout::Mapping _eventType,
                       EventRoute _route) noexcept;
 
     StandardLayout::Mapping trackedType;
-    Warehouse::InsertShortTermQuery inserter;
+    StandardLayout::Mapping eventType;
     EventRoute route;
 };
 
@@ -95,15 +95,32 @@ class TrivialEventTrigger final : public EventTriggerBase
 {
 public:
     TrivialEventTrigger (StandardLayout::Mapping _trackedType,
-                         Warehouse::InsertShortTermQuery _inserter,
+                         StandardLayout::Mapping _eventType,
                          EventRoute _route,
                          const Container::Vector<CopyOutField> &_copyOuts) noexcept;
+
+private:
+    friend class TrivialEventTriggerInstance;
+
+    Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOuts;
+};
+
+/// \brief Instance of event trigger knows where to insert events and therefore can be triggered.
+class TrivialEventTriggerInstance final
+{
+public:
+    TrivialEventTriggerInstance (const TrivialEventTrigger *_trigger,
+                                 Warehouse::InsertShortTermQuery _inserter) noexcept;
+
+    /// \brief Source trigger which parameters are being used.
+    [[nodiscard]] const TrivialEventTrigger *GetTrigger () const noexcept;
 
     /// \brief Trigger event for given record.
     void Trigger (const void *_record) noexcept;
 
 private:
-    Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOuts;
+    const TrivialEventTrigger *trigger;
+    Warehouse::InsertShortTermQuery inserter;
 };
 
 /// \brief Trivial OnAdd/OnRemove events for the same tracked type should be stored in rows to make event firing easier.
@@ -112,22 +129,24 @@ private:
 using TrivialEventTriggerRow =
     Container::InplaceVector<TrivialEventTrigger, static_cast<std::size_t> (EventRoute::COUNT)>;
 
+/// \brief For the same reason as event triggers (::TrivialEventTriggerRow), instances should be stored in a rows.
+using TrivialEventTriggerInstanceRow =
+    Container::InplaceVector<TrivialEventTriggerInstance, static_cast<std::size_t> (EventRoute::COUNT)>;
+
 /// \brief Trigger for OnChange automated events.
 class OnChangeEventTrigger final : public EventTriggerBase
 {
 public:
     OnChangeEventTrigger (StandardLayout::Mapping _trackedType,
-                          Warehouse::InsertShortTermQuery _inserter,
+                          StandardLayout::Mapping _eventType,
                           EventRoute _route,
                           const Container::Vector<StandardLayout::FieldId> &_trackedFields,
                           const Container::Vector<CopyOutField> &_copyOutOfInitial,
                           const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept;
 
-    /// \brief Trigger event for given changed record with its tracking buffer (see ChangeTracker).
-    void Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept;
-
 private:
     friend class ChangeTracker;
+    friend class OnChangeEventTriggerInstance;
 
     struct TrackedZone final
     {
@@ -143,6 +162,29 @@ private:
     Container::InplaceVector<CopyOutBlock, MAX_COPY_OUT_BLOCKS_PER_EVENT> copyOutOfChanged;
 };
 
+/// \brief Instance of event trigger knows where to insert events and therefore can be triggered.
+class OnChangeEventTriggerInstance final
+{
+public:
+    OnChangeEventTriggerInstance (const OnChangeEventTrigger *_trigger,
+                                  Warehouse::InsertShortTermQuery _inserter) noexcept;
+
+    /// \brief Source trigger which parameters are being used.
+    [[nodiscard]] const OnChangeEventTrigger *GetTrigger () const noexcept;
+
+    /// \brief Trigger event for given changed record with its tracking buffer (see ChangeTracker).
+    void Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept;
+
+private:
+    const OnChangeEventTrigger *trigger;
+    Warehouse::InsertShortTermQuery inserter;
+};
+
+/// \brief Trigger instances are stored in a rows to make event firing easier.
+using OnChangeEventTriggerInstanceRow =
+    Container::InplaceVector<OnChangeEventTriggerInstance, MAX_ON_CHANGE_EVENTS_PER_TYPE>;
+
+/// \brief Change tracker performs change detection logic and stores optimized data for change detection algorithm.
 class ChangeTracker final
 {
 public:
@@ -161,7 +203,7 @@ public:
 
     /// \brief Inform tracker that user finished editing given record.
     /// \details OnChange events are triggered there if any relevant changes are detected.
-    void EndEdition (const void *_record) noexcept;
+    void EndEdition (const void *_record, OnChangeEventTriggerInstanceRow &_eventInstanceRow) noexcept;
 
     [[nodiscard]] StandardLayout::Mapping GetTrackedType () const noexcept;
 

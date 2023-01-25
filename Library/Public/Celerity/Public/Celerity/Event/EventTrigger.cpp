@@ -143,7 +143,7 @@ StandardLayout::Mapping EventTriggerBase::GetTrackedType () const noexcept
 
 StandardLayout::Mapping EventTriggerBase::GetEventType () const noexcept
 {
-    return inserter.GetTypeMapping ();
+    return eventType;
 }
 
 EventRoute EventTriggerBase::GetRoute () const noexcept
@@ -152,43 +152,56 @@ EventRoute EventTriggerBase::GetRoute () const noexcept
 }
 
 EventTriggerBase::EventTriggerBase (StandardLayout::Mapping _trackedType,
-                                    Warehouse::InsertShortTermQuery _inserter,
+                                    StandardLayout::Mapping _eventType,
                                     EventRoute _route) noexcept
     : trackedType (std::move (_trackedType)),
-      inserter (std::move (_inserter)),
+      eventType (_eventType),
       route (_route)
 {
 }
 
 TrivialEventTrigger::TrivialEventTrigger (StandardLayout::Mapping _trackedType,
-                                          Warehouse::InsertShortTermQuery _inserter,
+                                          StandardLayout::Mapping _eventType,
                                           EventRoute _route,
                                           const Container::Vector<CopyOutField> &_copyOuts) noexcept
-    : EventTriggerBase (std::move (_trackedType), std::move (_inserter), _route),
-      copyOuts (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOuts))
+    : EventTriggerBase (std::move (_trackedType), std::move (_eventType), _route),
+      copyOuts (BakeCopyOuts (trackedType, GetEventType (), _copyOuts))
 {
 }
 
-void TrivialEventTrigger::Trigger (const void *_record) noexcept
+TrivialEventTriggerInstance::TrivialEventTriggerInstance (const TrivialEventTrigger *_trigger,
+                                                          Warehouse::InsertShortTermQuery _inserter) noexcept
+    : trigger (_trigger),
+      inserter (std::move (_inserter))
+{
+    EMERGENCE_ASSERT (trigger);
+}
+
+const TrivialEventTrigger *TrivialEventTriggerInstance::GetTrigger () const noexcept
+{
+    return trigger;
+}
+
+void TrivialEventTriggerInstance::Trigger (const void *_record) noexcept
 {
     auto cursor = inserter.Execute ();
     void *event = ++cursor;
 
-    for (const CopyOutBlock &block : copyOuts)
+    for (const CopyOutBlock &block : trigger->copyOuts)
     {
         ApplyCopyOut (block, _record, event);
     }
 }
 
 OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType,
-                                            Warehouse::InsertShortTermQuery _inserter,
+                                            StandardLayout::Mapping _eventType,
                                             EventRoute _route,
                                             const Container::Vector<StandardLayout::FieldId> &_trackedFields,
                                             const Container::Vector<CopyOutField> &_copyOutOfInitial,
                                             const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept
-    : EventTriggerBase (std::move (_trackedType), std::move (_inserter), _route),
-      copyOutOfInitial (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOutOfInitial)),
-      copyOutOfChanged (BakeCopyOuts (trackedType, inserter.GetTypeMapping (), _copyOutOfChanged))
+    : EventTriggerBase (std::move (_trackedType), std::move (_eventType), _route),
+      copyOutOfInitial (BakeCopyOuts (trackedType, GetEventType (), _copyOutOfInitial)),
+      copyOutOfChanged (BakeCopyOuts (trackedType, GetEventType (), _copyOutOfChanged))
 {
     BakeTrackedFields (trackedType, _trackedFields);
 
@@ -204,17 +217,30 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
 #endif
 }
 
-void OnChangeEventTrigger::Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept
+OnChangeEventTriggerInstance::OnChangeEventTriggerInstance (const OnChangeEventTrigger *_trigger,
+                                                            Warehouse::InsertShortTermQuery _inserter) noexcept
+    : trigger (_trigger),
+      inserter (std::move (_inserter))
+{
+    EMERGENCE_ASSERT (trigger);
+}
+
+const OnChangeEventTrigger *OnChangeEventTriggerInstance::GetTrigger () const noexcept
+{
+    return trigger;
+}
+
+void OnChangeEventTriggerInstance::Trigger (const void *_changedRecord, const void *_trackingBuffer) noexcept
 {
     auto cursor = inserter.Execute ();
     void *event = ++cursor;
 
-    for (const CopyOutBlock &block : copyOutOfInitial)
+    for (const CopyOutBlock &block : trigger->copyOutOfInitial)
     {
         ApplyCopyOut (block, _trackingBuffer, event);
     }
 
-    for (const CopyOutBlock &block : copyOutOfChanged)
+    for (const CopyOutBlock &block : trigger->copyOutOfChanged)
     {
         ApplyCopyOut (block, _changedRecord, event);
     }
@@ -294,7 +320,7 @@ void ChangeTracker::BeginEdition (const void *_record) noexcept
     }
 }
 
-void ChangeTracker::EndEdition (const void *_record) noexcept
+void ChangeTracker::EndEdition (const void *_record, OnChangeEventTriggerInstanceRow &_eventInstanceRow) noexcept
 {
     EMERGENCE_ASSERT (_record);
     decltype (EventBinding::zoneMask) changedMask = 0u;
@@ -310,11 +336,11 @@ void ChangeTracker::EndEdition (const void *_record) noexcept
         currentZoneFlag <<= 1u;
     }
 
-    for (EventBinding &binding : bindings)
+    for (std::size_t bindingIndex = 0u; bindingIndex < bindings.GetCount (); ++bindingIndex)
     {
-        if (binding.zoneMask & changedMask)
+        if (bindings[bindingIndex].zoneMask & changedMask)
         {
-            binding.event->Trigger (_record, &buffer);
+            _eventInstanceRow[bindingIndex].Trigger (_record, &buffer);
         }
     }
 }

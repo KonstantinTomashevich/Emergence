@@ -252,6 +252,15 @@ ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout
     return ModifyRayIntersectionQuery (array_cast (query));
 }
 
+bool Registry::IsTypeUsed (const StandardLayout::Mapping &_typeMapping) const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    EMERGENCE_ASSERT (internal.deck);
+    return internal.deck->IsLongTermContainerAllocated (_typeMapping) ||
+           internal.deck->IsShortTermContainerAllocated (_typeMapping) ||
+           internal.deck->IsSingletonContainerAllocated (_typeMapping);
+}
+
 Memory::UniqueString Registry::GetName () const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);

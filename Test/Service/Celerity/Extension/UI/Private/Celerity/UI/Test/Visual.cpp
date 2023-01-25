@@ -154,7 +154,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
     static const Emergence::Memory::UniqueString testTexturesPath {"UITestResources/Textures"};
     static const Emergence::Memory::UniqueString testFontsPath {"UITestResources/Fonts"};
-    PipelineBuilder pipelineBuilder {&world};
+    PipelineBuilder pipelineBuilder {world.GetRootView ()};
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);

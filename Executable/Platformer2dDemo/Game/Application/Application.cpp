@@ -783,7 +783,7 @@ void Application::InitWorld () noexcept
         Emergence::Celerity::RegisterUIEvents (registrar);
     }
 
-    Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+    Emergence::Celerity::PipelineBuilder pipelineBuilder {world.GetRootView ()};
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Emergence::Celerity::Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (pipelineBuilder);

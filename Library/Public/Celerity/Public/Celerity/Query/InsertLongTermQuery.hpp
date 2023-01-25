@@ -33,12 +33,12 @@ public:
         /// Prepared query constructs its cursors.
         friend class InsertLongTermQuery;
 
-        explicit Cursor (Warehouse::InsertLongTermQuery::Cursor _source, TrivialEventTriggerRow *_eventsOnAdd) noexcept;
+        explicit Cursor (Warehouse::InsertLongTermQuery::Cursor _source, TrivialEventTriggerInstanceRow *_eventsOnAdd) noexcept;
 
         void FireEvent () noexcept;
 
         Warehouse::InsertLongTermQuery::Cursor source;
-        TrivialEventTriggerRow *eventsOnAdd;
+        TrivialEventTriggerInstanceRow *eventsOnAdd;
         void *current = nullptr;
     };
 
@@ -49,9 +49,9 @@ private:
     friend class TaskConstructor;
 
     explicit InsertLongTermQuery (Warehouse::InsertLongTermQuery _source,
-                                  TrivialEventTriggerRow *_eventsOnAdd) noexcept;
+                                  TrivialEventTriggerInstanceRow *_eventsOnAdd) noexcept;
 
     Warehouse::InsertLongTermQuery source;
-    TrivialEventTriggerRow *eventsOnAdd;
+    TrivialEventTriggerInstanceRow *eventsOnAdd;
 };
 } // namespace Emergence::Celerity

@@ -411,7 +411,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
     static const Emergence::Memory::UniqueString testTexturesPath {"Render2dTestResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
 
-    PipelineBuilder pipelineBuilder {&world};
+    PipelineBuilder pipelineBuilder {world.GetRootView ()};
     bool scenarioFinished = false;
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);

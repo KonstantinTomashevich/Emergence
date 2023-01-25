@@ -350,7 +350,7 @@ void ExecuteScenario (const Container::Vector<FrameTasks> &_tasks) noexcept
         eventMap = RegisterAssetEvents (registrar, assetReferenceBindingList);
     }
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     builder.AddTask ("Configurator"_us).SetExecutor<Configurator> (std::move (configuratorFrames));
     builder.AddTask ("AssetStateUpdateRequester"_us)
