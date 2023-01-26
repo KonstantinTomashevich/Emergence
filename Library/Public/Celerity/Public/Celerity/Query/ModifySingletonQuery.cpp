@@ -29,7 +29,7 @@ ModifySingletonQuery::Cursor::Cursor (Warehouse::ModifySingletonQuery::Cursor _s
                                       OnChangeEventTriggerInstanceRow *_onChangeEvents,
                                       ChangeTracker *_changeTracker) noexcept
     : source (std::move (_source)),
-      onChangeEvents(_onChangeEvents),
+      onChangeEvents (_onChangeEvents),
       changeTracker (_changeTracker)
 {
     if (changeTracker)

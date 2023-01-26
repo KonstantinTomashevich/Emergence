@@ -219,7 +219,7 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
         loadingPipeline->Execute ();
         if (loadingFinished)
         {
-            world.GetRootView()->RemovePipeline (loadingPipeline);
+            world.GetRootView ()->RemovePipeline (loadingPipeline);
             loadingPipeline = nullptr;
         }
     }

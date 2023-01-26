@@ -33,7 +33,8 @@ public:
         /// Prepared query constructs its cursors.
         friend class InsertLongTermQuery;
 
-        explicit Cursor (Warehouse::InsertLongTermQuery::Cursor _source, TrivialEventTriggerInstanceRow *_eventsOnAdd) noexcept;
+        explicit Cursor (Warehouse::InsertLongTermQuery::Cursor _source,
+                         TrivialEventTriggerInstanceRow *_eventsOnAdd) noexcept;
 
         void FireEvent () noexcept;
 
