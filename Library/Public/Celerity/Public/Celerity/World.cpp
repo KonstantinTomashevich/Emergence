@@ -12,7 +12,7 @@ namespace Emergence::Celerity
 using namespace Memory::Literals;
 
 template <typename Type, typename... Arguments>
-static Type ConstructInsideGroup (const Memory::Profiler::AllocationGroup &_group, Arguments... _arguments)
+Type ConstructInsideGroup (const Memory::Profiler::AllocationGroup &_group, Arguments... _arguments)
 {
     auto placeholder = _group.PlaceOnTop ();
     return Type {std::forward<Arguments> (_arguments)...};
