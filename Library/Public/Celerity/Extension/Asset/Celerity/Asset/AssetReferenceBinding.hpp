@@ -27,11 +27,6 @@ struct AssetReferenceBinding final
     /// \brief Type of an object that contains asset references.
     StandardLayout::Mapping objectType;
 
-    /// \brief Field of ::objectType that contains unique id of asset user.
-    /// \details Should be generated using AssetManagerSingleton::GenerateAssetUserId.
-    /// \invariant Must be UniqueId.
-    StandardLayout::FieldId assetUserIdField;
-
     /// \brief Lists fields that reference assets.
     Container::Vector<AssetReferenceField> references {GetAssetBindingAllocationGroup ()};
 };

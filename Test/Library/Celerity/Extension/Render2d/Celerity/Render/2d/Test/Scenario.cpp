@@ -228,13 +228,10 @@ void ScenarioExecutor::Execute () noexcept
 
 void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
 {
-    auto assetManagerCursor = fetchAssetManager.Execute ();
-    const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
-
     for (const Task &task : *_point)
     {
         std::visit (
-            [this, assetManager] (const auto &_task)
+            [this] (const auto &_task)
             {
                 using Type = std::decay_t<decltype (_task)>;
                 if constexpr (std::is_same_v<Type, Tasks::CreateViewport>)
@@ -336,7 +333,6 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto *sprite = static_cast<Sprite2dComponent *> (++cursor);
                     sprite->objectId = _task.objectId;
                     sprite->spriteId = _task.spriteId;
-                    sprite->assetUserId = assetManager->GenerateAssetUserId ();
                     sprite->materialInstanceId = _task.materialInstanceId;
                     sprite->uv = _task.uv;
                     sprite->halfSize = _task.halfSize;

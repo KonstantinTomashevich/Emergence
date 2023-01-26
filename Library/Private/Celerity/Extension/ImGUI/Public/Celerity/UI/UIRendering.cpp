@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
@@ -50,9 +49,7 @@ private:
                             Render::Backend::UniformId _textureUniformId,
                             uint8_t _textureStage) noexcept;
 
-    FetchSingletonQuery fetchAssetManager;
     FetchSingletonQuery fetchRenderFoundation;
-
     FetchAscendingRangeQuery fetchAssetPin;
     InsertLongTermQuery insertAssetPin;
 
@@ -67,10 +64,8 @@ private:
 };
 
 UIRenderer::UIRenderer (TaskConstructor &_constructor) noexcept
-    : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
-      fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
-
-      fetchAssetPin (FETCH_ASCENDING_RANGE (UIAssetPin, assetUserId)),
+    : fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
+      fetchAssetPin (FETCH_ASCENDING_RANGE (UIAssetPin, materialId)),
       insertAssetPin (INSERT_LONG_TERM (UIAssetPin)),
 
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
@@ -132,12 +127,8 @@ bool UIRenderer::IsAssetPinExists () noexcept
 
 void UIRenderer::CreateAssetPin () noexcept
 {
-    auto assetManagerCursor = fetchAssetManager.Execute ();
-    const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
-
     auto cursor = insertAssetPin.Execute ();
     auto *assetPin = static_cast<UIAssetPin *> (++cursor);
-    assetPin->assetUserId = assetManager->GenerateAssetUserId ();
     assetPin->materialId = MATERIAL_ID;
 }
 

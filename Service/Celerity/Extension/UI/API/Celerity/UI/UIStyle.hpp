@@ -159,16 +159,12 @@ struct UIStyleFontProperty final
     /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
 
-    /// \brief Asset user id is required, because we reference font asset.
-    UniqueId assetUserId = INVALID_UNIQUE_ID;
-
     /// \brief Id of a font asset to be used.
     Memory::UniqueString fontId;
 
     struct Reflection final
     {
         StandardLayout::FieldId styleId;
-        StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId fontId;
         StandardLayout::Mapping mapping;
     };

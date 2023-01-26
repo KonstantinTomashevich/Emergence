@@ -10,7 +10,6 @@ const MaterialInstanceLoadingState::Reflection &MaterialInstanceLoadingState::Re
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialInstanceLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (parentId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

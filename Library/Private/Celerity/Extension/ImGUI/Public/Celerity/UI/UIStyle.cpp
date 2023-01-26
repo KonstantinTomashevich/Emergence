@@ -56,7 +56,6 @@ const UIStyleFontProperty::Reflection &UIStyleFontProperty::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UIStyleFontProperty);
         EMERGENCE_MAPPING_REGISTER_REGULAR (styleId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fontId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

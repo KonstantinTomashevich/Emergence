@@ -10,7 +10,6 @@ const ImageControl::Reflection &ImageControl::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ImageControl);
         EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (width);
         EMERGENCE_MAPPING_REGISTER_REGULAR (height);

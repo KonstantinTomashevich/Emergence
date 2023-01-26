@@ -2,7 +2,6 @@
 #include <fstream>
 
 #include <Celerity/Asset/AssetManagement.hpp>
-#include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceLoadingState.hpp>
@@ -47,8 +46,6 @@ private:
 
     void Unload (Memory::UniqueString _assetId) noexcept;
 
-    FetchSingletonQuery fetchAssetManager;
-
     InsertShortTermQuery insertAssetStateEvent;
     FetchSequenceQuery fetchAssetRemovedEvents;
     FetchValueQuery fetchAssetById;
@@ -87,9 +84,7 @@ Manager::Manager (TaskConstructor &_constructor,
                   const Container::Vector<Emergence::Memory::UniqueString> &_materialInstanceRootPaths,
                   uint64_t _maxLoadingTimePerFrameNs,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
-    : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
-
-      insertAssetStateEvent (_constructor.InsertShortTerm (_stateUpdateEvent)),
+    : insertAssetStateEvent (_constructor.InsertShortTerm (_stateUpdateEvent)),
       fetchAssetRemovedEvents (FETCH_SEQUENCE (AssetRemovedNormalEvent)),
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
       fetchAssetByTypeNumberAndState (FETCH_VALUE_2F (Asset, typeNumber, state)),
@@ -220,9 +215,6 @@ AssetState Manager::SummarizeDependencyState (Memory::UniqueString _materialId, 
 
 AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcept
 {
-    auto assetManagerCursor = fetchAssetManager.Execute ();
-    const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
-
     Unload (_assetId);
     MaterialInstanceAssetHeader header;
     bool headerFound = false;
@@ -276,7 +268,6 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
     auto *materialInstance = static_cast<MaterialInstance *> (++materialInstanceInsertCursor);
 
     materialInstance->assetId = _assetId;
-    materialInstance->assetUserId = assetManager->GenerateAssetUserId ();
     materialInstance->materialId = header.material;
 
     const AssetState dependencyState = SummarizeDependencyState (header.material, header.parent);
@@ -297,7 +288,6 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
     auto *loadingState = static_cast<MaterialInstanceLoadingState *> (++loadingStateInsertCursor);
 
     loadingState->assetId = _assetId;
-    loadingState->assetUserId = assetManager->GenerateAssetUserId ();
     loadingState->parentId = header.parent;
     return AssetState::LOADING;
 }
@@ -334,9 +324,6 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
     {
         CopyParentValuesIntoCollector (_parentAssetId);
     }
-
-    auto assetManagerCursor = fetchAssetManager.Execute ();
-    const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
 
     auto insertVector4Cursor = insertUniformVector4fValue.Execute ();
     auto insertMatrix3x3Cursor = insertUniformMatrix3x3fValue.Execute ();
@@ -378,7 +365,6 @@ AssetState Manager::TryFinalizeLoading (Memory::UniqueString _assetId, Memory::U
         {
             auto *uniformValue = static_cast<UniformSamplerValue *> (++insertSamplerCursor);
             uniformValue->assetId = _assetId;
-            uniformValue->assetUserId = assetManager->GenerateAssetUserId ();
             uniformValue->uniformName = value.name;
             uniformValue->textureId = value.textureId;
             break;
