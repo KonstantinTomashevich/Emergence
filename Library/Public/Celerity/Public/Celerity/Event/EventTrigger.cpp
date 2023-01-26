@@ -155,7 +155,7 @@ EventTriggerBase::EventTriggerBase (StandardLayout::Mapping _trackedType,
                                     StandardLayout::Mapping _eventType,
                                     EventRoute _route) noexcept
     : trackedType (std::move (_trackedType)),
-      eventType (_eventType),
+      eventType (std::move (_eventType)),
       route (_route)
 {
 }
