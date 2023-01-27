@@ -14,7 +14,7 @@ using namespace Memory::Literals;
 void OperationsTest (RequestExecutor::RequestPacket _scenario, bool _use2d)
 {
     World world {"TestWorld"_us};
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);

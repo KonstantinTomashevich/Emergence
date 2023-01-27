@@ -11,7 +11,6 @@
 
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
-#include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
@@ -89,7 +88,6 @@ public:
 private:
     Emergence::Celerity::FetchSingletonQuery fetchTimeSingleton;
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
-    Emergence::Celerity::FetchSingletonQuery fetchAssetManager;
     Emergence::Celerity::FetchSingletonQuery fetchUI;
     Emergence::Celerity::ModifySingletonQuery modifyRender;
 
@@ -119,7 +117,6 @@ private:
 DemoScenarioExecutor::DemoScenarioExecutor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTimeSingleton (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
-      fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
       fetchUI (FETCH_SINGLETON (Emergence::Celerity::UISingleton)),
       modifyRender (MODIFY_SINGLETON (Emergence::Celerity::Render2dSingleton)),
 
@@ -156,10 +153,6 @@ void DemoScenarioExecutor::Execute () noexcept
     {
         auto worldCursor = fetchWorld.Execute ();
         const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
-
-        auto assetManagerCursor = fetchAssetManager.Execute ();
-        const auto *assetManager =
-            static_cast<const Emergence::Celerity::AssetManagerSingleton *> (*assetManagerCursor);
 
         const auto uiCursor = fetchUI.Execute ();
         const auto *ui = static_cast<const Emergence::Celerity::UISingleton *> (*uiCursor);
@@ -204,7 +197,6 @@ void DemoScenarioExecutor::Execute () noexcept
             auto *sprite = static_cast<Emergence::Celerity::Sprite2dComponent *> (++spriteCursor);
             sprite->objectId = spriteTransform->GetObjectId ();
             sprite->spriteId = render->GenerateSprite2dId ();
-            sprite->assetUserId = assetManager->GenerateAssetUserId ();
 
             sprite->materialInstanceId = "Earth"_us;
             sprite->uv = {{0.0f, 0.0f}, {1.0f, 1.0f}};
@@ -218,7 +210,6 @@ void DemoScenarioExecutor::Execute () noexcept
         auto *sprite = static_cast<Emergence::Celerity::Sprite2dComponent *> (++spriteCursor);
         sprite->objectId = spriteTransform->GetObjectId ();
         sprite->spriteId = render->GenerateSprite2dId ();
-        sprite->assetUserId = assetManager->GenerateAssetUserId ();
 
         sprite->materialInstanceId = "CrateLoading"_us;
         sprite->uv = {{0.0f, 0.0f}, {1.0f, 1.0f}};
@@ -327,7 +318,6 @@ void DemoScenarioExecutor::Execute () noexcept
         secondRowImage->nodeId = secondRowImageNode->nodeId;
         secondRowImage->width = 40u;
         secondRowImage->height = 40u;
-        secondRowImage->assetUserId = assetManager->GenerateAssetUserId ();
         secondRowImage->textureId = Emergence::Memory::UniqueString {"Crate.png"};
         secondRowImage->uv = {{0.0f, 0.0f}, {1.0f, 1.0f}};
 
@@ -365,7 +355,6 @@ void DemoScenarioExecutor::Execute () noexcept
         auto fontPropertyCursor = insertFontProperty.Execute ();
         auto *fontProperty = static_cast<Emergence::Celerity::UIStyleFontProperty *> (++fontPropertyCursor);
         fontProperty->styleId = uiPass->defaultStyleId;
-        fontProperty->assetUserId = assetManager->GenerateAssetUserId ();
         fontProperty->fontId = Emergence::Memory::UniqueString {
             EMERGENCE_BUILD_STRING ("DroidSans.ttf", Emergence::Celerity::FONT_SIZE_SEPARATOR, "14")};
 
@@ -783,7 +772,7 @@ void Application::InitWorld () noexcept
         Emergence::Celerity::RegisterUIEvents (registrar);
     }
 
-    Emergence::Celerity::PipelineBuilder pipelineBuilder {&world};
+    Emergence::Celerity::PipelineBuilder pipelineBuilder {world.GetRootView ()};
     pipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     Emergence::Celerity::Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (pipelineBuilder);

@@ -62,6 +62,7 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     FrameInputAccumulator inputAccumulator;
     AssetReferenceBindingList binding {GetAssetBindingAllocationGroup ()};
     AssetReferenceBindingEventMap assetReferenceBindingEventMap;
+    GetUIAssetUsage (binding);
 
     {
         EventRegistrar registrar {&world};
@@ -75,7 +76,7 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     static const Emergence::Memory::UniqueString engineMaterialsPath {GetUIBackendMaterialPath ()};
     static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
     static const Emergence::Memory::UniqueString testTexturesPath {"UITestResources/Textures"};
-    PipelineBuilder pipelineBuilder {&world};
+    PipelineBuilder pipelineBuilder {world.GetRootView ()};
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);

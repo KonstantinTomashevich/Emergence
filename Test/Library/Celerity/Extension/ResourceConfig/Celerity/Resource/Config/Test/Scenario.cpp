@@ -237,7 +237,7 @@ void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept
     };
 
     World world {"TestWorld"_us, WorldConfiguration {}};
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     bool scenarioFinished = false;
 
     builder.Begin ("LoadingUpdate"_us, PipelineType::CUSTOM);

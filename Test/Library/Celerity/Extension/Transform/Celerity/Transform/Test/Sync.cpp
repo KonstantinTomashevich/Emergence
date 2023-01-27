@@ -26,7 +26,7 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
                bool _use2d)
 {
     World world {"TestWorld"_us, WorldConfiguration {{TEST_FIXED_FRAME_TIME_S}}};
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);

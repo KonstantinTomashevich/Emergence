@@ -21,10 +21,6 @@ struct Sprite2dComponent final
     /// \invariant Must be generated using Render2dSingleton::GenerateSprite2dId.
     UniqueId spriteId = INVALID_UNIQUE_ID;
 
-    /// \brief Unique asset user id for this sprite.
-    /// \details Sprite references MaterialInstance2d, therefore asset user id is needed.
-    UniqueId assetUserId = INVALID_UNIQUE_ID;
-
     /// \brief Material instance that should be used to render the sprite.
     Memory::UniqueString materialInstanceId;
 
@@ -48,7 +44,6 @@ struct Sprite2dComponent final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId spriteId;
-        StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId materialInstanceId;
         StandardLayout::FieldId uv;
         StandardLayout::FieldId halfSize;

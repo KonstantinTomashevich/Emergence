@@ -12,13 +12,11 @@ namespace Emergence::Celerity
 struct MaterialInstanceLoadingState final
 {
     Memory::UniqueString assetId;
-    UniqueId assetUserId;
     Memory::UniqueString parentId;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
-        StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId parentId;
         StandardLayout::Mapping mapping;
     };

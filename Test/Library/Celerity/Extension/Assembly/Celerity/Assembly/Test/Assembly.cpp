@@ -67,7 +67,7 @@ void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
         RegisterAssemblyEvents (registrar);
     }
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
@@ -93,7 +93,7 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
         RegisterAssemblyEvents (registrar);
     }
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);

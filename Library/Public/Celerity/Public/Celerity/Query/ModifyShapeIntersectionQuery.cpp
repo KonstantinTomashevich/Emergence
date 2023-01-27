@@ -6,6 +6,6 @@ EMERGENCE_CELERITY_MODIFY_QUERY_WRAPPER_IMPLEMENTATION (ShapeIntersectionQuery)
 
 ModifyShapeIntersectionQuery::Cursor ModifyShapeIntersectionQuery::Execute (Warehouse::Shape _shape) noexcept
 {
-    return Cursor {source.Execute (_shape), eventsOnRemove, changeTracker};
+    return Cursor {source.Execute (_shape), eventsOnRemove, eventsOnChange, changeTracker};
 }
 } // namespace Emergence::Celerity

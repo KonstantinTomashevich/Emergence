@@ -24,7 +24,7 @@ void *InsertLongTermQuery::Cursor::operator++ () noexcept
 }
 
 InsertLongTermQuery::Cursor::Cursor (Warehouse::InsertLongTermQuery::Cursor _source,
-                                     TrivialEventTriggerRow *_eventsOnAdd) noexcept
+                                     TrivialEventTriggerInstanceRow *_eventsOnAdd) noexcept
     : source (std::move (_source)),
       eventsOnAdd (_eventsOnAdd)
 {
@@ -34,7 +34,7 @@ void InsertLongTermQuery::Cursor::FireEvent () noexcept
 {
     if (eventsOnAdd && current)
     {
-        for (TrivialEventTrigger &trigger : *eventsOnAdd)
+        for (TrivialEventTriggerInstance &trigger : *eventsOnAdd)
         {
             trigger.Trigger (current);
         }
@@ -63,7 +63,7 @@ void InsertLongTermQuery::AddCustomVisualization (VisualGraph::Graph &_graph) co
 }
 
 InsertLongTermQuery::InsertLongTermQuery (Warehouse::InsertLongTermQuery _source,
-                                          TrivialEventTriggerRow *_eventsOnAdd) noexcept
+                                          TrivialEventTriggerInstanceRow *_eventsOnAdd) noexcept
     : source (std::move (_source)),
       eventsOnAdd (_eventsOnAdd)
 {

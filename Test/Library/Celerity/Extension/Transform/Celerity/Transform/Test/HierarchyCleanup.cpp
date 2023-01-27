@@ -30,7 +30,7 @@ void HierarchyCleanupTest (Container::Vector<RequestExecutor::RequestPacket> _sc
         RegisterTransformCommonEvents (registrar);
     }
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     const std::size_t stepCount = _scenario.size ();
 
     if (_fixed)

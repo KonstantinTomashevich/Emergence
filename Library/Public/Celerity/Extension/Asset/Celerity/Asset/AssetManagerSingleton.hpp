@@ -16,12 +16,6 @@ struct AssetManagerSingleton final
     /// \brief Indicates whether assets with no references should be deleted automatically.
     bool automaticallyCleanUnusedAssets = true;
 
-    /// \invariant Do not access directly, use ::GenerateAssetUserId.
-    std::atomic_unsigned_lock_free assetUserIdCounter = 0u;
-
-    /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateAssetUserId () const noexcept;
-
     struct Reflection final
     {
         StandardLayout::FieldId assetsLeftToLoad;

@@ -59,7 +59,8 @@
             friend class QueryClass;                                                                                   \
                                                                                                                        \
             explicit Cursor (BaseClass::Cursor _source,                                                                \
-                             Emergence::Celerity::TrivialEventTriggerRow *_eventsOnRemove,                             \
+                             Emergence::Celerity::TrivialEventTriggerInstanceRow *_eventsOnRemove,                     \
+                             Emergence::Celerity::OnChangeEventTriggerInstanceRow *_eventsOnChange,                    \
                              Emergence::Celerity::ChangeTracker *_changeTracker) noexcept;                             \
                                                                                                                        \
             void EnterRecord () noexcept;                                                                              \
@@ -67,7 +68,8 @@
             void ExitRecord () noexcept;                                                                               \
                                                                                                                        \
             BaseClass::Cursor source;                                                                                  \
-            [[maybe_unused]] Emergence::Celerity::TrivialEventTriggerRow *eventsOnRemove;                              \
+            [[maybe_unused]] Emergence::Celerity::TrivialEventTriggerInstanceRow *eventsOnRemove;                      \
+            [[maybe_unused]] Emergence::Celerity::OnChangeEventTriggerInstanceRow *eventsOnChange;                     \
             [[maybe_unused]] Emergence::Celerity::ChangeTracker *changeTracker;                                        \
         };                                                                                                             \
                                                                                                                        \
@@ -91,11 +93,13 @@
         friend class TaskConstructor;                                                                                  \
                                                                                                                        \
         explicit QueryClass (BaseClass _source,                                                                        \
-                             Emergence::Celerity::TrivialEventTriggerRow *_eventsOnRemove,                             \
+                             Emergence::Celerity::TrivialEventTriggerInstanceRow *_eventsOnRemove,                     \
+                             Emergence::Celerity::OnChangeEventTriggerInstanceRow *_eventsOnChange,                    \
                              Emergence::Celerity::ChangeTracker *_changeTracker) noexcept;                             \
                                                                                                                        \
         BaseClass source;                                                                                              \
-        Emergence::Celerity::TrivialEventTriggerRow *eventsOnRemove;                                                   \
+        Emergence::Celerity::TrivialEventTriggerInstanceRow *eventsOnRemove;                                           \
+        Emergence::Celerity::OnChangeEventTriggerInstanceRow *eventsOnChange;                                          \
         Emergence::Celerity::ChangeTracker *changeTracker;                                                             \
     }
 
@@ -118,9 +122,11 @@
     QueryClass::Cursor::Cursor (QueryClass::Cursor &&_other) noexcept                                                  \
         : source (std::move (_other.source)),                                                                          \
           eventsOnRemove (_other.eventsOnRemove),                                                                      \
+          eventsOnChange (_other.eventsOnChange),                                                                      \
           changeTracker (_other.changeTracker)                                                                         \
     {                                                                                                                  \
         _other.eventsOnRemove = nullptr;                                                                               \
+        _other.eventsOnChange = nullptr;                                                                               \
         _other.changeTracker = nullptr;                                                                                \
     }                                                                                                                  \
                                                                                                                        \
@@ -149,10 +155,12 @@
     }                                                                                                                  \
                                                                                                                        \
     QueryClass::Cursor::Cursor (BaseClass::Cursor _source,                                                             \
-                                Emergence::Celerity::TrivialEventTriggerRow *_eventsOnRemove,                          \
+                                Emergence::Celerity::TrivialEventTriggerInstanceRow *_eventsOnRemove,                  \
+                                Emergence::Celerity::OnChangeEventTriggerInstanceRow *_eventsOnChange,                 \
                                 Emergence::Celerity::ChangeTracker *_changeTracker) noexcept                           \
         : source (std::move (_source)),                                                                                \
           eventsOnRemove (_eventsOnRemove),                                                                            \
+          eventsOnChange (_eventsOnChange),                                                                            \
           changeTracker (_changeTracker)                                                                               \
                                                                                                                        \
     {                                                                                                                  \
@@ -179,7 +187,7 @@
         {                                                                                                              \
             if (void *current = *source)                                                                               \
             {                                                                                                          \
-                changeTracker->EndEdition (current);                                                                   \
+                changeTracker->EndEdition (current, *eventsOnChange);                                                  \
             }                                                                                                          \
         }                                                                                                              \
     }                                                                                                                  \
@@ -196,10 +204,12 @@
         return source.AllowUnsafeFetchAccess ();                                                                       \
     }                                                                                                                  \
                                                                                                                        \
-    QueryClass::QueryClass (BaseClass _source, Emergence::Celerity::TrivialEventTriggerRow *_eventsOnRemove,           \
+    QueryClass::QueryClass (BaseClass _source, Emergence::Celerity::TrivialEventTriggerInstanceRow *_eventsOnRemove,   \
+                            Emergence::Celerity::OnChangeEventTriggerInstanceRow *_eventsOnChange,                     \
                             Emergence::Celerity::ChangeTracker *_changeTracker) noexcept                               \
         : source (std::move (_source)),                                                                                \
           eventsOnRemove (_eventsOnRemove),                                                                            \
+          eventsOnChange (_eventsOnChange),                                                                            \
           changeTracker (_changeTracker)                                                                               \
     {                                                                                                                  \
     }
@@ -224,7 +234,7 @@
         {                                                                                                              \
             if (void *current = *source)                                                                               \
             {                                                                                                          \
-                for (Emergence::Celerity::TrivialEventTrigger & trigger : *eventsOnRemove)                             \
+                for (Emergence::Celerity::TrivialEventTriggerInstance & trigger : *eventsOnRemove)                     \
                 {                                                                                                      \
                     trigger.Trigger (current);                                                                         \
                 }                                                                                                      \

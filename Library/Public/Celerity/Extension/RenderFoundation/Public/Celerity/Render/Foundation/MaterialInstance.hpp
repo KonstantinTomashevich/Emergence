@@ -24,16 +24,12 @@ struct MaterialInstance final
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
 
-    /// \brief As material instance references Material, it needs a unique asset user id.
-    UniqueId assetUserId = INVALID_UNIQUE_ID;
-
     /// \brief Id of the material, parameters to which this instance contains.
     Memory::UniqueString materialId;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
-        StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId materialId;
         StandardLayout::Mapping mapping;
     };
@@ -119,9 +115,6 @@ struct UniformSamplerValue final
     /// \brief Name of the uniform that should receive this value.
     Memory::UniqueString uniformName;
 
-    /// \brief As uniform sampler value references Texture, it needs a unique asset user id.
-    UniqueId assetUserId = INVALID_UNIQUE_ID;
-
     /// \brief Id of the texture asset that should be sent as value.
     Memory::UniqueString textureId;
 
@@ -129,7 +122,6 @@ struct UniformSamplerValue final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId uniformName;
-        StandardLayout::FieldId assetUserId;
         StandardLayout::FieldId textureId;
         StandardLayout::Mapping mapping;
     };

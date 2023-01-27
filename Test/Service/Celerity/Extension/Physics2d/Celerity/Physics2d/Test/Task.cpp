@@ -403,7 +403,7 @@ void ExecuteScenario (Container::Vector<ConfiguratorFrame> _configuratorFrames,
         RegisterTransformCommonEvents (registrar);
     }
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     Physics2dSimulation::AddToFixedUpdate (builder);
     TransformHierarchyCleanup::Add2dToFixedUpdate (builder);

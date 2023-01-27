@@ -65,14 +65,19 @@ TaskConstructor &TaskConstructor::MakeDependencyOf (Memory::UniqueString _taskOr
 FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchSingleton (_typeMapping);
+    return parent->worldView->FindViewForType (_typeMapping).localRegistry.FetchSingleton (_typeMapping);
 }
 
 ModifySingletonQuery TaskConstructor::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifySingletonQuery {parent->world->registry.ModifySingleton (_typeMapping),
-                                 BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+
+    return ModifySingletonQuery {
+        view.localRegistry.ModifySingleton (_typeMapping),
+        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
+        changeTracker};
 }
 
 InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -92,18 +97,29 @@ InsertShortTermQuery TaskConstructor::InsertShortTerm (const StandardLayout::Map
         }
     }
 
-    return parent->world->registry.InsertShortTerm (_typeMapping);
+    return parent->worldView->FindViewForType (_typeMapping).localRegistry.InsertShortTerm (_typeMapping);
 }
 
 FetchSequenceQuery TaskConstructor::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
+    WorldView &targetView = parent->worldView->FindViewForType (_typeMapping);
+
     if (parent->eventTypes.contains (_typeMapping))
     {
+        if (&targetView != parent->worldView)
+        {
+            parent->anyErrorsDetected = true;
+            EMERGENCE_LOG (ERROR, "Found fetch of events with type \"", _typeMapping.GetName (),
+                           "\" from world view \"", parent->worldView->GetName (),
+                           "\", but this event type is only allowed to be fetched in world view \"",
+                           targetView.GetName (), "\".");
+        }
+
         RegisterEventConsumption (_typeMapping);
     }
 
-    return parent->world->registry.FetchSequence (_typeMapping);
+    return targetView.localRegistry.FetchSequence (_typeMapping);
 }
 
 ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
@@ -116,106 +132,131 @@ ModifySequenceQuery TaskConstructor::ModifySequence (const StandardLayout::Mappi
                        "\". Event modification is not allowed.");
     }
 
-    return parent->world->registry.ModifySequence (_typeMapping);
+    return parent->worldView->FindViewForType (_typeMapping).localRegistry.ModifySequence (_typeMapping);
 }
 
 InsertLongTermQuery TaskConstructor::InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return InsertLongTermQuery {parent->world->registry.InsertLongTerm (_typeMapping), BindEventsOnAdd (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+    TrivialEventTriggerRow *eventsOnAdd = BindEventsOnAdd (_typeMapping);
+
+    return InsertLongTermQuery {
+        view.localRegistry.InsertLongTerm (_typeMapping),
+        eventsOnAdd ? view.RequestOnAddEventInstances (parent->currentPipelineType, eventsOnAdd) : nullptr};
 }
 
 FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typeMapping,
                                              const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchValue (_typeMapping, _keyFields);
+    return parent->worldView->FindViewForType (_typeMapping).localRegistry.FetchValue (_typeMapping, _keyFields);
 }
 
 ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifyValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields),
-                             BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructModifyQuery<ModifyValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
+                                                   _typeMapping);
 }
 
 EditValueQuery TaskConstructor::EditValue (const StandardLayout::Mapping &_typeMapping,
                                            const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return EditValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields), nullptr,
-                           BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructEditQuery<EditValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
+                                               _typeMapping);
 }
 
 RemoveValueQuery TaskConstructor::RemoveValue (const StandardLayout::Mapping &_typeMapping,
                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return RemoveValueQuery {parent->world->registry.ModifyValue (_typeMapping, _keyFields),
-                             BindEventsOnRemove (_typeMapping), nullptr};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructRemoveQuery<RemoveValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
+                                                   _typeMapping);
 }
 
 FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                StandardLayout::FieldId _keyField) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchAscendingRange (_typeMapping, _keyField);
+    return parent->worldView->FindViewForType (_typeMapping)
+        .localRegistry.FetchAscendingRange (_typeMapping, _keyField);
 }
 
 ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifyAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField),
-                                      BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructModifyQuery<ModifyAscendingRangeQuery> (
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 EditAscendingRangeQuery TaskConstructor::EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                              StandardLayout::FieldId _keyField) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return EditAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField), nullptr,
-                                    BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructEditQuery<EditAscendingRangeQuery> (
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 RemoveAscendingRangeQuery TaskConstructor::RemoveAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return RemoveAscendingRangeQuery {parent->world->registry.ModifyAscendingRange (_typeMapping, _keyField),
-                                      BindEventsOnRemove (_typeMapping), nullptr};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructRemoveQuery<RemoveAscendingRangeQuery> (
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchDescendingRange (_typeMapping, _keyField);
+    return parent->worldView->FindViewForType (_typeMapping)
+        .localRegistry.FetchDescendingRange (_typeMapping, _keyField);
 }
 
 ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                    StandardLayout::FieldId _keyField) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifyDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField),
-                                       BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructModifyQuery<ModifyDescendingRangeQuery> (
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 EditDescendingRangeQuery TaskConstructor::EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                StandardLayout::FieldId _keyField) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return EditDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField), nullptr,
-                                     BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructEditQuery<EditDescendingRangeQuery> (
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 RemoveDescendingRangeQuery TaskConstructor::RemoveDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                    StandardLayout::FieldId _keyField) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return RemoveDescendingRangeQuery {parent->world->registry.ModifyDescendingRange (_typeMapping, _keyField),
-                                       BindEventsOnRemove (_typeMapping), nullptr};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructRemoveQuery<RemoveDescendingRangeQuery> (
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 FetchSignalQuery TaskConstructor::FetchSignal (const StandardLayout::Mapping &_typeMapping,
@@ -223,7 +264,8 @@ FetchSignalQuery TaskConstructor::FetchSignal (const StandardLayout::Mapping &_t
                                                const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchSignal (_typeMapping, _keyField, _signaledValue);
+    return parent->worldView->FindViewForType (_typeMapping)
+        .localRegistry.FetchSignal (_typeMapping, _keyField, _signaledValue);
 }
 
 ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &_typeMapping,
@@ -231,8 +273,10 @@ ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &
                                                  const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifySignalQuery {parent->world->registry.ModifySignal (_typeMapping, _keyField, _signaledValue),
-                              BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructModifyQuery<ModifySignalQuery> (
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
 }
 
 EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typeMapping,
@@ -240,8 +284,10 @@ EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typ
                                              const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return EditSignalQuery {parent->world->registry.ModifySignal (_typeMapping, _keyField, _signaledValue), nullptr,
-                            BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructEditQuery<EditSignalQuery> (
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
 }
 
 RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &_typeMapping,
@@ -249,70 +295,86 @@ RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &
                                                  const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return RemoveSignalQuery {parent->world->registry.ModifySignal (_typeMapping, _keyField, _signaledValue),
-                              BindEventsOnRemove (_typeMapping), nullptr};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructRemoveQuery<RemoveSignalQuery> (
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
 }
 
 FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchShapeIntersection (_typeMapping, _dimensions);
+    return parent->worldView->FindViewForType (_typeMapping)
+        .localRegistry.FetchShapeIntersection (_typeMapping, _dimensions);
 }
 
 ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifyShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
-                                         BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructModifyQuery<ModifyShapeIntersectionQuery> (
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 EditShapeIntersectionQuery TaskConstructor::EditShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return EditShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
-                                       nullptr, BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructEditQuery<EditShapeIntersectionQuery> (
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 RemoveShapeIntersectionQuery TaskConstructor::RemoveShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return RemoveShapeIntersectionQuery {parent->world->registry.ModifyShapeIntersection (_typeMapping, _dimensions),
-                                         BindEventsOnRemove (_typeMapping), nullptr};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructRemoveQuery<RemoveShapeIntersectionQuery> (
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
-    return parent->world->registry.FetchRayIntersection (_typeMapping, _dimensions);
+    return parent->worldView->FindViewForType (_typeMapping)
+        .localRegistry.FetchRayIntersection (_typeMapping, _dimensions);
 }
 
 ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return ModifyRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions),
-                                       BindEventsOnRemove (_typeMapping), BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructModifyQuery<ModifyRayIntersectionQuery> (
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 EditRayIntersectionQuery TaskConstructor::EditRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return EditRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions), nullptr,
-                                     BindChangeTracker (_typeMapping)};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructEditQuery<EditRayIntersectionQuery> (
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
-    return RemoveRayIntersectionQuery {parent->world->registry.ModifyRayIntersection (_typeMapping, _dimensions),
-                                       BindEventsOnRemove (_typeMapping), nullptr};
+    WorldView &view = parent->worldView->FindViewForType (_typeMapping);
+
+    return ConstructRemoveQuery<RemoveRayIntersectionQuery> (
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 TaskConstructor &TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
@@ -343,6 +405,44 @@ void TaskConstructor::RegisterWriteAccess (Memory::UniqueString _resourceName) n
     task.readAccess.erase (_resourceName);
 }
 
+template <typename WrappedQuery, typename SourceQuery>
+WrappedQuery TaskConstructor::ConstructModifyQuery (SourceQuery _source,
+                                                    WorldView &_view,
+                                                    const StandardLayout::Mapping &_typeMapping) noexcept
+{
+    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    return WrappedQuery {
+        _source,
+        eventsOnRemove ? _view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
+        changeTracker ? _view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
+        changeTracker};
+}
+
+template <typename WrappedQuery, typename SourceQuery>
+WrappedQuery TaskConstructor::ConstructEditQuery (SourceQuery _source,
+                                                  WorldView &_view,
+                                                  const StandardLayout::Mapping &_typeMapping) noexcept
+{
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    return WrappedQuery {
+        _source, nullptr,
+        changeTracker ? _view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
+        changeTracker};
+}
+
+template <typename WrappedQuery, typename SourceQuery>
+WrappedQuery TaskConstructor::ConstructRemoveQuery (SourceQuery _source,
+                                                    WorldView &_view,
+                                                    const StandardLayout::Mapping &_typeMapping) noexcept
+{
+    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
+    return WrappedQuery {
+        _source,
+        eventsOnRemove ? _view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
+        nullptr, nullptr};
+}
+
 TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                             const StandardLayout::Mapping &_trackedType) noexcept
 {
@@ -366,21 +466,21 @@ TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::TypedOrde
 TrivialEventTriggerRow *TaskConstructor::BindEventsOnAdd (const StandardLayout::Mapping &_trackedType) noexcept
 {
     World::EventScheme &eventScheme =
-        parent->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
+        parent->worldView->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
     return BindTrivialEvents (eventScheme.onAdd, _trackedType);
 }
 
 TrivialEventTriggerRow *TaskConstructor::BindEventsOnRemove (const StandardLayout::Mapping &_trackedType) noexcept
 {
     World::EventScheme &eventScheme =
-        parent->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
+        parent->worldView->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
     return BindTrivialEvents (eventScheme.onRemove, _trackedType);
 }
 
 ChangeTracker *TaskConstructor::BindChangeTracker (const StandardLayout::Mapping &_trackedType) noexcept
 {
     World::EventScheme &eventScheme =
-        parent->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
+        parent->worldView->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
 
     for (ChangeTracker &tracker : eventScheme.changeTrackers)
     {
@@ -435,8 +535,8 @@ void TaskConstructor::RegisterEventConsumption (const StandardLayout::Mapping &_
     }
 }
 
-PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
-    : world (_targetWorld),
+PipelineBuilder::PipelineBuilder (WorldView *_targetWorldView) noexcept
+    : worldView (_targetWorldView),
       registeredResources (GetBuildTimeAllocationGroup ()),
       eventTypes (GetBuildTimeAllocationGroup ()),
       sharedEventTypes (GetBuildTimeAllocationGroup ()),
@@ -452,8 +552,8 @@ PipelineBuilder::PipelineBuilder (World *_targetWorld) noexcept
           EventUsageMap {GetBuildTimeAllocationGroup ()},
       })
 {
-    EMERGENCE_ASSERT (world);
-    for (const World::EventScheme &scheme : world->eventSchemes)
+    EMERGENCE_ASSERT (worldView);
+    for (const World::EventScheme &scheme : worldView->world->eventSchemes)
     {
         ImportEventScheme (scheme);
     }
@@ -464,7 +564,7 @@ bool PipelineBuilder::Begin (Memory::UniqueString _id, PipelineType _type) noexc
     switch (_type)
     {
     case PipelineType::NORMAL:
-        if (world->normalPipeline)
+        if (worldView->normalPipeline)
         {
             // Normal pipeline for this world is already built.
             return false;
@@ -472,7 +572,7 @@ bool PipelineBuilder::Begin (Memory::UniqueString _id, PipelineType _type) noexc
 
         break;
     case PipelineType::FIXED:
-        if (world->fixedPipeline)
+        if (worldView->fixedPipeline)
         {
             // Fixed pipeline for this world is already built.
             return false;
@@ -490,7 +590,7 @@ bool PipelineBuilder::Begin (Memory::UniqueString _id, PipelineType _type) noexc
     currentPipelineType = _type;
 
     currentPipelineAllocationGroup =
-        Memory::Profiler::AllocationGroup {world->pipelinePool.GetAllocationGroup (), currentPipelineId};
+        Memory::Profiler::AllocationGroup {worldView->pipelinePool.GetAllocationGroup (), currentPipelineId};
 
     // Everything else should be cleared in ::End.
     return true;
@@ -543,7 +643,7 @@ Pipeline *PipelineBuilder::End (VisualGraph::Graph *_visualGraphOutput, bool _ex
             *_visualGraphOutput = taskRegister.ExportVisual (_exportResourcesToGraph);
         }
 
-        newPipeline = world->AddPipeline (currentPipelineId, currentPipelineType, taskRegister.ExportCollection ());
+        newPipeline = worldView->AddPipeline (currentPipelineId, currentPipelineType, taskRegister.ExportCollection ());
     }
 
     taskRegister.Clear ();
@@ -565,7 +665,7 @@ Pipeline *PipelineBuilder::End (VisualGraph::Graph *_visualGraphOutput, bool _ex
 
 Memory::Profiler::AllocationGroup PipelineBuilder::GetBuildTimeAllocationGroup () noexcept
 {
-    return {world->pipelinePool.GetAllocationGroup (), Memory::UniqueString {"PipelineBuilder"}};
+    return {worldView->pipelinePool.GetAllocationGroup (), Memory::UniqueString {"PipelineBuilder"}};
 }
 
 void PipelineBuilder::ImportEventScheme (const World::EventScheme &_scheme) noexcept
@@ -652,16 +752,15 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
             continue;
         }
 
-        auto consumptionIterator = _consumption.find (eventType);
-        if (consumptionIterator == _consumption.end () || consumptionIterator->second.empty ())
+        // Skip events that are not local for this view: they can only be produced in this pipeline.
+        if (!worldView->localRegistry.IsTypeUsed (eventType))
         {
-            EMERGENCE_LOG (WARNING, "Events of type \"", eventType.GetName (), "\" are produced, but never consumed.");
             continue;
         }
 
-        if (producers.empty ())
+        auto consumptionIterator = _consumption.find (eventType);
+        if (consumptionIterator == _consumption.end () || consumptionIterator->second.empty ())
         {
-            EMERGENCE_LOG (WARNING, "Events of type \"", eventType.GetName (), "\" are consumed, but never produced.");
             continue;
         }
 
@@ -677,58 +776,63 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
         {
             // Check whether this consumer belongs to "current execution consumers" category.
 
-            auto consumerDependencyIterator = dependencyMap.find (consumerTask);
-            if (consumerDependencyIterator != dependencyMap.end ())
+            // If there is no producers, then events are being sent from other views.
+            // In this case, we treat all consumers as "previous execution consumers" category.
+            if (!producers.empty ())
             {
-                bool dependsOnAllProducers = true;
-                bool dependsOnAnyProducer = false;
-
-                for (const Memory::UniqueString &producerTask : producers)
+                auto consumerDependencyIterator = dependencyMap.find (consumerTask);
+                if (consumerDependencyIterator != dependencyMap.end ())
                 {
-                    const bool dependsOnProducer = consumerDependencyIterator->second.contains (producerTask);
-                    dependsOnAllProducers &= dependsOnProducer;
-                    dependsOnAnyProducer |= dependsOnProducer;
-
-                    if (!dependsOnAllProducers && dependsOnAnyProducer)
-                    {
-                        // Error found, stop processing.
-                        break;
-                    }
-                }
-
-                if (dependsOnAllProducers)
-                {
-                    // Belongs to "current execution consumers" category.
-                    continue;
-                }
-
-                if (dependsOnAnyProducer)
-                {
-                    Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
-                        "Task \"", consumerTask, "\" consumes events of type \"", eventType.GetName (),
-                        "\", but graph ensures that task is executed only after some of the producers, instead of "
-                        "all. List of dependency producers: ");
+                    bool dependsOnAllProducers = true;
+                    bool dependsOnAnyProducer = false;
 
                     for (const Memory::UniqueString &producerTask : producers)
                     {
-                        if (consumerDependencyIterator->second.contains (producerTask))
+                        const bool dependsOnProducer = consumerDependencyIterator->second.contains (producerTask);
+                        dependsOnAllProducers &= dependsOnProducer;
+                        dependsOnAnyProducer |= dependsOnProducer;
+
+                        if (!dependsOnAllProducers && dependsOnAnyProducer)
                         {
-                            builder.Append ("\"", producerTask, "\" ");
+                            // Error found, stop processing.
+                            break;
                         }
                     }
 
-                    builder.Append (". List of dependant or unspecified producers: ");
-                    for (const Memory::UniqueString &producerTask : producers)
+                    if (dependsOnAllProducers)
                     {
-                        if (!consumerDependencyIterator->second.contains (producerTask))
-                        {
-                            builder.Append ("\"", producerTask, "\" ");
-                        }
+                        // Belongs to "current execution consumers" category.
+                        continue;
                     }
 
-                    EMERGENCE_LOG (ERROR, builder.Get ());
-                    anyErrorsDetected = true;
-                    continue;
+                    if (dependsOnAnyProducer)
+                    {
+                        Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
+                            "Task \"", consumerTask, "\" consumes events of type \"", eventType.GetName (),
+                            "\", but graph ensures that task is executed only after some of the producers, instead of "
+                            "all. List of dependency producers: ");
+
+                        for (const Memory::UniqueString &producerTask : producers)
+                        {
+                            if (consumerDependencyIterator->second.contains (producerTask))
+                            {
+                                builder.Append ("\"", producerTask, "\" ");
+                            }
+                        }
+
+                        builder.Append (". List of dependant or unspecified producers: ");
+                        for (const Memory::UniqueString &producerTask : producers)
+                        {
+                            if (!consumerDependencyIterator->second.contains (producerTask))
+                            {
+                                builder.Append ("\"", producerTask, "\" ");
+                            }
+                        }
+
+                        EMERGENCE_LOG (ERROR, builder.Get ());
+                        anyErrorsDetected = true;
+                        continue;
+                    }
                 }
             }
 
@@ -790,6 +894,12 @@ void PipelineBuilder::PostProcessLocalEventRoutine (const PipelineBuilder::Event
             continue;
         }
 
+        // Skip events that are not local for this view: they can only be produced in this pipeline.
+        if (!worldView->localRegistry.IsTypeUsed (eventType))
+        {
+            continue;
+        }
+
         auto consumptionIterator = _consumption.find (eventType);
         if (consumptionIterator == _consumption.end () || consumptionIterator->second.empty ())
         {
@@ -840,6 +950,12 @@ void PipelineBuilder::PostProcessSharedEventRoutine (const PipelineBuilder::Even
     postProcessingEvents = true;
     for (const StandardLayout::Mapping &eventType : sharedEventTypes)
     {
+        // Skip events that are not local for this view: they can only be produced in this pipeline.
+        if (!worldView->localRegistry.IsTypeUsed (eventType))
+        {
+            continue;
+        }
+
         auto consumptionIterator = _consumption.find (eventType);
         if (consumptionIterator != _consumption.end ())
         {

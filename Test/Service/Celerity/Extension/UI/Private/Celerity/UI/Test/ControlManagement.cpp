@@ -1,4 +1,3 @@
-#include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/UI/Test/ControlManagement.hpp>
@@ -18,8 +17,6 @@ public:
     void Execute () noexcept;
 
 private:
-    FetchSingletonQuery fetchAssetManager;
-
     InsertLongTermQuery insertViewport;
     InsertLongTermQuery insertPass;
 
@@ -44,9 +41,7 @@ private:
 };
 
 ControlManager::ControlManager (TaskConstructor &_constructor, Container::Vector<Frame> _frames) noexcept
-    : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
-
-      insertViewport (INSERT_LONG_TERM (Viewport)),
+    : insertViewport (INSERT_LONG_TERM (Viewport)),
       insertPass (INSERT_LONG_TERM (UIRenderPass)),
 
       insertNode (INSERT_LONG_TERM (UINode)),
@@ -78,9 +73,6 @@ void ControlManager::Execute () noexcept
         return;
     }
 
-    auto assetManagerCursor = fetchAssetManager.Execute ();
-    const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
-
     auto createNode = [this] (UniqueId _nodeId, UniqueId _parentId, Memory::UniqueString _styleId)
     {
         auto nodeCursor = insertNode.Execute ();
@@ -94,7 +86,7 @@ void ControlManager::Execute () noexcept
     for (const Task &task : frames[currentFrameIndex])
     {
         std::visit (
-            [this, assetManager, &createNode] (const auto &_task)
+            [this, &createNode] (const auto &_task)
             {
                 using Type = std::decay_t<decltype (_task)>;
                 if constexpr (std::is_same_v<Type, Tasks::CreateViewport>)
@@ -168,7 +160,6 @@ void ControlManager::Execute () noexcept
                     auto *image = static_cast<ImageControl *> (++imageCursor);
 
                     image->nodeId = _task.nodeId;
-                    image->assetUserId = assetManager->GenerateAssetUserId ();
                     image->textureId = _task.textureId;
                     image->width = _task.width;
                     image->height = _task.height;
@@ -281,7 +272,6 @@ void ControlManager::Execute () noexcept
                     auto propertyCursor = insertFontProperty.Execute ();
                     auto *property = static_cast<UIStyleFontProperty *> (++propertyCursor);
                     property->styleId = _task.styleId;
-                    property->assetUserId = assetManager->GenerateAssetUserId ();
                     property->fontId = _task.fontId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::RemoveControl>)

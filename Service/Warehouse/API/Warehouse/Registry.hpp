@@ -176,6 +176,9 @@ public:
     [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersection (
         const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept;
 
+    /// \return Whether registry has any prepared queries associated with given type.
+    [[nodiscard]] bool IsTypeUsed (const StandardLayout::Mapping &_typeMapping) const noexcept;
+
     /// \return Name of this registry, that can be used for debug or visualization purposes.
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 

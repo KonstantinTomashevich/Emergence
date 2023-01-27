@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <thread>
 
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
@@ -18,11 +17,6 @@
 namespace Emergence::Celerity::Test
 {
 using namespace Emergence::Memory::Literals;
-
-bool EventTriggeringTestIncludeMarker () noexcept
-{
-    return true;
-}
 
 namespace
 {
@@ -388,7 +382,7 @@ Container::Vector<Task> FromChangeVector (const ChangeVector &_changes)
 template <typename EventType>
 void SeparatedEventTest (World *_world, Container::Vector<Task> _tasks, Container::Vector<EventType> _expected)
 {
-    PipelineBuilder builder {_world};
+    PipelineBuilder builder {_world->GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
     AddExecutorTask (builder, std::move (_tasks));
     AddValidatorTask<EventType> (builder, std::move (_expected));
@@ -433,7 +427,7 @@ void OnChangeMultipleTest (World *_world)
         },
     };
 
-    PipelineBuilder builder {_world};
+    PipelineBuilder builder {_world->GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
     AddExecutorTask (builder, FromChangeVector (changes));
 
@@ -503,7 +497,7 @@ TEST_CASE (OnAddShared)
     }
 
     const TestRecord testRecord {21u, 91.7f, 22.3f, 11.8f, 67.2f};
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
 
     builder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     AddExecutorTask (builder, {AddRecord {testRecord}});

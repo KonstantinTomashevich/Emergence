@@ -35,7 +35,6 @@ private:
                        const AssetReferenceBinding &_binding,
                        const AssetReferenceBindingHookEvents &_hooks) noexcept;
 
-        FetchValueQuery fetchUserById;
         FetchSequenceQuery fetchOnAddedEvents;
         FetchSequenceQuery fetchOnChangedEvents;
         FetchSequenceQuery fetchOnRemovedEvents;
@@ -81,30 +80,14 @@ void AssetManager::Execute () noexcept
     auto assetManagerCursor = modifyAssetManager.Execute ();
     auto *assetManager = static_cast<AssetManagerSingleton *> (*assetManagerCursor);
 
-#ifndef NDEBUG
-    // Current scenario supports only one addition/change per asset user per
-    // frame. Having more than one change per frame indicates that asset usage
-    // selection is decentralized, which is not a good pattern in most cases.
-    Container::HashSet<UniqueId> assetUsersAffectedThisFrame {assetUsers.get_allocator ()};
-#endif
-
     for (AssetUserData &assetUser : assetUsers)
     {
         for (auto eventCursor = assetUser.fetchOnAddedEvents.Execute ();
              const auto *event = static_cast<const AssetUserAddedEventView *> (*eventCursor); ++eventCursor)
         {
-            EMERGENCE_ASSERT (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
-            auto assetUserCursor = assetUser.fetchUserById.Execute (&event->assetUserId);
-
-            if (const void *assetUserObject = *assetUserCursor)
+            for (size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
-                for (const AssetReferenceFieldData &field : assetUser.fields)
-                {
-                    OnAssetUsageAdded (
-                        assetManager,
-                        *static_cast<const Memory::UniqueString *> (field.field.GetValue (assetUserObject)),
-                        field.type);
-                }
+                OnAssetUsageAdded (assetManager, event->assetReferences[index], assetUser.fields[index].type);
             }
         }
     }
@@ -114,23 +97,14 @@ void AssetManager::Execute () noexcept
         for (auto eventCursor = assetUser.fetchOnChangedEvents.Execute ();
              const auto *event = static_cast<const AssetUserChangedEventView *> (*eventCursor); ++eventCursor)
         {
-            EMERGENCE_ASSERT (assetUsersAffectedThisFrame.emplace (event->assetUserId).second);
-            auto assetUserCursor = assetUser.fetchUserById.Execute (&event->assetUserId);
-
-            if (const void *assetUserObject = *assetUserCursor)
+            for (size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
-                for (std::size_t fieldIndex = 0u; fieldIndex < assetUser.fields.size (); ++fieldIndex)
+                if (event->assetReferenceSequence[index] !=
+                    event->assetReferenceSequence[assetUser.fields.size () + index])
                 {
-                    const AssetReferenceFieldData &field = assetUser.fields[fieldIndex];
-                    const Memory::UniqueString oldValue = event->unchangedAssets[fieldIndex];
-                    const Memory::UniqueString currentValue =
-                        *static_cast<const Memory::UniqueString *> (field.field.GetValue (assetUserObject));
-
-                    if (oldValue != currentValue)
-                    {
-                        OnAssetUsageRemoved (assetManager, oldValue);
-                        OnAssetUsageAdded (assetManager, currentValue, field.type);
-                    }
+                    OnAssetUsageRemoved (assetManager, event->assetReferenceSequence[index]);
+                    OnAssetUsageAdded (assetManager, event->assetReferenceSequence[assetUser.fields.size () + index],
+                                       assetUser.fields[index].type);
                 }
             }
         }
@@ -141,9 +115,9 @@ void AssetManager::Execute () noexcept
         for (auto eventCursor = assetUser.fetchOnRemovedEvents.Execute ();
              const auto *event = static_cast<const AssetUserRemovedEventView *> (*eventCursor); ++eventCursor)
         {
-            for (std::size_t fieldIndex = 0u; fieldIndex < assetUser.fields.size (); ++fieldIndex)
+            for (size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
-                OnAssetUsageRemoved (assetManager, event->assets[fieldIndex]);
+                OnAssetUsageRemoved (assetManager, event->assetReferences[index]);
             }
         }
     }
@@ -168,8 +142,7 @@ void AssetManager::Execute () noexcept
 AssetManager::AssetUserData::AssetUserData (TaskConstructor &_constructor,
                                             const AssetReferenceBinding &_binding,
                                             const AssetReferenceBindingHookEvents &_hooks) noexcept
-    : fetchUserById (_constructor.FetchValue (_binding.objectType, {_binding.assetUserIdField})),
-      fetchOnAddedEvents (_constructor.FetchSequence (_hooks.onObjectAdded)),
+    : fetchOnAddedEvents (_constructor.FetchSequence (_hooks.onObjectAdded)),
       fetchOnChangedEvents (_constructor.FetchSequence (_hooks.onAnyReferenceChanged)),
       fetchOnRemovedEvents (_constructor.FetchSequence (_hooks.onObjectRemoved))
 {

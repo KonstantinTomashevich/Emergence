@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cstdint>
-#include <thread>
 
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
@@ -17,11 +16,6 @@
 namespace Emergence::Celerity::Test
 {
 using namespace Emergence::Memory::Literals;
-
-bool EventRoutingTestIncludeMarker () noexcept
-{
-    return true;
-}
 
 namespace
 {
@@ -156,7 +150,7 @@ void SimpleConsumptionTest (EventRoute _route, const EventPlan &_plan, bool _pre
 
     const uint64_t steps = productionPlan.size ();
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     REQUIRE (GetEventProducingPipeline (_route) == GetEventConsumingPipeline (_route));
     builder.Begin ("Update"_us, GetEventProducingPipeline (_route));
 
@@ -242,7 +236,7 @@ TEST_CASE (FixedToNormal)
         {},
     };
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
 
     builder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
     AddTestTask<EventProducer> (builder, "EventProducer"_us, std::move (productionPlan));
@@ -283,7 +277,7 @@ TEST_CASE (MultipleProducers)
     EventPlan consumerPlan {{3u, 7u, 7u, 15u}, {21u}, {13u}};
     const std::size_t steps = firstProducerPlan.size ();
 
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
     const Emergence::Memory::UniqueString firstProducer {"FirstEventProducer"};
@@ -308,7 +302,7 @@ TEST_CASE (MultipleConsumers)
     RegisterTestEvent (&world, EventRoute::FIXED);
 
     const EventPlan plan {{3u, 7u, 21u}, {73u, 42u}, {}, {13u, 10u}};
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
     const Emergence::Memory::UniqueString producer {"EventProducer"};
@@ -330,7 +324,7 @@ TEST_CASE (ConsumerDoesNotDependOnAllProducers)
 {
     World world {"TestWorld"_us};
     RegisterTestEvent (&world, EventRoute::FIXED);
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
     const Emergence::Memory::UniqueString firstProducer {"FirstEventProducer"};
@@ -346,7 +340,7 @@ TEST_CASE (ConsumerIsNotDependencyOfAllProducers)
 {
     World world {"TestWorld"_us};
     RegisterTestEvent (&world, EventRoute::FIXED);
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
     const Emergence::Memory::UniqueString firstProducer {"FirstProducer"};
@@ -362,7 +356,7 @@ TEST_CASE (ConsumerIsBetweenProducers)
 {
     World world {"TestWorld"_us};
     RegisterTestEvent (&world, EventRoute::FIXED);
-    PipelineBuilder builder {&world};
+    PipelineBuilder builder {world.GetRootView ()};
     builder.Begin ("Update"_us, Emergence::Celerity::PipelineType::FIXED);
 
     const Emergence::Memory::UniqueString firstProducer {"FirstEventProducer"};

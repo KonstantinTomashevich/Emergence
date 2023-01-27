@@ -11,10 +11,11 @@ namespace Emergence::Celerity
 {
 using namespace Memory::Literals;
 
-static Warehouse::Registry ConstructInsideGroup (Memory::UniqueString _worldName)
+template <typename Type, typename... Arguments>
+Type ConstructInsideGroup (const Memory::Profiler::AllocationGroup &_group, Arguments... _arguments)
 {
-    auto placeholder = Memory::Profiler::AllocationGroup {_worldName}.PlaceOnTop ();
-    return Warehouse::Registry {_worldName};
+    auto placeholder = _group.PlaceOnTop ();
+    return Type {std::forward<Arguments> (_arguments)...};
 }
 
 static Memory::Profiler::AllocationGroup WorldAllocationGroup (Memory::UniqueString _worldName,
@@ -23,14 +24,268 @@ static Memory::Profiler::AllocationGroup WorldAllocationGroup (Memory::UniqueStr
     return Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_worldName}, _groupName};
 }
 
+Memory::UniqueString WorldView::GetName () const noexcept
+{
+    return name;
+}
+
+void WorldView::RemovePipeline (Pipeline *_pipeline) noexcept
+{
+    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
+    {
+        auto *pipeline = static_cast<Pipeline *> (*iterator);
+        if (pipeline == _pipeline)
+        {
+            if (pipeline == normalPipeline)
+            {
+                normalPipeline = nullptr;
+            }
+
+            if (pipeline == fixedPipeline)
+            {
+                fixedPipeline = nullptr;
+            }
+
+            pipeline->~Pipeline ();
+            pipelinePool.Release (pipeline);
+            return;
+        }
+    }
+
+    // Received pipeline from another world?
+    EMERGENCE_ASSERT (false);
+}
+
+WorldView::EventSchemeInstance::EventSchemeInstance (
+    const Memory::Profiler::AllocationGroup &_rootAllocationGroup) noexcept
+    : onAdd (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnAdd"_us}),
+      onRemove (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnRemove"_us}),
+      onChange (Memory::Profiler::AllocationGroup {_rootAllocationGroup, "OnChange"_us})
+{
+}
+
 /// It's expected that user will not have a lot of pipelines, therefore no need to waste memory on large pool pages.
-static constexpr std::size_t PIPELINES_ON_PAGE = 8u;
+static constexpr std::size_t PIPELINES_ON_PAGE = 4u;
+
+WorldView::WorldView (World *_world,
+                      WorldView *_parent,
+                      Memory::UniqueString _name,
+                      const WorldViewConfig &_config) noexcept
+    : world (_world),
+      parent (_parent),
+      name (_name),
+      config ({Container::HashSet<StandardLayout::Mapping> {Memory::Profiler::AllocationGroup {"EnforcedTypes"_us}}}),
+
+      localRegistry (_name),
+      pipelinePool (Memory::Profiler::AllocationGroup {"Pipelines"_us}, sizeof (Pipeline), PIPELINES_ON_PAGE),
+
+      childrenHeap (Memory::Profiler::AllocationGroup {"Children"_us}),
+      childrenViews (Memory::Profiler::AllocationGroup::Top ()),
+      eventSchemeInstances (
+          {EventSchemeInstance {Memory::Profiler::AllocationGroup {"NormalUpdateEventSchemeInstance"_us}},
+           EventSchemeInstance {Memory::Profiler::AllocationGroup {"FixedUpdateEventSchemeInstance"_us}},
+           EventSchemeInstance {Memory::Profiler::AllocationGroup {"CustomPipelinesEventSchemeInstance"_us}}})
+{
+    for (const StandardLayout::Mapping &enforcedType : _config.enforcedTypes)
+    {
+        // Can only be enforced implicitly for root view.
+        EMERGENCE_ASSERT (enforcedType != TimeSingleton::Reflect ().mapping);
+        EMERGENCE_ASSERT (enforcedType != WorldSingleton::Reflect ().mapping);
+
+        config.enforcedTypes.emplace (enforcedType);
+    }
+
+#ifdef EMERGENCE_ASSERT_ENABLED
+    // Validate that there is no enforcement overlaps.
+    WorldView *viewToCheck = parent;
+
+    while (viewToCheck)
+    {
+        for (const StandardLayout::Mapping &enforcedType : config.enforcedTypes)
+        {
+            EMERGENCE_ASSERT (!viewToCheck->config.enforcedTypes.contains (enforcedType));
+        }
+
+        viewToCheck = viewToCheck->parent;
+    }
+#endif
+}
+
+WorldView::~WorldView () noexcept
+{
+    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
+    {
+        auto *pipeline = static_cast<Pipeline *> (*iterator);
+        pipeline->~Pipeline ();
+    }
+
+    for (WorldView *child : childrenViews)
+    {
+        child->~WorldView ();
+        childrenHeap.Release (child, sizeof (WorldView));
+    }
+}
+
+Pipeline *WorldView::AddPipeline (Memory::UniqueString _id,
+                                  PipelineType _type,
+                                  const Task::Collection &_collection) noexcept
+{
+    EMERGENCE_ASSERT (!normalPipeline || _type != PipelineType::NORMAL);
+    EMERGENCE_ASSERT (!fixedPipeline || _type != PipelineType::FIXED);
+
+    auto placeholder = Memory::Profiler::AllocationGroup {pipelinePool.GetAllocationGroup (), _id}.PlaceOnTop ();
+    auto *pipeline = new (pipelinePool.Acquire ()) Pipeline {_id, _type, _collection};
+
+    switch (_type)
+    {
+    case PipelineType::NORMAL:
+        normalPipeline = pipeline;
+        break;
+
+    case PipelineType::FIXED:
+        fixedPipeline = pipeline;
+        break;
+
+    case PipelineType::CUSTOM:
+        break;
+
+    case PipelineType::COUNT:
+        EMERGENCE_ASSERT (false);
+        break;
+    }
+
+    return pipeline;
+}
+
+void WorldView::ExecuteNormalPipeline () noexcept
+{
+    if (normalPipeline)
+    {
+        normalPipeline->Execute ();
+    }
+
+    for (WorldView *child : childrenViews)
+    {
+        child->ExecuteNormalPipeline ();
+    }
+}
+
+void WorldView::ExecuteFixedPipeline () noexcept
+{
+    if (fixedPipeline)
+    {
+        fixedPipeline->Execute ();
+    }
+
+    for (WorldView *child : childrenViews)
+    {
+        child->ExecuteFixedPipeline ();
+    }
+}
+
+WorldView &WorldView::FindViewForType (const StandardLayout::Mapping &_type) noexcept
+{
+    WorldView *currentView = this;
+    while (currentView)
+    {
+        if (currentView->config.enforcedTypes.contains (_type) || currentView->localRegistry.IsTypeUsed (_type))
+        {
+            return *currentView;
+        }
+
+        currentView = currentView->parent;
+    }
+
+    // First occurrence in hierarchy: make type local.
+    return *this;
+}
+
+TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstance (
+    Container::TypedOrderedPool<TrivialEventTriggerInstanceRow> &_pool, const TrivialEventTriggerRow *_source)
+{
+    EMERGENCE_ASSERT (_source && !_source->Empty ());
+    for (TrivialEventTriggerInstanceRow &row : _pool)
+    {
+        if (!row.Empty () && row.Front ().GetTrigger () == &_source->Front ())
+        {
+#ifdef EMERGENCE_ASSERT_ENABLED
+            EMERGENCE_ASSERT (row.GetCount () == _source->GetCount ());
+            for (size_t index = 0u; index < row.GetCount (); ++index)
+            {
+                EMERGENCE_ASSERT (row[index].GetTrigger () == &(*_source)[index]);
+            }
+#endif
+
+            return &row;
+        }
+    }
+
+    TrivialEventTriggerInstanceRow &row = _pool.Acquire ();
+    for (const TrivialEventTrigger &trigger : *_source)
+    {
+        row.EmplaceBack (TrivialEventTriggerInstance {
+            &trigger,
+            FindViewForType (trigger.GetEventType ()).localRegistry.InsertShortTerm (trigger.GetEventType ())});
+    }
+
+    return &row;
+}
+
+TrivialEventTriggerInstanceRow *WorldView::RequestOnAddEventInstances (PipelineType _pipeline,
+                                                                       const TrivialEventTriggerRow *_source) noexcept
+{
+    return RequestTrivialEventInstance (eventSchemeInstances[static_cast<size_t> (_pipeline)].onAdd, _source);
+}
+
+TrivialEventTriggerInstanceRow *WorldView::RequestOnRemoveEventInstances (
+    PipelineType _pipeline, const TrivialEventTriggerRow *_source) noexcept
+{
+    return RequestTrivialEventInstance (eventSchemeInstances[static_cast<size_t> (_pipeline)].onRemove, _source);
+}
+
+OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (PipelineType _pipeline,
+                                                                           const ChangeTracker *_source) noexcept
+{
+    EMERGENCE_ASSERT (_source);
+    const ChangeTracker::EventVector eventVector = _source->GetEventTriggers ();
+    EMERGENCE_ASSERT (!eventVector.Empty ());
+
+    for (OnChangeEventTriggerInstanceRow &row : eventSchemeInstances[static_cast<size_t> (_pipeline)].onChange)
+    {
+        if (!row.Empty () && row.Front ().GetTrigger () == eventVector.Front ())
+        {
+#ifdef EMERGENCE_ASSERT_ENABLED
+            EMERGENCE_ASSERT (row.GetCount () == eventVector.GetCount ());
+            for (size_t index = 0u; index < row.GetCount (); ++index)
+            {
+                EMERGENCE_ASSERT (row[index].GetTrigger () == eventVector[index]);
+            }
+#endif
+
+            return &row;
+        }
+    }
+
+    OnChangeEventTriggerInstanceRow &row = eventSchemeInstances[static_cast<size_t> (_pipeline)].onChange.Acquire ();
+    for (const OnChangeEventTrigger *trigger : eventVector)
+    {
+        row.EmplaceBack (OnChangeEventTriggerInstance {
+            trigger,
+            FindViewForType (trigger->GetEventType ()).localRegistry.InsertShortTerm (trigger->GetEventType ())});
+    }
+
+    return &row;
+}
 
 World::World (Memory::UniqueString _name, const WorldConfiguration &_configuration) noexcept
-    : registry (ConstructInsideGroup (_name)),
-      modifyTime (registry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
-      modifyWorld (registry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
-      pipelinePool (WorldAllocationGroup (_name, "Pipelines"_us), sizeof (Pipeline), PIPELINES_ON_PAGE),
+    : rootView (ConstructInsideGroup<WorldView> (
+          Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "RootView"_us},
+          this,
+          nullptr,
+          "Root"_us,
+          _configuration.rootViewConfig)),
+      modifyTime (rootView.localRegistry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
+      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
       eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
                      EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
                      EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}})
@@ -40,13 +295,47 @@ World::World (Memory::UniqueString _name, const WorldConfiguration &_configurati
     time->targetFixedFrameDurationsS = _configuration.targetFixedFrameDurationsS;
 }
 
-World::~World ()
+const WorldView *World::GetRootView () const noexcept
 {
-    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
-    {
-        auto *pipeline = static_cast<Pipeline *> (*iterator);
-        pipeline->~Pipeline ();
-    }
+    return &rootView;
+}
+
+WorldView *World::GetRootView () noexcept
+{
+    return &rootView;
+}
+
+WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name, const WorldViewConfig &_config) noexcept
+{
+    EMERGENCE_ASSERT (_parent);
+    EnsureViewIsOwned (_parent);
+
+    auto placeholder =
+        Memory::Profiler::AllocationGroup {_parent->childrenHeap.GetAllocationGroup (), _name}.PlaceOnTop ();
+
+    auto *view = new (_parent->childrenHeap.Acquire (sizeof (WorldView), alignof (WorldView)))
+        WorldView (this, _parent, _name, _config);
+
+    _parent->childrenViews.emplace_back (view);
+    return view;
+}
+
+void World::DropView (WorldView *_view) noexcept
+{
+    EMERGENCE_ASSERT (_view);
+    EnsureViewIsOwned (_view);
+    EMERGENCE_ASSERT (_view != &rootView);
+
+    WorldView *parent = _view->parent;
+    EMERGENCE_ASSERT (parent);
+
+    auto iterator = std::find (parent->childrenViews.begin (), parent->childrenViews.end (), _view);
+    EMERGENCE_ASSERT (iterator != parent->childrenViews.end ());
+    // Order matters as it changes update order.
+    parent->childrenViews.erase (iterator);
+
+    _view->~WorldView ();
+    parent->childrenHeap.Release (_view, sizeof (WorldView));
 }
 
 void World::Update () noexcept
@@ -78,38 +367,7 @@ void World::Update () noexcept
 
     TimeUpdate (time, world);
     FixedUpdate (time, world);
-
-    if (normalPipeline)
-    {
-        normalPipeline->Execute ();
-    }
-}
-
-void World::RemovePipeline (Pipeline *_pipeline) noexcept
-{
-    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
-    {
-        auto *pipeline = static_cast<Pipeline *> (*iterator);
-        if (pipeline == _pipeline)
-        {
-            if (pipeline == normalPipeline)
-            {
-                normalPipeline = nullptr;
-            }
-
-            if (pipeline == fixedPipeline)
-            {
-                fixedPipeline = nullptr;
-            }
-
-            pipeline->~Pipeline ();
-            pipelinePool.Release (pipeline);
-            return;
-        }
-    }
-
-    // Received pipeline from another world?
-    EMERGENCE_ASSERT (false);
+    rootView.ExecuteNormalPipeline ();
 }
 
 void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
@@ -194,11 +452,7 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
         // Catch up to normal time.
         while (_time->fixedTimeNs <= _time->normalTimeNs)
         {
-            if (fixedPipeline)
-            {
-                fixedPipeline->Execute ();
-            }
-
+            rootView.ExecuteFixedPipeline ();
             _time->fixedTimeNs += fixedDurationNs;
         }
 
@@ -212,46 +466,23 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
         // step to compensate for changes made by other pipelines.
         _time->fixedDurationS = 0.0f;
 
-        if (fixedPipeline)
-        {
-            fixedPipeline->Execute ();
-        }
-
+        rootView.ExecuteFixedPipeline ();
         _world->fixedUpdateHappened = true;
         break;
     }
     }
 }
 
-Pipeline *World::AddPipeline (Memory::UniqueString _id,
-                              PipelineType _type,
-                              const Task::Collection &_collection) noexcept
+void World::EnsureViewIsOwned (WorldView *_view) noexcept
 {
-    EMERGENCE_ASSERT (!normalPipeline || _type != PipelineType::NORMAL);
-    EMERGENCE_ASSERT (!fixedPipeline || _type != PipelineType::FIXED);
-
-    auto placeholder = Memory::Profiler::AllocationGroup {pipelinePool.GetAllocationGroup (), _id}.PlaceOnTop ();
-    auto *pipeline = new (pipelinePool.Acquire ()) Pipeline {_id, _type, _collection};
-
-    switch (_type)
+    if (_view->parent)
     {
-    case PipelineType::NORMAL:
-        normalPipeline = pipeline;
-        break;
-
-    case PipelineType::FIXED:
-        fixedPipeline = pipeline;
-        break;
-
-    case PipelineType::CUSTOM:
-        break;
-
-    case PipelineType::COUNT:
-        EMERGENCE_ASSERT (false);
-        break;
+        EnsureViewIsOwned (_view->parent);
     }
-
-    return pipeline;
+    else
+    {
+        EMERGENCE_ASSERT (_view == &rootView);
+    }
 }
 
 World::EventScheme::EventScheme (const Memory::Profiler::AllocationGroup &_rootAllocationGroup) noexcept
@@ -275,12 +506,7 @@ void WorldTestingUtility::RunNormalUpdateOnce (World &_world, uint64_t _timeDelt
 
     time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
     time->normalTimeNs += scaledTimeDeltaNs;
-
-    if (_world.normalPipeline)
-    {
-        _world.normalPipeline->Execute ();
-    }
-
+    _world.rootView.ExecuteNormalPipeline ();
     world->fixedUpdateHappened = false;
 }
 
@@ -293,11 +519,7 @@ void WorldTestingUtility::RunFixedUpdateOnce (World &_world) noexcept
     time->fixedDurationS = time->targetFixedFrameDurationsS[0u];
     const auto fixedDurationNs = static_cast<uint64_t> (time->fixedDurationS * 1e9f);
 
-    if (_world.fixedPipeline)
-    {
-        _world.fixedPipeline->Execute ();
-    }
-
+    _world.rootView.ExecuteFixedPipeline ();
     time->fixedTimeNs += fixedDurationNs;
     world->fixedUpdateHappened = true;
 }

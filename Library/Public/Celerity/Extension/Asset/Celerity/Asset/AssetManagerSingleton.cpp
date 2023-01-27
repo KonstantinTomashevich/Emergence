@@ -6,12 +6,6 @@
 
 namespace Emergence::Celerity
 {
-uintptr_t AssetManagerSingleton::GenerateAssetUserId () const noexcept
-{
-    EMERGENCE_ASSERT (assetUserIdCounter != std::numeric_limits<decltype (assetUserIdCounter)::value_type>::max ());
-    return const_cast<AssetManagerSingleton *> (this)->assetUserIdCounter++;
-}
-
 const AssetManagerSingleton::Reflection &AssetManagerSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()

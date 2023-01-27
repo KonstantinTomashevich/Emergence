@@ -14,9 +14,6 @@ struct ImageControl final
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
 
-    /// \brief As this control references Texture's, it needs an asset user id.
-    UniqueId assetUserId = INVALID_UNIQUE_ID;
-
     /// \brief Width of this control.
     uint32_t width = 0u;
 
@@ -32,8 +29,6 @@ struct ImageControl final
     struct Reflection final
     {
         StandardLayout::FieldId nodeId;
-        StandardLayout::FieldId assetUserId;
-
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
 

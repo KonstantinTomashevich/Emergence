@@ -15,7 +15,7 @@ ModifySingletonQuery::Cursor::~Cursor () noexcept
     {
         if (void *singleton = *source)
         {
-            changeTracker->EndEdition (singleton);
+            changeTracker->EndEdition (singleton, *onChangeEvents);
         }
     }
 }
@@ -26,8 +26,10 @@ void *ModifySingletonQuery::Cursor::operator* () const noexcept
 }
 
 ModifySingletonQuery::Cursor::Cursor (Warehouse::ModifySingletonQuery::Cursor _source,
+                                      OnChangeEventTriggerInstanceRow *_onChangeEvents,
                                       ChangeTracker *_changeTracker) noexcept
     : source (std::move (_source)),
+      onChangeEvents (_onChangeEvents),
       changeTracker (_changeTracker)
 {
     if (changeTracker)
@@ -47,7 +49,7 @@ ModifySingletonQuery::~ModifySingletonQuery () noexcept = default;
 
 ModifySingletonQuery::Cursor ModifySingletonQuery::Execute () noexcept
 {
-    return Cursor (source.Execute (), changeTracker);
+    return Cursor (source.Execute (), onChangeEvents, changeTracker);
 }
 
 StandardLayout::Mapping ModifySingletonQuery::GetTypeMapping () const noexcept
@@ -61,8 +63,10 @@ void ModifySingletonQuery::AddCustomVisualization (VisualGraph::Graph &_graph) c
 }
 
 ModifySingletonQuery::ModifySingletonQuery (Warehouse::ModifySingletonQuery _source,
+                                            OnChangeEventTriggerInstanceRow *_onChangeEvents,
                                             ChangeTracker *_changeTracker) noexcept
     : source (std::move (_source)),
+      onChangeEvents (_onChangeEvents),
       changeTracker (_changeTracker)
 {
 }

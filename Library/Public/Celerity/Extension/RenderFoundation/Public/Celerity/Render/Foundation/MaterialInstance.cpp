@@ -10,7 +10,6 @@ const MaterialInstance::Reflection &MaterialInstance::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialInstance);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (materialId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -67,7 +66,6 @@ const UniformSamplerValue::Reflection &UniformSamplerValue::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (UniformSamplerValue);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (uniformName);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (assetUserId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (textureId);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
