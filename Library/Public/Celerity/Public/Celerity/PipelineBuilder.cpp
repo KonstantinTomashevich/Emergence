@@ -158,14 +158,9 @@ ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_t
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return ModifyValueQuery {
-        view.localRegistry.ModifyValue (_typeMapping, _keyFields),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructModifyQuery<ModifyValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
+                                                   _typeMapping);
 }
 
 EditValueQuery TaskConstructor::EditValue (const StandardLayout::Mapping &_typeMapping,
@@ -173,12 +168,9 @@ EditValueQuery TaskConstructor::EditValue (const StandardLayout::Mapping &_typeM
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return EditValueQuery {
-        view.localRegistry.ModifyValue (_typeMapping, _keyFields), nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructEditQuery<EditValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
+                                               _typeMapping);
 }
 
 RemoveValueQuery TaskConstructor::RemoveValue (const StandardLayout::Mapping &_typeMapping,
@@ -186,12 +178,9 @@ RemoveValueQuery TaskConstructor::RemoveValue (const StandardLayout::Mapping &_t
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
 
-    return RemoveValueQuery {
-        view.localRegistry.ModifyValue (_typeMapping, _keyFields),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        nullptr, nullptr};
+    return ConstructRemoveQuery<RemoveValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
+                                                   _typeMapping);
 }
 
 FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -207,14 +196,9 @@ ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardL
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return ModifyAscendingRangeQuery {
-        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructModifyQuery<ModifyAscendingRangeQuery> (
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 EditAscendingRangeQuery TaskConstructor::EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -222,12 +206,9 @@ EditAscendingRangeQuery TaskConstructor::EditAscendingRange (const StandardLayou
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return EditAscendingRangeQuery {
-        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructEditQuery<EditAscendingRangeQuery> (
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 RemoveAscendingRangeQuery TaskConstructor::RemoveAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -235,12 +216,9 @@ RemoveAscendingRangeQuery TaskConstructor::RemoveAscendingRange (const StandardL
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
 
-    return RemoveAscendingRangeQuery {
-        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        nullptr, nullptr};
+    return ConstructRemoveQuery<RemoveAscendingRangeQuery> (
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -256,14 +234,9 @@ ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const Standar
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return ModifyDescendingRangeQuery {
-        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructModifyQuery<ModifyDescendingRangeQuery> (
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 EditDescendingRangeQuery TaskConstructor::EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -271,12 +244,9 @@ EditDescendingRangeQuery TaskConstructor::EditDescendingRange (const StandardLay
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return EditDescendingRangeQuery {
-        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructEditQuery<EditDescendingRangeQuery> (
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 RemoveDescendingRangeQuery TaskConstructor::RemoveDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -284,12 +254,9 @@ RemoveDescendingRangeQuery TaskConstructor::RemoveDescendingRange (const Standar
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
 
-    return RemoveDescendingRangeQuery {
-        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        nullptr, nullptr};
+    return ConstructRemoveQuery<RemoveDescendingRangeQuery> (
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
 FetchSignalQuery TaskConstructor::FetchSignal (const StandardLayout::Mapping &_typeMapping,
@@ -307,14 +274,9 @@ ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return ModifySignalQuery {
-        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructModifyQuery<ModifySignalQuery> (
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
 }
 
 EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typeMapping,
@@ -323,12 +285,9 @@ EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typ
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return EditSignalQuery {
-        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructEditQuery<EditSignalQuery> (
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
 }
 
 RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &_typeMapping,
@@ -337,12 +296,9 @@ RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
 
-    return RemoveSignalQuery {
-        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        nullptr, nullptr};
+    return ConstructRemoveQuery<RemoveSignalQuery> (
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
 }
 
 FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
@@ -358,14 +314,9 @@ ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return ModifyShapeIntersectionQuery {
-        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructModifyQuery<ModifyShapeIntersectionQuery> (
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 EditShapeIntersectionQuery TaskConstructor::EditShapeIntersection (
@@ -373,12 +324,9 @@ EditShapeIntersectionQuery TaskConstructor::EditShapeIntersection (
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return EditShapeIntersectionQuery {
-        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructEditQuery<EditShapeIntersectionQuery> (
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 RemoveShapeIntersectionQuery TaskConstructor::RemoveShapeIntersection (
@@ -386,12 +334,9 @@ RemoveShapeIntersectionQuery TaskConstructor::RemoveShapeIntersection (
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
 
-    return RemoveShapeIntersectionQuery {
-        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        nullptr, nullptr};
+    return ConstructRemoveQuery<RemoveShapeIntersectionQuery> (
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
@@ -407,14 +352,9 @@ ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return ModifyRayIntersectionQuery {
-        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructModifyQuery<ModifyRayIntersectionQuery> (
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 EditRayIntersectionQuery TaskConstructor::EditRayIntersection (
@@ -422,12 +362,9 @@ EditRayIntersectionQuery TaskConstructor::EditRayIntersection (
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
 
-    return EditRayIntersectionQuery {
-        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), nullptr,
-        changeTracker ? view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
-        changeTracker};
+    return ConstructEditQuery<EditRayIntersectionQuery> (
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
@@ -435,12 +372,9 @@ RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
 
-    return RemoveRayIntersectionQuery {
-        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions),
-        eventsOnRemove ? view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
-        nullptr, nullptr};
+    return ConstructRemoveQuery<RemoveRayIntersectionQuery> (
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
 }
 
 TaskConstructor &TaskConstructor::SetExecutor (std::function<void ()> _executor) noexcept
@@ -469,6 +403,44 @@ void TaskConstructor::RegisterWriteAccess (Memory::UniqueString _resourceName) n
 {
     task.writeAccess.emplace (_resourceName);
     task.readAccess.erase (_resourceName);
+}
+
+template <typename WrappedQuery, typename SourceQuery>
+WrappedQuery TaskConstructor::ConstructModifyQuery (SourceQuery _source,
+                                                    WorldView &_view,
+                                                    const StandardLayout::Mapping &_typeMapping) noexcept
+{
+    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    return WrappedQuery {
+        _source,
+        eventsOnRemove ? _view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
+        changeTracker ? _view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
+        changeTracker};
+}
+
+template <typename WrappedQuery, typename SourceQuery>
+WrappedQuery TaskConstructor::ConstructEditQuery (SourceQuery _source,
+                                                  WorldView &_view,
+                                                  const StandardLayout::Mapping &_typeMapping) noexcept
+{
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    return WrappedQuery {
+        _source, nullptr,
+        changeTracker ? _view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
+        changeTracker};
+}
+
+template <typename WrappedQuery, typename SourceQuery>
+WrappedQuery TaskConstructor::ConstructRemoveQuery (SourceQuery _source,
+                                                    WorldView &_view,
+                                                    const StandardLayout::Mapping &_typeMapping) noexcept
+{
+    TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
+    return WrappedQuery {
+        _source,
+        eventsOnRemove ? _view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
+        nullptr, nullptr};
 }
 
 TrivialEventTriggerRow *TaskConstructor::BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,

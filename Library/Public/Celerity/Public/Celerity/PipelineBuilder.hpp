@@ -242,6 +242,21 @@ private:
 
     void RegisterWriteAccess (Memory::UniqueString _resourceName) noexcept;
 
+    template <typename WrappedQuery, typename SourceQuery>
+    WrappedQuery ConstructModifyQuery (SourceQuery _source,
+                                       WorldView &_view,
+                                       const StandardLayout::Mapping &_typeMapping) noexcept;
+
+    template <typename WrappedQuery, typename SourceQuery>
+    WrappedQuery ConstructEditQuery (SourceQuery _source,
+                                     WorldView &_view,
+                                     const StandardLayout::Mapping &_typeMapping) noexcept;
+
+    template <typename WrappedQuery, typename SourceQuery>
+    WrappedQuery ConstructRemoveQuery (SourceQuery _source,
+                                       WorldView &_view,
+                                       const StandardLayout::Mapping &_typeMapping) noexcept;
+
     [[nodiscard]] TrivialEventTriggerRow *BindTrivialEvents (Container::TypedOrderedPool<TrivialEventTriggerRow> &_rows,
                                                              const StandardLayout::Mapping &_trackedType) noexcept;
 
