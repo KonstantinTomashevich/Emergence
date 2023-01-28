@@ -1,7 +1,7 @@
 set (GAME_NAME "Platformer2dDemo")
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
-set (GAME_RESOURCES_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Development")
-set (GAME_RESOURCES_TARGET "${CMAKE_CURRENT_BINARY_DIR}/Resources/Development")
+set (GAME_RESOURCES_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
+set (GAME_RESOURCES_TARGET "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 
 file (GLOB_RECURSE GAME_SHADERS "${GAME_RESOURCES_SOURCE}/*.sc")
 add_library ("${GAME_NAME}Shaders" INTERFACE ${GAME_SHADERS})
@@ -9,7 +9,6 @@ add_library ("${GAME_NAME}Shaders" INTERFACE ${GAME_SHADERS})
 add_subdirectory (Game)
 add_subdirectory (Logic)
 add_subdirectory (Model)
-add_subdirectory (Test)
 
 file (MAKE_DIRECTORY "${GAME_RESOURCES_TARGET}")
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Fonts" "${GAME_RESOURCES_TARGET}/Fonts" SYMBOLIC)

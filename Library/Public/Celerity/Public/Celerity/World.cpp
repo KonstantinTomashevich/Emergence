@@ -200,7 +200,7 @@ WorldView &WorldView::FindViewForType (const StandardLayout::Mapping &_type) noe
     return *this;
 }
 
-TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstance (
+TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstances (
     Container::TypedOrderedPool<TrivialEventTriggerInstanceRow> &_pool, const TrivialEventTriggerRow *_source)
 {
     EMERGENCE_ASSERT (_source && !_source->Empty ());
@@ -234,13 +234,13 @@ TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstance (
 TrivialEventTriggerInstanceRow *WorldView::RequestOnAddEventInstances (PipelineType _pipeline,
                                                                        const TrivialEventTriggerRow *_source) noexcept
 {
-    return RequestTrivialEventInstance (eventSchemeInstances[static_cast<size_t> (_pipeline)].onAdd, _source);
+    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<size_t> (_pipeline)].onAdd, _source);
 }
 
 TrivialEventTriggerInstanceRow *WorldView::RequestOnRemoveEventInstances (
     PipelineType _pipeline, const TrivialEventTriggerRow *_source) noexcept
 {
-    return RequestTrivialEventInstance (eventSchemeInstances[static_cast<size_t> (_pipeline)].onRemove, _source);
+    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<size_t> (_pipeline)].onRemove, _source);
 }
 
 OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (PipelineType _pipeline,
@@ -322,6 +322,8 @@ WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name, co
 
 void World::DropView (WorldView *_view) noexcept
 {
+    // TODO: During drop we need to trigger all removal events that are sent to parent views.
+
     EMERGENCE_ASSERT (_view);
     EnsureViewIsOwned (_view);
     EMERGENCE_ASSERT (_view != &rootView);
