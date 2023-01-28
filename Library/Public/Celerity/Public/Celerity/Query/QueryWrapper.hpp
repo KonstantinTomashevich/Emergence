@@ -86,6 +86,9 @@
         /*! \see BaseClass::UnsafeFetchAccessToken */                                                                  \
         BaseClass::UnsafeFetchAccessToken AllowUnsafeFetchAccess () noexcept;                                          \
                                                                                                                        \
+        /*! \return Whether this query works with data from given registry. */                                         \
+        bool IsFromRegistry (const Warehouse::Registry &_registry) const noexcept;                                     \
+                                                                                                                       \
         /*! Assigning prepared queries looks counter-intuitive. */                                                     \
         EMERGENCE_DELETE_ASSIGNMENT (QueryClass);                                                                      \
                                                                                                                        \
@@ -202,6 +205,11 @@
     BaseClass::UnsafeFetchAccessToken QueryClass::AllowUnsafeFetchAccess () noexcept                                   \
     {                                                                                                                  \
         return source.AllowUnsafeFetchAccess ();                                                                       \
+    }                                                                                                                  \
+                                                                                                                       \
+    bool QueryClass::IsFromRegistry (const Warehouse::Registry &_registry) const noexcept                              \
+    {                                                                                                                  \
+        return source.IsFromRegistry (_registry);                                                                      \
     }                                                                                                                  \
                                                                                                                        \
     QueryClass::QueryClass (BaseClass _source, Emergence::Celerity::TrivialEventTriggerInstanceRow *_eventsOnRemove,   \

@@ -504,6 +504,61 @@ TEST_CASE (EventOnlyPropagation)
     world.Update ();
 }
 
+TEST_CASE (RemovalEventsOnDrop)
+{
+    World world {"TestWorld"_us};
+    RegisterTestEvents (world);
+    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us, {});
+
+    PipelineBuilder rootBuilder {world.GetRootView ()};
+    rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
+    rootBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
+
+    rootBuilder.AddTask ("EventVerifier"_us)
+        .SetExecutor<EventVerifier> (
+            Container::Vector<EventVerificationFrame> {{},
+                                                       {
+                                                           {
+                                                               TestComponentAddedNormalEvent {0u},
+                                                               TestComponentAddedNormalEvent {1u},
+                                                           },
+                                                           {},
+                                                           {},
+                                                       },
+                                                       {
+                                                           {
+
+                                                           },
+                                                           {},
+                                                           {
+                                                               TestComponentRemovedNormalEvent {0u},
+                                                               TestComponentRemovedNormalEvent {1u},
+                                                           },
+                                                       }});
+    REQUIRE (rootBuilder.End ());
+
+    PipelineBuilder firstViewBuilder {firstView};
+    firstViewBuilder.Begin ("Update"_us, PipelineType::NORMAL);
+    firstViewBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
+
+    firstViewBuilder.AddTask ("Editor"_us)
+        .SetExecutor<Editor> (Container::Vector<EditionFrame> {{
+            {
+                TestComponent {0u, 1.5f, 1.5f},
+                TestComponent {1u, 2.5f, 3.5f},
+            },
+            {},
+            {},
+        }});
+
+    REQUIRE (firstViewBuilder.End ());
+
+    world.Update ();
+    world.Update ();
+    world.DropView (firstView);
+    world.Update ();
+}
+
 TEST_CASE (MultiLevel)
 {
     WorldConfiguration configuration;

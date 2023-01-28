@@ -2,6 +2,7 @@
 
 #include <SyntaxSugar/BlockCast.hpp>
 
+#include <Warehouse/RegistryData.hpp>
 #include <Warehouse/VisualizationDriver.hpp>
 
 #define EMERGENCE_BIND_QUERY_COMMON_OPERATIONS(Query, QueryImplementation)                                             \
@@ -29,6 +30,12 @@
     StandardLayout::Mapping Query::GetTypeMapping () const noexcept                                                    \
     {                                                                                                                  \
         return block_cast<QueryImplementation> (data).GetContainer ()->GetTypeMapping ();                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    bool Query::IsFromRegistry (const Registry &_registry) const noexcept                                              \
+    {                                                                                                                  \
+        return block_cast<QueryImplementation> (data).GetContainer ()->GetDeck () ==                                   \
+               reinterpret_cast<const RegistryData *> (&_registry)->deck;                                               \
     }                                                                                                                  \
                                                                                                                        \
     Query::Query (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                                  \

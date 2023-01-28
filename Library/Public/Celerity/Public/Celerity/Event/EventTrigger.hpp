@@ -118,6 +118,9 @@ public:
     /// \brief Trigger event for given record.
     void Trigger (const void *_record) noexcept;
 
+    /// \return Whether events from this trigger instance are being inserted into given registry.
+    [[nodiscard]] bool IsTargetingRegistry (const Warehouse::Registry &_registry) const noexcept;
+
 private:
     const TrivialEventTrigger *trigger;
     Warehouse::InsertShortTermQuery inserter;

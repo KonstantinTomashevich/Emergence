@@ -6,6 +6,11 @@
 
 #include <Visual/Graph.hpp>
 
+namespace Emergence::Warehouse
+{
+class Registry;
+} // namespace Emergence::Warehouse
+
 /// \brief Internal macro with common operations for EMERGENCE_READ_ONLY_PREPARED_QUERY_OPERATIONS and
 ///        EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS.
 #define EMERGENCE_PREPARED_QUERY_OPERATIONS_COMMON(Class)                                                              \
@@ -19,6 +24,9 @@
                                                                                                                        \
     /*! \return Mapping for type, with which this query works. */                                                      \
     [[nodiscard]] Emergence::StandardLayout::Mapping GetTypeMapping () const noexcept;                                 \
+                                                                                                                       \
+    /*! \return Whether this query works with data from given registry. */                                                                                                                   \
+    [[nodiscard]] bool IsFromRegistry (const Warehouse::Registry &_registry) const noexcept;                                         \
                                                                                                                        \
     /*! Assigning prepared queries looks counter-intuitive. */                                                         \
     EMERGENCE_DELETE_ASSIGNMENT (Class);                                                                               \

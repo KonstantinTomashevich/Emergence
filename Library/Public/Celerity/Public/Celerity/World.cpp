@@ -113,6 +113,40 @@ WorldView::WorldView (World *_world,
 
 WorldView::~WorldView () noexcept
 {
+    // We need to trigger events that must be inserted into parent views, so they will receive required data.
+    // This logic might significantly slow down destruction of the large worlds. Think about improving it later.
+    for (EventSchemeInstance &eventSchemeInstance : eventSchemeInstances)
+    {
+        for (TrivialEventTriggerInstanceRow &row : eventSchemeInstance.onRemove)
+        {
+            for (TrivialEventTriggerInstance &instance : row)
+            {
+                const StandardLayout::Mapping &trackedType = instance.GetTrigger ()->GetTrackedType ();
+                if (!instance.IsTargetingRegistry (localRegistry) && localRegistry.IsTypeUsed (trackedType))
+                {
+                    StandardLayout::FieldId idForRangeExtraction = 0u;
+                    while (trackedType.GetField (idForRangeExtraction).IsHandleValid () &&
+                           trackedType.GetField (idForRangeExtraction).GetArchetype () ==
+                               StandardLayout::FieldArchetype::NESTED_OBJECT)
+                    {
+                        ++idForRangeExtraction;
+                    }
+
+                    EMERGENCE_ASSERT (trackedType.GetField (idForRangeExtraction).IsHandleValid ());
+                    Warehouse::FetchAscendingRangeQuery query =
+                        localRegistry.FetchAscendingRange (trackedType, idForRangeExtraction);
+                    auto cursor = query.Execute (nullptr, nullptr);
+
+                    while (const void *record = *cursor)
+                    {
+                        instance.Trigger (record);
+                        ++cursor;
+                    }
+                }
+            }
+        }
+    }
+
     for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
     {
         auto *pipeline = static_cast<Pipeline *> (*iterator);
@@ -278,17 +312,17 @@ OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (Pipel
 }
 
 World::World (Memory::UniqueString _name, const WorldConfiguration &_configuration) noexcept
-    : rootView (ConstructInsideGroup<WorldView> (
+    : eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}}),
+      rootView (ConstructInsideGroup<WorldView> (
           Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "RootView"_us},
           this,
           nullptr,
           "Root"_us,
           _configuration.rootViewConfig)),
       modifyTime (rootView.localRegistry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
-      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
-      eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
-                     EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
-                     EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}})
+      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping))
 {
     auto timeCursor = modifyTime.Execute ();
     auto *time = static_cast<TimeSingleton *> (*timeCursor);
@@ -322,8 +356,6 @@ WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name, co
 
 void World::DropView (WorldView *_view) noexcept
 {
-    // TODO: During drop we need to trigger all removal events that are sent to parent views.
-
     EMERGENCE_ASSERT (_view);
     EnsureViewIsOwned (_view);
     EMERGENCE_ASSERT (_view != &rootView);

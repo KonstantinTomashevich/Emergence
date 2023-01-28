@@ -57,6 +57,11 @@ StandardLayout::Mapping ModifySingletonQuery::GetTypeMapping () const noexcept
     return source.GetTypeMapping ();
 }
 
+bool ModifySingletonQuery::IsFromRegistry (const Warehouse::Registry &_registry) const noexcept
+{
+    return source.IsFromRegistry (_registry);
+}
+
 void ModifySingletonQuery::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept
 {
     source.AddCustomVisualization (_graph);

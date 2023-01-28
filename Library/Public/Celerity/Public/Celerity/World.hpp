@@ -239,11 +239,12 @@ private:
 
     void EnsureViewIsOwned (WorldView *_view) noexcept;
 
+    /// \details First field, because event scheme must be available during root world destruction.
+    std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
     WorldView rootView;
 
     Warehouse::ModifySingletonQuery modifyTime;
     Warehouse::ModifySingletonQuery modifyWorld;
-    std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
 };
 
 /// \brief Contains useful functions for tests.

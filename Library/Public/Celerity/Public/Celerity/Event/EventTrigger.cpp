@@ -193,6 +193,11 @@ void TrivialEventTriggerInstance::Trigger (const void *_record) noexcept
     }
 }
 
+bool TrivialEventTriggerInstance::IsTargetingRegistry (const Warehouse::Registry &_registry) const noexcept
+{
+    return inserter.IsFromRegistry (_registry);
+}
+
 OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType,
                                             StandardLayout::Mapping _eventType,
                                             EventRoute _route,

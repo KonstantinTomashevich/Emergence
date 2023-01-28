@@ -12,6 +12,8 @@
 
 namespace Emergence::Galleon
 {
+class CargoDeck;
+
 class ContainerBase : public Handling::HandleableBase
 {
 public:
@@ -21,6 +23,8 @@ public:
     ContainerBase (ContainerBase &&_other) = delete;
 
     [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;
+
+    [[nodiscard]] const CargoDeck *GetDeck () const noexcept;
 
     /// Containers are managed by CargoDeck, therefore they can not be assigned.
     EMERGENCE_DELETE_ASSIGNMENT (ContainerBase);
@@ -33,7 +37,7 @@ protected:
 
     ~ContainerBase () noexcept = default;
 
-    class CargoDeck *deck;
+    CargoDeck *deck;
 
     StandardLayout::Mapping typeMapping;
 };
