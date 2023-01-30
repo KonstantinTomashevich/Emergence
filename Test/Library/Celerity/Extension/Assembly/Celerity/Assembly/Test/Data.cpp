@@ -1,5 +1,6 @@
 #include <Assert/Assert.hpp>
 
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Assembly/Test/Data.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
@@ -124,6 +125,10 @@ TypeBindingVector GetFixedAssemblerTypes () noexcept
                                                  ASSEMBLY_OBJECT_ID_KEY_INDEX};
     transform3dComponent.keys.emplace_back () = {Transform3dComponent::Reflect ().parentObjectId,
                                                  ASSEMBLY_OBJECT_ID_KEY_INDEX};
+
+    TypeDescriptor &prototypeComponent = types.emplace_back ();
+    prototypeComponent.type = PrototypeComponent::Reflect ().mapping;
+    prototypeComponent.keys.emplace_back () = {PrototypeComponent::Reflect ().objectId, ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     TypeDescriptor &fixedComponentA = types.emplace_back ();
     fixedComponentA.type = FixedComponentA::Reflect ().mapping;

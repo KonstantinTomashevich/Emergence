@@ -18,21 +18,26 @@ struct PrototypeComponent final
     /// \brief Id of AssemblyDescriptor using which object will be assembled.
     Memory::UniqueString descriptorId;
 
-    // TODO: Use flat hash map.
+    /// \brief Whether fixed pipeline components must be assembled all at once during next frame.
+    /// \details By default, fixed pipeline components contain logic and therefore must be instanced immediately.
+    ///          If you can afford to delay fixed components loading, for example you're loading map chunk,
+    ///          it is advised to make this false in order to split loading process to several frames.
+    bool requestImmediateFixedAssembly = true;
 
-    /// \brief Used to save id replacement map while assembly is in intermediate state
-    ///        (assembled in normal, but not in fixed and vice versa).
-    /// \details Each prototype is technically assembled two times: once in fixed update and once in normal update.
-    ///          To correctly resolve references between normal-assembled and fixed-assembled types we need to save
-    ///          id replacement map during first pass (doesn't matter whether it is normal or fixed) and reuse it
-    ///          during second pass.
-    Container::Vector<Container::HashMap<UniqueId, UniqueId>> intermediateIdReplacement {
-        Memory::Profiler::AllocationGroup::Top ()};
+    /// \brief Whether normal pipeline components must be assembled all at once during next frame.
+    /// \details By default, normal pipeline components contain visuals and therefore their instancing can be delayed.
+    bool requestImmediateNormalAssembly = false;
+
+    /// \brief Whether assembly process was started for this component. For internal use only.
+    bool assemblyStarted = false;
 
     struct Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId descriptorId;
+        StandardLayout::FieldId requestImmediateFixedAssembly;
+        StandardLayout::FieldId requestImmediateNormalAssembly;
+        StandardLayout::FieldId assemblyStarted;
         StandardLayout::Mapping mapping;
     };
 

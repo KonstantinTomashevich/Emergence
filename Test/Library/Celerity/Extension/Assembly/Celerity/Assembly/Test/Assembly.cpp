@@ -1,5 +1,6 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Assembly/Test/Data.hpp>
 #include <Celerity/Assembly/Test/Task.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
@@ -19,8 +20,10 @@ namespace Emergence::Celerity::Test
 {
 static const FixedComponentA STATE_ROOT_A_PROTO {ASSEMBLY_ROOT_OBJECT_ID, 0u, 12u};
 static const FixedComponentA STATE_ROOT_A_ADDED {1u, 0u, 12u};
+static const FixedComponentA STATE_ROOT_A_ADDED_RECURSIVE {3u, 0u, 12u};
 static const FixedComponentB STATE_ROOT_B_PROTO {ASSEMBLY_ROOT_OBJECT_ID, true, false, false, true};
 static const FixedComponentB STATE_ROOT_B_ADDED {1u, true, false, false, true};
+static const FixedComponentB STATE_ROOT_B_ADDED_RECURSIVE {3u, true, false, false, true};
 
 static const FixedMultiComponent STATE_MULTI_FIRST_PROTO {ASSEMBLY_ROOT_OBJECT_ID, 10u, 0.0f, 1.0f};
 static const FixedMultiComponent STATE_MULTI_FIRST_ADDED {1u, 0u, 0.0f, 1.0f};
@@ -55,6 +58,9 @@ static const NormalVisualComponent STATE_ROOT_VISUAL_PROTO_NO_REF {ASSEMBLY_ROOT
                                                                    "Knight"_us, "GreyKnight"_us};
 static const NormalVisualComponent STATE_ROOT_VISUAL_ADDED_NO_REF {1u, INVALID_UNIQUE_ID, "Knight"_us, "GreyKnight"_us};
 
+static const PrototypeComponent STATE_PROTOTYPE_AB {1u, "AB"_us, true, false, false};
+static const PrototypeComponent STATE_PROTOTYPE_PROTOTYPE_AB {1u, "PrototypeAB"_us, true, false, false};
+
 void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
                         Container::Vector<ValidatorTask> _validatorTasks)
 {
@@ -72,7 +78,7 @@ void FixedAssemblyTest (Container::Vector<ConfiguratorTask> _configuratorTasks,
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
 
-    Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
+    Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes (), 16000000u);
     AddConfiguratorAndValidator (builder, std::move (_configuratorTasks), std::move (_validatorTasks));
     REQUIRE (builder.End ());
 
@@ -97,7 +103,7 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
-    Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes ());
+    Assembly::AddToFixedUpdate (builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes (), 16000000u);
     AddConfiguratorAndValidator (builder, std::move (_fixedConfiguratorTasks), std::move (_fixedValidatorTasks));
     REQUIRE (builder.End ());
 
@@ -105,7 +111,7 @@ void CombinedAssemblyTest (Container::Vector<ConfiguratorTask> _fixedConfigurato
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
     builder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
     builder.AddCheckpoint (TransformVisualSync::Checkpoint::STARTED);
-    Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes ());
+    Assembly::AddToNormalUpdate (builder, GetAssemblerCustomKeys (), GetNormalAssemblerTypes (), 16000000u);
     AddConfiguratorAndValidator (builder, std::move (_normalConfiguratorTasks), std::move (_normalValidatorTasks));
     REQUIRE (builder.End ());
 
@@ -231,6 +237,33 @@ TEST_CASE (Hierarchy)
                             &STATE_SECOND_LEVEL_CHILD_ADDED, sizeof (UniqueId) * 5u},
             CheckComponent {3u, FixedComponentA::Reflect ().mapping, FixedComponentA::Reflect ().objectId,
                             &STATE_SECOND_LEVEL_A_ADDED},
+        });
+}
+
+TEST_CASE (RecursiveImmediateAssembly)
+{
+    FixedAssemblyTest (
+        {
+            AddAssemblyDescriptor {"AB"_us,
+                                   {{FixedComponentA::Reflect ().mapping, &STATE_ROOT_A_PROTO},
+                                    {FixedComponentB::Reflect ().mapping, &STATE_ROOT_B_PROTO}}},
+            AddAssemblyDescriptor {
+                "PrototypeAB"_us,
+                {{Transform3dComponent::Reflect ().mapping, &STATE_FIRST_LEVEL_CHILD_PROTO},
+                 {PrototypeComponent::Reflect ().mapping, &STATE_PROTOTYPE_AB}},
+            },
+            AddAssemblyDescriptor {
+                "PrototypeOfPrototype"_us,
+                {{Transform3dComponent::Reflect ().mapping, &STATE_FIRST_LEVEL_CHILD_PROTO},
+                 {PrototypeComponent::Reflect ().mapping, &STATE_PROTOTYPE_PROTOTYPE_AB}},
+            },
+            SpawnPrototype {"PrototypeOfPrototype"_us},
+        },
+        {
+            CheckComponent {3u, FixedComponentA::Reflect ().mapping, FixedComponentA::Reflect ().objectId,
+                            &STATE_ROOT_A_ADDED_RECURSIVE},
+            CheckComponent {3u, FixedComponentB::Reflect ().mapping, FixedComponentB::Reflect ().objectId,
+                            &STATE_ROOT_B_ADDED_RECURSIVE},
         });
 }
 
