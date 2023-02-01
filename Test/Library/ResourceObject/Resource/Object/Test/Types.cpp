@@ -50,14 +50,29 @@ const MultiComponent::Reflection &MultiComponent::Reflect () noexcept
     return reflection;
 }
 
+const InjectionComponent::Reflection &InjectionComponent::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (InjectionComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (injectionId);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
 const TypeManifest &GetTypeManifest () noexcept
 {
     static TypeManifest manifest = [] ()
     {
         TypeManifest typeManifest;
+        typeManifest.InitInjection (InjectionComponent::Reflect().mapping, InjectionComponent::Reflect().injectionId);
         typeManifest.Register (FirstComponent::Reflect ().mapping, {FirstComponent::Reflect ().objectId});
         typeManifest.Register (SecondComponent::Reflect ().mapping, {SecondComponent::Reflect ().objectId});
         typeManifest.Register (MultiComponent::Reflect ().mapping, {MultiComponent::Reflect ().instanceId});
+        typeManifest.Register (InjectionComponent::Reflect().mapping, {MultiComponent::Reflect ().objectId});
         return typeManifest;
     }();
 

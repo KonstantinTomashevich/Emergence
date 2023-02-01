@@ -87,10 +87,14 @@ private:
     /// \brief Fills ::folderList for current loading routine.
     void FormFolderList () noexcept;
 
+    /// \brief Attempts to find object with given name in any of acknowledged folders
+    ///        and calls ::LoadObjectDeclaration on found declaration if any.
+    bool FindAndLoadDeclaration (Memory::UniqueString _objectName, bool _loadingAsParent) noexcept;
+
     /// \brief Loads declaration of given object. Recursively loads declarations of all parents of this object.
     void LoadObjectDeclaration (const Container::String &_objectFolder,
                                 Memory::UniqueString _objectName,
-                                bool _loadingAsDependency) noexcept;
+                                bool _loadingAsParent) noexcept;
 
     /// \brief Fills ::objectList for current loading routine.
     void FormObjectList () noexcept;
