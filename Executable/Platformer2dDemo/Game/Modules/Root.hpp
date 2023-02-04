@@ -2,8 +2,11 @@
 
 #include <Framework/GameState.hpp>
 
-Emergence::Celerity::WorldViewConfig GetRootModuleViewConfig () noexcept;
+namespace Modules::Root
+{
+Emergence::Celerity::WorldViewConfig GetViewConfig () noexcept;
 
-void RootModuleInitializer (GameState &_gameState,
-                            Emergence::Celerity::World &_world,
-                            Emergence::Celerity::WorldView &_rootView) noexcept;
+void Initializer (GameState &_gameState,
+                  Emergence::Celerity::World &_world,
+                  Emergence::Celerity::WorldView &_rootView) noexcept;
+} // namespace Modules::Root

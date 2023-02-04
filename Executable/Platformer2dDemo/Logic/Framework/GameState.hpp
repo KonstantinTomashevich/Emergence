@@ -37,9 +37,24 @@ private:
     GameState *gameState = nullptr;
 };
 
+class ViewDropHandle final
+{
+public:
+    void RequestViewDrop (Emergence::Celerity::WorldView *_view) noexcept;
+
+private:
+    friend class GameState;
+
+    ViewDropHandle (GameState *_gameState) noexcept;
+
+    GameState *gameState = nullptr;
+};
+
 class GameState final
 {
 public:
+    static const Emergence::Memory::UniqueString TERMINATION_REDIRECT;
+
     GameState (const Emergence::Celerity::WorldConfiguration &_worldConfiguration,
                const ModuleInitializer &_rootViewInitializer) noexcept;
 
@@ -53,14 +68,19 @@ public:
 
     WorldStateRedirectionHandle ConstructWorldStateRedirectionHandle () noexcept;
 
+    ViewDropHandle ConstructViewDropHandle () noexcept;
+
     Emergence::Celerity::FrameInputAccumulator *GetFrameInputAccumulator () noexcept;
 
     void ExecuteFrame () noexcept;
+
+    [[nodiscard]] bool IsTerminated () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (GameState);
 
 private:
     friend class WorldStateRedirectionHandle;
+    friend class ViewDropHandle;
 
     Emergence::Celerity::World world;
     Emergence::Celerity::FrameInputAccumulator frameInputAccumulator;
@@ -72,4 +92,6 @@ private:
         Emergence::Memory::Profiler::AllocationGroup::Top ()};
 
     Emergence::Memory::UniqueString requestedRedirect;
+    Emergence::Container::Vector<Emergence::Celerity::WorldView *> viewsToDrop {
+        Emergence::Memory::Profiler::AllocationGroup::Top ()};
 };

@@ -2,6 +2,12 @@
 
 using namespace Emergence::Memory::Literals;
 
+Emergence::Memory::UniqueString GetLevelsConfigurationPath () noexcept
+{
+    static const Emergence::Memory::UniqueString path {"../GameResources/Configuration/Levels.yaml"};
+    return path;
+}
+
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetFontPaths () noexcept
 {
     static const Emergence::Container::Vector<Emergence::Memory::UniqueString> paths = [] ()

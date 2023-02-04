@@ -4,14 +4,29 @@ using namespace Emergence::Memory::Literals;
 
 void WorldStateRedirectionHandle::RequestRedirect (Emergence::Memory::UniqueString _targetWorldStateName) noexcept
 {
+    // Assert that there is no redirection overlap.
+    EMERGENCE_ASSERT (!*gameState->requestedRedirect);
     gameState->requestedRedirect = _targetWorldStateName;
 }
 
 WorldStateRedirectionHandle::WorldStateRedirectionHandle (GameState *_gameState) noexcept
     : gameState (_gameState)
 {
-    EMERGENCE_ASSERT (_gameState);
+    EMERGENCE_ASSERT (gameState);
 }
+
+void ViewDropHandle::RequestViewDrop (Emergence::Celerity::WorldView *_view) noexcept
+{
+    gameState->viewsToDrop.emplace_back (_view);
+}
+
+ViewDropHandle::ViewDropHandle (GameState *_gameState) noexcept
+    : gameState (_gameState)
+{
+    EMERGENCE_ASSERT (gameState);
+}
+
+const Emergence::Memory::UniqueString GameState::TERMINATION_REDIRECT {"Termination"};
 
 GameState::GameState (const Emergence::Celerity::WorldConfiguration &_worldConfiguration,
                       const ModuleInitializer &_rootViewInitializer) noexcept
@@ -31,6 +46,11 @@ WorldStateRedirectionHandle GameState::ConstructWorldStateRedirectionHandle () n
     return {this};
 }
 
+ViewDropHandle GameState::ConstructViewDropHandle () noexcept
+{
+    return {this};
+}
+
 Emergence::Celerity::FrameInputAccumulator *GameState::GetFrameInputAccumulator () noexcept
 {
     return &frameInputAccumulator;
@@ -46,6 +66,13 @@ void GameState::ExecuteFrame () noexcept
         }
 
         currentStateModuleRootViews.clear ();
+        if (requestedRedirect == TERMINATION_REDIRECT)
+        {
+            // Application should handle termination redirect and exit.
+            EMERGENCE_ASSERT (false);
+            return;
+        }
+
         EMERGENCE_ASSERT (worldStates.contains (requestedRedirect));
         WorldStateDefinition &definition = worldStates[requestedRedirect];
         requestedRedirect = {};
@@ -62,4 +89,16 @@ void GameState::ExecuteFrame () noexcept
 
     world.Update ();
     frameInputAccumulator.Clear ();
+
+    for (Emergence::Celerity::WorldView *view : viewsToDrop)
+    {
+        world.DropView (view);
+    }
+
+    viewsToDrop.clear ();
+}
+
+bool GameState::IsTerminated () const noexcept
+{
+    return requestedRedirect == TERMINATION_REDIRECT;
 }

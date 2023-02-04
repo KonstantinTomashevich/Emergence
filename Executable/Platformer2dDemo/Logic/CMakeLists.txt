@@ -10,11 +10,13 @@ sober_library_begin ("${GAME_NAME}Logic" STATIC)
     sober_naming_variant_target (CelerityAssembly Original CELERITY_ASSEMBLY_TARGET)
     sober_naming_variant_target (CelerityRender2d Original CELERITY_RENDER_2D_TARGET)
     sober_naming_variant_target (CelerityTransform Original CELERITY_TRANSFORM_TARGET)
+    sober_naming_variant_target (Serialization Original SERIALIZATION_TARGET)
 
     sober_library_link_library (PUBLIC ${CELERITY_ASSEMBLY_TARGET})
     sober_library_link_library (PUBLIC ${CELERITY_RENDER_2D_TARGET})
     sober_library_link_library (PUBLIC ${CELERITY_TRANSFORM_TARGET})
     sober_library_link_library (PUBLIC ${MODEL_TARGET})
+    sober_library_link_library (PUBLIC ${SERIALIZATION_TARGET})
 
     sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PRIVATE Memory)

@@ -7,11 +7,13 @@
 
 #include <Assert/Assert.hpp>
 
+#include <Configuration/WorldStates.hpp>
+
 #include <Log/Log.hpp>
 
 #include <Framework/GameState.hpp>
 
-#include <Modules/Demo.hpp>
+#include <Modules/MainMenu.hpp>
 #include <Modules/Root.hpp>
 
 #include <Render/Backend/Configuration.hpp>
@@ -135,15 +137,16 @@ void Application::InitWindow () noexcept
 
 void Application::InitGameState () noexcept
 {
-    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState)))
-        GameState {{{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, GetRootModuleViewConfig ()}, RootModuleInitializer};
+    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState))) GameState {
+        {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, Modules::Root::GetViewConfig ()}, Modules::Root::Initializer};
 
-    WorldStateDefinition demoState;
-    demoState.name = "DemoState"_us;
-    demoState.modules.emplace_back () = {GetDemoModuleName (), GetDemoModuleViewConfig (), DemoModuleInitializer};
-    gameState->AddWorldStateDefinition (demoState);
+    WorldStateDefinition mainMenuState;
+    mainMenuState.name = WorldStates::MAIN_MENU;
+    mainMenuState.modules.emplace_back () = {Modules::MainMenu::GetName (), Modules::MainMenu::GetViewConfig (),
+                                             Modules::MainMenu::Initializer};
+    gameState->AddWorldStateDefinition (mainMenuState);
 
-    gameState->ConstructWorldStateRedirectionHandle ().RequestRedirect ("DemoState"_us);
+    gameState->ConstructWorldStateRedirectionHandle ().RequestRedirect (WorldStates::MAIN_MENU);
 }
 
 void Application::EventLoop () noexcept
@@ -242,6 +245,8 @@ void Application::EventLoop () noexcept
         {
             memoryEventSerializer.SerializeEvent (*memoryEvent);
         }
+
+        running &= !gameState->IsTerminated ();
     }
 }
 

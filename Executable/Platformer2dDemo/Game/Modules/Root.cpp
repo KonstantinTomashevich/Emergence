@@ -17,6 +17,11 @@
 
 #include <Modules/Root.hpp>
 
+#include <Root/LevelSelectionSingleton.hpp>
+#include <Root/LevelsConfigurationSingleton.hpp>
+
+namespace Modules::Root
+{
 using namespace Emergence::Memory::Literals;
 
 static Emergence::Celerity::AssetReferenceBindingList GetAssetReferenceBindingList ()
@@ -28,20 +33,22 @@ static Emergence::Celerity::AssetReferenceBindingList GetAssetReferenceBindingLi
     return binding;
 }
 
-Emergence::Celerity::WorldViewConfig GetRootModuleViewConfig () noexcept
+Emergence::Celerity::WorldViewConfig GetViewConfig () noexcept
 {
     static Emergence::Celerity::WorldViewConfig rootViewConfig = [] ()
     {
         Emergence::Celerity::WorldViewConfig config;
+        config.enforcedTypes.emplace (LevelsConfigurationSingleton::Reflect ().mapping);
+        config.enforcedTypes.emplace (LevelSelectionSingleton::Reflect ().mapping);
         return config;
     }();
 
     return rootViewConfig;
 }
 
-void RootModuleInitializer (GameState & /*unused*/,
-                            Emergence::Celerity::World &_world,
-                            Emergence::Celerity::WorldView &_rootView) noexcept
+void Initializer (GameState & /*unused*/,
+                  Emergence::Celerity::World &_world,
+                  Emergence::Celerity::WorldView &_rootView) noexcept
 {
     Emergence::Celerity::AssetReferenceBindingList assetReferenceBindingList = GetAssetReferenceBindingList ();
     Emergence::Celerity::AssetReferenceBindingEventMap assetReferenceBindingEventMap;
@@ -71,6 +78,7 @@ void RootModuleInitializer (GameState & /*unused*/,
         pipelineBuilder, GetMaterialPaths (), GetShadersPaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (), MAX_LOADING_TIME_NS,
                                                                assetReferenceBindingEventMap);
-    const bool normalPipelineRegistered = pipelineBuilder.End ();
+    [[maybe_unused]] const bool normalPipelineRegistered = pipelineBuilder.End ();
     EMERGENCE_ASSERT (normalPipelineRegistered);
 }
+} // namespace Modules::Root

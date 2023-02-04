@@ -10,10 +10,15 @@ add_subdirectory (Game)
 add_subdirectory (Logic)
 add_subdirectory (Model)
 
+# TODO: Merge tiles into atlas.
+
 file (MAKE_DIRECTORY "${GAME_RESOURCES_TARGET}")
+file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Configuration" "${GAME_RESOURCES_TARGET}/Configuration" SYMBOLIC)
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Fonts" "${GAME_RESOURCES_TARGET}/Fonts" SYMBOLIC)
-file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Materials" "${GAME_RESOURCES_TARGET}/Materials" SYMBOLIC)
+file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Levels" "${GAME_RESOURCES_TARGET}/Levels" SYMBOLIC)
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/MaterialInstances" "${GAME_RESOURCES_TARGET}/MaterialInstances" SYMBOLIC)
+file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Materials" "${GAME_RESOURCES_TARGET}/Materials" SYMBOLIC)
+file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Objects" "${GAME_RESOURCES_TARGET}/Objects" SYMBOLIC)
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Textures" "${GAME_RESOURCES_TARGET}/Textures" SYMBOLIC)
 
 register_bgfx_shaders ("${GAME_RESOURCES_SOURCE}/Shaders" "${GAME_RESOURCES_TARGET}/Shaders")
