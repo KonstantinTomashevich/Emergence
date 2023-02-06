@@ -108,6 +108,10 @@ public:
     /// \invariant Checkpoint name should be unique among checkpoints and tasks.
     void RegisterCheckpoint (Memory::UniqueString _name) noexcept;
 
+    /// \brief Registers external dependency between given checkpoints. Make `_to` dependant of `_from`.
+    /// \details External checkpoint dependency addition makes it easier to glue together different modules.
+    void RegisterCheckpointDependency (Memory::UniqueString _from, Memory::UniqueString _to) noexcept;
+
     /// \brief Registers new resource with given name.
     /// \invariant Resource name should be unique.
     void RegisterResource (Memory::UniqueString _name) noexcept;
@@ -149,6 +153,12 @@ private:
         std::size_t visualGroupIndex = std::numeric_limits<std::size_t>::max ();
     };
 
+    struct CheckpointDependency final
+    {
+        Memory::UniqueString from;
+        Memory::UniqueString to;
+    };
+
     struct VisualGroupNode
     {
         Container::String groupName;
@@ -164,6 +174,7 @@ private:
 
     Container::Vector<Task> tasks {GetDefaultAllocationGroup ()};
     Container::Vector<Checkpoint> checkpoints {GetDefaultAllocationGroup ()};
+    Container::Vector<CheckpointDependency> checkpointDependencies {GetDefaultAllocationGroup ()};
     Container::Vector<Memory::UniqueString> resources {GetDefaultAllocationGroup ()};
 
     Container::Vector<VisualGroupNode> visualGroupNodes {GetDefaultAllocationGroup ()};
