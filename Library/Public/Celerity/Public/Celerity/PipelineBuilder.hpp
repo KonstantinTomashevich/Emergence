@@ -301,6 +301,10 @@ public:
     /// \invariant Checkpoint name is unique.
     void AddCheckpoint (Memory::UniqueString _name) noexcept;
 
+    /// \brief Registers external dependency between given checkpoints. Make `_to` dependant of `_from`.
+    /// \details External checkpoint dependency addition makes it easier to glue together different modules.
+    void AddCheckpointDependency (Memory::UniqueString _from, Memory::UniqueString _to) noexcept;
+
     /// \brief Calls TaskRegister::OpenVisualGroup for task visual grouping.
     Flow::TaskRegister::VisualGroupNodePlaced OpenVisualGroup (Container::String _name) noexcept;
 

@@ -84,7 +84,8 @@ WorldView::WorldView (World *_world,
       eventSchemeInstances (
           {EventSchemeInstance {Memory::Profiler::AllocationGroup {"NormalUpdateEventSchemeInstance"_us}},
            EventSchemeInstance {Memory::Profiler::AllocationGroup {"FixedUpdateEventSchemeInstance"_us}},
-           EventSchemeInstance {Memory::Profiler::AllocationGroup {"CustomPipelinesEventSchemeInstance"_us}}})
+           EventSchemeInstance {Memory::Profiler::AllocationGroup {"CustomPipelinesEventSchemeInstance"_us}}}),
+      eventProductionForbiddenInChildren (Memory::Profiler::AllocationGroup::Top ())
 {
     for (const StandardLayout::Mapping &enforcedType : _config.enforcedTypes)
     {
@@ -257,9 +258,9 @@ TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstances (
     TrivialEventTriggerInstanceRow &row = _pool.Acquire ();
     for (const TrivialEventTrigger &trigger : *_source)
     {
-        row.EmplaceBack (TrivialEventTriggerInstance {
-            &trigger,
-            FindViewForType (trigger.GetEventType ()).localRegistry.InsertShortTerm (trigger.GetEventType ())});
+        WorldView &view = FindViewForType (trigger.GetEventType ());
+        row.EmplaceBack (
+            TrivialEventTriggerInstance {&trigger, view.localRegistry.InsertShortTerm (trigger.GetEventType ())});
     }
 
     return &row;

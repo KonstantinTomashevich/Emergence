@@ -161,6 +161,8 @@ private:
     Memory::Heap childrenHeap;
     Container::Vector<WorldView *> childrenViews;
     std::array<EventSchemeInstance, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemeInstances;
+
+    Container::HashSet<StandardLayout::Mapping> eventProductionForbiddenInChildren;
 };
 
 /// \brief Contains basic configuration for WorldSingleton and TimeSingleton.

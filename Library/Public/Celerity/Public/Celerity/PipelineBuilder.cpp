@@ -501,6 +501,24 @@ ChangeTracker *TaskConstructor::BindChangeTracker (const StandardLayout::Mapping
 
 void TaskConstructor::RegisterEventProduction (const StandardLayout::Mapping &_eventType) noexcept
 {
+    // Check that message production is not forbidden by parent views.
+    WorldView *viewToCheck = parent->worldView->parent;
+
+    while (viewToCheck)
+    {
+        if (viewToCheck->eventProductionForbiddenInChildren.contains (_eventType))
+        {
+            parent->anyErrorsDetected = true;
+            EMERGENCE_LOG (ERROR, "Events of type \"", _eventType.GetName (), "\" can not be produced in world view \"",
+                           parent->worldView->GetName (), "\" as its parent view \"", viewToCheck->GetName (),
+                           "\" forbids production in children views. It usually happens when production would result "
+                           "in partial consumption of events.");
+            break;
+        }
+
+        viewToCheck = viewToCheck->parent;
+    }
+
     PipelineBuilder::EventUsageMap &productionMap =
         parent->eventProduction[static_cast<std::size_t> (parent->currentPipelineType)];
 
@@ -605,6 +623,11 @@ TaskConstructor PipelineBuilder::AddTask (Memory::UniqueString _name) noexcept
 void PipelineBuilder::AddCheckpoint (Memory::UniqueString _name) noexcept
 {
     taskRegister.RegisterCheckpoint (_name);
+}
+
+void PipelineBuilder::AddCheckpointDependency (Memory::UniqueString _from, Memory::UniqueString _to) noexcept
+{
+    taskRegister.RegisterCheckpointDependency (_from, _to);
 }
 
 Flow::TaskRegister::VisualGroupNodePlaced PipelineBuilder::OpenVisualGroup (Container::String _name) noexcept
@@ -802,6 +825,7 @@ void PipelineBuilder::PostProcessContinuousEventRoutine (const PipelineBuilder::
                     if (dependsOnAllProducers)
                     {
                         // Belongs to "current execution consumers" category.
+                        worldView->eventProductionForbiddenInChildren.emplace (eventType);
                         continue;
                     }
 
