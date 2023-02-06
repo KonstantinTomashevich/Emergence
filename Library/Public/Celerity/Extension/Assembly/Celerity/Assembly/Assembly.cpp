@@ -93,7 +93,7 @@ private:
     FetchSignalQuery fetchWaitingPrototypeAssemblies;
     ModifySignalQuery modifyWaitingPrototypeAssemblies;
 
-    FetchValueQuery fetchTransformById;
+    FetchValueQuery fetchTransform3dById;
     Transform3dWorldAccessor transformWorldAccessor;
 
     InsertLongTermQuery insertPrototypeAssembly;
@@ -106,10 +106,10 @@ private:
 
     const uint64_t assemblyTimeLimit;
     const bool isFixed;
-    bool needRootObjectTransform = false;
+    bool needRootObjectTransform3d = false;
 };
 
-static UniqueId WorldObjectIdProvider (const void *_singleton)
+[[maybe_unused]] static UniqueId WorldObjectIdProvider (const void *_singleton)
 {
     return static_cast<const WorldSingleton *> (_singleton)->GenerateId ();
 }
@@ -147,7 +147,7 @@ Assembler::Assembler (TaskConstructor &_constructor,
                      PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
           array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
 
-      fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
+      fetchTransform3dById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       insertPrototypeAssembly (INSERT_LONG_TERM (PrototypeAssemblyComponent)),
@@ -188,7 +188,7 @@ Assembler::Assembler (TaskConstructor &_constructor,
             binding.keys.emplace_back () = {typeDescriptor.type.GetField (keyBinding.keyField), keyBinding.keyIndex};
         }
 
-        needRootObjectTransform |= !typeDescriptor.rotateVector3fs.empty ();
+        needRootObjectTransform3d |= !typeDescriptor.rotateVector3fs.empty ();
         for (const StandardLayout::FieldId &vectorField : typeDescriptor.rotateVector3fs)
         {
             binding.rotateVector3fs.emplace_back (typeDescriptor.type.GetField (vectorField));
@@ -220,15 +220,6 @@ void Assembler::StartFreshPrototypeAssembly () noexcept
 {
     for (auto cursor = modifyFreshPrototypes.Execute (); auto *prototype = static_cast<PrototypeComponent *> (*cursor);)
     {
-        auto transformCursor = fetchTransformById.Execute (&prototype->objectId);
-        if (!*transformCursor)
-        {
-            EMERGENCE_LOG (WARNING, "Assembly: Removing prototype with id ", prototype->objectId,
-                           ", because its object has no transform!");
-            ~cursor;
-            continue;
-        }
-
         auto prototypeAssemblyCursor = insertPrototypeAssembly.Execute ();
         auto *prototypeAssembly = static_cast<PrototypeAssemblyComponent *> (++prototypeAssemblyCursor);
         prototypeAssembly->objectId = prototype->objectId;
@@ -284,7 +275,8 @@ void Assembler::ProcessWaitingPrototypes (uint64_t _executionStartTime) noexcept
     }
 }
 
-AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_assembly, uint64_t _executionStartTime) noexcept
+AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_assembly,
+                                                   uint64_t _executionStartTime) noexcept
 {
     Memory::UniqueString descriptorId;
     bool requestImmediateNormalAssembly = false;
@@ -306,14 +298,14 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
         requestImmediateNormalAssembly = prototype->requestImmediateNormalAssembly;
     }
 
-    Math::Transform3d rootObjectTransform;
-    if (needRootObjectTransform)
+    Math::Transform3d rootObjectTransform3d;
+    if (needRootObjectTransform3d)
     {
-        auto transformCursor = fetchTransformById.Execute (&_assembly->objectId);
+        auto transformCursor = fetchTransform3dById.Execute (&_assembly->objectId);
         if (const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor))
         {
-            rootObjectTransform = isFixed ? transform->GetLogicalWorldTransform (transformWorldAccessor) :
-                                            transform->GetVisualWorldTransform (transformWorldAccessor);
+            rootObjectTransform3d = isFixed ? transform->GetLogicalWorldTransform (transformWorldAccessor) :
+                                              transform->GetVisualWorldTransform (transformWorldAccessor);
         }
         else
         {
@@ -393,9 +385,9 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
 
             for (const StandardLayout::Field &vectorField : binding.rotateVector3fs)
             {
-                EMERGENCE_ASSERT (needRootObjectTransform);
+                EMERGENCE_ASSERT (needRootObjectTransform3d);
                 auto *vector = static_cast<Math::Vector3f *> (vectorField.GetValue (component));
-                *vector = Math::Rotate (*vector, rootObjectTransform.rotation);
+                *vector = Math::Rotate (*vector, rootObjectTransform3d.rotation);
             }
         }
         else
