@@ -642,4 +642,45 @@ FieldNameLookupCache *PatchBundleDeserializer::RequestCache (Memory::UniqueStrin
 
     return nullptr;
 }
+
+void StringMappingSerializer::Next (Memory::UniqueString _key, const Container::Utf8String &_value) noexcept
+{
+    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
+    YAML::Node item {YAML::NodeType::Map};
+    item[*_key] = _value.c_str ();
+    root.push_back (item);
+}
+
+bool StringMappingDeserializer::Next (Memory::UniqueString &_keyOutput, Container::Utf8String &_valueOutput) noexcept
+{
+    if (!HasNext ())
+    {
+        return false;
+    }
+
+    auto &iterator = block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder);
+    if (!iterator->IsMap ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: String mapping node is not a map!");
+        return false;
+    }
+
+    if (iterator->begin () == iterator->end ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: String mapping node map is empty!");
+        return false;
+    }
+
+    if (++(iterator->begin ()) != iterator->end ())
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: String mapping node map has more than one pair!");
+        return false;
+    }
+
+    _keyOutput = Memory::UniqueString {iterator->begin ()->first.Scalar ().c_str ()};
+    // NOLINTNEXTLINE(readability-redundant-string-cstr): It's not, because allocators are different.
+    _valueOutput = iterator->begin ()->second.Scalar ().c_str ();
+    ++iterator;
+    return true;
+}
 } // namespace Emergence::Serialization::Yaml

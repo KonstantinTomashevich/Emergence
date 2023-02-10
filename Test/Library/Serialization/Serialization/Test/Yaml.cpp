@@ -166,3 +166,63 @@ BEGIN_SUITE (YamlPatchBundleSerialization)
 PATCH_BUNDLE_SERIALIZATION_TESTS (PatchBundleSerializeAndDeserialize)
 
 END_SUITE
+
+BEGIN_SUITE (YamlStringMappingSerialization)
+
+TEST_CASE (MultipleMappings)
+{
+    using namespace Emergence::Memory::Literals;
+
+    std::stringstream buffer;
+    StringMappingSerializer serializer;
+
+    serializer.Begin ();
+    serializer.Next ("StartTutorial"_us, "Start tutorial!");
+    serializer.Next ("StartCampaign"_us, "Start campaign!");
+    serializer.Next ("Quit"_us, "Quit!");
+    serializer.End (buffer);
+
+    const Emergence::Container::Utf8String expectation =
+        "- StartTutorial: Start tutorial!\n"
+        "- StartCampaign: Start campaign!\n"
+        "- Quit: Quit!";
+
+    const Emergence::Container::Utf8String result {buffer.str ()};
+    CHECK_EQUAL (result, expectation);
+}
+
+END_SUITE
+
+BEGIN_SUITE (YamlStringMappingDeserialization)
+
+TEST_CASE (MultipleMappings)
+{
+    using namespace Emergence::Memory::Literals;
+
+    std::stringstream buffer;
+    buffer << "- StartTutorial: Start tutorial!\n"
+              "- StartCampaign: Start campaign!\n"
+              "- Quit: Quit!";
+
+    Emergence::Memory::UniqueString key;
+    Emergence::Container::Utf8String value;
+    StringMappingDeserializer deserializer;
+    deserializer.Begin (buffer);
+
+    REQUIRE (deserializer.Next (key, value));
+    CHECK_EQUAL (key, "StartTutorial"_us);
+    CHECK_EQUAL (value, "Start tutorial!");
+
+    REQUIRE (deserializer.Next (key, value));
+    CHECK_EQUAL (key, "StartCampaign"_us);
+    CHECK_EQUAL (value, "Start campaign!");
+
+    REQUIRE (deserializer.Next (key, value));
+    CHECK_EQUAL (key, "Quit"_us);
+    CHECK_EQUAL (value, "Quit!");
+
+    CHECK (!deserializer.HasNext ());
+    deserializer.End ();
+}
+
+END_SUITE

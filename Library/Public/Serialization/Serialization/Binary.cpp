@@ -313,6 +313,23 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
     return true;
 }
 
+void SerializeString (std::ostream &_output, const char *_string) noexcept
+{
+    WriteString (_output, _string);
+}
+
+bool DeserializeString (std::istream &_input, Container::Utf8String &_stringOutput) noexcept
+{
+    Container::Optional<Container::String> string = ReadString (_input);
+    if (string)
+    {
+        _stringOutput = std::move (string.value ());
+        return true;
+    }
+
+    return false;
+}
+
 void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept
 {
     const StandardLayout::Mapping &mapping = _patch.GetTypeMapping ();

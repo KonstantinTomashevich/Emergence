@@ -4,6 +4,7 @@
 #include <ostream>
 
 #include <Container/Optional.hpp>
+#include <Container/String.hpp>
 
 #include <Serialization/FieldNameLookupCache.hpp>
 
@@ -21,6 +22,13 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
 /// \brief Deserializes data from given binary stream into given address using given mapping.
 /// \invariant Serialization must be done through ::SerializeObject.
 bool DeserializeObject (std::istream &_input, void *_object, const StandardLayout::Mapping &_mapping) noexcept;
+
+/// \brief Serializes given string into given output stream.
+void SerializeString (std::ostream &_output, const char *_string) noexcept;
+
+/// \brief Attempts to deserialize string from given input into given output instance.
+/// \invariant Serialization must be done through ::SerializeString.
+bool DeserializeString (std::istream &_input, Container::String &_stringOutput) noexcept;
 
 /// \brief Serializes given patch into given binary stream.
 /// \warning Serialization is patch-mapping-dependant: deserialization must be
