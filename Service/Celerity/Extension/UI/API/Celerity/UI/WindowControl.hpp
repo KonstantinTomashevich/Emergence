@@ -22,7 +22,10 @@ struct WindowControl final
     /// \brief Name of the viewport in which this window is rendered.
     Memory::UniqueString viewportName;
 
-    /// \brief Window title if any.
+    /// \brief Key to LocalizedString that is used as window title if any.
+    Memory::UniqueString titleKey;
+
+    /// \brief Window title. Used instead of ::titleKey if present.
     Container::Utf8String title;
 
     /// \brief Whether this window can be closed.
@@ -77,6 +80,7 @@ struct WindowControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId viewportName;
+        StandardLayout::FieldId titleKey;
 
         StandardLayout::FieldId closable;
         StandardLayout::FieldId minimizable;

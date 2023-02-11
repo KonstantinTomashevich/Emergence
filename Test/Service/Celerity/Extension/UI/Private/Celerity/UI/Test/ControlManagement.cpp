@@ -117,6 +117,7 @@ void ControlManager::Execute () noexcept
                     auto *button = static_cast<ButtonControl *> (++buttonCursor);
 
                     button->nodeId = _task.nodeId;
+                    button->labelKey = _task.labelKey;
                     button->label = _task.label;
                     button->width = _task.width;
                     button->height = _task.height;
@@ -131,6 +132,7 @@ void ControlManager::Execute () noexcept
                     auto *checkbox = static_cast<CheckboxControl *> (++checkboxCursor);
 
                     checkbox->nodeId = _task.nodeId;
+                    checkbox->labelKey = _task.labelKey;
                     checkbox->label = _task.label;
                     checkbox->checked = _task.checked;
                     checkbox->onChangedAction = _task.onChangedAction;
@@ -149,7 +151,9 @@ void ControlManager::Execute () noexcept
                     container->width = _task.width;
                     container->height = _task.height;
                     container->border = _task.border;
+                    container->labelKey = _task.labelKey;
                     container->label = _task.label;
+                    container->previewKey = _task.previewKey;
                     container->preview = _task.preview;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::CreateImage>)
@@ -174,6 +178,7 @@ void ControlManager::Execute () noexcept
 
                     input->nodeId = _task.nodeId;
                     input->type = _task.type;
+                    input->labelKey = _task.labelKey;
                     input->label = _task.label;
                     input->onChangedAction = _task.onChangedAction;
                     input->onChangedActionDispatch = _task.onChangedActionDispatch;
@@ -201,6 +206,7 @@ void ControlManager::Execute () noexcept
                     auto *label = static_cast<LabelControl *> (++labelCursor);
 
                     label->nodeId = _task.nodeId;
+                    label->labelKey = _task.labelKey;
                     label->label = _task.label;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::CreateWindow>)
@@ -212,6 +218,7 @@ void ControlManager::Execute () noexcept
 
                     window->nodeId = _task.nodeId;
                     window->viewportName = _task.viewportName;
+                    window->titleKey = _task.titleKey;
                     window->title = _task.title;
 
                     window->closable = _task.closable;

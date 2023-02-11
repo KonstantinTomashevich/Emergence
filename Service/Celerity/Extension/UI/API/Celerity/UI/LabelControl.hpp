@@ -14,12 +14,16 @@ struct LabelControl final
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
 
-    /// \brief Text that is displayed.
+    /// \brief Key to LocalizedString that is displayed.
+    Memory::UniqueString labelKey;
+
+    /// \brief Text that is displayed. Used instead of ::labelKey if present.
     Container::Utf8String label;
 
     struct Reflection final
     {
         StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId labelKey;
         StandardLayout::Mapping mapping;
     };
 

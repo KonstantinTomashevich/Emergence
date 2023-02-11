@@ -15,7 +15,10 @@ struct CheckboxControl final
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
 
-    /// \brief Text that is displayed near checkbox.
+    /// \brief Key to LocalizedString that is displayed near the checkbox.
+    Memory::UniqueString labelKey;
+
+    /// \brief Text that is displayed near the checkbox. Used instead of ::labelKey if present.
     Container::Utf8String label;
 
     /// \brief Whether checkbox is checked right now. Automatically updated by UI.
@@ -30,6 +33,7 @@ struct CheckboxControl final
     struct Reflection final
     {
         StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId labelKey;
         StandardLayout::FieldId checked;
 
         StandardLayout::FieldId onChangedAction;

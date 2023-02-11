@@ -10,6 +10,7 @@ const LabelControl::Reflection &LabelControl::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (LabelControl);
         EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (labelKey);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

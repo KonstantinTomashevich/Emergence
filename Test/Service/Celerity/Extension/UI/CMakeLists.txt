@@ -11,10 +11,12 @@ sober_test_begin (CelerityUI)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
 
+    sober_naming_variant_target (CelerityLocale Original CELERITY_LOCALE_LIBRARY_TARGET)
     sober_naming_variant_target (CelerityRenderFoundation Original CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET)
     sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
     sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_LIBRARY_TARGET)
 
+    sober_library_link_library (PUBLIC ${CELERITY_LOCALE_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
@@ -55,6 +57,9 @@ file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Expectation"
 
 file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Fonts"
         "${RESOURCES_COMPILED_DIRECTORY}/Fonts" SYMBOLIC)
+
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Locales"
+        "${RESOURCES_COMPILED_DIRECTORY}/Locales" SYMBOLIC)
 
 file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Textures"
         "${RESOURCES_COMPILED_DIRECTORY}/Textures" SYMBOLIC)

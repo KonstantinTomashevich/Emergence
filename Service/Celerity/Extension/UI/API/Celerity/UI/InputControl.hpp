@@ -34,7 +34,10 @@ struct InputControl final
     /// \brief Type of data that can be passed into this input control.
     InputControlType type = InputControlType::TEXT;
 
-    /// \brief Text that is displayed near input box.
+    /// \brief Key to LocalizedString that is displayed near the input box.
+    Memory::UniqueString labelKey;
+
+    /// \brief Text that is displayed near the input box. Used instead of ::labelKey if present.
     Container::Utf8String label;
 
     /// \brief Input action that will be sent in InputActionHolder on value change.
@@ -61,6 +64,7 @@ struct InputControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId type;
+        StandardLayout::FieldId labelKey;
 
         StandardLayout::FieldId onChangedAction;
         StandardLayout::FieldId onChangedActionDispatch;
