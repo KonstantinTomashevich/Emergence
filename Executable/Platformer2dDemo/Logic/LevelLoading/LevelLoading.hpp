@@ -2,7 +2,7 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-namespace MainMenuInitialization
+namespace LevelLoading
 {
 struct Checkpoint final
 {
@@ -13,4 +13,4 @@ struct Checkpoint final
 };
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
-} // namespace MainMenuInitialization
+} // namespace LevelLoading

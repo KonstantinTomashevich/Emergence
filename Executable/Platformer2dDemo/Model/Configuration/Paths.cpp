@@ -8,6 +8,24 @@ Emergence::Memory::UniqueString GetLevelsConfigurationPath () noexcept
     return path;
 }
 
+Emergence::Memory::UniqueString GetLevelsPath () noexcept
+{
+    static const Emergence::Memory::UniqueString path {"../GameResources/Levels"};
+    return path;
+}
+
+Emergence::Memory::UniqueString GetLocalizationPath () noexcept
+{
+    static const Emergence::Memory::UniqueString path {"../GameResources/Locales"};
+    return path;
+}
+
+Emergence::Memory::UniqueString GetObjectsPath () noexcept
+{
+    static const Emergence::Memory::UniqueString path {"../GameResources/Objects"};
+    return path;
+}
+
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetFontPaths () noexcept
 {
     static const Emergence::Container::Vector<Emergence::Memory::UniqueString> paths = [] ()

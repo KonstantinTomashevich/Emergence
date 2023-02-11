@@ -1,5 +1,7 @@
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionComponent.hpp>
+#include <Celerity/Input/InputSubscriptionComponent.hpp>
+#include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Configuration/WorldStates.hpp>
@@ -22,8 +24,11 @@ public:
     void Execute () noexcept;
 
 private:
-    Emergence::Celerity::FetchSingletonQuery fetchMainMenu;
+    Emergence::Celerity::FetchSingletonQuery fetchWorld;
+    Emergence::Celerity::ModifySingletonQuery modifyMainMenu;
     Emergence::Celerity::FetchSingletonQuery fetchLevelsConfiguration;
+
+    Emergence::Celerity::InsertLongTermQuery insertInputSubscription;
     Emergence::Celerity::ModifySingletonQuery modifyLevelSelection;
     Emergence::Celerity::FetchValueQuery fetchInputActionByObjectId;
     WorldStateRedirectionHandle redirectionHandle;
@@ -31,8 +36,11 @@ private:
 
 Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor,
                         const WorldStateRedirectionHandle &_redirectionHandle) noexcept
-    : fetchMainMenu (FETCH_SINGLETON (MainMenuSingleton)),
+    : fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+      modifyMainMenu (MODIFY_SINGLETON (MainMenuSingleton)),
       fetchLevelsConfiguration (FETCH_SINGLETON (LevelsConfigurationSingleton)),
+
+      insertInputSubscription (INSERT_LONG_TERM (Emergence::Celerity::InputSubscriptionComponent)),
       modifyLevelSelection (MODIFY_SINGLETON (LevelSelectionSingleton)),
       fetchInputActionByObjectId (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId)),
       redirectionHandle (_redirectionHandle)
@@ -42,8 +50,20 @@ Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor,
 
 void Controller::Execute () noexcept
 {
-    auto mainMenuCursor = fetchMainMenu.Execute ();
-    const auto *mainMenu = static_cast<const MainMenuSingleton *> (*mainMenuCursor);
+    auto mainMenuCursor = modifyMainMenu.Execute ();
+    auto *mainMenu = static_cast<MainMenuSingleton *> (*mainMenuCursor);
+
+    if (mainMenu->uiListenerObjectId == Emergence::Celerity::INVALID_UNIQUE_ID)
+    {
+        auto worldCursor = fetchWorld.Execute ();
+        const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
+        auto inputSubscriptionCursor = insertInputSubscription.Execute ();
+        auto *subscription = static_cast<Emergence::Celerity::InputSubscriptionComponent *> (++inputSubscriptionCursor);
+        subscription->objectId = world->GenerateId ();
+        subscription->group = MainMenuInputActions::GetMainMenuUIGroup ();
+        mainMenu->uiListenerObjectId = subscription->objectId;
+    }
 
     for (auto actionCursor = fetchInputActionByObjectId.Execute (&mainMenu->uiListenerObjectId);
          const auto *action = static_cast<const Emergence::Celerity::InputActionComponent *> (*actionCursor);

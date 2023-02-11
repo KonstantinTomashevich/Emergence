@@ -1,14 +1,17 @@
+#include <Celerity/Assembly/AssemblyDescriptor.hpp>
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/Render2dSingleton.hpp>
-#include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
+#include <Celerity/Resource/Object/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
+#include <Configuration/Paths.hpp>
 #include <Configuration/VisibilityMask.hpp>
 
 #include <LoadingAnimation/LoadingAnimation.hpp>
@@ -26,6 +29,7 @@ const Emergence::Memory::UniqueString Checkpoint::STARTED {"LoadingAnimation::St
 const Emergence::Memory::UniqueString Checkpoint::FINISHED {"LoadingAnimation::Finished"};
 
 static const Emergence::Memory::UniqueString LOADING_VIEWPORT_NAME {"LoadingAnimationViewport"};
+static const Emergence::Memory::UniqueString LOADING_PROTOTYPE_NAME {"LoadingAnimation"};
 
 class Manager final : public Emergence::Celerity::TaskExecutorBase<Manager>
 {
@@ -35,18 +39,24 @@ public:
     void Execute () noexcept;
 
 private:
+    void RequestDescriptorLoading () noexcept;
+
+    bool IsDescriptorLoaded () noexcept;
+
     void Instantiate (LoadingAnimationSingleton *_loadingAnimation) noexcept;
 
     void Destroy (LoadingAnimationSingleton *_loadingAnimation) noexcept;
 
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
-    Emergence::Celerity::FetchSingletonQuery fetchRender;
     Emergence::Celerity::ModifySingletonQuery modifyLoadingAnimation;
+
+    Emergence::Celerity::InsertShortTermQuery insertResourceObjectRequest;
+    Emergence::Celerity::FetchValueQuery fetchAssemblyDescriptorById;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
-    Emergence::Celerity::InsertLongTermQuery insertSprite;
+    Emergence::Celerity::InsertLongTermQuery insertPrototype;
     Emergence::Celerity::InsertLongTermQuery insertViewport;
     Emergence::Celerity::InsertLongTermQuery insertWorldPass;
 
@@ -59,12 +69,14 @@ private:
 Manager::Manager (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
-      fetchRender (FETCH_SINGLETON (Emergence::Celerity::Render2dSingleton)),
       modifyLoadingAnimation (MODIFY_SINGLETON (LoadingAnimationSingleton)),
+
+      insertResourceObjectRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceObjectRequest)),
+      fetchAssemblyDescriptorById (FETCH_VALUE_1F (Emergence::Celerity::AssemblyDescriptor, id)),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
-      insertSprite (INSERT_LONG_TERM (Emergence::Celerity::Sprite2dComponent)),
+      insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent)),
       insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport)),
       insertWorldPass (INSERT_LONG_TERM (Emergence::Celerity::World2dRenderPass)),
 
@@ -82,12 +94,16 @@ void Manager::Execute () noexcept
 {
     auto loadingAnimationCursor = modifyLoadingAnimation.Execute ();
     auto *loadingAnimation = static_cast<LoadingAnimationSingleton *> (*loadingAnimationCursor);
+    RequestDescriptorLoading ();
 
     if (loadingAnimation->required != loadingAnimation->instanced)
     {
         if (loadingAnimation->required)
         {
-            Instantiate (loadingAnimation);
+            if (IsDescriptorLoaded ())
+            {
+                Instantiate (loadingAnimation);
+            }
         }
         else
         {
@@ -112,17 +128,30 @@ void Manager::Execute () noexcept
     }
 }
 
+void Manager::RequestDescriptorLoading () noexcept
+{
+    if (!IsDescriptorLoaded ())
+    {
+        auto cursor = insertResourceObjectRequest.Execute ();
+        auto *request = static_cast<Emergence::Celerity::ResourceObjectRequest *> (++cursor);
+        request->folder = EMERGENCE_BUILD_STRING (GetObjectsPath (), "/", LOADING_PROTOTYPE_NAME);
+        request->object = LOADING_PROTOTYPE_NAME;
+    }
+}
+
+bool Manager::IsDescriptorLoaded () noexcept
+{
+    return *fetchAssemblyDescriptorById.Execute (&LOADING_PROTOTYPE_NAME);
+}
+
 void Manager::Instantiate (LoadingAnimationSingleton *_loadingAnimation) noexcept
 {
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
-    auto renderCursor = fetchRender.Execute ();
-    const auto *render = static_cast<const Emergence::Celerity::Render2dSingleton *> (*renderCursor);
-
     auto transformCursor = insertTransform.Execute ();
     auto cameraCursor = insertCamera.Execute ();
-    auto spriteCursor = insertSprite.Execute ();
+    auto prototypeCursor = insertPrototype.Execute ();
 
     auto *cameraTransform = static_cast<Emergence::Celerity::Transform2dComponent *> (++transformCursor);
     _loadingAnimation->cameraObjectId = world->GenerateId ();
@@ -149,19 +178,15 @@ void Manager::Instantiate (LoadingAnimationSingleton *_loadingAnimation) noexcep
     worldPass->name = worldViewport->name;
     worldPass->cameraObjectId = camera->objectId;
 
-    auto *spriteTransform = static_cast<Emergence::Celerity::Transform2dComponent *> (++transformCursor);
+    auto *loadingAnimationTransform = static_cast<Emergence::Celerity::Transform2dComponent *> (++transformCursor);
     _loadingAnimation->spriteObjectId = world->GenerateId ();
-    spriteTransform->SetObjectId (_loadingAnimation->spriteObjectId);
+    loadingAnimationTransform->SetObjectId (_loadingAnimation->spriteObjectId);
 
-    auto *sprite = static_cast<Emergence::Celerity::Sprite2dComponent *> (++spriteCursor);
-    sprite->objectId = spriteTransform->GetObjectId ();
-    sprite->spriteId = render->GenerateSprite2dId ();
-    sprite->visibilityMask = static_cast<uint64_t> (VisibilityMask::LOADING_ANIMATION);
-
-    sprite->materialInstanceId = "CrateLoading"_us;
-    sprite->uv = {{0.0f, 0.0f}, {1.0f, 1.0f}};
-    sprite->halfSize = {3.0f, 3.0f};
-    sprite->layer = 0u;
+    auto *prototype = static_cast<Emergence::Celerity::PrototypeComponent *> (++prototypeCursor);
+    prototype->objectId = _loadingAnimation->spriteObjectId;
+    prototype->descriptorId = LOADING_PROTOTYPE_NAME;
+    prototype->requestImmediateFixedAssembly = false;
+    prototype->requestImmediateNormalAssembly = false;
 
     _loadingAnimation->instanced = true;
 }

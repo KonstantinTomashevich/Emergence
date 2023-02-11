@@ -5,15 +5,18 @@
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Asset/UI/FontManagement.hpp>
+#include <Celerity/Locale/Localization.hpp>
 #include <Celerity/Render/2d/AssetUsage.hpp>
 #include <Celerity/Render/2d/Events.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
 #include <Celerity/UI/Events.hpp>
 
 #include <Configuration/Paths.hpp>
+#include <Configuration/ResourceObjectTypeManifest.hpp>
 
 #include <Modules/Root.hpp>
 
@@ -65,17 +68,20 @@ void Initializer (GameState & /*unused*/,
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&_rootView};
-    constexpr uint64_t MAX_LOADING_TIME_NS = 10000000;
+    constexpr uint64_t MAX_LOADING_TIME_NS = 10000000u;
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, assetReferenceBindingList,
                                                              assetReferenceBindingEventMap);
     Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, GetFontPaths (), MAX_LOADING_TIME_NS,
                                                             assetReferenceBindingEventMap);
+    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, GetLocalizationPath(), MAX_LOADING_TIME_NS);
     Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, GetMaterialInstancePaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, GetMaterialPaths (), GetShadersPaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
+                                                                      GetResourceObjectTypeManifest ());
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (), MAX_LOADING_TIME_NS,
                                                                assetReferenceBindingEventMap);
     [[maybe_unused]] const bool normalPipelineRegistered = pipelineBuilder.End ();

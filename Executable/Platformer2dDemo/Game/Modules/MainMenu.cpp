@@ -1,5 +1,6 @@
 #include <Application/KeyCodeMapping.hpp>
 
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/PipelineBuilder.hpp>
@@ -8,6 +9,11 @@
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/UI/UI.hpp>
+#include <Celerity/Locale/Localization.hpp>
+
+#include <Configuration/AssemblyConfiguration.hpp>
+
+#include <LevelLoading/LevelLoading.hpp>
 
 #include <LoadingAnimation/LoadingAnimation.hpp>
 
@@ -15,7 +21,6 @@
 
 #include <MainMenuLoading/LevelsConfigurationLoading.hpp>
 #include <MainMenuLoading/LoadingOrchestration.hpp>
-#include <MainMenuLoading/MainMenuInitialization.hpp>
 
 #include <Modules/MainMenu.hpp>
 
@@ -46,8 +51,12 @@ void Initializer (GameState &_gameState,
                   Emergence::Celerity::World &_world,
                   Emergence::Celerity::WorldView &_view) noexcept
 {
+    constexpr uint64_t MAX_ASSEMBLY_TIME_NS = 10000000u;
+
     Emergence::Celerity::PipelineBuilder mainPipelineBuilder {&_view};
     mainPipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);
+    Emergence::Celerity::Assembly::AddToFixedUpdate (mainPipelineBuilder, GetAssemblerCustomKeys (),
+                                                     GetFixedAssemblerTypes (), MAX_ASSEMBLY_TIME_NS);
     Emergence::Celerity::Input::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (mainPipelineBuilder);
     [[maybe_unused]] const bool fixedPipelineRegistered = mainPipelineBuilder.End ();
@@ -57,12 +66,16 @@ void Initializer (GameState &_gameState,
 
     mainPipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
 
-    // Mock asset management checkpoints.
+    // Mock asset management and localization checkpoints.
     mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::AssetManagement::Checkpoint::STARTED);
     mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::AssetManagement::Checkpoint::ASSET_LOADING_STARTED);
     mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::AssetManagement::Checkpoint::ASSET_LOADING_FINISHED);
     mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::AssetManagement::Checkpoint::FINISHED);
+    mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::Localization::Checkpoint::SYNC_STARTED);
+    mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::Localization::Checkpoint::SYNC_FINISHED);
 
+    Emergence::Celerity::Assembly::AddToNormalUpdate (mainPipelineBuilder, GetAssemblerCustomKeys (),
+                                                      GetNormalAssemblerTypes (), MAX_ASSEMBLY_TIME_NS);
     Emergence::Celerity::Input::AddToNormalUpdate (mainPipelineBuilder, _gameState.GetFrameInputAccumulator ());
     Emergence::Celerity::RenderPipelineFoundation::AddToNormalUpdate (mainPipelineBuilder);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (mainPipelineBuilder, worldBox);
@@ -71,6 +84,10 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::UI::AddToNormalUpdate (mainPipelineBuilder, _gameState.GetFrameInputAccumulator (),
                                                 GetKeyCodeMapping ());
     MainMenuInputResponse::AddToNormalUpdate (mainPipelineBuilder, _gameState.ConstructWorldStateRedirectionHandle ());
+
+    mainPipelineBuilder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,
+                                                 Emergence::Celerity::UI::Checkpoint::HIERARCHY_CLEANUP_STARTED);
+
     [[maybe_unused]] const bool normalPipelineRegistered = mainPipelineBuilder.End ();
     EMERGENCE_ASSERT (normalPipelineRegistered);
 
@@ -80,8 +97,8 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::PipelineBuilder loadingPipelineBuilder {loadingView};
     loadingPipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     LevelsConfigurationLoading::AddToNormalUpdate (loadingPipelineBuilder);
+    LevelLoading::AddToNormalUpdate (loadingPipelineBuilder);
     LoadingAnimation::AddToNormalUpdate (loadingPipelineBuilder);
-    MainMenuInitialization::AddToNormalUpdate (loadingPipelineBuilder);
     MainMenuLoadingOrchestration::AddToNormalUpdate (loadingPipelineBuilder, _gameState.ConstructViewDropHandle (),
                                                      loadingView);
     [[maybe_unused]] const bool loadingNormalPipelineRegistered = loadingPipelineBuilder.End ();
