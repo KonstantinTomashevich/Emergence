@@ -20,16 +20,33 @@ CargoDeck::CargoDeck (Memory::UniqueString _name) noexcept
     : name (_name),
       singleton (Memory::Profiler::AllocationGroup {"Singleton"_us}),
       shortTerm (Memory::Profiler::AllocationGroup {"ShortTerm"_us}),
-      longTerm (Memory::Profiler::AllocationGroup {"LongTerm"_us})
+      longTerm (Memory::Profiler::AllocationGroup {"LongTerm"_us}),
+      garbageCollectionDisabled (Memory::Profiler::AllocationGroup {"GarbageCollectionDisabledSet"_us})
 {
 }
 
 CargoDeck::~CargoDeck () noexcept
 {
-    // Assert that all containers are detached.
-    EMERGENCE_ASSERT (singleton.IsEmpty ());
-    EMERGENCE_ASSERT (shortTerm.IsEmpty ());
-    EMERGENCE_ASSERT (longTerm.IsEmpty ());
+    // Assert that all containers are either detached or exist only due to garbage collection disabled flag.
+    // We do not need to detach them as they'll be automatically cleared by typed pool destructors.
+
+    for (SingletonContainer &container : singleton)
+    {
+        EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
+        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
+    }
+
+    for (ShortTermContainer &container : shortTerm)
+    {
+        EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
+        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
+    }
+
+    for (LongTermContainer &container : longTerm)
+    {
+        EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
+        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
+    }
 }
 
 Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)
@@ -83,6 +100,39 @@ bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_ty
     return std::find_if (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping}) != longTerm.End ();
 }
 
+void CargoDeck::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept
+{
+    if (_enabled)
+    {
+        garbageCollectionDisabled.erase (_typeMapping);
+        auto singletonIterator =
+            std::find_if (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
+
+        if (singletonIterator != singleton.End () && (*singletonIterator).GetReferenceCount () == 0u)
+        {
+            DetachContainer (&*singletonIterator);
+        }
+
+        auto shortTermIterator =
+            std::find_if (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
+
+        if (shortTermIterator != shortTerm.End () && (*shortTermIterator).GetReferenceCount () == 0u)
+        {
+            DetachContainer (&*shortTermIterator);
+        }
+
+        auto longTermIterator = std::find_if (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
+        if (longTermIterator != longTerm.End () && (*longTermIterator).GetReferenceCount () == 0u)
+        {
+            DetachContainer (&*longTermIterator);
+        }
+    }
+    else
+    {
+        garbageCollectionDisabled.emplace (_typeMapping);
+    }
+}
+
 Memory::UniqueString CargoDeck::GetName () const noexcept
 {
     return name;
@@ -90,16 +140,25 @@ Memory::UniqueString CargoDeck::GetName () const noexcept
 
 void CargoDeck::DetachContainer (SingletonContainer *_container) noexcept
 {
-    singleton.Release (*_container);
+    if (!garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
+    {
+        singleton.Release (*_container);
+    }
 }
 
 void CargoDeck::DetachContainer (ShortTermContainer *_container) noexcept
 {
-    shortTerm.Release (*_container);
+    if (!garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
+    {
+        shortTerm.Release (*_container);
+    }
 }
 
 void CargoDeck::DetachContainer (LongTermContainer *_container) noexcept
 {
-    longTerm.Release (*_container);
+    if (!garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
+    {
+        longTerm.Release (*_container);
+    }
 }
 } // namespace Emergence::Galleon

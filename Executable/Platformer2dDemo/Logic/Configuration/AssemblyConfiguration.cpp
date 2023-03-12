@@ -1,5 +1,8 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Input/InputSubscriptionComponent.hpp>
+#include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
+#include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
+#include <Celerity/Physics2d/RigidBody2dComponent.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/Render2dSingleton.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
@@ -18,6 +21,13 @@
 
 #include <Configuration/AssemblyConfiguration.hpp>
 
+#include <Platformer/LayerSetupComponent.hpp>
+
+static Emergence::Celerity::UniqueId GenerateShapeId (const void *_argument)
+{
+    return static_cast<const Emergence::Celerity::PhysicsWorld2dSingleton *> (_argument)->GenerateShapeId ();
+}
+
 static Emergence::Celerity::UniqueId GenerateSpriteId (const void *_argument)
 {
     return static_cast<const Emergence::Celerity::Render2dSingleton *> (_argument)->GenerateSprite2dId ();
@@ -28,13 +38,19 @@ static Emergence::Celerity::UniqueId GenerateUINodeId (const void *_argument)
     return static_cast<const Emergence::Celerity::UISingleton *> (_argument)->GenerateNodeId ();
 }
 
-static constexpr Emergence::Celerity::UniqueId SPRITE_ID_KEY = 0u;
+static constexpr Emergence::Celerity::UniqueId SHAPE_ID_KEY = 0u;
 
-static constexpr Emergence::Celerity::UniqueId UI_NODE_ID_KEY = 1u;
+static constexpr Emergence::Celerity::UniqueId SPRITE_ID_KEY = 1u;
+
+static constexpr Emergence::Celerity::UniqueId UI_NODE_ID_KEY = 2u;
 
 Emergence::Celerity::CustomKeyVector GetAssemblerCustomKeys () noexcept
 {
     Emergence::Celerity::CustomKeyVector customKeys {Emergence::Celerity::GetAssemblerConfigurationAllocationGroup ()};
+
+    Emergence::Celerity::CustomKeyDescriptor &shapeIdKey = customKeys.emplace_back ();
+    shapeIdKey.singletonProviderType = Emergence::Celerity::PhysicsWorld2dSingleton::Reflect ().mapping;
+    shapeIdKey.providerFunction = GenerateShapeId;
 
     Emergence::Celerity::CustomKeyDescriptor &spriteIdKey = customKeys.emplace_back ();
     spriteIdKey.singletonProviderType = Emergence::Celerity::Render2dSingleton::Reflect ().mapping;
@@ -51,11 +67,24 @@ Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept
 {
     Emergence::Celerity::TypeBindingVector types {Emergence::Celerity::GetAssemblerConfigurationAllocationGroup ()};
 
+    Emergence::Celerity::TypeDescriptor &collisionShape2dComponent = types.emplace_back ();
+    collisionShape2dComponent.type = Emergence::Celerity::CollisionShape2dComponent::Reflect ().mapping;
+    collisionShape2dComponent.keys.emplace_back () = {
+        Emergence::Celerity::CollisionShape2dComponent::Reflect ().objectId,
+        Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+    collisionShape2dComponent.keys.emplace_back () = {
+        Emergence::Celerity::CollisionShape2dComponent::Reflect ().shapeId, SHAPE_ID_KEY};
+
     Emergence::Celerity::TypeDescriptor &transform2dComponent = types.emplace_back ();
     transform2dComponent.type = Emergence::Celerity::Transform2dComponent::Reflect ().mapping;
     transform2dComponent.keys.emplace_back () = {Emergence::Celerity::Transform2dComponent::Reflect ().objectId,
                                                  Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
     transform2dComponent.keys.emplace_back () = {Emergence::Celerity::Transform2dComponent::Reflect ().parentObjectId,
+                                                 Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+
+    Emergence::Celerity::TypeDescriptor &rigidBody2dComponent = types.emplace_back ();
+    rigidBody2dComponent.type = Emergence::Celerity::RigidBody2dComponent::Reflect ().mapping;
+    rigidBody2dComponent.keys.emplace_back () = {Emergence::Celerity::RigidBody2dComponent::Reflect ().objectId,
                                                  Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     Emergence::Celerity::TypeDescriptor &prototypeComponent = types.emplace_back ();
@@ -106,13 +135,6 @@ Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept
     sprite2dComponent.keys.emplace_back () = {Emergence::Celerity::Sprite2dComponent::Reflect ().spriteId,
                                               SPRITE_ID_KEY};
 
-    Emergence::Celerity::TypeDescriptor &transform2dComponent = types.emplace_back ();
-    transform2dComponent.type = Emergence::Celerity::Transform2dComponent::Reflect ().mapping;
-    transform2dComponent.keys.emplace_back () = {Emergence::Celerity::Transform2dComponent::Reflect ().objectId,
-                                                 Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
-    transform2dComponent.keys.emplace_back () = {Emergence::Celerity::Transform2dComponent::Reflect ().parentObjectId,
-                                                 Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
-
     Emergence::Celerity::TypeDescriptor &uiNode = types.emplace_back ();
     uiNode.type = Emergence::Celerity::UINode::Reflect ().mapping;
     uiNode.keys.emplace_back () = {Emergence::Celerity::UINode::Reflect ().nodeId, UI_NODE_ID_KEY};
@@ -133,6 +155,11 @@ Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept
     Emergence::Celerity::TypeDescriptor &windowControl = types.emplace_back ();
     windowControl.type = Emergence::Celerity::WindowControl::Reflect ().mapping;
     windowControl.keys.emplace_back () = {Emergence::Celerity::WindowControl::Reflect ().nodeId, UI_NODE_ID_KEY};
+
+    Emergence::Celerity::TypeDescriptor &layerSetupComponent = types.emplace_back ();
+    layerSetupComponent.type = LayerSetupComponent::Reflect ().mapping;
+    layerSetupComponent.keys.emplace_back () = {LayerSetupComponent::Reflect ().objectId,
+                                                Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     return types;
 }

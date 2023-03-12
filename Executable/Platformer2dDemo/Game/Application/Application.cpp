@@ -14,6 +14,7 @@
 #include <Framework/GameState.hpp>
 
 #include <Modules/MainMenu.hpp>
+#include <Modules/Platformer.hpp>
 #include <Modules/Root.hpp>
 
 #include <Render/Backend/Configuration.hpp>
@@ -145,6 +146,12 @@ void Application::InitGameState () noexcept
     mainMenuState.modules.emplace_back () = {Modules::MainMenu::GetName (), Modules::MainMenu::GetViewConfig (),
                                              Modules::MainMenu::Initializer};
     gameState->AddWorldStateDefinition (mainMenuState);
+
+    WorldStateDefinition platformerState;
+    platformerState.name = WorldStates::PLATFORMER;
+    platformerState.modules.emplace_back () = {Modules::Platformer::GetName (), Modules::Platformer::GetViewConfig (),
+                                               Modules::Platformer::Initializer};
+    gameState->AddWorldStateDefinition (platformerState);
 
     gameState->ConstructWorldStateRedirectionHandle ().RequestRedirect (WorldStates::MAIN_MENU);
 }

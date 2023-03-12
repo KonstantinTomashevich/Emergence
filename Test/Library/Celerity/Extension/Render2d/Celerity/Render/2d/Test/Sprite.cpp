@@ -36,7 +36,7 @@ TEST_CASE (UV)
             CreateCamera {0u, 2.0f, ~0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
-            CreateSprite {1u, 0u, "Crate"_us, {{0.0f, 0.0f}, {0.5f, 0.5f}}, {1.0f, 1.0f}, 0u, ~0u},
+            CreateSprite {1u, 0u, "Crate"_us, {{0.0f, 0.0f}, {1.5f, 1.5f}}, {1.0f, 1.0f}, 0u, ~0u},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"UV"_us},

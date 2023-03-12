@@ -628,6 +628,7 @@ void TaskRegister::Clear () noexcept
     tasks.clear ();
     checkpoints.clear ();
     resources.clear ();
+    checkpointDependencies.clear();
 }
 
 // If asserts are not enabled, CLang Tidy advises to convert this function to static, which is not correct.

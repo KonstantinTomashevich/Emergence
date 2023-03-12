@@ -30,6 +30,9 @@ struct AssetFileLoadingState final
     /// \brief Id of asset, to which this extension is attached during loading.
     Memory::UniqueString assetId;
 
+    /// \brief Root directory from which asset is being loaded.
+    Memory::UniqueString selectedRootPath;
+
     /// \brief Allocator for allocation ::data.
     Memory::Heap allocator {Memory::Profiler::AllocationGroup::Top ()};
 

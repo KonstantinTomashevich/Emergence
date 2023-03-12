@@ -7,7 +7,6 @@ const MainMenuLoadingSingleton::Reflection &MainMenuLoadingSingleton::Reflect ()
     static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MainMenuLoadingSingleton);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (levelsConfigurationLoaded);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetsLoaded);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

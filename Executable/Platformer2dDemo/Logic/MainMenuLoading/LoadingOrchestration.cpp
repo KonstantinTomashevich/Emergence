@@ -9,6 +9,7 @@
 #include <Celerity/UI/UIRenderPass.hpp>
 
 #include <Configuration/VisibilityMask.hpp>
+#include <Configuration/Localization.hpp>
 
 #include <Framework/GameState.hpp>
 
@@ -18,17 +19,16 @@
 #include <LoadingAnimation/LoadingAnimation.hpp>
 #include <LoadingAnimation/LoadingAnimationSingleton.hpp>
 
-#include <MainMenuLoading/LevelsConfigurationLoading.hpp>
 #include <MainMenuLoading/LoadingOrchestration.hpp>
 #include <MainMenuLoading/MainMenuLoadingSingleton.hpp>
 
 #include <Render/Backend/Configuration.hpp>
 
+#include <Root/LevelsConfigurationSingleton.hpp>
+
 namespace MainMenuLoadingOrchestration
 {
 using namespace Emergence::Memory::Literals;
-
-static const Emergence::Memory::UniqueString HARDCODED_LOCALE {"English"};
 
 const Emergence::Memory::UniqueString Checkpoint::STARTED {"MainMenuLoadingOrchestration::Started"};
 const Emergence::Memory::UniqueString Checkpoint::FINISHED {"MainMenuLoadingOrchestration::Finished"};
@@ -45,12 +45,13 @@ public:
 private:
     void SpawnViewports (const Emergence::Celerity::WorldSingleton *_world) noexcept;
 
-    Emergence::Celerity::ModifySingletonQuery modifyWorld;
+    Emergence::Celerity::FetchSingletonQuery fetchAssetManager;
+    Emergence::Celerity::FetchSingletonQuery fetchLevelsConfiguration;
     Emergence::Celerity::ModifySingletonQuery modifyLevelLoading;
+    Emergence::Celerity::ModifySingletonQuery modifyLoadingAnimation;
     Emergence::Celerity::ModifySingletonQuery modifyLocale;
     Emergence::Celerity::ModifySingletonQuery modifyMainMenuLoading;
-    Emergence::Celerity::FetchSingletonQuery fetchAssetManager;
-    Emergence::Celerity::ModifySingletonQuery modifyLoadingAnimation;
+    Emergence::Celerity::ModifySingletonQuery modifyWorld;
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
@@ -65,12 +66,13 @@ private:
 LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor,
                                           const ViewDropHandle &_viewDropHandle,
                                           Emergence::Celerity::WorldView *_ownerView) noexcept
-    : modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
+    : fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
+      fetchLevelsConfiguration (FETCH_SINGLETON (LevelsConfigurationSingleton)),
       modifyLevelLoading (MODIFY_SINGLETON (LevelLoadingSingleton)),
+      modifyLoadingAnimation (MODIFY_SINGLETON (LoadingAnimationSingleton)),
       modifyLocale (MODIFY_SINGLETON (Emergence::Celerity::LocaleSingleton)),
       modifyMainMenuLoading (MODIFY_SINGLETON (MainMenuLoadingSingleton)),
-      fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
-      modifyLoadingAnimation (MODIFY_SINGLETON (LoadingAnimationSingleton)),
+      modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
@@ -84,7 +86,6 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (LevelLoading::Checkpoint::STARTED);
-    _constructor.MakeDependencyOf (LevelsConfigurationLoading::Checkpoint::STARTED);
     _constructor.MakeDependencyOf (LoadingAnimation::Checkpoint::STARTED);
 }
 
@@ -106,8 +107,11 @@ void LoadingOrchestrator::Execute () noexcept
 
     if (!*locale->targetLocale)
     {
-        locale->targetLocale = HARDCODED_LOCALE;
+        locale->targetLocale = Localization::HARDCODED_LOCALE;
     }
+
+    auto levelsConfigurationCursor = fetchLevelsConfiguration.Execute ();
+    const auto *levelsConfiguration = static_cast<const LevelsConfigurationSingleton *> (*levelsConfigurationCursor);
 
     auto mainMenuLoadingCursor = modifyMainMenuLoading.Execute ();
     auto *mainMenuLoading = static_cast<MainMenuLoadingSingleton *> (*mainMenuLoadingCursor);
@@ -119,7 +123,7 @@ void LoadingOrchestrator::Execute () noexcept
     auto loadingAnimationCursor = modifyLoadingAnimation.Execute ();
     auto *loadingAnimation = static_cast<LoadingAnimationSingleton *> (*loadingAnimationCursor);
 
-    if (mainMenuLoading->levelsConfigurationLoaded && levelLoading->state == LevelLoadingState::DONE &&
+    if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE &&
         mainMenuLoading->assetsLoaded && locale->loadedLocale == locale->targetLocale)
     {
         loadingAnimation->required = false;

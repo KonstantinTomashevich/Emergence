@@ -2,8 +2,43 @@
 
 #include <API/Common/ImplementationBinding.hpp>
 
+#include <StandardLayout/Mapping.hpp>
+
 namespace Emergence::Render::Backend
 {
+/// \brief Describes type of sampling along texture coordinate.
+enum class TextureSampling
+{
+    NONE = 0,
+    MIRROR,
+    CLAMP,
+    BORDER,
+    SHIFT
+};
+
+/// \brief Contains various supported settings that dictate how texture should be used.
+struct TextureSettings final
+{
+    /// \brief Sampling along U coordinate line.
+    TextureSampling uSampling = TextureSampling::NONE;
+
+    /// \brief Sampling along V coordinate line.
+    TextureSampling vSampling = TextureSampling::NONE;
+
+    /// \brief Sampling along W coordinate line.
+    TextureSampling wSampling = TextureSampling::NONE;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId uSampling;
+        StandardLayout::FieldId vSampling;
+        StandardLayout::FieldId wSampling;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
 /// \brief Unique identifier used to reference existing Texture.
 using TextureId = std::uint64_t;
 
@@ -15,11 +50,14 @@ public:
     Texture () noexcept;
 
     /// \brief Constructs texture from given data. Data format is implementation-dependant.
-    Texture (const uint8_t *_data, std::uint64_t _size) noexcept;
+    Texture (const uint8_t *_data, std::uint64_t _size, const TextureSettings &_settings) noexcept;
 
     /// \brief Constructs texture from given RGBA32 data.
     /// \details Data ownership is not transferred to texture. Instead, data is copied.
-    Texture (const uint8_t *_data, std::uint64_t _width, std::uint64_t _height) noexcept;
+    Texture (const uint8_t *_data,
+             std::uint64_t _width,
+             std::uint64_t _height,
+             const TextureSettings &_settings) noexcept;
 
     Texture (const Texture &_other) = delete;
 

@@ -183,6 +183,7 @@ AssetState TrivialFileAssetManager<Successor>::StartLoading (Memory::UniqueStrin
             auto cursor = insertAssetFileLoadingState.Execute ();
             auto *state = static_cast<AssetFileLoadingState *> (++cursor);
             state->assetId = _assetId;
+            state->selectedRootPath = root;
 
             AssetFileLoadingStatus fileLoadingState = state->StartLoading (pathString.c_str ());
             EMERGENCE_ASSERT (fileLoadingState != AssetFileLoadingStatus::FINISHED);

@@ -10,6 +10,7 @@ const LevelsConfigurationSingleton::Reflection &LevelsConfigurationSingleton::Re
         EMERGENCE_MAPPING_REGISTER_REGULAR (tutorialLevelName);
         EMERGENCE_MAPPING_REGISTER_REGULAR (campaignLevelPrefix);
         EMERGENCE_MAPPING_REGISTER_REGULAR (campaignLevelCount);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (loaded);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

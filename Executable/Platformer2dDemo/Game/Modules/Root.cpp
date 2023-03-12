@@ -21,6 +21,7 @@
 #include <Modules/Root.hpp>
 
 #include <Root/LevelSelectionSingleton.hpp>
+#include <Root/LevelsConfigurationLoading.hpp>
 #include <Root/LevelsConfigurationSingleton.hpp>
 
 namespace Modules::Root
@@ -75,7 +76,7 @@ void Initializer (GameState & /*unused*/,
                                                              assetReferenceBindingEventMap);
     Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, GetFontPaths (), MAX_LOADING_TIME_NS,
                                                             assetReferenceBindingEventMap);
-    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, GetLocalizationPath(), MAX_LOADING_TIME_NS);
+    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, GetLocalizationPath (), MAX_LOADING_TIME_NS);
     Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, GetMaterialInstancePaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
@@ -84,6 +85,7 @@ void Initializer (GameState & /*unused*/,
                                                                       GetResourceObjectTypeManifest ());
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (), MAX_LOADING_TIME_NS,
                                                                assetReferenceBindingEventMap);
+    LevelsConfigurationLoading::AddToNormalUpdate (pipelineBuilder);
     [[maybe_unused]] const bool normalPipelineRegistered = pipelineBuilder.End ();
     EMERGENCE_ASSERT (normalPipelineRegistered);
 }

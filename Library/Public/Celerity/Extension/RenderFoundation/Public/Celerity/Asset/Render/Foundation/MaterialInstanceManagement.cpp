@@ -264,11 +264,13 @@ AssetState Manager::TryInitializeLoading (Memory::UniqueString _assetId) noexcep
         return AssetState::CORRUPTED;
     }
 
-    auto materialInstanceInsertCursor = insertMaterialInstance.Execute ();
-    auto *materialInstance = static_cast<MaterialInstance *> (++materialInstanceInsertCursor);
+    {
+        auto materialInstanceInsertCursor = insertMaterialInstance.Execute ();
+        auto *materialInstance = static_cast<MaterialInstance *> (++materialInstanceInsertCursor);
 
-    materialInstance->assetId = _assetId;
-    materialInstance->materialId = header.material;
+        materialInstance->assetId = _assetId;
+        materialInstance->materialId = header.material;
+    }
 
     const AssetState dependencyState = SummarizeDependencyState (header.material, header.parent);
     if (dependencyState == AssetState::CORRUPTED || dependencyState == AssetState::MISSING)

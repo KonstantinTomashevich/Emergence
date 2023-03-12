@@ -7,5 +7,5 @@ struct WorldStates final
     WorldStates () = delete;
 
     static const Emergence::Memory::UniqueString MAIN_MENU;
-    static const Emergence::Memory::UniqueString GAME_LEVEL;
+    static const Emergence::Memory::UniqueString PLATFORMER;
 };

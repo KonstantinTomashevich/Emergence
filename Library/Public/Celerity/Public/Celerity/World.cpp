@@ -94,6 +94,11 @@ WorldView::WorldView (World *_world,
         EMERGENCE_ASSERT (enforcedType != WorldSingleton::Reflect ().mapping);
 
         config.enforcedTypes.emplace (enforcedType);
+
+        // We disable garbage collection for enforced types, as they might never be referenced in parent view, but used
+        // only in child views instead. To ensure fully predictable behaviour where children can use enforced types in
+        // order to pass data during transition, we have to disable garbage collection for these types.
+        localRegistry.SetGarbageCollectionEnabled (enforcedType, false);
     }
 
 #ifdef EMERGENCE_ASSERT_ENABLED

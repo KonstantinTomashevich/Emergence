@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Container/HashSet.hpp>
 #include <Container/TypedOrderedPool.hpp>
 
 #include <Galleon/LongTermContainer.hpp>
@@ -41,6 +42,8 @@ public:
 
     [[nodiscard]] bool IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
 
+    void SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept;
+
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     /// CargoDeck manages lots of storages with lots of objects, therefore it's not optimal to copy assign it.
@@ -71,5 +74,6 @@ private:
     Container::TypedOrderedPool<SingletonContainer> singleton;
     Container::TypedOrderedPool<ShortTermContainer> shortTerm;
     Container::TypedOrderedPool<LongTermContainer> longTerm;
+    Container::HashSet<StandardLayout::Mapping> garbageCollectionDisabled;
 };
 } // namespace Emergence::Galleon

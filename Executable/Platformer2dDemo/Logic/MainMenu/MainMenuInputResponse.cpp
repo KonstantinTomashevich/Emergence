@@ -79,7 +79,7 @@ void Controller::Execute () noexcept
             auto *levelSelection = static_cast<LevelSelectionSingleton *> (*levelSelectionCursor);
             levelSelection->selectedLevelName = levelsConfiguration->tutorialLevelName;
 
-            redirectionHandle.RequestRedirect (WorldStates::GAME_LEVEL);
+            redirectionHandle.RequestRedirect (WorldStates::PLATFORMER);
             break;
         }
 
@@ -95,7 +95,7 @@ void Controller::Execute () noexcept
 
             levelSelection->selectedLevelName = Emergence::Memory::UniqueString {
                 EMERGENCE_BUILD_STRING (levelsConfiguration->campaignLevelPrefix, "0")};
-            redirectionHandle.RequestRedirect (WorldStates::GAME_LEVEL);
+            redirectionHandle.RequestRedirect (WorldStates::PLATFORMER);
             break;
         }
 

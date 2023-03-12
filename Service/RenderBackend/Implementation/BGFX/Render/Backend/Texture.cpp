@@ -9,10 +9,98 @@
 #include <Render/Backend/Allocator.hpp>
 #include <Render/Backend/Texture.hpp>
 
+#include <StandardLayout/MappingRegistration.hpp>
+
 #include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Render::Backend
 {
+static uint64_t SettingsToFlags (const TextureSettings &_settings)
+{
+    uint64_t flags = BGFX_TEXTURE_NONE;
+    switch (_settings.uSampling)
+    {
+    case TextureSampling::NONE:
+        break;
+
+    case TextureSampling::MIRROR:
+        flags |= BGFX_SAMPLER_U_MIRROR;
+        break;
+
+    case TextureSampling::CLAMP:
+        flags |= BGFX_SAMPLER_U_CLAMP;
+        break;
+
+    case TextureSampling::BORDER:
+        flags |= BGFX_SAMPLER_U_BORDER;
+        break;
+
+    case TextureSampling::SHIFT:
+        flags |= BGFX_SAMPLER_U_SHIFT;
+        break;
+    }
+
+    switch (_settings.vSampling)
+    {
+    case TextureSampling::NONE:
+        break;
+
+    case TextureSampling::MIRROR:
+        flags |= BGFX_SAMPLER_V_MIRROR;
+        break;
+
+    case TextureSampling::CLAMP:
+        flags |= BGFX_SAMPLER_V_CLAMP;
+        break;
+
+    case TextureSampling::BORDER:
+        flags |= BGFX_SAMPLER_V_BORDER;
+        break;
+
+    case TextureSampling::SHIFT:
+        flags |= BGFX_SAMPLER_V_SHIFT;
+        break;
+    }
+
+    switch (_settings.wSampling)
+    {
+    case TextureSampling::NONE:
+        break;
+
+    case TextureSampling::MIRROR:
+        flags |= BGFX_SAMPLER_W_MIRROR;
+        break;
+
+    case TextureSampling::CLAMP:
+        flags |= BGFX_SAMPLER_W_CLAMP;
+        break;
+
+    case TextureSampling::BORDER:
+        flags |= BGFX_SAMPLER_W_BORDER;
+        break;
+
+    case TextureSampling::SHIFT:
+        flags |= BGFX_SAMPLER_W_SHIFT;
+        break;
+    }
+
+    return flags;
+}
+
+const TextureSettings::Reflection &TextureSettings::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TextureSettings);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uSampling);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (vSampling);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (wSampling);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
 Texture::Texture () noexcept
 {
     block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
@@ -23,7 +111,7 @@ static void ImageReleaseCallback (void * /*unused*/, void *_userData)
     bimg::imageFree (static_cast<bimg::ImageContainer *> (_userData));
 }
 
-Texture::Texture (const uint8_t *_data, const std::uint64_t _size) noexcept
+Texture::Texture (const uint8_t *_data, const std::uint64_t _size, const TextureSettings &_settings) noexcept
 {
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
@@ -55,8 +143,7 @@ Texture::Texture (const uint8_t *_data, const std::uint64_t _size) noexcept
     bgfx::TextureHandle handle = bgfx::createTexture2D (
         static_cast<uint16_t> (imageContainer->m_width), static_cast<uint16_t> (imageContainer->m_height),
         1u < imageContainer->m_numMips, imageContainer->m_numLayers,
-        static_cast<bgfx::TextureFormat::Enum> (imageContainer->m_format), BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
-        memory);
+        static_cast<bgfx::TextureFormat::Enum> (imageContainer->m_format), SettingsToFlags (_settings), memory);
 
     if (!bgfx::isValid (handle))
     {
@@ -67,13 +154,16 @@ Texture::Texture (const uint8_t *_data, const std::uint64_t _size) noexcept
     resultHandle = handle.idx;
 }
 
-Texture::Texture (const uint8_t *_data, std::uint64_t _width, std::uint64_t _height) noexcept
+Texture::Texture (const uint8_t *_data,
+                  std::uint64_t _width,
+                  std::uint64_t _height,
+                  const TextureSettings &_settings) noexcept
 {
     auto &resultHandle = block_cast<uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
     bgfx::TextureHandle handle = bgfx::createTexture2D (
         static_cast<uint16_t> (_width), static_cast<uint16_t> (_height), false, 1u, bgfx::TextureFormat::BGRA8,
-        BGFX_TEXTURE_NONE, bgfx::copy (_data, static_cast<uint32_t> (_width * _height * 4u)));
+        SettingsToFlags (_settings), bgfx::copy (_data, static_cast<uint32_t> (_width * _height * 4u)));
 
     if (!bgfx::isValid (handle))
     {

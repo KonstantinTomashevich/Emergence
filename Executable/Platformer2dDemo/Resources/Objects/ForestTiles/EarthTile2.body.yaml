@@ -1,0 +1,53 @@
+- type: Sprite2dComponent
+  content:
+    objectId: 0
+    spriteId: 0
+    materialInstanceId: ForestTiles
+    uv:
+      min:
+        x: 0.401
+        y: 0.001
+      max:
+        x: 0.599
+        y: 0.249
+    halfSize:
+        x: 0.5
+        y: 0.5
+    layer: 0
+    visibilityMask: 1
+- type: RigidBody2dComponent
+  content:
+    objectId: 0
+    type: 0
+- type: CollisionShape2dComponent
+  content:
+    objectId: 0
+    shapeId: 1
+    translation:
+      x: 63.812054
+      y: 43.286500000000004
+    rotation: 0
+    geometry:
+      type: 0
+      boxHalfExtents:
+        x: 64.2185
+        y: 28.4512
+    materialId: Default
+    trigger: 0
+    collisionGroup: 0
+- type: CollisionShape2dComponent
+  content:
+    objectId: 0
+    shapeId: 2
+    translation:
+      x: 86.16655
+      y: 90.33260000000001
+    rotation: 0
+    geometry:
+      type: 0
+      boxHalfExtents:
+        x: 41.86395
+        y: 19.4078
+    materialId: Default
+    trigger: 0
+    collisionGroup: 0

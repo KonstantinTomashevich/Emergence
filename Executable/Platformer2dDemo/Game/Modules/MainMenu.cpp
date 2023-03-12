@@ -19,7 +19,6 @@
 
 #include <MainMenu/MainMenuInputResponse.hpp>
 
-#include <MainMenuLoading/LevelsConfigurationLoading.hpp>
 #include <MainMenuLoading/LoadingOrchestration.hpp>
 
 #include <Modules/MainMenu.hpp>
@@ -96,7 +95,6 @@ void Initializer (GameState &_gameState,
 
     Emergence::Celerity::PipelineBuilder loadingPipelineBuilder {loadingView};
     loadingPipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
-    LevelsConfigurationLoading::AddToNormalUpdate (loadingPipelineBuilder);
     LevelLoading::AddToNormalUpdate (loadingPipelineBuilder);
     LoadingAnimation::AddToNormalUpdate (loadingPipelineBuilder);
     MainMenuLoadingOrchestration::AddToNormalUpdate (loadingPipelineBuilder, _gameState.ConstructViewDropHandle (),

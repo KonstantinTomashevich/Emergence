@@ -79,13 +79,13 @@ private:
     Transform logicalLocalTransform;
     uint64_t logicalLocalTransformRevision = 0u;
     mutable uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
-    mutable bool logicalLocalTransformChangedSinceLastUpdate = false;
+    mutable bool logicalLocalTransformChangedSinceLastUpdate = true;
     mutable Transform logicalWorldTransformCache;
 
     Transform visualLocalTransform;
     uint64_t visualLocalTransformRevision = 0u;
     mutable uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
-    mutable bool visualLocalTransformChangedSinceLastUpdate = false;
+    mutable bool visualLocalTransformChangedSinceLastUpdate = true;
     mutable Transform visualWorldTransformCache;
 
     bool visualTransformSyncNeeded = false;
