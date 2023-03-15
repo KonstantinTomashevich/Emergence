@@ -392,7 +392,7 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
         }
         else
         {
-            EMERGENCE_LOG (DEBUG, "Skipping assembly of unknown type \"",
+            EMERGENCE_LOG (VERBOSE, "Skipping assembly of unknown type \"",
                            componentDescriptor.GetTypeMapping ().GetName (), "\"...");
         }
     }
