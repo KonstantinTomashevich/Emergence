@@ -24,7 +24,7 @@ let extractLayers = (layerContainer) => {
     return layers;
 };
 
-let saveTile = (file, objectId, tile, locationX, locationY, rotation, layerIndex) => {
+let saveMapObject = (file, objectId, className, locationX, locationY, rotation, layerIndex) => {
     file.writeLine("- type: Transform2dComponent");
     file.writeLine("  content:");
     file.writeLine("    objectId: " + objectId);
@@ -42,7 +42,7 @@ let saveTile = (file, objectId, tile, locationX, locationY, rotation, layerIndex
     file.writeLine("- type: PrototypeComponent")
     file.writeLine("  content:")
     file.writeLine("    objectId: " + objectId);
-    file.writeLine("    descriptorId: " + tile.className);
+    file.writeLine("    descriptorId: " + className);
     file.writeLine("    requestImmediateFixedAssembly: 0");
     file.writeLine("    requestImmediateNormalAssembly: 0");
 };
@@ -238,6 +238,15 @@ tiled.registerMapFormat(
                 folderDependenciesFile.writeLine("- relativePath: \"../../Objects/" + tileset.name + "\"")
             });
 
+            let customDependencyIndex = 0;
+            let resolvedProperties = tilemap.resolvedProperties();
+
+            while (resolvedProperties["CustomDependency" + customDependencyIndex] != null) {
+                folderDependenciesFile.writeLine("- relativePath: \"" +
+                    resolvedProperties["CustomDependency" + customDependencyIndex] + "\"");
+                ++customDependencyIndex;
+            }
+
             folderDependenciesFile.commit();
 
             let levelDeclarationFile = new TextFile(
@@ -258,14 +267,21 @@ tiled.registerMapFormat(
 
                 } else if (layer.isObjectLayer) {
                     layer.objects.forEach(object => {
-                        if (object.tile != null && object.tile.className != null && object.tile.className !== "") {
-                            let locationX = (object.width * 0.5 + object.x + layer.offset.x) / tilemap.tileWidth;
-                            let locationY = (object.height * 0.5 - object.y - layer.offset.y) / tilemap.tileHeight;
+                        let locationX = (object.width * 0.5 + object.x + layer.offset.x) / tilemap.tileWidth;
+                        let locationY = (object.height * 0.5 - object.y - layer.offset.y) / tilemap.tileHeight;
+                        let className = null;
 
-                            saveTile(
+                        if (object.tile != null && object.tile.className != null && object.tile.className !== "") {
+                           className = object.tile.className;
+                        } else if (object.className != null && object.className !== "") {
+                            className = object.className;
+                        }
+
+                        if (className != null && className !== "") {
+                            saveMapObject(
                                 levelBodyFile,
                                 objectId,
-                                object.tile,
+                                className,
                                 locationX,
                                 locationY,
                                 object.rotation,
@@ -282,10 +298,10 @@ tiled.registerMapFormat(
                                 let locationX = x + 0.5 + layer.offset.x / tilemap.tileWidth;
                                 let locationY = -y - 0.5 - layer.offset.y / tilemap.tileHeight;
 
-                                saveTile(
+                                saveMapObject(
                                     levelBodyFile,
                                     objectId,
-                                    tile,
+                                    tile.className,
                                     locationX,
                                     locationY,
                                     0.0,
