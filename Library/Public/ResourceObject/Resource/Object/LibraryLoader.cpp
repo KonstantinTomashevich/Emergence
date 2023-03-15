@@ -15,6 +15,7 @@
 #include <StandardLayout/MappingRegistration.hpp>
 
 #include <SyntaxSugar/OnScopeExit.hpp>
+#include <SyntaxSugar/Time.hpp>
 
 namespace Emergence::Resource::Object
 {
@@ -46,6 +47,7 @@ void LibraryLoader::Begin (const Container::Vector<LibraryLoadingTask> &_loading
     Job::Dispatcher::Global ().Dispatch (
         [this] ()
         {
+            loadingStartTimeNs = Time::NanosecondsSinceStartup ();
             FormFolderList ();
         });
 }
@@ -318,6 +320,9 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
     if (_indexInList >= objectList.size ())
     {
         loading.clear (std::memory_order_release);
+        const uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
+        EMERGENCE_LOG (INFO, "Resource::Object::LibraryLoader: Library loading took ",
+                       static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
         return;
     }
 
@@ -331,22 +336,22 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
                 });
         });
 
-    ObjectListItem &objectItem = objectList[_indexInList];
-    auto objectDataIterator = currentLibrary.objects.find (objectItem.name);
+    auto objectDataIterator = currentLibrary.objects.find (objectList[_indexInList].name);
 
     if (objectDataIterator == currentLibrary.objects.end ())
     {
         EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Object \"",
-                       objectItem.name, "\" is found in object list, but its declaration is not found in library.");
+                       objectList[_indexInList].name,
+                       "\" is found in object list, but its declaration is not found in library.");
         return;
     }
 
     Library::ObjectData &objectData = objectDataIterator->second;
-    std::filesystem::path binaryBodyPath {
-        EMERGENCE_BUILD_STRING (objectItem.folder, "/", objectItem.name, BINARY_OBJECT_BODY_SUFFIX)};
+    std::filesystem::path binaryBodyPath {EMERGENCE_BUILD_STRING (
+        objectList[_indexInList].folder, "/", objectList[_indexInList].name, BINARY_OBJECT_BODY_SUFFIX)};
 
-    std::filesystem::path yamlBodyPath {
-        EMERGENCE_BUILD_STRING (objectItem.folder, "/", objectItem.name, YAML_OBJECT_BODY_SUFFIX)};
+    std::filesystem::path yamlBodyPath {EMERGENCE_BUILD_STRING (
+        objectList[_indexInList].folder, "/", objectList[_indexInList].name, YAML_OBJECT_BODY_SUFFIX)};
 
     Container::Vector<StandardLayout::Patch> changelist {GetAllocationGroup ()};
     if (std::filesystem::is_regular_file (binaryBodyPath))
@@ -394,8 +399,8 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
     }
     else
     {
-        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find body for object \"", objectItem.name,
-                       "\" in folder \"", objectItem.folder, "\".");
+        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find body for object \"",
+                       objectList[_indexInList].name, "\" in folder \"", objectList[_indexInList].folder, "\".");
         return;
     }
 
@@ -404,9 +409,9 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
         auto parentObjectDataIterator = currentLibrary.objects.find (objectData.declaration.parent);
         if (parentObjectDataIterator == currentLibrary.objects.end ())
         {
-            EMERGENCE_LOG (ERROR,
-                           "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
-                           objectItem.name, "\", which is \"", objectData.declaration.parent, "\", is not found.");
+            EMERGENCE_LOG (
+                ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
+                objectList[_indexInList].name, "\", which is \"", objectData.declaration.parent, "\", is not found.");
             return;
         }
 
@@ -442,7 +447,7 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
                         {
                             EMERGENCE_LOG (ERROR,
                                            "Resource::Object::LibraryLoader: Unable to find injected sub object \"",
-                                           dependency, "\" for object \"", objectItem.name, "\".");
+                                           dependency, "\" for object \"", objectList[_indexInList].name, "\".");
                         }
 
                         break;

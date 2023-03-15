@@ -125,6 +125,7 @@ private:
 
     TypeManifest typeManifest;
     Serialization::FieldNameLookupCache declarationFieldLookupCache {Declaration::Reflect ().mapping};
+    uint64_t loadingStartTimeNs = 0u;
 };
 
 /// \brief Item of folder dependency list.
