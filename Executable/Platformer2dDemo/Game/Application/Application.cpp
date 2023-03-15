@@ -26,6 +26,8 @@
 
 #include <SyntaxSugar/Time.hpp>
 
+#undef ERROR
+
 using namespace Emergence::Memory::Literals;
 
 static Emergence::Memory::Profiler::EventObserver StartMemoryRecording (
@@ -40,7 +42,10 @@ Application::Application () noexcept
     : memoryEventOutput ("MemoryRecording.track", std::ios::binary),
       memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput))
 {
+    Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
+                                        {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
     Emergence::SetIsAssertInteractive (true);
+
     if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         sdlTicksAfterInit = SDL_GetTicks64 ();
