@@ -53,10 +53,16 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
         }
     }
 
+#ifdef EMERGENCE_ASSERT_ENABLED
     std::size_t resolvedTasksCount = 0u;
+#endif
+
     while (!resolvedTasks.empty ())
     {
+#ifdef EMERGENCE_ASSERT_ENABLED
         ++resolvedTasksCount;
+#endif
+
         std::size_t taskIndex = resolvedTasks.back ();
         resolvedTasks.pop_back ();
 

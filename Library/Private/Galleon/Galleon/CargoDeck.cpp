@@ -30,6 +30,7 @@ CargoDeck::~CargoDeck () noexcept
     // Assert that all containers are either detached or exist only due to garbage collection disabled flag.
     // We do not need to detach them as they'll be automatically cleared by typed pool destructors.
 
+#ifdef EMERGENCE_ASSERT_ENABLED
     for (SingletonContainer &container : singleton)
     {
         EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
@@ -47,6 +48,7 @@ CargoDeck::~CargoDeck () noexcept
         EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
         EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
     }
+#endif
 }
 
 Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)
