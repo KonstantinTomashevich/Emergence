@@ -8,8 +8,8 @@
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 
-#include <Configuration/VisibilityMask.hpp>
 #include <Configuration/Localization.hpp>
+#include <Configuration/VisibilityMask.hpp>
 
 #include <Framework/GameState.hpp>
 
@@ -19,13 +19,17 @@
 #include <LoadingAnimation/LoadingAnimation.hpp>
 #include <LoadingAnimation/LoadingAnimationSingleton.hpp>
 
+#include <Log/Log.hpp>
+
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 #include <PlatformerLoading/PlatformerLoadingSingleton.hpp>
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <Root/LevelsConfigurationSingleton.hpp>
 #include <Root/LevelSelectionSingleton.hpp>
+#include <Root/LevelsConfigurationSingleton.hpp>
+
+#include <SyntaxSugar/Time.hpp>
 
 namespace PlatformerLoadingOrchestration
 {
@@ -94,11 +98,19 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
 
 void LoadingOrchestrator::Execute () noexcept
 {
+    auto platformerLoadingCursor = modifyPlatformerLoading.Execute ();
+    auto *platformerLoading = static_cast<PlatformerLoadingSingleton *> (*platformerLoadingCursor);
+
+    if (platformerLoading->loadingStartTimeNs == 0u)
+    {
+        platformerLoading->loadingStartTimeNs = Emergence::Time::NanosecondsSinceStartup ();
+    }
+
     auto worldCursor = modifyWorld.Execute ();
     auto *world = static_cast<Emergence::Celerity::WorldSingleton *> (*worldCursor);
-    
-    auto levelSelectionCursor = fetchLevelSelection.Execute();
-    const auto *levelSelection = static_cast<const LevelSelectionSingleton *>(*levelSelectionCursor);
+
+    auto levelSelectionCursor = fetchLevelSelection.Execute ();
+    const auto *levelSelection = static_cast<const LevelSelectionSingleton *> (*levelSelectionCursor);
 
     auto levelLoadingCursor = modifyLevelLoading.Execute ();
     auto *levelLoading = static_cast<LevelLoadingSingleton *> (*levelLoadingCursor);
@@ -119,9 +131,6 @@ void LoadingOrchestrator::Execute () noexcept
     auto levelsConfigurationCursor = fetchLevelsConfiguration.Execute ();
     const auto *levelsConfiguration = static_cast<const LevelsConfigurationSingleton *> (*levelsConfigurationCursor);
 
-    auto platformerLoadingCursor = modifyPlatformerLoading.Execute ();
-    auto *platformerLoading = static_cast<PlatformerLoadingSingleton *> (*platformerLoadingCursor);
-
     auto assetManagerCursor = fetchAssetManager.Execute ();
     const auto *assetManager = static_cast<const Emergence::Celerity::AssetManagerSingleton *> (*assetManagerCursor);
     platformerLoading->assetsLoaded = assetManager->assetsLeftToLoad == 0u;
@@ -136,6 +145,13 @@ void LoadingOrchestrator::Execute () noexcept
         world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;
         SpawnViewports (world);
         viewDropHandle.RequestViewDrop (ownerView);
+
+        const uint64_t loadingTimeNs =
+            Emergence::Time::NanosecondsSinceStartup () - platformerLoading->loadingStartTimeNs;
+        platformerLoading->loadingStartTimeNs = 0u;
+
+        EMERGENCE_LOG (INFO, "PlatformerLoadingOrchestration: Scene loading took ",
+                       static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
     }
     else
     {
