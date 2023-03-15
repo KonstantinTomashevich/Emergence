@@ -1,16 +1,5 @@
 - type: Transform2dComponent
   content:
-    objectId: 1
-    parentObjectId: 0
-
-- type: Camera2dComponent
-  content:
-    objectId: 1
-    halfOrthographicSize: 3.75
-    visibilityMask: 1
-
-- type: Transform2dComponent
-  content:
     objectId: 2
     parentObjectId: 0
     logicalLocalTransform:

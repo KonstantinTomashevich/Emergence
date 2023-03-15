@@ -25,11 +25,11 @@ struct Sprite2dComponent final
     Memory::UniqueString materialInstanceId;
 
     /// \brief Sprite UV-mapping used for texture projection.
-    Math::AxisAlignedBox2d uv;
+    Math::AxisAlignedBox2d uv {{0.0f, 0.0f}, {1.0f, 1.0f}};
 
     /// \brief Half size of the sprite.
     /// \details We expect half size in order to make geometry generation during rendering a little bit faster.
-    Math::Vector2f halfSize;
+    Math::Vector2f halfSize {0.5f, 0.5f};
 
     /// \brief Sprites are sorted by their layer.
     /// \details Sprites with higher value appear on top of the sprites with lower value.
