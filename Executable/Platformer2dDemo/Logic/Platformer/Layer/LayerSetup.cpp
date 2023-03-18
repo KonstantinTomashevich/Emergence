@@ -6,8 +6,8 @@
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
-#include <Platformer/LayerSetup.hpp>
-#include <Platformer/LayerSetupComponent.hpp>
+#include <Platformer/Layer/LayerSetup.hpp>
+#include <Platformer/Layer/LayerSetupComponent.hpp>
 
 namespace LayerSetup
 {

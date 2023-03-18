@@ -18,7 +18,7 @@
 
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
-#include <Platformer/LayerSetupComponent.hpp>
+#include <Platformer/Layer/LayerSetupComponent.hpp>
 
 Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexcept
 {

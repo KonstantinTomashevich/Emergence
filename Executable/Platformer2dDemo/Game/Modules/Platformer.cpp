@@ -20,7 +20,7 @@
 
 #include <Modules/Platformer.hpp>
 
-#include <Platformer/LayerSetup.hpp>
+#include <Platformer/Layer/LayerSetup.hpp>
 
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 

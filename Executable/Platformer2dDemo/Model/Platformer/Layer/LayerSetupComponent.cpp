@@ -1,4 +1,4 @@
-#include <Platformer/LayerSetupComponent.hpp>
+#include <Platformer/Layer/LayerSetupComponent.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

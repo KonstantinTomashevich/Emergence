@@ -21,7 +21,7 @@
 
 #include <Configuration/AssemblyConfiguration.hpp>
 
-#include <Platformer/LayerSetupComponent.hpp>
+#include <Platformer/Layer/LayerSetupComponent.hpp>
 
 static Emergence::Celerity::UniqueId GenerateShapeId (const void *_argument)
 {
