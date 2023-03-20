@@ -20,6 +20,8 @@
 
 #include <Modules/Root.hpp>
 
+#include <Platformer/Events.hpp>
+
 #include <Root/LevelSelectionSingleton.hpp>
 #include <Root/LevelsConfigurationLoading.hpp>
 #include <Root/LevelsConfigurationSingleton.hpp>
@@ -66,6 +68,7 @@ void Initializer (GameState & /*unused*/,
         Emergence::Celerity::RegisterTransform2dEvents (registrar);
         Emergence::Celerity::RegisterTransformCommonEvents (registrar);
         Emergence::Celerity::RegisterUIEvents (registrar);
+        RegisterPlatformerEvents (registrar);
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&_rootView};

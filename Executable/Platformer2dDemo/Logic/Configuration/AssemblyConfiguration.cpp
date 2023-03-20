@@ -22,6 +22,7 @@
 #include <Configuration/AssemblyConfiguration.hpp>
 
 #include <Platformer/Layer/LayerSetupComponent.hpp>
+#include <Platformer/Spawn/SpawnComponent.hpp>
 
 static Emergence::Celerity::UniqueId GenerateShapeId (const void *_argument)
 {
@@ -160,6 +161,11 @@ Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept
     layerSetupComponent.type = LayerSetupComponent::Reflect ().mapping;
     layerSetupComponent.keys.emplace_back () = {LayerSetupComponent::Reflect ().objectId,
                                                 Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+
+    Emergence::Celerity::TypeDescriptor &spawnComponent = types.emplace_back ();
+    spawnComponent.type = SpawnComponent::Reflect ().mapping;
+    spawnComponent.keys.emplace_back () = {SpawnComponent::Reflect ().objectId,
+                                           Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     return types;
 }

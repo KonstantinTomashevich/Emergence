@@ -19,6 +19,7 @@
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
 #include <Platformer/Layer/LayerSetupComponent.hpp>
+#include <Platformer/Spawn/SpawnComponent.hpp>
 
 Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexcept
 {
@@ -67,6 +68,7 @@ Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexc
         typeManifest.Register (Emergence::Celerity::WindowControl::Reflect ().mapping,
                                {Emergence::Celerity::WindowControl::Reflect ().nodeId});
         typeManifest.Register (LayerSetupComponent::Reflect ().mapping, {LayerSetupComponent::Reflect ().objectId});
+        typeManifest.Register (SpawnComponent::Reflect ().mapping, {SpawnComponent::Reflect ().objectId});
         return typeManifest;
     }();
 

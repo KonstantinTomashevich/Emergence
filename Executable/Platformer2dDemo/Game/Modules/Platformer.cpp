@@ -4,13 +4,13 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Locale/Localization.hpp>
+#include <Celerity/Physics2d/Simulation.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/UI/UI.hpp>
-#include <Celerity/Physics2d/Simulation.hpp>
 
 #include <Configuration/AssemblyConfiguration.hpp>
 
@@ -21,6 +21,7 @@
 #include <Modules/Platformer.hpp>
 
 #include <Platformer/Layer/LayerSetup.hpp>
+#include <Platformer/Spawn/Spawn.hpp>
 
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 
@@ -60,6 +61,7 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::Input::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::Physics2dSimulation::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (mainPipelineBuilder);
+    Spawn::AddToFixedUpdate (mainPipelineBuilder);
 
     mainPipelineBuilder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,
                                                  Emergence::Celerity::Physics2dSimulation::Checkpoint::STARTED);
