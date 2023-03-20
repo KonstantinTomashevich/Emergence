@@ -353,6 +353,14 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
         }
     };
 
+    auto clearIntermediateIdReplacement = [this] ()
+    {
+        for (auto &keyState : keyStates)
+        {
+            keyState.idReplacement.clear ();
+        }
+    };
+
     const bool immediate = (isFixed ? _assembly->fixedAssemblyState : _assembly->normalAssemblyState) ==
                            AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY;
     GetObjectIdKeyState ().idReplacement.emplace (ASSEMBLY_ROOT_OBJECT_ID, _assembly->objectId);
@@ -400,6 +408,7 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
     if (index < descriptor->components.size ())
     {
         saveIntermediateIdReplacement ();
+        clearIntermediateIdReplacement ();
         return AssemblyExecutionResult::OUT_OF_TIME;
     }
 
@@ -416,11 +425,8 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
     }
 
     (isFixed ? _assembly->fixedAssemblyState : _assembly->normalAssemblyState) = AssemblyState::ASSEMBLED;
-    for (auto &keyState : keyStates)
-    {
-        keyState.idReplacement.clear ();
-    }
-
+    clearIntermediateIdReplacement ();
+    
     auto eventCursor = insertFinishedEvent.Execute ();
     void *event = ++eventCursor;
     *static_cast<UniqueId *> (event) = _assembly->objectId;
