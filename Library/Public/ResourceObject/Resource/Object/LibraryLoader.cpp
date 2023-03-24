@@ -432,25 +432,28 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
     {
         for (const StandardLayout::Patch &patch : objectData.body.fullChangelist)
         {
-            if (patch.GetTypeMapping () == typeManifest.GetInjectorType ())
+            for (const DependencyInjectionInfo &injection : typeManifest.GetInjections ())
             {
-                for (const StandardLayout::Patch::ChangeInfo &change : patch)
+                if (patch.GetTypeMapping () == injection.injectorType)
                 {
-                    if (change.field == typeManifest.GetInjectorIdField ())
+                    for (const StandardLayout::Patch::ChangeInfo &change : patch)
                     {
-                        const Memory::UniqueString dependency =
-                            *static_cast<const Memory::UniqueString *> (change.newValue);
-
-                        // We don't mark injected sub objects as dependencies, because they are logically
-                        // separate objects, and they should not be thrown away after full changelist resolution.
-                        if (!FindAndLoadDeclaration (dependency, false))
+                        if (change.field == injection.injectorIdField)
                         {
-                            EMERGENCE_LOG (ERROR,
-                                           "Resource::Object::LibraryLoader: Unable to find injected sub object \"",
-                                           dependency, "\" for object \"", objectList[_indexInList].name, "\".");
-                        }
+                            const Memory::UniqueString dependency =
+                                *static_cast<const Memory::UniqueString *> (change.newValue);
 
-                        break;
+                            // We don't mark injected sub objects as dependencies, because they are logically
+                            // separate objects, and they should not be thrown away after full changelist resolution.
+                            if (!FindAndLoadDeclaration (dependency, false))
+                            {
+                                EMERGENCE_LOG (ERROR,
+                                               "Resource::Object::LibraryLoader: Unable to find injected sub object \"",
+                                               dependency, "\" for object \"", objectList[_indexInList].name, "\".");
+                            }
+
+                            break;
+                        }
                     }
                 }
             }

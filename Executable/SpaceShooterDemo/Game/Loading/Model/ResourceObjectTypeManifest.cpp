@@ -17,8 +17,8 @@
 Emergence::Resource::Object::TypeManifest PrepareResourceObjectTypeManifest () noexcept
 {
     Emergence::Resource::Object::TypeManifest typeManifest;
-    typeManifest.InitInjection (Emergence::Celerity::PrototypeComponent::Reflect ().mapping,
-                                Emergence::Celerity::PrototypeComponent::Reflect ().objectId);
+    typeManifest.AddInjection ({Emergence::Celerity::PrototypeComponent::Reflect ().mapping,
+                                Emergence::Celerity::PrototypeComponent::Reflect ().objectId});
 
     typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});
     typeManifest.Register (DamageDealerComponent::Reflect ().mapping, {DamageDealerComponent::Reflect ().objectId});

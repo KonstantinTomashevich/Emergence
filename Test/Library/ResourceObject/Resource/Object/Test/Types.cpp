@@ -68,11 +68,13 @@ const TypeManifest &GetTypeManifest () noexcept
     static TypeManifest manifest = [] ()
     {
         TypeManifest typeManifest;
-        typeManifest.InitInjection (InjectionComponent::Reflect().mapping, InjectionComponent::Reflect().injectionId);
+        typeManifest.AddInjection (
+            {InjectionComponent::Reflect ().mapping, InjectionComponent::Reflect ().injectionId});
+
         typeManifest.Register (FirstComponent::Reflect ().mapping, {FirstComponent::Reflect ().objectId});
         typeManifest.Register (SecondComponent::Reflect ().mapping, {SecondComponent::Reflect ().objectId});
         typeManifest.Register (MultiComponent::Reflect ().mapping, {MultiComponent::Reflect ().instanceId});
-        typeManifest.Register (InjectionComponent::Reflect().mapping, {MultiComponent::Reflect ().objectId});
+        typeManifest.Register (InjectionComponent::Reflect ().mapping, {MultiComponent::Reflect ().objectId});
         return typeManifest;
     }();
 

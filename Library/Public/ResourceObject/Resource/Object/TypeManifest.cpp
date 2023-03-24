@@ -4,11 +4,9 @@
 
 namespace Emergence::Resource::Object
 {
-void TypeManifest::InitInjection (const StandardLayout::Mapping &_injectorType,
-                                                     StandardLayout::FieldId _injectorIdField) noexcept
+void TypeManifest::AddInjection (DependencyInjectionInfo _info) noexcept
 {
-    injectorType = _injectorType;
-    injectorIdField = _injectorIdField;
+    injections.emplace_back (std::move (_info));
 }
 
 void TypeManifest::Register (const StandardLayout::Mapping &_mapping, const TypeInfo &_info) noexcept
@@ -35,13 +33,8 @@ const Container::HashMap<StandardLayout::Mapping, TypeInfo> &TypeManifest::GetMa
     return infos;
 }
 
-const StandardLayout::Mapping &TypeManifest::GetInjectorType () const noexcept
+const Container::Vector<DependencyInjectionInfo> &TypeManifest::GetInjections () const noexcept
 {
-    return injectorType;
-}
-
-StandardLayout::FieldId TypeManifest::GetInjectorIdField () const noexcept
-{
-    return injectorIdField;
+    return injections;
 }
 } // namespace Emergence::Resource::Object
