@@ -115,6 +115,8 @@ private:
 
     void UpdateConfiguration (const PhysicsWorld2dSingleton *_physicsWorld) noexcept;
 
+    static void UpdateBox2dWorld (const PhysicsWorld2dSingleton *_physicsWorld) noexcept;
+
     ModifySingletonQuery modifyBox2d;
     FetchSingletonQuery fetchPhysicsWorld;
     FetchSequenceQuery fetchConfigurationChangedEvents;
@@ -155,6 +157,7 @@ void WorldUpdater::EnsurePhysicsWorldReady (const PhysicsWorld2dSingleton *_phys
 
         SetBox2dLogger (Box2dLog);
         box2dWorld = new (b2Alloc (sizeof (b2World))) b2World {ToBox2d (_physicsWorld->gravity)};
+        UpdateBox2dWorld (_physicsWorld);
     }
 }
 
@@ -166,6 +169,11 @@ void WorldUpdater::UpdateConfiguration (const PhysicsWorld2dSingleton *_physicsW
         return;
     }
 
+    UpdateBox2dWorld (_physicsWorld);
+}
+
+void WorldUpdater::UpdateBox2dWorld (const PhysicsWorld2dSingleton *_physicsWorld) noexcept
+{
     auto *box2dWorld = block_cast<b2World *> (_physicsWorld->implementationBlock);
     box2dWorld->SetGravity (ToBox2d (_physicsWorld->gravity));
 }
