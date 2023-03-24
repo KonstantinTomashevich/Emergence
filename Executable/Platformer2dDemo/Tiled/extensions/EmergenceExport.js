@@ -169,16 +169,18 @@ tiled.registerTilesetFormat(
                         tileBodyFile.writeLine("    objectId: 0");
                         tileBodyFile.writeLine("    shapeId: " + collisionShape.id);
                         tileBodyFile.writeLine("    translation:");
-                        tileBodyFile.writeLine("      x: " + (collisionShape.x + collisionShape.width / 2.0));
-                        tileBodyFile.writeLine("      y: " + (collisionShape.y + collisionShape.height / 2.0));
+                        tileBodyFile.writeLine("      x: " +
+                            ((collisionShape.x + collisionShape.width / 2.0) / tile.width - 0.5));
+                        tileBodyFile.writeLine("      y: " +
+                            ((collisionShape.y + collisionShape.height / 2.0) / tile.height - 0.5));
                         tileBodyFile.writeLine("    rotation: " + collisionShape.rotation);
                         tileBodyFile.writeLine("    geometry:");
 
                         if (collisionShape.shape === MapObject.Rectangle) {
                             tileBodyFile.writeLine("      type: 0");
                             tileBodyFile.writeLine("      boxHalfExtents:");
-                            tileBodyFile.writeLine("        x: " + collisionShape.width / 2.0);
-                            tileBodyFile.writeLine("        y: " + collisionShape.height / 2.0);
+                            tileBodyFile.writeLine("        x: " + (collisionShape.width / 2.0) / tile.width);
+                            tileBodyFile.writeLine("        y: " + (collisionShape.height / 2.0) / tile.height);
 
                         } else if (collisionShape.shape === MapObject.Ellipse) {
                             if (collisionShape.width !== collisionShape.height) {
@@ -272,7 +274,7 @@ tiled.registerMapFormat(
                         let className = null;
 
                         if (object.tile != null && object.tile.className != null && object.tile.className !== "") {
-                           className = object.tile.className;
+                            className = object.tile.className;
                         } else if (object.className != null && object.className !== "") {
                             className = object.className;
                         }

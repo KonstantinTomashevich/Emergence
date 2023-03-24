@@ -26,8 +26,9 @@ Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexc
     static Emergence::Resource::Object::TypeManifest manifest = [] ()
     {
         Emergence::Resource::Object::TypeManifest typeManifest;
-        typeManifest.InitInjection (Emergence::Celerity::PrototypeComponent::Reflect ().mapping,
-                                    Emergence::Celerity::PrototypeComponent::Reflect ().descriptorId);
+        typeManifest.AddInjection ({Emergence::Celerity::PrototypeComponent::Reflect ().mapping,
+                                    Emergence::Celerity::PrototypeComponent::Reflect ().descriptorId});
+        typeManifest.AddInjection ({SpawnComponent::Reflect ().mapping, SpawnComponent::Reflect ().prototypeId});
 
         typeManifest.Register (Emergence::Celerity::ButtonControl::Reflect ().mapping,
                                {Emergence::Celerity::ButtonControl::Reflect ().nodeId});

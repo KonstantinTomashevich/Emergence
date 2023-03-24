@@ -24,14 +24,14 @@
     objectId: 0
     shapeId: 1
     translation:
-      x: 64
-      y: 64
+      x: 0
+      y: 0
     rotation: 0
     geometry:
       type: 0
       boxHalfExtents:
-        x: 64
-        y: 64
+        x: 0.5
+        y: 0.5
     materialId: Default
-    trigger: 1
+    trigger: 0
     collisionGroup: 0

@@ -12,6 +12,8 @@ Emergence::Memory::UniqueString GetLocalizationPath () noexcept;
 
 Emergence::Memory::UniqueString GetObjectsPath () noexcept;
 
+Emergence::Memory::UniqueString GetResourceConfigRootPath () noexcept;
+
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetFontPaths () noexcept;
 
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetMaterialInstancePaths () noexcept;

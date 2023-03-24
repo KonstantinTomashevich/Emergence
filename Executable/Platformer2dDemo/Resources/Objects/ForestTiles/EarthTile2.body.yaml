@@ -24,14 +24,14 @@
     objectId: 0
     shapeId: 1
     translation:
-      x: 63.812054
-      y: 43.286500000000004
+      x: -0.0014683281249999736
+      y: -0.16182421874999997
     rotation: 0
     geometry:
       type: 0
       boxHalfExtents:
-        x: 64.2185
-        y: 28.4512
+        x: 0.50170703125
+        y: 0.222275
     materialId: Default
     trigger: 0
     collisionGroup: 0
@@ -40,14 +40,14 @@
     objectId: 0
     shapeId: 2
     translation:
-      x: 86.16655
-      y: 90.33260000000001
+      x: 0.173176171875
+      y: 0.2057234375000001
     rotation: 0
     geometry:
       type: 0
       boxHalfExtents:
-        x: 41.86395
-        y: 19.4078
+        x: 0.327062109375
+        y: 0.1516234375
     materialId: Default
     trigger: 0
     collisionGroup: 0

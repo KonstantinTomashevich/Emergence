@@ -2,36 +2,36 @@
   content:
     objectId: 0
     spriteId: 0
-    materialInstanceId: ForestTiles
+    materialInstanceId: WarriorIdle
     uv:
       min:
-        x: 0.401
-        y: 0.751
+        x: 0.0
+        y: 0.0
       max:
-        x: 0.599
-        y: 0.999
+        x: 0.16667
+        y: 1.0
     halfSize:
-        x: 0.5
-        y: 0.5
+      x: 1.343
+      y: 1.0
     layer: 0
     visibilityMask: 1
 - type: RigidBody2dComponent
   content:
     objectId: 0
-    type: 0
+    type: 2
 - type: CollisionShape2dComponent
   content:
     objectId: 0
     shapeId: 1
     translation:
       x: 0
-      y: 0
+      y: -0.25
     rotation: 0
     geometry:
       type: 0
       boxHalfExtents:
-        x: 0.5
-        y: 0.5
+        x: 0.4
+        y: 0.55
     materialId: Default
     trigger: 0
     collisionGroup: 0

@@ -26,6 +26,12 @@ Emergence::Memory::UniqueString GetObjectsPath () noexcept
     return path;
 }
 
+Emergence::Memory::UniqueString GetResourceConfigRootPath () noexcept
+{
+    static const Emergence::Memory::UniqueString path {"../GameResources/Configuration"};
+    return path;
+}
+
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetFontPaths () noexcept
 {
     static const Emergence::Container::Vector<Emergence::Memory::UniqueString> paths = [] ()

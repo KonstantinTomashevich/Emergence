@@ -20,7 +20,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -35,7 +35,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -44,7 +44,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -53,7 +53,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="-0.609669" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -62,7 +62,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -76,7 +76,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -85,7 +85,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -100,7 +100,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -118,7 +118,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -127,7 +127,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -136,7 +136,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -145,7 +145,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>
@@ -154,7 +154,7 @@
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">
     <properties>
-     <property name="Trigger" type="bool" value="true"/>
+     <property name="Trigger" type="bool" value="false"/>
     </properties>
    </object>
   </objectgroup>

@@ -1,10 +1,12 @@
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Locale/LocaleSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/Physics2d/DynamicsMaterial2d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
+#include <Celerity/Resource/Config/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 
@@ -59,6 +61,9 @@ private:
     Emergence::Celerity::ModifySingletonQuery modifyPlatformerLoading;
     Emergence::Celerity::ModifySingletonQuery modifyWorld;
 
+    Emergence::Celerity::InsertShortTermQuery insertConfigRequest;
+    Emergence::Celerity::FetchSequenceQuery fetchConfigResponse;
+
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
     Emergence::Celerity::InsertLongTermQuery insertViewport;
@@ -80,6 +85,9 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
       modifyLocale (MODIFY_SINGLETON (Emergence::Celerity::LocaleSingleton)),
       modifyPlatformerLoading (MODIFY_SINGLETON (PlatformerLoadingSingleton)),
       modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
+
+      insertConfigRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceConfigRequest)),
+      fetchConfigResponse (FETCH_SEQUENCE (Emergence::Celerity::ResourceConfigLoadedResponse)),
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
@@ -106,6 +114,25 @@ void LoadingOrchestrator::Execute () noexcept
         platformerLoading->loadingStartTimeNs = Emergence::Time::NanosecondsSinceStartup ();
     }
 
+    if (!platformerLoading->dynamicsMaterialsLoadingRequested)
+    {
+        auto requestCursor = insertConfigRequest.Execute ();
+        auto *request = static_cast<Emergence::Celerity::ResourceConfigRequest *> (++requestCursor);
+        request->type = Emergence::Celerity::DynamicsMaterial2d::Reflect ().mapping;
+        platformerLoading->dynamicsMaterialsLoadingRequested = true;
+    }
+
+    for (auto responseCursor = fetchConfigResponse.Execute ();
+         const auto *response =
+             static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*responseCursor);
+         ++responseCursor)
+    {
+        if (response->type == Emergence::Celerity::DynamicsMaterial2d::Reflect ().mapping)
+        {
+            platformerLoading->dynamicsMaterialsLoaded = true;
+        }
+    }
+
     auto worldCursor = modifyWorld.Execute ();
     auto *world = static_cast<Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
@@ -115,9 +142,13 @@ void LoadingOrchestrator::Execute () noexcept
     auto levelLoadingCursor = modifyLevelLoading.Execute ();
     auto *levelLoading = static_cast<LevelLoadingSingleton *> (*levelLoadingCursor);
 
-    if (!*levelLoading->levelName && *levelSelection->selectedLevelName)
+    // Load level only after all configs are loaded.
+    if (platformerLoading->dynamicsMaterialsLoaded)
     {
-        levelLoading->levelName = levelSelection->selectedLevelName;
+        if (!*levelLoading->levelName && *levelSelection->selectedLevelName)
+        {
+            levelLoading->levelName = levelSelection->selectedLevelName;
+        }
     }
 
     auto localeCursor = modifyLocale.Execute ();
@@ -139,7 +170,8 @@ void LoadingOrchestrator::Execute () noexcept
     auto *loadingAnimation = static_cast<LoadingAnimationSingleton *> (*loadingAnimationCursor);
 
     if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE &&
-        platformerLoading->assetsLoaded && locale->loadedLocale == locale->targetLocale)
+        platformerLoading->assetsLoaded && platformerLoading->dynamicsMaterialsLoaded &&
+        locale->loadedLocale == locale->targetLocale)
     {
         loadingAnimation->required = false;
         world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;

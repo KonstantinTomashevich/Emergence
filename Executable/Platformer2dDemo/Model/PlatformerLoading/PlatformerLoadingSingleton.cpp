@@ -8,6 +8,8 @@ const PlatformerLoadingSingleton::Reflection &PlatformerLoadingSingleton::Reflec
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (PlatformerLoadingSingleton);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetsLoaded);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (dynamicsMaterialsLoaded);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (dynamicsMaterialsLoadingRequested);
         EMERGENCE_MAPPING_REGISTER_REGULAR (loadingStartTimeNs);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

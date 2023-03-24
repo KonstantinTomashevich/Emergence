@@ -1,7 +1,7 @@
 - type: SpawnComponent
   content:
     objectId: 0
-    prototypeId: Crate
+    prototypeId: Warrior
     spawnDelayNs: 2000000000
     maxSpawnedCount: 1
     respawn: 1

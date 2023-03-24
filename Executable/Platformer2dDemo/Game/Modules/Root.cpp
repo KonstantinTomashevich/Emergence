@@ -6,16 +6,20 @@
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Asset/UI/FontManagement.hpp>
 #include <Celerity/Locale/Localization.hpp>
+#include <Celerity/Physics2d/Events.hpp>
 #include <Celerity/Render/2d/AssetUsage.hpp>
 #include <Celerity/Render/2d/Events.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Resource/Config/Loading.hpp>
+#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
 #include <Celerity/UI/Events.hpp>
 
 #include <Configuration/Paths.hpp>
+#include <Configuration/ResourceConfigTypeMeta.hpp>
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
 #include <Modules/Root.hpp>
@@ -63,6 +67,7 @@ void Initializer (GameState & /*unused*/,
         Emergence::Celerity::EventRegistrar registrar {&_world};
         Emergence::Celerity::RegisterAssemblyEvents (registrar);
         assetReferenceBindingEventMap = Emergence::Celerity::RegisterAssetEvents (registrar, assetReferenceBindingList);
+        Emergence::Celerity::RegisterPhysicsEvents (registrar);
         Emergence::Celerity::RegisterRender2dEvents (registrar);
         Emergence::Celerity::RegisterRenderFoundationEvents (registrar);
         Emergence::Celerity::RegisterTransform2dEvents (registrar);
@@ -84,6 +89,10 @@ void Initializer (GameState & /*unused*/,
         pipelineBuilder, GetMaterialInstancePaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
         pipelineBuilder, GetMaterialPaths (), GetShadersPaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, MAX_LOADING_TIME_NS,
+                                                                      GetResourceConfigTypeMeta ());
+    Emergence::Celerity::ResourceConfigPathMappingLoading::AddToLoadingPipeline (
+        pipelineBuilder, *GetResourceConfigRootPath (), GetResourceConfigTypeMeta ());
     Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
                                                                       GetResourceObjectTypeManifest ());
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (), MAX_LOADING_TIME_NS,
