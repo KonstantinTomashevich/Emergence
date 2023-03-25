@@ -145,6 +145,9 @@ private:
     InsertLongTermQuery insertSprite;
     ModifyValueQuery modifySprite;
 
+    InsertLongTermQuery insertDebugShape;
+    ModifyValueQuery modifyDebugShape;
+
     std::size_t currentPointIndex = 0u;
     Scenario scenario;
     uint32_t framesWaiting = 0u;
@@ -169,6 +172,9 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
 
       insertSprite (INSERT_LONG_TERM (Sprite2dComponent)),
       modifySprite (MODIFY_VALUE_1F (Sprite2dComponent, spriteId)),
+
+      insertDebugShape (INSERT_LONG_TERM (DebugShape2dComponent)),
+      modifyDebugShape (MODIFY_VALUE_1F (DebugShape2dComponent, debugShapeId)),
 
       scenario (std::move (_scenario)),
       finishedOutput (_finishedOutput)
@@ -355,6 +361,37 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                 {
                     LOG ("Deleting sprite with id ", _task.spriteId, ".");
                     auto cursor = modifySprite.Execute (&_task.spriteId);
+                    REQUIRE (*cursor);
+                    ~cursor;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateDebugShape>)
+                {
+                    LOG ("Creating debug shape on object ", _task.objectId, " with id ", _task.debugShapeId, ".");
+                    auto cursor = insertDebugShape.Execute ();
+                    auto *debugShape = static_cast<DebugShape2dComponent *> (++cursor);
+                    debugShape->objectId = _task.objectId;
+                    debugShape->debugShapeId = _task.debugShapeId;
+                    debugShape->materialInstanceId = _task.materialInstanceId;
+                    debugShape->translation = _task.translation;
+                    debugShape->rotation = _task.rotation;
+                    debugShape->shape = _task.shape;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::UpdateDebugShape>)
+                {
+                    LOG ("Updating debug shape with id ", _task.debugShapeId, ".");
+                    auto cursor = modifyDebugShape.Execute (&_task.debugShapeId);
+                    auto *debugShape = static_cast<DebugShape2dComponent *> (*cursor);
+                    REQUIRE (debugShape);
+                    debugShape->debugShapeId = _task.debugShapeId;
+                    debugShape->materialInstanceId = _task.materialInstanceId;
+                    debugShape->translation = _task.translation;
+                    debugShape->rotation = _task.rotation;
+                    debugShape->shape = _task.shape;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::DeleteDebugShape>)
+                {
+                    LOG ("Deleting debug shape with id ", _task.debugShapeId, ".");
+                    auto cursor = modifyDebugShape.Execute (&_task.debugShapeId);
                     REQUIRE (*cursor);
                     ~cursor;
                 }

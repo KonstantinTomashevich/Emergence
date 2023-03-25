@@ -2,6 +2,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
+#include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 #include <Celerity/Render/2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
@@ -18,6 +19,9 @@
 
 #include <Log/Log.hpp>
 
+#include <Math/Constants.hpp>
+#include <Math/Scalar.hpp>
+
 #include <Render/Backend/Renderer.hpp>
 
 namespace Emergence::Celerity::WorldRendering2d
@@ -29,13 +33,24 @@ struct RectData final
     Math::Vector2f halfSize;
 };
 
-struct Vertex final
+struct LineData final
+{
+    Math::Vector2f startPoint;
+    Math::Vector2f endPoint;
+};
+
+struct RectVertex final
 {
     Math::Vector2f translation;
     Math::Vector2f uv;
 };
 
-static const Vertex QUAD_VERTICES[4u] = {
+struct LineVertex final
+{
+    Math::Vector2f translation;
+};
+
+static const RectVertex QUAD_VERTICES[4u] = {
     {{-1.0f, 1.0f}, {0.0f, 0.0f}},
     {{1.0f, 1.0f}, {1.0f, 0.0f}},
     {{1.0f, -1.0f}, {1.0f, 1.0f}},
@@ -57,12 +72,16 @@ private:
         uint16_t layer = 0u;
         Memory::UniqueString materialInstanceId;
         Container::Vector<RectData> rects;
+        Container::Vector<LineData> lines;
     };
 
     void CollectVisibleObjects (const Viewport *_viewport,
                                 UniqueId _cameraObjectId,
                                 Math::Transform2d &_selectedCameraTransform,
                                 Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
+
+    void AddDebugShapeLines (const DebugShape2dComponent *_debugShape,
+                             const Math::Transform2d &_worldTransform) noexcept;
 
     WorldRenderer::Batch &GetBatch (uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept;
 
@@ -74,6 +93,11 @@ private:
                       const Viewport *_viewport,
                       const Render::Backend::Program &_program,
                       const Container::Vector<RectData> &_rects) noexcept;
+
+    void SubmitLines (Render::Backend::SubmissionAgent &_agent,
+                      const Viewport *_viewport,
+                      const Render::Backend::Program &_program,
+                      const Container::Vector<LineData> &_lines) noexcept;
 
     void PoolBatches () noexcept;
 
@@ -88,6 +112,7 @@ private:
     FetchShapeIntersectionQuery fetchVisibleRenderObjects;
     FetchValueQuery fetchLocalBoundsByRenderObjectId;
     FetchValueQuery fetchSpriteByObjectId;
+    FetchValueQuery fetchDebugShapeByObjectId;
 
     FetchValueQuery fetchAssetById;
     FetchValueQuery fetchMaterialInstanceById;
@@ -103,7 +128,8 @@ private:
     Container::Vector<Batch> batches {Memory::Profiler::AllocationGroup::Top ()};
     Container::Vector<Batch> batchPool {Memory::Profiler::AllocationGroup::Top ()};
 
-    Render::Backend::VertexLayout vertexLayout;
+    Render::Backend::VertexLayout rectVertexLayout;
+    Render::Backend::VertexLayout lineVertexLayout;
 };
 
 static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAlignedBox2d &_worldBounds)
@@ -151,6 +177,7 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
                                                                       GetDimensions (_worldBounds))),
       fetchLocalBoundsByRenderObjectId (FETCH_VALUE_1F (LocalBounds2dComponent, renderObjectId)),
       fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId)),
+      fetchDebugShapeByObjectId (FETCH_VALUE_1F (DebugShape2dComponent, objectId)),
 
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
       fetchMaterialInstanceById (FETCH_VALUE_1F (MaterialInstance, assetId)),
@@ -163,11 +190,17 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
       fetchUniformMatrix4x4fByInstanceId (FETCH_VALUE_1F (UniformMatrix4x4fValue, assetId)),
       fetchUniformSamplerByInstanceId (FETCH_VALUE_1F (UniformSamplerValue, assetId)),
 
-      vertexLayout (Render::Backend::VertexLayoutBuilder {}
-                        .Begin ()
-                        .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
-                        .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
-                        .End ())
+      rectVertexLayout (
+          Render::Backend::VertexLayoutBuilder {}
+              .Begin ()
+              .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
+              .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
+              .End ()),
+
+      lineVertexLayout (Render::Backend::VertexLayoutBuilder {}
+                            .Begin ()
+                            .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
+                            .End ())
 {
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::VIEWPORT_SYNC_FINISHED);
     _constructor.DependOn (BoundsCalculation2d::Checkpoint::FINISHED);
@@ -280,8 +313,76 @@ void WorldRenderer::CollectVisibleObjects (const Viewport *_viewport,
                             .rects.emplace_back (RectData {worldTransform, sprite->uv, sprite->halfSize});
                     }
                 }
+
+                for (auto debugShapeCursor = fetchDebugShapeByObjectId.Execute (&localBounds->objectId);
+                     const auto *debugShape = static_cast<const DebugShape2dComponent *> (*debugShapeCursor);
+                     ++debugShapeCursor)
+                {
+                    AddDebugShapeLines (debugShape, worldTransform);
+                }
             }
         }
+    }
+}
+
+void WorldRenderer::AddDebugShapeLines (const DebugShape2dComponent *_debugShape,
+                                        const Math::Transform2d &_worldTransform) noexcept
+{
+    Batch &batch = GetBatch (std::numeric_limits<uint16_t>::max (), _debugShape->materialInstanceId);
+    const Math::Transform2d shapeLocalTransform {_debugShape->translation, _debugShape->rotation, Math::Vector2f::ONE};
+
+    const Math::Matrix3x3f shapeWorldTransformMatrix =
+        Math::Matrix3x3f {_worldTransform} * Math::Matrix3x3f {shapeLocalTransform};
+
+    auto transformPoint = [&shapeWorldTransformMatrix] (const Math::Vector2f &_point)
+    {
+        const Math::Vector3f point3 = shapeWorldTransformMatrix * Math::Vector3f {_point.x, _point.y, 1.0f};
+        return Math::Vector2f {point3.x, point3.y};
+    };
+
+    switch (_debugShape->shape.type)
+    {
+    case DebugShape2dType::BOX:
+        for (size_t startVertexIndex = 0u; startVertexIndex < 4u; ++startVertexIndex)
+        {
+            const RectVertex &startVertex = QUAD_VERTICES[startVertexIndex];
+            const RectVertex &endVertex = QUAD_VERTICES[(startVertexIndex + 1u) % 4u];
+
+            const Math::Vector2f startPoint = startVertex.translation * _debugShape->shape.boxHalfExtents;
+            const Math::Vector2f endPoint = endVertex.translation * _debugShape->shape.boxHalfExtents;
+
+            batch.lines.emplace_back (LineData {transformPoint (startPoint), transformPoint (endPoint)});
+        }
+
+        break;
+
+    case DebugShape2dType::CIRCLE:
+    {
+        constexpr size_t POINT_COUNT = 16u;
+        for (size_t startVertexIndex = 0u; startVertexIndex < POINT_COUNT; ++startVertexIndex)
+        {
+            const float startAngle =
+                static_cast<float> (startVertexIndex) * 2.0f * Math::PI / static_cast<float> (POINT_COUNT);
+
+            const float endAngle = static_cast<float> ((startVertexIndex + 1u) % POINT_COUNT) * 2.0f * Math::PI /
+                                   static_cast<float> (POINT_COUNT);
+
+            const Math::Vector2f startPoint =
+                Math::Vector2f {Math::Cos (startAngle), Math::Sin (startAngle)} * _debugShape->shape.circleRadius;
+
+            const Math::Vector2f endPoint =
+                Math::Vector2f {Math::Cos (endAngle), Math::Sin (endAngle)} * _debugShape->shape.circleRadius;
+
+            batch.lines.emplace_back (LineData {transformPoint (startPoint), transformPoint (endPoint)});
+        }
+
+        break;
+    }
+
+    case DebugShape2dType::LINE:
+        batch.lines.emplace_back (
+            LineData {transformPoint (Math::Vector2f::ZERO), transformPoint (_debugShape->shape.lineEnd)});
+        break;
     }
 }
 
@@ -310,7 +411,8 @@ WorldRenderer::Batch &WorldRenderer::GetBatch (uint16_t _layer, Memory::UniqueSt
     if (batchPool.empty ())
     {
         return *batches.emplace (
-            next, Batch {_layer, _materialInstanceId, Container::Vector<RectData> {batches.get_allocator ()}});
+            next, Batch {_layer, _materialInstanceId, Container::Vector<RectData> {batches.get_allocator ()},
+                         Container::Vector<LineData> {batches.get_allocator ()}});
     }
 
     Batch &pooledBatch = batchPool.back ();
@@ -438,19 +540,24 @@ void WorldRenderer::SubmitBatch (Render::Backend::SubmissionAgent &_agent,
     }
 
     SubmitRects (_agent, _viewport, material->program, _batch.rects);
+    SubmitLines (_agent, _viewport, material->program, _batch.lines);
 }
 
-void WorldRenderer::SubmitRects (
-    Render::Backend::SubmissionAgent &_agent,
-    const Viewport *_viewport,
-    const Render::Backend::Program &_program,
-    const Container::Vector<Emergence::Celerity::WorldRendering2d::RectData> &_rects) noexcept
+void WorldRenderer::SubmitRects (Render::Backend::SubmissionAgent &_agent,
+                                 const Viewport *_viewport,
+                                 const Render::Backend::Program &_program,
+                                 const Container::Vector<RectData> &_rects) noexcept
 {
+    if (_rects.empty ())
+    {
+        return;
+    }
+
     const auto totalVertices = static_cast<uint32_t> (_rects.size () * 4u);
     const auto totalIndices = static_cast<uint32_t> (_rects.size () * 6u);
 
     const uint32_t availableVertices =
-        Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, vertexLayout);
+        Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, rectVertexLayout);
 
     const uint32_t availableIndices =
         Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
@@ -464,18 +571,19 @@ void WorldRenderer::SubmitRects (
     const uint32_t maxRects = std::min (availableVertices / 4u, availableIndices / 6u);
     const uint32_t size = std::min (maxRects, static_cast<uint32_t> (_rects.size ()));
 
-    Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, vertexLayout};
+    Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, rectVertexLayout};
     Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
 
     for (uint32_t index = 0u; index < size; ++index)
     {
         const RectData &rect = _rects[index];
         const Math::Matrix3x3f transformMatrix {rect.transform};
-        Vertex *vertices = reinterpret_cast<Vertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 4u);
+        RectVertex *vertices =
+            reinterpret_cast<RectVertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 4u);
 
         for (uint32_t vertexIndex = 0u; vertexIndex < 4u; ++vertexIndex)
         {
-            Vertex &vertex = vertices[vertexIndex];
+            RectVertex &vertex = vertices[vertexIndex];
             const Math::Vector2f localPoint = QUAD_VERTICES[vertexIndex].translation * rect.halfSize;
             const Math::Vector3f globalPoint3f = transformMatrix * Math::Vector3f {localPoint.x, localPoint.y, 1.0f};
 
@@ -495,7 +603,61 @@ void WorldRenderer::SubmitRects (
 
     _agent.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G | Render::Backend::STATE_WRITE_B |
                      Render::Backend::STATE_WRITE_A | Render::Backend::STATE_BLEND_ALPHA |
-                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA);
+                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA |
+                     Render::Backend::STATE_PRIMITIVE_TRIANGLES);
+
+    _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
+}
+
+void WorldRenderer::SubmitLines (Render::Backend::SubmissionAgent &_agent,
+                                 const Viewport *_viewport,
+                                 const Render::Backend::Program &_program,
+                                 const Container::Vector<LineData> &_lines) noexcept
+{
+    if (_lines.empty ())
+    {
+        return;
+    }
+
+    const auto totalVertices = static_cast<uint32_t> (_lines.size () * 2u);
+    const auto totalIndices = static_cast<uint32_t> (_lines.size () * 2u);
+
+    const uint32_t availableVertices =
+        Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, lineVertexLayout);
+
+    const uint32_t availableIndices =
+        Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
+
+    if (availableVertices != totalVertices || availableIndices != totalIndices)
+    {
+        EMERGENCE_LOG (WARNING,
+                       "Celerity::Render2d: Unable to submit all lines due to being unable to allocate buffers.");
+    }
+
+    const uint32_t maxLines = std::min (availableVertices / 2u, availableIndices / 2u);
+    const uint32_t size = std::min (maxLines, static_cast<uint32_t> (_lines.size ()));
+
+    Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, lineVertexLayout};
+    Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
+
+    for (uint32_t index = 0u; index < size; ++index)
+    {
+        const LineData &line = _lines[index];
+        LineVertex *vertices =
+            reinterpret_cast<LineVertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 2u);
+
+        vertices[0u].translation = line.startPoint;
+        vertices[1u].translation = line.endPoint;
+
+        uint16_t *indices = reinterpret_cast<uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 2u);
+        indices[0u] = index * 2u;
+        indices[1u] = index * 2u + 1u;
+    }
+
+    _agent.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G | Render::Backend::STATE_WRITE_B |
+                     Render::Backend::STATE_WRITE_A | Render::Backend::STATE_BLEND_ALPHA |
+                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA |
+                     Render::Backend::STATE_PRIMITIVE_LINES);
 
     _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
 }

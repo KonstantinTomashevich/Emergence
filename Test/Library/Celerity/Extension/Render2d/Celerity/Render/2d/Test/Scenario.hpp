@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Celerity/Standard/UniqueId.hpp>
+#include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
@@ -113,6 +114,30 @@ struct DeleteSprite final
 {
     UniqueId spriteId = INVALID_UNIQUE_ID;
 };
+
+struct CreateDebugShape final
+{
+    UniqueId objectId = INVALID_UNIQUE_ID;
+    UniqueId debugShapeId = INVALID_UNIQUE_ID;
+    Memory::UniqueString materialInstanceId;
+    Math::Vector2f translation = Math::Vector2f::ZERO;
+    float rotation = 0.0f;
+    DebugShape2d shape;
+};
+
+struct UpdateDebugShape final
+{
+    UniqueId debugShapeId = INVALID_UNIQUE_ID;
+    Memory::UniqueString materialInstanceId;
+    Math::Vector2f translation = Math::Vector2f::ZERO;
+    float rotation = 0.0f;
+    DebugShape2d shape;
+};
+
+struct DeleteDebugShape final
+{
+    UniqueId debugShapeId = INVALID_UNIQUE_ID;
+};
 }; // namespace Tasks
 
 using Task = Container::Variant<Tasks::CreateViewport,
@@ -126,7 +151,10 @@ using Task = Container::Variant<Tasks::CreateViewport,
                                 Tasks::DeleteTransform,
                                 Tasks::CreateSprite,
                                 Tasks::UpdateSprite,
-                                Tasks::DeleteSprite>;
+                                Tasks::DeleteSprite,
+                                Tasks::CreateDebugShape,
+                                Tasks::UpdateDebugShape,
+                                Tasks::DeleteDebugShape>;
 
 using TaskPoint = Container::Vector<Task>;
 

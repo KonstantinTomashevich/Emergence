@@ -40,6 +40,12 @@ constexpr std::uint64_t STATE_BLEND_ALPHA = 0x0000000006565000u;
 /// \brief Whether multisample antialiasing is enabled.
 constexpr std::uint64_t STATE_MSAA = 0x0100000000000000u;
 
+/// \brief Tells renderer that current draw primitive is triangle.
+constexpr std::uint64_t STATE_PRIMITIVE_TRIANGLES = 0x0000000000000000u;
+
+/// \brief Tells renderer that current draw primitive is line.
+constexpr std::uint64_t STATE_PRIMITIVE_LINES = 0x0002000000000000u;
+
 /// \brief Provides API for thread safe submission of render commands.
 /// \details Usually we want to prepare render commands for independent viewports in parallel.
 ///          For example, one thread will do the world rendering while another one will do UI
