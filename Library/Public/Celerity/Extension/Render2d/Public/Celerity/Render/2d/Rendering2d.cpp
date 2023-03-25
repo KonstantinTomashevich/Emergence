@@ -2,6 +2,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
+#include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
@@ -25,6 +26,14 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlign
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
         // We delay removal processing in asset management by one frame, because otherwise
         // we won't be able to delete Sprite2dComponent after AssetManagement.
+        .DependOn (AssetManagement::Checkpoint::FINISHED);
+
+    _pipelineBuilder.AddTask ("RemoveDebugShape2dComponentOnTransformCleanup"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, DebugShape2dComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED)
+        // We delay removal processing in asset management by one frame, because otherwise
+        // we won't be able to delete DebugShape2dComponent after AssetManagement.
         .DependOn (AssetManagement::Checkpoint::FINISHED);
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Rendering2d");
