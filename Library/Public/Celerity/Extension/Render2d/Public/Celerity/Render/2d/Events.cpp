@@ -9,8 +9,11 @@ EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Sprite2dSizeChangedNormalEvent, object
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Sprite2dRemovedNormalEvent, objectId)
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DebugShape2dAddedNormalEvent, objectId, debugShapeId)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DebugShape2dAddedFixedToNormalEvent, objectId, debugShapeId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DebugShape2dGeometryChangedNormalEvent, objectId, debugShapeId)
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DebugShape2dGeometryChangedFixedToNormalEvent, objectId, debugShapeId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DebugShape2dRemovedNormalEvent, objectId)
+EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (DebugShape2dRemovedFixedToNormalEvent, objectId)
 
 void RegisterRender2dEvents (EventRegistrar &_registrar) noexcept
 {
@@ -42,6 +45,13 @@ void RegisterRender2dEvents (EventRegistrar &_registrar) noexcept
          {{DebugShape2dComponent::Reflect ().objectId, DebugShape2dAddedNormalEvent::Reflect ().objectId},
           {DebugShape2dComponent::Reflect ().debugShapeId, DebugShape2dAddedNormalEvent::Reflect ().debugShapeId}}});
 
+    _registrar.OnAddEvent (
+        {{DebugShape2dAddedFixedToNormalEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
+         DebugShape2dComponent::Reflect ().mapping,
+         {{DebugShape2dComponent::Reflect ().objectId, DebugShape2dAddedFixedToNormalEvent::Reflect ().objectId},
+          {DebugShape2dComponent::Reflect ().debugShapeId,
+           DebugShape2dAddedFixedToNormalEvent::Reflect ().debugShapeId}}});
+
     _registrar.OnChangeEvent (
         {{DebugShape2dGeometryChangedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
          DebugShape2dComponent::Reflect ().mapping,
@@ -55,9 +65,27 @@ void RegisterRender2dEvents (EventRegistrar &_registrar) noexcept
           {DebugShape2dComponent::Reflect ().debugShapeId,
            DebugShape2dGeometryChangedNormalEvent::Reflect ().debugShapeId}}});
 
+    _registrar.OnChangeEvent (
+        {{DebugShape2dGeometryChangedFixedToNormalEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
+         DebugShape2dComponent::Reflect ().mapping,
+         {
+             DebugShape2dComponent::Reflect ().translation,
+             DebugShape2dComponent::Reflect ().rotation,
+             DebugShape2dComponent::Reflect ().shape,
+         },
+         {},
+         {{DebugShape2dComponent::Reflect ().objectId, DebugShape2dRemovedFixedToNormalEvent::Reflect ().objectId},
+          {DebugShape2dComponent::Reflect ().debugShapeId,
+           DebugShape2dGeometryChangedFixedToNormalEvent::Reflect ().debugShapeId}}});
+
     _registrar.OnRemoveEvent (
         {{DebugShape2dRemovedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
          DebugShape2dComponent::Reflect ().mapping,
          {{DebugShape2dComponent::Reflect ().objectId, DebugShape2dRemovedNormalEvent::Reflect ().objectId}}});
+
+    _registrar.OnRemoveEvent (
+        {{DebugShape2dRemovedFixedToNormalEvent::Reflect ().mapping, EventRoute::FROM_FIXED_TO_NORMAL},
+         DebugShape2dComponent::Reflect ().mapping,
+         {{DebugShape2dComponent::Reflect ().objectId, DebugShape2dRemovedFixedToNormalEvent::Reflect ().objectId}}});
 }
 } // namespace Emergence::Celerity

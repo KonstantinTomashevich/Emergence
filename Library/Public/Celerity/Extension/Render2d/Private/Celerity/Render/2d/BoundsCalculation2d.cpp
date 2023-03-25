@@ -46,9 +46,13 @@ private:
     FetchSequenceQuery fetchSpriteSizeChangedEvents;
     FetchSequenceQuery fetchSpriteRemovedEvents;
 
-    FetchSequenceQuery fetchDebugShapeAddedEvents;
-    FetchSequenceQuery fetchDebugShapeGeometryChangedEvents;
-    FetchSequenceQuery fetchDebugShapeRemovedEvents;
+    FetchSequenceQuery fetchDebugShapeAddedNormalEvents;
+    FetchSequenceQuery fetchDebugShapeGeometryChangedNormalEvents;
+    FetchSequenceQuery fetchDebugShapeRemovedNormalEvents;
+
+    FetchSequenceQuery fetchDebugShapeAddedFixedEvents;
+    FetchSequenceQuery fetchDebugShapeGeometryChangedFixedEvents;
+    FetchSequenceQuery fetchDebugShapeRemovedFixedEvents;
 
     FetchSequenceQuery fetchTransformParentChangedEventsFixed;
     FetchSequenceQuery fetchTransformParentChangedEventsNormal;
@@ -79,9 +83,13 @@ BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
       fetchSpriteSizeChangedEvents (FETCH_SEQUENCE (Sprite2dSizeChangedNormalEvent)),
       fetchSpriteRemovedEvents (FETCH_SEQUENCE (Sprite2dRemovedNormalEvent)),
 
-      fetchDebugShapeAddedEvents (FETCH_SEQUENCE (DebugShape2dAddedNormalEvent)),
-      fetchDebugShapeGeometryChangedEvents (FETCH_SEQUENCE (DebugShape2dGeometryChangedNormalEvent)),
-      fetchDebugShapeRemovedEvents (FETCH_SEQUENCE (DebugShape2dRemovedNormalEvent)),
+      fetchDebugShapeAddedNormalEvents (FETCH_SEQUENCE (DebugShape2dAddedNormalEvent)),
+      fetchDebugShapeGeometryChangedNormalEvents (FETCH_SEQUENCE (DebugShape2dGeometryChangedNormalEvent)),
+      fetchDebugShapeRemovedNormalEvents (FETCH_SEQUENCE (DebugShape2dRemovedNormalEvent)),
+
+      fetchDebugShapeAddedFixedEvents (FETCH_SEQUENCE (DebugShape2dAddedFixedToNormalEvent)),
+      fetchDebugShapeGeometryChangedFixedEvents (FETCH_SEQUENCE (DebugShape2dGeometryChangedFixedToNormalEvent)),
+      fetchDebugShapeRemovedFixedEvents (FETCH_SEQUENCE (DebugShape2dRemovedFixedToNormalEvent)),
 
       fetchTransformParentChangedEventsFixed (FETCH_SEQUENCE (Transform2dComponentParentChangedFixedToNormalEvent)),
       fetchTransformParentChangedEventsNormal (FETCH_SEQUENCE (Transform2dComponentParentChangedNormalEvent)),
@@ -135,21 +143,41 @@ void BoundsCalculator::Execute () noexcept
         RequestLocalBoundsUpdate (event->objectId);
     }
 
-    for (auto eventCursor = fetchDebugShapeAddedEvents.Execute ();
+    for (auto eventCursor = fetchDebugShapeAddedNormalEvents.Execute ();
          const auto *event = static_cast<const DebugShape2dAddedNormalEvent *> (*eventCursor); ++eventCursor)
     {
         EnsureLocalBoundsExistence (event->objectId);
         RequestLocalBoundsUpdate (event->objectId);
     }
 
-    for (auto eventCursor = fetchDebugShapeGeometryChangedEvents.Execute ();
+    for (auto eventCursor = fetchDebugShapeGeometryChangedNormalEvents.Execute ();
          const auto *event = static_cast<const DebugShape2dGeometryChangedNormalEvent *> (*eventCursor); ++eventCursor)
     {
         RequestLocalBoundsUpdate (event->objectId);
     }
 
-    for (auto eventCursor = fetchDebugShapeRemovedEvents.Execute ();
+    for (auto eventCursor = fetchDebugShapeRemovedNormalEvents.Execute ();
          const auto *event = static_cast<const DebugShape2dRemovedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeAddedFixedEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dAddedFixedToNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        EnsureLocalBoundsExistence (event->objectId);
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeGeometryChangedFixedEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dGeometryChangedFixedToNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeRemovedFixedEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dRemovedFixedToNormalEvent *> (*eventCursor); ++eventCursor)
     {
         RequestLocalBoundsUpdate (event->objectId);
     }
