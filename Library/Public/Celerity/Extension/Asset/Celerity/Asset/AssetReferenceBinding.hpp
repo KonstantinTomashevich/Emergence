@@ -37,14 +37,29 @@ using AssetReferenceBindingList = Container::Vector<AssetReferenceBinding>;
 /// \brief Stores automatically generated event types for single asset user type.
 struct AssetReferenceBindingHookEvents final
 {
-    /// \brief Asset user addition event that is required for asset usage tracking.
-    StandardLayout::Mapping onObjectAdded;
+    /// \brief Asset user addition in normal pipeline event that is required for asset usage tracking.
+    StandardLayout::Mapping onObjectAddedNormal;
 
-    /// \brief Asset user change event that is required for asset usage tracking.
-    StandardLayout::Mapping onAnyReferenceChanged;
+    /// \brief Asset user change in normal pipeline event that is required for asset usage tracking.
+    StandardLayout::Mapping onAnyReferenceChangedNormal;
 
-    /// \brief Asset user removal event that is required for asset usage tracking.
-    StandardLayout::Mapping onObjectRemoved;
+    /// \brief Asset user removal in normal pipeline event that is required for asset usage tracking.
+    StandardLayout::Mapping onObjectRemovedNormal;
+    
+    /// \brief Asset user addition in fixed pipeline event that is required for asset usage tracking.
+    /// \details In ideal world all asset users operate only in normal pipeline, but in some cases
+    ///          like debug draw it is convenient to work with them from fixed pipeline too.
+    StandardLayout::Mapping onObjectAddedFixedToNormal;
+    
+    /// \brief Asset user change in fixed pipeline event that is required for asset usage tracking.
+    /// \details In ideal world all asset users operate only in normal pipeline, but in some cases
+    ///          like debug draw it is convenient to work with them from fixed pipeline too.
+    StandardLayout::Mapping onAnyReferenceChangedFixedToNormal;
+
+    /// \brief Asset user removal in fixed pipeline event that is required for asset usage tracking.
+    /// \details In ideal world all asset users operate only in normal pipeline, but in some cases
+    ///          like debug draw it is convenient to work with them from fixed pipeline too.
+    StandardLayout::Mapping onObjectRemovedFixedToNormal;
 };
 
 /// \brief Stores all automatically generated event types.

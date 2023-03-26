@@ -52,8 +52,47 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
         assetFields.clear ();
         assetCopyOut.clear ();
         generateAssetReferenceList (offsetof (AssetUserAddedEventView, assetReferences), assetFields, assetCopyOut);
-        hook.onObjectAdded = builder.End ();
-        _registrar.OnAddEvent ({{hook.onObjectAdded, EventRoute::NORMAL}, binding.objectType, assetCopyOut});
+        hook.onObjectAddedNormal = builder.End ();
+        _registrar.OnAddEvent ({{hook.onObjectAddedNormal, EventRoute::NORMAL}, binding.objectType, assetCopyOut});
+
+        builder.Begin (Memory::UniqueString {EMERGENCE_BUILD_STRING ("AssetUser", binding.objectType.GetName (),
+                                                                     "AddedFixedToNormalEvent")},
+                       sizeof (AssetUserAddedEventView) + sizeof (Memory::UniqueString) * binding.references.size (),
+                       alignof (AssetUserAddedEventView));
+
+        assetFields.clear ();
+        assetCopyOut.clear ();
+        generateAssetReferenceList (offsetof (AssetUserAddedEventView, assetReferences), assetFields, assetCopyOut);
+        hook.onObjectAddedFixedToNormal = builder.End ();
+        _registrar.OnAddEvent (
+            {{hook.onObjectAddedFixedToNormal, EventRoute::FROM_FIXED_TO_NORMAL}, binding.objectType, assetCopyOut});
+
+        auto generatedChangedAssetReferenceList =
+            [&assetFields, &unchangedCopyOut, &changedCopyOut, &binding, &builder] ()
+        {
+            assetFields.clear ();
+            unchangedCopyOut.clear ();
+            changedCopyOut.clear ();
+
+            for (std::size_t assetIndex = 0u; assetIndex < binding.references.size (); ++assetIndex)
+            {
+                const StandardLayout::FieldId oldField = builder.RegisterUniqueString (
+                    Memory::UniqueString {EMERGENCE_BUILD_STRING (
+                        binding.objectType.GetField (binding.references[assetIndex].field).GetName (), "Old")},
+                    offsetof (AssetUserChangedEventView, assetReferenceSequence) +
+                        sizeof (Memory::UniqueString) * assetIndex);
+
+                const StandardLayout::FieldId newField = builder.RegisterUniqueString (
+                    Memory::UniqueString {EMERGENCE_BUILD_STRING (
+                        binding.objectType.GetField (binding.references[assetIndex].field).GetName (), "New")},
+                    offsetof (AssetUserChangedEventView, assetReferenceSequence) +
+                        sizeof (Memory::UniqueString) * (binding.references.size () + assetIndex));
+
+                assetFields.emplace_back (binding.references[assetIndex].field);
+                unchangedCopyOut.emplace_back () = {binding.references[assetIndex].field, oldField};
+                changedCopyOut.emplace_back () = {binding.references[assetIndex].field, newField};
+            }
+        };
 
         builder.Begin (
             Memory::UniqueString {
@@ -61,31 +100,23 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
             sizeof (AssetUserChangedEventView) + sizeof (Memory::UniqueString) * binding.references.size () * 2u,
             alignof (AssetUserChangedEventView));
 
-        assetFields.clear ();
-        unchangedCopyOut.clear ();
-        changedCopyOut.clear ();
+        generatedChangedAssetReferenceList ();
+        hook.onAnyReferenceChangedNormal = builder.End ();
+        _registrar.OnChangeEvent ({{hook.onAnyReferenceChangedNormal, EventRoute::NORMAL},
+                                   binding.objectType,
+                                   assetFields,
+                                   unchangedCopyOut,
+                                   changedCopyOut});
 
-        for (std::size_t assetIndex = 0u; assetIndex < binding.references.size (); ++assetIndex)
-        {
-            const StandardLayout::FieldId oldField = builder.RegisterUniqueString (
-                Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                    binding.objectType.GetField (binding.references[assetIndex].field).GetName (), "Old")},
-                offsetof (AssetUserChangedEventView, assetReferenceSequence) +
-                    sizeof (Memory::UniqueString) * assetIndex);
+        builder.Begin (
+            Memory::UniqueString {
+                EMERGENCE_BUILD_STRING ("AssetUser", binding.objectType.GetName (), "ChangedFixedToNormalEvent")},
+            sizeof (AssetUserChangedEventView) + sizeof (Memory::UniqueString) * binding.references.size () * 2u,
+            alignof (AssetUserChangedEventView));
 
-            const StandardLayout::FieldId newField = builder.RegisterUniqueString (
-                Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                    binding.objectType.GetField (binding.references[assetIndex].field).GetName (), "New")},
-                offsetof (AssetUserChangedEventView, assetReferenceSequence) +
-                    sizeof (Memory::UniqueString) * (binding.references.size () + assetIndex));
-
-            assetFields.emplace_back (binding.references[assetIndex].field);
-            unchangedCopyOut.emplace_back () = {binding.references[assetIndex].field, oldField};
-            changedCopyOut.emplace_back () = {binding.references[assetIndex].field, newField};
-        }
-
-        hook.onAnyReferenceChanged = builder.End ();
-        _registrar.OnChangeEvent ({{hook.onAnyReferenceChanged, EventRoute::NORMAL},
+        generatedChangedAssetReferenceList ();
+        hook.onAnyReferenceChangedFixedToNormal = builder.End ();
+        _registrar.OnChangeEvent ({{hook.onAnyReferenceChangedFixedToNormal, EventRoute::FROM_FIXED_TO_NORMAL},
                                    binding.objectType,
                                    assetFields,
                                    unchangedCopyOut,
@@ -99,8 +130,20 @@ AssetReferenceBindingEventMap RegisterAssetEvents (EventRegistrar &_registrar,
         assetFields.clear ();
         assetCopyOut.clear ();
         generateAssetReferenceList (offsetof (AssetUserRemovedEventView, assetReferences), assetFields, assetCopyOut);
-        hook.onObjectRemoved = builder.End ();
-        _registrar.OnRemoveEvent ({{hook.onObjectRemoved, EventRoute::NORMAL}, binding.objectType, assetCopyOut});
+        hook.onObjectRemovedNormal = builder.End ();
+        _registrar.OnRemoveEvent ({{hook.onObjectRemovedNormal, EventRoute::NORMAL}, binding.objectType, assetCopyOut});
+
+        builder.Begin (Memory::UniqueString {EMERGENCE_BUILD_STRING ("AssetUser", binding.objectType.GetName (),
+                                                                     "RemovedFixedToNormalEvent")},
+                       sizeof (AssetUserRemovedEventView) + sizeof (Memory::UniqueString) * binding.references.size (),
+                       alignof (AssetUserRemovedEventView));
+
+        assetFields.clear ();
+        assetCopyOut.clear ();
+        generateAssetReferenceList (offsetof (AssetUserRemovedEventView, assetReferences), assetFields, assetCopyOut);
+        hook.onObjectRemovedFixedToNormal = builder.End ();
+        _registrar.OnRemoveEvent (
+            {{hook.onObjectRemovedFixedToNormal, EventRoute::FROM_FIXED_TO_NORMAL}, binding.objectType, assetCopyOut});
 
         for (const AssetReferenceField &field : binding.references)
         {
