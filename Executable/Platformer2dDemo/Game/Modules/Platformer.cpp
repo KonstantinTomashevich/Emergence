@@ -4,6 +4,7 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Locale/Localization.hpp>
+#include <Celerity/Physics2d/DebugDraw.hpp>
 #include <Celerity/Physics2d/Simulation.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Render/2d/Rendering2d.hpp>
@@ -59,6 +60,7 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::Assembly::AddToFixedUpdate (mainPipelineBuilder, GetAssemblerCustomKeys (),
                                                      GetFixedAssemblerTypes (), MAX_ASSEMBLY_TIME_NS);
     Emergence::Celerity::Input::AddToFixedUpdate (mainPipelineBuilder);
+    Emergence::Celerity::Physics2dDebugDraw::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::Physics2dSimulation::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (mainPipelineBuilder);
     Spawn::AddToFixedUpdate (mainPipelineBuilder);

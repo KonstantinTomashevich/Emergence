@@ -56,6 +56,7 @@ const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetMaterial
                                                           "Paths"_us}};
 
         vector.emplace_back ("../GameResources/MaterialInstances"_us);
+        vector.emplace_back ("../Physics2dDebugDrawResources/MaterialInstances"_us);
         return vector;
     }();
 
@@ -72,6 +73,7 @@ const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetMaterial
 
         vector.emplace_back ("../GameResources/Materials"_us);
         vector.emplace_back ("../ImGUIResources/Materials"_us);
+        vector.emplace_back ("../Physics2dDebugDrawResources/Materials"_us);
         vector.emplace_back ("../Render2dResources/Materials"_us);
         return vector;
     }();
@@ -89,6 +91,7 @@ const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetShadersP
 
         vector.emplace_back ("../GameResources/Shaders"_us);
         vector.emplace_back ("../ImGUIResources/Shaders"_us);
+        vector.emplace_back ("../Physics2dDebugDrawResources/Shaders"_us);
         vector.emplace_back ("../Render2dResources/Shaders"_us);
         return vector;
     }();
