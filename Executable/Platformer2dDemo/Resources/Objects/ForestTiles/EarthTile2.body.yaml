@@ -25,7 +25,7 @@
     shapeId: 1
     translation:
       x: -0.0014683281249999736
-      y: -0.16182421874999997
+      y: 0.16182421874999997
     rotation: 0
     geometry:
       type: 0
@@ -41,7 +41,7 @@
     shapeId: 2
     translation:
       x: 0.173176171875
-      y: 0.2057234375000001
+      y: -0.2057234375000001
     rotation: 0
     geometry:
       type: 0

@@ -172,7 +172,7 @@ tiled.registerTilesetFormat(
                         tileBodyFile.writeLine("      x: " +
                             ((collisionShape.x + collisionShape.width / 2.0) / tile.width - 0.5));
                         tileBodyFile.writeLine("      y: " +
-                            ((collisionShape.y + collisionShape.height / 2.0) / tile.height - 0.5));
+                            (0.5 - (collisionShape.y + collisionShape.height / 2.0) / tile.height));
                         tileBodyFile.writeLine("    rotation: " + collisionShape.rotation);
                         tileBodyFile.writeLine("    geometry:");
 
