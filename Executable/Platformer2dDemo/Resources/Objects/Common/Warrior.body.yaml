@@ -19,19 +19,49 @@
   content:
     objectId: 0
     type: 2
+    manipulatedOutsideOfSimulation: 1
+    fixedRotation: 1
 - type: CollisionShape2dComponent
   content:
     objectId: 0
     shapeId: 1
     translation:
-      x: 0
-      y: -0.25
+      x: -0.10
+      y: -0.6
+    rotation: 0
+    geometry:
+      type: 1
+      circleRadius: 0.25
+    materialId: Default
+    trigger: 0
+    collisionGroup: 0
+- type: CollisionShape2dComponent
+  content:
+    objectId: 0
+    shapeId: 2
+    translation:
+      x: -0.10
+      y: 0.15
+    rotation: 0
+    geometry:
+      type: 1
+      circleRadius: 0.25
+    materialId: Default
+    trigger: 0
+    collisionGroup: 0
+- type: CollisionShape2dComponent
+  content:
+    objectId: 0
+    shapeId: 3
+    translation:
+      x: -0.10
+      y: -0.225
     rotation: 0
     geometry:
       type: 0
       boxHalfExtents:
-        x: 0.4
-        y: 0.55
+        x: 0.25
+        y: 0.375
     materialId: Default
     trigger: 0
     collisionGroup: 0
