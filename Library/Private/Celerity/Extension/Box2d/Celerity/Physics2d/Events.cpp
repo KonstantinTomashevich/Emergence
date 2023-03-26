@@ -26,7 +26,10 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShape2dComponentGeometryChang
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShape2dComponentAttributesChangedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (CollisionShape2dComponentRemovedEvent, objectId, implementationHandle)
+EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (CollisionShape2dComponentRemovedEvent,
+                                          objectId,
+                                          shapeId,
+                                          implementationHandle)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBody2dComponentAddedFixedEvent, objectId)
 
@@ -131,14 +134,16 @@ void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept
                                {{CollisionShape2dComponent::Reflect ().shapeId,
                                  CollisionShape2dComponentAttributesChangedEvent::Reflect ().shapeId}}});
 
-    _registrar.OnRemoveEvent ({{CollisionShape2dComponentRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
-                               CollisionShape2dComponent::Reflect ().mapping,
-                               {
-                                   {CollisionShape2dComponent::Reflect ().objectId,
-                                    CollisionShape2dComponentRemovedEvent::Reflect ().objectId},
-                                   {CollisionShape2dComponent::Reflect ().implementationHandle,
-                                    CollisionShape2dComponentRemovedEvent::Reflect ().implementationHandle},
-                               }});
+    _registrar.OnRemoveEvent (
+        {{CollisionShape2dComponentRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
+         CollisionShape2dComponent::Reflect ().mapping,
+         {
+             {CollisionShape2dComponent::Reflect ().objectId,
+              CollisionShape2dComponentRemovedEvent::Reflect ().objectId},
+             {CollisionShape2dComponent::Reflect ().shapeId, CollisionShape2dComponentRemovedEvent::Reflect ().shapeId},
+             {CollisionShape2dComponent::Reflect ().implementationHandle,
+              CollisionShape2dComponentRemovedEvent::Reflect ().implementationHandle},
+         }});
 
     // RigidBody2dComponent
 

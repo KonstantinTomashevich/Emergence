@@ -28,8 +28,8 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShape2dComponentGeometryChangedE
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShape2dComponentAttributesChangedEvent, UniqueId, shapeId);
 
-EMERGENCE_CELERITY_EVENT2_DECLARATION (
-    CollisionShape2dComponentRemovedEvent, UniqueId, objectId, void *, implementationHandle);
+EMERGENCE_CELERITY_EVENT3_DECLARATION (
+    CollisionShape2dComponentRemovedEvent, UniqueId, objectId, UniqueId, shapeId, void *, implementationHandle);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentAddedFixedEvent, UniqueId, objectId);
 

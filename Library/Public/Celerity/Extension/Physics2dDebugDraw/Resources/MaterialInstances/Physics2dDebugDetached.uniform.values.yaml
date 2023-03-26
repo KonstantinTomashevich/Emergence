@@ -1,0 +1,7 @@
+- name: color
+  type: 0
+  vector4f:
+    x: 0.5
+    y: 0.5
+    z: 0.5
+    w: 1.0
