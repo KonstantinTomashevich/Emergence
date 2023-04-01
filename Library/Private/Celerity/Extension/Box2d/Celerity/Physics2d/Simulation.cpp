@@ -2,12 +2,14 @@
 
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Physics2d/Box2dAccessSingleton.hpp>
+#include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
 #include <Celerity/Physics2d/DynamicsMaterial2d.hpp>
 #include <Celerity/Physics2d/Events.hpp>
 #include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
 #include <Celerity/Physics2d/RigidBody2dComponent.hpp>
 #include <Celerity/Physics2d/Simulation.hpp>
+#include <Celerity/Physics2d/TriggerContact2d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
@@ -72,12 +74,12 @@ static Math::Vector2f FromBox2d (const b2Vec2 &_vector) noexcept;
 static b2Shape::Type ToBox2d (CollisionGeometry2dType _type) noexcept;
 
 static b2Filter ConstructBox2dFilter (uint8_t _collisionGroup,
-                                      bool _sendContactEvents,
+                                      bool _maintainContactList,
                                       bool _visibleToWorldQueries) noexcept;
 
 static uint8_t GetCollisionGroup (const b2Filter &_filter) noexcept;
 
-static bool IsSendingContactEvents (const b2Filter &_filter) noexcept;
+static bool IsMaintainingContactList (const b2Filter &_filter) noexcept;
 
 static bool IsVisibleToWorldQueries (const b2Filter &_filter) noexcept;
 
@@ -510,7 +512,7 @@ void ShapeChangesSynchronizer::ApplyShapeAttributesChanges () noexcept
             if (auto *fixture = static_cast<b2Fixture *> (shape->implementationHandle))
             {
                 fixture->SetSensor (shape->trigger);
-                fixture->SetFilterData (ConstructBox2dFilter (shape->collisionGroup, shape->sendContactEvents,
+                fixture->SetFilterData (ConstructBox2dFilter (shape->collisionGroup, shape->maintainCollisionContacts,
                                                               shape->visibleToWorldQueries));
             }
         }
@@ -528,12 +530,22 @@ private:
     ModifySingletonQuery modifyBox2d;
     FetchValueQuery fetchBodyByObjectId;
     FetchSequenceQuery fetchShapeRemovedEvents;
+
+    RemoveValueQuery removeCollisionContactByShapeId;
+    RemoveValueQuery removeCollisionContactByOtherShapeId;
+    RemoveValueQuery removeTriggerContactByTriggerShapeId;
+    RemoveValueQuery removeTriggerContactByIntruderShapeId;
 };
 
 ShapeDeleter::ShapeDeleter (TaskConstructor &_constructor) noexcept
     : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBody2dComponent, objectId)),
-      fetchShapeRemovedEvents (FETCH_SEQUENCE (CollisionShape2dComponentRemovedEvent))
+      fetchShapeRemovedEvents (FETCH_SEQUENCE (CollisionShape2dComponentRemovedEvent)),
+
+      removeCollisionContactByShapeId (REMOVE_VALUE_1F (CollisionContact2d, shapeId)),
+      removeCollisionContactByOtherShapeId (REMOVE_VALUE_1F (CollisionContact2d, otherShapeId)),
+      removeTriggerContactByTriggerShapeId (REMOVE_VALUE_1F (TriggerContact2d, triggerShapeId)),
+      removeTriggerContactByIntruderShapeId (REMOVE_VALUE_1F (TriggerContact2d, intruderShapeId))
 {
     _constructor.DependOn (TaskNames::SYNC_SHAPE_CHANGES);
 }
@@ -556,6 +568,27 @@ void ShapeDeleter::Execute ()
             {
                 // Body was removed too.
             }
+        }
+
+        // Because shape is deleted, we need to delete all contacts too.
+        for (auto cursor = removeCollisionContactByShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
+        {
+            ~cursor;
+        }
+
+        for (auto cursor = removeCollisionContactByOtherShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
+        {
+            ~cursor;
+        }
+
+        for (auto cursor = removeTriggerContactByTriggerShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
+        {
+            ~cursor;
+        }
+
+        for (auto cursor = removeTriggerContactByIntruderShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
+        {
+            ~cursor;
         }
     }
 }
@@ -741,12 +774,22 @@ private:
     ModifySingletonQuery modifyBox2d;
     FetchValueQuery fetchShapeByObjectId;
     FetchSequenceQuery fetchBodyRemovedEvents;
+
+    RemoveValueQuery removeCollisionContactByObjectId;
+    RemoveValueQuery removeCollisionContactByOtherObjectId;
+    RemoveValueQuery removeTriggerContactByTriggerObjectId;
+    RemoveValueQuery removeTriggerContactByIntruderObjectId;
 };
 
 BodyDeleter::BodyDeleter (TaskConstructor &_constructor) noexcept
     : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShape2dComponent, objectId)),
-      fetchBodyRemovedEvents (FETCH_SEQUENCE (RigidBody2dComponentRemovedEvent))
+      fetchBodyRemovedEvents (FETCH_SEQUENCE (RigidBody2dComponentRemovedEvent)),
+
+      removeCollisionContactByObjectId (REMOVE_VALUE_1F (CollisionContact2d, objectId)),
+      removeCollisionContactByOtherObjectId (REMOVE_VALUE_1F (CollisionContact2d, otherObjectId)),
+      removeTriggerContactByTriggerObjectId (REMOVE_VALUE_1F (TriggerContact2d, triggerObjectId)),
+      removeTriggerContactByIntruderObjectId (REMOVE_VALUE_1F (TriggerContact2d, intruderObjectId))
 {
     _constructor.DependOn (TaskNames::INITIALIZE_BODIES);
 }
@@ -763,6 +806,27 @@ void BodyDeleter::Execute ()
             // because edition will trigger event pipeline validation and trigger error as shape edition is processed
             // earlier.
             const_cast<CollisionShape2dComponent *> (shape)->implementationHandle = nullptr;
+        }
+
+        // Because all shapes are deleted, we need to delete all contacts too.
+        for (auto cursor = removeCollisionContactByObjectId.Execute (&event->objectId); cursor.ReadConst ();)
+        {
+            ~cursor;
+        }
+
+        for (auto cursor = removeCollisionContactByOtherObjectId.Execute (&event->objectId); cursor.ReadConst ();)
+        {
+            ~cursor;
+        }
+
+        for (auto cursor = removeTriggerContactByTriggerObjectId.Execute (&event->objectId); cursor.ReadConst ();)
+        {
+            ~cursor;
+        }
+
+        for (auto cursor = removeTriggerContactByIntruderObjectId.Execute (&event->objectId); cursor.ReadConst ();)
+        {
+            ~cursor;
         }
     }
 }
@@ -835,6 +899,8 @@ public:
 
     void BeginContact (b2Contact *_contact) noexcept override;
 
+    void PostSolve (b2Contact *_contact, [[maybe_unused]] const b2ContactImpulse *_impulse) noexcept override;
+
     void EndContact (b2Contact *_contact) noexcept override;
 
 private:
@@ -857,11 +923,11 @@ private:
     EditValueQuery editTransformByObjectId;
     Transform2dWorldAccessor transformWorldAccessor;
 
-    InsertShortTermQuery insertContactFoundEvents;
-    InsertShortTermQuery insertContactLostEvents;
+    InsertLongTermQuery insertCollisionContact;
+    ModifyValueQuery modifyCollisionContactByShapeIdAndOtherShapeId;
 
-    InsertShortTermQuery insertTriggerEnteredEvents;
-    InsertShortTermQuery insertTriggerExitedEvents;
+    InsertLongTermQuery insertTriggerContact;
+    ModifyValueQuery modifyTriggerContactByTriggerShapeIdAndIntruderShapeId;
 };
 
 SimulationExecutor::SimulationExecutor (TaskConstructor &_constructor) noexcept
@@ -878,11 +944,12 @@ SimulationExecutor::SimulationExecutor (TaskConstructor &_constructor) noexcept
       editTransformByObjectId (EDIT_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      insertContactFoundEvents (INSERT_SHORT_TERM (Contact2dFoundEvent)),
-      insertContactLostEvents (INSERT_SHORT_TERM (Contact2dLostEvent)),
+      insertCollisionContact (INSERT_LONG_TERM (CollisionContact2d)),
+      modifyCollisionContactByShapeIdAndOtherShapeId (MODIFY_VALUE_2F (CollisionContact2d, shapeId, otherShapeId)),
 
-      insertTriggerEnteredEvents (INSERT_SHORT_TERM (Trigger2dEnteredEvent)),
-      insertTriggerExitedEvents (INSERT_SHORT_TERM (Trigger2dExitedEvent))
+      insertTriggerContact (INSERT_LONG_TERM (TriggerContact2d)),
+      modifyTriggerContactByTriggerShapeIdAndIntruderShapeId (
+          MODIFY_VALUE_2F (TriggerContact2d, triggerShapeId, intruderShapeId))
 {
     _constructor.DependOn (TaskNames::SYNC_BODY_MASSES);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
@@ -926,40 +993,126 @@ void SimulationExecutor::BeginContact (b2Contact *_contact) noexcept
     const bool firstSensor = firstShape->IsSensor ();
     const bool secondSensor = secondShape->IsSensor ();
     EMERGENCE_ASSERT (!firstSensor || !secondSensor);
-    const bool sensor = firstSensor || secondSensor;
 
-    if (sensor || IsSendingContactEvents (firstShape->GetFilterData ()) ||
-        IsSendingContactEvents (secondShape->GetFilterData ()))
+    if (firstSensor || secondSensor)
     {
-        if (sensor)
-        {
-            auto cursor = insertTriggerEnteredEvents.Execute ();
-            auto *event = static_cast<Trigger2dEnteredEvent *> (++cursor);
+        auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+        const auto *physicsWorld = static_cast<const PhysicsWorld2dSingleton *> (*physicsWorldCursor);
 
-            if (firstSensor)
-            {
-                event->triggerObjectId = firstBody->GetUserData ().objectId;
-                event->triggerShapeId = firstShape->GetUserData ().shapeId;
-                event->intruderObjectId = secondBody->GetUserData ().objectId;
-                event->intruderShapeId = secondShape->GetUserData ().shapeId;
-            }
-            else
-            {
-                event->triggerObjectId = secondBody->GetUserData ().objectId;
-                event->triggerShapeId = secondShape->GetUserData ().shapeId;
-                event->intruderObjectId = firstBody->GetUserData ().objectId;
-                event->intruderShapeId = firstShape->GetUserData ().shapeId;
-            }
+        auto cursor = insertTriggerContact.Execute ();
+        auto *contact = static_cast<TriggerContact2d *> (++cursor);
+        contact->triggerContactId = physicsWorld->GenerateTriggerContactId ();
+
+        if (firstSensor)
+        {
+            contact->triggerObjectId = firstBody->GetUserData ().objectId;
+            contact->triggerShapeId = firstShape->GetUserData ().shapeId;
+            contact->intruderObjectId = secondBody->GetUserData ().objectId;
+            contact->intruderShapeId = secondShape->GetUserData ().shapeId;
         }
         else
         {
-            auto cursor = insertContactFoundEvents.Execute ();
-            auto *event = static_cast<Contact2dFoundEvent *> (++cursor);
+            contact->triggerObjectId = secondBody->GetUserData ().objectId;
+            contact->triggerShapeId = secondShape->GetUserData ().shapeId;
+            contact->intruderObjectId = firstBody->GetUserData ().objectId;
+            contact->intruderShapeId = firstShape->GetUserData ().shapeId;
+        }
+    }
+    else
+    {
+        const bool addCollisionContactToFirst = IsMaintainingContactList (firstShape->GetFilterData ());
+        const bool addCollisionContactToSecond = IsMaintainingContactList (secondShape->GetFilterData ());
 
-            event->firstObjectId = firstBody->GetUserData ().objectId;
-            event->firstShapeId = firstShape->GetUserData ().shapeId;
-            event->secondObjectId = secondBody->GetUserData ().objectId;
-            event->secondShapeId = secondShape->GetUserData ().shapeId;
+        if (addCollisionContactToFirst || addCollisionContactToSecond)
+        {
+            b2WorldManifold contactWorldManifold;
+            _contact->GetWorldManifold (&contactWorldManifold);
+
+            auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+            const auto *physicsWorld = static_cast<const PhysicsWorld2dSingleton *> (*physicsWorldCursor);
+            auto cursor = insertCollisionContact.Execute ();
+
+            auto addContact = [&cursor, physicsWorld, _contact, &contactWorldManifold] (
+                                  const b2Body *_body, const b2Fixture *_shape, const b2Body *_otherBody,
+                                  const b2Fixture *_otherShape)
+            {
+                auto *contact = static_cast<CollisionContact2d *> (++cursor);
+                contact->collisionContactId = physicsWorld->GenerateCollisionContactId ();
+                contact->objectId = _body->GetUserData ().objectId;
+                contact->shapeId = _shape->GetUserData ().shapeId;
+                contact->otherObjectId = _otherBody->GetUserData ().objectId;
+                contact->otherShapeId = _otherShape->GetUserData ().shapeId;
+                contact->normal = FromBox2d (contactWorldManifold.normal);
+
+                for (size_t pointIndex = 0u; pointIndex < static_cast<size_t> (_contact->GetManifold ()->pointCount);
+                     ++pointIndex)
+                {
+                    [[maybe_unused]] const bool emplaceSuccessful =
+                        contact->points.TryEmplaceBack (FromBox2d (contactWorldManifold.points[pointIndex]));
+                    EMERGENCE_ASSERT (emplaceSuccessful);
+                }
+            };
+
+            if (addCollisionContactToFirst)
+            {
+                addContact (firstBody, firstShape, secondBody, secondShape);
+            }
+
+            if (addCollisionContactToSecond)
+            {
+                addContact (secondBody, secondShape, firstBody, firstShape);
+            }
+        }
+    }
+}
+
+void SimulationExecutor::PostSolve (b2Contact *_contact, [[maybe_unused]] const b2ContactImpulse *_impulse) noexcept
+{
+    const b2Fixture *firstShape = _contact->GetFixtureA ();
+    const b2Fixture *secondShape = _contact->GetFixtureB ();
+    EMERGENCE_ASSERT (!firstShape->IsSensor () && !secondShape->IsSensor ());
+
+    const bool updateCollisionContactOnFirst = IsMaintainingContactList (firstShape->GetFilterData ());
+    const bool updateCollisionContactOnSecond = IsMaintainingContactList (secondShape->GetFilterData ());
+
+    if (updateCollisionContactOnFirst || updateCollisionContactOnSecond)
+    {
+        b2WorldManifold contactWorldManifold;
+        _contact->GetWorldManifold (&contactWorldManifold);
+
+        auto updateContact =
+            [this, _contact, &contactWorldManifold] (const b2Fixture *_shape, const b2Fixture *_otherShape)
+        {
+            struct
+            {
+                UniqueId shapeId;
+                UniqueId otherShapeId;
+            } query {_shape->GetUserData ().shapeId, _otherShape->GetUserData ().shapeId};
+
+            auto cursor = modifyCollisionContactByShapeIdAndOtherShapeId.Execute (&query);
+            auto *contact = static_cast<CollisionContact2d *> (*cursor);
+            EMERGENCE_ASSERT (contact);
+
+            contact->normal = FromBox2d (contactWorldManifold.normal);
+            contact->points.Clear ();
+
+            for (size_t pointIndex = 0u; pointIndex < static_cast<size_t> (_contact->GetManifold ()->pointCount);
+                 ++pointIndex)
+            {
+                [[maybe_unused]] const bool emplaceSuccessful =
+                    contact->points.TryEmplaceBack (FromBox2d (contactWorldManifold.points[pointIndex]));
+                EMERGENCE_ASSERT (emplaceSuccessful);
+            }
+        };
+
+        if (updateCollisionContactOnFirst)
+        {
+            updateContact (firstShape, secondShape);
+        }
+
+        if (updateCollisionContactOnSecond)
+        {
+            updateContact (secondShape, firstShape);
         }
     }
 }
@@ -969,46 +1122,64 @@ void SimulationExecutor::EndContact (b2Contact *_contact) noexcept
     const b2Fixture *firstShape = _contact->GetFixtureA ();
     const b2Fixture *secondShape = _contact->GetFixtureB ();
 
-    const b2Body *firstBody = firstShape->GetBody ();
-    const b2Body *secondBody = secondShape->GetBody ();
-
     const bool firstSensor = firstShape->IsSensor ();
     const bool secondSensor = secondShape->IsSensor ();
     EMERGENCE_ASSERT (!firstSensor || !secondSensor);
-    const bool sensor = firstSensor || secondSensor;
 
-    if (sensor || IsSendingContactEvents (firstShape->GetFilterData ()) ||
-        IsSendingContactEvents (secondShape->GetFilterData ()))
+    if (firstSensor)
     {
-        if (sensor)
+        struct
         {
-            auto cursor = insertTriggerExitedEvents.Execute ();
-            auto *event = static_cast<Trigger2dExitedEvent *> (++cursor);
+            UniqueId triggerShapeId;
+            UniqueId intruderShapeId;
+        } query {firstShape->GetUserData ().shapeId, secondShape->GetUserData ().shapeId};
 
-            if (firstSensor)
+        for (auto cursor = modifyTriggerContactByTriggerShapeIdAndIntruderShapeId.Execute (&query); *cursor;)
+        {
+            ~cursor;
+        }
+    }
+    else if (secondSensor)
+    {
+        struct
+        {
+            UniqueId triggerShapeId;
+            UniqueId intruderShapeId;
+        } query {secondShape->GetUserData ().shapeId, firstShape->GetUserData ().shapeId};
+
+        for (auto cursor = modifyTriggerContactByTriggerShapeIdAndIntruderShapeId.Execute (&query); *cursor;)
+        {
+            ~cursor;
+        }
+    }
+    else
+    {
+        if (IsMaintainingContactList (firstShape->GetFilterData ()))
+        {
+            struct
             {
-                event->triggerObjectId = firstBody->GetUserData ().objectId;
-                event->triggerShapeId = firstShape->GetUserData ().shapeId;
-                event->intruderObjectId = secondBody->GetUserData ().objectId;
-                event->intruderShapeId = secondShape->GetUserData ().shapeId;
-            }
-            else
+                UniqueId shapeId;
+                UniqueId otherShapeId;
+            } query {firstShape->GetUserData ().shapeId, secondShape->GetUserData ().shapeId};
+
+            for (auto cursor = modifyCollisionContactByShapeIdAndOtherShapeId.Execute (&query); *cursor;)
             {
-                event->triggerObjectId = secondBody->GetUserData ().objectId;
-                event->triggerShapeId = secondShape->GetUserData ().shapeId;
-                event->intruderObjectId = firstBody->GetUserData ().objectId;
-                event->intruderShapeId = firstShape->GetUserData ().shapeId;
+                ~cursor;
             }
         }
-        else
-        {
-            auto cursor = insertContactLostEvents.Execute ();
-            auto *event = static_cast<Contact2dLostEvent *> (++cursor);
 
-            event->firstObjectId = firstBody->GetUserData ().objectId;
-            event->firstShapeId = firstShape->GetUserData ().shapeId;
-            event->secondObjectId = secondBody->GetUserData ().objectId;
-            event->secondShapeId = secondShape->GetUserData ().shapeId;
+        if (IsMaintainingContactList (secondShape->GetFilterData ()))
+        {
+            struct
+            {
+                UniqueId shapeId;
+                UniqueId otherShapeId;
+            } query {secondShape->GetUserData ().shapeId, firstShape->GetUserData ().shapeId};
+
+            for (auto cursor = modifyCollisionContactByShapeIdAndOtherShapeId.Execute (&query); *cursor;)
+            {
+                ~cursor;
+            }
         }
     }
 }
@@ -1074,8 +1245,12 @@ void SimulationExecutor::ExecuteSimulation (const PhysicsWorld2dSingleton *_phys
         auto *box2dWorld = block_cast<b2World *> (_physicsWorld->implementationBlock);
         box2dWorld->SetContactFilter (this);
         box2dWorld->SetContactListener (this);
+
         // TODO: Make iteration constants part of public API?
         box2dWorld->Step (_timeStep, 8u, 3u);
+
+        box2dWorld->SetContactFilter (nullptr);
+        box2dWorld->SetContactListener (nullptr);
     }
 }
 
@@ -1173,11 +1348,11 @@ static b2Shape::Type ToBox2d (CollisionGeometry2dType _type) noexcept
     return b2Shape::e_typeCount;
 }
 
-b2Filter ConstructBox2dFilter (uint8_t _collisionGroup, bool _sendContactEvents, bool _visibleToWorldQueries) noexcept
+b2Filter ConstructBox2dFilter (uint8_t _collisionGroup, bool _maintainContactList, bool _visibleToWorldQueries) noexcept
 {
     b2Filter filter;
     filter.categoryBits = static_cast<uint16_t> (_collisionGroup);
-    filter.maskBits = _sendContactEvents ? 1u : 0u;
+    filter.maskBits = _maintainContactList ? 1u : 0u;
     filter.groupIndex = _visibleToWorldQueries ? 1u : 0u;
     return filter;
 }
@@ -1187,7 +1362,7 @@ uint8_t GetCollisionGroup (const b2Filter &_filter) noexcept
     return static_cast<uint8_t> (_filter.categoryBits);
 }
 
-bool IsSendingContactEvents (const b2Filter &_filter) noexcept
+bool IsMaintainingContactList (const b2Filter &_filter) noexcept
 {
     return _filter.maskBits == 1u;
 }
@@ -1310,7 +1485,7 @@ void ConstructBox2dShape (CollisionShape2dComponent *_shape,
 
     fixtureDefinition.isSensor = _shape->trigger;
     fixtureDefinition.filter =
-        ConstructBox2dFilter (_shape->collisionGroup, _shape->sendContactEvents, _shape->visibleToWorldQueries);
+        ConstructBox2dFilter (_shape->collisionGroup, _shape->maintainCollisionContacts, _shape->visibleToWorldQueries);
     fixtureDefinition.userData.shapeId = _shape->shapeId;
     _shape->implementationHandle = _body->CreateFixture (&fixtureDefinition);
 }

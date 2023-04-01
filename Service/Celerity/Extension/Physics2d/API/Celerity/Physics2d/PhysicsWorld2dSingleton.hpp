@@ -34,12 +34,28 @@ struct PhysicsWorld2dSingleton final
     /// \invariant Do not access directly, use ::GenerateShapeId.
     std::atomic_unsigned_lock_free shapeIdCounter = 0u;
 
+    /// \brief Atomic counter for generating unique ids for collision contacts.
+    /// \invariant Do not access directly, use ::GenerateCollisionContactId.
+    std::atomic_unsigned_lock_free collisionContactIdCounter = 0u;
+
+    /// \brief Atomic counter for generating unique ids for trigger contacts.
+    /// \invariant Do not access directly, use ::GenerateTriggerContactId.
+    std::atomic_unsigned_lock_free triggerContactIdCounter = 0u;
+
     /// \brief Block with implementation-specific data.
     std::array<uint8_t, sizeof (uintptr_t)> implementationBlock;
 
     /// \brief Generates new unique id for a collision shape.
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     [[nodiscard]] uintptr_t GenerateShapeId () const noexcept;
+
+    /// \brief Generates new unique id for a collision contact.
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    [[nodiscard]] uintptr_t GenerateCollisionContactId () const noexcept;
+
+    /// \brief Generates new unique id for a trigger contact.
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    [[nodiscard]] uintptr_t GenerateTriggerContactId () const noexcept;
 
     struct Reflection final
     {

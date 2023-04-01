@@ -47,9 +47,10 @@ struct CollisionShape2dComponent final
     /// \brief Whether this shape is visible to world queries.
     bool visibleToWorldQueries = true;
 
-    /// \brief Whether collision shape should send events on physical contact during simulation.
+    /// \brief Whether collision shape should maintain list of CollisionContact2d's.
     /// \details Ignored if ::trigger.
-    bool sendContactEvents = false;
+    /// \invariant Should not be changed after component creation: changing it is not yet supported.
+    bool maintainCollisionContacts = false;
 
     /// \brief Shape collision groups are used to filter out unneeded collisions.
     /// \invariant < 32u
@@ -68,7 +69,7 @@ struct CollisionShape2dComponent final
         StandardLayout::FieldId materialId;
         StandardLayout::FieldId trigger;
         StandardLayout::FieldId visibleToWorldQueries;
-        StandardLayout::FieldId sendContactEvents;
+        StandardLayout::FieldId maintainCollisionContacts;
         StandardLayout::FieldId collisionGroup;
         StandardLayout::FieldId implementationHandle;
         StandardLayout::Mapping mapping;

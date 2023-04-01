@@ -36,6 +36,20 @@ uintptr_t PhysicsWorld2dSingleton::GenerateShapeId () const noexcept
     return const_cast<PhysicsWorld2dSingleton *> (this)->shapeIdCounter++;
 }
 
+uintptr_t PhysicsWorld2dSingleton::GenerateCollisionContactId () const noexcept
+{
+    EMERGENCE_ASSERT (collisionContactIdCounter !=
+                      std::numeric_limits<decltype (collisionContactIdCounter)::value_type>::max ());
+    return const_cast<PhysicsWorld2dSingleton *> (this)->collisionContactIdCounter++;
+}
+
+uintptr_t PhysicsWorld2dSingleton::GenerateTriggerContactId () const noexcept
+{
+    EMERGENCE_ASSERT (triggerContactIdCounter !=
+                      std::numeric_limits<decltype (triggerContactIdCounter)::value_type>::max ());
+    return const_cast<PhysicsWorld2dSingleton *> (this)->triggerContactIdCounter++;
+}
+
 const PhysicsWorld2dSingleton::Reflection &PhysicsWorld2dSingleton::Reflect () noexcept
 {
     static Reflection reflection = [] ()

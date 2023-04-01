@@ -21,7 +21,7 @@ const CollisionShape2dComponent::Reflection &CollisionShape2dComponent::Reflect 
         EMERGENCE_MAPPING_REGISTER_REGULAR (materialId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (trigger);
         EMERGENCE_MAPPING_REGISTER_REGULAR (visibleToWorldQueries);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (sendContactEvents);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (maintainCollisionContacts);
         EMERGENCE_MAPPING_REGISTER_REGULAR (collisionGroup);
         EMERGENCE_MAPPING_REGISTER_REGULAR (implementationHandle);
         EMERGENCE_MAPPING_REGISTRATION_END ();

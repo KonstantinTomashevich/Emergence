@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionGeometry2d.hpp>
 #include <Celerity/Physics2d/Events.hpp>
 #include <Celerity/Physics2d/RigidBody2dComponent.hpp>
+#include <Celerity/Physics2d/TriggerContact2d.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Variant.hpp>
@@ -103,7 +105,7 @@ struct CollisionShapeData
 
     bool trigger = false;
     bool visibleToWorldQueries = true;
-    bool sendContactEvents = false;
+    bool maintainCollisionContacts = false;
     uint8_t collisionGroup = 0u;
 };
 
@@ -160,20 +162,17 @@ struct CheckObjectTransform final
     Math::Transform2d transform {Math::Vector2f::ZERO, 0.0f, Math::Vector2f::ONE};
 };
 
-struct CheckEvents final
+struct CheckContacts final
 {
-    Container::Vector<Contact2dFoundEvent> contactFound;
-    Container::Vector<Contact2dLostEvent> contactLost;
-
-    Container::Vector<Trigger2dEnteredEvent> triggerEntered;
-    Container::Vector<Trigger2dExitedEvent> triggerExited;
+    Container::Vector<CollisionContact2d> collisionContacts;
+    Container::Vector<TriggerContact2d> triggerContacts;
 };
 } // namespace ValidatorTasks
 
 using ValidatorTask = Container::Variant<ValidatorTasks::CheckRigidBodyExistence,
                                          ValidatorTasks::CheckCollisionShapeExistence,
                                          ValidatorTasks::CheckObjectTransform,
-                                         ValidatorTasks::CheckEvents>;
+                                         ValidatorTasks::CheckContacts>;
 
 struct ValidatorFrame final
 {
