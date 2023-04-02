@@ -316,6 +316,12 @@ void ShapeInitializer::Execute ()
             return;
         }
 
+        if (!shape->enabled)
+        {
+            // Shape is currently disabled.
+            return;
+        }
+
         auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
         const auto *material = static_cast<const DynamicsMaterial2d *> (*materialCursor);
 
@@ -347,12 +353,11 @@ void ShapeInitializer::Execute ()
         {
             if (auto *box2dBody = static_cast<b2Body *> (body->implementationHandle))
             {
+                // We need to edit shape, because we're setting implementation handle. But we cannot register edition
+                // as it would trigger possibility of edition events for event validation pipeline, which would trigger
+                // an error, because these events are processed right now.
                 ConstructBox2dShape (shape, box2dBody, material, worldScale);
                 // Body mass is automatically calculated, therefore there is no need to invalidate it.
-            }
-            else
-            {
-                // Body is not initialized yet. Shape will be added during initialization.
             }
         }
     };
@@ -372,7 +377,70 @@ void ShapeInitializer::Execute ()
     }
 }
 
-class ShapeChangesSynchronizer final : public TaskExecutorBase<ShapeChangesSynchronizer>
+struct ShapeRemoveHelper
+{
+public:
+    ShapeRemoveHelper (TaskConstructor &_constructor) noexcept;
+
+protected:
+    void RemoveShape (UniqueId _objectId, UniqueId _shapeId, void *_implementationHandle) noexcept;
+
+    FetchValueQuery fetchBodyByObjectId;
+    RemoveValueQuery removeCollisionContactByShapeId;
+    RemoveValueQuery removeCollisionContactByOtherShapeId;
+    RemoveValueQuery removeTriggerContactByTriggerShapeId;
+    RemoveValueQuery removeTriggerContactByIntruderShapeId;
+};
+
+ShapeRemoveHelper::ShapeRemoveHelper (TaskConstructor &_constructor) noexcept
+    : fetchBodyByObjectId (FETCH_VALUE_1F (RigidBody2dComponent, objectId)),
+      removeCollisionContactByShapeId (REMOVE_VALUE_1F (CollisionContact2d, shapeId)),
+      removeCollisionContactByOtherShapeId (REMOVE_VALUE_1F (CollisionContact2d, otherShapeId)),
+      removeTriggerContactByTriggerShapeId (REMOVE_VALUE_1F (TriggerContact2d, triggerShapeId)),
+      removeTriggerContactByIntruderShapeId (REMOVE_VALUE_1F (TriggerContact2d, intruderShapeId))
+{
+}
+
+void ShapeRemoveHelper::RemoveShape (UniqueId _objectId, UniqueId _shapeId, void *_implementationHandle) noexcept
+{
+    if (auto *fixture = static_cast<b2Fixture *> (_implementationHandle))
+    {
+        auto bodyCursor = fetchBodyByObjectId.Execute (&_objectId);
+        if (const auto *body = static_cast<const RigidBody2dComponent *> (*bodyCursor);
+            body && body->implementationHandle)
+        {
+            static_cast<b2Body *> (body->implementationHandle)->DestroyFixture (fixture);
+            // Do not need to invalidate mass as it is invalidated automatically.
+        }
+        else
+        {
+            // Body was removed too.
+        }
+    }
+
+    // Because shape is deleted, we need to delete all contacts too.
+    for (auto cursor = removeCollisionContactByShapeId.Execute (&_shapeId); cursor.ReadConst ();)
+    {
+        ~cursor;
+    }
+
+    for (auto cursor = removeCollisionContactByOtherShapeId.Execute (&_shapeId); cursor.ReadConst ();)
+    {
+        ~cursor;
+    }
+
+    for (auto cursor = removeTriggerContactByTriggerShapeId.Execute (&_shapeId); cursor.ReadConst ();)
+    {
+        ~cursor;
+    }
+
+    for (auto cursor = removeTriggerContactByIntruderShapeId.Execute (&_shapeId); cursor.ReadConst ();)
+    {
+        ~cursor;
+    }
+}
+
+class ShapeChangesSynchronizer final : public TaskExecutorBase<ShapeChangesSynchronizer>, public ShapeRemoveHelper
 {
 public:
     ShapeChangesSynchronizer (TaskConstructor &_constructor) noexcept;
@@ -403,7 +471,9 @@ private:
 };
 
 ShapeChangesSynchronizer::ShapeChangesSynchronizer (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : ShapeRemoveHelper (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShape2dComponent, shapeId)),
       removeShapeByShapeId (REMOVE_VALUE_1F (CollisionShape2dComponent, shapeId)),
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial2d, id)),
@@ -509,7 +579,48 @@ void ShapeChangesSynchronizer::ApplyShapeAttributesChanges () noexcept
         auto shapeCursor = fetchShapeByShapeId.Execute (&event->shapeId);
         if (const auto *shape = static_cast<const CollisionShape2dComponent *> (*shapeCursor))
         {
-            if (auto *fixture = static_cast<b2Fixture *> (shape->implementationHandle))
+            if (shape->enabled && !shape->implementationHandle)
+            {
+                auto materialCursor = fetchMaterialById.Execute (&shape->materialId);
+                const auto *material = static_cast<const DynamicsMaterial2d *> (*materialCursor);
+
+                if (!material)
+                {
+                    EMERGENCE_LOG (ERROR, "Physics2d: Unable to find DynamicsMaterial2d with id ", shape->materialId,
+                                   "!");
+                    continue;
+                }
+
+                auto transformCursor = fetchTransformById.Execute (&shape->objectId);
+                const auto *transform = static_cast<const Transform2dComponent *> (*transformCursor);
+
+                if (!transform)
+                {
+                    EMERGENCE_LOG (
+                        ERROR, "Physics2d: Unable to add backend shape of CollisionShape2dComponent to object with id ",
+                        shape->objectId, ", because it has no Transform2dComponent!");
+                    return;
+                }
+
+                const Math::Vector2f worldScale = transform->GetLogicalWorldTransform (transformWorldAccessor).scale;
+                auto bodyCursor = fetchBodyByObjectId.Execute (&shape->objectId);
+
+                if (const auto *body = static_cast<const RigidBody2dComponent *> (*bodyCursor))
+                {
+                    if (auto *box2dBody = static_cast<b2Body *> (body->implementationHandle))
+                    {
+                        ConstructBox2dShape (const_cast<CollisionShape2dComponent *> (shape), box2dBody, material,
+                                             worldScale);
+                        // Body mass is automatically calculated, therefore there is no need to invalidate it.
+                    }
+                }
+            }
+            else if (!shape->enabled && shape->implementationHandle)
+            {
+                RemoveShape (shape->objectId, shape->shapeId, shape->implementationHandle);
+                const_cast<CollisionShape2dComponent *> (shape)->implementationHandle = nullptr;
+            }
+            else if (auto *fixture = static_cast<b2Fixture *> (shape->implementationHandle))
             {
                 fixture->SetSensor (shape->trigger);
                 fixture->SetFilterData (ConstructBox2dFilter (shape->collisionGroup, shape->maintainCollisionContacts,
@@ -519,7 +630,7 @@ void ShapeChangesSynchronizer::ApplyShapeAttributesChanges () noexcept
     }
 }
 
-class ShapeDeleter final : public TaskExecutorBase<ShapeDeleter>
+class ShapeDeleter final : public TaskExecutorBase<ShapeDeleter>, public ShapeRemoveHelper
 {
 public:
     ShapeDeleter (TaskConstructor &_constructor) noexcept;
@@ -538,7 +649,9 @@ private:
 };
 
 ShapeDeleter::ShapeDeleter (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : ShapeRemoveHelper (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBody2dComponent, objectId)),
       fetchShapeRemovedEvents (FETCH_SEQUENCE (CollisionShape2dComponentRemovedEvent)),
 
@@ -555,41 +668,7 @@ void ShapeDeleter::Execute ()
     for (auto eventCursor = fetchShapeRemovedEvents.Execute ();
          const auto *event = static_cast<const CollisionShape2dComponentRemovedEvent *> (*eventCursor); ++eventCursor)
     {
-        if (auto *fixture = static_cast<b2Fixture *> (event->implementationHandle))
-        {
-            auto bodyCursor = fetchBodyByObjectId.Execute (&event->objectId);
-            if (const auto *body = static_cast<const RigidBody2dComponent *> (*bodyCursor);
-                body && body->implementationHandle)
-            {
-                static_cast<b2Body *> (body->implementationHandle)->DestroyFixture (fixture);
-                // Do not need to invalidate mass as it is invalidated automatically.
-            }
-            else
-            {
-                // Body was removed too.
-            }
-        }
-
-        // Because shape is deleted, we need to delete all contacts too.
-        for (auto cursor = removeCollisionContactByShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
-        {
-            ~cursor;
-        }
-
-        for (auto cursor = removeCollisionContactByOtherShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
-        {
-            ~cursor;
-        }
-
-        for (auto cursor = removeTriggerContactByTriggerShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
-        {
-            ~cursor;
-        }
-
-        for (auto cursor = removeTriggerContactByIntruderShapeId.Execute (&event->shapeId); cursor.ReadConst ();)
-        {
-            ~cursor;
-        }
+        RemoveShape (event->objectId, event->shapeId, event->implementationHandle);
     }
 }
 
@@ -713,6 +792,11 @@ void BodyInitializer::Execute ()
         for (auto shapeCursor = fetchShapeByObjectId.Execute (&body->objectId);
              const auto *shape = static_cast<const CollisionShape2dComponent *> (*shapeCursor); ++shapeCursor)
         {
+            if (!shape->enabled)
+            {
+                continue;
+            }
+
             // If shapes are initialized, then cleanup after body removal
             // wasn't executed or there is another body on this object.
             EMERGENCE_ASSERT (!shape->implementationHandle);
@@ -1384,6 +1468,12 @@ void UpdateShapeMaterial (b2Fixture *_fixture, const DynamicsMaterial2d *_materi
 bool UpdateShapeGeometryAndPose (const CollisionShape2dComponent *_shape, const Math::Vector2f &_worldScale) noexcept
 {
     auto *fixture = static_cast<b2Fixture *> (_shape->implementationHandle);
+    if (!fixture)
+    {
+        EMERGENCE_ASSERT (!_shape->enabled);
+        return true;
+    }
+
     if (fixture->GetShape ()->GetType () != ToBox2d (_shape->geometry.type))
     {
         EMERGENCE_LOG (ERROR,

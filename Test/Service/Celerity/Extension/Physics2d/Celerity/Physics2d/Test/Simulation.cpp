@@ -145,6 +145,7 @@ TEST_CASE (DynamicAndStaticContact)
                                   {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                   Vector2f::ZERO,
                                   0.0f,
+                                  true,
                                   false,
                                   true,
                                   true}},
@@ -189,6 +190,7 @@ TEST_CASE (DynamicAndDynamicContact)
                                   {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                   Vector2f::ZERO,
                                   0.0f,
+                                  true,
                                   false,
                                   false,
                                   true}},
@@ -234,6 +236,7 @@ TEST_CASE (Trigger)
                                                      0.0f,
                                                      true,
                                                      true,
+                                                     true,
                                                      false}},
                              }}},
                            {
@@ -262,6 +265,7 @@ TEST_CASE (MultishapeContact)
                                   {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                   Vector2f::ZERO,
                                   0.0f,
+                                  true,
                                   false,
                                   true,
                                   true}},
@@ -307,6 +311,7 @@ TEST_CASE (CollisionMaskMismatch)
                                                      {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                                      Vector2f::ZERO,
                                                      0.0f,
+                                                     true,
                                                      false,
                                                      true,
                                                      true,
@@ -336,6 +341,132 @@ TEST_CASE (CollisionMaskMismatch)
                            });
 }
 
+TEST_CASE (CollisionShapeDisabledFromStart)
+{
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f}, 0.0f, Vector2f::ONE}}},
+                                 AddRigidBody {{0u, RigidBody2dType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
+                                                     Vector2f::ZERO,
+                                                     0.0f,
+                                                     false,
+                                                     false,
+                                                     true,
+                                                     true}},
+
+                                 AddTransform {{1u, {{-0.5f, 0.0f}, 0.0f, Vector2f::ONE}}},
+                                 AddRigidBody {{1u, RigidBody2dType::STATIC}},
+                                 AddCollisionShape {{1u, 1u, "Test"_us}},
+                             }}},
+                           {
+                               {78u,
+                                {
+                                    CheckContacts {{}, {}},
+                                }},
+                               {79u,
+                                {
+                                    CheckContacts {{}, {}},
+                                }},
+                           });
+}
+
+TEST_CASE (CollisionShapeDisabledInProgress)
+{
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us}},
+                                 AddTransform {{0u, {{0.0f, 10.0f}, 0.0f, Vector2f::ONE}}},
+                                 AddRigidBody {{0u, RigidBody2dType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
+                                                     Vector2f::ZERO,
+                                                     0.0f,
+                                                     true,
+                                                     false,
+                                                     true,
+                                                     true}},
+
+                                 AddTransform {{1u, {{-0.5f, 0.0f}, 0.0f, Vector2f::ONE}}},
+                                 AddRigidBody {{1u, RigidBody2dType::STATIC}},
+                                 AddCollisionShape {{1u, 1u, "Test"_us}},
+                             }},
+                            {25u,
+                             {
+                                 UpdateCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
+                                                     Vector2f::ZERO,
+                                                     0.0f,
+                                                     false,
+                                                     false,
+                                                     true,
+                                                     true}}
+                             }}},
+                           {
+                               {78u,
+                                {
+                                    CheckContacts {{}, {}},
+                                }},
+                               {79u,
+                                {
+                                    CheckContacts {{}, {}},
+                                }},
+                           });
+}
+
+TEST_CASE (CollisionShapeEnabledInProgress)
+{
+    Test::ExecuteScenario ({{0u,
+                             {
+                                 AddDynamicsMaterial {{"Test"_us, 0.0f, 0.5f, 0.5f, 1.0f}},
+                                 AddTransform {{0u, {{0.0f, 10.0f}, 0.0f, Vector2f::ONE}}},
+                                 AddRigidBody {{0u, RigidBody2dType::DYNAMIC}},
+                                 AddCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
+                                                     Vector2f::ZERO,
+                                                     0.0f,
+                                                     false,
+                                                     false,
+                                                     true,
+                                                     true}},
+
+                                 AddTransform {{1u, {{-0.5f, 0.0f}, 0.0f, Vector2f::ONE}}},
+                                 AddRigidBody {{1u, RigidBody2dType::STATIC}},
+                                 AddCollisionShape {{1u, 1u, "Test"_us}},
+                             }},
+                            {20u,
+                             {UpdateCollisionShape {{0u,
+                                                     0u,
+                                                     "Test"_us,
+                                                     {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
+                                                     Vector2f::ZERO,
+                                                     0.0f,
+                                                     true,
+                                                     false,
+                                                     true,
+                                                     true}}}}},
+                           {
+                               {98u,
+                                {
+                                    CheckContacts {{{0u, 0u, 1u, 0u, 1u, {0.0f, 1.0f}, {{0.0f, 0.546936631f}}}}, {}},
+                                }},
+                               {99u,
+                                {
+                                    CheckContacts {{}, {}},
+                                }},
+                           });
+}
+
 TEST_CASE (MaterialUpdate)
 {
     Test::ExecuteScenario ({{0u,
@@ -349,6 +480,7 @@ TEST_CASE (MaterialUpdate)
                                                      {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                                      Vector2f::ZERO,
                                                      0.0f,
+                                                     true,
                                                      false,
                                                      true,
                                                      true}},
@@ -388,6 +520,7 @@ TEST_CASE (MaterialReplaced)
                                                      {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                                      Vector2f::ZERO,
                                                      0.0f,
+                                                     true,
                                                      false,
                                                      true,
                                                      true}},
@@ -404,6 +537,7 @@ TEST_CASE (MaterialReplaced)
                                                         {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
                                                         Vector2f::ZERO,
                                                         0.0f,
+                                                        true,
                                                         false,
                                                         true,
                                                         true}},

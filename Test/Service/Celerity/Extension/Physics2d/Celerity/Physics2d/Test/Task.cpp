@@ -206,6 +206,7 @@ void Configurator::Execute ()
     shape->translation = _task.translation;                                                                            \
     shape->rotation = _task.rotation;                                                                                  \
                                                                                                                        \
+    shape->enabled = _task.enabled;                                                                                    \
     shape->trigger = _task.trigger;                                                                                    \
     shape->visibleToWorldQueries = _task.visibleToWorldQueries;                                                        \
     shape->maintainCollisionContacts = _task.maintainCollisionContacts;                                                \

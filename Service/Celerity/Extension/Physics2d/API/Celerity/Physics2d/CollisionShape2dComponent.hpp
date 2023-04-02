@@ -40,6 +40,9 @@ struct CollisionShape2dComponent final
     /// \see DynamicsMaterial2d
     Memory::UniqueString materialId;
 
+    /// \brief Whether this shape is currently participating in physical simulation.
+    bool enabled = true;
+
     /// \brief Whether this shape is a trigger shape.
     /// \details Trigger shapes do not collide, but send special enter/exit events.
     bool trigger = false;
@@ -67,6 +70,7 @@ struct CollisionShape2dComponent final
         StandardLayout::FieldId translation;
         StandardLayout::FieldId geometry;
         StandardLayout::FieldId materialId;
+        StandardLayout::FieldId enabled;
         StandardLayout::FieldId trigger;
         StandardLayout::FieldId visibleToWorldQueries;
         StandardLayout::FieldId maintainCollisionContacts;

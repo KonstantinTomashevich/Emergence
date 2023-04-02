@@ -103,6 +103,7 @@ struct CollisionShapeData
     Math::Vector2f translation = Math::Vector2f::ZERO;
     float rotation = 0.0f;
 
+    bool enabled = true;
     bool trigger = false;
     bool visibleToWorldQueries = true;
     bool maintainCollisionContacts = false;

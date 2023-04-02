@@ -135,6 +135,7 @@ void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept
                                CollisionShape2dComponent::Reflect ().mapping,
                                {
 
+                                   CollisionShape2dComponent::Reflect ().enabled,
                                    CollisionShape2dComponent::Reflect ().trigger,
                                    CollisionShape2dComponent::Reflect ().visibleToWorldQueries,
                                    CollisionShape2dComponent::Reflect ().collisionGroup,
