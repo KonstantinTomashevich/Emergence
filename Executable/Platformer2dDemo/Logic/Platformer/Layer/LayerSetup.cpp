@@ -3,7 +3,9 @@
 #include <Celerity/Render/2d/Events.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
+#include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Platformer/Layer/LayerSetup.hpp>
@@ -80,6 +82,12 @@ void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) 
 {
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+
+    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"RemoveLayerSetupComponent"})
+        .AS_CASCADE_REMOVER_1F (Emergence::Celerity::TransformNodeCleanupNormalEvent, LayerSetupComponent, objectId)
+        .DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"SpriteLayerInitializer"})
         .SetExecutor<SpriteLayerInitializer> ();
 }

@@ -22,6 +22,8 @@
 #include <Configuration/AssemblyConfiguration.hpp>
 
 #include <Platformer/Layer/LayerSetupComponent.hpp>
+#include <Platformer/Movement/CollisionShapeMovementContextComponent.hpp>
+#include <Platformer/Movement/MovementComponent.hpp>
 #include <Platformer/Spawn/SpawnComponent.hpp>
 
 static Emergence::Celerity::UniqueId GenerateShapeId (const void *_argument)
@@ -75,6 +77,18 @@ Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept
         Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
     collisionShape2dComponent.keys.emplace_back () = {
         Emergence::Celerity::CollisionShape2dComponent::Reflect ().shapeId, SHAPE_ID_KEY};
+
+    Emergence::Celerity::TypeDescriptor &collisionShapeMovementContextComponent = types.emplace_back ();
+    collisionShapeMovementContextComponent.type = CollisionShapeMovementContextComponent::Reflect ().mapping;
+    collisionShapeMovementContextComponent.keys.emplace_back () = {
+        CollisionShapeMovementContextComponent::Reflect ().objectId, Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+    collisionShapeMovementContextComponent.keys.emplace_back () = {
+        CollisionShapeMovementContextComponent::Reflect ().shapeId, SHAPE_ID_KEY};
+
+    Emergence::Celerity::TypeDescriptor &movementComponent = types.emplace_back ();
+    movementComponent.type = MovementComponent::Reflect ().mapping;
+    movementComponent.keys.emplace_back () = {MovementComponent::Reflect ().objectId,
+                                              Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     Emergence::Celerity::TypeDescriptor &transform2dComponent = types.emplace_back ();
     transform2dComponent.type = Emergence::Celerity::Transform2dComponent::Reflect ().mapping;

@@ -15,6 +15,10 @@
       y: 1.0
     layer: 0
     visibilityMask: 1
+- type: MovementComponent
+  content:
+    objectId: 0
+    configurationId: Warrior
 - type: RigidBody2dComponent
   content:
     objectId: 0
@@ -34,7 +38,14 @@
       circleRadius: 0.25
     materialId: Default
     trigger: 0
+    maintainCollisionContacts: 1
     collisionGroup: 0
+- type: CollisionShapeMovementContextComponent
+  content:
+    objectId: 0
+    shapeId: 1
+    supportedStates: 255
+    useForGroundContactCheck: 1
 - type: CollisionShape2dComponent
   content:
     objectId: 0
@@ -48,7 +59,14 @@
       circleRadius: 0.25
     materialId: Default
     trigger: 0
+    maintainCollisionContacts: 1
     collisionGroup: 0
+- type: CollisionShapeMovementContextComponent
+  content:
+    objectId: 0
+    shapeId: 2
+    supportedStates: 255
+    useForGroundContactCheck: 0
 - type: CollisionShape2dComponent
   content:
     objectId: 0
@@ -64,4 +82,11 @@
         y: 0.375
     materialId: Default
     trigger: 0
+    maintainCollisionContacts: 1
     collisionGroup: 0
+- type: CollisionShapeMovementContextComponent
+  content:
+    objectId: 0
+    shapeId: 3
+    supportedStates: 255
+    useForGroundContactCheck: 0

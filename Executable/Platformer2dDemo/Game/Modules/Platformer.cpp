@@ -23,6 +23,7 @@
 
 #include <Platformer/Layer/LayerSetup.hpp>
 #include <Platformer/Spawn/Spawn.hpp>
+#include <Platformer/Movement/Movement.hpp>
 
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 
@@ -63,6 +64,7 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::Physics2dDebugDraw::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::Physics2dSimulation::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (mainPipelineBuilder);
+    Movement::AddToFixedUpdate (mainPipelineBuilder);
     Spawn::AddToFixedUpdate (mainPipelineBuilder);
 
     mainPipelineBuilder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,

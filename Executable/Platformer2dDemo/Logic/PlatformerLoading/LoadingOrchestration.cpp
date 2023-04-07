@@ -1,4 +1,5 @@
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
+#include <Celerity/Input/InputTriggers.hpp>
 #include <Celerity/Locale/LocaleSingleton.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics2d/DynamicsMaterial2d.hpp>
@@ -22,6 +23,9 @@
 #include <LoadingAnimation/LoadingAnimationSingleton.hpp>
 
 #include <Log/Log.hpp>
+
+#include <Platformer/Input/InputActions.hpp>
+#include <Platformer/Movement/MovementConfiguration.hpp>
 
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 #include <PlatformerLoading/PlatformerLoadingSingleton.hpp>
@@ -52,6 +56,8 @@ public:
 private:
     void SpawnViewports (const Emergence::Celerity::WorldSingleton *_world) noexcept;
 
+    void InitInput () noexcept;
+
     Emergence::Celerity::FetchSingletonQuery fetchAssetManager;
     Emergence::Celerity::FetchSingletonQuery fetchLevelsConfiguration;
     Emergence::Celerity::FetchSingletonQuery fetchLevelSelection;
@@ -69,6 +75,8 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertViewport;
     Emergence::Celerity::InsertLongTermQuery insertWorldPass;
     Emergence::Celerity::InsertLongTermQuery insertUIPass;
+
+    Emergence::Celerity::InsertLongTermQuery insertKeyTrigger;
 
     ViewDropHandle viewDropHandle;
     Emergence::Celerity::WorldView *ownerView;
@@ -94,6 +102,8 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
       insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport)),
       insertWorldPass (INSERT_LONG_TERM (Emergence::Celerity::World2dRenderPass)),
       insertUIPass (INSERT_LONG_TERM (Emergence::Celerity::UIRenderPass)),
+
+      insertKeyTrigger (INSERT_LONG_TERM (Emergence::Celerity::KeyTrigger)),
 
       viewDropHandle (_viewDropHandle),
       ownerView (_ownerView)
@@ -122,6 +132,14 @@ void LoadingOrchestrator::Execute () noexcept
         platformerLoading->dynamicsMaterialsLoadingRequested = true;
     }
 
+    if (!platformerLoading->movementConfigurationsLoadingRequested)
+    {
+        auto requestCursor = insertConfigRequest.Execute ();
+        auto *request = static_cast<Emergence::Celerity::ResourceConfigRequest *> (++requestCursor);
+        request->type = MovementConfiguration::Reflect ().mapping;
+        platformerLoading->movementConfigurationsLoadingRequested = true;
+    }
+
     for (auto responseCursor = fetchConfigResponse.Execute ();
          const auto *response =
              static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*responseCursor);
@@ -130,6 +148,10 @@ void LoadingOrchestrator::Execute () noexcept
         if (response->type == Emergence::Celerity::DynamicsMaterial2d::Reflect ().mapping)
         {
             platformerLoading->dynamicsMaterialsLoaded = true;
+        }
+        else if (response->type == MovementConfiguration::Reflect ().mapping)
+        {
+            platformerLoading->movementConfigurationsLoaded = true;
         }
     }
 
@@ -176,6 +198,7 @@ void LoadingOrchestrator::Execute () noexcept
         loadingAnimation->required = false;
         world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;
         SpawnViewports (world);
+        InitInput ();
         viewDropHandle.RequestViewDrop (ownerView);
 
         const uint64_t loadingTimeNs =
@@ -230,6 +253,45 @@ void LoadingOrchestrator::SpawnViewports (const Emergence::Celerity::WorldSingle
     auto *uiPass = static_cast<Emergence::Celerity::UIRenderPass *> (++uiPassCursor);
     uiPass->name = uiViewport->name;
     uiPass->defaultStyleId = "Default"_us;
+}
+
+void LoadingOrchestrator::InitInput () noexcept
+{
+    auto keyTriggerCursor = insertKeyTrigger.Execute ();
+    auto *upTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
+    upTrigger->actionToSend = PlatformerInputActions::DIRECTED_MOVEMENT;
+    upTrigger->actionToSend.real[0u] = 0.0f;
+    upTrigger->actionToSend.real[1u] = 1.0f;
+    // TODO: Normally, we need to get this codes from settings, not just hardcode SDL values.
+    upTrigger->triggerCode = 26;
+    upTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
+
+    auto *downTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
+    downTrigger->actionToSend = PlatformerInputActions::DIRECTED_MOVEMENT;
+    downTrigger->actionToSend.real[0u] = 0.0f;
+    downTrigger->actionToSend.real[1u] = -1.0f;
+    downTrigger->triggerCode = 22;
+    downTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
+
+    auto *leftTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
+    leftTrigger->actionToSend = PlatformerInputActions::DIRECTED_MOVEMENT;
+    leftTrigger->actionToSend.real[0u] = -1.0f;
+    leftTrigger->actionToSend.real[1u] = 0.0f;
+    leftTrigger->triggerCode = 4;
+    leftTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
+
+    auto *rightTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
+    rightTrigger->actionToSend = PlatformerInputActions::DIRECTED_MOVEMENT;
+    rightTrigger->actionToSend.real[0u] = 1.0f;
+    rightTrigger->actionToSend.real[1u] = 0.0f;
+    rightTrigger->triggerCode = 7;
+    rightTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
+
+    auto *rollTrigger = static_cast<Emergence::Celerity::KeyTrigger *> (++keyTriggerCursor);
+    rollTrigger->actionToSend = PlatformerInputActions::MOVEMENT_ROLL;
+    rollTrigger->triggerCode = 44;
+    rollTrigger->triggerType = Emergence::Celerity::KeyTriggerType::ON_STATE_CHANGED;
+    rollTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
 }
 
 void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
