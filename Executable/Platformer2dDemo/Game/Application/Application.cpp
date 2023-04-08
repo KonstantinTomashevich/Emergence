@@ -179,7 +179,7 @@ void Application::EventLoop () noexcept
             {
                 running = false;
             }
-            else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+            else if ((event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) && !event.key.repeat)
             {
                 Emergence::Celerity::KeyboardEvent inputEvent {
                     static_cast<Emergence::Celerity::KeyCode> (event.key.keysym.sym),
