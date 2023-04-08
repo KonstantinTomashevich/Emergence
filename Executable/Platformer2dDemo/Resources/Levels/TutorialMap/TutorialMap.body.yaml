@@ -580,7 +580,7 @@
     logicalLocalTransform:
       translation:
         x: -2.5
-        y: 7.5
+        y: 6.5
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -652,7 +652,7 @@
     logicalLocalTransform:
       translation:
         x: -1.5
-        y: 7.5
+        y: 6.5
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -886,7 +886,7 @@
     logicalLocalTransform:
       translation:
         x: 2.5
-        y: 6.5
+        y: 5.5
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -958,7 +958,7 @@
     logicalLocalTransform:
       translation:
         x: 3.5
-        y: 6.5
+        y: 5.5
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -1030,7 +1030,7 @@
     logicalLocalTransform:
       translation:
         x: 6.5
-        y: 4.5
+        y: 3.5
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -1084,7 +1084,7 @@
     logicalLocalTransform:
       translation:
         x: 7.5
-        y: 4.5
+        y: 3.5
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16492,7 +16492,7 @@
     logicalLocalTransform:
       translation:
         x: 7.03515625
-        y: 4.9296875
+        y: 3.9296875
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16510,7 +16510,7 @@
     logicalLocalTransform:
       translation:
         x: 3.03515625
-        y: 6.9296875
+        y: 5.9296875
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16528,7 +16528,7 @@
     logicalLocalTransform:
       translation:
         x: -1.96484375
-        y: 7.9296875
+        y: 6.9296875
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16618,7 +16618,7 @@
     logicalLocalTransform:
       translation:
         x: -2.6484375
-        y: 7.9609375
+        y: 6.9609375
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16852,7 +16852,7 @@
     logicalLocalTransform:
       translation:
         x: -1.5546875
-        y: 7.91015625
+        y: 6.91015625
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16870,7 +16870,7 @@
     logicalLocalTransform:
       translation:
         x: -2.8046875
-        y: 7.91015625
+        y: 6.91015625
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16888,7 +16888,7 @@
     logicalLocalTransform:
       translation:
         x: 3.69140625
-        y: 6.91015625
+        y: 5.91015625
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16906,7 +16906,7 @@
     logicalLocalTransform:
       translation:
         x: 2.44140625
-        y: 6.91015625
+        y: 5.91015625
       rotation: 0
 - type: LayerSetupComponent
   content:
@@ -16977,40 +16977,22 @@
     objectId: 944
     logicalLocalTransform:
       translation:
-        x: 7.6015625
-        y: 4.9609375
-      rotation: 0
-- type: LayerSetupComponent
-  content:
-    objectId: 944
-    layer: 4
-- type: PrototypeComponent
-  content:
-    objectId: 944
-    descriptorId: Stone
-    requestImmediateFixedAssembly: 0
-    requestImmediateNormalAssembly: 0
-- type: Transform2dComponent
-  content:
-    objectId: 945
-    logicalLocalTransform:
-      translation:
         x: -9.8046875
         y: -0.08984375
       rotation: 0
 - type: LayerSetupComponent
   content:
-    objectId: 945
+    objectId: 944
     layer: 4
 - type: PrototypeComponent
   content:
-    objectId: 945
+    objectId: 944
     descriptorId: Mushroom2
     requestImmediateFixedAssembly: 0
     requestImmediateNormalAssembly: 0
 - type: Transform2dComponent
   content:
-    objectId: 946
+    objectId: 945
     logicalLocalTransform:
       translation:
         x: -11.0546875
@@ -17018,17 +17000,17 @@
       rotation: 0
 - type: LayerSetupComponent
   content:
-    objectId: 946
+    objectId: 945
     layer: 4
 - type: PrototypeComponent
   content:
-    objectId: 946
+    objectId: 945
     descriptorId: Mushroom2
     requestImmediateFixedAssembly: 0
     requestImmediateNormalAssembly: 0
 - type: Transform2dComponent
   content:
-    objectId: 947
+    objectId: 946
     logicalLocalTransform:
       translation:
         x: -9.0546875
@@ -17036,17 +17018,17 @@
       rotation: 0
 - type: LayerSetupComponent
   content:
-    objectId: 947
+    objectId: 946
     layer: 4
 - type: PrototypeComponent
   content:
-    objectId: 947
+    objectId: 946
     descriptorId: Mushroom2
     requestImmediateFixedAssembly: 0
     requestImmediateNormalAssembly: 0
 - type: Transform2dComponent
   content:
-    objectId: 948
+    objectId: 947
     logicalLocalTransform:
       translation:
         x: -8.3046875
@@ -17054,17 +17036,17 @@
       rotation: 0
 - type: LayerSetupComponent
   content:
-    objectId: 948
+    objectId: 947
     layer: 4
 - type: PrototypeComponent
   content:
-    objectId: 948
+    objectId: 947
     descriptorId: Mushroom2
     requestImmediateFixedAssembly: 0
     requestImmediateNormalAssembly: 0
 - type: Transform2dComponent
   content:
-    objectId: 949
+    objectId: 948
     logicalLocalTransform:
       translation:
         x: -9.80859375
@@ -17072,17 +17054,17 @@
       rotation: 0
 - type: LayerSetupComponent
   content:
-    objectId: 949
+    objectId: 948
     layer: 4
 - type: PrototypeComponent
   content:
-    objectId: 949
+    objectId: 948
     descriptorId: Mushroom1
     requestImmediateFixedAssembly: 0
     requestImmediateNormalAssembly: 0
 - type: Transform2dComponent
   content:
-    objectId: 950
+    objectId: 949
     logicalLocalTransform:
       translation:
         x: -13.05859375
@@ -17090,11 +17072,11 @@
       rotation: 0
 - type: LayerSetupComponent
   content:
-    objectId: 950
+    objectId: 949
     layer: 4
 - type: PrototypeComponent
   content:
-    objectId: 950
+    objectId: 949
     descriptorId: Mushroom1
     requestImmediateFixedAssembly: 0
     requestImmediateNormalAssembly: 0
