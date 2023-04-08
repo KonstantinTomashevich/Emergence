@@ -215,7 +215,7 @@ void MovementProcessor::PrepareContext (Context &_context) noexcept
          const auto *contact = static_cast<const Emergence::Celerity::CollisionContact2d *> (*contactCursor);
          ++contactCursor)
     {
-        if (contact->normal.y >= 0.0f)
+        if (contact->normal.y > 0.0f)
         {
             if (auto contextCursor = fetchCollisionShapeMovementContextByShapeId.Execute (&contact->shapeId);
                 const auto *shapeContext = static_cast<const CollisionShapeMovementContextComponent *> (*contextCursor))
@@ -437,6 +437,12 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_c
     if (_context.movement->framesInAir > 0u)
     {
         nextVelocity += _context.physicsWorld->gravity * _context.time->fixedDurationS;
+    }
+    // If we're not in the air, but our movement velocity is negative, we need to reset it.
+    // Otherwise, going down on stair-like environment will result in insane downward velocity.
+    else if (_context.movement->lastMovementVelocity.y < 0.0f)
+    {
+        nextVelocity.y = 0.0f;
     }
 
     auto applyAirControl = [&nextVelocity, &_context] ()
