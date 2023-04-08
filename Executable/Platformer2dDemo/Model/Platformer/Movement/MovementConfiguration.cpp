@@ -11,7 +11,8 @@ const MovementConfiguration::Reflection &MovementConfiguration::Reflect () noexc
         EMERGENCE_MAPPING_REGISTER_REGULAR (runVelocity);
         EMERGENCE_MAPPING_REGISTER_REGULAR (jumpVelocity);
         EMERGENCE_MAPPING_REGISTER_REGULAR (groundMaxSlopeDeg);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (airControlVelocity);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (airControlMaxVelocity);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (airControlAcceleration);
         EMERGENCE_MAPPING_REGISTER_REGULAR (rollVelocity);
         EMERGENCE_MAPPING_REGISTER_REGULAR (rollDurationS);
         EMERGENCE_MAPPING_REGISTER_REGULAR (slideVelocity);

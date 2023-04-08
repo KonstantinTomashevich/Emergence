@@ -14,7 +14,9 @@ struct MovementConfiguration final
 
     float groundMaxSlopeDeg = 0.0f;
 
-    float airControlVelocity = 0.0f;
+    float airControlMaxVelocity = 0.0f;
+
+    float airControlAcceleration = 0.0f;
 
     float rollVelocity = 0.0f;
 
@@ -38,7 +40,8 @@ struct MovementConfiguration final
         Emergence::StandardLayout::FieldId runVelocity;
         Emergence::StandardLayout::FieldId jumpVelocity;
         Emergence::StandardLayout::FieldId groundMaxSlopeDeg;
-        Emergence::StandardLayout::FieldId airControlVelocity;
+        Emergence::StandardLayout::FieldId airControlMaxVelocity;
+        Emergence::StandardLayout::FieldId airControlAcceleration;
         Emergence::StandardLayout::FieldId rollVelocity;
         Emergence::StandardLayout::FieldId rollDurationS;
         Emergence::StandardLayout::FieldId slideVelocity;

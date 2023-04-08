@@ -12,6 +12,8 @@ const MovementComponent::Reflection &MovementComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (state);
         EMERGENCE_MAPPING_REGISTER_REGULAR (stateStartTimeNs);
         EMERGENCE_MAPPING_REGISTER_REGULAR (lastMovementVelocity);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (framesInAir);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (framesOnGround);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

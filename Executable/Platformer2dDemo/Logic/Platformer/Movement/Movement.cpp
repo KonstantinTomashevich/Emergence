@@ -6,6 +6,7 @@
 #include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
 #include <Celerity/Physics2d/Events.hpp>
+#include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
 #include <Celerity/Physics2d/RigidBody2dComponent.hpp>
 #include <Celerity/Physics2d/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -38,38 +39,33 @@ public:
     void Execute () noexcept;
 
 private:
-    struct ExternalContext final
+    struct Context final
     {
+        MovementComponent *movement = nullptr;
+        Emergence::Celerity::RigidBody2dComponent *rigidBody = nullptr;
+        const MovementConfiguration *configuration = nullptr;
+        const MovementConfigurationSingleton *globalConfiguration = nullptr;
+        const Emergence::Celerity::TimeSingleton *time = nullptr;
+        const Emergence::Celerity::PhysicsWorld2dSingleton *physicsWorld = nullptr;
+
         Emergence::Math::Vector2f axisClampedDirectionInput = Emergence::Math::Vector2f::ZERO;
-        Emergence::Math::Vector2f bodyVelocity = Emergence::Math::Vector2f::ZERO;
         bool blocked = false;
-        bool inAir = false;
         bool rollInput = false;
+        bool stateChanged;
     };
 
-    void GatherContext (ExternalContext &_context,
-                        const MovementComponent *_movement,
-                        const Emergence::Celerity::RigidBody2dComponent *_rigidBody,
-                        const MovementConfiguration *_configuration) noexcept;
+    void PrepareContext (Context &_context) noexcept;
 
-    static MovementState RunStateMachine (const ExternalContext &_context,
-                                          const MovementComponent *_movement,
-                                          const MovementConfiguration *_configuration,
-                                          const MovementConfigurationSingleton *_globalConfiguration,
-                                          const Emergence::Celerity::TimeSingleton *_time) noexcept;
+    static MovementState RunStateMachine (const Context &_context) noexcept;
 
     void UpdateShapesWithMovementContext (const MovementComponent *_movement) noexcept;
 
-    static void ApplyMovementState (const ExternalContext &_context,
-                                    MovementComponent *_movement,
-                                    Emergence::Celerity::RigidBody2dComponent *_rigidBody,
-                                    const MovementConfiguration *_configuration,
-                                    const MovementConfigurationSingleton *_globalConfiguration,
-                                    bool _stateChanged) noexcept;
+    static void ApplyMovementState (const Context &_context) noexcept;
 
     Emergence::Celerity::FetchSingletonQuery fetchTime;
     Emergence::Celerity::FetchSingletonQuery fetchWorld;
     Emergence::Celerity::FetchSingletonQuery fetchMovementConfiguration;
+    Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
 
     Emergence::Celerity::ModifyAscendingRangeQuery modifyMovementByIdAscending;
     Emergence::Celerity::FetchValueQuery fetchMovementConfigurationById;
@@ -87,6 +83,7 @@ MovementProcessor::MovementProcessor (Emergence::Celerity::TaskConstructor &_con
     : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       fetchMovementConfiguration (FETCH_SINGLETON (MovementConfigurationSingleton)),
+      fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorld2dSingleton)),
 
       modifyMovementByIdAscending (MODIFY_ASCENDING_RANGE (MovementComponent, objectId)),
       fetchMovementConfigurationById (FETCH_VALUE_1F (MovementConfiguration, id)),
@@ -109,70 +106,78 @@ MovementProcessor::MovementProcessor (Emergence::Celerity::TaskConstructor &_con
 
 void MovementProcessor::Execute () noexcept
 {
-    auto worldCursor = fetchTime.Execute ();
+    auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     if (world->updateMode != Emergence::Celerity::WorldUpdateMode::SIMULATING)
     {
         return;
     }
-    
+
+    Context context;
     auto timeCursor = fetchTime.Execute ();
-    const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
+    context.time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
 
     auto globalConfigurationCursor = fetchMovementConfiguration.Execute ();
-    const auto *globalConfiguration = static_cast<const MovementConfigurationSingleton *> (*globalConfigurationCursor);
-    ExternalContext context;
+    context.globalConfiguration = static_cast<const MovementConfigurationSingleton *> (*globalConfigurationCursor);
+
+    auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
+    context.physicsWorld = static_cast<const Emergence::Celerity::PhysicsWorld2dSingleton *> (*physicsWorldCursor);
 
     for (auto movementCursor = modifyMovementByIdAscending.Execute (nullptr, nullptr);
-         auto *movement = static_cast<MovementComponent *> (*movementCursor);)
+         (context.movement = static_cast<MovementComponent *> (*movementCursor));)
     {
-        auto configurationCursor = fetchMovementConfigurationById.Execute (&movement->configurationId);
-        const auto *configuration = static_cast<const MovementConfiguration *> (*configurationCursor);
+        auto configurationCursor = fetchMovementConfigurationById.Execute (&context.movement->configurationId);
+        context.configuration = static_cast<const MovementConfiguration *> (*configurationCursor);
 
-        if (!configuration)
+        if (!context.configuration)
         {
-            EMERGENCE_LOG (ERROR, "Movement: There is no configuration \"", movement->configurationId,
-                           "\" for MovementComponent on object with id ", movement->objectId,
+            EMERGENCE_LOG (ERROR, "Movement: There is no configuration \"", context.movement->configurationId,
+                           "\" for MovementComponent on object with id ", context.movement->objectId,
                            ", therefore MovementComponent will be deleted.");
             ~movementCursor;
             continue;
         }
 
-        auto rigidBodyCursor = editRigidBodyById.Execute (&movement->objectId);
-        auto *rigidBody = static_cast<Emergence::Celerity::RigidBody2dComponent *> (*rigidBodyCursor);
+        auto rigidBodyCursor = editRigidBodyById.Execute (&context.movement->objectId);
+        context.rigidBody = static_cast<Emergence::Celerity::RigidBody2dComponent *> (*rigidBodyCursor);
 
-        if (!rigidBody)
+        if (!context.rigidBody)
         {
             EMERGENCE_LOG (
                 ERROR,
                 "Movement: There is no configuration RigidBody2dComponent for MovementComponent on object with id ",
-                movement->objectId, ", therefore MovementComponent will be deleted.");
+                context.movement->objectId, ", therefore MovementComponent will be deleted.");
             ~movementCursor;
             continue;
         }
 
-        GatherContext (context, movement, rigidBody, configuration);
-        const MovementState newState = RunStateMachine (context, movement, configuration, globalConfiguration, time);
-        const bool stateChanged = newState != movement->state;
+        // Movement is designed for dynamic bodies.
+        EMERGENCE_ASSERT (context.rigidBody->type == Emergence::Celerity::RigidBody2dType::DYNAMIC);
+        // Gravitation is applied manually.
+        EMERGENCE_ASSERT (!context.rigidBody->affectedByGravity);
+        // Velocity changes from simulation internals (like collisions) should be ignored.
+        EMERGENCE_ASSERT (context.rigidBody->ignoreSimulationVelocityChange);
 
-        if (stateChanged)
+        PrepareContext (context);
+        const MovementState newState = RunStateMachine (context);
+        context.stateChanged = newState != context.movement->state;
+
+        if (context.stateChanged)
         {
-            movement->state = newState;
-            UpdateShapesWithMovementContext (movement);
+            context.movement->state = newState;
+            context.movement->stateStartTimeNs = context.time->fixedTimeNs;
+            UpdateShapesWithMovementContext (context.movement);
         }
 
-        ApplyMovementState (context, movement, rigidBody, configuration, globalConfiguration, stateChanged);
+        ApplyMovementState (context);
         ++movementCursor;
     }
 }
 
-void MovementProcessor::GatherContext (MovementProcessor::ExternalContext &_context,
-                                       const MovementComponent *_movement,
-                                       const Emergence::Celerity::RigidBody2dComponent *_rigidBody,
-                                       const MovementConfiguration *_configuration) noexcept
+void MovementProcessor::PrepareContext (Context &_context) noexcept
 {
-    auto movementBlockedCursor = fetchMovementBlockedById.Execute (&_movement->objectId);
+    auto movementBlockedCursor = fetchMovementBlockedById.Execute (&_context.movement->objectId);
     _context.blocked = *movementBlockedCursor;
 
     if (_context.blocked)
@@ -182,11 +187,10 @@ void MovementProcessor::GatherContext (MovementProcessor::ExternalContext &_cont
         return;
     }
 
-    _context.bodyVelocity = _rigidBody->linearVelocity;
     _context.axisClampedDirectionInput = Emergence::Math::Vector2f::ZERO;
     _context.rollInput = false;
 
-    for (auto inputActionCursor = fetchInputActionById.Execute (&_movement->objectId);
+    for (auto inputActionCursor = fetchInputActionById.Execute (&_context.movement->objectId);
          const auto *inputAction = static_cast<const Emergence::Celerity::InputActionComponent *> (*inputActionCursor);
          ++inputActionCursor)
     {
@@ -205,9 +209,9 @@ void MovementProcessor::GatherContext (MovementProcessor::ExternalContext &_cont
 
     _context.axisClampedDirectionInput.x = Emergence::Math::Clamp (_context.axisClampedDirectionInput.x, -1.0f, 1.0f);
     _context.axisClampedDirectionInput.y = Emergence::Math::Clamp (_context.axisClampedDirectionInput.y, -1.0f, 1.0f);
+    bool inAir = true;
 
-    _context.inAir = true;
-    for (auto contactCursor = fetchCollisionContactByObjectId.Execute (&_movement->objectId);
+    for (auto contactCursor = fetchCollisionContactByObjectId.Execute (&_context.movement->objectId);
          const auto *contact = static_cast<const Emergence::Celerity::CollisionContact2d *> (*contactCursor);
          ++contactCursor)
     {
@@ -223,22 +227,29 @@ void MovementProcessor::GatherContext (MovementProcessor::ExternalContext &_cont
                     EMERGENCE_ASSERT (slopeRad < Emergence::Math::PI * 0.5f);
                     const float slopeDeg = Emergence::Math::ToDegrees (slopeRad);
 
-                    if (slopeDeg <= _configuration->groundMaxSlopeDeg)
+                    if (slopeDeg <= _context.configuration->groundMaxSlopeDeg)
                     {
-                        _context.inAir = false;
+                        inAir = false;
                         break;
                     }
                 }
             }
         }
     }
+
+    if (inAir)
+    {
+        ++_context.movement->framesInAir;
+        _context.movement->framesOnGround = 0u;
+    }
+    else
+    {
+        _context.movement->framesInAir = 0u;
+        ++_context.movement->framesOnGround;
+    }
 }
 
-MovementState MovementProcessor::RunStateMachine (const MovementProcessor::ExternalContext &_context,
-                                                  const MovementComponent *_movement,
-                                                  const MovementConfiguration *_configuration,
-                                                  const MovementConfigurationSingleton *_globalConfiguration,
-                                                  const Emergence::Celerity::TimeSingleton *_time) noexcept
+MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Context &_context) noexcept
 {
     if (_context.blocked)
     {
@@ -246,11 +257,16 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
         return MovementState::BLOCKED;
     }
 
-    MovementState state = _movement->state;
+    MovementState previousState = _context.movement->state;
+    MovementState state = _context.movement->state;
     bool stateChanged;
 
-    auto transit = [&state, &stateChanged] (MovementState _target)
+    auto transit = [&previousState, &state, &stateChanged] (MovementState _target)
     {
+        // Assert that state machine contains no deadlocks.
+        EMERGENCE_ASSERT (_target != previousState);
+
+        previousState = state;
         state = _target;
         stateChanged = true;
     };
@@ -261,26 +277,27 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
         switch (state)
         {
         case MovementState::IDLE:
-            if (_context.inAir)
+            if (_context.movement->framesInAir > 1u)
             {
                 transit (MovementState::FALL);
             }
-            else if (_configuration->allowRoll && _context.rollInput)
+            else if (_context.configuration->allowRoll && _context.rollInput)
             {
                 transit (MovementState::ROLL);
             }
-            else if (_configuration->allowJump &&
-                     _context.axisClampedDirectionInput.y > _globalConfiguration->jumpActuationThreshold)
+            else if (_context.configuration->allowJump &&
+                     _context.axisClampedDirectionInput.y > _context.globalConfiguration->jumpActuationThreshold)
             {
                 transit (MovementState::JUMP);
             }
-            else if (_configuration->allowCrouch &&
-                     _context.axisClampedDirectionInput.y < -_globalConfiguration->crouchOrSlideActuationThreshold)
+            else if (_context.configuration->allowCrouch &&
+                     _context.axisClampedDirectionInput.y <
+                         -_context.globalConfiguration->crouchOrSlideActuationThreshold)
             {
                 transit (MovementState::CROUCH);
             }
-            else if (_context.axisClampedDirectionInput.x > _globalConfiguration->runActuationThreshold ||
-                     _context.axisClampedDirectionInput.x < -_globalConfiguration->runActuationThreshold)
+            else if (_context.axisClampedDirectionInput.x > _context.globalConfiguration->runActuationThreshold ||
+                     _context.axisClampedDirectionInput.x < -_context.globalConfiguration->runActuationThreshold)
             {
                 transit (MovementState::RUN);
             }
@@ -288,26 +305,27 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
             break;
 
         case MovementState::RUN:
-            if (_context.inAir)
+            if (_context.movement->framesInAir > 1u)
             {
                 transit (MovementState::FALL);
             }
-            else if (_configuration->allowRoll && _context.rollInput)
+            else if (_context.configuration->allowRoll && _context.rollInput)
             {
                 transit (MovementState::ROLL);
             }
-            else if (_configuration->allowJump &&
-                     _context.axisClampedDirectionInput.y > _globalConfiguration->jumpActuationThreshold)
+            else if (_context.configuration->allowJump &&
+                     _context.axisClampedDirectionInput.y > _context.globalConfiguration->jumpActuationThreshold)
             {
                 transit (MovementState::JUMP);
             }
-            else if (_configuration->allowSlide &&
-                     _context.axisClampedDirectionInput.y < -_globalConfiguration->crouchOrSlideActuationThreshold)
+            else if (_context.configuration->allowSlide &&
+                     _context.axisClampedDirectionInput.y <
+                         -_context.globalConfiguration->crouchOrSlideActuationThreshold)
             {
                 transit (MovementState::SLIDE);
             }
-            else if (_context.axisClampedDirectionInput.x < _globalConfiguration->runActuationThreshold &&
-                     _context.axisClampedDirectionInput.x > -_globalConfiguration->runActuationThreshold)
+            else if (_context.axisClampedDirectionInput.x < _context.globalConfiguration->runActuationThreshold &&
+                     _context.axisClampedDirectionInput.x > -_context.globalConfiguration->runActuationThreshold)
             {
                 transit (MovementState::IDLE);
             }
@@ -315,15 +333,16 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
             break;
 
         case MovementState::CROUCH:
-            if (_context.inAir)
+            if (_context.movement->framesInAir > 1u)
             {
                 transit (MovementState::FALL);
             }
-            else if (_configuration->allowRoll && _context.rollInput)
+            else if (_context.configuration->allowRoll && _context.rollInput)
             {
                 transit (MovementState::ROLL);
             }
-            else if (_context.axisClampedDirectionInput.y > -_globalConfiguration->crouchOrSlideActuationThreshold)
+            else if (_context.axisClampedDirectionInput.y >
+                     -_context.globalConfiguration->crouchOrSlideActuationThreshold)
             {
                 transit (MovementState::IDLE);
             }
@@ -332,23 +351,17 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
 
         case MovementState::JUMP:
         {
-            if (const bool justJumped = _movement->state != MovementState::JUMP; !justJumped)
+            if (_context.movement->state == MovementState::JUMP &&
+                _context.rigidBody->linearVelocity.y < Emergence::Math::EPSILON)
             {
-                if (!_context.inAir)
-                {
-                    transit (MovementState::IDLE);
-                }
-                else if (_context.bodyVelocity.y < 0.0f)
-                {
-                    transit (MovementState::FALL);
-                }
+                transit (MovementState::FALL);
             }
 
             break;
         }
 
         case MovementState::FALL:
-            if (!_context.inAir)
+            if (_context.movement->framesOnGround > 1u)
             {
                 transit (MovementState::IDLE);
             }
@@ -356,12 +369,14 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
             break;
 
         case MovementState::ROLL:
-            if (_context.inAir)
+            if (_context.movement->framesInAir > 1u)
             {
                 transit (MovementState::FALL);
             }
-            else if (_movement->stateStartTimeNs + static_cast<uint64_t> (_configuration->rollDurationS * 1e9f) >=
-                     _time->fixedTimeNs)
+            else if (_context.movement->state == MovementState::ROLL &&
+                     _context.movement->stateStartTimeNs +
+                             static_cast<uint64_t> (_context.configuration->rollDurationS * 1e9f) <=
+                         _context.time->fixedTimeNs)
             {
                 transit (MovementState::IDLE);
             }
@@ -369,12 +384,14 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Exter
             break;
 
         case MovementState::SLIDE:
-            if (_context.inAir)
+            if (_context.movement->framesInAir > 10u)
             {
                 transit (MovementState::FALL);
             }
-            else if (_movement->stateStartTimeNs + static_cast<uint64_t> (_configuration->slideDurationS * 1e9f) >=
-                     _time->fixedTimeNs)
+            else if (_context.movement->state == MovementState::SLIDE &&
+                     _context.movement->stateStartTimeNs +
+                             static_cast<uint64_t> (_context.configuration->slideDurationS * 1e9f) <=
+                         _context.time->fixedTimeNs)
             {
                 transit (MovementState::IDLE);
             }
@@ -411,31 +428,38 @@ void MovementProcessor::UpdateShapesWithMovementContext (const MovementComponent
     }
 }
 
-void MovementProcessor::ApplyMovementState (const MovementProcessor::ExternalContext &_context,
-                                            MovementComponent *_movement,
-                                            Emergence::Celerity::RigidBody2dComponent *_rigidBody,
-                                            const MovementConfiguration *_configuration,
-                                            const MovementConfigurationSingleton *_globalConfiguration,
-                                            bool _stateChanged) noexcept
+void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_context) noexcept
 {
-    Emergence::Math::Vector2f nextVelocity = Emergence::Math::Vector2f::ZERO;
-    // In some cases, like jump, velocity is added as one-up force and
-    // should be treated as external during further calculations next frame.
-    Emergence::Math::Vector2f forceVelocity = Emergence::Math::Vector2f::ZERO;
+    Emergence::Math::Vector2f nextVelocity = {0.0f, _context.movement->lastMovementVelocity.y};
 
-    auto applyAirControl = [&nextVelocity, &_context, _configuration, _globalConfiguration] ()
+    // It's better not to apply gravity velocity unless we think that we're falling,
+    // due to the fact that application results in "jerky" movement in some rare cases.
+    if (_context.movement->framesInAir > 0u)
     {
-        if (_context.axisClampedDirectionInput.x > _globalConfiguration->runActuationThreshold)
+        nextVelocity += _context.physicsWorld->gravity * _context.time->fixedDurationS;
+    }
+
+    auto applyAirControl = [&nextVelocity, &_context] ()
+    {
+        const float previousVelocityX = _context.movement->lastMovementVelocity.x;
+        nextVelocity.x = previousVelocityX;
+        const float velocityDelta = _context.configuration->airControlAcceleration * _context.time->fixedDurationS;
+
+        if (_context.axisClampedDirectionInput.x > _context.globalConfiguration->runActuationThreshold &&
+            previousVelocityX < _context.configuration->airControlMaxVelocity)
         {
-            nextVelocity.x = _configuration->airControlVelocity;
+            nextVelocity.x =
+                std::min (previousVelocityX + velocityDelta, _context.configuration->airControlMaxVelocity);
         }
-        else if (_context.axisClampedDirectionInput.x < -_globalConfiguration->runActuationThreshold)
+        else if (_context.axisClampedDirectionInput.x < -_context.globalConfiguration->runActuationThreshold &&
+                 previousVelocityX > -_context.configuration->airControlMaxVelocity)
         {
-            nextVelocity.x = -_configuration->airControlVelocity;
+            nextVelocity.x =
+                std::max (previousVelocityX - velocityDelta, -_context.configuration->airControlMaxVelocity);
         }
     };
 
-    switch (_movement->state)
+    switch (_context.movement->state)
     {
     case MovementState::IDLE:
     case MovementState::CROUCH:
@@ -443,24 +467,24 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::ExternalCon
         break;
 
     case MovementState::RUN:
-        if (_context.axisClampedDirectionInput.x > _globalConfiguration->runActuationThreshold)
+        if (_context.axisClampedDirectionInput.x > _context.globalConfiguration->runActuationThreshold)
         {
-            nextVelocity.x = _configuration->runVelocity;
+            nextVelocity.x = _context.configuration->runVelocity;
         }
-        else if (_context.axisClampedDirectionInput.x < -_globalConfiguration->runActuationThreshold)
+        else if (_context.axisClampedDirectionInput.x < -_context.globalConfiguration->runActuationThreshold)
         {
-            nextVelocity.x = -_configuration->runVelocity;
+            nextVelocity.x = -_context.configuration->runVelocity;
         }
 
         break;
 
     case MovementState::JUMP:
-        if (_stateChanged)
+        applyAirControl ();
+        if (_context.stateChanged)
         {
-            forceVelocity.y = _configuration->jumpVelocity;
+            nextVelocity.y = _context.configuration->jumpVelocity;
         }
 
-        applyAirControl ();
         break;
 
     case MovementState::FALL:
@@ -468,33 +492,34 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::ExternalCon
         break;
 
     case MovementState::ROLL:
-        if (_movement->lastMovementVelocity.x >= 0.0f)
+        if (_context.movement->lastMovementVelocity.x >= 0.0f)
         {
-            nextVelocity.x = _configuration->rollVelocity;
+            nextVelocity.x = _context.configuration->rollVelocity;
         }
         else
         {
-            nextVelocity.x = -_configuration->rollVelocity;
+            nextVelocity.x = -_context.configuration->rollVelocity;
         }
 
         break;
 
     case MovementState::SLIDE:
-        if (_movement->lastMovementVelocity.x >= 0.0f)
+        if (_context.movement->lastMovementVelocity.x >= 0.0f)
         {
-            nextVelocity.x = _configuration->slideVelocity;
+            nextVelocity.x = _context.configuration->slideVelocity;
         }
         else
         {
-            nextVelocity.x = -_configuration->slideVelocity;
+            nextVelocity.x = -_context.configuration->slideVelocity;
         }
 
         break;
     }
 
-    const Emergence::Math::Vector2f externalVelocity = _rigidBody->linearVelocity - _movement->lastMovementVelocity;
-    _rigidBody->linearVelocity = externalVelocity + nextVelocity + forceVelocity;
-    _movement->lastMovementVelocity = nextVelocity;
+    const Emergence::Math::Vector2f externalVelocity =
+        _context.rigidBody->linearVelocity - _context.movement->lastMovementVelocity;
+    _context.rigidBody->linearVelocity = externalVelocity + nextVelocity;
+    _context.movement->lastMovementVelocity = nextVelocity;
 }
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

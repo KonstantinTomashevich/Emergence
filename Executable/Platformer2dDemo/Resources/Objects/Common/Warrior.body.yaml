@@ -1,3 +1,6 @@
+- type: ControllableComponent
+  content:
+    objectId: 0
 - type: Sprite2dComponent
   content:
     objectId: 0
@@ -23,8 +26,10 @@
   content:
     objectId: 0
     type: 2
+    affectedByGravity: 0
     manipulatedOutsideOfSimulation: 1
     fixedRotation: 1
+    ignoreSimulationVelocityChange: 1
 - type: CollisionShape2dComponent
   content:
     objectId: 0

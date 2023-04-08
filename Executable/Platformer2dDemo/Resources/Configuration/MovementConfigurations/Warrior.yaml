@@ -1,7 +1,8 @@
 runVelocity: 2.0
-jumpVelocity: 10.0
+jumpVelocity: 6.5
 groundMaxSlopeDeg: 45.0
-airControlVelocity: 0.5
+airControlMaxVelocity: 1.0
+airControlAcceleration: 3.0
 rollVelocity: 1.5
 rollDurationS: 0.5
 slideVelocity: 3.0
