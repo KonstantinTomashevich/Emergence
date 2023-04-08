@@ -27,7 +27,7 @@ struct PhysicsWorld2dSingleton final
     /// \note To avoid excessive duplication, types A and B collide when
     ///       `(masks[A] & (1 << B)) | (masks[B] & (1 << A))`. Notice `|` operation in the center -- it means that
     ///       if A collides with B, you need to fill only one of the masks.
-    /// \details Can be changed from fixed pipeline.
+    /// \details Can be changed from fixed pipeline. By default filled with 1 bits for everything.
     std::array<uint32_t, 32u> collisionMasks;
 
     /// \brief Atomic counter for generating unique ids for collision shapes.

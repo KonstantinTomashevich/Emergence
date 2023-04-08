@@ -18,6 +18,7 @@ namespace Emergence::Celerity
 // NOLINTNEXTLINE(modernize-use-equals-default): It's not actually trivial. Why linter thinks it is?
 PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept
 {
+    collisionMasks.fill (std::numeric_limits<uint32_t>::max ());
     block_cast<b2World *> (implementationBlock) = nullptr;
 }
 
