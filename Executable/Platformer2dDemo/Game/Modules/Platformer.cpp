@@ -21,6 +21,7 @@
 
 #include <Modules/Platformer.hpp>
 
+#include <Platformer/Camera/Camera.hpp>
 #include <Platformer/Control/PlayerControl.hpp>
 #include <Platformer/Layer/LayerSetup.hpp>
 #include <Platformer/LooseCascadeRemovers.hpp>
@@ -98,6 +99,7 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (mainPipelineBuilder);
     Emergence::Celerity::UI::AddToNormalUpdate (mainPipelineBuilder, _gameState.GetFrameInputAccumulator (),
                                                 GetKeyCodeMapping ());
+    Camera::AddToNormalUpdate (mainPipelineBuilder);
     LayerSetup::AddToNormalUpdate (mainPipelineBuilder);
 
     mainPipelineBuilder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,

@@ -18,6 +18,7 @@
 
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
+#include <Platformer/Camera/CameraContextComponent.hpp>
 #include <Platformer/Control/ControllableComponent.hpp>
 #include <Platformer/Layer/LayerSetupComponent.hpp>
 #include <Platformer/Movement/CollisionShapeMovementContextComponent.hpp>
@@ -34,6 +35,8 @@ Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexc
                                     Emergence::Celerity::PrototypeComponent::Reflect ().descriptorId});
         typeManifest.AddInjection ({SpawnComponent::Reflect ().mapping, SpawnComponent::Reflect ().prototypeId});
 
+        typeManifest.Register (CameraContextComponent::Reflect ().mapping,
+                               {CameraContextComponent::Reflect ().objectId});
         typeManifest.Register (CollisionShapeMovementContextComponent::Reflect ().mapping,
                                {CollisionShapeMovementContextComponent::Reflect ().objectId});
         typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});

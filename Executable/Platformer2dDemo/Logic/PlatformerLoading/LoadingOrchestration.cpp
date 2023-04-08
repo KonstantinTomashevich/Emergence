@@ -24,6 +24,7 @@
 
 #include <Log/Log.hpp>
 
+#include <Platformer/Camera/CameraContextComponent.hpp>
 #include <Platformer/Input/InputActions.hpp>
 #include <Platformer/Movement/MovementConfiguration.hpp>
 
@@ -72,6 +73,7 @@ private:
 
     Emergence::Celerity::InsertLongTermQuery insertTransform;
     Emergence::Celerity::InsertLongTermQuery insertCamera;
+    Emergence::Celerity::InsertLongTermQuery insertCameraContext;
     Emergence::Celerity::InsertLongTermQuery insertViewport;
     Emergence::Celerity::InsertLongTermQuery insertWorldPass;
     Emergence::Celerity::InsertLongTermQuery insertUIPass;
@@ -99,6 +101,7 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertCamera (INSERT_LONG_TERM (Emergence::Celerity::Camera2dComponent)),
+      insertCameraContext (INSERT_LONG_TERM (CameraContextComponent)),
       insertViewport (INSERT_LONG_TERM (Emergence::Celerity::Viewport)),
       insertWorldPass (INSERT_LONG_TERM (Emergence::Celerity::World2dRenderPass)),
       insertUIPass (INSERT_LONG_TERM (Emergence::Celerity::UIRenderPass)),
@@ -227,6 +230,11 @@ void LoadingOrchestrator::SpawnViewports (const Emergence::Celerity::WorldSingle
     camera->objectId = cameraTransform->GetObjectId ();
     camera->halfOrthographicSize = 3.75f;
     camera->visibilityMask = static_cast<uint64_t> (VisibilityMask::GAME_SCENE);
+
+    auto cameraContextCursor = insertCameraContext.Execute ();
+    auto *cameraContext = static_cast<CameraContextComponent *> (++cameraContextCursor);
+    cameraContext->objectId = cameraTransform->GetObjectId ();
+    cameraContext->target = CameraTarget::PLAYER;
 
     auto viewportCursor = insertViewport.Execute ();
     auto *worldViewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);
