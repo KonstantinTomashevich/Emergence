@@ -36,11 +36,11 @@
     shapeId: 1
     translation:
       x: -0.10
-      y: -0.6
+      y: -0.585
     rotation: 0
     geometry:
       type: 1
-      circleRadius: 0.25
+      circleRadius: 0.235
     materialId: Default
     trigger: 0
     maintainCollisionContacts: 1
@@ -57,11 +57,11 @@
     shapeId: 2
     translation:
       x: -0.10
-      y: 0.15
+      y: 0.135
     rotation: 0
     geometry:
       type: 1
-      circleRadius: 0.25
+      circleRadius: 0.235
     materialId: Default
     trigger: 0
     maintainCollisionContacts: 1
@@ -83,8 +83,8 @@
     geometry:
       type: 0
       boxHalfExtents:
-        x: 0.25
-        y: 0.375
+        x: 0.2
+        y: 0.36
     materialId: Default
     trigger: 0
     maintainCollisionContacts: 1

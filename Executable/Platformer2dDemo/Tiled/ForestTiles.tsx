@@ -27,7 +27,7 @@
  </tile>
  <tile id="2" class="EarthTile2">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="-0.406446" y="14.8353" width="128.437" height="56.9024"/>
+   <object id="1" x="-0.406446" y="16.26" width="128.437" height="56.9024"/>
    <object id="2" x="44.3026" y="70.9248" width="83.7279" height="38.8156"/>
   </objectgroup>
  </tile>
