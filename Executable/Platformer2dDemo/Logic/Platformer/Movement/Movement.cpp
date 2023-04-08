@@ -51,7 +51,8 @@ private:
         Emergence::Math::Vector2f axisClampedDirectionInput = Emergence::Math::Vector2f::ZERO;
         bool blocked = false;
         bool rollInput = false;
-        bool stateChanged;
+        bool movementBlockedFromAbove = false;
+        bool stateChanged = false;
     };
 
     void PrepareContext (Context &_context) noexcept;
@@ -234,6 +235,10 @@ void MovementProcessor::PrepareContext (Context &_context) noexcept
                     }
                 }
             }
+        }
+        else
+        {
+            _context.movementBlockedFromAbove = true;
         }
     }
 
@@ -431,6 +436,12 @@ void MovementProcessor::UpdateShapesWithMovementContext (const MovementComponent
 void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_context) noexcept
 {
     Emergence::Math::Vector2f nextVelocity = {0.0f, _context.movement->lastMovementVelocity.y};
+
+    // When we're blocked from above and have upward velocity, reset it to avoid floating.
+    if (_context.movementBlockedFromAbove && nextVelocity.y > 0.0f)
+    {
+        nextVelocity.y = 0.0f;
+    }
 
     // It's better not to apply gravity velocity unless we think that we're falling,
     // due to the fact that application results in "jerky" movement in some rare cases.
