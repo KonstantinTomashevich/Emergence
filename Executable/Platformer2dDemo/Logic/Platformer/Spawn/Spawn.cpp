@@ -13,6 +13,7 @@
 #include <Platformer/Spawn/Spawn.hpp>
 #include <Platformer/Spawn/SpawnComponent.hpp>
 #include <Platformer/Spawn/SpawnMarkerComponent.hpp>
+#include <Platformer/Team/TeamComponent.hpp>
 
 namespace Spawn
 {
@@ -39,6 +40,7 @@ private:
     Emergence::Celerity::EditValueQuery editSpawnByObjectId;
     Emergence::Celerity::EditAscendingRangeQuery editSpawnByAscendingNextSpawnTimeNs;
     Emergence::Celerity::FetchValueQuery fetchLayerSetupByObjectId;
+    Emergence::Celerity::FetchValueQuery fetchTeamByObjectId;
 
     Emergence::Celerity::FetchValueQuery fetchTransformByObjectId;
     Emergence::Celerity::Transform2dWorldAccessor transformWorldAccessor;
@@ -47,6 +49,7 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertPrototype;
     Emergence::Celerity::InsertLongTermQuery insertMarker;
     Emergence::Celerity::InsertLongTermQuery insertLayerSetup;
+    Emergence::Celerity::InsertLongTermQuery insertTeam;
 };
 
 SpawnManager::SpawnManager (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -58,6 +61,7 @@ SpawnManager::SpawnManager (Emergence::Celerity::TaskConstructor &_constructor) 
       editSpawnByObjectId (EDIT_VALUE_1F (SpawnComponent, objectId)),
       editSpawnByAscendingNextSpawnTimeNs (EDIT_ASCENDING_RANGE (SpawnComponent, nextSpawnTimeNs)),
       fetchLayerSetupByObjectId (FETCH_VALUE_1F (LayerSetupComponent, objectId)),
+      fetchTeamByObjectId (FETCH_VALUE_1F (TeamComponent, objectId)),
 
       fetchTransformByObjectId (FETCH_VALUE_1F (Emergence::Celerity::Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -65,7 +69,8 @@ SpawnManager::SpawnManager (Emergence::Celerity::TaskConstructor &_constructor) 
       insertTransform (INSERT_LONG_TERM (Emergence::Celerity::Transform2dComponent)),
       insertPrototype (INSERT_LONG_TERM (Emergence::Celerity::PrototypeComponent)),
       insertMarker (INSERT_LONG_TERM (SpawnMarkerComponent)),
-      insertLayerSetup (INSERT_LONG_TERM (LayerSetupComponent))
+      insertLayerSetup (INSERT_LONG_TERM (LayerSetupComponent)),
+      insertTeam (INSERT_LONG_TERM (TeamComponent))
 {
     _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::STARTED);
@@ -153,6 +158,21 @@ void SpawnManager::ProcessScheduledSpawns (const Emergence::Celerity::TimeSingle
             auto *layerSetup = static_cast<LayerSetupComponent *> (++layerSetupCursor);
             layerSetup->objectId = transform->GetObjectId ();
             layerSetup->layer = layer.value ();
+        }
+
+        Emergence::Container::Optional<uint16_t> team;
+        if (auto teamCursor = fetchTeamByObjectId.Execute (&spawn->objectId);
+            const auto *spawnTeam = static_cast<const TeamComponent *> (*teamCursor))
+        {
+            team = spawnTeam->teamId;
+        }
+
+        if (team)
+        {
+            auto teamCursor = insertTeam.Execute ();
+            auto *spawnedTeam = static_cast<TeamComponent *> (++teamCursor);
+            spawnedTeam->objectId = transform->GetObjectId ();
+            spawnedTeam->teamId = team.value ();
         }
 
         ++spawn->currentSpawnedCount;

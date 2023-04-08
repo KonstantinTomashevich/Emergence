@@ -21,9 +21,11 @@
 
 #include <Modules/Platformer.hpp>
 
+#include <Platformer/Control/PlayerControl.hpp>
 #include <Platformer/Layer/LayerSetup.hpp>
-#include <Platformer/Spawn/Spawn.hpp>
+#include <Platformer/LooseCascadeRemovers.hpp>
 #include <Platformer/Movement/Movement.hpp>
+#include <Platformer/Spawn/Spawn.hpp>
 
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 
@@ -64,7 +66,9 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::Physics2dDebugDraw::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::Physics2dSimulation::AddToFixedUpdate (mainPipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (mainPipelineBuilder);
+    LooseCascadeRemovers::AddToFixedPipeline (mainPipelineBuilder);
     Movement::AddToFixedUpdate (mainPipelineBuilder);
+    PlayerControl::AddToFixedUpdate (mainPipelineBuilder);
     Spawn::AddToFixedUpdate (mainPipelineBuilder);
 
     mainPipelineBuilder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,

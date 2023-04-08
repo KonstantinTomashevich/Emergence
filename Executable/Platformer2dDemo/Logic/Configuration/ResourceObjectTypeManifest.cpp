@@ -18,10 +18,12 @@
 
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
+#include <Platformer/Control/ControllableComponent.hpp>
 #include <Platformer/Layer/LayerSetupComponent.hpp>
 #include <Platformer/Movement/CollisionShapeMovementContextComponent.hpp>
 #include <Platformer/Movement/MovementComponent.hpp>
 #include <Platformer/Spawn/SpawnComponent.hpp>
+#include <Platformer/Team/TeamComponent.hpp>
 
 Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexcept
 {
@@ -34,6 +36,7 @@ Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexc
 
         typeManifest.Register (CollisionShapeMovementContextComponent::Reflect ().mapping,
                                {CollisionShapeMovementContextComponent::Reflect ().objectId});
+        typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});
         typeManifest.Register (Emergence::Celerity::ButtonControl::Reflect ().mapping,
                                {Emergence::Celerity::ButtonControl::Reflect ().nodeId});
         typeManifest.Register (Emergence::Celerity::Camera2dComponent::Reflect ().mapping,
@@ -75,6 +78,7 @@ Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexc
         typeManifest.Register (LayerSetupComponent::Reflect ().mapping, {LayerSetupComponent::Reflect ().objectId});
         typeManifest.Register (MovementComponent::Reflect ().mapping, {MovementComponent::Reflect ().objectId});
         typeManifest.Register (SpawnComponent::Reflect ().mapping, {SpawnComponent::Reflect ().objectId});
+        typeManifest.Register (TeamComponent::Reflect ().mapping, {TeamComponent::Reflect ().objectId});
         return typeManifest;
     }();
 

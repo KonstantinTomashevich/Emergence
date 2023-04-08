@@ -1,5 +1,4 @@
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/Input/InputSubscriptionComponent.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
 #include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
 #include <Celerity/Physics2d/RigidBody2dComponent.hpp>
@@ -21,10 +20,12 @@
 
 #include <Configuration/AssemblyConfiguration.hpp>
 
+#include <Platformer/Control/ControllableComponent.hpp>
 #include <Platformer/Layer/LayerSetupComponent.hpp>
 #include <Platformer/Movement/CollisionShapeMovementContextComponent.hpp>
 #include <Platformer/Movement/MovementComponent.hpp>
 #include <Platformer/Spawn/SpawnComponent.hpp>
+#include <Platformer/Team/TeamComponent.hpp>
 
 static Emergence::Celerity::UniqueId GenerateShapeId (const void *_argument)
 {
@@ -78,6 +79,11 @@ Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept
     collisionShape2dComponent.keys.emplace_back () = {
         Emergence::Celerity::CollisionShape2dComponent::Reflect ().shapeId, SHAPE_ID_KEY};
 
+    Emergence::Celerity::TypeDescriptor &controllableComponent = types.emplace_back ();
+    controllableComponent.type = ControllableComponent::Reflect ().mapping;
+    controllableComponent.keys.emplace_back () = {ControllableComponent::Reflect ().objectId,
+                                                  Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+
     Emergence::Celerity::TypeDescriptor &collisionShapeMovementContextComponent = types.emplace_back ();
     collisionShapeMovementContextComponent.type = CollisionShapeMovementContextComponent::Reflect ().mapping;
     collisionShapeMovementContextComponent.keys.emplace_back () = {
@@ -89,6 +95,11 @@ Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept
     movementComponent.type = MovementComponent::Reflect ().mapping;
     movementComponent.keys.emplace_back () = {MovementComponent::Reflect ().objectId,
                                               Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+
+    Emergence::Celerity::TypeDescriptor &teamComponent = types.emplace_back ();
+    teamComponent.type = TeamComponent::Reflect ().mapping;
+    teamComponent.keys.emplace_back () = {TeamComponent::Reflect ().objectId,
+                                          Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
 
     Emergence::Celerity::TypeDescriptor &transform2dComponent = types.emplace_back ();
     transform2dComponent.type = Emergence::Celerity::Transform2dComponent::Reflect ().mapping;
