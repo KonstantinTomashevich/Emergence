@@ -21,6 +21,7 @@ const RigidBody2dComponent::Reflection &RigidBody2dComponent::Reflect () noexcep
         EMERGENCE_MAPPING_REGISTER_REGULAR (affectedByGravity);
         EMERGENCE_MAPPING_REGISTER_REGULAR (manipulatedOutsideOfSimulation);
         EMERGENCE_MAPPING_REGISTER_REGULAR (fixedRotation);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (ignoreSimulationVelocityChange);
         EMERGENCE_MAPPING_REGISTER_REGULAR (linearVelocity);
         EMERGENCE_MAPPING_REGISTER_REGULAR (angularVelocity);
         EMERGENCE_MAPPING_REGISTER_REGULAR (additiveLinearImpulse);

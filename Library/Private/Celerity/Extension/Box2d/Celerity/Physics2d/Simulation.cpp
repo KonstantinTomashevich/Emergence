@@ -1365,8 +1365,11 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
          auto *body = static_cast<RigidBody2dComponent *> (*dynamicCursor); ++dynamicCursor)
     {
         auto *box2dBody = static_cast<b2Body *> (body->implementationHandle);
-        body->linearVelocity = FromBox2d (box2dBody->GetLinearVelocity ());
-        body->angularVelocity = box2dBody->GetAngularVelocity ();
+        if (!body->ignoreSimulationVelocityChange)
+        {
+            body->linearVelocity = FromBox2d (box2dBody->GetLinearVelocity ());
+            body->angularVelocity = box2dBody->GetAngularVelocity ();
+        }
 
         body->additiveLinearImpulse = Math::Vector2f::ZERO;
         body->additiveAngularImpulse = 0.0f;
