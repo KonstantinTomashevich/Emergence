@@ -70,9 +70,16 @@ FetchSingletonQuery TaskConstructor::FetchSingleton (const StandardLayout::Mappi
 
 ModifySingletonQuery TaskConstructor::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
+    return ModifySingletonPartial (_typeMapping, {});
+}
+
+ModifySingletonQuery TaskConstructor::ModifySingletonPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping, _editedFields);
 
     return ModifySingletonQuery {
         view.localRegistry.ModifySingleton (_typeMapping),
@@ -156,21 +163,37 @@ FetchValueQuery TaskConstructor::FetchValue (const StandardLayout::Mapping &_typ
 ModifyValueQuery TaskConstructor::ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                                const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
+    return ModifyValuePartial (_typeMapping, _keyFields, {});
+}
+
+ModifyValueQuery TaskConstructor::ModifyValuePartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<StandardLayout::FieldId> &_keyFields,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructModifyQuery<ModifyValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
-                                                   _typeMapping);
+                                                   _typeMapping, _editedFields);
 }
 
 EditValueQuery TaskConstructor::EditValue (const StandardLayout::Mapping &_typeMapping,
                                            const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
+    return EditValuePartial (_typeMapping, _keyFields, {});
+}
+
+EditValueQuery TaskConstructor::EditValuePartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<StandardLayout::FieldId> &_keyFields,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructEditQuery<EditValueQuery> (view.localRegistry.ModifyValue (_typeMapping, _keyFields), view,
-                                               _typeMapping);
+                                               _typeMapping, _editedFields);
 }
 
 RemoveValueQuery TaskConstructor::RemoveValue (const StandardLayout::Mapping &_typeMapping,
@@ -194,21 +217,37 @@ FetchAscendingRangeQuery TaskConstructor::FetchAscendingRange (const StandardLay
 ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                  StandardLayout::FieldId _keyField) noexcept
 {
+    return ModifyAscendingRangePartial (_typeMapping, _keyField, {});
+}
+
+ModifyAscendingRangeQuery TaskConstructor::ModifyAscendingRangePartial (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructModifyQuery<ModifyAscendingRangeQuery> (
-        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping, _editedFields);
 }
 
 EditAscendingRangeQuery TaskConstructor::EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                              StandardLayout::FieldId _keyField) noexcept
 {
+    return EditAscendingRangePartial (_typeMapping, _keyField, {});
+}
+
+EditAscendingRangeQuery TaskConstructor::EditAscendingRangePartial (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructEditQuery<EditAscendingRangeQuery> (
-        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping);
+        view.localRegistry.ModifyAscendingRange (_typeMapping, _keyField), view, _typeMapping, _editedFields);
 }
 
 RemoveAscendingRangeQuery TaskConstructor::RemoveAscendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -232,21 +271,37 @@ FetchDescendingRangeQuery TaskConstructor::FetchDescendingRange (const StandardL
 ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                    StandardLayout::FieldId _keyField) noexcept
 {
+    return ModifyDescendingRangePartial (_typeMapping, _keyField, {});
+}
+
+ModifyDescendingRangeQuery TaskConstructor::ModifyDescendingRangePartial (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructModifyQuery<ModifyDescendingRangeQuery> (
-        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping, _editedFields);
 }
 
 EditDescendingRangeQuery TaskConstructor::EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                StandardLayout::FieldId _keyField) noexcept
 {
+    return EditDescendingRangePartial (_typeMapping, _keyField, {});
+}
+
+EditDescendingRangeQuery TaskConstructor::EditDescendingRangePartial (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructEditQuery<EditDescendingRangeQuery> (
-        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
+        view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping, _editedFields);
 }
 
 RemoveDescendingRangeQuery TaskConstructor::RemoveDescendingRange (const StandardLayout::Mapping &_typeMapping,
@@ -272,22 +327,40 @@ ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &
                                                  StandardLayout::FieldId _keyField,
                                                  const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
+    return ModifySignalPartial (_typeMapping, _keyField, _signaledValue, {});
+}
+
+ModifySignalQuery TaskConstructor::ModifySignalPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructModifyQuery<ModifySignalQuery> (
-        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping, _editedFields);
 }
 
 EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typeMapping,
                                              StandardLayout::FieldId _keyField,
                                              const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
+    return EditSignalPartial (_typeMapping, _keyField, _signaledValue, {});
+}
+
+EditSignalQuery TaskConstructor::EditSignalPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructEditQuery<EditSignalQuery> (
-        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping);
+        view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping, _editedFields);
 }
 
 RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &_typeMapping,
@@ -312,21 +385,37 @@ FetchShapeIntersectionQuery TaskConstructor::FetchShapeIntersection (
 ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
+    return ModifyShapeIntersectionPartial (_typeMapping, _dimensions, {});
+}
+
+ModifyShapeIntersectionQuery TaskConstructor::ModifyShapeIntersectionPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<Warehouse::Dimension> &_dimensions,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructModifyQuery<ModifyShapeIntersectionQuery> (
-        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping, _editedFields);
 }
 
 EditShapeIntersectionQuery TaskConstructor::EditShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
+    return EditShapeIntersectionPartial (_typeMapping, _dimensions, {});
+}
+
+EditShapeIntersectionQuery TaskConstructor::EditShapeIntersectionPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<Warehouse::Dimension> &_dimensions,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructEditQuery<EditShapeIntersectionQuery> (
-        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping);
+        view.localRegistry.ModifyShapeIntersection (_typeMapping, _dimensions), view, _typeMapping, _editedFields);
 }
 
 RemoveShapeIntersectionQuery TaskConstructor::RemoveShapeIntersection (
@@ -350,21 +439,37 @@ FetchRayIntersectionQuery TaskConstructor::FetchRayIntersection (
 ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
+    return ModifyRayIntersectionPartial (_typeMapping, _dimensions, {});
+}
+
+ModifyRayIntersectionQuery TaskConstructor::ModifyRayIntersectionPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<Warehouse::Dimension> &_dimensions,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructModifyQuery<ModifyRayIntersectionQuery> (
-        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping, _editedFields);
 }
 
 EditRayIntersectionQuery TaskConstructor::EditRayIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept
 {
+    return EditRayIntersectionPartial (_typeMapping, _dimensions, {});
+}
+
+EditRayIntersectionQuery TaskConstructor::EditRayIntersectionPartial (
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<Warehouse::Dimension> &_dimensions,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
+{
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);
 
     return ConstructEditQuery<EditRayIntersectionQuery> (
-        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping);
+        view.localRegistry.ModifyRayIntersection (_typeMapping, _dimensions), view, _typeMapping, _editedFields);
 }
 
 RemoveRayIntersectionQuery TaskConstructor::RemoveRayIntersection (
@@ -406,12 +511,14 @@ void TaskConstructor::RegisterWriteAccess (Memory::UniqueString _resourceName) n
 }
 
 template <typename WrappedQuery, typename SourceQuery>
-WrappedQuery TaskConstructor::ConstructModifyQuery (SourceQuery _source,
-                                                    WorldView &_view,
-                                                    const StandardLayout::Mapping &_typeMapping) noexcept
+WrappedQuery TaskConstructor::ConstructModifyQuery (
+    SourceQuery _source,
+    WorldView &_view,
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
 {
     TrivialEventTriggerRow *eventsOnRemove = BindEventsOnRemove (_typeMapping);
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping, _editedFields);
     return WrappedQuery {
         _source,
         eventsOnRemove ? _view.RequestOnRemoveEventInstances (parent->currentPipelineType, eventsOnRemove) : nullptr,
@@ -420,11 +527,13 @@ WrappedQuery TaskConstructor::ConstructModifyQuery (SourceQuery _source,
 }
 
 template <typename WrappedQuery, typename SourceQuery>
-WrappedQuery TaskConstructor::ConstructEditQuery (SourceQuery _source,
-                                                  WorldView &_view,
-                                                  const StandardLayout::Mapping &_typeMapping) noexcept
+WrappedQuery TaskConstructor::ConstructEditQuery (
+    SourceQuery _source,
+    WorldView &_view,
+    const StandardLayout::Mapping &_typeMapping,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
 {
-    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping);
+    ChangeTracker *changeTracker = BindChangeTracker (_typeMapping, _editedFields);
     return WrappedQuery {
         _source, nullptr,
         changeTracker ? _view.RequestOnChangeEventInstances (parent->currentPipelineType, changeTracker) : nullptr,
@@ -477,7 +586,9 @@ TrivialEventTriggerRow *TaskConstructor::BindEventsOnRemove (const StandardLayou
     return BindTrivialEvents (eventScheme.onRemove, _trackedType);
 }
 
-ChangeTracker *TaskConstructor::BindChangeTracker (const StandardLayout::Mapping &_trackedType) noexcept
+ChangeTracker *TaskConstructor::BindChangeTracker (
+    const StandardLayout::Mapping &_trackedType,
+    const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
 {
     World::EventScheme &eventScheme =
         parent->worldView->world->eventSchemes[static_cast<std::size_t> (parent->currentPipelineType)];
@@ -488,8 +599,26 @@ ChangeTracker *TaskConstructor::BindChangeTracker (const StandardLayout::Mapping
         {
             for (OnChangeEventTrigger *trigger : tracker.GetEventTriggers ())
             {
-                RegisterWriteAccess (trigger->GetEventType ().GetName ());
-                RegisterEventProduction (trigger->GetEventType ());
+                // We treat empty field edition array as full object edition.
+                bool editingTrackedFields = _editedFields.empty ();
+
+                if (!_editedFields.empty ())
+                {
+                    for (StandardLayout::FieldId field : _editedFields)
+                    {
+                        if (trigger->IsFieldTracked (field))
+                        {
+                            editingTrackedFields = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (editingTrackedFields)
+                {
+                    RegisterWriteAccess (trigger->GetEventType ().GetName ());
+                    RegisterEventProduction (trigger->GetEventType ());
+                }
             }
 
             return &tracker;

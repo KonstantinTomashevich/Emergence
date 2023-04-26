@@ -74,6 +74,14 @@ public:
     /// \brief Grants read-write access to singleton, described by given mapping.
     [[nodiscard]] ModifySingletonQuery ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept;
 
+    /// \brief Grants read-write access to singleton, described by given mapping,
+    ///        and informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifySingletonQuery ModifySingletonPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants insertion access to short term objects storage, described by given mapping.
     [[nodiscard]] InsertShortTermQuery InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept;
 
@@ -96,10 +104,30 @@ public:
     [[nodiscard]] ModifyValueQuery ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                                 const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with any selected values in given fields.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifyValueQuery ModifyValuePartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_keyFields,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with any selected values in given fields.
     [[nodiscard]] EditValueQuery EditValue (const StandardLayout::Mapping &_typeMapping,
                                             const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
+
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with any selected values in given fields.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] EditValueQuery EditValuePartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<StandardLayout::FieldId> &_keyFields,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with any selected values in given fields.
@@ -116,10 +144,30 @@ public:
     [[nodiscard]] ModifyAscendingRangeQuery ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                   StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifyAscendingRangeQuery ModifyAscendingRangePartial (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] EditAscendingRangeQuery EditAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                               StandardLayout::FieldId _keyField) noexcept;
+
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] EditAscendingRangeQuery EditAscendingRangePartial (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects within selected value interval on given field.
@@ -136,10 +184,30 @@ public:
     [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                     StandardLayout::FieldId _keyField) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifyDescendingRangeQuery ModifyDescendingRangePartial (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects within selected value interval on given field.
     [[nodiscard]] EditDescendingRangeQuery EditDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                                 StandardLayout::FieldId _keyField) noexcept;
+
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects within selected value interval on given field.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] EditDescendingRangeQuery EditDescendingRangePartial (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects within selected value interval on given field.
@@ -159,11 +227,33 @@ public:
         StandardLayout::FieldId _keyField,
         const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with given value in given field.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifySignalQuery ModifySignalPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
     [[nodiscard]] EditSignalQuery EditSignal (const StandardLayout::Mapping &_typeMapping,
                                               StandardLayout::FieldId _keyField,
                                               const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects with given value in given field.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] EditSignalQuery EditSignalPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
@@ -184,11 +274,31 @@ public:
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected shape.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifyShapeIntersectionQuery ModifyShapeIntersectionPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects that intersect with selected shape.
     [[nodiscard]] EditShapeIntersectionQuery EditShapeIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected shape.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] EditShapeIntersectionQuery EditShapeIntersectionPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects that intersect with selected shape.
@@ -208,11 +318,31 @@ public:
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
 
+    /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected ray.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] ModifyRayIntersectionQuery ModifyRayIntersectionPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
+
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects that intersect with selected ray.
     [[nodiscard]] EditRayIntersectionQuery EditRayIntersection (
         const StandardLayout::Mapping &_typeMapping,
         const Container::Vector<Warehouse::Dimension> &_dimensions) noexcept;
+
+    /// \brief Grants edit access to long term objects storage, described by given mapping, through
+    ///        prepared query, that allows iterating over objects that intersect with selected ray.
+    ///        Informs validator that only given fields are planned to be edited.
+    /// \warning Partial edition information only affects pipeline validation!
+    ///          It doesn't allow edition from multiple tasks.
+    [[nodiscard]] EditRayIntersectionQuery EditRayIntersectionPartial (
+        const StandardLayout::Mapping &_typeMapping,
+        const Container::Vector<Warehouse::Dimension> &_dimensions,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects that intersect with selected ray.
@@ -245,12 +375,14 @@ private:
     template <typename WrappedQuery, typename SourceQuery>
     WrappedQuery ConstructModifyQuery (SourceQuery _source,
                                        WorldView &_view,
-                                       const StandardLayout::Mapping &_typeMapping) noexcept;
+                                       const StandardLayout::Mapping &_typeMapping,
+                                       const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     template <typename WrappedQuery, typename SourceQuery>
     WrappedQuery ConstructEditQuery (SourceQuery _source,
                                      WorldView &_view,
-                                     const StandardLayout::Mapping &_typeMapping) noexcept;
+                                     const StandardLayout::Mapping &_typeMapping,
+                                     const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     template <typename WrappedQuery, typename SourceQuery>
     WrappedQuery ConstructRemoveQuery (SourceQuery _source,
@@ -264,7 +396,9 @@ private:
 
     [[nodiscard]] TrivialEventTriggerRow *BindEventsOnRemove (const StandardLayout::Mapping &_trackedType) noexcept;
 
-    [[nodiscard]] ChangeTracker *BindChangeTracker (const StandardLayout::Mapping &_trackedType) noexcept;
+    [[nodiscard]] ChangeTracker *BindChangeTracker (
+        const StandardLayout::Mapping &_trackedType,
+        const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     void RegisterEventProduction (const StandardLayout::Mapping &_eventType) noexcept;
 

@@ -147,6 +147,10 @@ public:
                           const Container::Vector<CopyOutField> &_copyOutOfInitial,
                           const Container::Vector<CopyOutField> &_copyOutOfChanged) noexcept;
 
+    /// \return Whether given field is tracked by this trigger.
+    /// \details If given field is nested, it is considered tracked if any of its subfields is tracked.
+    [[nodiscard]] bool IsFieldTracked (StandardLayout::FieldId _field) const noexcept;
+
 private:
     friend class ChangeTracker;
     friend class OnChangeEventTriggerInstance;

@@ -222,6 +222,20 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
 #endif
 }
 
+bool OnChangeEventTrigger::IsFieldTracked (StandardLayout::FieldId _field) const noexcept
+{
+    StandardLayout::Field field = trackedType.GetField (_field);
+    for (const TrackedZone &zone : trackedZones)
+    {
+        if (field.GetOffset () >= zone.offset && field.GetOffset () < zone.offset + zone.length)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 OnChangeEventTriggerInstance::OnChangeEventTriggerInstance (const OnChangeEventTrigger *_trigger,
                                                             Warehouse::InsertShortTermQuery _inserter) noexcept
     : trigger (_trigger),
