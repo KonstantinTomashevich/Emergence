@@ -138,6 +138,30 @@ struct DeleteDebugShape final
 {
     UniqueId debugShapeId = INVALID_UNIQUE_ID;
 };
+
+struct CreateSpriteAnimation final
+{
+    UniqueId objectId = INVALID_UNIQUE_ID;
+    UniqueId spriteId = INVALID_UNIQUE_ID;
+    Memory::UniqueString animationId;
+    uint64_t currentTimeNs = 0u;
+    bool tickTime = true;
+    bool loop = false;
+};
+
+struct UpdateSpriteAnimation final
+{
+    UniqueId spriteId = INVALID_UNIQUE_ID;
+    Memory::UniqueString animationId;
+    uint64_t currentTimeNs = 0u;
+    bool tickTime = true;
+    bool loop = false;
+};
+
+struct DeleteSpriteAnimation final
+{
+    UniqueId spriteId = INVALID_UNIQUE_ID;
+};
 }; // namespace Tasks
 
 using Task = Container::Variant<Tasks::CreateViewport,
@@ -154,7 +178,10 @@ using Task = Container::Variant<Tasks::CreateViewport,
                                 Tasks::DeleteSprite,
                                 Tasks::CreateDebugShape,
                                 Tasks::UpdateDebugShape,
-                                Tasks::DeleteDebugShape>;
+                                Tasks::DeleteDebugShape,
+                                Tasks::CreateSpriteAnimation,
+                                Tasks::UpdateSpriteAnimation,
+                                Tasks::DeleteSpriteAnimation>;
 
 using TaskPoint = Container::Vector<Task>;
 
@@ -167,7 +194,12 @@ struct ScreenShotPoint final
     Memory::UniqueString screenShotId;
 };
 
-using Scenario = Container::Vector<Container::Variant<TaskPoint, AssetWaitPoint, ScreenShotPoint>>;
+struct FrameSkipPoint final
+{
+    uint64_t frameCount = 0u;
+};
+
+using Scenario = Container::Vector<Container::Variant<TaskPoint, AssetWaitPoint, ScreenShotPoint, FrameSkipPoint>>;
 
 void ExecuteScenario (Scenario _scenario) noexcept;
 } // namespace Emergence::Celerity::Test
