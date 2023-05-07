@@ -168,10 +168,14 @@ void MovementProcessor::Execute () noexcept
         {
             context.movement->state = newState;
             context.movement->stateStartTimeNs = context.time->fixedTimeNs;
-            UpdateShapesWithMovementContext (context.movement);
         }
 
         ApplyMovementState (context);
+        if (context.stateChanged)
+        {
+            UpdateShapesWithMovementContext (context.movement);
+        }
+
         ++movementCursor;
     }
 }
@@ -424,6 +428,10 @@ void MovementProcessor::UpdateShapesWithMovementContext (const MovementComponent
             auto *shape = static_cast<Emergence::Celerity::CollisionShape2dComponent *> (*shapeCursor))
         {
             shape->enabled = static_cast<uint8_t> (context->supportedStates) & currentStateFlag;
+            // Update shape offset using movement direction.
+            shape->translation.x = _movement->lastMovementDirection == MovementDirection::RIGHT ?
+                                       -Emergence::Math::Abs (shape->translation.x) :
+                                       Emergence::Math::Abs (shape->translation.x);
             ++contextCursor;
         }
         else
@@ -509,7 +517,7 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_c
         break;
 
     case MovementState::ROLL:
-        switch(_context.movement->lastMovementDirection)
+        switch (_context.movement->lastMovementDirection)
         {
         case MovementDirection::LEFT:
             nextVelocity.x = -_context.configuration->rollVelocity;
@@ -522,7 +530,7 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_c
         break;
 
     case MovementState::SLIDE:
-        switch(_context.movement->lastMovementDirection)
+        switch (_context.movement->lastMovementDirection)
         {
         case MovementDirection::LEFT:
             nextVelocity.x = -_context.configuration->slideVelocity;

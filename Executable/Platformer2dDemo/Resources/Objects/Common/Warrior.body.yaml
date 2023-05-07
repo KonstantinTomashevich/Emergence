@@ -40,7 +40,7 @@
     objectId: 0
     shapeId: 1
     translation:
-      x: -0.10
+      x: -0.1
       y: -0.585
     rotation: 0
     geometry:
@@ -54,14 +54,14 @@
   content:
     objectId: 0
     shapeId: 1
-    supportedStates: 255
+    supportedStates: 191
     useForGroundContactCheck: 1
 - type: CollisionShape2dComponent
   content:
     objectId: 0
     shapeId: 2
     translation:
-      x: -0.10
+      x: -0.1
       y: 0.135
     rotation: 0
     geometry:
@@ -75,14 +75,14 @@
   content:
     objectId: 0
     shapeId: 2
-    supportedStates: 255
+    supportedStates: 155
     useForGroundContactCheck: 0
 - type: CollisionShape2dComponent
   content:
     objectId: 0
     shapeId: 3
     translation:
-      x: -0.10
+      x: -0.1
       y: -0.225
     rotation: 0
     geometry:
@@ -98,5 +98,51 @@
   content:
     objectId: 0
     shapeId: 3
-    supportedStates: 255
+    supportedStates: 155
     useForGroundContactCheck: 0
+- type: CollisionShape2dComponent
+  content:
+    objectId: 0
+    shapeId: 4
+    translation:
+      x: -0.1
+      y: -0.225
+    rotation: 0
+    geometry:
+      type: 0
+      boxHalfExtents:
+        x: 0.2
+        y: 0.25
+    materialId: Default
+    trigger: 0
+    maintainCollisionContacts: 1
+    collisionGroup: 0
+- type: CollisionShapeMovementContextComponent
+  content:
+    objectId: 0
+    shapeId: 4
+    supportedStates: 4
+    useForGroundContactCheck: 0
+- type: CollisionShape2dComponent
+  content:
+    objectId: 0
+    shapeId: 5
+    translation:
+      x: -0.1
+      y: -0.585
+    rotation: 0
+    geometry:
+      type: 0
+      boxHalfExtents:
+        x: 0.4
+        y: 0.25
+    materialId: Default
+    trigger: 0
+    maintainCollisionContacts: 1
+    collisionGroup: 0
+- type: CollisionShapeMovementContextComponent
+  content:
+    objectId: 0
+    shapeId: 5
+    supportedStates: 64
+    useForGroundContactCheck: 1
