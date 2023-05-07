@@ -20,6 +20,7 @@
 
 #include <Configuration/AssemblyConfiguration.hpp>
 
+#include <Platformer/Animation/CharacterAnimationControllerComponent.hpp>
 #include <Platformer/Camera/CameraContextComponent.hpp>
 #include <Platformer/Control/ControllableComponent.hpp>
 #include <Platformer/Layer/LayerSetupComponent.hpp>
@@ -139,6 +140,13 @@ Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept
     cameraContextComponent.type = CameraContextComponent::Reflect ().mapping;
     cameraContextComponent.keys.emplace_back () = {CameraContextComponent::Reflect ().objectId,
                                                    Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+
+    Emergence::Celerity::TypeDescriptor &characterAnimationControllerComponent = types.emplace_back ();
+    characterAnimationControllerComponent.type = CharacterAnimationControllerComponent::Reflect ().mapping;
+    characterAnimationControllerComponent.keys.emplace_back () = {
+        CharacterAnimationControllerComponent::Reflect ().objectId, Emergence::Celerity::ASSEMBLY_OBJECT_ID_KEY_INDEX};
+    characterAnimationControllerComponent.keys.emplace_back () = {
+        CharacterAnimationControllerComponent::Reflect ().spriteId, SPRITE_ID_KEY};
 
     Emergence::Celerity::TypeDescriptor &checkboxControl = types.emplace_back ();
     checkboxControl.type = Emergence::Celerity::CheckboxControl::Reflect ().mapping;

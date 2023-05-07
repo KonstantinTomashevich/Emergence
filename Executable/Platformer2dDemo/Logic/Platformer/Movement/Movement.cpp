@@ -509,25 +509,27 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_c
         break;
 
     case MovementState::ROLL:
-        if (_context.movement->lastMovementVelocity.x >= 0.0f)
+        switch(_context.movement->lastMovementDirection)
         {
-            nextVelocity.x = _context.configuration->rollVelocity;
-        }
-        else
-        {
+        case MovementDirection::LEFT:
             nextVelocity.x = -_context.configuration->rollVelocity;
+            break;
+        case MovementDirection::RIGHT:
+            nextVelocity.x = _context.configuration->rollVelocity;
+            break;
         }
 
         break;
 
     case MovementState::SLIDE:
-        if (_context.movement->lastMovementVelocity.x >= 0.0f)
+        switch(_context.movement->lastMovementDirection)
         {
-            nextVelocity.x = _context.configuration->slideVelocity;
-        }
-        else
-        {
+        case MovementDirection::LEFT:
             nextVelocity.x = -_context.configuration->slideVelocity;
+            break;
+        case MovementDirection::RIGHT:
+            nextVelocity.x = _context.configuration->slideVelocity;
+            break;
         }
 
         break;
@@ -537,6 +539,12 @@ void MovementProcessor::ApplyMovementState (const MovementProcessor::Context &_c
         _context.rigidBody->linearVelocity - _context.movement->lastMovementVelocity;
     _context.rigidBody->linearVelocity = externalVelocity + nextVelocity;
     _context.movement->lastMovementVelocity = nextVelocity;
+
+    if (!Emergence::Math::NearlyEqual (_context.movement->lastMovementVelocity.x, 0.0f))
+    {
+        _context.movement->lastMovementDirection =
+            _context.movement->lastMovementVelocity.x > 0.0f ? MovementDirection::RIGHT : MovementDirection::LEFT;
+    }
 }
 
 void AddToFixedUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

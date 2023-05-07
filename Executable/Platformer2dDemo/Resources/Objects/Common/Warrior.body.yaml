@@ -1,3 +1,8 @@
+- type: CharacterAnimationControllerComponent
+  content:
+    objectId: 0
+    spriteId: 0
+    animationConfigurationId: WarriorAnimation
 - type: ControllableComponent
   content:
     objectId: 0

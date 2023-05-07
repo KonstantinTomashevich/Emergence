@@ -22,4 +22,6 @@ const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetMaterial
 
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetShadersPaths () noexcept;
 
+const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetSpriteAnimationPaths () noexcept;
+
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetTexturePaths () noexcept;

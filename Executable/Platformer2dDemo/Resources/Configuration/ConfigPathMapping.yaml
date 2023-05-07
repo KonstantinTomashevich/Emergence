@@ -1,3 +1,5 @@
+- typeName: CharacterAnimationConfiguration
+  folder: CharacterAnimationConfigurations
 - typeName: DynamicsMaterial2d
   folder: DynamicsMaterials
 - typeName: MovementConfiguration

@@ -6,6 +6,9 @@ struct PlatformerLoadingSingleton final
 {
     bool assetsLoaded = false;
 
+    bool characterAnimationConfigurationsLoaded = false;
+    bool characterAnimationConfigurationsLoadingRequested = false;
+
     bool dynamicsMaterialsLoaded = false;
     bool dynamicsMaterialsLoadingRequested = false;
 
@@ -17,6 +20,8 @@ struct PlatformerLoadingSingleton final
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId assetsLoaded;
+        Emergence::StandardLayout::FieldId characterAnimationConfigurationsLoaded;
+        Emergence::StandardLayout::FieldId characterAnimationConfigurationsLoadingRequested;
         Emergence::StandardLayout::FieldId dynamicsMaterialsLoaded;
         Emergence::StandardLayout::FieldId dynamicsMaterialsLoadingRequested;
         Emergence::StandardLayout::FieldId movementConfigurationsLoaded;

@@ -99,6 +99,21 @@ const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetShadersP
     return paths;
 }
 
+const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetSpriteAnimationPaths () noexcept
+{
+    static const Emergence::Container::Vector<Emergence::Memory::UniqueString> paths = [] ()
+    {
+        Emergence::Container::Vector<Emergence::Memory::UniqueString> vector {
+            Emergence::Memory::Profiler::AllocationGroup {Emergence::Memory::Profiler::AllocationGroup::Top (),
+                                                          "Paths"_us}};
+
+        vector.emplace_back ("../GameResources/Animations"_us);
+        return vector;
+    }();
+
+    return paths;
+}
+
 const Emergence::Container::Vector<Emergence::Memory::UniqueString> &GetTexturePaths () noexcept
 {
     static const Emergence::Container::Vector<Emergence::Memory::UniqueString> paths = [] ()

@@ -10,9 +10,8 @@ add_subdirectory (Game)
 add_subdirectory (Logic)
 add_subdirectory (Model)
 
-# TODO: Merge tiles into atlas.
-
 file (MAKE_DIRECTORY "${GAME_RESOURCES_TARGET}")
+file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Animations" "${GAME_RESOURCES_TARGET}/Animations" SYMBOLIC)
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Configuration" "${GAME_RESOURCES_TARGET}/Configuration" SYMBOLIC)
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Fonts" "${GAME_RESOURCES_TARGET}/Fonts" SYMBOLIC)
 file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Levels" "${GAME_RESOURCES_TARGET}/Levels" SYMBOLIC)

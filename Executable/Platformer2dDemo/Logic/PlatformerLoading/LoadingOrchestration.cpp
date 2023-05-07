@@ -24,6 +24,7 @@
 
 #include <Log/Log.hpp>
 
+#include <Platformer/Animation/CharacterAnimationConfiguration.hpp>
 #include <Platformer/Camera/CameraContextComponent.hpp>
 #include <Platformer/Input/InputActions.hpp>
 #include <Platformer/Movement/MovementConfiguration.hpp>
@@ -127,6 +128,14 @@ void LoadingOrchestrator::Execute () noexcept
         platformerLoading->loadingStartTimeNs = Emergence::Time::NanosecondsSinceStartup ();
     }
 
+    if (!platformerLoading->characterAnimationConfigurationsLoadingRequested)
+    {
+        auto requestCursor = insertConfigRequest.Execute ();
+        auto *request = static_cast<Emergence::Celerity::ResourceConfigRequest *> (++requestCursor);
+        request->type = CharacterAnimationConfiguration::Reflect ().mapping;
+        platformerLoading->characterAnimationConfigurationsLoadingRequested = true;
+    }
+
     if (!platformerLoading->dynamicsMaterialsLoadingRequested)
     {
         auto requestCursor = insertConfigRequest.Execute ();
@@ -148,7 +157,11 @@ void LoadingOrchestrator::Execute () noexcept
              static_cast<const Emergence::Celerity::ResourceConfigLoadedResponse *> (*responseCursor);
          ++responseCursor)
     {
-        if (response->type == Emergence::Celerity::DynamicsMaterial2d::Reflect ().mapping)
+        if (response->type == CharacterAnimationConfiguration::Reflect ().mapping)
+        {
+            platformerLoading->characterAnimationConfigurationsLoaded = true;
+        }
+        else if (response->type == Emergence::Celerity::DynamicsMaterial2d::Reflect ().mapping)
         {
             platformerLoading->dynamicsMaterialsLoaded = true;
         }
@@ -195,8 +208,8 @@ void LoadingOrchestrator::Execute () noexcept
     auto *loadingAnimation = static_cast<LoadingAnimationSingleton *> (*loadingAnimationCursor);
 
     if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE &&
-        platformerLoading->assetsLoaded && platformerLoading->dynamicsMaterialsLoaded &&
-        locale->loadedLocale == locale->targetLocale)
+        platformerLoading->assetsLoaded && platformerLoading->characterAnimationConfigurationsLoaded &&
+        platformerLoading->dynamicsMaterialsLoaded && locale->loadedLocale == locale->targetLocale)
     {
         loadingAnimation->required = false;
         world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;

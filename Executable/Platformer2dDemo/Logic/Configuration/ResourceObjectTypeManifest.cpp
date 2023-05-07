@@ -18,6 +18,7 @@
 
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
+#include <Platformer/Animation/CharacterAnimationControllerComponent.hpp>
 #include <Platformer/Camera/CameraContextComponent.hpp>
 #include <Platformer/Control/ControllableComponent.hpp>
 #include <Platformer/Layer/LayerSetupComponent.hpp>
@@ -37,6 +38,8 @@ Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexc
 
         typeManifest.Register (CameraContextComponent::Reflect ().mapping,
                                {CameraContextComponent::Reflect ().objectId});
+        typeManifest.Register (CharacterAnimationControllerComponent::Reflect ().mapping,
+                               {CharacterAnimationControllerComponent::Reflect ().objectId});
         typeManifest.Register (CollisionShapeMovementContextComponent::Reflect ().mapping,
                                {CollisionShapeMovementContextComponent::Reflect ().objectId});
         typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});

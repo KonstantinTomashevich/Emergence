@@ -1,6 +1,7 @@
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
+#include <Celerity/Asset/Render/2d/Sprite2dUvAnimationManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
@@ -18,6 +19,7 @@
 #include <Celerity/UI/AssetUsage.hpp>
 #include <Celerity/UI/Events.hpp>
 
+#include <Configuration/AssetUsage.hpp>
 #include <Configuration/Paths.hpp>
 #include <Configuration/ResourceConfigTypeMeta.hpp>
 #include <Configuration/ResourceObjectTypeManifest.hpp>
@@ -40,6 +42,7 @@ static Emergence::Celerity::AssetReferenceBindingList GetAssetReferenceBindingLi
     Emergence::Celerity::GetRender2dAssetUsage (binding);
     Emergence::Celerity::GetRenderFoundationAssetUsage (binding);
     Emergence::Celerity::GetUIAssetUsage (binding);
+    GetGameAssetUsage (binding);
     return binding;
 }
 
@@ -95,9 +98,14 @@ void Initializer (GameState & /*unused*/,
         pipelineBuilder, *GetResourceConfigRootPath (), GetResourceConfigTypeMeta ());
     Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
                                                                       GetResourceObjectTypeManifest ());
+    Emergence::Celerity::Sprite2dUvAnimationManagement::AddToNormalUpdate (
+        pipelineBuilder, GetSpriteAnimationPaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (), MAX_LOADING_TIME_NS,
                                                                assetReferenceBindingEventMap);
     LevelsConfigurationLoading::AddToNormalUpdate (pipelineBuilder);
+
+    pipelineBuilder.AddCheckpointDependency (Emergence::Celerity::ResourceConfigLoading::Checkpoint::FINISHED,
+                                             Emergence::Celerity::AssetManagement::Checkpoint::STARTED);
     [[maybe_unused]] const bool normalPipelineRegistered = pipelineBuilder.End ();
     EMERGENCE_ASSERT (normalPipelineRegistered);
 }

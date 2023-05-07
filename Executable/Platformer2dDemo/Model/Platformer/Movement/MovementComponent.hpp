@@ -5,6 +5,7 @@
 #include <Math/Vector2f.hpp>
 
 #include <Platformer/Movement/MovementState.hpp>
+#include <Platformer/Movement/MovementDirection.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -15,6 +16,8 @@ struct MovementComponent final
     Emergence::Memory::UniqueString configurationId;
 
     MovementState state = MovementState::IDLE;
+
+    MovementDirection lastMovementDirection = MovementDirection::RIGHT;
 
     uint64_t stateStartTimeNs = 0u;
 
@@ -38,6 +41,7 @@ struct MovementComponent final
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId configurationId;
         Emergence::StandardLayout::FieldId state;
+        Emergence::StandardLayout::FieldId lastMovementDirection;
         Emergence::StandardLayout::FieldId stateStartTimeNs;
         Emergence::StandardLayout::FieldId lastMovementVelocity;
         Emergence::StandardLayout::FieldId framesInAir;

@@ -21,6 +21,7 @@
 
 #include <Modules/Platformer.hpp>
 
+#include <Platformer/Animation/CharacterAnimation.hpp>
 #include <Platformer/Camera/Camera.hpp>
 #include <Platformer/Control/PlayerControl.hpp>
 #include <Platformer/Layer/LayerSetup.hpp>
@@ -90,6 +91,7 @@ void Initializer (GameState &_gameState,
     mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::Localization::Checkpoint::SYNC_STARTED);
     mainPipelineBuilder.AddCheckpoint (Emergence::Celerity::Localization::Checkpoint::SYNC_FINISHED);
 
+    CharacterAnimation::AddToNormalUpdate (mainPipelineBuilder);
     Emergence::Celerity::Assembly::AddToNormalUpdate (mainPipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes (), MAX_ASSEMBLY_TIME_NS);
     Emergence::Celerity::Input::AddToNormalUpdate (mainPipelineBuilder, _gameState.GetFrameInputAccumulator ());
