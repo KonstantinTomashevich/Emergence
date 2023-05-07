@@ -492,8 +492,8 @@ ShapeChangesSynchronizer::ShapeChangesSynchronizer (TaskConstructor &_constructo
 void ShapeChangesSynchronizer::Execute ()
 {
     ApplyShapeMaterialChanges ();
-    ApplyShapeGeometryChanges ();
     ApplyShapeAttributesChanges ();
+    ApplyShapeGeometryChanges ();
 }
 
 void ShapeChangesSynchronizer::ApplyShapeMaterialChanges () noexcept
