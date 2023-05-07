@@ -80,6 +80,7 @@ private:
 
     FetchSequenceQuery fetchCollisionShapeAddedFixedEvents;
     FetchSequenceQuery fetchCollisionShapeAddedCustomEvents;
+    FetchSequenceQuery fetchCollisionShapeAttributesChangedEvents;
     FetchSequenceQuery fetchCollisionShapeGeometryChangedEvents;
     FetchSequenceQuery fetchCollisionShapeRemovedEvents;
 
@@ -108,6 +109,7 @@ DebugDrawManager::DebugDrawManager (TaskConstructor &_constructor) noexcept
 
       fetchCollisionShapeAddedFixedEvents (FETCH_SEQUENCE (CollisionShape2dComponentAddedFixedEvent)),
       fetchCollisionShapeAddedCustomEvents (FETCH_SEQUENCE (CollisionShape2dComponentAddedCustomToFixedEvent)),
+      fetchCollisionShapeAttributesChangedEvents (FETCH_SEQUENCE (CollisionShape2dComponentAttributesChangedEvent)),
       fetchCollisionShapeGeometryChangedEvents (FETCH_SEQUENCE (CollisionShape2dComponentGeometryChangedEvent)),
       fetchCollisionShapeRemovedEvents (FETCH_SEQUENCE (CollisionShape2dComponentRemovedEvent)),
 
@@ -195,6 +197,24 @@ void DebugDrawManager::Execute () noexcept
             AddShapeDebugDraw (event->shapeId);
         }
 
+        for (auto eventCursor = fetchCollisionShapeAttributesChangedEvents.Execute ();
+             const auto *event = static_cast<const CollisionShape2dComponentAttributesChangedEvent *> (*eventCursor);
+             ++eventCursor)
+        {
+            if (auto cursor = fetchCollisionShapeByShapeId.Execute (&event->shapeId);
+                const auto *collisionShape = static_cast<const CollisionShape2dComponent *> (*cursor))
+            {
+                if (collisionShape->enabled)
+                {
+                    AddShapeDebugDraw (collisionShape);
+                }
+                else
+                {
+                    RemoveShapeDebugDraw (event->shapeId);
+                }
+            }
+        }
+
         for (auto eventCursor = fetchCollisionShapeGeometryChangedEvents.Execute ();
              const auto *event = static_cast<const CollisionShape2dComponentGeometryChangedEvent *> (*eventCursor);
              ++eventCursor)
@@ -243,6 +263,16 @@ void DebugDrawManager::AddShapeDebugDraw (UniqueId _shapeId) noexcept
 
 void DebugDrawManager::AddShapeDebugDraw (const CollisionShape2dComponent *_collisionShape) noexcept
 {
+    {
+        auto linkCursor = fetchShapeDebugDrawLinkByShapeId.Execute (&_collisionShape->shapeId);
+        if (*linkCursor)
+        {
+            // Already linked, just update.
+            UpdateShapeDebugDraw (_collisionShape);
+            return;
+        }
+    }
+
     auto render2dCursor = fetchRender2d.Execute ();
     const auto *render2d = static_cast<const Render2dSingleton *> (*render2dCursor);
 
