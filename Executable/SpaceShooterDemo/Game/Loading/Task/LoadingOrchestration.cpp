@@ -161,7 +161,7 @@ void LoadingOrchestrator::Execute () noexcept
 
     case LoadingStage::WAITING_FOR_ASSEMBLY:
     {
-        if (!*fetchUninitializedPrototypes.Execute() && !*fetchPrototypeStates.Execute (nullptr, nullptr))
+        if (!*fetchUninitializedPrototypes.Execute () && !*fetchPrototypeStates.Execute (nullptr, nullptr))
         {
             stage = LoadingStage::FINISHED;
         }

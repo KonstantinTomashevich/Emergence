@@ -2,6 +2,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Batching2d.hpp>
 #include <Celerity/Render/2d/Batching2dSingleton.hpp>
+#include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render/2d/Events.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dUvAnimation.hpp>
@@ -9,7 +10,6 @@
 #include <Celerity/Render/2d/Sprite2dUvAnimationSync.hpp>
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
-#include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 
 namespace Emergence::Celerity::Sprite2dUvAnimationSync
 {

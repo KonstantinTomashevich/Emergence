@@ -25,8 +25,8 @@ class Registry;
     /*! \return Mapping for type, with which this query works. */                                                      \
     [[nodiscard]] Emergence::StandardLayout::Mapping GetTypeMapping () const noexcept;                                 \
                                                                                                                        \
-    /*! \return Whether this query works with data from given registry. */                                                                                                                   \
-    [[nodiscard]] bool IsFromRegistry (const Warehouse::Registry &_registry) const noexcept;                                         \
+    /*! \return Whether this query works with data from given registry. */                                             \
+    [[nodiscard]] bool IsFromRegistry (const Warehouse::Registry &_registry) const noexcept;                           \
                                                                                                                        \
     /*! Assigning prepared queries looks counter-intuitive. */                                                         \
     EMERGENCE_DELETE_ASSIGNMENT (Class);                                                                               \

@@ -25,7 +25,7 @@ const Sprite2dUvAnimation::Reflection &Sprite2dUvAnimation::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimation);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceId);
-        EMERGENCE_MAPPING_REGISTRATION_END();
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

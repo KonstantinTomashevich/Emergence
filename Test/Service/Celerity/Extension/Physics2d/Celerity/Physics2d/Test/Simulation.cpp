@@ -398,8 +398,7 @@ TEST_CASE (CollisionShapeDisabledInProgress)
                                  AddCollisionShape {{1u, 1u, "Test"_us}},
                              }},
                             {25u,
-                             {
-                                 UpdateCollisionShape {{0u,
+                             {UpdateCollisionShape {{0u,
                                                      0u,
                                                      "Test"_us,
                                                      {.type = CollisionGeometry2dType::CIRCLE, .circleRadius = 1.0f},
@@ -408,8 +407,7 @@ TEST_CASE (CollisionShapeDisabledInProgress)
                                                      false,
                                                      false,
                                                      true,
-                                                     true}}
-                             }}},
+                                                     true}}}}},
                            {
                                {78u,
                                 {

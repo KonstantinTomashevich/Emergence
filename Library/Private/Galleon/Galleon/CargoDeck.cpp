@@ -33,20 +33,20 @@ CargoDeck::~CargoDeck () noexcept
 #ifdef EMERGENCE_ASSERT_ENABLED
     for (SingletonContainer &container : singleton)
     {
-        EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
-        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
+        EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
+        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping ()));
     }
 
     for (ShortTermContainer &container : shortTerm)
     {
-        EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
-        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
+        EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
+        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping ()));
     }
 
     for (LongTermContainer &container : longTerm)
     {
-        EMERGENCE_ASSERT (container.GetReferenceCount() == 0u);
-        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping()));
+        EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
+        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping ()));
     }
 #endif
 }

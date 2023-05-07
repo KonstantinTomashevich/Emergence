@@ -265,7 +265,7 @@ TEST_CASE (LoadSpecifiedWithInjection)
     const Emergence::Memory::UniqueString secondObjectName {"Second"};
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> secondObjectChangelist {
         MakePatch (SecondComponent {0u, 100u, 20u, 10u}), MakePatch (InjectionComponent {0u, firstObjectName})};
-    
+
     const Emergence::Memory::UniqueString thirdObjectName {"Third"};
     Emergence::Container::Vector<Emergence::StandardLayout::Patch> thirdObjectChangelist {
         MakePatch (SecondComponent {0u, 100u, 20u, 10u}), MakePatch (InjectionComponent {0u, secondObjectName})};
@@ -289,24 +289,24 @@ TEST_CASE (LoadSpecifiedWithInjection)
 
     Library library = loader.End ();
     CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 3u);
-    
+
     const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
     REQUIRE (firstObjectData);
-    
+
     const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
     REQUIRE (secondObjectData);
-    
+
     const Library::ObjectData *thirdObjectData = library.Find (thirdObjectName);
     REQUIRE (thirdObjectData);
 
     CHECK_EQUAL (firstObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (firstObjectData->body.fullChangelist, firstObjectChangelist);
     CHECK_EQUAL (firstObjectData->loadedAsParent, false);
-    
+
     CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
     CHECK_EQUAL (secondObjectData->loadedAsParent, false);
-    
+
     CHECK_EQUAL (thirdObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (thirdObjectData->body.fullChangelist, thirdObjectChangelist);
     CHECK_EQUAL (thirdObjectData->loadedAsParent, false);

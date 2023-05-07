@@ -217,8 +217,8 @@ void LocalizationSynchronizer::UpdateLocalizedString (Memory::UniqueString _key,
 }
 
 void AddToNormalUpdate (PipelineBuilder &_builder,
-                          Memory::UniqueString _localizationRootPath,
-                          uint64_t _maxLoadingTimePerFrameNs) noexcept
+                        Memory::UniqueString _localizationRootPath,
+                        uint64_t _maxLoadingTimePerFrameNs) noexcept
 {
     _builder.AddCheckpoint (Checkpoint::SYNC_STARTED);
     _builder.AddCheckpoint (Checkpoint::SYNC_FINISHED);

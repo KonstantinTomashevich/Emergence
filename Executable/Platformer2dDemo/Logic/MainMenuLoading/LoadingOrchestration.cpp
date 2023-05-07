@@ -8,8 +8,8 @@
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
 
-#include <Configuration/VisibilityMask.hpp>
 #include <Configuration/Localization.hpp>
+#include <Configuration/VisibilityMask.hpp>
 
 #include <Framework/GameState.hpp>
 

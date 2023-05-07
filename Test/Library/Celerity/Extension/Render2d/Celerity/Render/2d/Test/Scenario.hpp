@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Celerity/Standard/UniqueId.hpp>
 #include <Celerity/Render/2d/DebugShape2dComponent.hpp>
+#include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>

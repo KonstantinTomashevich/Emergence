@@ -10,18 +10,18 @@ Emergence::Memory::UniqueString MainMenuInputActions::GetMainMenuUIGroup () noex
 
 const Emergence::Celerity::InputAction &MainMenuInputActions::GetStartTutorialAction () noexcept
 {
-    static const Emergence::Celerity::InputAction action {GetMainMenuUIGroup(), "StartTutorial"_us};
+    static const Emergence::Celerity::InputAction action {GetMainMenuUIGroup (), "StartTutorial"_us};
     return action;
 }
 
 const Emergence::Celerity::InputAction &MainMenuInputActions::GetStartCampaignAction () noexcept
 {
-    static const Emergence::Celerity::InputAction action {GetMainMenuUIGroup(), "StartCampaign"_us};
+    static const Emergence::Celerity::InputAction action {GetMainMenuUIGroup (), "StartCampaign"_us};
     return action;
 }
 
 const Emergence::Celerity::InputAction &MainMenuInputActions::GetQuitAction () noexcept
 {
-    static const Emergence::Celerity::InputAction action {GetMainMenuUIGroup(), "Quit"_us};
+    static const Emergence::Celerity::InputAction action {GetMainMenuUIGroup (), "Quit"_us};
     return action;
 }

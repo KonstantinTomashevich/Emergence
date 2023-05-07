@@ -1,4 +1,4 @@
-#include <LoadingAnimation//LoadingAnimationSingleton.hpp>
+#include <LoadingAnimation/LoadingAnimationSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

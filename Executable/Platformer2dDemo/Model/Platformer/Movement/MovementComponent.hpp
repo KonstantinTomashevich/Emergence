@@ -4,8 +4,8 @@
 
 #include <Math/Vector2f.hpp>
 
-#include <Platformer/Movement/MovementState.hpp>
 #include <Platformer/Movement/MovementDirection.hpp>
+#include <Platformer/Movement/MovementState.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 

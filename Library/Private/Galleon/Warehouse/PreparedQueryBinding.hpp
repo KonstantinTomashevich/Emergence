@@ -35,7 +35,7 @@
     bool Query::IsFromRegistry (const Registry &_registry) const noexcept                                              \
     {                                                                                                                  \
         return block_cast<QueryImplementation> (data).GetContainer ()->GetDeck () ==                                   \
-               reinterpret_cast<const RegistryData *> (&_registry)->deck;                                               \
+               reinterpret_cast<const RegistryData *> (&_registry)->deck;                                              \
     }                                                                                                                  \
                                                                                                                        \
     Query::Query (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                                  \

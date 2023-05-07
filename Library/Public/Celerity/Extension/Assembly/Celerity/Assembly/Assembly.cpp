@@ -426,7 +426,7 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
 
     (isFixed ? _assembly->fixedAssemblyState : _assembly->normalAssemblyState) = AssemblyState::ASSEMBLED;
     clearIntermediateIdReplacement ();
-    
+
     auto eventCursor = insertFinishedEvent.Execute ();
     void *event = ++eventCursor;
     *static_cast<UniqueId *> (event) = _assembly->objectId;

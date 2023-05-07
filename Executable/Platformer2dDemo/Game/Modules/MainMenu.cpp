@@ -3,13 +3,13 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Input/Input.hpp>
+#include <Celerity/Locale/Localization.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/UI/UI.hpp>
-#include <Celerity/Locale/Localization.hpp>
 
 #include <Configuration/AssemblyConfiguration.hpp>
 

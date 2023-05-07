@@ -59,7 +59,7 @@ void ReportCriticalError (const char *_expression, const char *_file, size_t _li
         };
 
         Container::String assertText = EMERGENCE_BUILD_STRING ("Expression: ", _expression, ".\nFile: ", _file,
-                                                                     ".\nLine: ", _line, ".\nStacktrace:\n");
+                                                               ".\nLine: ", _line, ".\nStacktrace:\n");
 
         // We avoid using string builder here as stacktrace string is usually too big.
         assertText += std::to_string (std::stacktrace::current ());

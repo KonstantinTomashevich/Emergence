@@ -42,7 +42,7 @@ struct Sprite2dUvAnimation final
 
     /// \details We store frames in vector instead of asset components,
     ///          because we need a fast access with strict order.
-    Container::Vector<Sprite2dUvAnimationFrame> frames {Memory::Profiler::AllocationGroup::Top()};
+    Container::Vector<Sprite2dUvAnimationFrame> frames {Memory::Profiler::AllocationGroup::Top ()};
 
     struct Reflection final
     {

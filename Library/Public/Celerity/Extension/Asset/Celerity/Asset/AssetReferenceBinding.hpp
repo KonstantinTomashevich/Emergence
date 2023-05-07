@@ -45,12 +45,12 @@ struct AssetReferenceBindingHookEvents final
 
     /// \brief Asset user removal in normal pipeline event that is required for asset usage tracking.
     StandardLayout::Mapping onObjectRemovedNormal;
-    
+
     /// \brief Asset user addition in fixed pipeline event that is required for asset usage tracking.
     /// \details In ideal world all asset users operate only in normal pipeline, but in some cases
     ///          like debug draw it is convenient to work with them from fixed pipeline too.
     StandardLayout::Mapping onObjectAddedFixedToNormal;
-    
+
     /// \brief Asset user change in fixed pipeline event that is required for asset usage tracking.
     /// \details In ideal world all asset users operate only in normal pipeline, but in some cases
     ///          like debug draw it is convenient to work with them from fixed pipeline too.
