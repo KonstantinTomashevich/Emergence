@@ -147,6 +147,8 @@ struct CreateSpriteAnimation final
     uint64_t currentTimeNs = 0u;
     bool tickTime = true;
     bool loop = false;
+    bool flipU = false;
+    bool flipV = false;
 };
 
 struct UpdateSpriteAnimation final
@@ -156,6 +158,8 @@ struct UpdateSpriteAnimation final
     uint64_t currentTimeNs = 0u;
     bool tickTime = true;
     bool loop = false;
+    bool flipU = false;
+    bool flipV = false;
 };
 
 struct DeleteSpriteAnimation final

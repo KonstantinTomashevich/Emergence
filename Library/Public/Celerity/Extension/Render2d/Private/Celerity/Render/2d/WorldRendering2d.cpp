@@ -64,12 +64,12 @@ private:
     void SubmitSprites (Render::Backend::SubmissionAgent &_agent,
                         const Viewport *_viewport,
                         const Render::Backend::Program &_program,
-                        const Container::Vector<UniqueId> &_spriteIds) noexcept;
+                        const Batch2d &_batch) noexcept;
 
     void SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
                             const Viewport *_viewport,
                             const Render::Backend::Program &_program,
-                            const Container::Vector<UniqueId> &_debugShapeIds) noexcept;
+                            const Batch2d &_batch) noexcept;
 
     ModifySingletonQuery modifyBatching;
     FetchSingletonQuery fetchRenderFoundation;
@@ -288,22 +288,22 @@ void WorldRenderer::SubmitBatch (Render::Backend::SubmissionAgent &_agent,
         }
     }
 
-    SubmitSprites (_agent, _viewport, material->program, _batch.sprites);
-    SubmitDebugShapes (_agent, _viewport, material->program, _batch.debugShapes);
+    SubmitSprites (_agent, _viewport, material->program, _batch);
+    SubmitDebugShapes (_agent, _viewport, material->program, _batch);
 }
 
 void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
                                    const Viewport *_viewport,
                                    const Render::Backend::Program &_program,
-                                   const Container::Vector<UniqueId> &_spriteIds) noexcept
+                                   const Batch2d &_batch) noexcept
 {
-    if (_spriteIds.empty ())
+    if (_batch.sprites.empty ())
     {
         return;
     }
 
-    const auto totalVertices = static_cast<uint32_t> (_spriteIds.size () * 4u);
-    const auto totalIndices = static_cast<uint32_t> (_spriteIds.size () * 6u);
+    const auto totalVertices = static_cast<uint32_t> (_batch.sprites.size () * 4u);
+    const auto totalIndices = static_cast<uint32_t> (_batch.sprites.size () * 6u);
 
     const uint32_t availableVertices =
         Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, rectVertexLayout);
@@ -318,20 +318,24 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
     }
 
     const uint32_t maxRects = std::min (availableVertices / 4u, availableIndices / 6u);
-    const uint32_t size = std::min (maxRects, static_cast<uint32_t> (_spriteIds.size ()));
+    const uint32_t size = std::min (maxRects, static_cast<uint32_t> (_batch.sprites.size ()));
 
     Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, rectVertexLayout};
     Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
 
     for (uint32_t index = 0u; index < size; ++index)
     {
-        auto spriteCursor = fetchSpriteBySpriteId.Execute (&_spriteIds[index]);
+        auto spriteCursor = fetchSpriteBySpriteId.Execute (&_batch.sprites[index]);
         const auto *sprite = static_cast<const Sprite2dComponent *> (*spriteCursor);
 
         if (!sprite)
         {
             continue;
         }
+
+        // Assert that neither material instance neither layer was changed after batching.
+        EMERGENCE_ASSERT (sprite->materialInstanceId == _batch.materialInstanceId);
+        EMERGENCE_ASSERT (sprite->layer == _batch.layer);
 
         auto transformCursor = fetchTransformById.Execute (&sprite->objectId);
         const auto *transform = static_cast<const Transform2dComponent *> (*transformCursor);
@@ -376,9 +380,9 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
 void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
                                        const Viewport *_viewport,
                                        const Render::Backend::Program &_program,
-                                       const Container::Vector<Emergence::Celerity::UniqueId> &_debugShapeIds) noexcept
+                                       const Batch2d &_batch) noexcept
 {
-    if (_debugShapeIds.empty ())
+    if (_batch.debugShapes.empty ())
     {
         return;
     }
@@ -386,7 +390,7 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
     constexpr size_t DEBUG_CIRCLE_POINT_COUNT = 16u;
     size_t lineCount = 0u;
 
-    for (UniqueId debugShapeId : _debugShapeIds)
+    for (UniqueId debugShapeId : _batch.debugShapes)
     {
         auto shapeCursor = fetchDebugShapeByDebugShapeId.Execute (&debugShapeId);
         if (const auto *shape = static_cast<const DebugShape2dComponent *> (*shapeCursor))
@@ -456,7 +460,7 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
         ++lineIndex;
     };
 
-    for (UniqueId debugShapeId : _debugShapeIds)
+    for (UniqueId debugShapeId : _batch.debugShapes)
     {
         auto shapeCursor = fetchDebugShapeByDebugShapeId.Execute (&debugShapeId);
         const auto *shape = static_cast<const DebugShape2dComponent *> (*shapeCursor);
@@ -465,6 +469,9 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
         {
             continue;
         }
+
+        // Assert that material instance was not changed after batching.
+        EMERGENCE_ASSERT (shape->materialInstanceId == _batch.materialInstanceId);
 
         auto transformCursor = fetchTransformById.Execute (&shape->objectId);
         const auto *transform = static_cast<const Transform2dComponent *> (*transformCursor);

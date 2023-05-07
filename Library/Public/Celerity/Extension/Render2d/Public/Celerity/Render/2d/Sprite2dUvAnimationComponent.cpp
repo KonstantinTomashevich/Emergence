@@ -17,7 +17,10 @@ const Sprite2dUvAnimationComponent::Reflection &Sprite2dUvAnimationComponent::Re
         EMERGENCE_MAPPING_REGISTER_REGULAR (lastSyncNormalTimeNs);
         EMERGENCE_MAPPING_REGISTER_REGULAR (tickTime);
         EMERGENCE_MAPPING_REGISTER_REGULAR (loop);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (flipU);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (flipV);
         EMERGENCE_MAPPING_REGISTER_REGULAR (finished);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (waitingForAnimationToLoad);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

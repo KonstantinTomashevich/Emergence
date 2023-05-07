@@ -19,7 +19,7 @@ TEST_CASE (SpriteAnimationTick)
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
-            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 0u, true, false},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 0u, true, false, false, false},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"SpriteAnimationTick1"_us},
@@ -42,7 +42,7 @@ TEST_CASE (SpriteAnimationNoTick)
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
-            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 0u, false, false},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 0u, false, false, false, false},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"SpriteAnimationNoTick1"_us},
@@ -61,12 +61,12 @@ TEST_CASE (SpriteAnimationOverrideTime)
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
-            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 510000000u, false, false},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 510000000u, false, false, false, false},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"SpriteAnimationOverrideTime1"_us},
         TaskPoint {
-            UpdateSpriteAnimation {0u, "WarriorRun1Animation"_us, 830000000u, false, false},
+            UpdateSpriteAnimation {0u, "WarriorRun1Animation"_us, 830000000u, false, false, false, false},
         },
         ScreenShotPoint {"SpriteAnimationOverrideTime2"_us},
     });
@@ -82,7 +82,7 @@ TEST_CASE (SpriteAnimationLoop)
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
-            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 880000000u, true, true},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 880000000u, true, true, false, false},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"SpriteAnimationLoop1"_us},
@@ -105,7 +105,7 @@ TEST_CASE (SpriteAnimationNoLoop)
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
-            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 880000000u, true, false},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 880000000u, true, false, false, false},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"SpriteAnimationNoLoop1"_us},
@@ -115,6 +115,63 @@ TEST_CASE (SpriteAnimationNoLoop)
         ScreenShotPoint {"SpriteAnimationNoLoop3"_us},
         FrameSkipPoint {13u},
         ScreenShotPoint {"SpriteAnimationNoLoop4"_us},
+    });
+}
+
+TEST_CASE (SpriteAnimationNoLoop)
+{
+    ExecuteScenario ({
+        TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateTransform {0u, INVALID_UNIQUE_ID, {}},
+            CreateCamera {0u, 2.0f, ~0u},
+
+            CreateTransform {1u, INVALID_UNIQUE_ID, {}},
+            CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 880000000u, true, false, false, false},
+        },
+        AssetWaitPoint {},
+        ScreenShotPoint {"SpriteAnimationNoLoop1"_us},
+        FrameSkipPoint {5u},
+        ScreenShotPoint {"SpriteAnimationNoLoop2"_us},
+        FrameSkipPoint {9u},
+        ScreenShotPoint {"SpriteAnimationNoLoop3"_us},
+        FrameSkipPoint {13u},
+        ScreenShotPoint {"SpriteAnimationNoLoop4"_us},
+    });
+}
+
+TEST_CASE (SpriteAnimationFlipU)
+{
+    ExecuteScenario ({
+        TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateTransform {0u, INVALID_UNIQUE_ID, {}},
+            CreateCamera {0u, 2.0f, ~0u},
+
+            CreateTransform {1u, INVALID_UNIQUE_ID, {}},
+            CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 0u, false, false, true, false},
+        },
+        AssetWaitPoint {},
+        ScreenShotPoint {"SpriteAnimationFlipU"_us},
+    });
+}
+
+TEST_CASE (SpriteAnimationFlipV)
+{
+    ExecuteScenario ({
+        TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateTransform {0u, INVALID_UNIQUE_ID, {}},
+            CreateCamera {0u, 2.0f, ~0u},
+
+            CreateTransform {1u, INVALID_UNIQUE_ID, {}},
+            CreateSprite {1u, 0u, "WarriorRun1"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
+            CreateSpriteAnimation {1u, 0u, "WarriorRun1Animation"_us, 0u, false, false, false, true},
+        },
+        AssetWaitPoint {},
+        ScreenShotPoint {"SpriteAnimationFlipV"_us},
     });
 }
 

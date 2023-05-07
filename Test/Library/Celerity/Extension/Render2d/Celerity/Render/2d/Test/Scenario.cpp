@@ -429,6 +429,8 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     animation->currentTimeNs = _task.currentTimeNs;
                     animation->tickTime = _task.tickTime;
                     animation->loop = _task.loop;
+                    animation->flipU = _task.flipU;
+                    animation->flipV = _task.flipV;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::UpdateSpriteAnimation>)
                 {
@@ -440,6 +442,8 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     animation->currentTimeNs = _task.currentTimeNs;
                     animation->tickTime = _task.tickTime;
                     animation->loop = _task.loop;
+                    animation->flipU = _task.flipU;
+                    animation->flipV = _task.flipV;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::DeleteSpriteAnimation>)
                 {

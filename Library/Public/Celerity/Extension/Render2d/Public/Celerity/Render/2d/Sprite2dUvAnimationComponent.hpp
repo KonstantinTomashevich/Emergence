@@ -36,9 +36,18 @@ struct Sprite2dUvAnimationComponent final
     /// \brief Whether animation is looped.
     bool loop = false;
 
+    /// \brief Whether animation U coordinates should be flipped.
+    bool flipU = false;
+
+    /// \brief Whether animation V coordinates should be flipped.
+    bool flipV = false;
+
     /// \brief Whether animation is finished.
     /// \warning If ::loop, animation cannot be finished at all!
     bool finished = false;
+
+    /// \brief Whether component is waiting for an animation asset and therefore unable to update the sprite.
+    bool waitingForAnimationToLoad = false;
 
     struct Reflection final
     {
@@ -50,7 +59,10 @@ struct Sprite2dUvAnimationComponent final
         StandardLayout::FieldId lastSyncNormalTimeNs;
         StandardLayout::FieldId tickTime;
         StandardLayout::FieldId loop;
+        StandardLayout::FieldId flipU;
+        StandardLayout::FieldId flipV;
         StandardLayout::FieldId finished;
+        StandardLayout::FieldId waitingForAnimationToLoad;
         StandardLayout::Mapping mapping;
     };
 

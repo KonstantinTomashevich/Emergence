@@ -1,12 +1,16 @@
 #include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 #include <Celerity/Render/2d/Events.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
+#include <Celerity/Render/2d/Sprite2dUvAnimationComponent.hpp>
 
 namespace Emergence::Celerity
 {
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Sprite2dAddedNormalEvent, objectId, spriteId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Sprite2dSizeChangedNormalEvent, objectId, spriteId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (Sprite2dRemovedNormalEvent, objectId)
+
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Sprite2dUvAnimationAddedNormalEvent, objectId, spriteId);
+EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (Sprite2dUvAnimationSyncedValuesChangedNormalEvent, objectId, spriteId);
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DebugShape2dAddedNormalEvent, objectId, debugShapeId)
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (DebugShape2dAddedFixedToNormalEvent, objectId, debugShapeId)
@@ -29,13 +33,36 @@ void RegisterRender2dEvents (EventRegistrar &_registrar) noexcept
          Sprite2dComponent::Reflect ().mapping,
          {Sprite2dComponent::Reflect ().halfSize},
          {},
-         {{Sprite2dComponent::Reflect ().objectId, Sprite2dRemovedNormalEvent::Reflect ().objectId},
+         {{Sprite2dComponent::Reflect ().objectId, Sprite2dSizeChangedNormalEvent::Reflect ().objectId},
           {Sprite2dComponent::Reflect ().spriteId, Sprite2dSizeChangedNormalEvent::Reflect ().spriteId}}});
 
     _registrar.OnRemoveEvent (
         {{Sprite2dRemovedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
          Sprite2dComponent::Reflect ().mapping,
          {{Sprite2dComponent::Reflect ().objectId, Sprite2dRemovedNormalEvent::Reflect ().objectId}}});
+
+    // Sprite2dUvAnimationComponent
+
+    _registrar.OnAddEvent (
+        {{Sprite2dUvAnimationAddedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
+         Sprite2dUvAnimationComponent::Reflect ().mapping,
+         {{Sprite2dUvAnimationComponent::Reflect ().objectId, Sprite2dUvAnimationAddedNormalEvent::Reflect ().objectId},
+          {Sprite2dUvAnimationComponent::Reflect ().spriteId,
+           Sprite2dUvAnimationAddedNormalEvent::Reflect ().spriteId}}});
+
+    _registrar.OnChangeEvent (
+        {{Sprite2dUvAnimationSyncedValuesChangedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
+         Sprite2dUvAnimationComponent::Reflect ().mapping,
+         {
+             Sprite2dUvAnimationComponent::Reflect ().animationId,
+             Sprite2dUvAnimationComponent::Reflect ().flipU,
+             Sprite2dUvAnimationComponent::Reflect ().flipV,
+         },
+         {},
+         {{Sprite2dUvAnimationComponent::Reflect ().objectId,
+           Sprite2dUvAnimationSyncedValuesChangedNormalEvent::Reflect ().objectId},
+          {Sprite2dUvAnimationComponent::Reflect ().spriteId,
+           Sprite2dUvAnimationSyncedValuesChangedNormalEvent::Reflect ().spriteId}}});
 
     // DebugShape2dComponent
 
