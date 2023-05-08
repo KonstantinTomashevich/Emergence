@@ -1,8 +1,17 @@
 cmake_minimum_required (VERSION 3.21)
 cmake_policy (VERSION 3.21)
 
+
 project (Emergence)
-set (CMAKE_CXX_STANDARD 23)
+# Due to the issues with CLang in VS 2022, we need to run coverage on VS 2019, therefore this flag is needed.
+option (EMERGENCE_FALLBACK_TO_CXX_20 "Enables deprecated C++ 20 support." OFF)
+
+if (EMERGENCE_FALLBACK_TO_CXX_20)
+    set (CMAKE_CXX_STANDARD 20)
+    add_compile_definitions ("EMERGENCE_FALLBACK_TO_CXX_20")
+else ()
+    set (CMAKE_CXX_STANDARD 23)
+endif ()
 
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/PhysX.cmake")
