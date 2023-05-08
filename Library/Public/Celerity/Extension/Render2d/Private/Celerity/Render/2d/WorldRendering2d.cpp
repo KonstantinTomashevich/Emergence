@@ -455,8 +455,9 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
 
         uint16_t *indices =
             reinterpret_cast<uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (lineIndex * 2u);
-        indices[0u] = lineIndex * 2u;
-        indices[1u] = lineIndex * 2u + 1u;
+        EMERGENCE_ASSERT (lineIndex * 2u + 1 < std::numeric_limits<uint16_t>::max ());
+        indices[0u] = static_cast<uint16_t> (lineIndex * 2u);
+        indices[1u] = static_cast<uint16_t> (lineIndex * 2u + 1u);
         ++lineIndex;
     };
 

@@ -6,6 +6,8 @@
 
 #include "box2d/b2_settings.h"
 
+#include <cstdio>
+
 static void *(*selectedAllocator) (int32_t) = nullptr;
 
 static void (*selectedDeallocator) (void *) = nullptr;

@@ -160,7 +160,7 @@ void SpawnManager::ProcessScheduledSpawns (const Emergence::Celerity::TimeSingle
             layerSetup->layer = layer.value ();
         }
 
-        Emergence::Container::Optional<uint16_t> team;
+        Emergence::Container::Optional<uint8_t> team;
         if (auto teamCursor = fetchTeamByObjectId.Execute (&spawn->objectId);
             const auto *spawnTeam = static_cast<const TeamComponent *> (*teamCursor))
         {
