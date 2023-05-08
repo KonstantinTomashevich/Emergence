@@ -47,6 +47,12 @@
       "Reason": "Uncovered code is used only for logging human readable errors. Might be fixed later by adding negative tests."
     },
     {
+      "Prefix": "./Library/Public/Celerity/Public/Celerity/PipelineBuilder.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 74.0,
+      "Reason": "Coverage requirement is met when GPU-dependant tests are executed too. But we cannot execute them on CI."
+    },
+    {
       "Prefix": "./Library/Public/Celerity/Public/Celerity/Query",
       "Action": "Exclude",
       "Reason": "Currently these queries just wrap Warehouse queries, therefore there is no need to cover them fully."
