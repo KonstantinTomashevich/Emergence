@@ -5,9 +5,7 @@
 Emergence is a flexible set of libraries for gameplay development, which modular architecture is inspired by
 [Sober CMake Framework](https://github.com/KonstantinTomashevich/Sober). Under development.
 
-## Finished modules
-
-### Services
+## Services
 
 - [Assert](./Service/Assert/README.md): provides assertion mechanism with optional interactive mode.
 - [ExportGraph](./Service/ExportGraph/README.md): exports [VisualGraph](./Library/Public/VisualGraph/README.md)
@@ -32,11 +30,19 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 - [Warehouse](./Service/Warehouse/README.md): provides database-like API for storing objects and accessing them through
   prepared queries.
 
-### Libraries
+### Celerity extensions
+
+These services are built on top of [Celerity](./Library/Public/Celerity/README.md) library and extend its features:
+
+- [Physics2d](./Service/Celerity/Extension/Physics2d/README.md): provides 2d physics simulation.
+- [Physics3d](./Service/Celerity/Extension/Physics3d/README.md): provides 3d physics simulation.
+- [UI](./Service/Celerity/Extension/UI/README.md): provides simplistic UI features.
+
+## Libraries
 
 - [Celerity](./Library/Public/Celerity/README.md): combines [Warehouse](./Service/Warehouse/README.md),
   [Flow](./Library/Public/Flow/README.md) and [TaskExecutor](./Service/TaskExecutor/README.md) into framework
-  for gameplay world logic implementation. Has transform hierarchy and physics engine extensions.
+  for gameplay world logic implementation.
 - [Container](./Library/Public/Container/README.md): template container proxies and implementations.
 - [Flow](./Library/Public/Flow/README.md): compact user-friendly task registration library. It verifies that there is no
   circular dependencies, no missing dependencies and no data races between registered tasks.
@@ -53,9 +59,35 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   graph. Helps to visualize complex structures that are created during execution. For example, task dependency graphs or
   data processing pipelines.
 
-### Executables
+### Celerity extensions
+
+These libraries are built on top of [Celerity](./Library/Public/Celerity/README.md) library and extend its features:
+
+- [Assembly](./Library/Public/Celerity/Extension/Assembly/README.md): `Assembly` pattern implementation that makes
+  it easy to instantiate objects during gameplay.
+- [Asset](./Library/Public/Celerity/Extension/Asset/README.md): implements asset cache behaviour with automatic asset
+  management through reflection-based asset usage scanning.
+- [Input](./Library/Public/Celerity/Extension/Input/README.md): implements input abstraction layer for game-level input.
+- [Locale](./Library/Public/Celerity/Extension/Locale/README.md): simplistic localization implementation.
+- [Physics2dDebugDraw](./Library/Public/Celerity/Extension/Physics2dDebugDraw/README.md): provides debug draw for
+  [Physics2d](./Service/Celerity/Extension/Physics2d/README.md) on top of
+  [Render2d](./Library/Public/Celerity/Extension/Render2d/README.md).
+- [Render2d](./Library/Public/Celerity/Extension/Render2d/README.md): simplistic 2d rendering implementation.
+- [RenderFoundation](./Library/Public/Celerity/Extension/RenderFoundation/README.md): contains common features and 
+  routine for render extensions making it possible to glue them together.
+- [ResourceConfig](./Library/Public/Celerity/Extension/ResourceConfig/README.md): provides support for game config 
+  loading using message driven API.
+- [ResourceObject](./Library/Public/Celerity/Extension/ResourceObject/README.md): integrates
+  [Assembly](./Library/Public/Celerity/Extension/Assembly/README.md) with
+  [ResourceObject](Library/Public/ResourceObject/README.md) using message driven API.
+- [Transform](./Library/Public/Celerity/Extension/Transform/README.md): transform node hierarchy with logical and 
+  visual transform separation and interpolation-based visual transform sync.
+
+## Executables
 
 - [MemoryRecordingClient](./Executable/MemoryRecordingClient/README.md):
   tool for viewing [MemoryRecording](./Library/Public/MemoryRecording/README.md) serialized tracks.
+- [Platformer2dDemo](./Executable/Platformer2dDemo/README.md): simple platformer game in early stage of development,
+  used to test new **Emergence** features.
 - [SpaceShooterDemo](./Executable/SpaceShooterDemo/README.md): simple shooter game, that illustrates usage of
   **Emergence** features.

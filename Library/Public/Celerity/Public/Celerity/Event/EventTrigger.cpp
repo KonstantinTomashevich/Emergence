@@ -227,7 +227,7 @@ bool OnChangeEventTrigger::IsFieldTracked (StandardLayout::FieldId _field) const
     StandardLayout::Field field = trackedType.GetField (_field);
     for (const TrackedZone &zone : trackedZones)
     {
-        if (field.GetOffset () >= zone.offset && field.GetOffset () < zone.offset + zone.length)
+        if (field.GetOffset () < zone.offset + zone.length && field.GetOffset () + field.GetSize () > zone.offset)
         {
             return true;
         }

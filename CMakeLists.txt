@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.21)
 cmake_policy (VERSION 3.21)
 
-
 project (Emergence)
 # Due to the issues with CLang in VS 2022, we need to run coverage on VS 2019, therefore this flag is needed.
 option (EMERGENCE_FALLBACK_TO_CXX_20 "Enables deprecated C++ 20 support." OFF)

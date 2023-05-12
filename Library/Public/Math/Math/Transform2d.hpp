@@ -25,7 +25,10 @@ struct alignas (float) Transform2d final
     Transform2d operator* (const Transform2d &_other) const noexcept;
 
     Vector2f translation;
+
+    /// \brief Rotation in radians.
     float rotation;
+
     Vector2f scale;
 
     struct Reflection final

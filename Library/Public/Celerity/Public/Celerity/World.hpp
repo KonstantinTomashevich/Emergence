@@ -241,7 +241,7 @@ private:
 
     void EnsureViewIsOwned (WorldView *_view) noexcept;
 
-    /// \details First field, because event scheme must be available during root world destruction.
+    /// \details First field, because event scheme must be available during root view destruction.
     std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
     WorldView rootView;
 

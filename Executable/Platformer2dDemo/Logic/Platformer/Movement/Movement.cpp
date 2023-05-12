@@ -145,10 +145,8 @@ void MovementProcessor::Execute () noexcept
 
         if (!context.rigidBody)
         {
-            EMERGENCE_LOG (
-                ERROR,
-                "Movement: There is no configuration RigidBody2dComponent for MovementComponent on object with id ",
-                context.movement->objectId, ", therefore MovementComponent will be deleted.");
+            EMERGENCE_LOG (ERROR, "Movement: There is no RigidBody2dComponent for MovementComponent on object with id ",
+                           context.movement->objectId, ", therefore MovementComponent will be deleted.");
             ~movementCursor;
             continue;
         }

@@ -10,14 +10,14 @@ struct LoadingAnimationSingleton final
     bool instanced = false;
 
     Emergence::Celerity::UniqueId cameraObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
-    Emergence::Celerity::UniqueId spriteObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
+    Emergence::Celerity::UniqueId sceneObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
     struct Reflection final
     {
         Emergence::StandardLayout::FieldId required;
         Emergence::StandardLayout::FieldId instanced;
         Emergence::StandardLayout::FieldId cameraObjectId;
-        Emergence::StandardLayout::FieldId spriteObjectId;
+        Emergence::StandardLayout::FieldId sceneObjectId;
         Emergence::StandardLayout::Mapping mapping;
     };
 

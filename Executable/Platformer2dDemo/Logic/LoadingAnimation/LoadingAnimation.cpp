@@ -179,11 +179,11 @@ void Manager::Instantiate (LoadingAnimationSingleton *_loadingAnimation) noexcep
     worldPass->cameraObjectId = camera->objectId;
 
     auto *loadingAnimationTransform = static_cast<Emergence::Celerity::Transform2dComponent *> (++transformCursor);
-    _loadingAnimation->spriteObjectId = world->GenerateId ();
-    loadingAnimationTransform->SetObjectId (_loadingAnimation->spriteObjectId);
+    _loadingAnimation->sceneObjectId = world->GenerateId ();
+    loadingAnimationTransform->SetObjectId (_loadingAnimation->sceneObjectId);
 
     auto *prototype = static_cast<Emergence::Celerity::PrototypeComponent *> (++prototypeCursor);
-    prototype->objectId = _loadingAnimation->spriteObjectId;
+    prototype->objectId = _loadingAnimation->sceneObjectId;
     prototype->descriptorId = LOADING_PROTOTYPE_NAME;
     prototype->requestImmediateFixedAssembly = false;
     prototype->requestImmediateNormalAssembly = false;
@@ -200,18 +200,18 @@ void Manager::Destroy (LoadingAnimationSingleton *_loadingAnimation) noexcept
     }
 
     {
-        auto removeCameraCursor = removeTransformById.Execute (&_loadingAnimation->cameraObjectId);
-        if (removeCameraCursor.ReadConst ())
+        auto removeCameraTransformCursor = removeTransformById.Execute (&_loadingAnimation->cameraObjectId);
+        if (removeCameraTransformCursor.ReadConst ())
         {
-            ~removeCameraCursor;
+            ~removeCameraTransformCursor;
         }
     }
 
     {
-        auto removeSpriteCursor = removeTransformById.Execute (&_loadingAnimation->spriteObjectId);
-        if (removeSpriteCursor.ReadConst ())
+        auto removeSceneTransformCursor = removeTransformById.Execute (&_loadingAnimation->sceneObjectId);
+        if (removeSceneTransformCursor.ReadConst ())
         {
-            ~removeSpriteCursor;
+            ~removeSceneTransformCursor;
         }
     }
 

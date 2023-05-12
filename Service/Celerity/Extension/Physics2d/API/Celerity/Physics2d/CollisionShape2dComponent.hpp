@@ -29,7 +29,7 @@ struct CollisionShape2dComponent final
     /// \brief Shape additional translation, local to object transform.
     Math::Vector2f translation = Math::Vector2f::ZERO;
 
-    /// \brief Shape additional rotation, local to object transform.
+    /// \brief Shape additional rotation in radians, local to object transform.
     float rotation = 0.0f;
 
     /// \brief Shape geometry. Can be resized any time in fixed pipeline.

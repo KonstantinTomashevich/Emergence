@@ -76,10 +76,8 @@ void CameraManager::Execute () noexcept
         playerControllableTransform = transform->GetVisualWorldTransform (transformWorldAccessor);
     }
 
-    auto transformCursor = editTransformById.Execute (&playerCameraContext->objectId);
-    auto *transform = static_cast<Emergence::Celerity::Transform2dComponent *> (*transformCursor);
-
-    if (transform)
+    if (auto transformCursor = editTransformById.Execute (&playerCameraContext->objectId);
+        auto *transform = static_cast<Emergence::Celerity::Transform2dComponent *> (*transformCursor))
     {
         transform->SetVisualLocalTransform (playerControllableTransform);
     }

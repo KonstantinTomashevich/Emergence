@@ -263,6 +263,11 @@ void DebugDrawManager::AddShapeDebugDraw (UniqueId _shapeId) noexcept
 
 void DebugDrawManager::AddShapeDebugDraw (const CollisionShape2dComponent *_collisionShape) noexcept
 {
+    if (!_collisionShape->enabled)
+    {
+        return;
+    }
+
     {
         auto linkCursor = fetchShapeDebugDrawLinkByShapeId.Execute (&_collisionShape->shapeId);
         if (*linkCursor)

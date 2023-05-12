@@ -443,8 +443,6 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
                             const Memory::UniqueString dependency =
                                 *static_cast<const Memory::UniqueString *> (change.newValue);
 
-                            // We don't mark injected sub objects as dependencies, because they are logically
-                            // separate objects, and they should not be thrown away after full changelist resolution.
                             if (!FindAndLoadDeclaration (dependency, false))
                             {
                                 EMERGENCE_LOG (ERROR,
