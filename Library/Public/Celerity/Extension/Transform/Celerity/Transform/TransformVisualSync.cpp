@@ -82,7 +82,7 @@ void TransformVisualSynchronizer<TransformComponentType>::Execute () noexcept
         if (auto *transform = static_cast<TransformComponentType *> (*cursor);
             transform && !transform->visualTransformSyncNeeded)
         {
-            transform->visualLocalTransform = transform->logicalLocalTransform;
+            transform->SetVisualLocalTransform (transform->logicalLocalTransform);
         }
     }
 

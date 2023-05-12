@@ -180,7 +180,7 @@ void GameApplication::Start ()
     Control::AddToFixedUpdate (pipelineBuilder);
     Damage::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Assembly::AddToFixedUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
-                                                     GetFixedAssemblerTypes ());
+                                                     GetFixedAssemblerTypes (), 16000000u);
     Emergence::Celerity::Input::AddToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::TransformHierarchyCleanup::Add3dToFixedUpdate (pipelineBuilder);
     Emergence::Celerity::Physics3dSimulation::AddToFixedUpdate (pipelineBuilder);
@@ -196,7 +196,7 @@ void GameApplication::Start ()
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::Assembly::AddToNormalUpdate (pipelineBuilder, GetAssemblerCustomKeys (),
-                                                      GetNormalAssemblerTypes ());
+                                                      GetNormalAssemblerTypes (), 16000000u);
     Emergence::Celerity::Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
     Emergence::Celerity::TransformHierarchyCleanup::Add3dToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::TransformVisualSync::Add3dToNormalUpdate (pipelineBuilder);

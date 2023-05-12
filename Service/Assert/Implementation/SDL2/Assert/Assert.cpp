@@ -9,6 +9,10 @@
 
 #include <SDL.h>
 
+#ifndef EMERGENCE_FALLBACK_TO_CXX_20
+#    include <stacktrace>
+#endif
+
 #include <SyntaxSugar/AtomicFlagGuard.hpp>
 
 namespace Emergence
@@ -56,8 +60,13 @@ void ReportCriticalError (const char *_expression, const char *_file, size_t _li
             {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT | SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, BUTTON_SKIP, "Skip"},
         };
 
-        const Container::String assertText =
-            EMERGENCE_BUILD_STRING ("Expression: ", _expression, ".\nFile: ", _file, ".\nLine: ", _line, ".");
+        Container::String assertText = EMERGENCE_BUILD_STRING ("Expression: ", _expression, ".\nFile: ", _file,
+                                                               ".\nLine: ", _line, ".\nStacktrace:\n");
+
+#ifndef EMERGENCE_FALLBACK_TO_CXX_20
+        // We avoid using string builder here as stacktrace string is usually too big.
+        assertText += std::to_string (std::stacktrace::current ());
+#endif
 
         const SDL_MessageBoxData messageBoxData = {
             SDL_MESSAGEBOX_ERROR,    nullptr, "Assert failed!", assertText.c_str (),

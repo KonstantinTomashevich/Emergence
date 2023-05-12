@@ -3,6 +3,7 @@
 #include <SyntaxSugar/BlockCast.hpp>
 
 #include <Warehouse/Registry.hpp>
+#include <Warehouse/RegistryData.hpp>
 #include <Warehouse/VisualizationDriver.hpp>
 
 namespace Emergence::Warehouse
@@ -48,15 +49,9 @@ Container::Vector<RecordCollection::Collection::DimensionDescriptor> ConvertDime
     return result;
 }
 
-struct InternalData final
-{
-    Memory::Heap heap {Memory::Profiler::AllocationGroup (Memory::UniqueString {"Registry"})};
-    Galleon::CargoDeck *deck = nullptr;
-};
-
 Registry::Registry (Memory::UniqueString _name) noexcept
 {
-    auto &internal = *new (&data) InternalData ();
+    auto &internal = *new (&data) RegistryData ();
     auto placeholder = internal.heap.GetAllocationGroup ().PlaceOnTop ();
     internal.deck = new (internal.heap.Acquire (sizeof (Galleon::CargoDeck), alignof (Galleon::CargoDeck)))
         Galleon::CargoDeck (_name);
@@ -64,27 +59,27 @@ Registry::Registry (Memory::UniqueString _name) noexcept
 
 Registry::Registry (Registry &&_other) noexcept
 {
-    auto &internal = *new (&data) InternalData ();
-    internal.deck = block_cast<InternalData> (_other.data).deck;
+    auto &internal = *new (&data) RegistryData ();
+    internal.deck = block_cast<RegistryData> (_other.data).deck;
     EMERGENCE_ASSERT (internal.deck);
-    block_cast<InternalData> (_other.data).deck = nullptr;
+    block_cast<RegistryData> (_other.data).deck = nullptr;
 }
 
 Registry::~Registry () noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     if (internal.deck)
     {
         internal.deck->~CargoDeck ();
         internal.heap.Release (internal.deck, sizeof (Galleon::CargoDeck));
     }
 
-    internal.~InternalData ();
+    internal.~RegistryData ();
 }
 
 FetchSingletonQuery Registry::FetchSingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto query = UseSingletonContainer (*internal.deck, _typeMapping)->Fetch ();
     return FetchSingletonQuery (array_cast (query));
@@ -92,7 +87,7 @@ FetchSingletonQuery Registry::FetchSingleton (const StandardLayout::Mapping &_ty
 
 ModifySingletonQuery Registry::ModifySingleton (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto query = UseSingletonContainer (*internal.deck, _typeMapping)->Modify ();
     return ModifySingletonQuery (array_cast (query));
@@ -100,7 +95,7 @@ ModifySingletonQuery Registry::ModifySingleton (const StandardLayout::Mapping &_
 
 InsertShortTermQuery Registry::InsertShortTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto query = UseShortTermContainer (*internal.deck, _typeMapping)->Insert ();
     return InsertShortTermQuery (array_cast (query));
@@ -108,7 +103,7 @@ InsertShortTermQuery Registry::InsertShortTerm (const StandardLayout::Mapping &_
 
 FetchSequenceQuery Registry::FetchSequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto query = UseShortTermContainer (*internal.deck, _typeMapping)->Fetch ();
     return FetchSequenceQuery (array_cast (query));
@@ -116,7 +111,7 @@ FetchSequenceQuery Registry::FetchSequence (const StandardLayout::Mapping &_type
 
 ModifySequenceQuery Registry::ModifySequence (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto query = UseShortTermContainer (*internal.deck, _typeMapping)->Modify ();
     return ModifySequenceQuery (array_cast (query));
@@ -124,7 +119,7 @@ ModifySequenceQuery Registry::ModifySequence (const StandardLayout::Mapping &_ty
 
 InsertLongTermQuery Registry::InsertLongTerm (const StandardLayout::Mapping &_typeMapping) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto query = UseLongTermContainer (*internal.deck, _typeMapping)->Insert ();
     return InsertLongTermQuery (array_cast (query));
@@ -133,7 +128,7 @@ InsertLongTermQuery Registry::InsertLongTerm (const StandardLayout::Mapping &_ty
 FetchValueQuery Registry::FetchValue (const StandardLayout::Mapping &_typeMapping,
                                       const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchValue (_keyFields);
@@ -143,7 +138,7 @@ FetchValueQuery Registry::FetchValue (const StandardLayout::Mapping &_typeMappin
 ModifyValueQuery Registry::ModifyValue (const StandardLayout::Mapping &_typeMapping,
                                         const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyValue (_keyFields);
@@ -153,7 +148,7 @@ ModifyValueQuery Registry::ModifyValue (const StandardLayout::Mapping &_typeMapp
 FetchAscendingRangeQuery Registry::FetchAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                         StandardLayout::FieldId _keyField) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchAscendingRange (_keyField);
@@ -163,7 +158,7 @@ FetchAscendingRangeQuery Registry::FetchAscendingRange (const StandardLayout::Ma
 ModifyAscendingRangeQuery Registry::ModifyAscendingRange (const StandardLayout::Mapping &_typeMapping,
                                                           StandardLayout::FieldId _keyField) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyAscendingRange (_keyField);
@@ -173,7 +168,7 @@ ModifyAscendingRangeQuery Registry::ModifyAscendingRange (const StandardLayout::
 FetchDescendingRangeQuery Registry::FetchDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                           StandardLayout::FieldId _keyField) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchDescendingRange (_keyField);
@@ -183,7 +178,7 @@ FetchDescendingRangeQuery Registry::FetchDescendingRange (const StandardLayout::
 ModifyDescendingRangeQuery Registry::ModifyDescendingRange (const StandardLayout::Mapping &_typeMapping,
                                                             StandardLayout::FieldId _keyField) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyDescendingRange (_keyField);
@@ -194,7 +189,7 @@ FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapp
                                         StandardLayout::FieldId _keyField,
                                         const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchSignal (_keyField, _signaledValue);
@@ -205,7 +200,7 @@ ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMa
                                           StandardLayout::FieldId _keyField,
                                           const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifySignal (_keyField, _signaledValue);
@@ -215,7 +210,7 @@ ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMa
 FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayout::Mapping &_typeMapping,
                                                               const Container::Vector<Dimension> &_dimensions) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchShapeIntersection (ConvertDimensions (_typeMapping, _dimensions));
@@ -225,7 +220,7 @@ FetchShapeIntersectionQuery Registry::FetchShapeIntersection (const StandardLayo
 ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (
     const StandardLayout::Mapping &_typeMapping, const Container::Vector<Dimension> &_dimensions) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyShapeIntersection (ConvertDimensions (_typeMapping, _dimensions));
@@ -235,7 +230,7 @@ ModifyShapeIntersectionQuery Registry::ModifyShapeIntersection (
 FetchRayIntersectionQuery Registry::FetchRayIntersection (const StandardLayout::Mapping &_typeMapping,
                                                           const Container::Vector<Dimension> &_dimensions) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->FetchRayIntersection (ConvertDimensions (_typeMapping, _dimensions));
@@ -245,7 +240,7 @@ FetchRayIntersectionQuery Registry::FetchRayIntersection (const StandardLayout::
 ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout::Mapping &_typeMapping,
                                                             const Container::Vector<Dimension> &_dimensions) noexcept
 {
-    auto &internal = block_cast<InternalData> (data);
+    auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     auto container = UseLongTermContainer (*internal.deck, _typeMapping);
     auto query = container->ModifyRayIntersection (ConvertDimensions (_typeMapping, _dimensions));
@@ -254,23 +249,30 @@ ModifyRayIntersectionQuery Registry::ModifyRayIntersection (const StandardLayout
 
 bool Registry::IsTypeUsed (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    const auto &internal = block_cast<InternalData> (data);
+    const auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     return internal.deck->IsLongTermContainerAllocated (_typeMapping) ||
            internal.deck->IsShortTermContainerAllocated (_typeMapping) ||
            internal.deck->IsSingletonContainerAllocated (_typeMapping);
 }
 
+void Registry::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept
+{
+    const auto &internal = block_cast<RegistryData> (data);
+    EMERGENCE_ASSERT (internal.deck);
+    internal.deck->SetGarbageCollectionEnabled (_typeMapping, _enabled);
+}
+
 Memory::UniqueString Registry::GetName () const noexcept
 {
-    const auto &internal = block_cast<InternalData> (data);
+    const auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     return internal.deck->GetName ();
 }
 
 void Registry::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept
 {
-    const auto &internal = block_cast<InternalData> (data);
+    const auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
     Galleon::VisualizationDriver::PostProcess (_graph, *internal.deck);
 }

@@ -58,6 +58,10 @@ struct RigidBody2dComponent final
     /// \brief Whether body rotation should be prevented.
     bool fixedRotation = false;
 
+    /// \brief Ignore changes to velocity made by simulation.
+    /// \details Used to manipulate dynamic bodies with complex physics, like game characters.
+    bool ignoreSimulationVelocityChange = false;
+
     /// \brief Body linear velocity in world coordinates.
     Math::Vector2f linearVelocity = Math::Vector2f::ZERO;
 
@@ -83,6 +87,7 @@ struct RigidBody2dComponent final
         StandardLayout::FieldId affectedByGravity;
         StandardLayout::FieldId manipulatedOutsideOfSimulation;
         StandardLayout::FieldId fixedRotation;
+        StandardLayout::FieldId ignoreSimulationVelocityChange;
         StandardLayout::FieldId linearVelocity;
         StandardLayout::FieldId angularVelocity;
         StandardLayout::FieldId additiveLinearImpulse;

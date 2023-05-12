@@ -4,6 +4,11 @@
 
 namespace Emergence::Resource::Object
 {
+void TypeManifest::AddInjection (DependencyInjectionInfo _info) noexcept
+{
+    injections.emplace_back (std::move (_info));
+}
+
 void TypeManifest::Register (const StandardLayout::Mapping &_mapping, const TypeInfo &_info) noexcept
 {
     if (!infos.emplace (_mapping, _info).second)
@@ -26,5 +31,10 @@ const TypeInfo *TypeManifest::Get (const StandardLayout::Mapping &_mapping) cons
 const Container::HashMap<StandardLayout::Mapping, TypeInfo> &TypeManifest::GetMap () const noexcept
 {
     return infos;
+}
+
+const Container::Vector<DependencyInjectionInfo> &TypeManifest::GetInjections () const noexcept
+{
+    return injections;
 }
 } // namespace Emergence::Resource::Object

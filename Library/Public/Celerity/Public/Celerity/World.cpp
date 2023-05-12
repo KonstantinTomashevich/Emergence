@@ -84,7 +84,8 @@ WorldView::WorldView (World *_world,
       eventSchemeInstances (
           {EventSchemeInstance {Memory::Profiler::AllocationGroup {"NormalUpdateEventSchemeInstance"_us}},
            EventSchemeInstance {Memory::Profiler::AllocationGroup {"FixedUpdateEventSchemeInstance"_us}},
-           EventSchemeInstance {Memory::Profiler::AllocationGroup {"CustomPipelinesEventSchemeInstance"_us}}})
+           EventSchemeInstance {Memory::Profiler::AllocationGroup {"CustomPipelinesEventSchemeInstance"_us}}}),
+      eventProductionForbiddenInChildren (Memory::Profiler::AllocationGroup::Top ())
 {
     for (const StandardLayout::Mapping &enforcedType : _config.enforcedTypes)
     {
@@ -93,6 +94,11 @@ WorldView::WorldView (World *_world,
         EMERGENCE_ASSERT (enforcedType != WorldSingleton::Reflect ().mapping);
 
         config.enforcedTypes.emplace (enforcedType);
+
+        // We disable garbage collection for enforced types, as they might never be referenced in parent view, but used
+        // only in child views instead. To ensure fully predictable behaviour where children can use enforced types in
+        // order to pass data during transition, we have to disable garbage collection for these types.
+        localRegistry.SetGarbageCollectionEnabled (enforcedType, false);
     }
 
 #ifdef EMERGENCE_ASSERT_ENABLED
@@ -113,6 +119,40 @@ WorldView::WorldView (World *_world,
 
 WorldView::~WorldView () noexcept
 {
+    // We need to trigger events that must be inserted into parent views, so they will receive required data.
+    // This logic might significantly slow down destruction of the large worlds. Think about improving it later.
+    for (EventSchemeInstance &eventSchemeInstance : eventSchemeInstances)
+    {
+        for (TrivialEventTriggerInstanceRow &row : eventSchemeInstance.onRemove)
+        {
+            for (TrivialEventTriggerInstance &instance : row)
+            {
+                const StandardLayout::Mapping &trackedType = instance.GetTrigger ()->GetTrackedType ();
+                if (!instance.IsTargetingRegistry (localRegistry) && localRegistry.IsTypeUsed (trackedType))
+                {
+                    StandardLayout::FieldId idForRangeExtraction = 0u;
+                    while (trackedType.GetField (idForRangeExtraction).IsHandleValid () &&
+                           trackedType.GetField (idForRangeExtraction).GetArchetype () ==
+                               StandardLayout::FieldArchetype::NESTED_OBJECT)
+                    {
+                        ++idForRangeExtraction;
+                    }
+
+                    EMERGENCE_ASSERT (trackedType.GetField (idForRangeExtraction).IsHandleValid ());
+                    Warehouse::FetchAscendingRangeQuery query =
+                        localRegistry.FetchAscendingRange (trackedType, idForRangeExtraction);
+                    auto cursor = query.Execute (nullptr, nullptr);
+
+                    while (const void *record = *cursor)
+                    {
+                        instance.Trigger (record);
+                        ++cursor;
+                    }
+                }
+            }
+        }
+    }
+
     for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
     {
         auto *pipeline = static_cast<Pipeline *> (*iterator);
@@ -200,7 +240,7 @@ WorldView &WorldView::FindViewForType (const StandardLayout::Mapping &_type) noe
     return *this;
 }
 
-TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstance (
+TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstances (
     Container::TypedOrderedPool<TrivialEventTriggerInstanceRow> &_pool, const TrivialEventTriggerRow *_source)
 {
     EMERGENCE_ASSERT (_source && !_source->Empty ());
@@ -223,9 +263,9 @@ TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstance (
     TrivialEventTriggerInstanceRow &row = _pool.Acquire ();
     for (const TrivialEventTrigger &trigger : *_source)
     {
-        row.EmplaceBack (TrivialEventTriggerInstance {
-            &trigger,
-            FindViewForType (trigger.GetEventType ()).localRegistry.InsertShortTerm (trigger.GetEventType ())});
+        WorldView &view = FindViewForType (trigger.GetEventType ());
+        row.EmplaceBack (
+            TrivialEventTriggerInstance {&trigger, view.localRegistry.InsertShortTerm (trigger.GetEventType ())});
     }
 
     return &row;
@@ -234,13 +274,13 @@ TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstance (
 TrivialEventTriggerInstanceRow *WorldView::RequestOnAddEventInstances (PipelineType _pipeline,
                                                                        const TrivialEventTriggerRow *_source) noexcept
 {
-    return RequestTrivialEventInstance (eventSchemeInstances[static_cast<size_t> (_pipeline)].onAdd, _source);
+    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<size_t> (_pipeline)].onAdd, _source);
 }
 
 TrivialEventTriggerInstanceRow *WorldView::RequestOnRemoveEventInstances (
     PipelineType _pipeline, const TrivialEventTriggerRow *_source) noexcept
 {
-    return RequestTrivialEventInstance (eventSchemeInstances[static_cast<size_t> (_pipeline)].onRemove, _source);
+    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<size_t> (_pipeline)].onRemove, _source);
 }
 
 OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (PipelineType _pipeline,
@@ -278,17 +318,17 @@ OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (Pipel
 }
 
 World::World (Memory::UniqueString _name, const WorldConfiguration &_configuration) noexcept
-    : rootView (ConstructInsideGroup<WorldView> (
+    : eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
+                     EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}}),
+      rootView (ConstructInsideGroup<WorldView> (
           Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "RootView"_us},
           this,
           nullptr,
           "Root"_us,
           _configuration.rootViewConfig)),
       modifyTime (rootView.localRegistry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
-      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
-      eventSchemes ({EventScheme {WorldAllocationGroup (_name, "NormalUpdateEventScheme"_us)},
-                     EventScheme {WorldAllocationGroup (_name, "FixedUpdateEventScheme"_us)},
-                     EventScheme {WorldAllocationGroup (_name, "CustomPipelinesEventScheme"_us)}})
+      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping))
 {
     auto timeCursor = modifyTime.Execute ();
     auto *time = static_cast<TimeSingleton *> (*timeCursor);

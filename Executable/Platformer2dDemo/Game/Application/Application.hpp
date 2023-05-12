@@ -9,33 +9,8 @@
 
 #include <Memory/Recording/StreamSerializer.hpp>
 
-// TODO: Currently this demo is used for quick testing, therefore everything is added into Application file.
-//       Should be refactored into real demo later.
-
+class GameState;
 struct SDL_Window;
-
-class WindowBackend final
-{
-public:
-    WindowBackend () noexcept = default;
-
-    WindowBackend (const WindowBackend &_other) = delete;
-
-    WindowBackend (WindowBackend &&_other) = delete;
-
-    ~WindowBackend () noexcept;
-
-    void Init (const Settings &_settings) noexcept;
-
-    [[nodiscard]] SDL_Window *GetWindow () const noexcept;
-
-    WindowBackend &operator= (const WindowBackend &_other) = delete;
-
-    WindowBackend &operator= (WindowBackend &&_other) = delete;
-
-private:
-    SDL_Window *window = nullptr;
-};
 
 class Application final
 {
@@ -46,7 +21,7 @@ public:
 
     Application (Application &&_other) = delete;
 
-    ~Application () noexcept = default;
+    ~Application () noexcept;
 
     void Run () noexcept;
 
@@ -59,16 +34,17 @@ private:
 
     void InitWindow () noexcept;
 
-    void InitWorld () noexcept;
+    void InitGameState () noexcept;
 
     void EventLoop () noexcept;
 
     [[nodiscard]] uint64_t SDLTicksToTime (uint64_t _ticks) const noexcept;
 
     Settings settings;
-    WindowBackend windowBackend;
-    Emergence::Celerity::FrameInputAccumulator inputAccumulator;
-    Emergence::Celerity::World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
+    GameState *gameState = nullptr;
+    Emergence::Memory::Heap gameStateHeap {Emergence::Memory::Profiler::AllocationGroup {
+        Emergence::Memory::Profiler::AllocationGroup::Root (), Emergence::Memory::UniqueString {"GameState"}}};
+    SDL_Window *window = nullptr;
 
     std::ofstream memoryEventOutput;
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;

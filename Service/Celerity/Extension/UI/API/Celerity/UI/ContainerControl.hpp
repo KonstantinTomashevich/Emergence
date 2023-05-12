@@ -55,11 +55,19 @@ struct ContainerControl final
     /// \invariant Only applicable for ContainerType::PANEL.
     bool border = false;
 
-    /// \brief Title that describes this container content.
+    /// \brief Key to LocalizedString that describes this container object.
+    /// \invariant Only applicable for ContainerType::COLLAPSING_PANEL and ContainerType::COMBO_PANEL.
+    Memory::UniqueString labelKey;
+
+    /// \brief Title that describes this container content. Used instead of ::labelKey if present.
     /// \invariant Only applicable for ContainerType::COLLAPSING_PANEL and ContainerType::COMBO_PANEL.
     Container::Utf8String label;
 
-    /// \brief Preview value that describes current state of this container.
+    /// \brief Key to LocalizedString that serves as preview value that describes current state of this container.
+    /// \invariant Only applicable for ContainerType::COMBO_PANEL.
+    Memory::UniqueString previewKey;
+
+    /// \brief Preview value that describes current state of this container. Used instead of ::previewKey if present.
     /// \invariant Only applicable for ContainerType::COMBO_PANEL.
     Container::Utf8String preview;
 
@@ -72,6 +80,9 @@ struct ContainerControl final
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
         StandardLayout::FieldId border;
+
+        StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId previewKey;
         StandardLayout::Mapping mapping;
     };
 

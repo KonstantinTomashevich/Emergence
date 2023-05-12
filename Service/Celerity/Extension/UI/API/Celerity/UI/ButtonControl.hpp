@@ -15,7 +15,10 @@ struct ButtonControl final
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
 
-    /// \brief Text that is written on this button.
+    /// \brief Key to LocalizedString that is written on this button.
+    Memory::UniqueString labelKey;
+
+    /// \brief Text that is written on this button. Used instead of ::labelKey if present.
     Container::Utf8String label;
 
     /// \brief Width of button control.
@@ -33,6 +36,7 @@ struct ButtonControl final
     struct Reflection final
     {
         StandardLayout::FieldId nodeId;
+        StandardLayout::FieldId labelKey;
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
 

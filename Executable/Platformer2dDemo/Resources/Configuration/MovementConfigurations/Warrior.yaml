@@ -1,0 +1,13 @@
+runVelocity: 3.0
+jumpVelocity: 7.5
+groundMaxSlopeDeg: 45.0
+airControlMaxVelocity: 2.0
+airControlAcceleration: 5.0
+rollVelocity: 2.0
+rollDurationS: 1.0
+slideVelocity: 4.0
+slideDurationS: 1.0
+allowJump: 1
+allowCrouch: 1
+allowRoll: 1
+allowSlide: 1

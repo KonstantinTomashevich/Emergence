@@ -36,7 +36,7 @@ struct WorldViewConfig final
     ///        storages for them will be created in this view registry.
     /// \invariant For any path from root view to any child view, any type can not be mentioned in this
     ///            set more than once. So, if type is enforced in parent view, child views can not enforce it.
-    Container::HashSet<StandardLayout::Mapping> enforcedTypes;
+    Container::HashSet<StandardLayout::Mapping> enforcedTypes {Memory::Profiler::AllocationGroup::Top ()};
 };
 
 /// \brief Combination of World data partition that is visible to this view and pipelines that operate on this
@@ -86,7 +86,7 @@ struct WorldViewConfig final
 /// - In the editor, we need to be able to edit several resources, for example several levels, independently.
 ///   We cannot store all the opened documents in the one world as they will blend and may change each other.
 ///   But we cannot store them in separate worlds too, as their logic must share asset cache and document
-///   model. We can solve this by storing asset cache, document model and other framework-level data in
+///   model. We can solve this by storing asset cache, document model and other framework-level data in the
 ///   root view, while creating a separate child view for each document.
 /// \endparblock
 class WorldView final
@@ -136,7 +136,7 @@ private:
 
     WorldView &FindViewForType (const StandardLayout::Mapping &_type) noexcept;
 
-    TrivialEventTriggerInstanceRow *RequestTrivialEventInstance (
+    TrivialEventTriggerInstanceRow *RequestTrivialEventInstances (
         Container::TypedOrderedPool<TrivialEventTriggerInstanceRow> &_pool, const TrivialEventTriggerRow *_source);
 
     TrivialEventTriggerInstanceRow *RequestOnAddEventInstances (PipelineType _pipeline,
@@ -161,6 +161,8 @@ private:
     Memory::Heap childrenHeap;
     Container::Vector<WorldView *> childrenViews;
     std::array<EventSchemeInstance, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemeInstances;
+
+    Container::HashSet<StandardLayout::Mapping> eventProductionForbiddenInChildren;
 };
 
 /// \brief Contains basic configuration for WorldSingleton and TimeSingleton.
@@ -173,8 +175,7 @@ struct WorldConfiguration final
         1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
 
     /// \brief Configuration for the root WorldView.
-    WorldViewConfig rootViewConfig {Container::HashSet<StandardLayout::Mapping> {
-        Memory::Profiler::AllocationGroup {Memory::UniqueString {"CelerityWorldRootViewEnforcedTypes"}}}};
+    WorldViewConfig rootViewConfig {};
 };
 
 /// \brief Represents whole game level (or world itself), works as conduit for data, events and pipelines.
@@ -240,11 +241,12 @@ private:
 
     void EnsureViewIsOwned (WorldView *_view) noexcept;
 
+    /// \details First field, because event scheme must be available during root view destruction.
+    std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
     WorldView rootView;
 
     Warehouse::ModifySingletonQuery modifyTime;
     Warehouse::ModifySingletonQuery modifyWorld;
-    std::array<EventScheme, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemes;
 };
 
 /// \brief Contains useful functions for tests.

@@ -6,6 +6,7 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
+#include <Celerity/Asset/Render/2d/Sprite2dUvAnimationManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
@@ -18,6 +19,7 @@
 #include <Celerity/Render/2d/Render2dSingleton.hpp>
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
+#include <Celerity/Render/2d/Sprite2dUvAnimationComponent.hpp>
 #include <Celerity/Render/2d/Test/Scenario.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
@@ -36,6 +38,8 @@
 
 #include <SDL.h>
 #include <SDL_syswm.h>
+
+#include <SyntaxSugar/Time.hpp>
 
 #include <Testing/Testing.hpp>
 
@@ -145,11 +149,18 @@ private:
     InsertLongTermQuery insertSprite;
     ModifyValueQuery modifySprite;
 
+    InsertLongTermQuery insertDebugShape;
+    ModifyValueQuery modifyDebugShape;
+
+    InsertLongTermQuery insertSpriteAnimation;
+    ModifyValueQuery modifySpriteAnimation;
+
     std::size_t currentPointIndex = 0u;
     Scenario scenario;
     uint32_t framesWaiting = 0u;
     bool *finishedOutput = nullptr;
     Memory::UniqueString pendingScreenShot;
+    uint64_t framesLeftToSkip = 0u;
 };
 
 ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _scenario, bool *_finishedOutput) noexcept
@@ -169,6 +180,12 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
 
       insertSprite (INSERT_LONG_TERM (Sprite2dComponent)),
       modifySprite (MODIFY_VALUE_1F (Sprite2dComponent, spriteId)),
+
+      insertDebugShape (INSERT_LONG_TERM (DebugShape2dComponent)),
+      modifyDebugShape (MODIFY_VALUE_1F (DebugShape2dComponent, debugShapeId)),
+
+      insertSpriteAnimation (INSERT_LONG_TERM (Sprite2dUvAnimationComponent)),
+      modifySpriteAnimation (MODIFY_VALUE_1F (Sprite2dUvAnimationComponent, spriteId)),
 
       scenario (std::move (_scenario)),
       finishedOutput (_finishedOutput)
@@ -223,6 +240,18 @@ void ScenarioExecutor::Execute () noexcept
         Emergence::Render::Backend::TakePngScreenshot (EMERGENCE_BUILD_STRING (screenShotPoint->screenShotId, ".png"));
         pendingScreenShot = screenShotPoint->screenShotId;
         ++currentPointIndex;
+    }
+    else if (auto *frameSkipPoint = std::get_if<FrameSkipPoint> (&scenario[currentPointIndex]))
+    {
+        LOG ("Skipping frames...");
+        if (framesLeftToSkip == 0u)
+        {
+            framesLeftToSkip = frameSkipPoint->frameCount;
+        }
+        else if (0u == --framesLeftToSkip)
+        {
+            ++currentPointIndex;
+        }
     }
 }
 
@@ -358,6 +387,71 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     REQUIRE (*cursor);
                     ~cursor;
                 }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateDebugShape>)
+                {
+                    LOG ("Creating debug shape on object ", _task.objectId, " with id ", _task.debugShapeId, ".");
+                    auto cursor = insertDebugShape.Execute ();
+                    auto *debugShape = static_cast<DebugShape2dComponent *> (++cursor);
+                    debugShape->objectId = _task.objectId;
+                    debugShape->debugShapeId = _task.debugShapeId;
+                    debugShape->materialInstanceId = _task.materialInstanceId;
+                    debugShape->translation = _task.translation;
+                    debugShape->rotation = _task.rotation;
+                    debugShape->shape = _task.shape;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::UpdateDebugShape>)
+                {
+                    LOG ("Updating debug shape with id ", _task.debugShapeId, ".");
+                    auto cursor = modifyDebugShape.Execute (&_task.debugShapeId);
+                    auto *debugShape = static_cast<DebugShape2dComponent *> (*cursor);
+                    REQUIRE (debugShape);
+                    debugShape->debugShapeId = _task.debugShapeId;
+                    debugShape->materialInstanceId = _task.materialInstanceId;
+                    debugShape->translation = _task.translation;
+                    debugShape->rotation = _task.rotation;
+                    debugShape->shape = _task.shape;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::DeleteDebugShape>)
+                {
+                    LOG ("Deleting debug shape with id ", _task.debugShapeId, ".");
+                    auto cursor = modifyDebugShape.Execute (&_task.debugShapeId);
+                    REQUIRE (*cursor);
+                    ~cursor;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateSpriteAnimation>)
+                {
+                    LOG ("Creating sprite animation on object ", _task.objectId, " and sprite ", _task.spriteId, ".");
+                    auto cursor = insertSpriteAnimation.Execute ();
+                    auto *animation = static_cast<Sprite2dUvAnimationComponent *> (++cursor);
+                    animation->objectId = _task.objectId;
+                    animation->spriteId = _task.spriteId;
+                    animation->animationId = _task.animationId;
+                    animation->currentTimeNs = _task.currentTimeNs;
+                    animation->tickTime = _task.tickTime;
+                    animation->loop = _task.loop;
+                    animation->flipU = _task.flipU;
+                    animation->flipV = _task.flipV;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::UpdateSpriteAnimation>)
+                {
+                    LOG ("Updating  sprite animation on sprite with id ", _task.spriteId, ".");
+                    auto cursor = modifySpriteAnimation.Execute (&_task.spriteId);
+                    auto *animation = static_cast<Sprite2dUvAnimationComponent *> (*cursor);
+                    REQUIRE (animation);
+                    animation->animationId = _task.animationId;
+                    animation->currentTimeNs = _task.currentTimeNs;
+                    animation->tickTime = _task.tickTime;
+                    animation->loop = _task.loop;
+                    animation->flipU = _task.flipU;
+                    animation->flipV = _task.flipV;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::DeleteSpriteAnimation>)
+                {
+                    LOG ("Deleting sprite animation from sprite with id ", _task.spriteId, ".");
+                    auto cursor = modifySpriteAnimation.Execute (&_task.spriteId);
+                    REQUIRE (*cursor);
+                    ~cursor;
+                }
             },
             task);
     }
@@ -399,6 +493,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
     }
 
     constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
+    static const Emergence::Memory::UniqueString testAnimationsPath {"Render2dTestResources/Animations"};
     static const Emergence::Memory::UniqueString testMaterialInstancesPath {"Render2dTestResources/MaterialInstances"};
     static const Emergence::Memory::UniqueString testMaterialsPath {"Render2dTestResources/Materials"};
     static const Emergence::Memory::UniqueString engineMaterialsPath {"Render2dResources/Materials"};
@@ -420,6 +515,8 @@ void ExecuteScenario (Scenario _scenario) noexcept
                                            assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
+    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, {testAnimationsPath}, MAX_LOADING_TIME_NS,
+                                                      assetReferenceBindingEventMap);
     TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
                                           assetReferenceBindingEventMap);
     TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
@@ -427,10 +524,15 @@ void ExecuteScenario (Scenario _scenario) noexcept
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);
     REQUIRE (pipelineBuilder.End ());
 
+    constexpr uint64_t SIMULATED_TIME_STEP_NS = 10000000u;
+    uint64_t timeOverride = 0u;
+
     while (!scenarioFinished)
     {
         ContextHolder::Frame ();
+        Time::Override (timeOverride);
         world.Update ();
+        timeOverride += SIMULATED_TIME_STEP_NS;
     }
 }
 } // namespace Emergence::Celerity::Test

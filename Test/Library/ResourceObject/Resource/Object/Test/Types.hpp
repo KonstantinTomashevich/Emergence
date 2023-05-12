@@ -63,5 +63,20 @@ struct MultiComponent final
     static const Reflection &Reflect () noexcept;
 };
 
+struct InjectionComponent final
+{
+    uint64_t objectId = 0u;
+    Memory::UniqueString injectionId;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId objectId;
+        StandardLayout::FieldId injectionId;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
 const TypeManifest &GetTypeManifest () noexcept;
 } // namespace Emergence::Resource::Object::Test

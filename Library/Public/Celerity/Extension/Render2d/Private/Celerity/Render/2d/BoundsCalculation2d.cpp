@@ -1,5 +1,6 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/BoundsCalculation2d.hpp>
+#include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 #include <Celerity/Render/2d/Events.hpp>
 #include <Celerity/Render/2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
@@ -45,6 +46,14 @@ private:
     FetchSequenceQuery fetchSpriteSizeChangedEvents;
     FetchSequenceQuery fetchSpriteRemovedEvents;
 
+    FetchSequenceQuery fetchDebugShapeAddedNormalEvents;
+    FetchSequenceQuery fetchDebugShapeGeometryChangedNormalEvents;
+    FetchSequenceQuery fetchDebugShapeRemovedNormalEvents;
+
+    FetchSequenceQuery fetchDebugShapeAddedFixedEvents;
+    FetchSequenceQuery fetchDebugShapeGeometryChangedFixedEvents;
+    FetchSequenceQuery fetchDebugShapeRemovedFixedEvents;
+
     FetchSequenceQuery fetchTransformParentChangedEventsFixed;
     FetchSequenceQuery fetchTransformParentChangedEventsNormal;
 
@@ -66,12 +75,21 @@ private:
     ModifyValueQuery modifyRenderObjectById;
 
     FetchValueQuery fetchSpriteByObjectId;
+    FetchValueQuery fetchDebugShapeByObjectId;
 };
 
 BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
     : fetchSpriteAddedEvents (FETCH_SEQUENCE (Sprite2dAddedNormalEvent)),
       fetchSpriteSizeChangedEvents (FETCH_SEQUENCE (Sprite2dSizeChangedNormalEvent)),
       fetchSpriteRemovedEvents (FETCH_SEQUENCE (Sprite2dRemovedNormalEvent)),
+
+      fetchDebugShapeAddedNormalEvents (FETCH_SEQUENCE (DebugShape2dAddedNormalEvent)),
+      fetchDebugShapeGeometryChangedNormalEvents (FETCH_SEQUENCE (DebugShape2dGeometryChangedNormalEvent)),
+      fetchDebugShapeRemovedNormalEvents (FETCH_SEQUENCE (DebugShape2dRemovedNormalEvent)),
+
+      fetchDebugShapeAddedFixedEvents (FETCH_SEQUENCE (DebugShape2dAddedFixedToNormalEvent)),
+      fetchDebugShapeGeometryChangedFixedEvents (FETCH_SEQUENCE (DebugShape2dGeometryChangedFixedToNormalEvent)),
+      fetchDebugShapeRemovedFixedEvents (FETCH_SEQUENCE (DebugShape2dRemovedFixedToNormalEvent)),
 
       fetchTransformParentChangedEventsFixed (FETCH_SEQUENCE (Transform2dComponentParentChangedFixedToNormalEvent)),
       fetchTransformParentChangedEventsNormal (FETCH_SEQUENCE (Transform2dComponentParentChangedNormalEvent)),
@@ -95,7 +113,8 @@ BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
       editRenderObjectWithGlobalDirty (EDIT_SIGNAL (RenderObject2dComponent, globalDirty, true)),
       modifyRenderObjectById (MODIFY_VALUE_1F (RenderObject2dComponent, objectId)),
 
-      fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId))
+      fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId)),
+      fetchDebugShapeByObjectId (FETCH_VALUE_1F (DebugShape2dComponent, objectId))
 {
     _constructor.DependOn (TransformVisualSync::Checkpoint::FINISHED);
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
@@ -120,6 +139,45 @@ void BoundsCalculator::Execute () noexcept
 
     for (auto eventCursor = fetchSpriteRemovedEvents.Execute ();
          const auto *event = static_cast<const Sprite2dRemovedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeAddedNormalEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dAddedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        EnsureLocalBoundsExistence (event->objectId);
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeGeometryChangedNormalEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dGeometryChangedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeRemovedNormalEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dRemovedNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeAddedFixedEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dAddedFixedToNormalEvent *> (*eventCursor); ++eventCursor)
+    {
+        EnsureLocalBoundsExistence (event->objectId);
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeGeometryChangedFixedEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dGeometryChangedFixedToNormalEvent *> (*eventCursor);
+         ++eventCursor)
+    {
+        RequestLocalBoundsUpdate (event->objectId);
+    }
+
+    for (auto eventCursor = fetchDebugShapeRemovedFixedEvents.Execute ();
+         const auto *event = static_cast<const DebugShape2dRemovedFixedToNormalEvent *> (*eventCursor); ++eventCursor)
     {
         RequestLocalBoundsUpdate (event->objectId);
     }
@@ -301,6 +359,35 @@ void BoundsCalculator::UpdateLocalBounds () noexcept
         {
             anyDrawableAttached = true;
             localBounds->bounds = Math::Combine (localBounds->bounds, {-sprite->halfSize, sprite->halfSize});
+        }
+
+        for (auto debugShapeCursor = fetchDebugShapeByObjectId.Execute (&localBounds->objectId);
+             const auto *debugShape = static_cast<const DebugShape2dComponent *> (*debugShapeCursor);
+             ++debugShapeCursor)
+        {
+            anyDrawableAttached = true;
+            Math::AxisAlignedBox2d shapeBox {Math::NoInitializationFlag::Confirm ()};
+
+            switch (debugShape->shape.type)
+            {
+            case DebugShape2dType::BOX:
+                shapeBox = {-debugShape->shape.boxHalfExtents, debugShape->shape.boxHalfExtents};
+                break;
+
+            case DebugShape2dType::CIRCLE:
+                shapeBox = {{-debugShape->shape.circleRadius, -debugShape->shape.circleRadius},
+                            {debugShape->shape.circleRadius, debugShape->shape.circleRadius}};
+                break;
+
+            case DebugShape2dType::LINE:
+                shapeBox = {
+                    {std::min (0.0f, debugShape->shape.lineEnd.x), std::min (0.0f, debugShape->shape.lineEnd.y)},
+                    {std::max (0.0f, debugShape->shape.lineEnd.x), std::max (0.0f, debugShape->shape.lineEnd.y)}};
+                break;
+            }
+
+            const Math::Transform2d shapeTransform {debugShape->translation, debugShape->rotation, Math::Vector2f::ONE};
+            localBounds->bounds = Math::Combine (localBounds->bounds, shapeTransform * shapeBox);
         }
 
         if (anyDrawableAttached)

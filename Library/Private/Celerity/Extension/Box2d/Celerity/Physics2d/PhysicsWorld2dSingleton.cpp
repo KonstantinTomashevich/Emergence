@@ -18,6 +18,7 @@ namespace Emergence::Celerity
 // NOLINTNEXTLINE(modernize-use-equals-default): It's not actually trivial. Why linter thinks it is?
 PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept
 {
+    collisionMasks.fill (std::numeric_limits<uint32_t>::max ());
     block_cast<b2World *> (implementationBlock) = nullptr;
 }
 
@@ -34,6 +35,20 @@ uintptr_t PhysicsWorld2dSingleton::GenerateShapeId () const noexcept
 {
     EMERGENCE_ASSERT (shapeIdCounter != std::numeric_limits<decltype (shapeIdCounter)::value_type>::max ());
     return const_cast<PhysicsWorld2dSingleton *> (this)->shapeIdCounter++;
+}
+
+uintptr_t PhysicsWorld2dSingleton::GenerateCollisionContactId () const noexcept
+{
+    EMERGENCE_ASSERT (collisionContactIdCounter !=
+                      std::numeric_limits<decltype (collisionContactIdCounter)::value_type>::max ());
+    return const_cast<PhysicsWorld2dSingleton *> (this)->collisionContactIdCounter++;
+}
+
+uintptr_t PhysicsWorld2dSingleton::GenerateTriggerContactId () const noexcept
+{
+    EMERGENCE_ASSERT (triggerContactIdCounter !=
+                      std::numeric_limits<decltype (triggerContactIdCounter)::value_type>::max ());
+    return const_cast<PhysicsWorld2dSingleton *> (this)->triggerContactIdCounter++;
 }
 
 const PhysicsWorld2dSingleton::Reflection &PhysicsWorld2dSingleton::Reflect () noexcept

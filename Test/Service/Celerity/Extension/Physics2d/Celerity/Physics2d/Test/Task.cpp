@@ -206,9 +206,10 @@ void Configurator::Execute ()
     shape->translation = _task.translation;                                                                            \
     shape->rotation = _task.rotation;                                                                                  \
                                                                                                                        \
+    shape->enabled = _task.enabled;                                                                                    \
     shape->trigger = _task.trigger;                                                                                    \
     shape->visibleToWorldQueries = _task.visibleToWorldQueries;                                                        \
-    shape->sendContactEvents = _task.sendContactEvents;                                                                \
+    shape->maintainCollisionContacts = _task.maintainCollisionContacts;                                                \
     shape->collisionGroup = _task.collisionGroup
 
                     FILL_SHAPE;
@@ -258,11 +259,8 @@ private:
     FetchValueQuery fetchTransformById;
     Transform2dWorldAccessor transformWorldAccessor;
 
-    FetchSequenceQuery fetchContactFoundEvents;
-    FetchSequenceQuery fetchContactLostEvents;
-
-    FetchSequenceQuery fetchTriggerEnteredEvents;
-    FetchSequenceQuery fetchTriggerExitedEvents;
+    FetchAscendingRangeQuery fetchCollisionContactByIdAscending;
+    FetchAscendingRangeQuery fetchTriggerContactByIdAscending;
 };
 
 Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept
@@ -275,11 +273,8 @@ Validator::Validator (TaskConstructor &_constructor, Container::Vector<Validator
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchContactFoundEvents (FETCH_SEQUENCE (Contact2dFoundEvent)),
-      fetchContactLostEvents (FETCH_SEQUENCE (Contact2dLostEvent)),
-
-      fetchTriggerEnteredEvents (FETCH_SEQUENCE (Trigger2dEnteredEvent)),
-      fetchTriggerExitedEvents (FETCH_SEQUENCE (Trigger2dExitedEvent))
+      fetchCollisionContactByIdAscending (FETCH_ASCENDING_RANGE (CollisionContact2d, collisionContactId)),
+      fetchTriggerContactByIdAscending (FETCH_ASCENDING_RANGE (TriggerContact2d, triggerContactId))
 {
     _constructor.DependOn (Physics2dSimulation::Checkpoint::FINISHED);
 }
@@ -345,40 +340,32 @@ void Validator::Execute () noexcept
                     CHECK (nearlyEqual (worldTransform.scale.x, _task.transform.scale.x, 0.00001f));
                     CHECK (nearlyEqual (worldTransform.scale.y, _task.transform.scale.y, 0.00001f));
                 }
-                else if constexpr (std::is_same_v<Type, ValidatorTasks::CheckEvents>)
+                else if constexpr (std::is_same_v<Type, ValidatorTasks::CheckContacts>)
                 {
-                    auto checkEvents = [] (FetchSequenceQuery &_query, const auto &_expected)
+                    auto checkContacts = [] (FetchAscendingRangeQuery &_query, const auto &_expected)
                     {
                         using VectorType = std::decay_t<decltype (_expected)>;
                         using ValueType = typename VectorType::value_type;
                         VectorType found;
 
-                        for (auto cursor = _query.Execute ();
-                             const auto *event = static_cast<const ValueType *> (*cursor); ++cursor)
+                        for (auto cursor = _query.Execute (nullptr, nullptr);
+                             const auto *contact = static_cast<const ValueType *> (*cursor); ++cursor)
                         {
-                            found.emplace_back (*event);
+                            found.emplace_back (*contact);
                         }
 
-                        // For simplicity, we assume that every event is unique.
                         CHECK_EQUAL (found.size (), _expected.size ());
-
-                        for (const ValueType &event : _expected)
+                        for (const ValueType &contact : _expected)
                         {
-                            CHECK (std::find (found.begin (), found.end (), event) != found.end ());
+                            CHECK (std::find (found.begin (), found.end (), contact) != found.end ());
                         }
                     };
 
-                    LOG ("Checking contact found events...");
-                    checkEvents (fetchContactFoundEvents, _task.contactFound);
+                    LOG ("Checking collision contacts...");
+                    checkContacts (fetchCollisionContactByIdAscending, _task.collisionContacts);
 
-                    LOG ("Checking contact lost events...");
-                    checkEvents (fetchContactLostEvents, _task.contactLost);
-
-                    LOG ("Checking trigger entered events...");
-                    checkEvents (fetchTriggerEnteredEvents, _task.triggerEntered);
-
-                    LOG ("Checking trigger exited events...");
-                    checkEvents (fetchTriggerExitedEvents, _task.triggerExited);
+                    LOG ("Checking trigger contacts...");
+                    checkContacts (fetchTriggerContactByIdAscending, _task.triggerContacts);
                 }
             },
             task);

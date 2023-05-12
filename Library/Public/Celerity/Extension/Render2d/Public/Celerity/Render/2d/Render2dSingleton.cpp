@@ -10,6 +10,13 @@ uintptr_t Render2dSingleton::GenerateSprite2dId () const noexcept
     return const_cast<Render2dSingleton *> (this)->sprite2dIdCounter++;
 }
 
+uintptr_t Render2dSingleton::GenerateDebugShape2dId () const noexcept
+{
+    EMERGENCE_ASSERT (debugShape2dIdCounter !=
+                      std::numeric_limits<decltype (debugShape2dIdCounter)::value_type>::max ());
+    return const_cast<Render2dSingleton *> (this)->debugShape2dIdCounter++;
+}
+
 const Render2dSingleton::Reflection &Render2dSingleton::Reflect () noexcept
 {
     static const Reflection reflection = [] ()

@@ -114,7 +114,7 @@ void LoadingProcessor::FinishLoading (ResourceObjectLoadingStateSingleton *_stat
     Resource::Object::Library library = libraryLoader.End ();
     for (const auto &[objectName, objectData] : library.GetRegisteredObjectMap ())
     {
-        if (objectData.loadedAsDependency)
+        if (objectData.loadedAsParent)
         {
             continue;
         }

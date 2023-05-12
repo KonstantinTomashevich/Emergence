@@ -18,12 +18,12 @@ public:
         /// \brief This object content.
         Body body;
 
-        /// \brief Whether this object was loaded because it is a dependency
-        ///        of other object and would be ignored otherwise.
+        /// \brief Whether this object was loaded because it is a parent of any
+        ///        of the requested objects and will not be loaded otherwise.
         /// \details When loading begins, user selects from which folders objects should be loaded.
-        ///          But some objects might have outside dependencies that must be loaded too.
-        ///          If object was loaded as such dependency, this flag will be `true` for it.
-        bool loadedAsDependency = false;
+        ///          But some objects might have outside objects as parents in inheritance.
+        ///          If object was loaded as such parent, this flag will be `true` for it.
+        bool loadedAsParent = false;
     };
 
     /// \brief Map in which loaded objects are stored.

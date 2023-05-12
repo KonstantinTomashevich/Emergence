@@ -34,11 +34,17 @@ if (-Not(Get-Command llvm-profdata))
     exit 4
 }
 
+$LLVMProfdataPath = (Get-Command llvm-profdata).Path
+echo "LLVM Profdata location: $LLVMProfdataPath"
+
 if (-Not(Get-Command llvm-cov))
 {
     echo "Unable to find llvm-cov in path!"
     exit 5
 }
+
+$LLVMCovPath = (Get-Command llvm-cov).Path
+echo "LLVM Cov location: $LLVMCovPath"
 
 $Configuration = Get-Content $ConfigurationFile | ConvertFrom-Json
 $Filter = $Configuration.Filter

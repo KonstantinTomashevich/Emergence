@@ -28,8 +28,8 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShape2dComponentGeometryChangedE
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (CollisionShape2dComponentAttributesChangedEvent, UniqueId, shapeId);
 
-EMERGENCE_CELERITY_EVENT2_DECLARATION (
-    CollisionShape2dComponentRemovedEvent, UniqueId, objectId, void *, implementationHandle);
+EMERGENCE_CELERITY_EVENT3_DECLARATION (
+    CollisionShape2dComponentRemovedEvent, UniqueId, objectId, UniqueId, shapeId, void *, implementationHandle);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentAddedFixedEvent, UniqueId, objectId);
 
@@ -39,43 +39,51 @@ EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentMassInvalidatedEvent,
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (RigidBody2dComponentRemovedEvent, UniqueId, objectId);
 
-EMERGENCE_CELERITY_EVENT4_DECLARATION (Contact2dFoundEvent,
+EMERGENCE_CELERITY_EVENT5_DECLARATION (CollisionContact2dAddedFixedEvent,
                                        UniqueId,
-                                       firstObjectId,
+                                       collisionContactId,
                                        UniqueId,
-                                       firstShapeId,
+                                       objectId,
                                        UniqueId,
-                                       secondObjectId,
+                                       otherObjectId,
                                        UniqueId,
-                                       secondShapeId);
+                                       shapeId,
+                                       UniqueId,
+                                       otherShapeId);
 
-EMERGENCE_CELERITY_EVENT4_DECLARATION (Contact2dLostEvent,
+EMERGENCE_CELERITY_EVENT5_DECLARATION (CollisionContact2dRemovedFixedEvent,
                                        UniqueId,
-                                       firstObjectId,
+                                       collisionContactId,
                                        UniqueId,
-                                       firstShapeId,
+                                       objectId,
                                        UniqueId,
-                                       secondObjectId,
+                                       otherObjectId,
                                        UniqueId,
-                                       secondShapeId);
+                                       shapeId,
+                                       UniqueId,
+                                       otherShapeId);
 
-EMERGENCE_CELERITY_EVENT4_DECLARATION (Trigger2dEnteredEvent,
+EMERGENCE_CELERITY_EVENT5_DECLARATION (TriggerContact2dAddedFixedEvent,
+                                       UniqueId,
+                                       triggerContactId,
                                        UniqueId,
                                        triggerObjectId,
                                        UniqueId,
-                                       triggerShapeId,
-                                       UniqueId,
                                        intruderObjectId,
+                                       UniqueId,
+                                       triggerShapeId,
                                        UniqueId,
                                        intruderShapeId);
 
-EMERGENCE_CELERITY_EVENT4_DECLARATION (Trigger2dExitedEvent,
+EMERGENCE_CELERITY_EVENT5_DECLARATION (TriggerContact2dRemovedFixedEvent,
+                                       UniqueId,
+                                       triggerContactId,
                                        UniqueId,
                                        triggerObjectId,
                                        UniqueId,
-                                       triggerShapeId,
-                                       UniqueId,
                                        intruderObjectId,
+                                       UniqueId,
+                                       triggerShapeId,
                                        UniqueId,
                                        intruderShapeId);
 

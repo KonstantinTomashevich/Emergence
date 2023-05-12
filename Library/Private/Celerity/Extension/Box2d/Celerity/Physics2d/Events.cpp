@@ -1,8 +1,10 @@
+#include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
 #include <Celerity/Physics2d/DynamicsMaterial2d.hpp>
 #include <Celerity/Physics2d/Events.hpp>
 #include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
 #include <Celerity/Physics2d/RigidBody2dComponent.hpp>
+#include <Celerity/Physics2d/TriggerContact2d.hpp>
 
 namespace Emergence::Celerity
 {
@@ -26,7 +28,10 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShape2dComponentGeometryChang
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (CollisionShape2dComponentAttributesChangedEvent, shapeId)
 
-EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (CollisionShape2dComponentRemovedEvent, objectId, implementationHandle)
+EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (CollisionShape2dComponentRemovedEvent,
+                                          objectId,
+                                          shapeId,
+                                          implementationHandle)
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBody2dComponentAddedFixedEvent, objectId)
 
@@ -36,17 +41,25 @@ EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBody2dComponentMassInvalidatedEve
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (RigidBody2dComponentRemovedEvent, objectId)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
-    Contact2dFoundEvent, firstObjectId, firstShapeId, secondObjectId, secondShapeId)
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (
+    CollisionContact2dAddedFixedEvent, collisionContactId, objectId, otherObjectId, shapeId, otherShapeId)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
-    Contact2dLostEvent, firstObjectId, firstShapeId, secondObjectId, secondShapeId)
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (
+    CollisionContact2dRemovedFixedEvent, collisionContactId, objectId, otherObjectId, shapeId, otherShapeId)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
-    Trigger2dEnteredEvent, triggerObjectId, triggerShapeId, intruderObjectId, intruderShapeId)
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (TriggerContact2dAddedFixedEvent,
+                                          triggerContactId,
+                                          triggerObjectId,
+                                          intruderObjectId,
+                                          triggerShapeId,
+                                          intruderShapeId)
 
-EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (
-    Trigger2dExitedEvent, triggerObjectId, triggerShapeId, intruderObjectId, intruderShapeId)
+EMERGENCE_CELERITY_EVENT5_IMPLEMENTATION (TriggerContact2dRemovedFixedEvent,
+                                          triggerContactId,
+                                          triggerObjectId,
+                                          intruderObjectId,
+                                          triggerShapeId,
+                                          intruderShapeId)
 
 void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept
 {
@@ -122,23 +135,25 @@ void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept
                                CollisionShape2dComponent::Reflect ().mapping,
                                {
 
+                                   CollisionShape2dComponent::Reflect ().enabled,
                                    CollisionShape2dComponent::Reflect ().trigger,
                                    CollisionShape2dComponent::Reflect ().visibleToWorldQueries,
-                                   CollisionShape2dComponent::Reflect ().sendContactEvents,
                                    CollisionShape2dComponent::Reflect ().collisionGroup,
                                },
                                {},
                                {{CollisionShape2dComponent::Reflect ().shapeId,
                                  CollisionShape2dComponentAttributesChangedEvent::Reflect ().shapeId}}});
 
-    _registrar.OnRemoveEvent ({{CollisionShape2dComponentRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
-                               CollisionShape2dComponent::Reflect ().mapping,
-                               {
-                                   {CollisionShape2dComponent::Reflect ().objectId,
-                                    CollisionShape2dComponentRemovedEvent::Reflect ().objectId},
-                                   {CollisionShape2dComponent::Reflect ().implementationHandle,
-                                    CollisionShape2dComponentRemovedEvent::Reflect ().implementationHandle},
-                               }});
+    _registrar.OnRemoveEvent (
+        {{CollisionShape2dComponentRemovedEvent::Reflect ().mapping, EventRoute::FIXED},
+         CollisionShape2dComponent::Reflect ().mapping,
+         {
+             {CollisionShape2dComponent::Reflect ().objectId,
+              CollisionShape2dComponentRemovedEvent::Reflect ().objectId},
+             {CollisionShape2dComponent::Reflect ().shapeId, CollisionShape2dComponentRemovedEvent::Reflect ().shapeId},
+             {CollisionShape2dComponent::Reflect ().implementationHandle,
+              CollisionShape2dComponentRemovedEvent::Reflect ().implementationHandle},
+         }});
 
     // RigidBody2dComponent
 
@@ -162,11 +177,65 @@ void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept
              {RigidBody2dComponent::Reflect ().objectId, RigidBody2dComponentRemovedEvent::Reflect ().objectId},
          }});
 
-    // Simulation.
+    // CollisionContact2d
 
-    _registrar.CustomEvent ({Contact2dFoundEvent::Reflect ().mapping, EventRoute::FIXED});
-    _registrar.CustomEvent ({Contact2dLostEvent::Reflect ().mapping, EventRoute::FIXED});
-    _registrar.CustomEvent ({Trigger2dEnteredEvent::Reflect ().mapping, EventRoute::FIXED});
-    _registrar.CustomEvent ({Trigger2dExitedEvent::Reflect ().mapping, EventRoute::FIXED});
+    _registrar.OnAddEvent (
+        {{CollisionContact2dAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
+         CollisionContact2d::Reflect ().mapping,
+         {
+             {CollisionContact2d::Reflect ().collisionContactId,
+              CollisionContact2dAddedFixedEvent::Reflect ().collisionContactId},
+             {CollisionContact2d::Reflect ().objectId, CollisionContact2dAddedFixedEvent::Reflect ().objectId},
+             {CollisionContact2d::Reflect ().otherObjectId,
+              CollisionContact2dAddedFixedEvent::Reflect ().otherObjectId},
+             {CollisionContact2d::Reflect ().shapeId, CollisionContact2dAddedFixedEvent::Reflect ().shapeId},
+             {CollisionContact2d::Reflect ().otherShapeId, CollisionContact2dAddedFixedEvent::Reflect ().otherShapeId},
+         }});
+
+    _registrar.OnRemoveEvent (
+        {{CollisionContact2dRemovedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
+         CollisionContact2d::Reflect ().mapping,
+         {
+             {CollisionContact2d::Reflect ().collisionContactId,
+              CollisionContact2dRemovedFixedEvent::Reflect ().collisionContactId},
+             {CollisionContact2d::Reflect ().objectId, CollisionContact2dRemovedFixedEvent::Reflect ().objectId},
+             {CollisionContact2d::Reflect ().otherObjectId,
+              CollisionContact2dRemovedFixedEvent::Reflect ().otherObjectId},
+             {CollisionContact2d::Reflect ().shapeId, CollisionContact2dRemovedFixedEvent::Reflect ().shapeId},
+             {CollisionContact2d::Reflect ().otherShapeId,
+              CollisionContact2dRemovedFixedEvent::Reflect ().otherShapeId},
+         }});
+
+    // TriggerContract2d
+
+    _registrar.OnAddEvent (
+        {{TriggerContact2dAddedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
+         TriggerContact2d::Reflect ().mapping,
+         {
+             {TriggerContact2d::Reflect ().triggerContactId,
+              TriggerContact2dAddedFixedEvent::Reflect ().triggerContactId},
+             {TriggerContact2d::Reflect ().triggerObjectId,
+              TriggerContact2dAddedFixedEvent::Reflect ().triggerObjectId},
+             {TriggerContact2d::Reflect ().intruderObjectId,
+              TriggerContact2dAddedFixedEvent::Reflect ().intruderObjectId},
+             {TriggerContact2d::Reflect ().triggerShapeId, TriggerContact2dAddedFixedEvent::Reflect ().triggerShapeId},
+             {TriggerContact2d::Reflect ().intruderShapeId,
+              TriggerContact2dAddedFixedEvent::Reflect ().intruderShapeId},
+         }});
+
+    _registrar.OnRemoveEvent ({{TriggerContact2dRemovedFixedEvent::Reflect ().mapping, EventRoute::FIXED},
+                               TriggerContact2d::Reflect ().mapping,
+                               {
+                                   {TriggerContact2d::Reflect ().triggerContactId,
+                                    TriggerContact2dRemovedFixedEvent::Reflect ().triggerContactId},
+                                   {TriggerContact2d::Reflect ().triggerObjectId,
+                                    TriggerContact2dRemovedFixedEvent::Reflect ().triggerObjectId},
+                                   {TriggerContact2d::Reflect ().intruderObjectId,
+                                    TriggerContact2dRemovedFixedEvent::Reflect ().intruderObjectId},
+                                   {TriggerContact2d::Reflect ().triggerShapeId,
+                                    TriggerContact2dRemovedFixedEvent::Reflect ().triggerShapeId},
+                                   {TriggerContact2d::Reflect ().intruderShapeId,
+                                    TriggerContact2dRemovedFixedEvent::Reflect ().intruderShapeId},
+                               }});
 }
 } // namespace Emergence::Celerity

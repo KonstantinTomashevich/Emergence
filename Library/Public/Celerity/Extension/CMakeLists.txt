@@ -1,6 +1,8 @@
 add_subdirectory (Assembly)
 add_subdirectory (Asset)
 add_subdirectory (Input)
+add_subdirectory (Locale)
+add_subdirectory (Physics2dDebugDraw)
 add_subdirectory (Render2d)
 add_subdirectory (RenderFoundation)
 add_subdirectory (ResourceConfig)

@@ -299,6 +299,8 @@ void LevelGenerator::PlacePrototype (float _x,
     auto *prototype = static_cast<Emergence::Celerity::PrototypeComponent *> (++prototypeCursor);
     prototype->objectId = objectId;
     prototype->descriptorId = _descriptorId;
+    prototype->requestImmediateFixedAssembly = false;
+    prototype->requestImmediateNormalAssembly = false;
 }
 
 void LevelGenerator::PlaceSpawn (float _x,

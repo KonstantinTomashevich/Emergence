@@ -2,6 +2,7 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/Events.hpp>
+#include <Celerity/Assembly/PrototypeAssemblyComponent.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -15,23 +16,30 @@
 
 #include <Log/Log.hpp>
 
+#include <SyntaxSugar/Time.hpp>
+
 namespace Emergence::Celerity::Assembly
 {
+enum class AssemblyExecutionResult
+{
+    DONE,
+    PARTIAL,
+    OUT_OF_TIME,
+};
+
 const Memory::UniqueString Checkpoint::STARTED {"AssemblyStarted"};
 const Memory::UniqueString Checkpoint::FINISHED {"AssemblyFinished"};
 
-class AssemblerBase
+class Assembler final : public TaskExecutorBase<Assembler>
 {
 public:
-    AssemblerBase (TaskConstructor &_constructor,
-                   const CustomKeyVector &_customKeys,
-                   const TypeBindingVector &_types,
-                   const StandardLayout::Mapping &_finishedEventType) noexcept;
+    Assembler (TaskConstructor &_constructor,
+               const CustomKeyVector &_customKeys,
+               const TypeBindingVector &_types,
+               bool _isFixed,
+               uint64_t _assemblyTimeLimit) noexcept;
 
-protected:
-    void AssembleObject (UniqueId _rootObjectId) noexcept;
-
-    bool useLogicalTransform = true;
+    void Execute () noexcept;
 
 private:
     struct InternalKeyBinding final
@@ -58,16 +66,37 @@ private:
         Container::HashMap<UniqueId, UniqueId> idReplacement;
     };
 
+    void StartFreshPrototypeAssembly () noexcept;
+
+    void ProcessImmediatePrototypes () noexcept;
+
+    void ProcessWaitingPrototypes (uint64_t _executionStartTime) noexcept;
+
+    AssemblyExecutionResult AssembleObject (PrototypeAssemblyComponent *_assembly,
+                                            uint64_t _executionStartTime) noexcept;
+
     static UniqueId ReplaceId (KeyState &_keyState, UniqueId _id) noexcept;
 
     KeyState &GetObjectIdKeyState () noexcept;
 
     KeyState &GetKeyState (UniqueId _index) noexcept;
 
-    ModifyValueQuery modifyPrototypeById;
+    FetchValueQuery fetchPrototypeById;
     FetchValueQuery fetchDescriptorById;
-    FetchValueQuery fetchTransformById;
+
+    FetchSignalQuery fetchFreshPrototypes;
+    ModifySignalQuery modifyFreshPrototypes;
+
+    FetchSignalQuery fetchImmediatePrototypeAssemblies;
+    ModifySignalQuery modifyImmediatePrototypeAssemblies;
+
+    FetchSignalQuery fetchWaitingPrototypeAssemblies;
+    ModifySignalQuery modifyWaitingPrototypeAssemblies;
+
+    FetchValueQuery fetchTransform3dById;
     Transform3dWorldAccessor transformWorldAccessor;
+
+    InsertLongTermQuery insertPrototypeAssembly;
     InsertShortTermQuery insertFinishedEvent;
 
     // TODO: Use flat hash map.
@@ -75,26 +104,67 @@ private:
 
     Container::Vector<KeyState> keyStates {Memory::Profiler::AllocationGroup::Top ()};
 
-    bool needRootObjectTransform = false;
+    const uint64_t assemblyTimeLimit;
+    const bool isFixed;
+    bool needRootObjectTransform3d = false;
 };
 
-static UniqueId WorldObjectIdProvider (const void *_singleton)
+[[maybe_unused]] static UniqueId WorldObjectIdProvider (const void *_singleton)
 {
     return static_cast<const WorldSingleton *> (_singleton)->GenerateId ();
 }
 
-AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
-                              const CustomKeyVector &_customKeys,
-                              const TypeBindingVector &_types,
-                              const StandardLayout::Mapping &_finishedEventType) noexcept
-    : modifyPrototypeById (MODIFY_VALUE_1F (PrototypeComponent, objectId)),
+Assembler::Assembler (TaskConstructor &_constructor,
+                      const CustomKeyVector &_customKeys,
+                      const TypeBindingVector &_types,
+                      bool _isFixed,
+                      uint64_t _assemblyTimeLimit) noexcept
+    : fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
       fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
-      fetchTransformById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
+
+      fetchFreshPrototypes (FETCH_SIGNAL (PrototypeComponent, assemblyStarted, false)),
+      modifyFreshPrototypes (MODIFY_SIGNAL (PrototypeComponent, assemblyStarted, false)),
+
+      fetchImmediatePrototypeAssemblies (_constructor.FetchSignal (
+          PrototypeAssemblyComponent::Reflect ().mapping,
+          _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
+                     PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
+          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY))),
+      modifyImmediatePrototypeAssemblies (_constructor.ModifySignal (
+          PrototypeAssemblyComponent::Reflect ().mapping,
+          _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
+                     PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
+          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY))),
+
+      fetchWaitingPrototypeAssemblies (_constructor.FetchSignal (
+          PrototypeAssemblyComponent::Reflect ().mapping,
+          _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
+                     PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
+          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
+      modifyWaitingPrototypeAssemblies (_constructor.ModifySignal (
+          PrototypeAssemblyComponent::Reflect ().mapping,
+          _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
+                     PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
+          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
+
+      fetchTransform3dById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
-      insertFinishedEvent (_constructor.InsertShortTerm (_finishedEventType))
+
+      insertPrototypeAssembly (INSERT_LONG_TERM (PrototypeAssemblyComponent)),
+      insertFinishedEvent (_constructor.InsertShortTerm (_isFixed ? AssemblyFinishedFixedEvent::Reflect ().mapping :
+                                                                    AssemblyFinishedNormalEvent::Reflect ().mapping)),
+
+      assemblyTimeLimit (_assemblyTimeLimit),
+      isFixed (_isFixed)
 {
     _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+
+    if (!isFixed)
+    {
+        _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
+    }
 
     for (const CustomKeyDescriptor &customKey : _customKeys)
     {
@@ -118,7 +188,7 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
             binding.keys.emplace_back () = {typeDescriptor.type.GetField (keyBinding.keyField), keyBinding.keyIndex};
         }
 
-        needRootObjectTransform |= !typeDescriptor.rotateVector3fs.empty ();
+        needRootObjectTransform3d |= !typeDescriptor.rotateVector3fs.empty ();
         for (const StandardLayout::FieldId &vectorField : typeDescriptor.rotateVector3fs)
         {
             binding.rotateVector3fs.emplace_back (typeDescriptor.type.GetField (vectorField));
@@ -126,68 +196,183 @@ AssemblerBase::AssemblerBase (TaskConstructor &_constructor,
     }
 }
 
-void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
+void Assembler::Execute () noexcept
 {
-    auto prototypeCursor = modifyPrototypeById.Execute (&_rootObjectId);
-    auto *prototype = static_cast<PrototypeComponent *> (*prototypeCursor);
+    const uint64_t startTime = Time::NanosecondsSinceStartup ();
+    bool hasUninitializedPrototypes = *fetchFreshPrototypes.Execute ();
+    bool hasPendingImmediatePrototypes = *fetchImmediatePrototypeAssemblies.Execute ();
+    bool hasPendingWaitingPrototypes = *fetchWaitingPrototypeAssemblies.Execute ();
 
-    if (!prototype)
+    while (hasUninitializedPrototypes || hasPendingImmediatePrototypes ||
+           (hasPendingWaitingPrototypes && Time::NanosecondsSinceStartup () - startTime < assemblyTimeLimit))
     {
-        EMERGENCE_LOG (ERROR, "Assembly: Unable to assemble object with id ", _rootObjectId,
-                       ", because it has no PrototypeComponent!");
-        return;
+        StartFreshPrototypeAssembly ();
+        ProcessImmediatePrototypes ();
+        ProcessWaitingPrototypes (startTime);
+
+        hasUninitializedPrototypes = *fetchFreshPrototypes.Execute ();
+        hasPendingImmediatePrototypes = *fetchImmediatePrototypeAssemblies.Execute ();
+        hasPendingWaitingPrototypes = *fetchWaitingPrototypeAssemblies.Execute ();
     }
+}
 
-    Math::Transform3d rootObjectTransform;
-    if (needRootObjectTransform)
+void Assembler::StartFreshPrototypeAssembly () noexcept
+{
+    for (auto cursor = modifyFreshPrototypes.Execute (); auto *prototype = static_cast<PrototypeComponent *> (*cursor);)
     {
-        auto transformCursor = fetchTransformById.Execute (&_rootObjectId);
-        if (const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor))
+        auto prototypeAssemblyCursor = insertPrototypeAssembly.Execute ();
+        auto *prototypeAssembly = static_cast<PrototypeAssemblyComponent *> (++prototypeAssemblyCursor);
+        prototypeAssembly->objectId = prototype->objectId;
+
+        prototypeAssembly->fixedAssemblyState = prototype->requestImmediateFixedAssembly ?
+                                                    AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY :
+                                                    AssemblyState::WAITING_FOR_ASSEMBLY;
+
+        // Blocked until fixed assembly is done.
+        prototypeAssembly->normalAssemblyState = AssemblyState::BLOCKED;
+        prototype->assemblyStarted = true;
+        ++cursor;
+    }
+}
+
+void Assembler::ProcessImmediatePrototypes () noexcept
+{
+    for (auto cursor = modifyImmediatePrototypeAssemblies.Execute ();
+         auto *assembly = static_cast<PrototypeAssemblyComponent *> (*cursor);)
+    {
+        switch (AssembleObject (assembly, 0u))
         {
-            rootObjectTransform = useLogicalTransform ? transform->GetLogicalWorldTransform (transformWorldAccessor) :
-                                                        transform->GetVisualWorldTransform (transformWorldAccessor);
+        case AssemblyExecutionResult::DONE:
+            ~cursor;
+            break;
+        case AssemblyExecutionResult::PARTIAL:
+            ++cursor;
+            break;
+        case AssemblyExecutionResult::OUT_OF_TIME:
+            // Cannot receive out of time result during immediate assembly.
+            EMERGENCE_ASSERT (false);
+            break;
         }
-        else
+    }
+}
+
+void Assembler::ProcessWaitingPrototypes (uint64_t _executionStartTime) noexcept
+{
+    for (auto cursor = modifyWaitingPrototypeAssemblies.Execute ();
+         auto *assembly = static_cast<PrototypeAssemblyComponent *> (*cursor);)
+    {
+        switch (AssembleObject (assembly, _executionStartTime))
         {
-            EMERGENCE_LOG (ERROR, "Assembly: Unable to assemble object with id ", _rootObjectId,
-                           ", because it has no Transform3dComponent!");
+        case AssemblyExecutionResult::DONE:
+            ~cursor;
+            break;
+        case AssemblyExecutionResult::PARTIAL:
+            ++cursor;
+            break;
+        case AssemblyExecutionResult::OUT_OF_TIME:
             return;
         }
     }
+}
 
-    auto descriptorCursor = fetchDescriptorById.Execute (&prototype->descriptorId);
+AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_assembly,
+                                                   uint64_t _executionStartTime) noexcept
+{
+    Memory::UniqueString descriptorId;
+    bool requestImmediateNormalAssembly = false;
+
+    // We only fetch required data from PrototypeComponent and leave it alone, because more prototype
+    // components can be inserted during object assembly (recursive prototypes are allowed).
+    {
+        auto prototypeCursor = fetchPrototypeById.Execute (&_assembly->objectId);
+        const auto *prototype = static_cast<const PrototypeComponent *> (*prototypeCursor);
+
+        if (!prototype)
+        {
+            EMERGENCE_LOG (ERROR, "Assembly: Unable to assemble object with id ", _assembly->objectId,
+                           ", because it has no PrototypeComponent!");
+            return AssemblyExecutionResult::DONE;
+        }
+
+        descriptorId = prototype->descriptorId;
+        requestImmediateNormalAssembly = prototype->requestImmediateNormalAssembly;
+    }
+
+    Math::Transform3d rootObjectTransform3d;
+    if (needRootObjectTransform3d)
+    {
+        auto transformCursor = fetchTransform3dById.Execute (&_assembly->objectId);
+        if (const auto *transform = static_cast<const Transform3dComponent *> (*transformCursor))
+        {
+            rootObjectTransform3d = isFixed ? transform->GetLogicalWorldTransform (transformWorldAccessor) :
+                                              transform->GetVisualWorldTransform (transformWorldAccessor);
+        }
+        else
+        {
+            EMERGENCE_LOG (ERROR, "Assembly: Unable to assemble object with id ", _assembly->objectId,
+                           ", because it has no Transform3dComponent!");
+            return AssemblyExecutionResult::DONE;
+        }
+    }
+
+    auto descriptorCursor = fetchDescriptorById.Execute (&descriptorId);
     const auto *descriptor = static_cast<const AssemblyDescriptor *> (*descriptorCursor);
 
     if (!descriptor)
     {
-        EMERGENCE_LOG (ERROR, "Assembly: Unable to find AssemblyDescriptor with id \"", prototype->descriptorId, "\"!");
-        return;
+        EMERGENCE_LOG (ERROR, "Assembly: Unable to find AssemblyDescriptor with id \"", descriptorId, "\"!");
+        return AssemblyExecutionResult::DONE;
     }
 
-    // See PrototypeComponent::intermediateIdReplacement for details.
-    bool idReplacementInherited = false;
-
-    if (!prototype->intermediateIdReplacement.empty ())
+    if (!_assembly->intermediateIdReplacement.empty ())
     {
         // Inherit intermediate id replacement from previous pass during other routine.
-        EMERGENCE_ASSERT (prototype->intermediateIdReplacement.size () == keyStates.size ());
+        EMERGENCE_ASSERT (_assembly->intermediateIdReplacement.size () == keyStates.size ());
 
         for (std::size_t index = 0u; index < keyStates.size (); ++index)
         {
-            for (const auto &[from, to] : prototype->intermediateIdReplacement[index])
+            for (const auto &[from, to] : _assembly->intermediateIdReplacement[index])
             {
                 keyStates[index].idReplacement.emplace (from, to);
             }
         }
-
-        idReplacementInherited = true;
-        prototype->intermediateIdReplacement.clear ();
     }
 
-    GetObjectIdKeyState ().idReplacement.emplace (ASSEMBLY_ROOT_OBJECT_ID, _rootObjectId);
-    for (const StandardLayout::Patch &componentDescriptor : descriptor->components)
+    auto saveIntermediateIdReplacement = [this, _assembly] ()
     {
+        _assembly->intermediateIdReplacement.resize (
+            keyStates.size (),
+            Container::HashMap<UniqueId, UniqueId> {_assembly->intermediateIdReplacement.get_allocator ()});
+
+        for (std::size_t index = 0u; index < keyStates.size (); ++index)
+        {
+            for (const auto &[from, to] : keyStates[index].idReplacement)
+            {
+                _assembly->intermediateIdReplacement[index].emplace (from, to);
+            }
+        }
+    };
+
+    auto clearIntermediateIdReplacement = [this] ()
+    {
+        for (auto &keyState : keyStates)
+        {
+            keyState.idReplacement.clear ();
+        }
+    };
+
+    const bool immediate = (isFixed ? _assembly->fixedAssemblyState : _assembly->normalAssemblyState) ==
+                           AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY;
+    GetObjectIdKeyState ().idReplacement.emplace (ASSEMBLY_ROOT_OBJECT_ID, _assembly->objectId);
+    size_t &index = (isFixed ? _assembly->fixedCurrentComponentIndex : _assembly->normalCurrentComponentIndex);
+
+    while (index < descriptor->components.size () &&
+           (immediate || Time::NanosecondsSinceStartup () - _executionStartTime < assemblyTimeLimit))
+    {
+        const StandardLayout::Patch &componentDescriptor = descriptor->components[index];
+        ++index;
         auto iterator = typeBindings.find (componentDescriptor.GetTypeMapping ());
+
         if (iterator != typeBindings.end ())
         {
             TypeBinding &binding = iterator->second;
@@ -208,50 +393,47 @@ void AssemblerBase::AssembleObject (UniqueId _rootObjectId) noexcept
 
             for (const StandardLayout::Field &vectorField : binding.rotateVector3fs)
             {
-                EMERGENCE_ASSERT (needRootObjectTransform);
+                EMERGENCE_ASSERT (needRootObjectTransform3d);
                 auto *vector = static_cast<Math::Vector3f *> (vectorField.GetValue (component));
-                *vector = Math::Rotate (*vector, rootObjectTransform.rotation);
+                *vector = Math::Rotate (*vector, rootObjectTransform3d.rotation);
             }
         }
         else
         {
-            EMERGENCE_LOG (DEBUG, "Skipping assembly of unknown type \"",
+            EMERGENCE_LOG (VERBOSE, "Skipping assembly of unknown type \"",
                            componentDescriptor.GetTypeMapping ().GetName (), "\"...");
         }
     }
 
-    if (idReplacementInherited)
+    if (index < descriptor->components.size ())
     {
-        // If id replacement was inherited then we reached last assembly step and
-        // no longer need to keep component around after fully assembling object.
-        ~prototypeCursor;
+        saveIntermediateIdReplacement ();
+        clearIntermediateIdReplacement ();
+        return AssemblyExecutionResult::OUT_OF_TIME;
+    }
+
+    if (isFixed)
+    {
+        _assembly->fixedAssemblyState = AssemblyState::ASSEMBLED;
+        _assembly->normalAssemblyState = requestImmediateNormalAssembly ? AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY :
+                                                                          AssemblyState::WAITING_FOR_ASSEMBLY;
+        saveIntermediateIdReplacement ();
     }
     else
     {
-        prototype->intermediateIdReplacement.resize (
-            keyStates.size (),
-            Container::HashMap<UniqueId, UniqueId> {prototype->intermediateIdReplacement.get_allocator ()});
-
-        for (std::size_t index = 0u; index < keyStates.size (); ++index)
-        {
-            for (const auto &[from, to] : keyStates[index].idReplacement)
-            {
-                prototype->intermediateIdReplacement[index].emplace (from, to);
-            }
-        }
+        _assembly->normalAssemblyState = AssemblyState::ASSEMBLED;
     }
 
-    for (auto &keyState : keyStates)
-    {
-        keyState.idReplacement.clear ();
-    }
+    (isFixed ? _assembly->fixedAssemblyState : _assembly->normalAssemblyState) = AssemblyState::ASSEMBLED;
+    clearIntermediateIdReplacement ();
 
     auto eventCursor = insertFinishedEvent.Execute ();
     void *event = ++eventCursor;
-    *static_cast<UniqueId *> (event) = _rootObjectId;
+    *static_cast<UniqueId *> (event) = _assembly->objectId;
+    return isFixed ? AssemblyExecutionResult::PARTIAL : AssemblyExecutionResult::DONE;
 }
 
-UniqueId AssemblerBase::ReplaceId (AssemblerBase::KeyState &_keyState, UniqueId _id) noexcept
+UniqueId Assembler::ReplaceId (Assembler::KeyState &_keyState, UniqueId _id) noexcept
 {
     auto iterator = _keyState.idReplacement.find (_id);
     if (iterator == _keyState.idReplacement.end ())
@@ -265,12 +447,12 @@ UniqueId AssemblerBase::ReplaceId (AssemblerBase::KeyState &_keyState, UniqueId 
     return iterator->second;
 }
 
-AssemblerBase::KeyState &AssemblerBase::GetObjectIdKeyState () noexcept
+Assembler::KeyState &Assembler::GetObjectIdKeyState () noexcept
 {
     return keyStates.back ();
 }
 
-AssemblerBase::KeyState &AssemblerBase::GetKeyState (UniqueId _index) noexcept
+Assembler::KeyState &Assembler::GetKeyState (UniqueId _index) noexcept
 {
     if (_index == ASSEMBLY_OBJECT_ID_KEY_INDEX)
     {
@@ -279,97 +461,6 @@ AssemblerBase::KeyState &AssemblerBase::GetKeyState (UniqueId _index) noexcept
 
     EMERGENCE_ASSERT (_index < keyStates.size () - 1u);
     return keyStates[_index];
-}
-
-class FixedAssembler final : public TaskExecutorBase<FixedAssembler>, public AssemblerBase
-{
-public:
-    FixedAssembler (TaskConstructor &_constructor,
-                    const CustomKeyVector &_customKeys,
-                    const TypeBindingVector &_types) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    FetchSequenceQuery fetchPrototypeAddedFixedEvents;
-    FetchSequenceQuery fetchPrototypeAddedCustomToFixedEvents;
-};
-
-FixedAssembler::FixedAssembler (TaskConstructor &_constructor,
-                                const CustomKeyVector &_customKeys,
-                                const TypeBindingVector &_types) noexcept
-    : AssemblerBase (_constructor, _customKeys, _types, AssemblyFinishedFixedEvent::Reflect ().mapping),
-      fetchPrototypeAddedFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedEvent)),
-      fetchPrototypeAddedCustomToFixedEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToFixedEvent))
-{
-    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
-}
-
-void FixedAssembler::Execute () noexcept
-{
-    for (auto eventCursor = fetchPrototypeAddedFixedEvents.Execute ();
-         const auto *event = static_cast<const PrototypeComponentAddedFixedEvent *> (*eventCursor); ++eventCursor)
-    {
-        AssembleObject (event->objectId);
-    }
-
-    for (auto eventCursor = fetchPrototypeAddedCustomToFixedEvents.Execute ();
-         const auto *event = static_cast<const PrototypeComponentAddedCustomToFixedEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        AssembleObject (event->objectId);
-    }
-}
-
-class NormalAssembler final : public TaskExecutorBase<NormalAssembler>, public AssemblerBase
-{
-public:
-    NormalAssembler (TaskConstructor &_constructor,
-                     const CustomKeyVector &_customKeys,
-                     const TypeBindingVector &_types) noexcept;
-
-    void Execute () noexcept;
-
-private:
-    FetchSequenceQuery fetchPrototypeAddedNormalEvents;
-    FetchSequenceQuery fetchPrototypeAddedFixedToNormalEvents;
-    FetchSequenceQuery fetchPrototypeAddedCustomToNormalEvents;
-};
-
-NormalAssembler::NormalAssembler (TaskConstructor &_constructor,
-                                  const CustomKeyVector &_customKeys,
-                                  const TypeBindingVector &_types) noexcept
-    : AssemblerBase (_constructor, _customKeys, _types, AssemblyFinishedNormalEvent::Reflect ().mapping),
-      fetchPrototypeAddedNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedNormalEvent)),
-      fetchPrototypeAddedFixedToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedFixedToNormalEvent)),
-      fetchPrototypeAddedCustomToNormalEvents (FETCH_SEQUENCE (PrototypeComponentAddedCustomToNormalEvent))
-{
-    useLogicalTransform = false;
-    _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
-    _constructor.MakeDependencyOf (TransformVisualSync::Checkpoint::STARTED);
-}
-
-void NormalAssembler::Execute () noexcept
-{
-    for (auto eventCursor = fetchPrototypeAddedNormalEvents.Execute ();
-         const auto *event = static_cast<const PrototypeComponentAddedNormalEvent *> (*eventCursor); ++eventCursor)
-    {
-        AssembleObject (event->objectId);
-    }
-
-    for (auto eventCursor = fetchPrototypeAddedFixedToNormalEvents.Execute ();
-         const auto *event = static_cast<const PrototypeComponentAddedFixedToNormalEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        AssembleObject (event->objectId);
-    }
-
-    for (auto eventCursor = fetchPrototypeAddedCustomToNormalEvents.Execute ();
-         const auto *event = static_cast<const PrototypeComponentAddedCustomToNormalEvent *> (*eventCursor);
-         ++eventCursor)
-    {
-        AssembleObject (event->objectId);
-    }
 }
 
 using namespace Memory::Literals;
@@ -382,25 +473,37 @@ static void AddCheckpoints (PipelineBuilder &_pipelineBuilder)
 
 void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder,
                        const CustomKeyVector &_allCustomKeys,
-                       const TypeBindingVector &_fixedUpdateTypes) noexcept
+                       const TypeBindingVector &_fixedUpdateTypes,
+                       std::uint64_t _maxAssemblyTimePerFrameNs) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, PrototypeComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
+    _pipelineBuilder.AddTask ("Assembly::RemovePrototypesAssemblies"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupFixedEvent, PrototypeAssemblyComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Assembly");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Assembly::FixedUpdate"_us)
-        .SetExecutor<FixedAssembler> (_allCustomKeys, _fixedUpdateTypes);
+        .SetExecutor<Assembler> (_allCustomKeys, _fixedUpdateTypes, true, _maxAssemblyTimePerFrameNs);
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         const CustomKeyVector &_allCustomKeys,
-                        const TypeBindingVector &_normalUpdateTypes) noexcept
+                        const TypeBindingVector &_normalUpdateTypes,
+                        std::uint64_t _maxAssemblyTimePerFrameNs) noexcept
 {
     _pipelineBuilder.AddTask ("Assembly::RemovePrototypes"_us)
         .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, PrototypeComponent, objectId)
+        .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
+        .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
+
+    _pipelineBuilder.AddTask ("Assembly::RemovePrototypeAssemblies"_us)
+        .AS_CASCADE_REMOVER_1F (TransformNodeCleanupNormalEvent, PrototypeAssemblyComponent, objectId)
         .DependOn (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED)
         .MakeDependencyOf (TransformHierarchyCleanup::Checkpoint::FINISHED);
 
@@ -410,6 +513,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Assembly");
     AddCheckpoints (_pipelineBuilder);
     _pipelineBuilder.AddTask ("Assembly::NormalUpdate"_us)
-        .SetExecutor<NormalAssembler> (_allCustomKeys, _normalUpdateTypes);
+        .SetExecutor<Assembler> (_allCustomKeys, _normalUpdateTypes, false, _maxAssemblyTimePerFrameNs);
 }
 } // namespace Emergence::Celerity::Assembly

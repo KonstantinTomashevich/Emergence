@@ -209,11 +209,11 @@ TEST_CASE (LoadTrivial)
 
     CHECK_EQUAL (firstObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (firstObjectData->body.fullChangelist, firstObjectChangelist);
-    CHECK_EQUAL (firstObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
 
     CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
-    CHECK_EQUAL (secondObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
 }
 
 TEST_CASE (LoadSpecified)
@@ -251,7 +251,117 @@ TEST_CASE (LoadSpecified)
 
     CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
-    CHECK_EQUAL (secondObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
+}
+
+TEST_CASE (LoadSpecifiedWithInjection)
+{
+    const Emergence::Memory::UniqueString folderName {"Objects"};
+
+    const Emergence::Memory::UniqueString firstObjectName {"First"};
+    Emergence::Container::Vector<Emergence::StandardLayout::Patch> firstObjectChangelist {
+        MakePatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
+
+    const Emergence::Memory::UniqueString secondObjectName {"Second"};
+    Emergence::Container::Vector<Emergence::StandardLayout::Patch> secondObjectChangelist {
+        MakePatch (SecondComponent {0u, 100u, 20u, 10u}), MakePatch (InjectionComponent {0u, firstObjectName})};
+
+    const Emergence::Memory::UniqueString thirdObjectName {"Third"};
+    Emergence::Container::Vector<Emergence::StandardLayout::Patch> thirdObjectChangelist {
+        MakePatch (SecondComponent {0u, 100u, 20u, 10u}), MakePatch (InjectionComponent {0u, secondObjectName})};
+
+    PrepareEnvironment ({{*folderName,
+                          {},
+                          SerializationFormat::BINARY,
+                          {
+                              {firstObjectName, {}, firstObjectChangelist},
+                              {secondObjectName, {}, secondObjectChangelist},
+                              {thirdObjectName, {}, thirdObjectChangelist},
+                          }}});
+
+    LibraryLoader loader {GetTypeManifest ()};
+    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), thirdObjectName}});
+
+    while (loader.IsLoading ())
+    {
+        std::this_thread::yield ();
+    }
+
+    Library library = loader.End ();
+    CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 3u);
+
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
+    REQUIRE (firstObjectData);
+
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
+    REQUIRE (secondObjectData);
+
+    const Library::ObjectData *thirdObjectData = library.Find (thirdObjectName);
+    REQUIRE (thirdObjectData);
+
+    CHECK_EQUAL (firstObjectData->declaration.parent, ""_us);
+    CheckChangelistEquality (firstObjectData->body.fullChangelist, firstObjectChangelist);
+    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
+
+    CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
+    CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
+
+    CHECK_EQUAL (thirdObjectData->declaration.parent, ""_us);
+    CheckChangelistEquality (thirdObjectData->body.fullChangelist, thirdObjectChangelist);
+    CHECK_EQUAL (thirdObjectData->loadedAsParent, false);
+}
+
+TEST_CASE (InjectionFromOtherFolder)
+{
+    const Emergence::Memory::UniqueString firstFolderName {"Objects/First"};
+    const Emergence::Memory::UniqueString secondFolderName {"Objects/Second"};
+
+    const Emergence::Memory::UniqueString firstObjectName {"First"};
+    Emergence::Container::Vector<Emergence::StandardLayout::Patch> firstObjectChangelist {
+        MakePatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
+
+    const Emergence::Memory::UniqueString secondObjectName {"Second"};
+    Emergence::Container::Vector<Emergence::StandardLayout::Patch> secondObjectChangelist {
+        MakePatch (SecondComponent {0u, 100u, 20u, 10u}), MakePatch (InjectionComponent {0u, firstObjectName})};
+
+    PrepareEnvironment ({{*firstFolderName,
+                          {},
+                          SerializationFormat::BINARY,
+                          {
+                              {firstObjectName, {}, firstObjectChangelist},
+                          }},
+                         {*secondFolderName,
+                          {"../First"},
+                          SerializationFormat::BINARY,
+                          {
+                              {secondObjectName, {}, secondObjectChangelist},
+                          }}});
+
+    LibraryLoader loader {GetTypeManifest ()};
+    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", secondFolderName), secondObjectName}});
+
+    while (loader.IsLoading ())
+    {
+        std::this_thread::yield ();
+    }
+
+    Library library = loader.End ();
+    CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 2u);
+
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
+    REQUIRE (firstObjectData);
+
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
+    REQUIRE (secondObjectData);
+
+    CHECK_EQUAL (firstObjectData->declaration.parent, ""_us);
+    CheckChangelistEquality (firstObjectData->body.fullChangelist, firstObjectChangelist);
+    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
+
+    CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
+    CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
 }
 
 TEST_CASE (LoadTrivialBinary)
@@ -292,11 +402,11 @@ TEST_CASE (LoadTrivialBinary)
 
     CHECK_EQUAL (firstObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (firstObjectData->body.fullChangelist, firstObjectChangelist);
-    CHECK_EQUAL (firstObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
 
     CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
-    CHECK_EQUAL (secondObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
 }
 
 TEST_CASE (LoadTrivialSubdirectories)
@@ -337,11 +447,11 @@ TEST_CASE (LoadTrivialSubdirectories)
 
     CHECK_EQUAL (firstObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (firstObjectData->body.fullChangelist, firstObjectChangelist);
-    CHECK_EQUAL (firstObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
 
     CHECK_EQUAL (secondObjectData->declaration.parent, ""_us);
     CheckChangelistEquality (secondObjectData->body.fullChangelist, secondObjectChangelist);
-    CHECK_EQUAL (secondObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
 }
 
 TEST_CASE (LoadInheritance)
@@ -390,13 +500,13 @@ TEST_CASE (LoadInheritance)
     Emergence::StandardLayout::Patch firstDerivationPatch =
         baseObjectChangelist.front () + firstDerivationObjectChangelist.front ();
     CheckChangelistEquality (firstDerivationObjectData->body.fullChangelist, {firstDerivationPatch});
-    CHECK_EQUAL (firstDerivationObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (firstDerivationObjectData->loadedAsParent, false);
 
     CHECK_EQUAL (secondDerivationObjectData->declaration.parent, firstDerivationObjectName);
     Emergence::StandardLayout::Patch secondDerivationPatch =
         firstDerivationPatch + secondDerivationObjectChangelist.front ();
     CheckChangelistEquality (secondDerivationObjectData->body.fullChangelist, {secondDerivationPatch});
-    CHECK_EQUAL (secondDerivationObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (secondDerivationObjectData->loadedAsParent, false);
 }
 
 TEST_CASE (LoadDependencies)
@@ -459,14 +569,14 @@ TEST_CASE (LoadDependencies)
         baseObjectChangelist.front () + firstDerivationObjectChangelist.front ();
     CheckChangelistEquality (firstDerivationObjectData->body.fullChangelist,
                              {firstDerivationPatch, baseObjectChangelist[1u], firstDerivationObjectChangelist[1u]});
-    CHECK_EQUAL (firstDerivationObjectData->loadedAsDependency, true);
+    CHECK_EQUAL (firstDerivationObjectData->loadedAsParent, true);
 
     CHECK_EQUAL (secondDerivationObjectData->declaration.parent, firstDerivationObjectName);
     Emergence::StandardLayout::Patch secondDerivationPatch =
         firstDerivationPatch + secondDerivationObjectChangelist.front ();
     CheckChangelistEquality (secondDerivationObjectData->body.fullChangelist,
                              {secondDerivationPatch, baseObjectChangelist[1u], firstDerivationObjectChangelist[1u]});
-    CHECK_EQUAL (secondDerivationObjectData->loadedAsDependency, false);
+    CHECK_EQUAL (secondDerivationObjectData->loadedAsParent, false);
 }
 
 END_SUITE

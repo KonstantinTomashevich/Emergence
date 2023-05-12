@@ -9,6 +9,8 @@
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Asset/UI/FontManagement.hpp>
 #include <Celerity/Input/Input.hpp>
+#include <Celerity/Locale/LocaleSingleton.hpp>
+#include <Celerity/Locale/Localization.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
@@ -34,6 +36,8 @@ bool VisualTestIncludeMarker () noexcept
     return true;
 }
 
+static const Memory::UniqueString USED_LOCALE {"English"};
+
 class ScreenshotTester final : public TaskExecutorBase<ScreenshotTester>
 {
 public:
@@ -51,6 +55,8 @@ private:
     void TakeScreenshot () const noexcept;
 
     FetchSingletonQuery fetchAssetManager;
+    ModifySingletonQuery modifyLocale;
+
     Container::String passName;
     bool firstUpdate = true;
     bool screenshotRequested = false;
@@ -61,9 +67,12 @@ ScreenshotTester::ScreenshotTester (TaskConstructor &_constructor,
                                     Container::String _passName,
                                     bool *_isFinishedOutput) noexcept
     : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
+      modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
+
       passName (std::move (_passName)),
       isFinishedOutput (_isFinishedOutput)
 {
+    _constructor.DependOn (Localization::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (RenderPipelineFoundation::Checkpoint::RENDER_FINISHED);
 }
 
@@ -122,7 +131,12 @@ bool ScreenshotTester::IsWaitingForDependencies () noexcept
 {
     auto assetManagerCursor = fetchAssetManager.Execute ();
     const auto *assetManager = static_cast<const AssetManagerSingleton *> (*assetManagerCursor);
-    return assetManager->assetsLeftToLoad > 0u;
+
+    auto localeCursor = modifyLocale.Execute ();
+    auto *locale = static_cast<LocaleSingleton *> (*localeCursor);
+    locale->targetLocale = USED_LOCALE;
+
+    return assetManager->assetsLeftToLoad > 0u && locale->loadedLocale == USED_LOCALE;
 }
 
 void ScreenshotTester::TakeScreenshot () const noexcept
@@ -154,6 +168,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
     static const Emergence::Memory::UniqueString testTexturesPath {"UITestResources/Textures"};
     static const Emergence::Memory::UniqueString testFontsPath {"UITestResources/Fonts"};
+    static const Emergence::Memory::UniqueString testLocalePath {"UITestResources/Locales"};
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
@@ -162,6 +177,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     FontManagement::AddToNormalUpdate (pipelineBuilder, {testFontsPath}, MAX_LOADING_TIME_NS,
                                        assetReferenceBindingEventMap);
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
+    Localization::AddToNormalUpdate (pipelineBuilder, testLocalePath, MAX_LOADING_TIME_NS);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
                                            {engineShadersPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
@@ -199,7 +215,7 @@ static CreateInput CreateIntInput (UniqueId _nodeId, UniqueId _parentId)
     task.nodeId = _nodeId;
     task.parentId = _parentId;
     task.type = InputControlType::INT;
-    task.label = "Integer input";
+    task.labelKey = "InputInt"_us;
     task.intValue = 112u;
     return task;
 }
@@ -210,7 +226,7 @@ static CreateInput CreateFloatInput (UniqueId _nodeId, UniqueId _parentId)
     task.nodeId = _nodeId;
     task.parentId = _parentId;
     task.type = InputControlType::FLOAT;
-    task.label = "Floating input";
+    task.labelKey = "InputFloat"_us;
     task.floatValue = 42.39f;
     return task;
 }
@@ -221,7 +237,7 @@ static CreateInput CreateTextInput (UniqueId _nodeId, UniqueId _parentId)
     task.nodeId = _nodeId;
     task.parentId = _parentId;
     task.type = InputControlType::TEXT;
-    task.label = "Text input";
+    task.labelKey = "InputText"_us;
     strcpy (task.utf8TextValue.data (), "Hello, world!");
     return task;
 }
@@ -321,39 +337,72 @@ TEST_CASE (CustomSkin)
                                       1.0f},
 
             CreateWindow {
-                0u,           ""_us,        "UI"_us, "Left window!",
-                true,         true,         true,    true,
-                true,         false,        true,    ContainerControlLayout::VERTICAL,
-                {0.0f, 0.0f}, {0.0f, 0.0f}, 0u,      0u,
-                WIDTH / 2,    HEIGHT,       {},      {},
+                0u,
+                ""_us,
+                "UI"_us,
+                ""_us,
+                "Left window!",
+                true,
+                true,
+                true,
+                true,
+                true,
+                false,
+                true,
+                ContainerControlLayout::VERTICAL,
+                {0.0f, 0.0f},
+                {0.0f, 0.0f},
+                0u,
+                0u,
+                WIDTH / 2,
+                HEIGHT,
+                {},
+                {},
             },
 
-            CreateLabel {1u, 0u, ""_us, "Example of dialog buttons:"},
+            CreateLabel {1u, 0u, ""_us, ""_us, "Example of dialog buttons:"},
             CreateContainer {2u, 0u, ""_us, ContainerControlType::PANEL, ContainerControlLayout::HORIZONTAL, 180u, 60u,
-                             true, "", ""},
-            CreateButton {3u, 2u, "OkButtonStyle"_us, "Ok", 50u, 30u, {}, InputActionDispatchType::NORMAL},
-            CreateButton {4u, 2u, "CancelButtonStyle"_us, "Cancel", 50u, 30u, {}, InputActionDispatchType::NORMAL},
-            CreateButton {5u, 2u, ""_us, "Help", 50u, 30u, {}, InputActionDispatchType::NORMAL},
+                             true, ""_us, "", ""_us, ""},
+            CreateButton {3u, 2u, "OkButtonStyle"_us, "Ok"_us, "", 50u, 30u, {}, InputActionDispatchType::NORMAL},
+            CreateButton {
+                4u, 2u, "CancelButtonStyle"_us, "Cancel"_us, "", 50u, 30u, {}, InputActionDispatchType::NORMAL},
+            CreateButton {5u, 2u, ""_us, "Help"_us, "", 50u, 30u, {}, InputActionDispatchType::NORMAL},
 
             CreateContainer {6u, 0u, ""_us, ContainerControlType::COLLAPSING_PANEL, ContainerControlLayout::VERTICAL,
-                             0u, 0u, false, "Collapsed one", ""},
-            CreateLabel {7u, 6u, ""_us, "First unseen."},
-            CreateLabel {8u, 6u, ""_us, "Second unseen."},
+                             0u, 0u, false, ""_us, "Collapsed one", ""_us, ""},
+            CreateLabel {7u, 6u, ""_us, ""_us, "First unseen."},
+            CreateLabel {8u, 6u, ""_us, ""_us, "Second unseen."},
 
             CreateContainer {9u, 0u, ""_us, ContainerControlType::COMBO_PANEL, ContainerControlLayout::VERTICAL, 0u, 0u,
-                             false, "Selectable one", "--- none selected ---"},
-            CreateLabel {10u, 9u, ""_us, "First unseen."},
-            CreateLabel {11u, 9u, ""_us, "Second unseen."},
+                             false, ""_us, "Selectable one", ""_us, "--- none selected ---"},
+            CreateLabel {10u, 9u, ""_us, ""_us, "First unseen."},
+            CreateLabel {11u, 9u, ""_us, ""_us, "Second unseen."},
 
-            CreateCheckbox {12u, 0u, ""_us, "Checked combo", true, {}, InputActionDispatchType::NORMAL},
-            CreateCheckbox {13u, 0u, ""_us, "Unchecked combo", false, {}, InputActionDispatchType::NORMAL},
+            CreateCheckbox {12u, 0u, ""_us, ""_us, "Checked combo", true, {}, InputActionDispatchType::NORMAL},
+            CreateCheckbox {13u, 0u, ""_us, ""_us, "Unchecked combo", false, {}, InputActionDispatchType::NORMAL},
 
             CreateWindow {
-                14u,          ""_us,        "UI"_us, "Right window!",
-                true,         true,         true,    true,
-                true,         false,        true,    ContainerControlLayout::VERTICAL,
-                {1.0f, 1.0f}, {1.0f, 1.0f}, 0,       0u,
-                WIDTH / 2,    HEIGHT,       {},      {},
+                14u,
+                ""_us,
+                "UI"_us,
+                ""_us,
+                "Right window!",
+                true,
+                true,
+                true,
+                true,
+                true,
+                false,
+                true,
+                ContainerControlLayout::VERTICAL,
+                {1.0f, 1.0f},
+                {1.0f, 1.0f},
+                0,
+                0u,
+                WIDTH / 2,
+                HEIGHT,
+                {},
+                {},
             },
 
             CreateIntInput (15u, 14u),

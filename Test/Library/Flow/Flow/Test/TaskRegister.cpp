@@ -10,10 +10,17 @@ using namespace Emergence::Memory::Literals;
 
 namespace Emergence::Flow::Test
 {
+struct CheckpointDependencySeed final
+{
+    Memory::UniqueString from;
+    Memory::UniqueString to;
+};
+
 struct Seed final
 {
     Container::Vector<Task> tasks;
     Container::Vector<Memory::UniqueString> checkpoints;
+    Container::Vector<CheckpointDependencySeed> checkpointDependencies;
     Container::Vector<Memory::UniqueString> resources;
 };
 
@@ -27,6 +34,11 @@ void Grow (const Seed &_seed, TaskRegister &_reusableRegister)
     for (Memory::UniqueString checkpoint : _seed.checkpoints)
     {
         _reusableRegister.RegisterCheckpoint (checkpoint);
+    }
+
+    for (const CheckpointDependencySeed &seed : _seed.checkpointDependencies)
+    {
+        _reusableRegister.RegisterCheckpointDependency (seed.from, seed.to);
     }
 
     for (Memory::UniqueString resource : _seed.resources)
@@ -107,6 +119,7 @@ static const Seed TRIVIAL_SAFE_RESOURCE_USAGE_SEED {{
                                                         {"B2"_us, nullptr, {}, {"R3"_us}, {"Join"_us}, {}},
                                                     },
                                                     {"Join"_us},
+                                                    {},
                                                     {"R1"_us, "R2"_us, "R3"_us}};
 
 VisualGraph::Graph GetTrivialSafeResourceUsageGraph ()
@@ -150,6 +163,7 @@ static const Seed COMPLEX_DEPENDENCIES_SEED {{
                                                  {"B2"_us, nullptr, {}, {}, {"Join1"_us, "A5"_us, "B1"_us}, {}},
                                              },
                                              {"Join1"_us, "Join2"_us},
+                                             {},
                                              {}};
 
 CollectionExpectation GetComplexDependenciesExpectation ()
@@ -173,6 +187,7 @@ TEST_CASE (Sequence)
                    {"B"_us, nullptr, {}, {}, {}, {}},
                    {"C"_us, nullptr, {}, {}, {"B"_us}, {}}},
                   {},
+                  {},
                   {}})
                .ExportCollection (),
            {{{"A", {"B"}}, {"B", {"C"}}, {"C", {}}}});
@@ -181,7 +196,7 @@ TEST_CASE (Sequence)
 TEST_CASE (SequenceWithCheckpoint)
 {
     using namespace Emergence::Flow::Test;
-    Check (Grow ({{{"A"_us, nullptr, {}, {}, {}, {"B"_us}}, {"C"_us, nullptr, {}, {}, {"B"_us}, {}}}, {"B"_us}, {}})
+    Check (Grow ({{{"A"_us, nullptr, {}, {}, {}, {"B"_us}}, {"C"_us, nullptr, {}, {}, {"B"_us}, {}}}, {"B"_us}, {}, {}})
                .ExportCollection (),
            {{{"A", {"C"}}, {"C", {}}}});
 }
@@ -196,6 +211,23 @@ TEST_CASE (CheckpointAsBarrier)
                       {"B2"_us, nullptr, {}, {}, {"Join"_us}, {}},
                   },
                   {"Join"_us},
+                  {},
+                  {}})
+               .ExportCollection (),
+           {{{"A1", {"B1", "B2"}}, {"A2", {"B1", "B2"}}, {"B1", {}}, {"B2", {}}}});
+}
+
+TEST_CASE (DependencyBetweenCheckpoints)
+{
+    using namespace Emergence::Flow::Test;
+    Check (Grow ({{
+                      {"A1"_us, nullptr, {}, {}, {}, {"Join1"_us}},
+                      {"A2"_us, nullptr, {}, {}, {}, {"Join1"_us}},
+                      {"B1"_us, nullptr, {}, {}, {"Join3"_us}, {}},
+                      {"B2"_us, nullptr, {}, {}, {"Join3"_us}, {}},
+                  },
+                  {"Join1"_us, "Join2"_us, "Join3"_us},
+                  {{"Join1"_us, "Join2"_us}, {"Join2"_us, "Join3"_us}},
                   {}})
                .ExportCollection (),
            {{{"A1", {"B1", "B2"}}, {"A2", {"B1", "B2"}}, {"B1", {}}, {"B2", {}}}});
@@ -213,6 +245,7 @@ TEST_CASE (TrivialCircularDependency)
     Check (Grow ({{{"A"_us, nullptr, {}, {}, {}, {"B"_us}},
                    {"B"_us, nullptr, {}, {}, {}, {"C"_us}},
                    {"C"_us, nullptr, {}, {}, {}, {"A"_us}}},
+                  {},
                   {},
                   {}})
                .ExportCollection (),
@@ -232,6 +265,7 @@ TEST_CASE (ComplexCircularDependency)
                       {"B2"_us, nullptr, {}, {}, {"Join1"_us, "A5"_us, "B1"_us}, {}},
                   },
                   {"Join1"_us, "Join2"_us},
+                  {},
                   {}})
                .ExportCollection (),
            {});
@@ -240,17 +274,18 @@ TEST_CASE (ComplexCircularDependency)
 TEST_CASE (DependencyNotExists)
 {
     using namespace Emergence::Flow::Test;
-    Check (
-        Grow (
-            {{{"A"_us, nullptr, {}, {}, {}, {"D"_us}}, {"B"_us, nullptr, {}, {}, {"Join2"_us}, {}}}, {"Join1"_us}, {}})
-            .ExportCollection (),
-        {});
+    Check (Grow ({{{"A"_us, nullptr, {}, {}, {}, {"D"_us}}, {"B"_us, nullptr, {}, {}, {"Join2"_us}, {}}},
+                  {"Join1"_us},
+                  {},
+                  {}})
+               .ExportCollection (),
+           {});
 }
 
 TEST_CASE (DuplicateResourceUsageInAccessMask)
 {
     using namespace Emergence::Flow::Test;
-    Check (Grow ({{{"A"_us, nullptr, {"R1"_us}, {"R1"_us}, {}, {}}}, {}, {"R1"_us}}).ExportCollection (), {});
+    Check (Grow ({{{"A"_us, nullptr, {"R1"_us}, {"R1"_us}, {}, {}}}, {}, {}, {"R1"_us}}).ExportCollection (), {});
 }
 
 TEST_CASE (TrivialSafeResourceUsage)
@@ -270,6 +305,7 @@ TEST_CASE (ChainedSafeResourceUsage)
                       {"C2"_us, nullptr, {}, {"R1"_us}, {"Join"_us}, {}},
                   },
                   {"Join"_us},
+                  {},
                   {"R1"_us, "R2"_us, "R3"_us}})
                .ExportCollection (),
            {{{"A", {"B1", "B2"}}, {"B1", {"C1"}}, {"C1", {}}, {"B2", {"C2"}}, {"C2", {}}}});
@@ -286,6 +322,7 @@ TEST_CASE (ReadWriteCollision)
                       {"C2"_us, nullptr, {}, {"R1"_us}, {"Join"_us}, {}},
                   },
                   {"Join"_us},
+                  {},
                   {"R1"_us, "R2"_us, "R3"_us}})
                .ExportCollection (),
            {});
@@ -302,6 +339,7 @@ TEST_CASE (WriteWriteCollision)
                       {"C2"_us, nullptr, {}, {"R1"_us}, {"Join"_us}, {}},
                   },
                   {"Join"_us},
+                  {},
                   {"R1"_us, "R2"_us, "R3"_us}})
                .ExportCollection (),
            {});
@@ -310,7 +348,7 @@ TEST_CASE (WriteWriteCollision)
 TEST_CASE (ResourceNotExists)
 {
     using namespace Emergence::Flow::Test;
-    Check (Grow ({{{"A"_us, nullptr, {}, {"R1"_us}, {}, {}}, {"B"_us, nullptr, {}, {"R2"_us}, {}, {}}}, {}, {}})
+    Check (Grow ({{{"A"_us, nullptr, {}, {"R1"_us}, {}, {}}, {"B"_us, nullptr, {}, {"R2"_us}, {}, {}}}, {}, {}, {}})
                .ExportCollection (),
            {});
 }

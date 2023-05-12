@@ -1,3 +1,5 @@
+#include <Celerity/Assembly/PrototypeAssemblyComponent.hpp>
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/WorldSingleton.hpp>
 #include <Celerity/Physics3d/DynamicsMaterial3d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
@@ -21,6 +23,7 @@ enum class LoadingStage
     NOT_STARTED = 0u,
     LOADING_LEVEL_ASSETS,
     GENERATING_LEVEL,
+    WAITING_FOR_ASSEMBLY,
     FINISHED,
 };
 
@@ -43,6 +46,9 @@ private:
     Emergence::Celerity::InsertShortTermQuery insertLevelGenerationRequest;
     Emergence::Celerity::InsertShortTermQuery insertLoadingFinishedEvent;
 
+    Emergence::Celerity::FetchSignalQuery fetchUninitializedPrototypes;
+    Emergence::Celerity::FetchAscendingRangeQuery fetchPrototypeStates;
+
     LoadingStage stage = LoadingStage::NOT_STARTED;
     bool resourceObjectsLoaded = false;
     bool dynamicsMaterialsLoaded = false;
@@ -62,6 +68,9 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
       insertResourceObjectFolderRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceObjectFolderRequest)),
       insertLevelGenerationRequest (INSERT_SHORT_TERM (LevelGenerationRequest)),
       insertLoadingFinishedEvent (INSERT_SHORT_TERM (LoadingFinishedEvent)),
+
+      fetchUninitializedPrototypes (FETCH_SIGNAL (Emergence::Celerity::PrototypeComponent, assemblyStarted, false)),
+      fetchPrototypeStates (FETCH_ASCENDING_RANGE (Emergence::Celerity::PrototypeAssemblyComponent, objectId)),
 
       loadingFinishedOutput (_loadingFinishedOutput)
 {
@@ -144,8 +153,16 @@ void LoadingOrchestrator::Execute () noexcept
         {
             auto loadingFinishedCursor = insertLoadingFinishedEvent.Execute ();
             ++loadingFinishedCursor;
+            stage = LoadingStage::WAITING_FOR_ASSEMBLY;
+        }
 
-            *loadingFinishedOutput = true;
+        break;
+    }
+
+    case LoadingStage::WAITING_FOR_ASSEMBLY:
+    {
+        if (!*fetchUninitializedPrototypes.Execute () && !*fetchPrototypeStates.Execute (nullptr, nullptr))
+        {
             stage = LoadingStage::FINISHED;
         }
 
@@ -153,6 +170,7 @@ void LoadingOrchestrator::Execute () noexcept
     }
 
     case LoadingStage::FINISHED:
+        *loadingFinishedOutput = true;
         break;
     }
 

@@ -1,3 +1,4 @@
+#include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Physics3d/CollisionShape3dComponent.hpp>
 #include <Celerity/Physics3d/RigidBody3dComponent.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
@@ -16,6 +17,9 @@
 Emergence::Resource::Object::TypeManifest PrepareResourceObjectTypeManifest () noexcept
 {
     Emergence::Resource::Object::TypeManifest typeManifest;
+    typeManifest.AddInjection ({Emergence::Celerity::PrototypeComponent::Reflect ().mapping,
+                                Emergence::Celerity::PrototypeComponent::Reflect ().objectId});
+
     typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});
     typeManifest.Register (DamageDealerComponent::Reflect ().mapping, {DamageDealerComponent::Reflect ().objectId});
 

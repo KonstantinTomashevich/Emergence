@@ -15,6 +15,7 @@
 #include <StandardLayout/MappingRegistration.hpp>
 
 #include <SyntaxSugar/OnScopeExit.hpp>
+#include <SyntaxSugar/Time.hpp>
 
 namespace Emergence::Resource::Object
 {
@@ -46,6 +47,7 @@ void LibraryLoader::Begin (const Container::Vector<LibraryLoadingTask> &_loading
     Job::Dispatcher::Global ().Dispatch (
         [this] ()
         {
+            loadingStartTimeNs = Time::NanosecondsSinceStartup ();
             FormFolderList ();
         });
 }
@@ -161,9 +163,30 @@ void LibraryLoader::FormFolderList () noexcept
         });
 }
 
+bool LibraryLoader::FindAndLoadDeclaration (Memory::UniqueString _objectName, bool _loadingAsParent) noexcept
+{
+    for (const Container::String &folder : folderList)
+    {
+        std::filesystem::path parentBinaryDeclarationPath {
+            EMERGENCE_BUILD_STRING (folder, "/", _objectName, BINARY_OBJECT_DECLARATION_SUFFIX)};
+
+        std::filesystem::path parentYamlDeclarationPath {
+            EMERGENCE_BUILD_STRING (folder, "/", _objectName, YAML_OBJECT_DECLARATION_SUFFIX)};
+
+        if (std::filesystem::is_regular_file (parentBinaryDeclarationPath) ||
+            std::filesystem::is_regular_file (parentYamlDeclarationPath))
+        {
+            LoadObjectDeclaration (folder, _objectName, _loadingAsParent);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void LibraryLoader::LoadObjectDeclaration (const Container::String &_objectFolder,
                                            Memory::UniqueString _objectName,
-                                           bool _loadingAsDependency) noexcept
+                                           bool _loadingAsParent) noexcept
 {
     if (auto iterator = currentLibrary.objects.find (_objectName); iterator != currentLibrary.objects.end ())
     {
@@ -177,7 +200,7 @@ void LibraryLoader::LoadObjectDeclaration (const Container::String &_objectFolde
         {
             // Check that we're trying to read the same object, not its name-duplicate.
             ObjectListItem &objectListItem = objectList[indexInObjectListIterator->second];
-            iterator->second.loadedAsDependency &= _loadingAsDependency;
+            iterator->second.loadedAsParent &= _loadingAsParent;
 
             if (_objectFolder != objectListItem.folder)
             {
@@ -214,28 +237,10 @@ void LibraryLoader::LoadObjectDeclaration (const Container::String &_objectFolde
         return;
     }
 
-    currentLibrary.objects.emplace (_objectName, Library::ObjectData {declaration, {}, _loadingAsDependency});
+    currentLibrary.objects.emplace (_objectName, Library::ObjectData {declaration, {}, _loadingAsParent});
     if (*declaration.parent)
     {
-        bool parentFound = false;
-        for (const Container::String &folder : folderList)
-        {
-            std::filesystem::path parentBinaryDeclarationPath {
-                EMERGENCE_BUILD_STRING (folder, "/", declaration.parent, BINARY_OBJECT_DECLARATION_SUFFIX)};
-
-            std::filesystem::path parentYamlDeclarationPath {
-                EMERGENCE_BUILD_STRING (folder, "/", declaration.parent, YAML_OBJECT_DECLARATION_SUFFIX)};
-
-            if (std::filesystem::is_regular_file (parentBinaryDeclarationPath) ||
-                std::filesystem::is_regular_file (parentYamlDeclarationPath))
-            {
-                LoadObjectDeclaration (folder, declaration.parent, true);
-                parentFound = true;
-                break;
-            }
-        }
-
-        if (!parentFound)
+        if (!FindAndLoadDeclaration (declaration.parent, true))
         {
             EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find parent \"", declaration.parent,
                            "\" for object \"", _objectName, "\".");
@@ -315,6 +320,9 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
     if (_indexInList >= objectList.size ())
     {
         loading.clear (std::memory_order_release);
+        const uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
+        EMERGENCE_LOG (INFO, "Resource::Object::LibraryLoader: Library loading took ",
+                       static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
         return;
     }
 
@@ -328,22 +336,22 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
                 });
         });
 
-    ObjectListItem &objectItem = objectList[_indexInList];
-    auto objectDataIterator = currentLibrary.objects.find (objectItem.name);
+    auto objectDataIterator = currentLibrary.objects.find (objectList[_indexInList].name);
 
     if (objectDataIterator == currentLibrary.objects.end ())
     {
         EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Object \"",
-                       objectItem.name, "\" is found in object list, but its declaration is not found in library.");
+                       objectList[_indexInList].name,
+                       "\" is found in object list, but its declaration is not found in library.");
         return;
     }
 
     Library::ObjectData &objectData = objectDataIterator->second;
-    std::filesystem::path binaryBodyPath {
-        EMERGENCE_BUILD_STRING (objectItem.folder, "/", objectItem.name, BINARY_OBJECT_BODY_SUFFIX)};
+    std::filesystem::path binaryBodyPath {EMERGENCE_BUILD_STRING (
+        objectList[_indexInList].folder, "/", objectList[_indexInList].name, BINARY_OBJECT_BODY_SUFFIX)};
 
-    std::filesystem::path yamlBodyPath {
-        EMERGENCE_BUILD_STRING (objectItem.folder, "/", objectItem.name, YAML_OBJECT_BODY_SUFFIX)};
+    std::filesystem::path yamlBodyPath {EMERGENCE_BUILD_STRING (
+        objectList[_indexInList].folder, "/", objectList[_indexInList].name, YAML_OBJECT_BODY_SUFFIX)};
 
     Container::Vector<StandardLayout::Patch> changelist {GetAllocationGroup ()};
     if (std::filesystem::is_regular_file (binaryBodyPath))
@@ -391,8 +399,8 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
     }
     else
     {
-        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find body for object \"", objectItem.name,
-                       "\" in folder \"", objectItem.folder, "\".");
+        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find body for object \"",
+                       objectList[_indexInList].name, "\" in folder \"", objectList[_indexInList].folder, "\".");
         return;
     }
 
@@ -401,9 +409,9 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
         auto parentObjectDataIterator = currentLibrary.objects.find (objectData.declaration.parent);
         if (parentObjectDataIterator == currentLibrary.objects.end ())
         {
-            EMERGENCE_LOG (ERROR,
-                           "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
-                           objectItem.name, "\", which is \"", objectData.declaration.parent, "\", is not found.");
+            EMERGENCE_LOG (
+                ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
+                objectList[_indexInList].name, "\", which is \"", objectData.declaration.parent, "\", is not found.");
             return;
         }
 
@@ -415,6 +423,38 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
         for (const StandardLayout::Patch &patch : changelist)
         {
             objectData.body.fullChangelist.emplace_back (patch);
+        }
+    }
+
+    // Scan loaded object data for injections. Skip this scan for dependency
+    // objects, as their injections might be overridden by their children.
+    if (!objectData.loadedAsParent)
+    {
+        for (const StandardLayout::Patch &patch : objectData.body.fullChangelist)
+        {
+            for (const DependencyInjectionInfo &injection : typeManifest.GetInjections ())
+            {
+                if (patch.GetTypeMapping () == injection.injectorType)
+                {
+                    for (const StandardLayout::Patch::ChangeInfo &change : patch)
+                    {
+                        if (change.field == injection.injectorIdField)
+                        {
+                            const Memory::UniqueString dependency =
+                                *static_cast<const Memory::UniqueString *> (change.newValue);
+
+                            if (!FindAndLoadDeclaration (dependency, false))
+                            {
+                                EMERGENCE_LOG (ERROR,
+                                               "Resource::Object::LibraryLoader: Unable to find injected sub object \"",
+                                               dependency, "\" for object \"", objectList[_indexInList].name, "\".");
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

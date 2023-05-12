@@ -34,20 +34,32 @@ static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
     }
 
     EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).IsHandleValid ());
-    EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetArchetype () ==
-                      StandardLayout::FieldArchetype::UINT);
+    const StandardLayout::FieldArchetype archetype =
+        _first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetArchetype ();
+    EMERGENCE_ASSERT (archetype == StandardLayout::FieldArchetype::UINT ||
+                      archetype == StandardLayout::FieldArchetype::UNIQUE_STRING);
     EMERGENCE_ASSERT (_first.GetTypeMapping ().GetField (typeInfo->uniqueId).GetSize () == sizeof (UniqueId));
 
     UniqueId firstId = 0u;
     UniqueId secondId = 0u;
 
-    auto findId = [typeInfo] (const StandardLayout::Patch &_patch, UniqueId &_output)
+    auto findId = [typeInfo, archetype] (const StandardLayout::Patch &_patch, UniqueId &_output)
     {
         for (const StandardLayout::Patch::ChangeInfo &changeInfo : _patch)
         {
             if (changeInfo.field == typeInfo->uniqueId)
             {
-                _output = *static_cast<const UniqueId *> (changeInfo.newValue);
+                if (archetype == StandardLayout::FieldArchetype::UINT)
+                {
+                    _output = *static_cast<const UniqueId *> (changeInfo.newValue);
+                }
+                else
+                {
+                    static_assert (sizeof (UniqueId) == sizeof (uintptr_t));
+                    _output =
+                        reinterpret_cast<UniqueId> (**static_cast<const Memory::UniqueString *> (changeInfo.newValue));
+                }
+
                 return true;
             }
         }

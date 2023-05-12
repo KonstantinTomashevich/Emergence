@@ -35,9 +35,14 @@ private:
                        const AssetReferenceBinding &_binding,
                        const AssetReferenceBindingHookEvents &_hooks) noexcept;
 
-        FetchSequenceQuery fetchOnAddedEvents;
-        FetchSequenceQuery fetchOnChangedEvents;
-        FetchSequenceQuery fetchOnRemovedEvents;
+        FetchSequenceQuery fetchOnAddedNormalEvents;
+        FetchSequenceQuery fetchOnChangedNormalEvents;
+        FetchSequenceQuery fetchOnRemovedNormalEvents;
+
+        FetchSequenceQuery fetchOnAddedFixedEvents;
+        FetchSequenceQuery fetchOnChangedFixedEvents;
+        FetchSequenceQuery fetchOnRemovedFixedEvents;
+
         Container::Vector<AssetReferenceFieldData> fields {Memory::Profiler::AllocationGroup::Top ()};
     };
 
@@ -82,43 +87,76 @@ void AssetManager::Execute () noexcept
 
     for (AssetUserData &assetUser : assetUsers)
     {
-        for (auto eventCursor = assetUser.fetchOnAddedEvents.Execute ();
-             const auto *event = static_cast<const AssetUserAddedEventView *> (*eventCursor); ++eventCursor)
+        auto checkEvent = [this, assetManager, &assetUser] (const AssetUserAddedEventView *_event)
         {
             for (size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
-                OnAssetUsageAdded (assetManager, event->assetReferences[index], assetUser.fields[index].type);
+                OnAssetUsageAdded (assetManager, _event->assetReferences[index], assetUser.fields[index].type);
             }
+        };
+
+        for (auto eventCursor = assetUser.fetchOnAddedNormalEvents.Execute ();
+             const auto *event = static_cast<const AssetUserAddedEventView *> (*eventCursor); ++eventCursor)
+        {
+            checkEvent (event);
+        }
+
+        for (auto eventCursor = assetUser.fetchOnAddedFixedEvents.Execute ();
+             const auto *event = static_cast<const AssetUserAddedEventView *> (*eventCursor); ++eventCursor)
+        {
+            checkEvent (event);
         }
     }
 
     for (AssetUserData &assetUser : assetUsers)
     {
-        for (auto eventCursor = assetUser.fetchOnChangedEvents.Execute ();
-             const auto *event = static_cast<const AssetUserChangedEventView *> (*eventCursor); ++eventCursor)
+        auto checkEvent = [this, assetManager, &assetUser] (const AssetUserChangedEventView *_event)
         {
             for (size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
-                if (event->assetReferenceSequence[index] !=
-                    event->assetReferenceSequence[assetUser.fields.size () + index])
+                if (_event->assetReferenceSequence[index] !=
+                    _event->assetReferenceSequence[assetUser.fields.size () + index])
                 {
-                    OnAssetUsageRemoved (assetManager, event->assetReferenceSequence[index]);
-                    OnAssetUsageAdded (assetManager, event->assetReferenceSequence[assetUser.fields.size () + index],
+                    OnAssetUsageRemoved (assetManager, _event->assetReferenceSequence[index]);
+                    OnAssetUsageAdded (assetManager, _event->assetReferenceSequence[assetUser.fields.size () + index],
                                        assetUser.fields[index].type);
                 }
             }
+        };
+
+        for (auto eventCursor = assetUser.fetchOnChangedNormalEvents.Execute ();
+             const auto *event = static_cast<const AssetUserChangedEventView *> (*eventCursor); ++eventCursor)
+        {
+            checkEvent (event);
+        }
+
+        for (auto eventCursor = assetUser.fetchOnChangedFixedEvents.Execute ();
+             const auto *event = static_cast<const AssetUserChangedEventView *> (*eventCursor); ++eventCursor)
+        {
+            checkEvent (event);
         }
     }
 
     for (AssetUserData &assetUser : assetUsers)
     {
-        for (auto eventCursor = assetUser.fetchOnRemovedEvents.Execute ();
-             const auto *event = static_cast<const AssetUserRemovedEventView *> (*eventCursor); ++eventCursor)
+        auto checkEvent = [this, assetManager, &assetUser] (const AssetUserRemovedEventView *_event)
         {
             for (size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
-                OnAssetUsageRemoved (assetManager, event->assetReferences[index]);
+                OnAssetUsageRemoved (assetManager, _event->assetReferences[index]);
             }
+        };
+
+        for (auto eventCursor = assetUser.fetchOnRemovedNormalEvents.Execute ();
+             const auto *event = static_cast<const AssetUserRemovedEventView *> (*eventCursor); ++eventCursor)
+        {
+            checkEvent (event);
+        }
+
+        for (auto eventCursor = assetUser.fetchOnRemovedFixedEvents.Execute ();
+             const auto *event = static_cast<const AssetUserRemovedEventView *> (*eventCursor); ++eventCursor)
+        {
+            checkEvent (event);
         }
     }
 
@@ -142,9 +180,13 @@ void AssetManager::Execute () noexcept
 AssetManager::AssetUserData::AssetUserData (TaskConstructor &_constructor,
                                             const AssetReferenceBinding &_binding,
                                             const AssetReferenceBindingHookEvents &_hooks) noexcept
-    : fetchOnAddedEvents (_constructor.FetchSequence (_hooks.onObjectAdded)),
-      fetchOnChangedEvents (_constructor.FetchSequence (_hooks.onAnyReferenceChanged)),
-      fetchOnRemovedEvents (_constructor.FetchSequence (_hooks.onObjectRemoved))
+    : fetchOnAddedNormalEvents (_constructor.FetchSequence (_hooks.onObjectAddedNormal)),
+      fetchOnChangedNormalEvents (_constructor.FetchSequence (_hooks.onAnyReferenceChangedNormal)),
+      fetchOnRemovedNormalEvents (_constructor.FetchSequence (_hooks.onObjectRemovedNormal)),
+
+      fetchOnAddedFixedEvents (_constructor.FetchSequence (_hooks.onObjectAddedFixedToNormal)),
+      fetchOnChangedFixedEvents (_constructor.FetchSequence (_hooks.onAnyReferenceChangedFixedToNormal)),
+      fetchOnRemovedFixedEvents (_constructor.FetchSequence (_hooks.onObjectRemovedFixedToNormal))
 {
     fields.reserve (_binding.references.size ());
     for (const AssetReferenceField &field : _binding.references)

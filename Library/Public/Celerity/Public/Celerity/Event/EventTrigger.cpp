@@ -193,6 +193,11 @@ void TrivialEventTriggerInstance::Trigger (const void *_record) noexcept
     }
 }
 
+bool TrivialEventTriggerInstance::IsTargetingRegistry (const Warehouse::Registry &_registry) const noexcept
+{
+    return inserter.IsFromRegistry (_registry);
+}
+
 OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType,
                                             StandardLayout::Mapping _eventType,
                                             EventRoute _route,
@@ -215,6 +220,20 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
                           _trackedFields.end ());
     }
 #endif
+}
+
+bool OnChangeEventTrigger::IsFieldTracked (StandardLayout::FieldId _field) const noexcept
+{
+    StandardLayout::Field field = trackedType.GetField (_field);
+    for (const TrackedZone &zone : trackedZones)
+    {
+        if (field.GetOffset () < zone.offset + zone.length && field.GetOffset () + field.GetSize () > zone.offset)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 OnChangeEventTriggerInstance::OnChangeEventTriggerInstance (const OnChangeEventTrigger *_trigger,

@@ -1,0 +1,155 @@
+- type: Transform2dComponent
+  content:
+    objectId: 2
+    parentObjectId: 0
+    logicalLocalTransform:
+      translation:
+        x: -10.0
+
+- type: Sprite2dComponent
+  content:
+    objectId: 2
+    spriteId: 0
+    materialInstanceId: MenuBackgroundTile
+    uv:
+      min:
+        x: 0.0
+        y: 0.0
+      max:
+        x: 1.0
+        y: 1.0
+    halfSize:
+      x: 5.0
+      y: 3.75
+    layer: 0
+
+- type: Transform2dComponent
+  content:
+    objectId: 3
+    parentObjectId: 0
+    logicalLocalTransform:
+      translation:
+        x: 0.0
+
+- type: Sprite2dComponent
+  content:
+    objectId: 3
+    spriteId: 1
+    materialInstanceId: MenuBackgroundTile
+    uv:
+      min:
+        x: 0.0
+        y: 0.0
+      max:
+        x: 1.0
+        y: 1.0
+    halfSize:
+      x: 5.0
+      y: 3.75
+    layer: 0
+
+- type: Transform2dComponent
+  content:
+    objectId: 4
+    parentObjectId: 0
+    logicalLocalTransform:
+      translation:
+        x: 10.0
+
+- type: Sprite2dComponent
+  content:
+    objectId: 4
+    spriteId: 2
+    materialInstanceId: MenuBackgroundTile
+    uv:
+      min:
+        x: 0.0
+        y: 0.0
+      max:
+        x: 1.0
+        y: 1.0
+    halfSize:
+      x: 5.0
+      y: 3.75
+    layer: 0
+
+- type: UINode
+  content:
+    nodeId: 0
+    sortIndex: 0
+    styleId: MainMenuStyle
+
+- type: WindowControl
+  content:
+    nodeId: 0
+    viewportName: MainMenuUI
+    titleKey: MainMenu
+    closable: 0
+    minimizable: 0
+    resizable: 0
+    movable: 0
+    hasTitleBar: 0
+    width: 215
+    height: 175
+    anchor:
+      x: 0.5
+      y: 0.5
+    pivot:
+      x: 0.5
+      y: 0.5
+
+- type: UINode
+  content:
+    nodeId: 1
+    parentId: 0
+    sortIndex: 0
+
+- type: ButtonControl
+  content:
+    nodeId: 1
+    labelKey: StartTutorial
+    width: 200
+    height: 50
+    onClickAction:
+      group: MainMenuUI
+      id: StartTutorial
+    onClickActionDispatch: 0
+
+- type: UINode
+  content:
+    nodeId: 2
+    parentId: 0
+    sortIndex: 1
+
+- type: ButtonControl
+  content:
+    nodeId: 2
+    labelKey: StartCampaign
+    width: 200
+    height: 50
+    onClickAction:
+      group: MainMenuUI
+      id: StartCampaign
+    onClickActionDispatch: 0
+
+- type: UINode
+  content:
+    nodeId: 3
+    parentId: 0
+    sortIndex: 2
+
+- type: ButtonControl
+  content:
+    nodeId: 3
+    labelKey: Quit
+    width: 200
+    height: 50
+    onClickAction:
+      group: MainMenuUI
+      id: Quit
+    onClickActionDispatch: 0
+
+- type: UIStyleFontProperty
+  content:
+    styleId: MainMenuStyle
+    fontId: DroidSans.ttf#20

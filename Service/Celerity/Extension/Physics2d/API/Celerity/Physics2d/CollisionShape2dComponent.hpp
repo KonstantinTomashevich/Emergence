@@ -29,7 +29,7 @@ struct CollisionShape2dComponent final
     /// \brief Shape additional translation, local to object transform.
     Math::Vector2f translation = Math::Vector2f::ZERO;
 
-    /// \brief Shape additional rotation, local to object transform.
+    /// \brief Shape additional rotation in radians, local to object transform.
     float rotation = 0.0f;
 
     /// \brief Shape geometry. Can be resized any time in fixed pipeline.
@@ -40,6 +40,9 @@ struct CollisionShape2dComponent final
     /// \see DynamicsMaterial2d
     Memory::UniqueString materialId;
 
+    /// \brief Whether this shape is currently participating in physical simulation.
+    bool enabled = true;
+
     /// \brief Whether this shape is a trigger shape.
     /// \details Trigger shapes do not collide, but send special enter/exit events.
     bool trigger = false;
@@ -47,9 +50,10 @@ struct CollisionShape2dComponent final
     /// \brief Whether this shape is visible to world queries.
     bool visibleToWorldQueries = true;
 
-    /// \brief Whether collision shape should send events on physical contact during simulation.
+    /// \brief Whether collision shape should maintain list of CollisionContact2d's.
     /// \details Ignored if ::trigger.
-    bool sendContactEvents = false;
+    /// \invariant Should not be changed after component creation: changing it is not yet supported.
+    bool maintainCollisionContacts = false;
 
     /// \brief Shape collision groups are used to filter out unneeded collisions.
     /// \invariant < 32u
@@ -66,9 +70,10 @@ struct CollisionShape2dComponent final
         StandardLayout::FieldId translation;
         StandardLayout::FieldId geometry;
         StandardLayout::FieldId materialId;
+        StandardLayout::FieldId enabled;
         StandardLayout::FieldId trigger;
         StandardLayout::FieldId visibleToWorldQueries;
-        StandardLayout::FieldId sendContactEvents;
+        StandardLayout::FieldId maintainCollisionContacts;
         StandardLayout::FieldId collisionGroup;
         StandardLayout::FieldId implementationHandle;
         StandardLayout::Mapping mapping;

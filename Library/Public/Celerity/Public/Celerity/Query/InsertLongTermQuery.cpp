@@ -57,6 +57,11 @@ StandardLayout::Mapping InsertLongTermQuery::GetTypeMapping () const noexcept
     return source.GetTypeMapping ();
 }
 
+bool InsertLongTermQuery::IsFromRegistry (const Warehouse::Registry &_registry) const noexcept
+{
+    return source.IsFromRegistry (_registry);
+}
+
 void InsertLongTermQuery::AddCustomVisualization (VisualGraph::Graph &_graph) const noexcept
 {
     source.AddCustomVisualization (_graph);

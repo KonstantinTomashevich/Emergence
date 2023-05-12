@@ -5,6 +5,7 @@
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Input/Input.hpp>
+#include <Celerity/Locale/Localization.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -90,7 +91,9 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, GetKeyCodeMapping ());
     UpdateResultCheck::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, std::move (resultCheckFrames));
 
-    // Mock transform hierarchy cleanup checkpoints.
+    // Mock localization and transform hierarchy cleanup checkpoints.
+    pipelineBuilder.AddCheckpoint (Localization::Checkpoint::SYNC_STARTED);
+    pipelineBuilder.AddCheckpoint (Localization::Checkpoint::SYNC_FINISHED);
     pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::STARTED);
     pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::CLEANUP_STARTED);
     pipelineBuilder.AddCheckpoint (TransformHierarchyCleanup::Checkpoint::FINISHED);
@@ -158,11 +161,27 @@ static CreateViewport CreateDefaultViewport ()
 static CreateWindow CreateDefaultWindow ()
 {
     return {
-        0u,           ""_us,        "UI"_us, "Hello, world!",
-        true,         true,         true,    true,
-        true,         false,        true,    ContainerControlLayout::VERTICAL,
-        {0.0f, 0.0f}, {0.0f, 0.0f}, 0u,      0u,
-        WIDTH,        HEIGHT,       {},      {},
+        0u,
+        ""_us,
+        "UI"_us,
+        ""_us,
+        "Hello, world!",
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        ContainerControlLayout::VERTICAL,
+        {0.0f, 0.0f},
+        {0.0f, 0.0f},
+        0u,
+        0u,
+        WIDTH,
+        HEIGHT,
+        {},
+        {},
     };
 }
 
@@ -200,12 +219,13 @@ static CreateWindow WithCustomSize (CreateWindow _task, uint32_t _width, uint32_
 
 static CreateButton CreateDefaultButton ()
 {
-    return {1u, 0u, ""_us, "Click me!", 100u, 50u, DEFAULT_BUTTON_CLICKED_ACTION, InputActionDispatchType::NORMAL};
+    return {
+        1u, 0u, ""_us, ""_us, "Click me!", 100u, 50u, DEFAULT_BUTTON_CLICKED_ACTION, InputActionDispatchType::NORMAL};
 }
 
 static CreateCheckbox CreateDefaultCheckbox ()
 {
-    return {1u, 0u, ""_us, "Check me!", false, DEFAULT_CHECKBOX_CHANGED_ACTION, InputActionDispatchType::NORMAL};
+    return {1u, 0u, ""_us, ""_us, "Check me!", false, DEFAULT_CHECKBOX_CHANGED_ACTION, InputActionDispatchType::NORMAL};
 }
 
 static CreateInput CreateDefaultInput ()
@@ -1302,17 +1322,17 @@ TEST_CASE (HierarchyRemoval)
             {
                 CreateDefaultViewport (),
                 CreateDefaultWindow (),
-                CreateButton {1u, 0u, ""_us, "Click me!", 100u, 50u, DEFAULT_BUTTON_CLICKED_ACTION,
+                CreateButton {1u, 0u, ""_us, ""_us, "Click me!", 100u, 50u, DEFAULT_BUTTON_CLICKED_ACTION,
                               InputActionDispatchType::NORMAL},
-                CreateButton {2u, 0u, ""_us, "Click me too!", 100u, 50u, DEFAULT_BUTTON_CLICKED_ACTION,
+                CreateButton {2u, 0u, ""_us, ""_us, "Click me too!", 100u, 50u, DEFAULT_BUTTON_CLICKED_ACTION,
                               InputActionDispatchType::NORMAL},
                 CreateContainer {3u, 0u, ""_us, ContainerControlType::PANEL, ContainerControlLayout::HORIZONTAL, 0u, 0u,
-                                 true, "", ""},
-                CreateCheckbox {4u, 3u, ""_us, "Check me!", false, DEFAULT_CHECKBOX_CHANGED_ACTION,
+                                 true, ""_us, "", ""_us, ""},
+                CreateCheckbox {4u, 3u, ""_us, ""_us, "Check me!", false, DEFAULT_CHECKBOX_CHANGED_ACTION,
                                 InputActionDispatchType::NORMAL},
-                CreateCheckbox {5u, 3u, ""_us, "Check me too!", false, DEFAULT_CHECKBOX_CHANGED_ACTION,
+                CreateCheckbox {5u, 3u, ""_us, ""_us, "Check me too!", false, DEFAULT_CHECKBOX_CHANGED_ACTION,
                                 InputActionDispatchType::NORMAL},
-                CreateLabel {6u, 3u, ""_us, "Hello, world!"},
+                CreateLabel {6u, 3u, ""_us, ""_us, "Hello, world!"},
                 CreateImage {7u, 3u, ""_us, 100u, 100u, "Texture.png"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}},
             },
             {

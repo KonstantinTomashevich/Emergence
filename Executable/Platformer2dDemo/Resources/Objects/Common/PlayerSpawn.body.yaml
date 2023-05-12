@@ -1,0 +1,11 @@
+- type: SpawnComponent
+  content:
+    objectId: 0
+    prototypeId: Warrior
+    spawnDelayNs: 2000000000
+    maxSpawnedCount: 1
+    respawn: 1
+- type: TeamComponent
+  content:
+    objectId: 0
+    teamId: 0

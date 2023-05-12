@@ -37,6 +37,7 @@ struct CreateButton final
     UniqueId parentId = INVALID_UNIQUE_ID;
     Memory::UniqueString styleId;
 
+    Memory::UniqueString labelKey;
     Container::Utf8String label;
     uint32_t width = 0u;
     uint32_t height = 0u;
@@ -51,6 +52,7 @@ struct CreateCheckbox final
     UniqueId parentId = INVALID_UNIQUE_ID;
     Memory::UniqueString styleId;
 
+    Memory::UniqueString labelKey;
     Container::Utf8String label;
     bool checked = false;
 
@@ -72,7 +74,9 @@ struct CreateContainer final
 
     bool border = false;
 
+    Memory::UniqueString labelKey;
     Container::Utf8String label;
+    Memory::UniqueString previewKey;
     Container::Utf8String preview;
 };
 
@@ -96,6 +100,7 @@ struct CreateInput final
     Memory::UniqueString styleId;
 
     InputControlType type = InputControlType::TEXT;
+    Memory::UniqueString labelKey;
     Container::Utf8String label;
 
     InputAction onChangedAction;
@@ -114,6 +119,7 @@ struct CreateLabel final
     UniqueId nodeId = INVALID_UNIQUE_ID;
     UniqueId parentId = INVALID_UNIQUE_ID;
     Memory::UniqueString styleId;
+    Memory::UniqueString labelKey;
     Container::Utf8String label;
 };
 
@@ -122,6 +128,7 @@ struct CreateWindow final
     UniqueId nodeId = INVALID_UNIQUE_ID;
     Memory::UniqueString styleId;
     Memory::UniqueString viewportName;
+    Memory::UniqueString titleKey;
     Container::Utf8String title;
 
     bool closable = true;

@@ -10,6 +10,7 @@ const CheckboxControl::Reflection &CheckboxControl::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (CheckboxControl);
         EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (labelKey);
         EMERGENCE_MAPPING_REGISTER_REGULAR (checked);
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (onChangedAction);

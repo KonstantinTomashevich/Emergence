@@ -25,16 +25,6 @@ jobs:
           - build_type: Debug
             os: windows-2019
             toolchain: CLangCL
-          # To compensate for the exclusion below.
-          - build_type: Release
-            os: windows-2019
-            toolchain: CLangCL
-        exclude:
-          # As of August 2022, GitHub Actions got an update that introduced strange linker errors, that cannot
-          # be reproduced on my local machine. Therefore, I'm temporary disabling this matrix value.
-          - build_type: Release
-            os: windows-2022
-            toolchain: CLangCL
 
     defaults:
       run:
@@ -67,16 +57,13 @@ jobs:
         run: |
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
+          echo "CMAKE_FALLBACK_TO_CXX20=-DEMERGENCE_FALLBACK_TO_CXX_20=ON" >> $Env:GITHUB_ENV
           echo "LLVM_PROFILE_FILE=%m.profraw" >> $Env:GITHUB_ENV
           echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
 
-      - name: Select CLangCL 12.0 toolset
-        if: matrix.build_type == 'Release' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLangCL'
-        run: echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
-
-      - name: Select CLangCL 14.0 toolset
+      - name: Select CLangCL toolset
         if: matrix.os == 'windows-2022' && matrix.toolchain == 'CLangCL'
         run: echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
 
@@ -88,7 +75,8 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
         run: >
           cmake ${{github.workspace}} ${{env.CMAKE_GENERATOR}} ${{env.CMAKE_ENABLE_COVERAGE}}
-          -DEMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS=OFF -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+          ${{env.CMAKE_FALLBACK_TO_CXX20}} -DEMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS=OFF 
+          -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
 
       - name: Build
         working-directory: ${{env.BUILD_DIRECTORY}}

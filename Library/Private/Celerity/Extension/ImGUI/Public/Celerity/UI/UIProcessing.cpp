@@ -9,6 +9,8 @@
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionHolder.hpp>
 #include <Celerity/Input/Keyboard.hpp>
+#include <Celerity/Locale/Localization.hpp>
+#include <Celerity/Locale/LocalizedString.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
@@ -486,11 +488,13 @@ private:
 
     void ProcessControl (InputControl *_control) noexcept;
 
-    static void ProcessControl (const LabelControl *_control) noexcept;
+    void ProcessControl (const LabelControl *_control) noexcept;
 
     void ProcessControl (WindowControl *_control) noexcept;
 
     void ProcessChildControls (const NodeOrderingStack::Sequence &_sequence, ContainerControlLayout _layout) noexcept;
+
+    const char *ResolveLocalization (Memory::UniqueString _key, const Container::Utf8String &_localValue) noexcept;
 
     FetchSingletonQuery fetchTime;
     FetchSingletonQuery fetchUI;
@@ -514,6 +518,7 @@ private:
 
     FetchValueQuery fetchAssetById;
     FetchValueQuery fetchTextureByAssetId;
+    FetchValueQuery fetchLocalizedString;
 
     FrameInputAccumulator *inputAccumulator;
     NodeOrderingStack nodeOrderingStack;
@@ -549,10 +554,12 @@ UIProcessor::UIProcessor (TaskConstructor &_constructor,
 
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
       fetchTextureByAssetId (FETCH_VALUE_1F (Texture, assetId)),
+      fetchLocalizedString (FETCH_VALUE_1F (LocalizedString, key)),
 
       inputAccumulator (_inputAccumulator),
       styleApplier (_constructor)
 {
+    _constructor.DependOn (Localization::Checkpoint::SYNC_FINISHED);
     _constructor.DependOn (UI::Checkpoint::UPDATE_STARTED);
     _constructor.MakeDependencyOf (UI::Checkpoint::UPDATE_FINISHED);
 
@@ -1100,7 +1107,7 @@ void UIProcessor::ProcessNode (const UINode *_node) noexcept
 
 void UIProcessor::ProcessControl (const ButtonControl *_control) noexcept
 {
-    if (ImGui::Button (_control->label.c_str (),
+    if (ImGui::Button (ResolveLocalization (_control->labelKey, _control->label),
                        {static_cast<float> (_control->width), static_cast<float> (_control->height)}))
     {
         if (*_control->onClickAction.id)
@@ -1115,7 +1122,7 @@ void UIProcessor::ProcessControl (const ButtonControl *_control) noexcept
 
 void UIProcessor::ProcessControl (CheckboxControl *_control) noexcept
 {
-    if (ImGui::Checkbox (_control->label.c_str (), &_control->checked))
+    if (ImGui::Checkbox (ResolveLocalization (_control->labelKey, _control->label), &_control->checked))
     {
         if (*_control->onChangedAction.id)
         {
@@ -1149,7 +1156,7 @@ void UIProcessor::ProcessControl (const ContainerControl *_control) noexcept
         break;
 
     case ContainerControlType::COLLAPSING_PANEL:
-        if (ImGui::CollapsingHeader (_control->label.c_str ()))
+        if (ImGui::CollapsingHeader (ResolveLocalization (_control->labelKey, _control->label)))
         {
             ProcessChildControls (orderingSequence, _control->layout);
         }
@@ -1157,7 +1164,8 @@ void UIProcessor::ProcessControl (const ContainerControl *_control) noexcept
         break;
 
     case ContainerControlType::COMBO_PANEL:
-        if (ImGui::BeginCombo (_control->label.c_str (), _control->preview.c_str ()))
+        if (ImGui::BeginCombo (ResolveLocalization (_control->labelKey, _control->label),
+                               ResolveLocalization (_control->previewKey, _control->preview)))
         {
             ProcessChildControls (orderingSequence, _control->layout);
             ImGui::EndCombo ();
@@ -1192,8 +1200,9 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
     switch (_control->type)
     {
     case InputControlType::TEXT:
-        if (ImGui::InputText (_control->label.c_str (), _control->utf8TextValue.data (),
-                              _control->utf8TextValue.size () - 1u, ImGuiInputTextFlags_AutoSelectAll))
+        if (ImGui::InputText (ResolveLocalization (_control->labelKey, _control->label),
+                              _control->utf8TextValue.data (), _control->utf8TextValue.size () - 1u,
+                              ImGuiInputTextFlags_AutoSelectAll))
         {
             if (*_control->onChangedAction.id)
             {
@@ -1209,7 +1218,7 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
     case InputControlType::INT:
     {
         int valueHolder = static_cast<int> (_control->intValue);
-        if (ImGui::InputInt (_control->label.c_str (), &valueHolder))
+        if (ImGui::InputInt (ResolveLocalization (_control->labelKey, _control->label), &valueHolder))
         {
             if (*_control->onChangedAction.id)
             {
@@ -1226,7 +1235,7 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
     }
 
     case InputControlType::FLOAT:
-        if (ImGui::InputFloat (_control->label.c_str (), &_control->floatValue))
+        if (ImGui::InputFloat (ResolveLocalization (_control->labelKey, _control->label), &_control->floatValue))
         {
             if (*_control->onChangedAction.id)
             {
@@ -1244,7 +1253,7 @@ void UIProcessor::ProcessControl (InputControl *_control) noexcept
 
 void UIProcessor::ProcessControl (const LabelControl *_control) noexcept
 {
-    ImGui::TextUnformatted (_control->label.c_str ());
+    ImGui::TextUnformatted (ResolveLocalization (_control->labelKey, _control->label));
 }
 
 void UIProcessor::ProcessControl (WindowControl *_control) noexcept
@@ -1301,7 +1310,17 @@ void UIProcessor::ProcessControl (WindowControl *_control) noexcept
     }
 
     ImGui::SetNextWindowSize ({static_cast<float> (_control->width), static_cast<float> (_control->height)});
-    if (ImGui::Begin (_control->title.c_str (), _control->closable ? &_control->open : nullptr, flags))
+    const char *title = ResolveLocalization (_control->titleKey, _control->title);
+    static Container::Utf8String emptyTitleStubBuffer;
+
+    // ImGUI requires every window title to be globally unique.
+    if (!title)
+    {
+        emptyTitleStubBuffer = EMERGENCE_BUILD_STRING ("Stub title ", _control->nodeId);
+        title = emptyTitleStubBuffer.c_str ();
+    }
+
+    if (ImGui::Begin (title, _control->closable ? &_control->open : nullptr, flags))
     {
         NodeOrderingStack::Sequence orderingSequence {&nodeOrderingStack};
         for (auto nodeCursor = fetchNodeByParentId.Execute (&_control->nodeId);
@@ -1361,6 +1380,25 @@ void UIProcessor::ProcessChildControls (const NodeOrderingStack::Sequence &_sequ
         const auto *node = static_cast<const UINode *> (*nodeCursor);
         ProcessNode (node);
     }
+}
+
+const char *UIProcessor::ResolveLocalization (Memory::UniqueString _key,
+                                              const Container::Utf8String &_localValue) noexcept
+{
+    if (!_localValue.empty ())
+    {
+        return _localValue.c_str ();
+    }
+
+    auto cursor = fetchLocalizedString.Execute (&_key);
+    if (const auto *string = static_cast<const LocalizedString *> (*cursor))
+    {
+        // It looks as unsafe behaviour, but technically it is totally safe here, because query existence
+        // ensures that there is no write access during this task execution, therefore taking const pointer is safe.
+        return string->value.c_str ();
+    }
+
+    return *_key;
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,

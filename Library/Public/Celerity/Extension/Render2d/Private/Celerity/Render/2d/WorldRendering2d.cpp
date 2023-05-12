@@ -1,12 +1,13 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/Render/2d/Batching2d.hpp>
+#include <Celerity/Render/2d/Batching2dSingleton.hpp>
 #include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
+#include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 #include <Celerity/Render/2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
-#include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
-#include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Render/Foundation/RenderFoundationSingleton.hpp>
@@ -18,24 +19,28 @@
 
 #include <Log/Log.hpp>
 
+#include <Math/Constants.hpp>
+#include <Math/Scalar.hpp>
+
 #include <Render/Backend/Renderer.hpp>
 
 namespace Emergence::Celerity::WorldRendering2d
 {
-struct RectData final
-{
-    Math::Transform2d transform;
-    Math::AxisAlignedBox2d uv;
-    Math::Vector2f halfSize;
-};
+const Memory::UniqueString Checkpoint::STARTED {"WorldRendering2d::Started"};
+const Memory::UniqueString Checkpoint::FINISHED {"WorldRendering2d::Finished"};
 
-struct Vertex final
+struct RectVertex final
 {
     Math::Vector2f translation;
     Math::Vector2f uv;
 };
 
-static const Vertex QUAD_VERTICES[4u] = {
+struct LineVertex final
+{
+    Math::Vector2f translation;
+};
+
+static const RectVertex QUAD_VERTICES[4u] = {
     {{-1.0f, 1.0f}, {0.0f, 0.0f}},
     {{1.0f, 1.0f}, {1.0f, 0.0f}},
     {{1.0f, -1.0f}, {1.0f, 1.0f}},
@@ -47,47 +52,36 @@ static const uint16_t QUAD_INDICES[6u] = {2u, 1u, 0u, 0u, 3u, 2u};
 class WorldRenderer final : public TaskExecutorBase<WorldRenderer>
 {
 public:
-    WorldRenderer (TaskConstructor &_constructor, const Math::AxisAlignedBox2d &_worldBounds) noexcept;
+    WorldRenderer (TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
 private:
-    struct Batch
-    {
-        uint16_t layer = 0u;
-        Memory::UniqueString materialInstanceId;
-        Container::Vector<RectData> rects;
-    };
-
-    void CollectVisibleObjects (const Viewport *_viewport,
-                                UniqueId _cameraObjectId,
-                                Math::Transform2d &_selectedCameraTransform,
-                                Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept;
-
-    WorldRenderer::Batch &GetBatch (uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept;
-
     void SubmitBatch (Render::Backend::SubmissionAgent &_agent,
                       const Viewport *_viewport,
-                      const Batch &_batch) noexcept;
+                      const Batch2d &_batch) noexcept;
 
-    void SubmitRects (Render::Backend::SubmissionAgent &_agent,
-                      const Viewport *_viewport,
-                      const Render::Backend::Program &_program,
-                      const Container::Vector<RectData> &_rects) noexcept;
+    void SubmitSprites (Render::Backend::SubmissionAgent &_agent,
+                        const Viewport *_viewport,
+                        const Render::Backend::Program &_program,
+                        const Batch2d &_batch) noexcept;
 
-    void PoolBatches () noexcept;
+    void SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
+                            const Viewport *_viewport,
+                            const Render::Backend::Program &_program,
+                            const Batch2d &_batch) noexcept;
 
+    ModifySingletonQuery modifyBatching;
     FetchSingletonQuery fetchRenderFoundation;
-    FetchAscendingRangeQuery fetchRenderPassesByNameAscending;
+
     FetchValueQuery fetchViewportByName;
     FetchValueQuery fetchCameraById;
 
     FetchValueQuery fetchTransformById;
     Transform2dWorldAccessor transformWorldAccessor;
 
-    FetchShapeIntersectionQuery fetchVisibleRenderObjects;
-    FetchValueQuery fetchLocalBoundsByRenderObjectId;
-    FetchValueQuery fetchSpriteByObjectId;
+    FetchValueQuery fetchSpriteBySpriteId;
+    FetchValueQuery fetchDebugShapeByDebugShapeId;
 
     FetchValueQuery fetchAssetById;
     FetchValueQuery fetchMaterialInstanceById;
@@ -100,57 +94,21 @@ private:
     FetchValueQuery fetchUniformMatrix4x4fByInstanceId;
     FetchValueQuery fetchUniformSamplerByInstanceId;
 
-    Container::Vector<Batch> batches {Memory::Profiler::AllocationGroup::Top ()};
-    Container::Vector<Batch> batchPool {Memory::Profiler::AllocationGroup::Top ()};
-
-    Render::Backend::VertexLayout vertexLayout;
+    Render::Backend::VertexLayout rectVertexLayout;
+    Render::Backend::VertexLayout lineVertexLayout;
 };
 
-static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAlignedBox2d &_worldBounds)
-{
-    const StandardLayout::FieldId minField = StandardLayout::ProjectNestedField (
-        RenderObject2dComponent::Reflect ().global, Math::AxisAlignedBox2d::Reflect ().min);
-    const StandardLayout::FieldId minXField =
-        StandardLayout::ProjectNestedField (minField, Math::Vector2f::Reflect ().x);
-    const StandardLayout::FieldId minYField =
-        StandardLayout::ProjectNestedField (minField, Math::Vector2f::Reflect ().y);
-
-    const StandardLayout::FieldId maxField = StandardLayout::ProjectNestedField (
-        RenderObject2dComponent::Reflect ().global, Math::AxisAlignedBox2d::Reflect ().max);
-    const StandardLayout::FieldId maxXField =
-        StandardLayout::ProjectNestedField (maxField, Math::Vector2f::Reflect ().x);
-    const StandardLayout::FieldId maxYField =
-        StandardLayout::ProjectNestedField (maxField, Math::Vector2f::Reflect ().y);
-
-    return {
-        {
-            &_worldBounds.min.x,
-            RenderObject2dComponent::Reflect ().mapping.GetField (minXField),
-            &_worldBounds.max.x,
-            RenderObject2dComponent::Reflect ().mapping.GetField (maxXField),
-        },
-        {
-            &_worldBounds.min.y,
-            RenderObject2dComponent::Reflect ().mapping.GetField (minYField),
-            &_worldBounds.max.y,
-            RenderObject2dComponent::Reflect ().mapping.GetField (maxYField),
-        },
-    };
-}
-
-WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAlignedBox2d &_worldBounds) noexcept
-    : fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
-      fetchRenderPassesByNameAscending (FETCH_ASCENDING_RANGE (World2dRenderPass, name)),
+WorldRenderer::WorldRenderer (TaskConstructor &_constructor) noexcept
+    : modifyBatching (MODIFY_SINGLETON (Batching2dSingleton)),
+      fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
-      fetchVisibleRenderObjects (_constructor.FetchShapeIntersection (RenderObject2dComponent::Reflect ().mapping,
-                                                                      GetDimensions (_worldBounds))),
-      fetchLocalBoundsByRenderObjectId (FETCH_VALUE_1F (LocalBounds2dComponent, renderObjectId)),
-      fetchSpriteByObjectId (FETCH_VALUE_1F (Sprite2dComponent, objectId)),
+      fetchSpriteBySpriteId (FETCH_VALUE_1F (Sprite2dComponent, spriteId)),
+      fetchDebugShapeByDebugShapeId (FETCH_VALUE_1F (DebugShape2dComponent, debugShapeId)),
 
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
       fetchMaterialInstanceById (FETCH_VALUE_1F (MaterialInstance, assetId)),
@@ -163,27 +121,36 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor, const Math::AxisAli
       fetchUniformMatrix4x4fByInstanceId (FETCH_VALUE_1F (UniformMatrix4x4fValue, assetId)),
       fetchUniformSamplerByInstanceId (FETCH_VALUE_1F (UniformSamplerValue, assetId)),
 
-      vertexLayout (Render::Backend::VertexLayoutBuilder {}
-                        .Begin ()
-                        .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
-                        .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
-                        .End ())
+      rectVertexLayout (
+          Render::Backend::VertexLayoutBuilder {}
+              .Begin ()
+              .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
+              .Add (Render::Backend::Attribute::SAMPLER_COORD_0, Render::Backend::AttributeType::FLOAT, 2u)
+              .End ()),
+
+      lineVertexLayout (Render::Backend::VertexLayoutBuilder {}
+                            .Begin ()
+                            .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
+                            .End ())
 {
-    _constructor.DependOn (RenderPipelineFoundation::Checkpoint::VIEWPORT_SYNC_FINISHED);
-    _constructor.DependOn (BoundsCalculation2d::Checkpoint::FINISHED);
+    _constructor.DependOn (Batching2d::Checkpoint::FINISHED);
+    _constructor.DependOn (Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (RenderPipelineFoundation::Checkpoint::RENDER_FINISHED);
 }
 
 void WorldRenderer::Execute () noexcept
 {
+    auto batchingCursor = modifyBatching.Execute ();
+    auto *batching = static_cast<Batching2dSingleton *> (*batchingCursor);
+
     auto renderFoundationCursor = fetchRenderFoundation.Execute ();
     const auto *renderFoundation = static_cast<const RenderFoundationSingleton *> (*renderFoundationCursor);
     Render::Backend::SubmissionAgent agent = renderFoundation->renderer.BeginSubmission ();
 
-    for (auto passCursor = fetchRenderPassesByNameAscending.Execute (nullptr, nullptr);
-         const auto *pass = static_cast<const World2dRenderPass *> (*passCursor); ++passCursor)
+    for (const ViewportInfoContainer &viewportInfo : batching->viewports)
     {
-        auto viewportCursor = fetchViewportByName.Execute (&pass->name);
+        auto viewportCursor = fetchViewportByName.Execute (&viewportInfo.name);
         const auto *viewport = static_cast<const Viewport *> (*viewportCursor);
 
         if (!viewport)
@@ -192,139 +159,23 @@ void WorldRenderer::Execute () noexcept
         }
 
         EMERGENCE_ASSERT (viewport->sortMode == Render::Backend::ViewportSortMode::SEQUENTIAL);
-        Math::Transform2d selectedCameraTransform;
-        Math::Vector2f selectedCameraHalfOrthographicSize {Math::Vector2f::ZERO};
-        CollectVisibleObjects (viewport, pass->cameraObjectId, selectedCameraTransform,
-                               selectedCameraHalfOrthographicSize);
+        viewport->viewport.SubmitOrthographicView (viewportInfo.cameraTransform,
+                                                   viewportInfo.cameraHalfOrthographicSize);
 
-        viewport->viewport.SubmitOrthographicView (selectedCameraTransform, selectedCameraHalfOrthographicSize);
-        for (const Batch &batch : batches)
+        for (const Batch2d &batch : viewportInfo.batches)
         {
             SubmitBatch (agent, viewport, batch);
         }
 
-        PoolBatches ();
         agent.Touch (viewport->viewport.GetId ());
     }
-}
 
-void WorldRenderer::CollectVisibleObjects (const Viewport *_viewport,
-                                           UniqueId _cameraObjectId,
-                                           Math::Transform2d &_selectedCameraTransform,
-                                           Math::Vector2f &_selectedCameraHalfOrthographicSize) noexcept
-{
-    auto cameraCursor = fetchCameraById.Execute (&_cameraObjectId);
-    const auto *camera = static_cast<const Camera2dComponent *> (*cameraCursor);
-
-    if (!camera)
-    {
-        return;
-    }
-
-    auto cameraTransformCursor = fetchTransformById.Execute (&_cameraObjectId);
-    const auto *cameraTransform = static_cast<const Transform2dComponent *> (*cameraTransformCursor);
-
-    if (!cameraTransform)
-    {
-        return;
-    }
-
-    _selectedCameraTransform = cameraTransform->GetVisualWorldTransform (transformWorldAccessor);
-    const float aspectRatio = static_cast<float> (_viewport->width) / static_cast<float> (_viewport->height);
-    _selectedCameraHalfOrthographicSize = {camera->halfOrthographicSize * aspectRatio, camera->halfOrthographicSize};
-
-    const Math::AxisAlignedBox2d localVisibilityBox {-_selectedCameraHalfOrthographicSize,
-                                                     _selectedCameraHalfOrthographicSize};
-    const Math::Matrix3x3f cameraTransformMatrix {_selectedCameraTransform};
-    const Math::AxisAlignedBox2d globalVisibilityBox = cameraTransformMatrix * localVisibilityBox;
-
-    struct
-    {
-        float minX;
-        float maxX;
-        float minY;
-        float maxY;
-    } query;
-
-    query.minX = globalVisibilityBox.min.x;
-    query.maxX = globalVisibilityBox.max.x;
-    query.minY = globalVisibilityBox.min.y;
-    query.maxY = globalVisibilityBox.max.y;
-
-    for (auto renderObjectCursor = fetchVisibleRenderObjects.Execute (&query);
-         const auto *renderObject = static_cast<const RenderObject2dComponent *> (*renderObjectCursor);
-         ++renderObjectCursor)
-    {
-        // We do not check intersections with original rotated rect, because we're designing the algorithm
-        // around the most popular use cases, so we do not optimize for rare case of camera rotation.
-
-        for (auto localBoundsCursor = fetchLocalBoundsByRenderObjectId.Execute (&renderObject->objectId);
-             const auto *localBounds = static_cast<const LocalBounds2dComponent *> (*localBoundsCursor);
-             ++localBoundsCursor)
-        {
-            // We do not check local bounds intersection here as it is unneeded in most cases and may throw the
-            // visual out only on rare occasion. Therefore, it is better for performance to avoid this check.
-
-            if (auto transformCursor = fetchTransformById.Execute (&localBounds->objectId);
-                const auto *boundsTransform = static_cast<const Transform2dComponent *> (*transformCursor))
-            {
-                const Math::Transform2d worldTransform =
-                    boundsTransform->GetVisualWorldTransform (transformWorldAccessor);
-
-                for (auto spriteCursor = fetchSpriteByObjectId.Execute (&localBounds->objectId);
-                     const auto *sprite = static_cast<const Sprite2dComponent *> (*spriteCursor); ++spriteCursor)
-                {
-                    if (sprite->visibilityMask & camera->visibilityMask)
-                    {
-                        GetBatch (sprite->layer, sprite->materialInstanceId)
-                            .rects.emplace_back (RectData {worldTransform, sprite->uv, sprite->halfSize});
-                    }
-                }
-            }
-        }
-    }
-}
-
-WorldRenderer::Batch &WorldRenderer::GetBatch (uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept
-{
-    auto next = std::upper_bound (batches.begin (), batches.end (), std::make_pair (_layer, _materialInstanceId),
-                                  [] (const auto &_query, const Batch &_batch)
-                                  {
-                                      if (_query.first != _batch.layer)
-                                      {
-                                          return _query.first < _batch.layer;
-                                      }
-
-                                      return *_query.second < *_batch.materialInstanceId;
-                                  });
-
-    if (next != batches.begin ())
-    {
-        auto previous = next - 1u;
-        if (previous->layer == _layer && previous->materialInstanceId == _materialInstanceId)
-        {
-            return *previous;
-        }
-    }
-
-    if (batchPool.empty ())
-    {
-        return *batches.emplace (
-            next, Batch {_layer, _materialInstanceId, Container::Vector<RectData> {batches.get_allocator ()}});
-    }
-
-    Batch &pooledBatch = batchPool.back ();
-    batchPool.pop_back ();
-
-    pooledBatch.layer = _layer;
-    pooledBatch.materialInstanceId = _materialInstanceId;
-    pooledBatch.rects.clear ();
-    return *batches.emplace (next, std::move (pooledBatch));
+    batching->Reset ();
 }
 
 void WorldRenderer::SubmitBatch (Render::Backend::SubmissionAgent &_agent,
                                  const Viewport *_viewport,
-                                 const Batch &_batch) noexcept
+                                 const Batch2d &_batch) noexcept
 {
     auto assetCursor = fetchAssetById.Execute (&_batch.materialInstanceId);
     const auto *asset = static_cast<const Asset *> (*assetCursor);
@@ -437,20 +288,25 @@ void WorldRenderer::SubmitBatch (Render::Backend::SubmissionAgent &_agent,
         }
     }
 
-    SubmitRects (_agent, _viewport, material->program, _batch.rects);
+    SubmitSprites (_agent, _viewport, material->program, _batch);
+    SubmitDebugShapes (_agent, _viewport, material->program, _batch);
 }
 
-void WorldRenderer::SubmitRects (
-    Render::Backend::SubmissionAgent &_agent,
-    const Viewport *_viewport,
-    const Render::Backend::Program &_program,
-    const Container::Vector<Emergence::Celerity::WorldRendering2d::RectData> &_rects) noexcept
+void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
+                                   const Viewport *_viewport,
+                                   const Render::Backend::Program &_program,
+                                   const Batch2d &_batch) noexcept
 {
-    const auto totalVertices = static_cast<uint32_t> (_rects.size () * 4u);
-    const auto totalIndices = static_cast<uint32_t> (_rects.size () * 6u);
+    if (_batch.sprites.empty ())
+    {
+        return;
+    }
+
+    const auto totalVertices = static_cast<uint32_t> (_batch.sprites.size () * 4u);
+    const auto totalIndices = static_cast<uint32_t> (_batch.sprites.size () * 6u);
 
     const uint32_t availableVertices =
-        Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, vertexLayout);
+        Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, rectVertexLayout);
 
     const uint32_t availableIndices =
         Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
@@ -462,28 +318,48 @@ void WorldRenderer::SubmitRects (
     }
 
     const uint32_t maxRects = std::min (availableVertices / 4u, availableIndices / 6u);
-    const uint32_t size = std::min (maxRects, static_cast<uint32_t> (_rects.size ()));
+    const uint32_t size = std::min (maxRects, static_cast<uint32_t> (_batch.sprites.size ()));
 
-    Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, vertexLayout};
+    Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, rectVertexLayout};
     Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
 
     for (uint32_t index = 0u; index < size; ++index)
     {
-        const RectData &rect = _rects[index];
-        const Math::Matrix3x3f transformMatrix {rect.transform};
-        Vertex *vertices = reinterpret_cast<Vertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 4u);
+        auto spriteCursor = fetchSpriteBySpriteId.Execute (&_batch.sprites[index]);
+        const auto *sprite = static_cast<const Sprite2dComponent *> (*spriteCursor);
+
+        if (!sprite)
+        {
+            continue;
+        }
+
+        // Assert that neither material instance neither layer was changed after batching.
+        EMERGENCE_ASSERT (sprite->materialInstanceId == _batch.materialInstanceId);
+        EMERGENCE_ASSERT (sprite->layer == _batch.layer);
+
+        auto transformCursor = fetchTransformById.Execute (&sprite->objectId);
+        const auto *transform = static_cast<const Transform2dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            continue;
+        }
+
+        const Math::Matrix3x3f transformMatrix {transform->GetVisualWorldTransform (transformWorldAccessor)};
+        RectVertex *vertices =
+            reinterpret_cast<RectVertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 4u);
 
         for (uint32_t vertexIndex = 0u; vertexIndex < 4u; ++vertexIndex)
         {
-            Vertex &vertex = vertices[vertexIndex];
-            const Math::Vector2f localPoint = QUAD_VERTICES[vertexIndex].translation * rect.halfSize;
+            RectVertex &vertex = vertices[vertexIndex];
+            const Math::Vector2f localPoint = QUAD_VERTICES[vertexIndex].translation * sprite->halfSize;
             const Math::Vector3f globalPoint3f = transformMatrix * Math::Vector3f {localPoint.x, localPoint.y, 1.0f};
 
             vertex.translation.x = globalPoint3f.x;
             vertex.translation.y = globalPoint3f.y;
 
-            vertex.uv.x = rect.uv.min.x + QUAD_VERTICES[vertexIndex].uv.x * (rect.uv.max.x - rect.uv.min.x);
-            vertex.uv.y = rect.uv.min.y + QUAD_VERTICES[vertexIndex].uv.y * (rect.uv.max.y - rect.uv.min.y);
+            vertex.uv.x = sprite->uv.min.x + QUAD_VERTICES[vertexIndex].uv.x * (sprite->uv.max.x - sprite->uv.min.x);
+            vertex.uv.y = sprite->uv.min.y + QUAD_VERTICES[vertexIndex].uv.y * (sprite->uv.max.y - sprite->uv.min.y);
         }
 
         uint16_t *indices = reinterpret_cast<uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 6u);
@@ -495,32 +371,185 @@ void WorldRenderer::SubmitRects (
 
     _agent.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G | Render::Backend::STATE_WRITE_B |
                      Render::Backend::STATE_WRITE_A | Render::Backend::STATE_BLEND_ALPHA |
-                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA);
+                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA |
+                     Render::Backend::STATE_PRIMITIVE_TRIANGLES);
 
     _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
 }
 
-void WorldRenderer::PoolBatches () noexcept
+void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
+                                       const Viewport *_viewport,
+                                       const Render::Backend::Program &_program,
+                                       const Batch2d &_batch) noexcept
 {
-    for (Batch &batch : batches)
+    if (_batch.debugShapes.empty ())
     {
-        batchPool.emplace_back (std::move (batch));
+        return;
     }
 
-    batches.clear ();
+    constexpr size_t DEBUG_CIRCLE_POINT_COUNT = 16u;
+    size_t lineCount = 0u;
+
+    for (UniqueId debugShapeId : _batch.debugShapes)
+    {
+        auto shapeCursor = fetchDebugShapeByDebugShapeId.Execute (&debugShapeId);
+        if (const auto *shape = static_cast<const DebugShape2dComponent *> (*shapeCursor))
+        {
+            switch (shape->shape.type)
+            {
+            case DebugShape2dType::BOX:
+                lineCount += 4u;
+                break;
+
+            case DebugShape2dType::CIRCLE:
+                lineCount += DEBUG_CIRCLE_POINT_COUNT;
+                break;
+
+            case DebugShape2dType::LINE:
+                ++lineCount;
+                break;
+            }
+        }
+    }
+
+    if (lineCount == 0u)
+    {
+        return;
+    }
+
+    const auto totalVertices = static_cast<uint32_t> (lineCount * 2u);
+    const auto totalIndices = static_cast<uint32_t> (lineCount * 2u);
+
+    const uint32_t availableVertices =
+        Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, lineVertexLayout);
+
+    const uint32_t availableIndices =
+        Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
+
+    if (availableVertices != totalVertices || availableIndices != totalIndices)
+    {
+        EMERGENCE_LOG (WARNING,
+                       "Celerity::Render2d: Unable to submit all lines due to being unable to allocate buffers.");
+    }
+
+    const uint32_t maxLines = std::min (availableVertices / 2u, availableIndices / 2u);
+    const uint32_t size = std::min (maxLines, static_cast<uint32_t> (lineCount));
+
+    Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, lineVertexLayout};
+    Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
+
+    size_t lineIndex = 0u;
+    auto addLine =
+        [size, &lineIndex, &vertexBuffer, &indexBuffer] (const Math::Vector2f &_start, const Math::Vector2f &_end)
+    {
+        if (lineIndex >= size)
+        {
+            return;
+        }
+
+        LineVertex *vertices =
+            reinterpret_cast<LineVertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (lineIndex * 2u);
+
+        vertices[0u].translation = _start;
+        vertices[1u].translation = _end;
+
+        uint16_t *indices =
+            reinterpret_cast<uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (lineIndex * 2u);
+        EMERGENCE_ASSERT (lineIndex * 2u + 1 < std::numeric_limits<uint16_t>::max ());
+        indices[0u] = static_cast<uint16_t> (lineIndex * 2u);
+        indices[1u] = static_cast<uint16_t> (lineIndex * 2u + 1u);
+        ++lineIndex;
+    };
+
+    for (UniqueId debugShapeId : _batch.debugShapes)
+    {
+        auto shapeCursor = fetchDebugShapeByDebugShapeId.Execute (&debugShapeId);
+        const auto *shape = static_cast<const DebugShape2dComponent *> (*shapeCursor);
+
+        if (!shape)
+        {
+            continue;
+        }
+
+        // Assert that material instance was not changed after batching.
+        EMERGENCE_ASSERT (shape->materialInstanceId == _batch.materialInstanceId);
+
+        auto transformCursor = fetchTransformById.Execute (&shape->objectId);
+        const auto *transform = static_cast<const Transform2dComponent *> (*transformCursor);
+
+        if (!transform)
+        {
+            continue;
+        }
+
+        const Math::Matrix3x3f transformMatrix {transform->GetVisualWorldTransform (transformWorldAccessor)};
+        const Math::Transform2d shapeLocalTransform {shape->translation, shape->rotation, Math::Vector2f::ONE};
+        const Math::Matrix3x3f shapeWorldTransformMatrix = transformMatrix * Math::Matrix3x3f {shapeLocalTransform};
+
+        auto transformPoint = [&shapeWorldTransformMatrix] (const Math::Vector2f &_point)
+        {
+            const Math::Vector3f point3 = shapeWorldTransformMatrix * Math::Vector3f {_point.x, _point.y, 1.0f};
+            return Math::Vector2f {point3.x, point3.y};
+        };
+
+        switch (shape->shape.type)
+        {
+        case DebugShape2dType::BOX:
+            for (size_t startVertexIndex = 0u; startVertexIndex < 4u; ++startVertexIndex)
+            {
+                const RectVertex &startVertex = QUAD_VERTICES[startVertexIndex];
+                const RectVertex &endVertex = QUAD_VERTICES[(startVertexIndex + 1u) % 4u];
+
+                const Math::Vector2f startPoint = startVertex.translation * shape->shape.boxHalfExtents;
+                const Math::Vector2f endPoint = endVertex.translation * shape->shape.boxHalfExtents;
+                addLine (transformPoint (startPoint), transformPoint (endPoint));
+            }
+
+            break;
+
+        case DebugShape2dType::CIRCLE:
+        {
+            constexpr size_t POINT_COUNT = 16u;
+            for (size_t startVertexIndex = 0u; startVertexIndex < POINT_COUNT; ++startVertexIndex)
+            {
+                const float startAngle =
+                    static_cast<float> (startVertexIndex) * 2.0f * Math::PI / static_cast<float> (POINT_COUNT);
+
+                const float endAngle = static_cast<float> ((startVertexIndex + 1u) % POINT_COUNT) * 2.0f * Math::PI /
+                                       static_cast<float> (POINT_COUNT);
+
+                const Math::Vector2f startPoint =
+                    Math::Vector2f {Math::Cos (startAngle), Math::Sin (startAngle)} * shape->shape.circleRadius;
+
+                const Math::Vector2f endPoint =
+                    Math::Vector2f {Math::Cos (endAngle), Math::Sin (endAngle)} * shape->shape.circleRadius;
+                addLine (transformPoint (startPoint), transformPoint (endPoint));
+            }
+
+            break;
+        }
+
+        case DebugShape2dType::LINE:
+            addLine (transformPoint (Math::Vector2f::ZERO), transformPoint (shape->shape.lineEnd));
+            break;
+        }
+    }
+
+    _agent.SetState (Render::Backend::STATE_WRITE_R | Render::Backend::STATE_WRITE_G | Render::Backend::STATE_WRITE_B |
+                     Render::Backend::STATE_WRITE_A | Render::Backend::STATE_BLEND_ALPHA |
+                     Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA |
+                     Render::Backend::STATE_PRIMITIVE_LINES);
+
+    _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
 }
 
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlignedBox2d &_worldBounds) noexcept
+void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept
 {
     using namespace Memory::Literals;
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("WorldRendering2d");
-
-    _pipelineBuilder.AddTask ("ClearWorld2dRenderPassesAfterViewportRemoval"_us)
-        .AS_CASCADE_REMOVER_1F (ViewportRemovedNormalEvent, World2dRenderPass, name)
-        .DependOn (RenderPipelineFoundation::Checkpoint::RENDER_STARTED)
-        .MakeDependencyOf ("WorldRenderer2d"_us);
-
-    _pipelineBuilder.AddTask ("WorldRenderer2d"_us).SetExecutor<WorldRenderer> (_worldBounds);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
+    _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
+    _pipelineBuilder.AddTask ("WorldRenderer2d"_us).SetExecutor<WorldRenderer> ();
 }
 } // namespace Emergence::Celerity::WorldRendering2d

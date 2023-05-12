@@ -10,6 +10,7 @@ const ButtonControl::Reflection &ButtonControl::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ButtonControl);
         EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (labelKey);
         EMERGENCE_MAPPING_REGISTER_REGULAR (width);
         EMERGENCE_MAPPING_REGISTER_REGULAR (height);
 

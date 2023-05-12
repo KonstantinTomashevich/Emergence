@@ -163,4 +163,20 @@ private:
     Container::HashMap<Memory::UniqueString, FieldNameLookupCache> cachesByTypeName {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"PatchBundleDeserializer"}}};
 };
+
+/// \brief Serializer for string mappings: pairs of key string and value string.
+class StringMappingSerializer final : public BundleSerializerBase
+{
+public:
+    /// \brief Append new mapping to the current sequence.
+    void Next (Memory::UniqueString _key, const Container::Utf8String &_value) noexcept;
+};
+
+/// \brief Deserializer for strings mappings. See StringMappingSerializer.
+class StringMappingDeserializer : public BundleDeserializerBase
+{
+public:
+    /// \brief Attempts to extract next string mapping from bundle if possible.
+    bool Next (Memory::UniqueString &_keyOutput, Container::Utf8String &_valueOutput) noexcept;
+};
 } // namespace Emergence::Serialization::Yaml

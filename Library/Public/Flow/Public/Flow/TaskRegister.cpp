@@ -60,6 +60,10 @@ private:
 
     [[nodiscard]] bool Verify () const noexcept;
 
+    void AddEdgeToCollection (Emergence::Task::Collection &_collection,
+                              const Node &_sourceNode,
+                              size_t _targetIndex) const noexcept;
+
     const TaskRegister *source = nullptr;
     Container::Vector<Node> nodes {GetDefaultAllocationGroup ()};
     Container::Vector<Container::Vector<std::size_t>> edges {GetDefaultAllocationGroup ()};
@@ -174,6 +178,30 @@ Container::Optional<TaskGraph> TaskGraph::Build (const TaskRegister &_register) 
         }
     }
 
+    for (const TaskRegister::CheckpointDependency &checkpointDependency : _register.checkpointDependencies)
+    {
+        if (auto fromIterator = nameToNodeIndex.find (checkpointDependency.from);
+            fromIterator != nameToNodeIndex.end ())
+        {
+            if (auto toIterator = nameToNodeIndex.find (checkpointDependency.to); toIterator != nameToNodeIndex.end ())
+            {
+                graph.edges[fromIterator->second].emplace_back (toIterator->second);
+            }
+            else
+            {
+                EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find checkpoint \"", checkpointDependency.to,
+                               "\" that depends on checkpoint \"", checkpointDependency.from, "\"!");
+                noErrors = false;
+            }
+        }
+        else
+        {
+            EMERGENCE_LOG (ERROR, "TaskGraph: Unable to find checkpoint \"", checkpointDependency.from,
+                           "\" that is dependency of checkpoint \"", checkpointDependency.to, "\"!");
+            noErrors = false;
+        }
+    }
+
     if (noErrors)
     {
         return graph;
@@ -195,14 +223,6 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
             item.task = task.executor;
         }
 
-        auto emplaceWithoutDuplication = [] (Container::Vector<std::size_t> &_indices, std::size_t _index)
-        {
-            if (std::find (_indices.begin (), _indices.end (), _index) == _indices.end ())
-            {
-                _indices.emplace_back (_index);
-            }
-        };
-
         for (std::size_t sourceIndex = 0u; sourceIndex < edges.size (); ++sourceIndex)
         {
             const Container::Vector<std::size_t> &targetIndices = edges[sourceIndex];
@@ -213,30 +233,7 @@ Emergence::Task::Collection TaskGraph::ExportCollection () const noexcept
             {
                 for (std::size_t targetIndex : targetIndices)
                 {
-                    const Node &targetNode = nodes[targetIndex];
-
-                    // Target is task: just add dependency.
-                    if (targetNode.sourceTaskIndex)
-                    {
-                        emplaceWithoutDuplication (
-                            collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
-                            targetNode.sourceTaskIndex.value ());
-                    }
-                    // Target is checkpoint: source should be dependency of all checkpoint targets.
-                    else
-                    {
-                        const Container::Vector<std::size_t> &checkpointTargets = edges[targetIndex];
-                        for (std::size_t checkpointTargetIndex : checkpointTargets)
-                        {
-                            const Node &checkpointTargetNode = nodes[checkpointTargetIndex];
-                            // Checkpoints can not depend on other checkpoints.
-                            EMERGENCE_ASSERT (checkpointTargetNode.sourceTaskIndex);
-
-                            emplaceWithoutDuplication (
-                                collection.tasks[sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
-                                checkpointTargetNode.sourceTaskIndex.value ());
-                        }
-                    }
+                    AddEdgeToCollection (collection, sourceNode, targetIndex);
                 }
             }
         }
@@ -436,6 +433,29 @@ bool TaskGraph::Verify () const noexcept
     return !anyDataRaces;
 }
 
+void TaskGraph::AddEdgeToCollection (Emergence::Task::Collection &_collection,
+                                     const Node &_sourceNode,
+                                     size_t _targetIndex) const noexcept
+{
+    const Node &targetNode = nodes[_targetIndex];
+
+    // Target is task: just add dependency.
+    if (targetNode.sourceTaskIndex)
+    {
+        Container::AddUnique (_collection.tasks[_sourceNode.sourceTaskIndex.value ()].dependantTasksIndices,
+                              targetNode.sourceTaskIndex.value ());
+    }
+    // Target is checkpoint: source should be dependency of all checkpoint targets.
+    else
+    {
+        const Container::Vector<std::size_t> &checkpointTargets = edges[_targetIndex];
+        for (std::size_t checkpointTargetIndex : checkpointTargets)
+        {
+            AddEdgeToCollection (_collection, _sourceNode, checkpointTargetIndex);
+        }
+    }
+}
+
 TaskRegister::VisualGroupNodePlaced::VisualGroupNodePlaced (TaskRegister::VisualGroupNodePlaced &&_other) noexcept
     : parent (_other.parent)
 {
@@ -469,6 +489,11 @@ void TaskRegister::RegisterCheckpoint (Memory::UniqueString _name) noexcept
 {
     AssertNodeNameUniqueness (_name);
     checkpoints.emplace_back () = {_name, currentVisualGroupNode};
+}
+
+void TaskRegister::RegisterCheckpointDependency (Memory::UniqueString _from, Memory::UniqueString _to) noexcept
+{
+    checkpointDependencies.emplace_back () = {_from, _to};
 }
 
 void TaskRegister::RegisterResource (Memory::UniqueString _name) noexcept
@@ -523,6 +548,13 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
         return GetVisualGraphPathForGroup (groupIndex) + *_name;
     };
 
+    auto addDependencyEdge = [&pipelineGraph] (const Container::String &_from, const Container::String &_to)
+    {
+        VisualGraph::Edge &edge = pipelineGraph.edges.emplace_back ();
+        edge.from = _from;
+        edge.to = _to;
+    };
+
     for (const Task &task : tasks)
     {
         VisualGraph::Graph &graph = FindVisualGraphForGroup (pipelineGraph, task.visualGroupIndex);
@@ -552,13 +584,6 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
             }
         }
 
-        auto addDependencyEdge = [&pipelineGraph] (const Container::String &_from, const Container::String &_to)
-        {
-            VisualGraph::Edge &edge = pipelineGraph.edges.emplace_back ();
-            edge.from = _from;
-            edge.to = _to;
-        };
-
         for (Memory::UniqueString dependency : task.dependsOn)
         {
             addDependencyEdge (getPathByName (dependency), path);
@@ -568,6 +593,11 @@ VisualGraph::Graph TaskRegister::ExportVisual (bool _exportResources) const noex
         {
             addDependencyEdge (path, getPathByName (target));
         }
+    }
+
+    for (const CheckpointDependency &checkpointDependency : checkpointDependencies)
+    {
+        addDependencyEdge (getPathByName (checkpointDependency.from), getPathByName (checkpointDependency.to));
     }
 
     return root;
@@ -598,6 +628,7 @@ void TaskRegister::Clear () noexcept
     tasks.clear ();
     checkpoints.clear ();
     resources.clear ();
+    checkpointDependencies.clear ();
 }
 
 // If asserts are not enabled, CLang Tidy advises to convert this function to static, which is not correct.

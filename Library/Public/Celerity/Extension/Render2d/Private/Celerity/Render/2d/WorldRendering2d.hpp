@@ -4,5 +4,14 @@
 
 namespace Emergence::Celerity::WorldRendering2d
 {
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder, const Math::AxisAlignedBox2d &_worldBounds) noexcept;
+struct Checkpoint final
+{
+    Checkpoint () = delete;
+
+    static const Memory::UniqueString STARTED;
+
+    static const Memory::UniqueString FINISHED;
+};
+
+void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::WorldRendering2d

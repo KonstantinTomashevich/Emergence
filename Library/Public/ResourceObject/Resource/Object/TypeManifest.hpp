@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Container/HashMap.hpp>
+#include <Container/Vector.hpp>
 
 #include <Resource/Object/AllocationGroup.hpp>
 
@@ -19,10 +20,28 @@ struct TypeInfo final
     StandardLayout::FieldId uniqueId;
 };
 
+/// \brief Describes injection feature for particular object part type.
+/// \details Injection provides ability to implement composition in resource objects by specifying injected
+///          sub objects through one of the injector types that hold id of sub object in injector id field.
+///          Injected object data is not directly added to owner changelist, instead injected object type
+///          is loaded into object library like any other object, so user instantiation library can implement
+///          composition by manually instantiating injected object from found injector instances.
+struct DependencyInjectionInfo final
+{
+    /// \brief Type of an object part, that contains field with injection.
+    StandardLayout::Mapping injectorType;
+
+    /// \brief Field that contains injected object id.
+    StandardLayout::FieldId injectorIdField = 0u;
+};
+
 /// \brief Contains metadata for all types, instances of which can be used as object parts.
 class TypeManifest final
 {
 public:
+    /// \brief Enables injection feature for given type and field.
+    void AddInjection (DependencyInjectionInfo _info) noexcept;
+
     /// \brief Registers metadata for given type.
     void Register (const StandardLayout::Mapping &_mapping, const TypeInfo &_info) noexcept;
 
@@ -32,8 +51,14 @@ public:
     /// \return Map of all registered types with their metadata.
     [[nodiscard]] const Container::HashMap<StandardLayout::Mapping, TypeInfo> &GetMap () const noexcept;
 
+    /// \return Vector of all added injections.
+    [[nodiscard]] const Container::Vector<DependencyInjectionInfo> &GetInjections () const noexcept;
+
 private:
     Container::HashMap<StandardLayout::Mapping, TypeInfo> infos {
+        Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"TypeManifest"}}};
+
+    Container::Vector<DependencyInjectionInfo> injections {
         Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"TypeManifest"}}};
 };
 } // namespace Emergence::Resource::Object

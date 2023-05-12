@@ -11,6 +11,9 @@ const PrototypeComponent::Reflection &PrototypeComponent::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (PrototypeComponent);
         EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (descriptorId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (requestImmediateFixedAssembly);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (requestImmediateNormalAssembly);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (assemblyStarted);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
