@@ -70,6 +70,13 @@ Mapping Field::GetNestedObjectMapping () const noexcept
     return Mapping (array_cast (nestedMapping));
 }
 
+class Mapping Field::GetVectorItemMapping () const noexcept
+{
+    EMERGENCE_ASSERT (IsHandleValid ());
+    Handling::Handle<PlainMapping> itemMapping = static_cast<const FieldData *> (handle)->GetVectorItemMapping ();
+    return Mapping (array_cast (itemMapping));
+}
+
 Memory::UniqueString Field::GetName () const noexcept
 {
     return static_cast<const FieldData *> (handle)->GetName ();

@@ -776,8 +776,8 @@ VolumetricTree<Unit, Dimensions>::VolumetricTree (const std::array<Dimension, Di
 }
 
 template <typename Unit, std::size_t Dimensions>
-const std::array<typename VolumetricTree<Unit, Dimensions>::Dimension, Dimensions>
-    &VolumetricTree<Unit, Dimensions>::GetDimensions () const noexcept
+const std::array<typename VolumetricTree<Unit, Dimensions>::Dimension, Dimensions> &
+VolumetricTree<Unit, Dimensions>::GetDimensions () const noexcept
 {
     return dimensions;
 }
@@ -1504,6 +1504,8 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
         case StandardLayout::FieldArchetype::BLOCK:                                                                    \
         case StandardLayout::FieldArchetype::UNIQUE_STRING:                                                            \
         case StandardLayout::FieldArchetype::NESTED_OBJECT:                                                            \
+        case StandardLayout::FieldArchetype::VECTOR:                                                                   \
+        case StandardLayout::FieldArchetype::PATCH:                                                                    \
             UNHANDLED_COMBINATION;                                                                                     \
         }
 

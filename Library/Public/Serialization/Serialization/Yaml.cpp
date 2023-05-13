@@ -110,6 +110,14 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
         // Only leaf values are supported.
         EMERGENCE_ASSERT (false);
         break;
+
+    case StandardLayout::FieldArchetype::VECTOR:
+        // TODO: Implement.
+        break;
+
+    case StandardLayout::FieldArchetype::PATCH:
+        // TODO: Implement.
+        break;
     }
 
     return result;
@@ -244,6 +252,14 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
             // Only leaf values are supported.
             EMERGENCE_ASSERT (false);
             break;
+
+        case StandardLayout::FieldArchetype::VECTOR:
+            // TODO: Implement.
+            break;
+
+        case StandardLayout::FieldArchetype::PATCH:
+            // TODO: Implement.
+            break;
         }
     }
     catch ([[maybe_unused]] YAML::Exception &exception)
@@ -323,6 +339,8 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
         case StandardLayout::FieldArchetype::STRING:
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::VECTOR:
+        case StandardLayout::FieldArchetype::PATCH:
             // Unsupported for patches.
             EMERGENCE_ASSERT (false);
             break;

@@ -50,6 +50,16 @@ enum class FieldArchetype : uint8_t
     /// \details All nested fields are projected into root mapping, but sometimes
     ///          it's useful to process complex fields as independent nested objects.
     NESTED_OBJECT,
+
+    /// \brief Instance of Emergence::Container::Vector that stores objects, that can be described by their mappings.
+    /// \details Field projection is impossible here due to different and dynamic address space.
+    ///          Therefore, this archetype primary goal is to make serialization easier.
+    VECTOR,
+
+    /// \brief Instance of Patch.
+    /// \details Field projection is impossible here due to dynamic and unpredictable nature of patches.
+    ///          Therefore, this archetype primary goal is to make serialization easier.
+    PATCH,
 };
 
 /// \brief Projected field name is `objectFieldName + PROJECTION_NAME_SEPARATOR + nestedFieldName`.
@@ -97,6 +107,11 @@ public:
     /// \invariant Handle must be valid.
     /// \invariant Field archetype is FieldArchetype::NESTED_OBJECT.
     [[nodiscard]] class Mapping GetNestedObjectMapping () const noexcept;
+
+    /// \return Mapping, that describes vector items.
+    /// \invariant Handle must be valid.
+    /// \invariant Field archetype is FieldArchetype::VECTOR.
+    [[nodiscard]] class Mapping GetVectorItemMapping () const noexcept;
 
     /// \return Human readable field name.
     /// \invariant Handle must be valid.

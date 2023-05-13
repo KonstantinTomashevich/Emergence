@@ -7,7 +7,10 @@
 
 #include <API/Common/Implementation/Iterator.hpp>
 
+#include <Container/Vector.hpp>
+
 #include <StandardLayout/Original/PlainMapping.hpp>
+#include <StandardLayout/Patch.hpp>
 
 namespace Emergence::StandardLayout
 {
@@ -48,6 +51,12 @@ Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const noexce
 {
     EMERGENCE_ASSERT (archetype == FieldArchetype::NESTED_OBJECT);
     return nestedObjectMapping;
+}
+
+Handling::Handle<PlainMapping> FieldData::GetVectorItemMapping () const noexcept
+{
+    EMERGENCE_ASSERT (archetype == FieldArchetype::VECTOR);
+    return vectorItemMapping;
 }
 
 Memory::UniqueString FieldData::GetName () const noexcept
@@ -102,11 +111,35 @@ FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
     size = nestedObjectMapping->GetObjectSize ();
 }
 
+FieldData::FieldData (FieldData::VectorSeed _seed) noexcept
+    : archetype (FieldArchetype::VECTOR),
+      projected (_seed.projected),
+      offset (_seed.offset),
+      name (_seed.name),
+      vectorItemMapping (std::move (_seed.vectorItemMapping))
+{
+    EMERGENCE_ASSERT (vectorItemMapping);
+    size = sizeof (Container::Vector<uint8_t>);
+}
+
+FieldData::FieldData (FieldData::PatchSeed _seed) noexcept
+    : archetype (FieldArchetype::PATCH),
+      projected (_seed.projected),
+      offset (_seed.offset),
+      size (sizeof (StandardLayout::Patch)),
+      name (_seed.name)
+{
+}
+
 FieldData::~FieldData ()
 {
     if (archetype == FieldArchetype::NESTED_OBJECT)
     {
         nestedObjectMapping.~Handle ();
+    }
+    else if (archetype == FieldArchetype::VECTOR)
+    {
+        vectorItemMapping.~Handle ();
     }
 }
 

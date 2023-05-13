@@ -64,6 +64,8 @@ static void SerializePatchValue (std::ostream &_output, const StandardLayout::Fi
     case StandardLayout::FieldArchetype::STRING:
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::VECTOR:
+    case StandardLayout::FieldArchetype::PATCH:
         // Unsupported.
         EMERGENCE_ASSERT (false);
         break;
@@ -154,6 +156,8 @@ static bool DeserializePatchValue (std::istream &_input,
     case StandardLayout::FieldArchetype::STRING:
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::VECTOR:
+    case StandardLayout::FieldArchetype::PATCH:
         // Unsupported.
         EMERGENCE_ASSERT (false);
         return false;
@@ -219,6 +223,32 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
             // We do nothing for nested objects, because all of their fields are projected.
             break;
+
+        case StandardLayout::FieldArchetype::VECTOR:
+        {
+            const auto vectorSizeInBytes = static_cast<uint32_t> (Container::UntypedVectorUtility::End (address) -
+                                                                  Container::UntypedVectorUtility::Begin (address));
+            EMERGENCE_ASSERT (vectorSizeInBytes % field.GetVectorItemMapping ().GetObjectSize () == 0u);
+            const uint32_t vectorSize = vectorSizeInBytes / field.GetVectorItemMapping ().GetObjectSize ();
+
+            _output.write (reinterpret_cast<const char *> (&vectorSize),
+                           static_cast<std::streamsize> (sizeof (vectorSize)));
+
+            for (const uint8_t *pointer = Container::UntypedVectorUtility::Begin (address);
+                 pointer != Container::UntypedVectorUtility::End (address);
+                 pointer += field.GetVectorItemMapping ().GetObjectSize ())
+            {
+                SerializeObject (_output, pointer, field.GetVectorItemMapping ());
+            }
+
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::PATCH:
+        {
+            SerializePatch (_output, *static_cast<const StandardLayout::Patch *> (address));
+            break;
+        }
         }
     }
 
@@ -233,6 +263,7 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
 {
     const void *lastBitsetByteAddress = nullptr;
     char lastBitsetByte = 0u;
+    StandardLayout::PatchBuilder patchBuilder;
 
     for (auto iterator = _mapping.BeginConditional (_object), end = _mapping.EndConditional (); iterator != end;
          ++iterator)
@@ -307,6 +338,18 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
             // We do nothing for nested objects, because all of their fields are projected.
             break;
+
+        case StandardLayout::FieldArchetype::VECTOR:
+        {
+            // TODO: Implement.
+            break;
+        }
+
+        case StandardLayout::FieldArchetype::PATCH:
+        {
+            // TODO: Implement.
+            break;
+        }
         }
     }
 

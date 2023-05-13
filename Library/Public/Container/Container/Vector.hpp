@@ -44,4 +44,26 @@ void AddUnique (Vector<Value> &_vector, Value &&_value)
         _vector.emplace_back (std::move (_value));
     }
 }
+
+/// \brief Contains utility functions for working with vectors without knowing their type.
+/// \details You should only need these functions if you're writing complex reflection-based logic.
+///          If you're not doing that, avoid using this functions.
+namespace UntypedVectorUtility
+{
+/// \brief Resizes given vector to given size in bytes without initializing content.
+/// \invariant Vector must be empty.
+void InitSize (void *_vector, size_t _sizeInBytes) noexcept;
+
+/// \return Pointer to the beginning of vector memory region.
+uint8_t *Begin (void *_vector) noexcept;
+
+/// \return Pointer to the ending of vector memory region.
+uint8_t *End (void *_vector) noexcept;
+
+/// \return Pointer to the beginning of vector memory region.
+const uint8_t *Begin (const void *_vector) noexcept;
+
+/// \return Pointer to the ending of vector memory region.
+const uint8_t *End (const void *_vector) noexcept;
+} // namespace UntypedVectorUtility
 } // namespace Emergence::Container

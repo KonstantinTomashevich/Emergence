@@ -81,6 +81,28 @@ public:
         bool projected = false;
     };
 
+    /// \brief Used to register fields with FieldArchetype::VECTOR.
+    struct VectorSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+
+        Handling::Handle<PlainMapping> vectorItemMapping;
+
+        bool projected = false;
+    };
+
+    /// \brief Used to register fields with FieldArchetype::PATCH.
+    struct PatchSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+
+        bool projected = false;
+    };
+
     /// FieldData could only be moved through reallocation of PlainMapping.
     FieldData (const FieldData &_other) = delete;
 
@@ -97,6 +119,8 @@ public:
     [[nodiscard]] uint_fast8_t GetBitOffset () const noexcept;
 
     [[nodiscard]] Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
+
+    [[nodiscard]] Handling::Handle<PlainMapping> GetVectorItemMapping () const noexcept;
 
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
@@ -120,6 +144,10 @@ private:
 
     explicit FieldData (NestedObjectSeed _seed) noexcept;
 
+    explicit FieldData (VectorSeed _seed) noexcept;
+
+    explicit FieldData (PatchSeed _seed) noexcept;
+
     ~FieldData ();
 
     FieldArchetype archetype {FieldArchetype::INT};
@@ -134,6 +162,8 @@ private:
         std::uint_fast8_t bitOffset;
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
+
+        Handling::Handle<PlainMapping> vectorItemMapping;
     };
 };
 

@@ -114,6 +114,16 @@ public:
                                                 std::size_t _offset,
                                                 const Mapping &_objectMapping) noexcept;
 
+    /// \brief Registers vector that contains items of given Mapping.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    [[nodiscard]] FieldId RegisterVector (Memory::UniqueString _name,
+                                          std::size_t _offset,
+                                          const Mapping &_itemMapping) noexcept;
+
+    /// \brief Registers Patch field.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    [[nodiscard]] FieldId RegisterPatch (Memory::UniqueString _name, std::size_t _offset) noexcept;
+
     /// \brief Pushes new condition to visibility conditions stack.
     /// \see Mapping::ConditionalFieldIterator
     /// \invariant `_field` is FieldArchetype::UINT.

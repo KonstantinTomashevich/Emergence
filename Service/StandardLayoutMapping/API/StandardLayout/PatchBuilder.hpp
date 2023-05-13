@@ -14,7 +14,13 @@ class PatchBuilder final
 public:
     /// \brief Automatically detects difference between given objects of given type and creates patch that
     ///        transforms objects from `_initial` into `_changed` state.
-    /// \warning FieldArchetype::STRING and FieldArchetype::BLOCK are not supported!
+    /// \details Supported field archetypes:
+    ///          * FieldArchetype::BIT
+    ///          * FieldArchetype::INT
+    ///          * FieldArchetype::UINT
+    ///          * FieldArchetype::FLOAT
+    ///          * FieldArchetype::UNIQUE_STRING
+    ///          Nested fields are ignored, because their fields are projected.
     static Patch FromDifference (const Mapping &_typeMapping, const void *_changed, const void *_initial) noexcept;
 
     PatchBuilder () noexcept;

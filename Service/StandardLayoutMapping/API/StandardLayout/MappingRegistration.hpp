@@ -6,8 +6,10 @@
 
 #include <Container/Optional.hpp>
 #include <Container/StringBuilder.hpp>
+#include <Container/Vector.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
+#include <StandardLayout/Patch.hpp>
 
 /// \brief Version of EMERGENCE_MAPPING_REGISTRATION_BEGIN, that allows custom class name to be passed.
 #define EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME(Class, ClassName)                                        \
@@ -112,10 +114,10 @@ void DefaultDestructor (void *_address)
 /// \brief Checks that type has static `Reflect` method for reflection-based logic.
 template <typename T>
 concept HasReflection = requires (T) {
-                            {
-                                T::Reflect ()
-                            };
-                        };
+    {
+        T::Reflect ()
+    };
+};
 
 /// \brief Checks that type is supported by ::RegisterRegularField function logic.
 template <typename T>
@@ -187,6 +189,14 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     {
         return _builder.RegisterNestedObject (Memory::UniqueString {_name}, _offset, Type::Reflect ().mapping);
     }
+    else if constexpr (IsVector<Type>::VALUE)
+    {
+        return _builder.RegisterVector (Memory::UniqueString {_name}, _offset, Type::value_type::Reflect ().mapping);
+    }
+    else if constexpr (std::is_same_v<Type, StandardLayout::Patch>)
+    {
+        return _builder.RegisterPatch (Memory::UniqueString {_name}, _offset);
+    }
     else
     {
         // Unfortunately, we cannot use static_assert here.
@@ -237,4 +247,16 @@ auto RegisterRegularArray (MappingBuilder &_builder,
 
     return result;
 }
+
+template <typename>
+struct IsVector
+{
+    static constexpr bool VALUE = false;
+};
+
+template <typename ValueType>
+struct IsVector<Container::Vector<ValueType>>
+{
+    static constexpr bool VALUE = true;
+};
 } // namespace Emergence::StandardLayout::Registration

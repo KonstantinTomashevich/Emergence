@@ -107,6 +107,8 @@ Patch PatchBuilder::FromDifference (const Mapping &_typeMapping, const void *_ch
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
         case FieldArchetype::NESTED_OBJECT:
+        case FieldArchetype::VECTOR:
+        case FieldArchetype::PATCH:
             // Do nothing: unsupported archetypes. Nested field is actually supported
             // due to projection, but its whole-field registration is ignored like that.
             break;

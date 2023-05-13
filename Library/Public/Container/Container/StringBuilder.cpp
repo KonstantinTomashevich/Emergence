@@ -3,6 +3,7 @@
 #include <Assert/Assert.hpp>
 
 #include <Container/StringBuilder.hpp>
+#include <Container/Vector.hpp>
 
 namespace Emergence::Container
 {
@@ -197,6 +198,34 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
 
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         return Append (ObjectPointer {_reflectedField.pointer, _reflectedField.reflection.GetNestedObjectMapping ()});
+
+    case StandardLayout::FieldArchetype::VECTOR:
+    {
+        Append ("{ ");
+        bool firstField = true;
+
+        for (const uint8_t *pointer = UntypedVectorUtility::Begin (_reflectedField.pointer);
+             pointer != UntypedVectorUtility::End (_reflectedField.pointer);
+             pointer += _reflectedField.reflection.GetVectorItemMapping ().GetObjectSize ())
+        {
+            if (firstField)
+            {
+                firstField = false;
+            }
+            else
+            {
+                Append (", ");
+            }
+
+            Append (ObjectPointer {pointer, _reflectedField.reflection.GetVectorItemMapping ()});
+        }
+
+        return Append (" }");
+    }
+
+    case StandardLayout::FieldArchetype::PATCH:
+        // Patches might be huge, therefore we're not unwrapping them right now.
+        return Append ("<patch>");
     }
 
     return Append ("<unknown field archetype>");

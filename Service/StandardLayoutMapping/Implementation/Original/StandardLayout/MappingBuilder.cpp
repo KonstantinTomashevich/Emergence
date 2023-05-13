@@ -194,6 +194,17 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
                                                                          _offset + field.GetOffset (),
                                                                          field.GetNestedObjectMapping ().Get (), true});
             break;
+
+        case FieldArchetype::VECTOR:
+            nestedFieldId =
+                state.AddField (FieldData::VectorSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (),
+                                                       field.GetVectorItemMapping ().Get (), true});
+            break;
+
+        case FieldArchetype::PATCH:
+            nestedFieldId = state.AddField (
+                FieldData::PatchSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (), true});
+            break;
         }
 
         EMERGENCE_ASSERT (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
@@ -207,6 +218,19 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     }
 
     return objectFieldId;
+}
+
+FieldId MappingBuilder::RegisterVector (Memory::UniqueString _name,
+                                        std::size_t _offset,
+                                        const Mapping &_itemMapping) noexcept
+{
+    return block_cast<PlainMappingBuilder> (data).AddField (
+        FieldData::VectorSeed {_name, _offset, block_cast<Handling::Handle<PlainMapping>> (_itemMapping.data), false});
+}
+
+FieldId MappingBuilder::RegisterPatch (Memory::UniqueString _name, std::size_t _offset) noexcept
+{
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::PatchSeed {_name, _offset, false});
 }
 
 void MappingBuilder::PushVisibilityCondition (FieldId _field,

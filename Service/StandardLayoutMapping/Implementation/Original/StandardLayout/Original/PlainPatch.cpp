@@ -94,6 +94,8 @@ void PlainPatch::Apply (void *_object) const noexcept
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
         case FieldArchetype::NESTED_OBJECT:
+        case FieldArchetype::VECTOR:
+        case FieldArchetype::PATCH:
             // Unsupported!
             EMERGENCE_ASSERT (false);
             break;

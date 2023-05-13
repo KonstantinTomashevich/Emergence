@@ -6,6 +6,7 @@
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
+#include <StandardLayout/Patch.hpp>
 #include <StandardLayout/Test/MappingBuilder.hpp>
 
 #include <Testing/Testing.hpp>
@@ -88,6 +89,15 @@ struct NestedObjectFieldSeed final : public FieldSeedBase
     Mapping typeMapping;
 };
 
+struct VectorFieldSeed final : public FieldSeedBase
+{
+    Mapping typeMapping;
+};
+
+struct PatchFieldSeed final : public FieldSeedBase
+{
+};
+
 using FieldSeed = Container::Variant<BitFieldSeed,
                                      Int8FieldSeed,
                                      Int16FieldSeed,
@@ -102,7 +112,9 @@ using FieldSeed = Container::Variant<BitFieldSeed,
                                      StringFieldSeed,
                                      BlockFieldSeed,
                                      UniqueStringFieldSeed,
-                                     NestedObjectFieldSeed>;
+                                     NestedObjectFieldSeed,
+                                     VectorFieldSeed,
+                                     PatchFieldSeed>;
 
 struct MappingSeed final
 {
@@ -181,6 +193,14 @@ Mapping Grow (MappingSeed &_seed, MappingBuilder &_builder)
                 else if constexpr (std::is_same_v<Seed, NestedObjectFieldSeed>)
                 {
                     _seed.recordedId = _builder.RegisterNestedObject (_seed.name, _seed.offset, _seed.typeMapping);
+                }
+                else if constexpr (std::is_same_v<Seed, VectorFieldSeed>)
+                {
+                    _seed.recordedId = _builder.RegisterVector (_seed.name, _seed.offset, _seed.typeMapping);
+                }
+                else if constexpr (std::is_same_v<Seed, PatchFieldSeed>)
+                {
+                    _seed.recordedId = _builder.RegisterPatch (_seed.name, _seed.offset);
                 }
             },
             packedSeed);
@@ -333,6 +353,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             {
                             case FieldArchetype::BIT:
                                 CHECK_EQUAL (nestedField.GetBitOffset (), projectedField.GetBitOffset ());
+                                break;
 
                             case FieldArchetype::INT:
                             case FieldArchetype::UINT:
@@ -340,15 +361,34 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             case FieldArchetype::STRING:
                             case FieldArchetype::BLOCK:
                             case FieldArchetype::UNIQUE_STRING:
+                            case FieldArchetype::PATCH:
                                 break;
 
                             case FieldArchetype::NESTED_OBJECT:
                                 CHECK (nestedField.GetNestedObjectMapping () ==
                                        projectedField.GetNestedObjectMapping ());
+                                break;
+
+                            case FieldArchetype::VECTOR:
+                                CHECK (nestedField.GetVectorItemMapping () == projectedField.GetVectorItemMapping ());
+                                break;
                             }
 
                             ++iterator;
                         }
+                    }
+                    else if constexpr (std::is_same_v<Seed, VectorFieldSeed>)
+                    {
+                        CHECK_EQUAL (field.GetSize (), sizeof (Container::Vector<uint8_t>));
+                        CHECK_EQUAL (field.GetArchetype (), FieldArchetype::VECTOR);
+                        CHECK (field.GetVectorItemMapping () == _seed.typeMapping);
+                        CHECK (!field.IsProjected ());
+                    }
+                    else if constexpr (std::is_same_v<Seed, PatchFieldSeed>)
+                    {
+                        CHECK_EQUAL (field.GetSize (), sizeof (Patch));
+                        CHECK_EQUAL (field.GetArchetype (), FieldArchetype::PATCH);
+                        CHECK (!field.IsProjected ());
                     }
                 }
 
@@ -578,6 +618,58 @@ static const MappingSeed NESTED_TWO_SUBLEVELS {
         NestedObjectFieldSeed {{"secondNested"_us, offsetof (NestedTwoSublevelsTest, secondNested)},
                                Grow (NESTED_IN_UNION_ONE_SUBLEVEL)},
     }};
+
+struct VectorTest
+{
+    Container::Vector<AllBasicTypesTest> vector;
+};
+
+static const MappingSeed VECTOR {
+    "Vector"_us,
+    sizeof (VectorTest),
+    alignof (VectorTest),
+    {
+        VectorFieldSeed {{"vector"_us, offsetof (VectorTest, vector)}, Grow (ALL_BASIC_TYPES)},
+    }};
+
+struct NestedVectorTest
+{
+    VectorTest nestedVector;
+};
+
+static const MappingSeed NESTED_VECTOR {
+    "NestedVector"_us,
+    sizeof (NestedVectorTest),
+    alignof (NestedVectorTest),
+    {
+        NestedObjectFieldSeed {{"nestedVector"_us, offsetof (NestedVectorTest, nestedVector)}, Grow (VECTOR)},
+    }};
+
+struct PatchTest
+{
+    Patch patch;
+};
+
+static const MappingSeed PATCH {
+    "Patch"_us,
+    sizeof (PatchTest),
+    alignof (PatchTest),
+    {
+        PatchFieldSeed {{"patch"_us, offsetof (PatchTest, patch)}},
+    }};
+
+struct NestedPatchTest
+{
+    PatchTest nestedPatch;
+};
+
+static const MappingSeed NESTED_PATCH {
+    "NestedPatch"_us,
+    sizeof (NestedPatchTest),
+    alignof (NestedPatchTest),
+    {
+        NestedObjectFieldSeed {{"nestedPatch"_us, offsetof (NestedPatchTest, nestedPatch)}, Grow (PATCH)},
+    }};
 } // namespace Emergence::StandardLayout::Test
 
 using namespace Emergence::StandardLayout::Test;
@@ -617,6 +709,26 @@ TEST_CASE (NestedInUnionOneSublevel)
 TEST_CASE (NestedTwoSublevels)
 {
     GrowAndTest (NESTED_TWO_SUBLEVELS);
+}
+
+TEST_CASE (VectorTest)
+{
+    GrowAndTest (VECTOR);
+}
+
+TEST_CASE (NestedVectorTest)
+{
+    GrowAndTest (NESTED_VECTOR);
+}
+
+TEST_CASE (PatchTest)
+{
+    GrowAndTest (PATCH);
+}
+
+TEST_CASE (NestedPatchTest)
+{
+    GrowAndTest (NESTED_PATCH);
 }
 
 TEST_CASE (BuildMultipleMappings)

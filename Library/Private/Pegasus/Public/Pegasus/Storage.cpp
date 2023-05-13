@@ -408,9 +408,6 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
 
     for (const IndexedField &indexedField : indexedFields)
     {
-        // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        EMERGENCE_ASSERT (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
         switch (indexedField.field.GetArchetype ())
         {
         case StandardLayout::FieldArchetype::BIT:
@@ -433,7 +430,6 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
         case StandardLayout::FieldArchetype::FLOAT:
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::UNIQUE_STRING:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
         {
             memcpy (indexedField.field.GetValue (editedRecordBackup), indexedField.field.GetValue (_record),
                     indexedField.field.GetSize ());
@@ -447,6 +443,13 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
                      indexedField.field.GetSize () / sizeof (char));
             break;
         }
+
+        case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::VECTOR:
+        case StandardLayout::FieldArchetype::PATCH:
+            // Unsupported field archetypes.
+            EMERGENCE_ASSERT (false);
+            break;
         }
     }
 }

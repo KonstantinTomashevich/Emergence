@@ -63,9 +63,6 @@ template <typename Callback>
 auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callback &_callback) noexcept
 {
     EMERGENCE_ASSERT (_field.IsHandleValid ());
-    // _field should be leaf-field, not intermediate nested object.
-    EMERGENCE_ASSERT (_field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
     switch (_field.GetArchetype ())
     {
     case StandardLayout::FieldArchetype::BIT:
@@ -128,7 +125,6 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     }
 
     case StandardLayout::FieldArchetype::BLOCK:
-    case StandardLayout::FieldArchetype::NESTED_OBJECT:
     {
         return _callback (BlockValueComparator {_field.GetSize ()});
     }
@@ -141,6 +137,19 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     case StandardLayout::FieldArchetype::UNIQUE_STRING:
     {
         return _callback (UniqueStringValueComparator {});
+    }
+
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    {
+        // _field should be leaf-field, not intermediate nested object.
+        EMERGENCE_ASSERT (false);
+    }
+
+    case StandardLayout::FieldArchetype::VECTOR:
+    case StandardLayout::FieldArchetype::PATCH:
+    {
+        // Vectors and patches aren't supported for indexing.
+        EMERGENCE_ASSERT (false);
     }
     }
 

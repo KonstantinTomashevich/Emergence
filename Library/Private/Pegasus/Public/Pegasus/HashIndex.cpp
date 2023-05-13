@@ -107,16 +107,12 @@ bool HashIndex::DirectComparator::operator() (const HashIndex::LookupRequest &_r
 
 static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Field &_indexedField, const uint8_t *_value)
 {
-    // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-    EMERGENCE_ASSERT (_indexedField.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
     switch (_indexedField.GetArchetype ())
     {
     case StandardLayout::FieldArchetype::INT:
     case StandardLayout::FieldArchetype::UINT:
     case StandardLayout::FieldArchetype::FLOAT:
     case StandardLayout::FieldArchetype::BLOCK:
-    case StandardLayout::FieldArchetype::NESTED_OBJECT:
     {
         _hasher.Append (_value, _indexedField.GetSize ());
         break;
@@ -159,6 +155,13 @@ static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Fiel
         _hasher.Append (reinterpret_cast<const uint8_t *> (&hash), sizeof (hash));
         break;
     }
+
+    case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::VECTOR:
+    case StandardLayout::FieldArchetype::PATCH:
+        // Unsupported field archetypes.
+        EMERGENCE_ASSERT (false);
+        break;
     }
 }
 
