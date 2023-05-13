@@ -30,6 +30,7 @@ void ProfiledAllocator::deallocate (void *_pointer)
 void PhysXJobDispatcher::submitTask (physx::PxBaseTask &_task)
 {
     Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::FOREGROUND,
         [&_task] ()
         {
             _task.run ();

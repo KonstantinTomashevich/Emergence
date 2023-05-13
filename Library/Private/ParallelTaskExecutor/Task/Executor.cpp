@@ -113,6 +113,7 @@ void ExecutorImplementation::Execute () noexcept
     for (std::size_t taskIndex : entryTaskIndices)
     {
         Job::Dispatcher::Global ().Dispatch (
+            Job::Priority::FOREGROUND,
             [this, taskIndex] ()
             {
                 TaskFunction (taskIndex);
@@ -136,6 +137,7 @@ void ExecutorImplementation::TaskFunction (std::size_t _taskIndex) noexcept
         {
             UnlockAtomicFlag (modifyingTasks);
             Job::Dispatcher::Global ().Dispatch (
+                Job::Priority::FOREGROUND,
                 [this, dependantIndex] ()
                 {
                     TaskFunction (dependantIndex);

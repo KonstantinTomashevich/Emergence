@@ -45,6 +45,7 @@ void LibraryLoader::Begin (const Container::Vector<LibraryLoadingTask> &_loading
     }
 
     Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
         [this] ()
         {
             loadingStartTimeNs = Time::NanosecondsSinceStartup ();
@@ -157,6 +158,7 @@ void LibraryLoader::FormFolderList () noexcept
     }
 
     Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
         [this] ()
         {
             FormObjectList ();
@@ -309,6 +311,7 @@ void LibraryLoader::FormObjectList () noexcept
     }
 
     Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
         [this] ()
         {
             LoadObjectBody (0u);
@@ -330,6 +333,7 @@ void LibraryLoader::LoadObjectBody (std::size_t _indexInList) noexcept
         [this, _indexInList] ()
         {
             Job::Dispatcher::Global ().Dispatch (
+                Job::Priority::BACKGROUND,
                 [this, _indexInList] ()
                 {
                     LoadObjectBody (_indexInList + 1u);
