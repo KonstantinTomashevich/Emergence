@@ -12,11 +12,8 @@ public:
     /// \brief Holds all known information about one particular object.
     struct ObjectData final
     {
-        /// \brief Various information about this object.
-        Declaration declaration;
-
-        /// \brief This object content.
-        Body body;
+        /// \brief Content of this object.
+        Object object;
 
         /// \brief Whether this object was loaded because it is a parent of any
         ///        of the requested objects and will not be loaded otherwise.

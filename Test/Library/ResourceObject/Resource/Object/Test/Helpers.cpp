@@ -6,8 +6,8 @@
 
 namespace Emergence::Resource::Object::Test
 {
-void CheckChangelistEquality (const Container::Vector<StandardLayout::Patch> &_first,
-                              const Container::Vector<StandardLayout::Patch> &_second) noexcept
+void CheckChangelistEquality (const Container::Vector<ObjectComponent> &_first,
+                              const Container::Vector<ObjectComponent> &_second) noexcept
 {
     // Comparing changelists correctly is difficult and not performance-friendly, as we need to take a lot
     // of details into account. Therefore, for test simplicity purposes we apply several simplifications:
@@ -21,39 +21,39 @@ void CheckChangelistEquality (const Container::Vector<StandardLayout::Patch> &_f
 
     for (std::size_t index = 0u; index < std::min (_first.size (), _second.size ()); ++index)
     {
-        const StandardLayout::Patch &first = _first[index];
-        const StandardLayout::Patch &second = _second[index];
+        const ObjectComponent &first = _first[index];
+        const ObjectComponent &second = _second[index];
 
-        if (first.GetTypeMapping () != second.GetTypeMapping ())
+        if (first.component.GetTypeMapping () != second.component.GetTypeMapping ())
         {
             CHECK_WITH_MESSAGE (false, "Found mismatch at index ", index, ": first patch has type \"",
-                                first.GetTypeMapping ().GetName (), "\", while second has type \"",
-                                second.GetTypeMapping ().GetName (), "\".");
+                                first.component.GetTypeMapping ().GetName (), "\", while second has type \"",
+                                second.component.GetTypeMapping ().GetName (), "\".");
             continue;
         }
 
-        REQUIRE (first.GetTypeMapping ().GetObjectSize () <= firstBuffer.size ());
-        first.GetTypeMapping ().Construct (firstBuffer.data ());
-        first.GetTypeMapping ().Construct (secondBuffer.data ());
+        REQUIRE (first.component.GetTypeMapping ().GetObjectSize () <= firstBuffer.size ());
+        first.component.GetTypeMapping ().Construct (firstBuffer.data ());
+        first.component.GetTypeMapping ().Construct (secondBuffer.data ());
 
-        first.Apply (firstBuffer.data ());
-        second.Apply (secondBuffer.data ());
+        first.component.Apply (firstBuffer.data ());
+        second.component.Apply (secondBuffer.data ());
         int comparisonResult =
-            memcmp (firstBuffer.data (), secondBuffer.data (), first.GetTypeMapping ().GetObjectSize ());
+            memcmp (firstBuffer.data (), secondBuffer.data (), first.component.GetTypeMapping ().GetObjectSize ());
 
         if (comparisonResult != 0)
         {
             CHECK_WITH_MESSAGE (false, "Found mismatch at index ", index,
                                 ": Objects are not equal after patches are applied.\nFirst object: ",
                                 EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {
-                                    firstBuffer.data (), first.GetTypeMapping ()}),
+                                    firstBuffer.data (), first.component.GetTypeMapping ()}),
                                 "\nSecond object: ",
                                 EMERGENCE_BUILD_STRING (Container::StringBuilder::ObjectPointer {
-                                    secondBuffer.data (), first.GetTypeMapping ()}));
+                                    secondBuffer.data (), first.component.GetTypeMapping ()}));
         }
 
-        first.GetTypeMapping ().Destruct (firstBuffer.data ());
-        first.GetTypeMapping ().Destruct (secondBuffer.data ());
+        first.component.GetTypeMapping ().Destruct (firstBuffer.data ());
+        first.component.GetTypeMapping ().Destruct (secondBuffer.data ());
     }
 }
 } // namespace Emergence::Resource::Object::Test

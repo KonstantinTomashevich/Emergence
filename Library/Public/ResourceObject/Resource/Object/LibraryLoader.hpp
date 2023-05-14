@@ -5,7 +5,6 @@
 #include <Resource/Object/Library.hpp>
 
 #include <Serialization/Binary.hpp>
-#include <Serialization/FieldNameLookupCache.hpp>
 #include <Serialization/Yaml.hpp>
 
 namespace Emergence::Resource::Object
@@ -31,17 +30,11 @@ public:
     /// \brief Name of the YAML file in the folder that lists all dependencies of this folder.
     inline static const Container::String YAML_FOLDER_DEPENDENCY_LIST = "ObjectFolderDependencies.yaml";
 
-    /// \brief Suffix for the object binary declaration file.
-    inline static const Container::String BINARY_OBJECT_DECLARATION_SUFFIX = ".declaration.bin";
+    /// \brief Suffix for the object binary file.
+    inline static const Container::String BINARY_OBJECT_SUFFIX = ".object.bin";
 
-    /// \brief Suffix for the object YAML declaration file.
-    inline static const Container::String YAML_OBJECT_DECLARATION_SUFFIX = ".declaration.yaml";
-
-    /// \brief Suffix for the object binary body file.
-    inline static const Container::String BINARY_OBJECT_BODY_SUFFIX = ".body.bin";
-
-    /// \brief Suffix for the object YAML body file.
-    inline static const Container::String YAML_OBJECT_BODY_SUFFIX = ".body.yaml";
+    /// \brief Suffix for the object YAML file.
+    inline static const Container::String YAML_OBJECT_SUFFIX = ".object.yaml";
 
     /// \brief Constructs loader with given type manifest.
     LibraryLoader (TypeManifest _typeManifest) noexcept;
@@ -87,25 +80,20 @@ private:
     /// \brief Fills ::folderList for current loading routine.
     void FormFolderList () noexcept;
 
-    /// \brief Attempts to find object with given name in any of acknowledged folders
-    ///        and calls ::LoadObjectDeclaration on found declaration if any.
-    bool FindAndLoadDeclaration (Memory::UniqueString _objectName, bool _loadingAsParent) noexcept;
+    /// \brief Attempts to find object with given name in any of acknowledged
+    ///        folders and calls ::LoadObject on found object if any.
+    bool FindAndLoadObject (Memory::UniqueString _objectName, bool _loadingAsParent) noexcept;
 
-    /// \brief Loads declaration of given object. Recursively loads declarations of all parents of this object.
-    void LoadObjectDeclaration (const Container::String &_objectFolder,
+    /// \brief Loads content of given object. Recursively loads content of all parents of this object.
+    void LoadObject (const Container::String &_objectFolder,
                                 Memory::UniqueString _objectName,
                                 bool _loadingAsParent) noexcept;
 
     /// \brief Fills ::objectList for current loading routine.
     void FormObjectList () noexcept;
 
-    /// \brief Loads body of object that is stored in given cell of ::objectList.
-    /// \details Object bodies are loaded sequentially one after another, not simultaneously.
-    ///          This strategy is selected for several reasons:
-    ///          - Persistent storage is expected to be main performance limiter here, not CPU,
-    ///            therefore we would not gain a lot of speed by utilizing more CPU.
-    ///          - Sequential loading allows to use caches to full extent, making loading much more efficient.
-    void LoadObjectBody (std::size_t _indexInList) noexcept;
+    /// \brief Applies post processing to object at given index: inheritance and injection features.
+    void PostProcessObject (std::size_t _indexInList) noexcept;
 
     std::atomic_flag loading;
     Library currentLibrary;
@@ -120,25 +108,36 @@ private:
     /// \brief Contains index in ::objectList for every object to be loaded.
     Container::HashMap<Memory::UniqueString, std::size_t> indexInObjectList {GetAllocationGroup ()};
 
-    Serialization::Binary::PatchBundleDeserializer binaryPatchBundleDeserializer;
-    Serialization::Yaml::PatchBundleDeserializer yamlPatchBundleDeserializer;
-
     TypeManifest typeManifest;
-    Serialization::FieldNameLookupCache declarationFieldLookupCache {Declaration::Reflect ().mapping};
+    Serialization::PatchableTypesRegistry patchableTypesRegistry;
     uint64_t loadingStartTimeNs = 0u;
 };
 
 /// \brief Item of folder dependency list.
 struct FolderDependency final
 {
-    static constexpr std::size_t RELATIVE_PATH_MAX_LENGTH = 128u;
-
     /// \brief Relative path from dependant folder to dependency folder.
-    std::array<char, RELATIVE_PATH_MAX_LENGTH> relativePath;
+    Container::Utf8String relativePath;
 
     struct Reflection final
     {
         StandardLayout::FieldId relativePath;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+/// \brief Describes structure of file that contains information about all dependencies of the folder.
+struct FolderDependencyList final
+{
+    /// \brief List with all dependency items.
+    Container::Vector<FolderDependency> list {
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"FolderDependencyList"}}};
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId list;
         StandardLayout::Mapping mapping;
     };
 
