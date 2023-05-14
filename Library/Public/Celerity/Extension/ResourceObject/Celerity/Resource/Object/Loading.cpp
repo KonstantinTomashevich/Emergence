@@ -132,11 +132,11 @@ void LoadingProcessor::FinishLoading (ResourceObjectLoadingStateSingleton *_stat
             auto insertionCursor = insertAssemblyDescriptor.Execute ();
             auto *descriptor = static_cast<Emergence::Celerity::AssemblyDescriptor *> (++insertionCursor);
             descriptor->id = objectName;
-            descriptor->components.reserve (objectData.body.fullChangelist.size ());
+            descriptor->components.reserve (objectData.object.changelist.size ());
 
-            for (const Emergence::StandardLayout::Patch &patch : objectData.body.fullChangelist)
+            for (const Resource::Object::ObjectComponent &component : objectData.object.changelist)
             {
-                descriptor->components.emplace_back (patch);
+                descriptor->components.emplace_back (component.component);
             }
         }
     }
