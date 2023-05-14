@@ -9,6 +9,9 @@
 
 #include <Serialization/Binary.hpp>
 
+#include <StandardLayout/Patch.hpp>
+#include <StandardLayout/PatchBuilder.hpp>
+
 #include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Serialization::Binary
@@ -43,6 +46,23 @@ static Container::Optional<Container::String> ReadString (std::istream &_input)
         }
 
         output += next;
+    }
+}
+
+[[maybe_unused]] static void SkipString (std::istream &_input)
+{
+    while (true)
+    {
+        char next;
+        if (!_input.get (next))
+        {
+            return;
+        }
+
+        if (next == '\0')
+        {
+            return;
+        }
     }
 }
 
@@ -166,8 +186,76 @@ static bool DeserializePatchValue (std::istream &_input,
     return true;
 }
 
+void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept
+{
+    const StandardLayout::Mapping &mapping = _patch.GetTypeMapping ();
+    WriteString (_output, *mapping.GetName ());
+
+    const auto changeCount = static_cast<uint32_t> (_patch.GetChangeCount ());
+    _output.write (reinterpret_cast<const char *> (&changeCount), sizeof (changeCount));
+
+    for (const auto &change : _patch)
+    {
+        _output.write (reinterpret_cast<const char *> (&change.field), sizeof (change.field));
+        StandardLayout::Field field = mapping.GetField (change.field);
+        SerializePatchValue (_output, field, change.newValue);
+    }
+}
+
+bool DeserializePatch (std::istream &_input,
+                       void *_outputAddress,
+                       const PatchableTypesRegistry &_patchableTypesRegistry) noexcept
+{
+    StandardLayout::PatchBuilder patchBuilder;
+    StandardLayout::Mapping mapping;
+
+    if (Container::Optional<Container::String> typeName = ReadString (_input))
+    {
+        if ((mapping = _patchableTypesRegistry.Get (Memory::UniqueString {*typeName})))
+        {
+            patchBuilder.Begin (mapping);
+        }
+        else
+        {
+            EMERGENCE_LOG (ERROR, "Serialization: Type \"", *typeName, "\" is not patchable!");
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    std::uint32_t changeCount = 0u;
+    if (!_input.read (reinterpret_cast<char *> (&changeCount), sizeof (changeCount)))
+    {
+        return false;
+    }
+
+    for (std::uint32_t index = 0u; index < changeCount; ++index)
+    {
+        StandardLayout::FieldId fieldId;
+        if (!_input.read (reinterpret_cast<char *> (&fieldId), sizeof (fieldId)))
+        {
+            return false;
+        }
+
+        StandardLayout::Field field = mapping.GetField (fieldId);
+        if (!field.IsHandleValid () || !DeserializePatchValue (_input, field, fieldId, patchBuilder))
+        {
+            return false;
+        }
+    }
+
+    *static_cast<StandardLayout::Patch *> (_outputAddress) = patchBuilder.End ();
+    return true;
+}
+
 void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept
 {
+    // Write string with object type for type detection.
+    WriteString (_output, *_mapping.GetName ());
+
     const void *lastBitsetByteAddress = nullptr;
     uint8_t lastBitsetByte = 0u;
 
@@ -259,11 +347,26 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
     }
 }
 
-bool DeserializeObject (std::istream &_input, void *_object, const StandardLayout::Mapping &_mapping) noexcept
+bool DeserializeObject (std::istream &_input,
+                        void *_object,
+                        const StandardLayout::Mapping &_mapping,
+                        const PatchableTypesRegistry &_patchableTypesRegistry) noexcept
 {
+#ifdef EMERGENCE_ASSERT_ENABLED
+    if (Container::Optional<Container::String> typeName = ReadString (_input))
+    {
+        EMERGENCE_ASSERT (typeName == *_mapping.GetName ());
+    }
+    else
+    {
+        return false;
+    }
+#else
+    SkipString (_input);
+#endif
+
     const void *lastBitsetByteAddress = nullptr;
     char lastBitsetByte = 0u;
-    StandardLayout::PatchBuilder patchBuilder;
 
     for (auto iterator = _mapping.BeginConditional (_object), end = _mapping.EndConditional (); iterator != end;
          ++iterator)
@@ -341,204 +444,40 @@ bool DeserializeObject (std::istream &_input, void *_object, const StandardLayou
 
         case StandardLayout::FieldArchetype::VECTOR:
         {
-            // TODO: Implement.
+            uint32_t vectorSize;
+            if (!_input.read (reinterpret_cast<char *> (&vectorSize), sizeof (vectorSize)))
+            {
+                return false;
+            }
+
+            const StandardLayout::Mapping &itemMapping = field.GetVectorItemMapping ();
+            Container::UntypedVectorUtility::InitSize (address, vectorSize * itemMapping.GetObjectSize ());
+
+            for (uint8_t *pointer = Container::UntypedVectorUtility::Begin (address);
+                 pointer != Container::UntypedVectorUtility::End (address); pointer += itemMapping.GetObjectSize ())
+            {
+                itemMapping.Construct (pointer);
+                if (!DeserializeObject (_input, pointer, itemMapping, _patchableTypesRegistry))
+                {
+                    return false;
+                }
+            }
+
             break;
         }
 
         case StandardLayout::FieldArchetype::PATCH:
         {
-            // TODO: Implement.
+            if (!DeserializePatch (_input, address, _patchableTypesRegistry))
+            {
+                return false;
+            }
+
             break;
         }
         }
     }
 
     return true;
-}
-
-void SerializeString (std::ostream &_output, const char *_string) noexcept
-{
-    WriteString (_output, _string);
-}
-
-bool DeserializeString (std::istream &_input, Container::Utf8String &_stringOutput) noexcept
-{
-    Container::Optional<Container::String> string = ReadString (_input);
-    if (string)
-    {
-        _stringOutput = std::move (string.value ());
-        return true;
-    }
-
-    return false;
-}
-
-void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept
-{
-    const StandardLayout::Mapping &mapping = _patch.GetTypeMapping ();
-    const auto changeCount = static_cast<uint32_t> (_patch.GetChangeCount ());
-    _output.write (reinterpret_cast<const char *> (&changeCount), sizeof (changeCount));
-
-    for (const auto &change : _patch)
-    {
-        _output.write (reinterpret_cast<const char *> (&change.field), sizeof (change.field));
-        StandardLayout::Field field = mapping.GetField (change.field);
-        SerializePatchValue (_output, field, change.newValue);
-    }
-}
-
-bool DeserializePatch (std::istream &_input,
-                       StandardLayout::PatchBuilder &_builder,
-                       const StandardLayout::Mapping &_mapping) noexcept
-{
-    _builder.Begin (_mapping);
-    std::uint32_t changeCount = 0u;
-
-    if (!_input.read (reinterpret_cast<char *> (&changeCount), sizeof (changeCount)))
-    {
-        return false;
-    }
-
-    for (std::uint32_t index = 0u; index < changeCount; ++index)
-    {
-        StandardLayout::FieldId fieldId;
-        if (!_input.read (reinterpret_cast<char *> (&fieldId), sizeof (fieldId)))
-        {
-            return false;
-        }
-
-        StandardLayout::Field field = _mapping.GetField (fieldId);
-        if (!field.IsHandleValid () || !DeserializePatchValue (_input, field, fieldId, _builder))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void SerializeFastPortablePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept
-{
-    const StandardLayout::Mapping &mapping = _patch.GetTypeMapping ();
-    const auto changeCount = static_cast<uint32_t> (_patch.GetChangeCount ());
-    _output.write (reinterpret_cast<const char *> (&changeCount), sizeof (changeCount));
-
-    for (const auto &change : _patch)
-    {
-        StandardLayout::Field field = mapping.GetField (change.field);
-        WriteString (_output, *field.GetName ());
-        SerializePatchValue (_output, field, change.newValue);
-    }
-}
-
-bool DeserializeFastPortablePatch (std::istream &_input,
-                                   StandardLayout::PatchBuilder &_builder,
-                                   FieldNameLookupCache &_cache) noexcept
-{
-    _builder.Begin (_cache.GetTypeMapping ());
-    std::uint32_t changeCount = 0u;
-
-    if (!_input.read (reinterpret_cast<char *> (&changeCount), sizeof (changeCount)))
-    {
-        return false;
-    }
-
-    for (std::uint32_t index = 0u; index < changeCount; ++index)
-    {
-        if (Container::Optional<Container::String> fieldName = ReadString (_input))
-        {
-            StandardLayout::Field field = _cache.Lookup (Memory::UniqueString {fieldName.value ().c_str ()});
-            if (!field)
-            {
-                // It's not an error, because mapping is portable and therefore fields might be missing.
-                EMERGENCE_LOG (WARNING, "Serialization::Binary: Mapping \"", _cache.GetTypeMapping ().GetName (),
-                               "\" does not contain field \"", fieldName.value (), "\"!");
-                continue;
-            }
-
-            if (!DeserializePatchValue (_input, field, _cache.GetTypeMapping ().GetFieldId (field), _builder))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void PatchBundleSerializer::Begin (std::ostream &_output) noexcept
-{
-    output = &_output;
-}
-
-void PatchBundleSerializer::Next (const StandardLayout::Patch &_patch) noexcept
-{
-    EMERGENCE_ASSERT (output);
-    WriteString (*output, *_patch.GetTypeMapping ().GetName ());
-    SerializePatch (*output, _patch);
-}
-
-void PatchBundleSerializer::End () noexcept
-{
-    output = nullptr;
-}
-
-void PatchBundleDeserializer::RegisterType (const StandardLayout::Mapping &_mapping) noexcept
-{
-    typeRegister.emplace (_mapping.GetName (), _mapping);
-}
-
-void PatchBundleDeserializer::Begin (std::istream &_input) noexcept
-{
-    input = &_input;
-}
-
-bool PatchBundleDeserializer::HasNext () const noexcept
-{
-    EMERGENCE_ASSERT (input);
-    // Peek to trigger end of stream check.
-    input->peek ();
-    return input->good ();
-}
-
-Container::Optional<StandardLayout::Patch> PatchBundleDeserializer::Next () noexcept
-{
-    EMERGENCE_ASSERT (input);
-    if (!HasNext ())
-    {
-        return std::nullopt;
-    }
-
-    const Container::Optional<Container::String> typeNameString = ReadString (*input);
-    if (!typeNameString)
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Binary: Unable to extract next patch type name!");
-        return std::nullopt;
-    }
-
-    const Memory::UniqueString typeName {typeNameString.value ().c_str ()};
-    auto iterator = typeRegister.find (typeName);
-
-    if (iterator == typeRegister.end ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Binary: Unable to find type with name \"", typeName, "\"!");
-        return std::nullopt;
-    }
-
-    if (!DeserializePatch (*input, patchBuilder, iterator->second))
-    {
-        return std::nullopt;
-    }
-
-    return patchBuilder.End ();
-}
-
-void PatchBundleDeserializer::End () noexcept
-{
-    input = nullptr;
 }
 } // namespace Emergence::Serialization::Binary

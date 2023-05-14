@@ -1,6 +1,13 @@
 #pragma once
 
+#include <Container/Vector.hpp>
+
+#include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
+#include <Serialization/PatchableTypesRegistry.hpp>
+
 #include <StandardLayout/Mapping.hpp>
+#include <StandardLayout/Patch.hpp>
 
 namespace Emergence::Serialization::Test
 {
@@ -110,4 +117,133 @@ struct UnionStruct final
 
     static const Reflection &Reflect () noexcept;
 };
+
+struct SimpleTestStruct final
+{
+    uint64_t a = 0u;
+    uint64_t b = 0u;
+
+    bool operator== (const SimpleTestStruct &_other) const noexcept = default;
+
+    bool operator!= (const SimpleTestStruct &_other) const noexcept = default;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId a;
+        StandardLayout::FieldId b;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct OneLevelNestingStruct final
+{
+    SimpleTestStruct first;
+    SimpleTestStruct second;
+
+    bool operator== (const OneLevelNestingStruct &_other) const noexcept = default;
+
+    bool operator!= (const OneLevelNestingStruct &_other) const noexcept = default;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId first;
+        StandardLayout::FieldId second;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct TwoLevelNestingStruct final
+{
+    SimpleTestStruct first;
+    OneLevelNestingStruct second;
+
+    bool operator== (const TwoLevelNestingStruct &_other) const noexcept = default;
+
+    bool operator!= (const TwoLevelNestingStruct &_other) const noexcept = default;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId first;
+        StandardLayout::FieldId second;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct VectorStruct final
+{
+    SimpleTestStruct simple;
+    Container::Vector<SimpleTestStruct> vector;
+
+    bool operator== (const VectorStruct &_other) const noexcept = default;
+
+    bool operator!= (const VectorStruct &_other) const noexcept = default;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId simple;
+        StandardLayout::FieldId vector;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct NestedVectorStruct final
+{
+    Container::Vector<VectorStruct> vector;
+
+    bool operator== (const NestedVectorStruct &_other) const noexcept = default;
+
+    bool operator!= (const NestedVectorStruct &_other) const noexcept = default;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId vector;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct PatchStruct final
+{
+    StandardLayout::Patch patch;
+
+    bool operator== (const PatchStruct &_other) const noexcept;
+
+    bool operator!= (const PatchStruct &_other) const noexcept;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId patch;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct VectorOfPatchesStruct final
+{
+    Container::Vector<PatchStruct> patches;
+
+    bool operator== (const VectorOfPatchesStruct &_other) const noexcept = default;
+
+    bool operator!= (const VectorOfPatchesStruct &_other) const noexcept = default;
+
+    struct Reflection
+    {
+        StandardLayout::FieldId patches;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+const PatchableTypesRegistry &GetPatchableTypesRegistry () noexcept;
 } // namespace Emergence::Serialization::Test

@@ -119,14 +119,26 @@ concept HasReflection = requires (T) {
     };
 };
 
+template <typename>
+struct IsVector
+{
+    static constexpr bool VALUE = false;
+};
+
+template <typename ValueType>
+struct IsVector<Container::Vector<ValueType>>
+{
+    static constexpr bool VALUE = true;
+};
+
 /// \brief Checks that type is supported by ::RegisterRegularField function logic.
 template <typename T>
-concept RegularFieldType =
-    std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
-    std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
-    std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
-    std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, Memory::UniqueString> ||
-    std::is_enum_v<T> || std::is_pointer_v<T> || HasReflection<T>;
+concept RegularFieldType = std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
+                           std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
+                           std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
+                           std::is_same_v<T, float> || std::is_same_v<T, double> ||
+                           std::is_same_v<T, Memory::UniqueString> || std::is_enum_v<T> || std::is_pointer_v<T> ||
+                           HasReflection<T> || IsVector<T>::VALUE || std::is_same_v<T, StandardLayout::Patch>;
 
 /// \brief Registers field which registration type can be easily deduced using constant expression.
 /// \details Arrays are not supported because their registration results in more than one field id.
@@ -247,16 +259,4 @@ auto RegisterRegularArray (MappingBuilder &_builder,
 
     return result;
 }
-
-template <typename>
-struct IsVector
-{
-    static constexpr bool VALUE = false;
-};
-
-template <typename ValueType>
-struct IsVector<Container::Vector<ValueType>>
-{
-    static constexpr bool VALUE = true;
-};
 } // namespace Emergence::StandardLayout::Registration

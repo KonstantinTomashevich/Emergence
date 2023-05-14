@@ -21,6 +21,11 @@ Patch::ChangeInfo Patch::Iterator::operator* () const noexcept
     return {valueSetter->field, &valueSetter->value};
 }
 
+Patch::Patch () noexcept
+{
+    new (&data) Handling::Handle<PlainPatch> (nullptr);
+}
+
 Patch::Patch (const Patch &_other) noexcept
     : Patch (_other.data)
 {
@@ -204,6 +209,38 @@ Patch Patch::operator- (const Patch &_other) const noexcept
 
     Handling::Handle<PlainPatch> patch = builder.End ();
     return Patch (array_cast (patch));
+}
+
+bool Patch::IsHandleValid () const noexcept
+{
+    return block_cast<Handling::Handle<PlainPatch>> (data).Get ();
+}
+
+Patch::operator bool () const noexcept
+{
+    return IsHandleValid ();
+}
+
+Patch &Patch::operator= (const Patch &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Patch ();
+        new (this) Patch (_other);
+    }
+
+    return *this;
+}
+
+Patch &Patch::operator= (Patch &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~Patch ();
+        new (this) Patch (std::move (_other));
+    }
+
+    return *this;
 }
 
 Patch::Patch (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept

@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Serialization/Test/Types.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
@@ -101,5 +103,144 @@ const UnionStruct::Reflection &UnionStruct::Reflect () noexcept
     }();
 
     return reflection;
+}
+
+const SimpleTestStruct::Reflection &SimpleTestStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (SimpleTestStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (a);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (b);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const OneLevelNestingStruct::Reflection &OneLevelNestingStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (OneLevelNestingStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (first);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (second);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const TwoLevelNestingStruct::Reflection &TwoLevelNestingStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (TwoLevelNestingStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (first);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (second);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const VectorStruct::Reflection &VectorStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (VectorStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (simple);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (vector);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const NestedVectorStruct::Reflection &NestedVectorStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (NestedVectorStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (vector);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+bool PatchStruct::operator== (const PatchStruct &_other) const noexcept
+{
+    if (patch.GetTypeMapping () != _other.patch.GetTypeMapping ())
+    {
+        return false;
+    }
+
+    // We assume that serialization saves the order of fields in patches.
+    // Therefore, we're just checking that the content for all fields is equal.
+    auto myIterator = patch.Begin ();
+    auto otherIterator = _other.patch.Begin ();
+
+    while (myIterator != patch.End () && otherIterator != _other.patch.End ())
+    {
+        if ((*myIterator).field != (*otherIterator).field)
+        {
+            return false;
+        }
+
+        const StandardLayout::Field field = patch.GetTypeMapping ().GetField ((*myIterator).field);
+        if (memcmp ((*myIterator).newValue, (*otherIterator).newValue, field.GetSize ()) != 0)
+        {
+            return false;
+        }
+
+        ++myIterator;
+        ++otherIterator;
+    }
+
+    return myIterator == patch.End () && otherIterator == _other.patch.End ();
+}
+
+bool PatchStruct::operator!= (const PatchStruct &_other) const noexcept
+{
+    return !(*this == _other);
+}
+
+const PatchStruct::Reflection &PatchStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PatchStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (patch);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const VectorOfPatchesStruct::Reflection &VectorOfPatchesStruct::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (VectorOfPatchesStruct);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (patches);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const PatchableTypesRegistry &GetPatchableTypesRegistry () noexcept
+{
+    static const PatchableTypesRegistry registry = [] ()
+    {
+        PatchableTypesRegistry typeRegistry;
+        typeRegistry.Register (SimpleTestStruct::Reflect ().mapping);
+        typeRegistry.Register (OneLevelNestingStruct::Reflect ().mapping);
+        typeRegistry.Register (TwoLevelNestingStruct::Reflect ().mapping);
+        return typeRegistry;
+    }();
+
+    return registry;
 }
 } // namespace Emergence::Serialization::Test

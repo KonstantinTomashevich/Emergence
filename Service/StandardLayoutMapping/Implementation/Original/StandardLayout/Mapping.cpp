@@ -172,6 +172,16 @@ uintptr_t Mapping::Hash () const noexcept
     return reinterpret_cast<uintptr_t> (handle.Get ());
 }
 
+bool Mapping::IsHandleValid () const noexcept
+{
+    return block_cast<Handling::Handle<PlainMapping>> (data).Get ();
+}
+
+Mapping::operator bool () const noexcept
+{
+    return IsHandleValid ();
+}
+
 Mapping::Mapping (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Handling::Handle<PlainMapping> (block_cast<Handling::Handle<PlainMapping>> (_data));

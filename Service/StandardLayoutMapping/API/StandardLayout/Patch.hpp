@@ -36,6 +36,9 @@ public:
 
         explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
+    
+    /// \brief Constructs invalid patch. Needed only to simplify registration procedure and must be reassigned.
+    Patch () noexcept;
 
     Patch (const Patch &_other) noexcept;
 
@@ -75,9 +78,17 @@ public:
     /// \details `x = y - z => y = z + x`. Keep in mind that `+` is not commutative!
     /// \invariant Both patches were build for one mapping!
     Patch operator- (const Patch &_other) const noexcept;
+    
+    /// \return Whether this instance points to a valid patch.
+    /// \return Is field ::handle valid?
+    [[nodiscard]] bool IsHandleValid () const noexcept;
+    
+    /// \return ::IsHandleValid ()
+    explicit operator bool () const noexcept;
 
-    /// Assigning patches looks counter-intuitive.
-    EMERGENCE_DELETE_ASSIGNMENT (Patch);
+    Patch &operator= (const Patch &_other) noexcept;
+    
+    Patch &operator= (Patch &&_other) noexcept;
 
 private:
     friend class PatchBuilder;

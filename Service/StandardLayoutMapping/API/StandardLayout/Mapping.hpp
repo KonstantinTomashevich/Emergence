@@ -102,6 +102,13 @@ public:
     /// \return Hash for this mapping.
     [[nodiscard]] uintptr_t Hash () const noexcept;
 
+    /// \return Whether this instance points to a valid mapping.
+    /// \return Is field ::handle valid?
+    [[nodiscard]] bool IsHandleValid () const noexcept;
+
+    /// \return ::IsHandleValid ()
+    explicit operator bool () const noexcept;
+
     /// \warning If two mappings were built independently for the same type, behaviour is implementation-defined.
     bool operator== (const Mapping &_other) const noexcept;
 
