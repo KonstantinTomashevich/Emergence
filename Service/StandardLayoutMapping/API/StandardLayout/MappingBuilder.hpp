@@ -114,6 +114,10 @@ public:
                                                 std::size_t _offset,
                                                 const Mapping &_objectMapping) noexcept;
 
+    /// \brief Registers Container::Utf8String field.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    [[nodiscard]] FieldId RegisterUtf8String (Memory::UniqueString _name, std::size_t _offset) noexcept;
+
     /// \brief Registers vector that contains items of given Mapping.
     /// \invariant There is active mapping construction routine that uses this builder.
     [[nodiscard]] FieldId RegisterVector (Memory::UniqueString _name,

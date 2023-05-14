@@ -106,6 +106,21 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
         break;
     }
 
+    case StandardLayout::FieldArchetype::UTF8_STRING:
+    {
+        const char *stringValue = static_cast<const Container::Utf8String *> (_address)->c_str ();
+        if (stringValue)
+        {
+            result = stringValue;
+        }
+        else
+        {
+            result = "";
+        }
+
+        break;
+    }
+
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
     case StandardLayout::FieldArchetype::VECTOR:
     case StandardLayout::FieldArchetype::PATCH:
@@ -276,6 +291,10 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
             *static_cast<Memory::UniqueString *> (_address) = Memory::UniqueString {_input.Scalar ().c_str ()};
             break;
 
+        case StandardLayout::FieldArchetype::UTF8_STRING:
+            *static_cast<Container::Utf8String *> (_address) = _input.Scalar ();
+            break;
+
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
         case StandardLayout::FieldArchetype::VECTOR:
         case StandardLayout::FieldArchetype::PATCH:
@@ -361,6 +380,7 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
         case StandardLayout::FieldArchetype::STRING:
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::UTF8_STRING:
         case StandardLayout::FieldArchetype::VECTOR:
         case StandardLayout::FieldArchetype::PATCH:
             // Unsupported for patches.
@@ -565,6 +585,7 @@ static bool DeserializeObjectFromYaml (const YAML::Node &_input,
             case StandardLayout::FieldArchetype::STRING:
             case StandardLayout::FieldArchetype::BLOCK:
             case StandardLayout::FieldArchetype::UNIQUE_STRING:
+            case StandardLayout::FieldArchetype::UTF8_STRING:
                 EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered map value for elementary field \"",
                                *field.GetName (), "\" of mapping \"", *_mapping.GetName (), "\"!");
                 return false;

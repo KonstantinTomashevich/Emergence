@@ -82,7 +82,9 @@ struct ContainerControl final
         StandardLayout::FieldId border;
 
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
         StandardLayout::FieldId previewKey;
+        StandardLayout::FieldId preview;
         StandardLayout::Mapping mapping;
     };
 

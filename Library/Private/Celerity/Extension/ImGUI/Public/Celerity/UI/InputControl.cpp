@@ -12,6 +12,7 @@ const InputControl::Reflection &InputControl::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (type);
         EMERGENCE_MAPPING_REGISTER_REGULAR (labelKey);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (label);
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (onChangedAction);
         EMERGENCE_MAPPING_REGISTER_REGULAR (onChangedActionDispatch);

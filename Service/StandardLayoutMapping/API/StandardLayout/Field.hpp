@@ -35,7 +35,7 @@ enum class FieldArchetype : uint8_t
     /// \brief Floating point number.
     FLOAT,
 
-    /// \brief Zero terminated string.
+    /// \brief Zero terminated inplace string.
     STRING,
 
     /// \brief Fixed size memory block.
@@ -50,6 +50,10 @@ enum class FieldArchetype : uint8_t
     /// \details All nested fields are projected into root mapping, but sometimes
     ///          it's useful to process complex fields as independent nested objects.
     NESTED_OBJECT,
+
+    /// \brief Instance of Container::Utf8String.
+    /// \details In contrast to ::STRING, ::UTF8_STRING represents string in external address space.
+    UTF8_STRING,
 
     /// \brief Instance of Emergence::Container::Vector that stores objects, that can be described by their mappings.
     /// \details Field projection is impossible here due to different and dynamic address space.

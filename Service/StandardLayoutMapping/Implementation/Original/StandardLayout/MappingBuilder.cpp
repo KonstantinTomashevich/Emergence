@@ -195,6 +195,11 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
                                                                          field.GetNestedObjectMapping ().Get (), true});
             break;
 
+        case FieldArchetype::UTF8_STRING:
+            nestedFieldId = state.AddField (
+                FieldData::Utf8StringSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (), true});
+            break;
+
         case FieldArchetype::VECTOR:
             nestedFieldId =
                 state.AddField (FieldData::VectorSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (),
@@ -218,6 +223,11 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     }
 
     return objectFieldId;
+}
+
+FieldId MappingBuilder::RegisterUtf8String (Memory::UniqueString _name, std::size_t _offset) noexcept
+{
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::Utf8StringSeed {_name, _offset, false});
 }
 
 FieldId MappingBuilder::RegisterVector (Memory::UniqueString _name,

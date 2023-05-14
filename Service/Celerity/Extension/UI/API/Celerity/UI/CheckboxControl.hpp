@@ -34,6 +34,7 @@ struct CheckboxControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
         StandardLayout::FieldId checked;
 
         StandardLayout::FieldId onChangedAction;

@@ -4,17 +4,6 @@
 
 namespace Emergence::Celerity::Localization
 {
-/// \brief Names of files used for storing localization data.
-struct Files final
-{
-    Files () = delete;
-
-    /// \brief Name of file that stores localized strings (without extension).
-    /// \details Binary representation (.bin extension) stores keys and values as plain strings.
-    ///          Yaml representation (.yaml extension) uses string mapping format.
-    static const Memory::UniqueString STRINGS;
-};
-
 /// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
 struct Checkpoint final
 {
@@ -31,8 +20,6 @@ struct Checkpoint final
 ///
 /// \param _localizationRootPath Known root folder for locale-specific folders. Files for every locale must be
 ///                              stored in `{_localizationRootPath}/{localeName}/*`.
-/// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for locale loading.
 void AddToNormalUpdate (PipelineBuilder &_builder,
-                        Memory::UniqueString _localizationRootPath,
-                        uint64_t _maxLoadingTimePerFrameNs) noexcept;
+                        Memory::UniqueString _localizationRootPath) noexcept;
 } // namespace Emergence::Celerity::Localization

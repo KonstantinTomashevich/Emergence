@@ -199,6 +199,9 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         return Append (ObjectPointer {_reflectedField.pointer, _reflectedField.reflection.GetNestedObjectMapping ()});
 
+    case StandardLayout::FieldArchetype::UTF8_STRING:
+        return Append (static_cast<const Container::Utf8String *> (_reflectedField.pointer)->c_str ());
+
     case StandardLayout::FieldArchetype::VECTOR:
     {
         Append ("{ ");

@@ -81,6 +81,7 @@ struct WindowControl final
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId viewportName;
         StandardLayout::FieldId titleKey;
+        StandardLayout::FieldId title;
 
         StandardLayout::FieldId closable;
         StandardLayout::FieldId minimizable;

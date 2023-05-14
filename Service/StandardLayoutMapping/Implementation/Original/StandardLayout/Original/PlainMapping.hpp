@@ -81,6 +81,16 @@ public:
         bool projected = false;
     };
 
+    /// \brief Used to register fields with FieldArchetype::UTF8_STRING.
+    struct Utf8StringSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+
+        bool projected = false;
+    };
+
     /// \brief Used to register fields with FieldArchetype::VECTOR.
     struct VectorSeed
     {
@@ -143,6 +153,8 @@ private:
     explicit FieldData (UniqueStringSeed _seed) noexcept;
 
     explicit FieldData (NestedObjectSeed _seed) noexcept;
+
+    explicit FieldData (Utf8StringSeed _seed) noexcept;
 
     explicit FieldData (VectorSeed _seed) noexcept;
 

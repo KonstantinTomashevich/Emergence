@@ -84,6 +84,7 @@ static void SerializePatchValue (std::ostream &_output, const StandardLayout::Fi
     case StandardLayout::FieldArchetype::STRING:
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::UTF8_STRING:
     case StandardLayout::FieldArchetype::VECTOR:
     case StandardLayout::FieldArchetype::PATCH:
         // Unsupported.
@@ -176,6 +177,7 @@ static bool DeserializePatchValue (std::istream &_input,
     case StandardLayout::FieldArchetype::STRING:
     case StandardLayout::FieldArchetype::BLOCK:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::UTF8_STRING:
     case StandardLayout::FieldArchetype::VECTOR:
     case StandardLayout::FieldArchetype::PATCH:
         // Unsupported.
@@ -312,6 +314,10 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
             // We do nothing for nested objects, because all of their fields are projected.
             break;
 
+        case StandardLayout::FieldArchetype::UTF8_STRING:
+            WriteString (_output, static_cast<const Container::Utf8String *> (address)->c_str ());
+            break;
+
         case StandardLayout::FieldArchetype::VECTOR:
         {
             const auto vectorSizeInBytes = static_cast<uint32_t> (Container::UntypedVectorUtility::End (address) -
@@ -441,6 +447,20 @@ bool DeserializeObject (std::istream &_input,
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
             // We do nothing for nested objects, because all of their fields are projected.
             break;
+
+        case StandardLayout::FieldArchetype::UTF8_STRING:
+        {
+            if (Container::Optional<Container::String> string = ReadString (_input))
+            {
+                *static_cast<Container::Utf8String *> (address) = string.value ();
+            }
+            else
+            {
+                return false;
+            }
+
+            break;
+        }
 
         case StandardLayout::FieldArchetype::VECTOR:
         {

@@ -187,6 +187,7 @@ Patch Patch::operator- (const Patch &_other) const noexcept
                 case FieldArchetype::STRING:
                 case FieldArchetype::BLOCK:
                 case FieldArchetype::NESTED_OBJECT:
+                case FieldArchetype::UTF8_STRING:
                 case FieldArchetype::VECTOR:
                 case FieldArchetype::PATCH:
                     // Do nothing: unsupported archetypes. Nested field is actually supported

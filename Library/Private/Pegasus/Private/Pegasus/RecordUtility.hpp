@@ -145,10 +145,11 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
         EMERGENCE_ASSERT (false);
     }
 
+    case StandardLayout::FieldArchetype::UTF8_STRING:
     case StandardLayout::FieldArchetype::VECTOR:
     case StandardLayout::FieldArchetype::PATCH:
     {
-        // Vectors and patches aren't supported for indexing.
+        // Vectors, patches and external strings aren't supported for indexing.
         EMERGENCE_ASSERT (false);
     }
     }

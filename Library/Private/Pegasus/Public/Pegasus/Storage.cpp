@@ -444,6 +444,7 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
             break;
         }
 
+        case StandardLayout::FieldArchetype::UTF8_STRING:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
         case StandardLayout::FieldArchetype::VECTOR:
         case StandardLayout::FieldArchetype::PATCH:

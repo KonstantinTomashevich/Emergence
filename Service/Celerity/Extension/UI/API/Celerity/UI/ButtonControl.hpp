@@ -37,6 +37,7 @@ struct ButtonControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
 

@@ -10,6 +10,7 @@ const LocalizedString::Reflection &LocalizedString::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (LocalizedString);
         EMERGENCE_MAPPING_REGISTER_REGULAR (key);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (value);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -133,12 +133,13 @@ struct IsVector<Container::Vector<ValueType>>
 
 /// \brief Checks that type is supported by ::RegisterRegularField function logic.
 template <typename T>
-concept RegularFieldType = std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
-                           std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
-                           std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
-                           std::is_same_v<T, float> || std::is_same_v<T, double> ||
-                           std::is_same_v<T, Memory::UniqueString> || std::is_enum_v<T> || std::is_pointer_v<T> ||
-                           HasReflection<T> || IsVector<T>::VALUE || std::is_same_v<T, StandardLayout::Patch>;
+concept RegularFieldType =
+    std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
+    std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
+    std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
+    std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, Memory::UniqueString> ||
+    std::is_enum_v<T> || std::is_pointer_v<T> || HasReflection<T> || std::is_same_v<T, Container::Utf8String> ||
+    IsVector<T>::VALUE || std::is_same_v<T, StandardLayout::Patch>;
 
 /// \brief Registers field which registration type can be easily deduced using constant expression.
 /// \details Arrays are not supported because their registration results in more than one field id.
@@ -200,6 +201,10 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     else if constexpr (HasReflection<Type>)
     {
         return _builder.RegisterNestedObject (Memory::UniqueString {_name}, _offset, Type::Reflect ().mapping);
+    }
+    else if constexpr (std::is_same_v<Type, Container::Utf8String>)
+    {
+        return _builder.RegisterUtf8String (Memory::UniqueString {_name}, _offset);
     }
     else if constexpr (IsVector<Type>::VALUE)
     {

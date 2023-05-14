@@ -1503,6 +1503,7 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
         case StandardLayout::FieldArchetype::STRING:                                                                   \
         case StandardLayout::FieldArchetype::BLOCK:                                                                    \
         case StandardLayout::FieldArchetype::UNIQUE_STRING:                                                            \
+        case StandardLayout::FieldArchetype::UTF8_STRING:                                                              \
         case StandardLayout::FieldArchetype::NESTED_OBJECT:                                                            \
         case StandardLayout::FieldArchetype::VECTOR:                                                                   \
         case StandardLayout::FieldArchetype::PATCH:                                                                    \

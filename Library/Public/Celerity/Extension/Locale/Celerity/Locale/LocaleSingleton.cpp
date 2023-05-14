@@ -12,6 +12,7 @@ const LocaleSingleton::Reflection &LocaleSingleton::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (targetLocale);
         EMERGENCE_MAPPING_REGISTER_REGULAR (loadedLocale);
         EMERGENCE_MAPPING_REGISTER_REGULAR (loadingLocale);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (configurationInLoading);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

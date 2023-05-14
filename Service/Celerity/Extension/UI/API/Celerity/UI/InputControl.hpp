@@ -65,6 +65,7 @@ struct InputControl final
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId type;
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
 
         StandardLayout::FieldId onChangedAction;
         StandardLayout::FieldId onChangedActionDispatch;

@@ -7,6 +7,7 @@
 
 #include <API/Common/Implementation/Iterator.hpp>
 
+#include <Container/String.hpp>
 #include <Container/Vector.hpp>
 
 #include <StandardLayout/Original/PlainMapping.hpp>
@@ -109,6 +110,15 @@ FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
 {
     EMERGENCE_ASSERT (nestedObjectMapping);
     size = nestedObjectMapping->GetObjectSize ();
+}
+
+FieldData::FieldData (FieldData::Utf8StringSeed _seed) noexcept
+    : archetype (FieldArchetype::UTF8_STRING),
+      projected (_seed.projected),
+      offset (_seed.offset),
+      size (sizeof (Container::Utf8String)),
+      name (_seed.name)
+{
 }
 
 FieldData::FieldData (FieldData::VectorSeed _seed) noexcept

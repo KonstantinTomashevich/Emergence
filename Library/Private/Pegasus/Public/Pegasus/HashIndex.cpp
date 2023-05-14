@@ -156,6 +156,7 @@ static void UpdateHash (Hashing::ByteHasher &_hasher, const StandardLayout::Fiel
         break;
     }
 
+    case StandardLayout::FieldArchetype::UTF8_STRING:
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
     case StandardLayout::FieldArchetype::VECTOR:
     case StandardLayout::FieldArchetype::PATCH:

@@ -6,6 +6,7 @@ sober_library_begin (CelerityLocale STATIC)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+    sober_library_use_service (EXPECTED PRIVATE JobDispatcher)
     sober_library_use_service (EXPECTED PRIVATE Log)
 
     sober_naming_variant_target (Celerity Original CELERITY_LIBRARY_TARGET)
