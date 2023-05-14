@@ -34,7 +34,6 @@ private:
         StandardLayout::Mapping type;
         InsertLongTermQuery insertConfig;
         RemoveValueQuery removeConfig;
-        Emergence::Serialization::FieldNameLookupCache cache;
     };
 
     bool ProcessCurrentRequest (ResourceConfigLoadingStateSingleton *_loadingState, std::uint64_t _startTime) noexcept;
@@ -70,8 +69,7 @@ Loader::Loader (TaskConstructor &_constructor,
     for (const ResourceConfigTypeMeta &meta : _supportedTypes)
     {
         perTypeData.emplace_back (PerTypeData {meta.mapping, _constructor.InsertLongTerm (meta.mapping),
-                                               _constructor.RemoveValue (meta.mapping, {meta.nameField}),
-                                               Serialization::FieldNameLookupCache {meta.mapping}});
+                                               _constructor.RemoveValue (meta.mapping, {meta.nameField})});
     }
 }
 
@@ -188,12 +186,12 @@ bool Loader::ProcessCurrentRequest (ResourceConfigLoadingStateSingleton *_loadin
             if (isBinaryConfig)
             {
                 std::ifstream input {entry.path (), std::ios::binary};
-                loaded = Emergence::Serialization::Binary::DeserializeObject (input, config, requestedType);
+                loaded = Emergence::Serialization::Binary::DeserializeObject (input, config, requestedType, {});
             }
             else
             {
                 std::ifstream input {entry.path ()};
-                loaded = Emergence::Serialization::Yaml::DeserializeObject (input, config, perType.cache);
+                loaded = Emergence::Serialization::Yaml::DeserializeObject (input, config, perType.type, {});
             }
 
             if (!loaded)

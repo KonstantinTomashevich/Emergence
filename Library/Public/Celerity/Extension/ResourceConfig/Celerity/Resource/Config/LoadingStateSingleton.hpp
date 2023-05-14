@@ -21,7 +21,7 @@ struct ResourceConfigLoadingStateSingleton final
         StandardLayout::FieldId nameField;
 
         /// \brief Folder that contains config resources.
-        Container::String folder;
+        Container::Utf8String folder;
 
         /// \brief Whether all configs of this type are loaded.
         bool loaded = false;

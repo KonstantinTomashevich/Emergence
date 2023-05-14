@@ -28,7 +28,8 @@ public:
     void Execute () noexcept;
 
 private:
-    void RegisterPathMapping (ResourceConfigLoadingStateSingleton *_state, const ListItem &_item) const noexcept;
+    void RegisterPathMapping (ResourceConfigLoadingStateSingleton *_state,
+                              const PathMapping &_pathMapping) const noexcept;
 
     ModifySingletonQuery modifyState;
 
@@ -67,46 +68,29 @@ void Loader::Execute () noexcept
 
     std::filesystem::path binaryPath {EMERGENCE_BUILD_STRING (pathToAssetRoot, "/", BINARY_FILE_NAME)};
     std::filesystem::path yamlPath {EMERGENCE_BUILD_STRING (pathToAssetRoot, "/", YAML_FILE_NAME)};
-    ListItem item;
+    PathMapping pathMapping;
 
     if (std::filesystem::exists (binaryPath))
     {
         std::ifstream input {binaryPath, std::ios::binary};
-        while (input)
+        if (!Serialization::Binary::DeserializeObject (input, &pathMapping, PathMapping::Reflect ().mapping, {}))
         {
-            if (!Serialization::Binary::DeserializeObject (input, &item, ListItem::Reflect ().mapping))
-            {
-                EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Unable to deserialize config path mapping \"",
-                               binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                               "\".");
-                break;
-            }
-
-            RegisterPathMapping (state, item);
-            // Use peek to test for the end of file or other problems in given stream.
-            input.peek ();
+            EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Unable to deserialize config path mapping \"",
+                           binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
         }
+
+        RegisterPathMapping (state, pathMapping);
     }
     else if (std::filesystem::exists (yamlPath))
     {
         std::ifstream input {yamlPath};
-        Serialization::Yaml::ObjectBundleDeserializer deserializer {ListItem::Reflect ().mapping};
-        bool successful = deserializer.Begin (input);
-
-        while (successful && deserializer.HasNext ())
-        {
-            if ((successful = deserializer.Next (&item)))
-            {
-                RegisterPathMapping (state, item);
-            }
-        }
-
-        deserializer.End ();
-        if (!successful)
+        if (!Serialization::Yaml::DeserializeObject (input, &pathMapping, PathMapping::Reflect ().mapping, {}))
         {
             EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Unable to deserialize config path mapping \"",
                            yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
         }
+
+        RegisterPathMapping (state, pathMapping);
     }
     else
     {
@@ -123,21 +107,31 @@ void Loader::Execute () noexcept
     state->pathMappingLoaded = true;
 }
 
-void Loader::RegisterPathMapping (ResourceConfigLoadingStateSingleton *_state, const ListItem &_item) const noexcept
+void Loader::RegisterPathMapping (ResourceConfigLoadingStateSingleton *_state,
+                                  const PathMapping &_pathMapping) const noexcept
 {
-    for (const ResourceConfigTypeMeta &type : supportedTypes)
+    for (const ListItem &item : _pathMapping.configs)
     {
-        if (type.mapping.GetName () == _item.typeName)
+        bool found = false;
+        for (const ResourceConfigTypeMeta &type : supportedTypes)
         {
-            ResourceConfigLoadingStateSingleton::TypeState &typeState = _state->typeStates.emplace_back ();
-            typeState.type = type.mapping;
-            typeState.nameField = type.nameField;
-            typeState.folder = EMERGENCE_BUILD_STRING (pathToAssetRoot, "/", _item.folder.data ());
-            return;
+            if (type.mapping.GetName () == item.typeName)
+            {
+                ResourceConfigLoadingStateSingleton::TypeState &typeState = _state->typeStates.emplace_back ();
+                typeState.type = type.mapping;
+                typeState.nameField = type.nameField;
+                typeState.folder = EMERGENCE_BUILD_STRING (pathToAssetRoot, "/", item.folder.data ());
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Config type \"", item.typeName,
+                           "\" is not supported!");
         }
     }
-
-    EMERGENCE_LOG (ERROR, "ResourceConfigPathMappingLoading: Config type \"", _item.typeName, "\" is not supported!");
 }
 
 void AddToLoadingPipeline (PipelineBuilder &_builder,
@@ -157,7 +151,19 @@ const ListItem::Reflection &ListItem::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ListItem);
         EMERGENCE_MAPPING_REGISTER_REGULAR (typeName);
-        EMERGENCE_MAPPING_REGISTER_STRING (folder);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (folder);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const PathMapping::Reflection &PathMapping::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PathMapping);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (configs);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

@@ -111,34 +111,21 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
     }
 
     std::filesystem::create_directories (rootPath);
+    ResourceConfigPathMappingLoading::PathMapping pathMapping;
+    pathMapping.configs.emplace_back () = {UnitConfig::Reflect ().mapping.GetName (), _task.unitConfigFolder};
+    pathMapping.configs.emplace_back () = {BuildingConfig::Reflect ().mapping.GetName (), _task.buildingConfigFolder};
+
     if (_task.useBinaryFormat)
     {
         std::ofstream output (rootPath / ResourceConfigPathMappingLoading::BINARY_FILE_NAME, std::ios::binary);
-
-        ResourceConfigPathMappingLoading::ListItem item;
-        item.typeName = UnitConfig::Reflect ().mapping.GetName ();
-        strcpy (item.folder.data (), _task.unitConfigFolder.c_str ());
-        Serialization::Binary::SerializeObject (output, &item, decltype (item)::Reflect ().mapping);
-
-        item.typeName = BuildingConfig::Reflect ().mapping.GetName ();
-        strcpy (item.folder.data (), _task.buildingConfigFolder.c_str ());
-        Serialization::Binary::SerializeObject (output, &item, decltype (item)::Reflect ().mapping);
+        Serialization::Binary::SerializeObject (output, &pathMapping,
+                                                ResourceConfigPathMappingLoading::PathMapping::Reflect ().mapping);
     }
     else
     {
         std::ofstream output (rootPath / ResourceConfigPathMappingLoading::YAML_FILE_NAME);
-        Serialization::Yaml::ObjectBundleSerializer serializer {
-            ResourceConfigPathMappingLoading::ListItem::Reflect ().mapping};
-
-        ResourceConfigPathMappingLoading::ListItem item;
-        item.typeName = UnitConfig::Reflect ().mapping.GetName ();
-        strcpy (item.folder.data (), _task.unitConfigFolder.c_str ());
-        serializer.Next (&item);
-
-        item.typeName = BuildingConfig::Reflect ().mapping.GetName ();
-        strcpy (item.folder.data (), _task.buildingConfigFolder.c_str ());
-        serializer.Next (&item);
-        serializer.End (output);
+        Serialization::Yaml::SerializeObject (output, &pathMapping,
+                                                ResourceConfigPathMappingLoading::PathMapping::Reflect ().mapping);
     }
 
     SerializeConfigs (_task.unitConfigFolder, _task.unitConfigs, _task.useBinaryFormat);

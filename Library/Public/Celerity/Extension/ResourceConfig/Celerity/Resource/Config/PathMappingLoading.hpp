@@ -32,20 +32,33 @@ void AddToLoadingPipeline (PipelineBuilder &_builder,
 /// \brief Defines an item of config path mapping.
 struct ListItem final
 {
-    /// \brief Maximum length of ::folder.
-    static constexpr std::size_t RELATIVE_PATH_MAX_LENGTH = 128u;
-
     /// \brief Name of the config type mapped to this item.
     /// \invariant Type to item relationship is 1 to 1.
     Memory::UniqueString typeName;
 
     /// \brief Path to folder with configs from resource root.
-    std::array<char, RELATIVE_PATH_MAX_LENGTH> folder;
+    Container::Utf8String folder;
 
     struct Reflection final
     {
         StandardLayout::FieldId typeName;
         StandardLayout::FieldId folder;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+/// \brief Defines structure of config path mapping file.
+struct PathMapping final
+{
+    /// \brief List of all config paths.
+    Container::Vector<ListItem> configs {
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"ResourceConfigPathMapping"}}};
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId configs;
         StandardLayout::Mapping mapping;
     };
 
