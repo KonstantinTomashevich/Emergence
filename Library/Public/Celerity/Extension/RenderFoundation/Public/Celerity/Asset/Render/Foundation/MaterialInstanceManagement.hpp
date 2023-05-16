@@ -13,6 +13,5 @@ namespace Emergence::Celerity::MaterialInstanceManagement
 /// \param _eventMap Event map generated as a result of asset events binding.
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
                         const Container::Vector<Memory::UniqueString> &_materialInstanceRootPaths,
-                        uint64_t _maxLoadingTimePerFrameNs,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::MaterialInstanceManagement

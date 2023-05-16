@@ -1,1 +1,6 @@
+# MaterialInstanceAsset
 material: Sprite
+uniforms:
+  - name: colorTexture
+    type: 3
+    textureId: Crate.png

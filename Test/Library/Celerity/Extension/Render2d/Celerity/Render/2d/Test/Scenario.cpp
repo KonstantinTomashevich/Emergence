@@ -161,6 +161,10 @@ private:
     bool *finishedOutput = nullptr;
     Memory::UniqueString pendingScreenShot;
     uint64_t framesLeftToSkip = 0u;
+
+    // We need to wait one frame after checking if all assets were loaded, because
+    // new asset usages might be created as a result of current frame asset loading.
+    bool allAssetsWereLoadedDuringPreviousFrame = false;
 };
 
 ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _scenario, bool *_finishedOutput) noexcept
@@ -223,12 +227,18 @@ void ScenarioExecutor::Execute () noexcept
 
         if (assetManager->assetsLeftToLoad == 0u)
         {
-            LOG ("Finished loading all assets!");
-            ++currentPointIndex;
-            framesWaiting = 0u;
+            if (allAssetsWereLoadedDuringPreviousFrame)
+            {
+                LOG ("Finished loading all assets!");
+                ++currentPointIndex;
+                framesWaiting = 0u;
+            }
+
+            allAssetsWereLoadedDuringPreviousFrame = true;
         }
         else
         {
+            allAssetsWereLoadedDuringPreviousFrame = false;
             ++framesWaiting;
             // ~5 seconds target FPS loading time cap.
             REQUIRE (framesWaiting < 300u);
@@ -492,7 +502,6 @@ void ExecuteScenario (Scenario _scenario) noexcept
         RegisterRenderFoundationEvents (registrar);
     }
 
-    constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
     static const Emergence::Memory::UniqueString testAnimationsPath {"Render2dTestResources/Animations"};
     static const Emergence::Memory::UniqueString testMaterialInstancesPath {"Render2dTestResources/MaterialInstances"};
     static const Emergence::Memory::UniqueString testMaterialsPath {"Render2dTestResources/Materials"};
@@ -508,17 +517,15 @@ void ExecuteScenario (Scenario _scenario) noexcept
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialInstancesPath}, MAX_LOADING_TIME_NS,
+    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialInstancesPath},
                                                    assetReferenceBindingEventMap);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {testShadersPath, engineShadersPath}, MAX_LOADING_TIME_NS,
-                                           assetReferenceBindingEventMap);
+                                           {testShadersPath, engineShadersPath}, assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, {testAnimationsPath}, MAX_LOADING_TIME_NS,
+    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, {testAnimationsPath},
                                                       assetReferenceBindingEventMap);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
-                                          assetReferenceBindingEventMap);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, assetReferenceBindingEventMap);
     TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);

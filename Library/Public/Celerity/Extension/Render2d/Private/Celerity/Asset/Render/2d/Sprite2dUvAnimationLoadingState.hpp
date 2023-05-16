@@ -1,28 +1,25 @@
 #pragma once
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Asset/Render/2d/Sprite2dUvAnimation.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
-struct MaterialInstanceLoadingState final
+struct Sprite2dUvAnimationLoadingState final
 {
     Memory::UniqueString assetId;
-
-    Memory::UniqueString parentId;
 
     std::atomic<AssetState> state {AssetState::LOADING};
 
     bool valid = true;
 
-    MaterialInstanceAsset asset;
+    Sprite2dUvAnimationAsset asset;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
-        StandardLayout::FieldId parentId;
         StandardLayout::FieldId valid;
         StandardLayout::FieldId asset;
         StandardLayout::Mapping mapping;

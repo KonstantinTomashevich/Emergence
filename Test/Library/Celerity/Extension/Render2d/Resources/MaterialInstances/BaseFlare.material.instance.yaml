@@ -1,1 +1,15 @@
+# MaterialInstanceAsset
 material: Flare
+uniforms:
+  - name: flareRadius_flareStrength_flarePower
+    type: 0
+    vector4f:
+      x: 0.45
+      y: 1
+      z: 3.0
+  - name: color
+    type: 0
+    vector4f:
+      x: 1.0
+      y: 1.0
+      z: 1.0

@@ -1,28 +1,25 @@
 #pragma once
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Asset/Render/Foundation/Material.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
-struct MaterialInstanceLoadingState final
+struct MaterialLoadingState final
 {
     Memory::UniqueString assetId;
-
-    Memory::UniqueString parentId;
 
     std::atomic<AssetState> state {AssetState::LOADING};
 
     bool valid = true;
 
-    MaterialInstanceAsset asset;
+    MaterialAsset asset;
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
-        StandardLayout::FieldId parentId;
         StandardLayout::FieldId valid;
         StandardLayout::FieldId asset;
         StandardLayout::Mapping mapping;

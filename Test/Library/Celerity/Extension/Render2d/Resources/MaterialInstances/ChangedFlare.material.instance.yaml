@@ -1,2 +1,10 @@
+# MaterialInstanceAsset
 material: Flare
 parent: BaseFlare
+uniforms:
+  - name: color
+    type: 0
+    vector4f:
+      x: 0.0
+      y: 0.0
+      z: 1.0

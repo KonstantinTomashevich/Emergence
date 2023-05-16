@@ -361,6 +361,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                             case FieldArchetype::STRING:
                             case FieldArchetype::BLOCK:
                             case FieldArchetype::UNIQUE_STRING:
+                            case FieldArchetype::UTF8_STRING:
                             case FieldArchetype::PATCH:
                                 break;
 

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
+
+#include <Container/Vector.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -9,49 +12,18 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Content of material instance header file that stores main information about material instance.
-/// \invariant Path to material instance header file is
-///            <material instance root folder>/<material instance id>.material.instance.<format extension>,
-///            where material instance root folder is any registered root folder for material instances,
-///            material instance id is any string that may include '/' for folder grouping,
-///            and format extension is either yaml or bin.
-struct MaterialInstanceAssetHeader final
+/// \brief Item of uniform values array inside material instance file.
+struct UniformValueDescription final
 {
-    /// \brief Parent material instances id if parent exists for this instance.
-    /// \details Material instance inheritance feature allows material instances to inherit and override values
-    ///          from parent material instance. It allows to reduce duplication and reuse common uniform configuration.
-    Memory::UniqueString parent;
+    UniformValueDescription () noexcept = default;
 
-    /// \brief Id of material to which this instance is connected.
-    Memory::UniqueString material;
+    UniformValueDescription (Memory::UniqueString _name, const Math::Vector4f &_value) noexcept;
 
-    struct Reflection final
-    {
-        StandardLayout::FieldId parent;
-        StandardLayout::FieldId material;
-        StandardLayout::Mapping mapping;
-    };
+    UniformValueDescription (Memory::UniqueString _name, Math::Matrix3x3f _value) noexcept;
 
-    static const Reflection &Reflect () noexcept;
-};
+    UniformValueDescription (Memory::UniqueString _name, Math::Matrix4x4f _value) noexcept;
 
-/// \brief Item of uniform values bundle file that contains values for material uniforms.
-/// \invariant Path to uniform values bundle file is
-///            <material instance root folder>/<material instance id>.uniform.values.<format extension>,
-///            where material instance root folder is any registered root folder for material instances,
-///            material instance id is any string that may include '/' for folder grouping,
-///            and format extension is either yaml or bin.
-struct UniformValueBundleItem final
-{
-    UniformValueBundleItem () noexcept = default;
-
-    UniformValueBundleItem (Memory::UniqueString _name, const Math::Vector4f &_value) noexcept;
-
-    UniformValueBundleItem (Memory::UniqueString _name, Math::Matrix3x3f _value) noexcept;
-
-    UniformValueBundleItem (Memory::UniqueString _name, Math::Matrix4x4f _value) noexcept;
-
-    UniformValueBundleItem (Memory::UniqueString _name, const Memory::UniqueString &_textureId) noexcept;
+    UniformValueDescription (Memory::UniqueString _name, const Memory::UniqueString &_textureId) noexcept;
 
     /// \brief Name of the uniform to which value will be assigned.
     Memory::UniqueString name;
@@ -86,6 +58,37 @@ struct UniformValueBundleItem final
         StandardLayout::FieldId matrix3x3f;
         StandardLayout::FieldId matrix4x4f;
         StandardLayout::FieldId textureId;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+/// \brief Content of material instance file that stores all the information about material instance.
+/// \invariant Path to material instance header file is
+///            <material instance root folder>/<material instance id>.material.instance.<format extension>,
+///            where material instance root folder is any registered root folder for material instances,
+///            material instance id is any string that may include '/' for folder grouping,
+///            and format extension is either yaml or bin.
+struct MaterialInstanceAsset final
+{
+    /// \brief Parent material instances id if parent exists for this instance.
+    /// \details Material instance inheritance feature allows material instances to inherit and override values
+    ///          from parent material instance. It allows to reduce duplication and reuse common uniform configuration.
+    Memory::UniqueString parent;
+
+    /// \brief Id of material to which this instance is connected.
+    Memory::UniqueString material;
+
+    /// \brief Contains all uniform values of this material instance.
+    Container::Vector<UniformValueDescription> uniforms {
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"MaterialInstanceUniforms"}}};
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId parent;
+        StandardLayout::FieldId material;
+        StandardLayout::FieldId uniforms;
         StandardLayout::Mapping mapping;
     };
 

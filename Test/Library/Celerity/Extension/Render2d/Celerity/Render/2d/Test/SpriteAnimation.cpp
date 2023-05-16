@@ -25,7 +25,7 @@ TEST_CASE (SpriteAnimationTick)
         ScreenShotPoint {"SpriteAnimationTick1"_us},
         FrameSkipPoint {5u},
         ScreenShotPoint {"SpriteAnimationTick2"_us},
-        FrameSkipPoint {9u},
+        FrameSkipPoint {5u},
         ScreenShotPoint {"SpriteAnimationTick3"_us},
         FrameSkipPoint {13u},
         ScreenShotPoint {"SpriteAnimationTick4"_us},

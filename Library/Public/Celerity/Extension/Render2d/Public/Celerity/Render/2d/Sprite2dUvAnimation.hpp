@@ -48,6 +48,7 @@ struct Sprite2dUvAnimation final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId materialInstanceId;
+        StandardLayout::FieldId frames;
         StandardLayout::Mapping mapping;
     };
 

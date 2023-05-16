@@ -1,2 +1,6 @@
 vertexShader: "Sprite"
 fragmentShader: "Sprite"
+uniforms:
+  - name: colorTexture
+    type: 3
+    textureStage: 0

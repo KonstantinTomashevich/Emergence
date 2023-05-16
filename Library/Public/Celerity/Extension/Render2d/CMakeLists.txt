@@ -10,6 +10,7 @@ sober_library_begin (CelerityRender2d STATIC)
     sober_library_include_directory (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public")
 
+    sober_library_use_service (EXPECTED PRIVATE JobDispatcher)
     sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PUBLIC RenderBackend)
 

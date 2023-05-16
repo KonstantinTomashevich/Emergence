@@ -1,16 +1,15 @@
-#include <Celerity/Asset/Render/Foundation/MaterialInstanceLoadingState.hpp>
+#include <Celerity/Asset/Render/2d/Sprite2dUvAnimationLoadingState.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
-const MaterialInstanceLoadingState::Reflection &MaterialInstanceLoadingState::Reflect () noexcept
+const Sprite2dUvAnimationLoadingState::Reflection &Sprite2dUvAnimationLoadingState::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialInstanceLoadingState);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimationLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (parentId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (valid);
         EMERGENCE_MAPPING_REGISTER_REGULAR (asset);
         EMERGENCE_MAPPING_REGISTRATION_END ();
