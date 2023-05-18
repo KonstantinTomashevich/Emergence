@@ -1,2 +1,10 @@
 vertexShader: "Sprite"
 fragmentShader: "LoadingEffect"
+uniforms:
+  - name: colorTexture
+    type: 3
+    textureStage: 0
+  - name: darknessFactor_lightFactor_lightRadius_lightDistance
+    type: 0
+  - name: angle
+    type: 0

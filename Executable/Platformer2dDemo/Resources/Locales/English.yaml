@@ -1,0 +1,10 @@
+# LocaleConfiguration
+strings:
+  - key: MainMenu
+    value: Main Menu
+  - key: StartTutorial
+    value: Start tutorial
+  - key: StartCampaign
+    value: Start campaign
+  - key: Quit
+    value: Quit

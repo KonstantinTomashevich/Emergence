@@ -1,3 +1,4 @@
+# MovementConfiguration
 runVelocity: 3.0
 jumpVelocity: 7.5
 groundMaxSlopeDeg: 45.0

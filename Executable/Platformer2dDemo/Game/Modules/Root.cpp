@@ -85,13 +85,13 @@ void Initializer (GameState & /*unused*/,
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, assetReferenceBindingList,
                                                              assetReferenceBindingEventMap);
-    Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, GetFontPaths (), MAX_LOADING_TIME_NS,
+    Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, GetFontPaths (),
                                                             assetReferenceBindingEventMap);
-    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, GetLocalizationPath (), MAX_LOADING_TIME_NS);
+    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, GetLocalizationPath ());
     Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
-        pipelineBuilder, GetMaterialInstancePaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+        pipelineBuilder, GetMaterialInstancePaths (),  assetReferenceBindingEventMap);
     Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
-        pipelineBuilder, GetMaterialPaths (), GetShadersPaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+        pipelineBuilder, GetMaterialPaths (), GetShadersPaths (), assetReferenceBindingEventMap);
     Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, MAX_LOADING_TIME_NS,
                                                                       GetResourceConfigTypeMeta ());
     Emergence::Celerity::ResourceConfigPathMappingLoading::AddToLoadingPipeline (
@@ -99,8 +99,8 @@ void Initializer (GameState & /*unused*/,
     Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
                                                                       GetResourceObjectTypeManifest ());
     Emergence::Celerity::Sprite2dUvAnimationManagement::AddToNormalUpdate (
-        pipelineBuilder, GetSpriteAnimationPaths (), MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
-    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (), MAX_LOADING_TIME_NS,
+        pipelineBuilder, GetSpriteAnimationPaths (),  assetReferenceBindingEventMap);
+    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (),
                                                                assetReferenceBindingEventMap);
     LevelsConfigurationLoading::AddToNormalUpdate (pipelineBuilder);
 

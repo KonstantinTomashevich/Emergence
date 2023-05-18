@@ -23,9 +23,6 @@ public:
 
 private:
     Emergence::Celerity::ModifySingletonQuery modifyLevelsConfiguration;
-
-    Emergence::Serialization::FieldNameLookupCache levelsConfigurationLoadingCache {
-        LevelsConfigurationSingleton::Reflect ().mapping};
 };
 
 Loader::Loader (Emergence::Celerity::TaskConstructor &_constructor) noexcept
@@ -47,8 +44,8 @@ void Loader::Execute () noexcept
 
         if (input)
         {
-            if (!Emergence::Serialization::Yaml::DeserializeObject (input, levelsConfiguration,
-                                                                    levelsConfigurationLoadingCache))
+            if (!Emergence::Serialization::Yaml::DeserializeObject (
+                    input, levelsConfiguration, LevelsConfigurationSingleton::Reflect ().mapping, {}))
             {
                 Emergence::ReportCriticalError (
                     "LevelsConfigurationLoading: Unable to deserialize levels configuration!", __FILE__, __LINE__);

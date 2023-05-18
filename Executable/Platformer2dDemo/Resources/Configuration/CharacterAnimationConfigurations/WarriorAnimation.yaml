@@ -1,3 +1,4 @@
+# CharacterAnimationConfiguration
 crouchAnimationId: WarriorCrouchAnimation
 fallAnimationId: WarriorFallAnimation
 idleAnimationId: WarriorIdleAnimation

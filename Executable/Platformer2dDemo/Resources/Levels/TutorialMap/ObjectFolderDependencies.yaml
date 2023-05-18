@@ -1,3 +1,4 @@
-- relativePath: "../../Objects/ForestTiles"
-- relativePath: "../../Objects/ForestObjects"
-- relativePath: "../../Objects/Common"
+list:
+  - relativePath: "../../Objects/ForestTiles"
+  - relativePath: "../../Objects/ForestObjects"
+  - relativePath: "../../Objects/Common"

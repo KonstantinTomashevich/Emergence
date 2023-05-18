@@ -86,9 +86,8 @@ void Application::LoadSettings () noexcept
     {
         EMERGENCE_LOG (INFO, "Application: Loading settings...");
         std::ifstream input {settingsPath};
-        Emergence::Serialization::FieldNameLookupCache cache {Settings::Reflect ().mapping};
 
-        if (!Emergence::Serialization::Yaml::DeserializeObject (input, &settings, cache))
+        if (!Emergence::Serialization::Yaml::DeserializeObject (input, &settings, Settings::Reflect ().mapping, {}))
         {
             EMERGENCE_LOG (INFO, "Application: Failed to load settings, falling back to default.");
             settings = {};

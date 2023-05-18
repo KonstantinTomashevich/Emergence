@@ -118,12 +118,13 @@ void LoadingOrchestrator::Execute () noexcept
 
     auto assetManagerCursor = fetchAssetManager.Execute ();
     const auto *assetManager = static_cast<const Emergence::Celerity::AssetManagerSingleton *> (*assetManagerCursor);
+    const bool assetsWereLoaded = mainMenuLoading->assetsLoaded;
     mainMenuLoading->assetsLoaded = assetManager->assetsLeftToLoad == 0u;
 
     auto loadingAnimationCursor = modifyLoadingAnimation.Execute ();
     auto *loadingAnimation = static_cast<LoadingAnimationSingleton *> (*loadingAnimationCursor);
 
-    if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE &&
+    if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE && assetsWereLoaded &&
         mainMenuLoading->assetsLoaded && locale->loadedLocale == locale->targetLocale)
     {
         loadingAnimation->required = false;
