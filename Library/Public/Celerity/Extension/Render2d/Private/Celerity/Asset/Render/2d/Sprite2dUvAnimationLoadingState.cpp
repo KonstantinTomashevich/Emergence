@@ -10,8 +10,6 @@ const Sprite2dUvAnimationLoadingState::Reflection &Sprite2dUvAnimationLoadingSta
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimationLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (valid);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (asset);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

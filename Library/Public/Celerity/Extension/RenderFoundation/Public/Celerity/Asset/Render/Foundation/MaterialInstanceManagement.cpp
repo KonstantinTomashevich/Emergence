@@ -150,20 +150,20 @@ AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) n
         {
             Job::Dispatcher::Global ().Dispatch (
                 Job::Priority::BACKGROUND,
-                [_loadingState, binaryPath] ()
+                [sharedState {_loadingState->sharedState}, binaryPath] ()
                 {
                     std::ifstream input {binaryPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (input, &_loadingState->asset,
+                    if (!Serialization::Binary::DeserializeObject (input, &sharedState->asset,
                                                                    MaterialInstanceAsset::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (
                             ERROR, "MaterialInstanceManagement: Unable to load material instance from \"",
                             binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                     }
                     else
                     {
-                        _loadingState->state = AssetState::READY;
+                        sharedState->state = AssetState::READY;
                     }
                 });
 
@@ -176,20 +176,20 @@ AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) n
         {
             Job::Dispatcher::Global ().Dispatch (
                 Job::Priority::BACKGROUND,
-                [_loadingState, yamlPath] ()
+                [sharedState {_loadingState->sharedState}, yamlPath] ()
                 {
                     std::ifstream input (yamlPath);
-                    if (!Serialization::Yaml::DeserializeObject (input, &_loadingState->asset,
+                    if (!Serialization::Yaml::DeserializeObject (input, &sharedState->asset,
                                                                  MaterialInstanceAsset::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to load material instance from \"",
                                        yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                        "\".");
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                     }
                     else
                     {
-                        _loadingState->state = AssetState::READY;
+                        sharedState->state = AssetState::READY;
                     }
                 });
 
@@ -197,7 +197,6 @@ AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) n
         }
     }
 
-    _loadingState->valid = false;
     EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to find material instance \"", _loadingState->assetId,
                    "\".");
     return AssetState::MISSING;
@@ -205,7 +204,7 @@ AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) n
 
 AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingState) noexcept
 {
-    switch (_loadingState->state)
+    switch (_loadingState->sharedState->state)
     {
     case AssetState::LOADING:
         return AssetState::LOADING;
@@ -220,8 +219,8 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
         break;
     }
 
-    _loadingState->parentId = _loadingState->asset.parent;
-    if (!*_loadingState->asset.material)
+    _loadingState->parentId = _loadingState->sharedState->asset.parent;
+    if (!*_loadingState->sharedState->asset.material)
     {
         EMERGENCE_LOG (ERROR, "MaterialInstanceManager: Material instance \"", _loadingState->assetId,
                        "\" is not attached to any material!");
@@ -234,11 +233,11 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
         auto materialInstanceInsertCursor = insertMaterialInstance.Execute ();
         auto *materialInstance = static_cast<MaterialInstance *> (++materialInstanceInsertCursor);
         materialInstance->assetId = _loadingState->assetId;
-        materialInstance->materialId = _loadingState->asset.material;
+        materialInstance->materialId = _loadingState->sharedState->asset.material;
     }
 
     const AssetState dependencyState =
-        SummarizeDependencyState (_loadingState->asset.material, _loadingState->asset.parent);
+        SummarizeDependencyState (_loadingState->sharedState->asset.material, _loadingState->sharedState->asset.parent);
 
     if (dependencyState != AssetState::READY)
     {
@@ -246,16 +245,17 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
     }
 
 #ifdef EMERGENCE_ASSERT_ENABLED
-    if (*_loadingState->asset.parent)
+    if (*_loadingState->sharedState->asset.parent)
     {
-        auto parentMaterialInstanceCursor = fetchMaterialInstanceById.Execute (&_loadingState->asset.parent);
+        auto parentMaterialInstanceCursor =
+            fetchMaterialInstanceById.Execute (&_loadingState->sharedState->asset.parent);
         const auto *parentMaterialInstance = static_cast<const MaterialInstance *> (*parentMaterialInstanceCursor);
         EMERGENCE_ASSERT (parentMaterialInstance);
-        EMERGENCE_ASSERT (parentMaterialInstance->materialId == _loadingState->asset.material);
+        EMERGENCE_ASSERT (parentMaterialInstance->materialId == _loadingState->sharedState->asset.material);
     }
 #endif
 
-    for (const UniformValueDescription &uniform : _loadingState->asset.uniforms)
+    for (const UniformValueDescription &uniform : _loadingState->sharedState->asset.uniforms)
     {
         for (const UniformValueDescription &item : uniformValuesCollector)
         {
@@ -270,9 +270,9 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
         uniformValuesCollector.emplace_back (uniform);
     }
 
-    if (*_loadingState->asset.parent)
+    if (*_loadingState->sharedState->asset.parent)
     {
-        CopyParentValuesIntoCollector (_loadingState->asset.parent);
+        CopyParentValuesIntoCollector (_loadingState->sharedState->asset.parent);
     }
 
     auto insertVector4Cursor = insertUniformVector4fValue.Execute ();
@@ -379,7 +379,6 @@ void Manager::CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noex
 
 void Manager::Unload (Memory::UniqueString _assetId) noexcept
 {
-    InvalidateLoadingState (_assetId);
     if (auto materialInstanceCursor = removeMaterialInstanceById.Execute (&_assetId);
         materialInstanceCursor.ReadConst ())
     {

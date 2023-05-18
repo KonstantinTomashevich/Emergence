@@ -4,9 +4,9 @@
 
 namespace Emergence::Celerity
 {
-TextureLoadingState::TextureLoadingState () noexcept = default;
+TextureLoadingSharedState::TextureLoadingSharedState () noexcept = default;
 
-TextureLoadingState::~TextureLoadingState () noexcept
+TextureLoadingSharedState::~TextureLoadingSharedState () noexcept
 {
     if (textureData)
     {
@@ -20,9 +20,6 @@ const TextureLoadingState::Reflection &TextureLoadingState::Reflect () noexcept
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (TextureLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (valid);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (settings);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (textureDataSize);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

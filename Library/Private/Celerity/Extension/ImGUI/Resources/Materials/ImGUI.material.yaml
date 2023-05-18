@@ -1,2 +1,8 @@
 vertexShader: "ImGUI"
 fragmentShader: "ImGUI"
+uniforms:
+  - name: hasColorTexture
+    type: 0
+  - name: colorTexture
+    type: 3
+    textureStage: 0

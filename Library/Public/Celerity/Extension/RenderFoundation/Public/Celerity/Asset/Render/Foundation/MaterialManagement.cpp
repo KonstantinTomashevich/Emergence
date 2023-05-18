@@ -93,10 +93,10 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
         {
             Job::Dispatcher::Global ().Dispatch (
                 Job::Priority::BACKGROUND,
-                [_loadingState, binaryMaterialPath] ()
+                [sharedState {_loadingState->sharedState}, binaryMaterialPath] ()
                 {
                     std::ifstream input {binaryMaterialPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (input, &_loadingState->asset,
+                    if (!Serialization::Binary::DeserializeObject (input, &sharedState->asset,
                                                                    MaterialAsset::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (
@@ -104,11 +104,11 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
                             binaryMaterialPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                             "\".");
 
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                     }
                     else
                     {
-                        _loadingState->state = AssetState::READY;
+                        sharedState->state = AssetState::READY;
                     }
                 });
 
@@ -121,10 +121,10 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
         {
             Job::Dispatcher::Global ().Dispatch (
                 Job::Priority::BACKGROUND,
-                [_loadingState, yamlMaterialPath] ()
+                [sharedState {_loadingState->sharedState}, yamlMaterialPath] ()
                 {
                     std::ifstream input {yamlMaterialPath};
-                    if (!Serialization::Yaml::DeserializeObject (input, &_loadingState->asset,
+                    if (!Serialization::Yaml::DeserializeObject (input, &sharedState->asset,
                                                                  MaterialAsset::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (
@@ -132,11 +132,11 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
                             yamlMaterialPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                             "\".");
 
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                     }
                     else
                     {
-                        _loadingState->state = AssetState::READY;
+                        sharedState->state = AssetState::READY;
                     }
                 });
 
@@ -144,7 +144,6 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
         }
     }
 
-    _loadingState->valid = false;
     EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find material \"", _loadingState->assetId, "\".");
     return AssetState::MISSING;
 }
@@ -154,8 +153,8 @@ AssetState Manager::TryFinishLoading (MaterialLoadingState *_loadingState) noexc
     auto materialCursor = insertMaterial.Execute ();
     auto *material = static_cast<Material *> (++materialCursor);
     material->assetId = _loadingState->assetId;
-    material->vertexShader = _loadingState->asset.vertexShader;
-    material->fragmentShader = _loadingState->asset.fragmentShader;
+    material->vertexShader = _loadingState->sharedState->asset.vertexShader;
+    material->fragmentShader = _loadingState->sharedState->asset.fragmentShader;
 
     const Container::Vector<uint8_t> vertexShader =
         LoadShaderFile (EMERGENCE_BUILD_STRING (material->vertexShader, ".vertex"));
@@ -169,7 +168,7 @@ AssetState Manager::TryFinishLoading (MaterialLoadingState *_loadingState) noexc
         return AssetState::CORRUPTED;
     }
 
-    for (const UniformDescription &description : _loadingState->asset.uniforms)
+    for (const UniformDescription &description : _loadingState->sharedState->asset.uniforms)
     {
         if (!RegisterUniform (_loadingState->assetId, description))
         {
@@ -238,8 +237,6 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
     {
         ~materialCursor;
     }
-
-    InvalidateLoadingState (_assetId);
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,

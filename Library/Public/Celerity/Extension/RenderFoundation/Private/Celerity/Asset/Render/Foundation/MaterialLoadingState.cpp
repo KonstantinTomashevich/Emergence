@@ -10,8 +10,6 @@ const MaterialLoadingState::Reflection &MaterialLoadingState::Reflect () noexcep
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (valid);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (asset);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

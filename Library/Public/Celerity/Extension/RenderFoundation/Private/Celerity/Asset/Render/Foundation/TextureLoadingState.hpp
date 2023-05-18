@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Celerity/Asset/Asset.hpp>
+#include <Celerity/Asset/LoadingSharedState.hpp>
 
 #include <Render/Backend/Texture.hpp>
 
@@ -8,30 +9,31 @@
 
 namespace Emergence::Celerity
 {
-struct TextureLoadingState final
+class TextureLoadingSharedState final : public LoadingSharedState<TextureLoadingSharedState>
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (TextureLoadingState);
+public:
+    static constexpr const char *ALLOCATION_GROUP_NAME = "TextureLoading";
 
-    Memory::UniqueString assetId;
-
-    std::atomic<AssetState> state {AssetState::LOADING};
-
-    bool valid = true;
+    EMERGENCE_STATIONARY_DATA_TYPE (TextureLoadingSharedState);
 
     Render::Backend::TextureSettings settings;
 
-    Memory::Heap textureDataHeap {Memory::Profiler::AllocationGroup::Top ()};
+    Memory::Heap textureDataHeap {GetHeap ().GetAllocationGroup ()};
 
     uint64_t textureDataSize = 0u;
 
     uint8_t *textureData = nullptr;
+};
+
+struct TextureLoadingState final
+{
+    Memory::UniqueString assetId;
+
+    Handling::Handle<TextureLoadingSharedState> sharedState {new TextureLoadingSharedState};
 
     struct Reflection final
     {
         StandardLayout::FieldId assetId;
-        StandardLayout::FieldId valid;
-        StandardLayout::FieldId settings;
-        StandardLayout::FieldId textureDataSize;
         StandardLayout::Mapping mapping;
     };
 

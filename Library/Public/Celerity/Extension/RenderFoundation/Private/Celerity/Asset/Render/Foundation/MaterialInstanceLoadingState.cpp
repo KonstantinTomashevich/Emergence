@@ -11,8 +11,6 @@ const MaterialInstanceLoadingState::Reflection &MaterialInstanceLoadingState::Re
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialInstanceLoadingState);
         EMERGENCE_MAPPING_REGISTER_REGULAR (assetId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (parentId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (valid);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (asset);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

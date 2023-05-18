@@ -72,7 +72,6 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
         RegisterUIEvents (registrar);
     }
 
-    constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
     static const Emergence::Memory::UniqueString testMaterialsPath {"UITestResources/Materials"};
     static const Emergence::Memory::UniqueString engineMaterialsPath {GetUIBackendMaterialPath ()};
     static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
@@ -84,10 +83,9 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (controlManagementFrames));
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {engineShadersPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+                                           {engineShadersPath}, assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
-                                          assetReferenceBindingEventMap);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, GetKeyCodeMapping ());
     UpdateResultCheck::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, std::move (resultCheckFrames));
 

@@ -74,21 +74,21 @@ AssetState Manager::StartLoading (Sprite2dUvAnimationLoadingState *_loadingState
         {
             Job::Dispatcher::Global ().Dispatch (
                 Job::Priority::BACKGROUND,
-                [_loadingState, binaryPath] ()
+                [sharedState {_loadingState->sharedState}, binaryPath] ()
                 {
                     std::ifstream input {binaryPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (input, &_loadingState->asset,
+                    if (!Serialization::Binary::DeserializeObject (input, &sharedState->asset,
                                                                    Sprite2dUvAnimationAsset::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (
                             ERROR, "Sprite2dUvAnimationManagement: Unable to load animation from \"",
                             binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
 
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                     }
                     else
                     {
-                        _loadingState->state = AssetState::READY;
+                        sharedState->state = AssetState::READY;
                     }
                 });
 
@@ -100,21 +100,21 @@ AssetState Manager::StartLoading (Sprite2dUvAnimationLoadingState *_loadingState
         {
             Job::Dispatcher::Global ().Dispatch (
                 Job::Priority::BACKGROUND,
-                [_loadingState, yamlPath] ()
+                [sharedState {_loadingState->sharedState}, yamlPath] ()
                 {
                     std::ifstream input {yamlPath};
-                    if (!Serialization::Yaml::DeserializeObject (input, &_loadingState->asset,
+                    if (!Serialization::Yaml::DeserializeObject (input, &sharedState->asset,
                                                                  Sprite2dUvAnimationAsset::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Unable to load animation from \"",
                                        yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                        "\".");
 
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                     }
                     else
                     {
-                        _loadingState->state = AssetState::READY;
+                        sharedState->state = AssetState::READY;
                     }
                 });
 
@@ -122,7 +122,6 @@ AssetState Manager::StartLoading (Sprite2dUvAnimationLoadingState *_loadingState
         }
     }
 
-    _loadingState->valid = false;
     EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Unable to find animation \"", _loadingState->assetId, "\".");
     return AssetState::MISSING;
 }
@@ -132,9 +131,9 @@ AssetState Manager::TryFinishLoading (Sprite2dUvAnimationLoadingState *_loadingS
     auto animationCursor = insertAnimation.Execute ();
     auto *animation = static_cast<Sprite2dUvAnimation *> (++animationCursor);
     animation->assetId = _loadingState->assetId;
-    animation->materialInstanceId = _loadingState->asset.materialInstanceId;
+    animation->materialInstanceId = _loadingState->sharedState->asset.materialInstanceId;
 
-    for (const Sprite2dUvAnimationFrameInfo &info : _loadingState->asset.frames)
+    for (const Sprite2dUvAnimationFrameInfo &info : _loadingState->sharedState->asset.frames)
     {
         animation->frames.emplace_back () = {info.uv, static_cast<uint64_t> (info.durationS * 1e9f), 0u};
     }
@@ -155,8 +154,6 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
     {
         ~animationCursor;
     }
-
-    InvalidateLoadingState (_assetId);
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,

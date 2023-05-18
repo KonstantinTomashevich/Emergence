@@ -94,18 +94,19 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
     {
         Job::Dispatcher::Global ().Dispatch (
             Job::Priority::BACKGROUND,
-            [_loadingState, settingsPath, selectedRoot, binary] ()
+            [assetId {_loadingState->assetId}, sharedState {_loadingState->sharedState}, settingsPath, selectedRoot,
+             binary] ()
             {
                 if (binary)
                 {
                     std::ifstream input {settingsPath, std::ios::binary};
                     if (!Serialization::Binary::DeserializeObject (
-                            input, &_loadingState->settings, Render::Backend::TextureSettings::Reflect ().mapping, {}))
+                            input, &sharedState->settings, Render::Backend::TextureSettings::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (
                             ERROR, "TextureManagement: Unable to load texture settings from \"",
                             settingsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                         return;
                     }
                 }
@@ -113,18 +114,18 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
                 {
                     std::ifstream input {settingsPath};
                     if (!Serialization::Yaml::DeserializeObject (
-                            input, &_loadingState->settings, Render::Backend::TextureSettings::Reflect ().mapping, {}))
+                            input, &sharedState->settings, Render::Backend::TextureSettings::Reflect ().mapping, {}))
                     {
                         EMERGENCE_LOG (
                             ERROR, "TextureManagement: Unable to load texture settings from \"",
                             settingsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-                        _loadingState->state = AssetState::CORRUPTED;
+                        sharedState->state = AssetState::CORRUPTED;
                         return;
                     }
                 }
 
                 // TODO: Do not rely on 1-1 id mapping and add texture id field to settings?
-                std::filesystem::path texturePath = EMERGENCE_BUILD_STRING (selectedRoot, "/", _loadingState->assetId);
+                std::filesystem::path texturePath = EMERGENCE_BUILD_STRING (selectedRoot, "/", assetId);
                 FILE *file = std::fopen (texturePath.generic_string ().c_str (), "rb");
 
                 if (!file)
@@ -132,34 +133,33 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
                     EMERGENCE_LOG (ERROR, "TextureManagement: Unable to open texture file \"",
                                    texturePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                    "\".");
-                    _loadingState->state = AssetState::CORRUPTED;
+                    sharedState->state = AssetState::CORRUPTED;
                     return;
                 }
 
                 fseek (file, 0u, SEEK_END);
-                _loadingState->textureDataSize = static_cast<uint64_t> (ftell (file));
+                sharedState->textureDataSize = static_cast<uint64_t> (ftell (file));
                 fseek (file, 0u, SEEK_SET);
-                _loadingState->textureData = static_cast<uint8_t *> (
-                    _loadingState->textureDataHeap.Acquire (_loadingState->textureDataSize, alignof (uint8_t)));
+                sharedState->textureData = static_cast<uint8_t *> (
+                    sharedState->textureDataHeap.Acquire (sharedState->textureDataSize, alignof (uint8_t)));
 
-                if (fread (_loadingState->textureData, 1u, _loadingState->textureDataSize, file) !=
-                    _loadingState->textureDataSize)
+                if (fread (sharedState->textureData, 1u, sharedState->textureDataSize, file) !=
+                    sharedState->textureDataSize)
                 {
                     EMERGENCE_LOG (ERROR, "TextureManagement: Unable to read texture file \"",
                                    texturePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
                                    "\".");
-                    _loadingState->state = AssetState::CORRUPTED;
+                    sharedState->state = AssetState::CORRUPTED;
                     return;
                 }
 
                 fclose (file);
-                _loadingState->state = AssetState::READY;
+                sharedState->state = AssetState::READY;
             });
 
         return AssetState::LOADING;
     }
 
-    _loadingState->valid = false;
     EMERGENCE_LOG (ERROR, "TextureManagement: Unable to find texture settings for texture \"", _loadingState->assetId,
                    "\".");
     return AssetState::MISSING;
@@ -167,8 +167,9 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
 
 AssetState Manager::TryFinishLoading (TextureLoadingState *_loadingState) noexcept
 {
-    Render::Backend::Texture nativeTexture {_loadingState->textureData, _loadingState->textureDataSize,
-                                            _loadingState->settings};
+    Render::Backend::Texture nativeTexture {_loadingState->sharedState->textureData,
+                                            _loadingState->sharedState->textureDataSize,
+                                            _loadingState->sharedState->settings};
     if (!nativeTexture.IsValid ())
     {
         EMERGENCE_LOG (ERROR, "TextureManagement: Failed to load texture \"", _loadingState->assetId, "\" from data.");
@@ -188,8 +189,6 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
     {
         ~textureCursor;
     }
-
-    InvalidateLoadingState (_assetId);
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,

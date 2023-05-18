@@ -61,6 +61,8 @@ private:
     bool firstUpdate = true;
     bool screenshotRequested = false;
     bool *isFinishedOutput = nullptr;
+
+    bool dependenciesReadyPreviousFrame = false;
 };
 
 ScreenshotTester::ScreenshotTester (TaskConstructor &_constructor,
@@ -136,7 +138,10 @@ bool ScreenshotTester::IsWaitingForDependencies () noexcept
     auto *locale = static_cast<LocaleSingleton *> (*localeCursor);
     locale->targetLocale = USED_LOCALE;
 
-    return assetManager->assetsLeftToLoad > 0u && locale->loadedLocale == USED_LOCALE;
+    const bool dependenciesReady = assetManager->assetsLeftToLoad == 0u && locale->loadedLocale == USED_LOCALE;
+    const bool everythingLoaded = dependenciesReady && dependenciesReadyPreviousFrame;
+    dependenciesReadyPreviousFrame = dependenciesReady;
+    return !everythingLoaded;
 }
 
 void ScreenshotTester::TakeScreenshot () const noexcept
@@ -162,7 +167,6 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
         RegisterUIEvents (registrar);
     }
 
-    constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
     static const Emergence::Memory::UniqueString testMaterialsPath {"UITestResources/Materials"};
     static const Emergence::Memory::UniqueString engineMaterialsPath {GetUIBackendMaterialPath ()};
     static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
@@ -174,15 +178,13 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (_frames));
-    FontManagement::AddToNormalUpdate (pipelineBuilder, {testFontsPath}, MAX_LOADING_TIME_NS,
-                                       assetReferenceBindingEventMap);
+    FontManagement::AddToNormalUpdate (pipelineBuilder, {testFontsPath}, assetReferenceBindingEventMap);
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
-    Localization::AddToNormalUpdate (pipelineBuilder, testLocalePath, MAX_LOADING_TIME_NS);
+    Localization::AddToNormalUpdate (pipelineBuilder, testLocalePath);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {engineShadersPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+                                           {engineShadersPath}, assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
-                                          assetReferenceBindingEventMap);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, {});
 
     bool testFinished = false;
