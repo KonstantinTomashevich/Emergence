@@ -1,2 +1,4 @@
-- typeName: DynamicsMaterial3d
-  folder: Physics/Materials
+# PathMapping
+configs:
+  - typeName: DynamicsMaterial3d
+    folder: Physics/Materials

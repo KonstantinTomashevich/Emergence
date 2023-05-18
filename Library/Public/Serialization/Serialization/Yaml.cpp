@@ -508,7 +508,7 @@ static bool DeserializeObjectFromYaml (const YAML::Node &_input,
             if (!field)
             {
                 EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
-                               "\" does not contain field \"", *field.GetName (), "\"!");
+                               "\" does not contain field \"", iterator->first.Scalar ().c_str (), "\"!");
                 return false;
             }
 
@@ -530,7 +530,7 @@ static bool DeserializeObjectFromYaml (const YAML::Node &_input,
             if (!field)
             {
                 EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
-                               "\" does not contain field \"", *field.GetName (), "\"!");
+                               "\" does not contain field \"", *iterator->first.Scalar ().c_str (), "\"!");
                 return false;
             }
 
@@ -572,7 +572,7 @@ static bool DeserializeObjectFromYaml (const YAML::Node &_input,
             if (!field)
             {
                 EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
-                               "\" does not contain field \"", *field.GetName (), "\"!");
+                               "\" does not contain field \"", *iterator->first.Scalar ().c_str (), "\"!");
                 return false;
             }
 
