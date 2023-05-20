@@ -2,6 +2,8 @@
 
 #include <Serialization/Test/Types.hpp>
 
+#include <StandardLayout/PatchBuilder.hpp>
+
 #define OBJECT_SERIALIZATION_TESTS(Executor)                                                                           \
     TEST_CASE (Trivial)                                                                                                \
     {                                                                                                                  \

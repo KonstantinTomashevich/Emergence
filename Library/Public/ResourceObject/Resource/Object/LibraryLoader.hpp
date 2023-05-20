@@ -109,7 +109,7 @@ private:
     Container::HashMap<Memory::UniqueString, std::size_t> indexInObjectList {GetAllocationGroup ()};
 
     TypeManifest typeManifest;
-    Serialization::PatchableTypesRegistry patchableTypesRegistry;
+    Container::MappingRegistry patchableTypesRegistry;
     uint64_t loadingStartTimeNs = 0u;
 };
 

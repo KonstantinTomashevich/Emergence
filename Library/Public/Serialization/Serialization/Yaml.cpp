@@ -6,6 +6,9 @@
 
 #include <Serialization/Yaml.hpp>
 
+#include <StandardLayout/Patch.hpp>
+#include <StandardLayout/PatchBuilder.hpp>
+
 #include <SyntaxSugar/BlockCast.hpp>
 
 // We're linking to static library, but define is not passed to us for some reason.
@@ -480,7 +483,7 @@ static bool DeserializePatchBodyFromYaml (const YAML::Node &_input,
 static bool DeserializeObjectFromYaml (const YAML::Node &_input,
                                        void *_objectAddress,
                                        const StandardLayout::Mapping &_mapping,
-                                       const PatchableTypesRegistry &_patchableTypesRegistry)
+                                       const Container::MappingRegistry &_patchableTypesRegistry)
 {
     for (auto iterator = _input.begin (); iterator != _input.end (); ++iterator)
     {
@@ -661,7 +664,7 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
 bool DeserializeObject (std::istream &_input,
                         void *_object,
                         const StandardLayout::Mapping &_mapping,
-                        const PatchableTypesRegistry &_patchableTypesRegistry) noexcept
+                        const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
     YAML::Node node = YAML::Load (_input);
     if (!node.IsMap ())

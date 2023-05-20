@@ -3,7 +3,7 @@
 #include <istream>
 #include <ostream>
 
-#include <Serialization/PatchableTypesRegistry.hpp>
+#include <Container/MappingRegistry.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -19,5 +19,5 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
 bool DeserializeObject (std::istream &_input,
                         void *_object,
                         const StandardLayout::Mapping &_mapping,
-                        const PatchableTypesRegistry &_patchableTypesRegistry) noexcept;
+                        const Container::MappingRegistry &_patchableTypesRegistry) noexcept;
 } // namespace Emergence::Serialization::Binary

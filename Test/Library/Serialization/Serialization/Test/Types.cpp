@@ -230,11 +230,11 @@ const VectorOfPatchesStruct::Reflection &VectorOfPatchesStruct::Reflect () noexc
     return reflection;
 }
 
-const PatchableTypesRegistry &GetPatchableTypesRegistry () noexcept
+const Container::MappingRegistry &GetPatchableTypesRegistry () noexcept
 {
-    static const PatchableTypesRegistry registry = [] ()
+    static const Container::MappingRegistry registry = [] ()
     {
-        PatchableTypesRegistry typeRegistry;
+        Container::MappingRegistry typeRegistry;
         typeRegistry.Register (SimpleTestStruct::Reflect ().mapping);
         typeRegistry.Register (OneLevelNestingStruct::Reflect ().mapping);
         typeRegistry.Register (TwoLevelNestingStruct::Reflect ().mapping);

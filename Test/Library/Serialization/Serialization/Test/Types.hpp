@@ -1,10 +1,9 @@
 #pragma once
 
+#include <Container/MappingRegistry.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
-
-#include <Serialization/PatchableTypesRegistry.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Patch.hpp>
@@ -245,5 +244,5 @@ struct VectorOfPatchesStruct final
     static const Reflection &Reflect () noexcept;
 };
 
-const PatchableTypesRegistry &GetPatchableTypesRegistry () noexcept;
+const Container::MappingRegistry &GetPatchableTypesRegistry () noexcept;
 } // namespace Emergence::Serialization::Test

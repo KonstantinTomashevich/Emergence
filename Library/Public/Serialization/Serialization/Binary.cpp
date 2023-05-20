@@ -206,7 +206,7 @@ void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch)
 
 bool DeserializePatch (std::istream &_input,
                        void *_outputAddress,
-                       const PatchableTypesRegistry &_patchableTypesRegistry) noexcept
+                       const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
     StandardLayout::PatchBuilder patchBuilder;
     StandardLayout::Mapping mapping;
@@ -356,7 +356,7 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
 bool DeserializeObject (std::istream &_input,
                         void *_object,
                         const StandardLayout::Mapping &_mapping,
-                        const PatchableTypesRegistry &_patchableTypesRegistry) noexcept
+                        const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
 #ifdef EMERGENCE_ASSERT_ENABLED
     if (Container::Optional<Container::String> typeName = ReadString (_input))
