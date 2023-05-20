@@ -21,6 +21,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   lookups for point, linear, signal and volumetric representations of records.
 - [RenderBackend](./Service/RenderBackend/README.md): provides low level render features like programs, uniforms, 
   buffers and so on.
+- [ResourceProvider](./Service/ResourceProvider/README.md): Provides out-of-the-box resource discovery solution 
+  that supports multiple resource sources.
 - [StandardLayoutMapping](./Service/StandardLayoutMapping/README.md): fast field-only reflection for standard layout
   structures.
 - [TaskExecutor](./Service/TaskExecutor/README.md): provides execution interface for tasks, stored
@@ -52,7 +54,7 @@ These services are built on top of [Celerity](./Library/Public/Celerity/README.m
 - [ResourceObject](Library/Public/ResourceObject/README.md): provides format for storing game objects (like units,
   buildings, etc) in YAML or binary with single inheritance support.
 - [Serialization](./Library/Public/Serialization/README.md): toolset for serializing and deserializing data from 
-  multiple formats using [StandardLayoutMapping](./Service/StandardLayoutMapping/README.md).
+  binary and yaml formats using [StandardLayoutMapping](./Service/StandardLayoutMapping/README.md).
 - [SyntaxSugar](./Library/Public/SyntaxSugar/README.md): contains syntax sugar for other libraries and service
   implementations.
 - [VisualGraph](./Library/Public/VisualGraph/README.md): data structure for runtime state representation in a form of
