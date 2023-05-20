@@ -118,11 +118,11 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::UniqueString _id,
                                                                    Memory::Heap &_allocator,
                                                                    uint64_t &_sizeOutput,
-                                                                   uint8_t *&_dataPointerOutput) const noexcept
+                                                                   uint8_t *&_dataOutput) const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
     EMERGENCE_ASSERT (internal.resourceProvider);
-    return internal.resourceProvider->LoadThirdPartyResource (_id, _allocator, _sizeOutput, _dataPointerOutput);
+    return internal.resourceProvider->LoadThirdPartyResource (_id, _allocator, _sizeOutput, _dataOutput);
 }
 
 ResourceProvider::ObjectRegistryCursor ResourceProvider::FindObjectsByType (

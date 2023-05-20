@@ -335,7 +335,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::UniqueString _id,
                                                                    Memory::Heap &_allocator,
                                                                    uint64_t &_sizeOutput,
-                                                                   uint8_t *&_dataPointerOutput) const noexcept
+                                                                   uint8_t *&_dataOutput) const noexcept
 {
     EMERGENCE_ASSERT (dataWritersCount == 0u);
     ++dataReadersCount;
@@ -359,9 +359,9 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
     fseek (file, 0u, SEEK_END);
     _sizeOutput = static_cast<uint64_t> (ftell (file));
     fseek (file, 0u, SEEK_SET);
-    _dataPointerOutput = static_cast<uint8_t *> (_allocator.Acquire (_sizeOutput, alignof (uint64_t)));
+    _dataOutput = static_cast<uint8_t *> (_allocator.Acquire (_sizeOutput, alignof (uint64_t)));
 
-    if (fread (_dataPointerOutput, 1u, _sizeOutput, file) != _sizeOutput)
+    if (fread (_dataOutput, 1u, _sizeOutput, file) != _sizeOutput)
     {
         --dataReadersCount;
         return LoadingOperationResponse::IO_ERROR;

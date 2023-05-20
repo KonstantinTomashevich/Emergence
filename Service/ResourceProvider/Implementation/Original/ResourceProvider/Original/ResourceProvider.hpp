@@ -66,7 +66,7 @@ public:
     LoadingOperationResponse LoadThirdPartyResource (Memory::UniqueString _id,
                                                      Memory::Heap &_allocator,
                                                      uint64_t &_sizeOutput,
-                                                     uint8_t *&_dataPointerOutput) const noexcept;
+                                                     uint8_t *&_dataOutput) const noexcept;
 
     ObjectRegistryCursor FindObjectsByType (const StandardLayout::Mapping &_type) const noexcept;
 
