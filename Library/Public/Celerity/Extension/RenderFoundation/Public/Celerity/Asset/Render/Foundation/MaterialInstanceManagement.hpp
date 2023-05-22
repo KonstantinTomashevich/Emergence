@@ -3,7 +3,7 @@
 #include <Celerity/Asset/AssetReferenceBinding.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 namespace Emergence::Celerity::MaterialInstanceManagement
 {
@@ -14,6 +14,6 @@ namespace Emergence::Celerity::MaterialInstanceManagement
 ///
 /// \param _eventMap Event map generated as a result of asset events binding.
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        ResourceProvider::ResourceProvider *_resourceProvider,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::MaterialInstanceManagement

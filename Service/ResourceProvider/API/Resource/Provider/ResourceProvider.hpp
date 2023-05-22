@@ -11,9 +11,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-// TODO: Migrate to Resource/Provider directory structure and namespaces? To be consistent with Resource/Object.
-
-namespace Emergence::ResourceProvider
+namespace Emergence::Resource::Provider
 {
 /// \brief Exit codes for ResourceProvider operations that work with resource sources.
 enum class SourceOperationResponse : uint8_t
@@ -151,4 +149,4 @@ public:
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
 };
-} // namespace Emergence::ResourceProvider
+} // namespace Emergence::Resource::Provider

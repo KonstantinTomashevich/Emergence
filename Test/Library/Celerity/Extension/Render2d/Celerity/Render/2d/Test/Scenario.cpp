@@ -40,7 +40,7 @@
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -505,15 +505,15 @@ struct ResourceProviderHolder
         : provider (GetAssetTypes (), {})
     {
         REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Render2dResources"}) ==
-                 ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+                 Resource::Provider::SourceOperationResponse::SUCCESSFUL);
         REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Render2dTestResources"}) ==
-                 ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+                 Resource::Provider::SourceOperationResponse::SUCCESSFUL);
     }
 
-    ResourceProvider::ResourceProvider provider;
+    Resource::Provider::ResourceProvider provider;
 };
 
-static ResourceProvider::ResourceProvider &GetSharedResourceProvider () noexcept
+static Resource::Provider::ResourceProvider &GetSharedResourceProvider () noexcept
 {
     static ResourceProviderHolder holder;
     return holder.provider;

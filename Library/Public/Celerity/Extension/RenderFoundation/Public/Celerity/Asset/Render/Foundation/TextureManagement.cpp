@@ -21,7 +21,7 @@ public:
     using LoadingState = TextureLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             ResourceProvider::ResourceProvider *_resourceProvider,
+             Resource::Provider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -36,11 +36,11 @@ private:
     InsertLongTermQuery insertTexture;
     RemoveValueQuery removeTextureById;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  ResourceProvider::ResourceProvider *_resourceProvider,
+                  Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase<Manager> (_constructor, _stateUpdateEvent),
       insertTexture (INSERT_LONG_TERM (Texture)),
@@ -59,20 +59,20 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
         {
             switch (cachedResourceProvider->LoadObject (TextureAsset::Reflect ().mapping, assetId, &sharedState->asset))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "TextureManagement: Unable to find texture \"", assetId, "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "TextureManagement: Failed to read texture \"", assetId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 EMERGENCE_LOG (ERROR, "TextureManagement: Object \"", assetId, "\" is not a texture.");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
@@ -82,22 +82,22 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
                 sharedState->asset.textureId, sharedState->textureDataHeap, sharedState->textureDataSize,
                 sharedState->textureData))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "TextureManagement: Unable to find texture source \"",
                                sharedState->asset.textureId, "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "TextureManagement: Failed to read texture source \"",
                                sharedState->asset.textureId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 sharedState->state = AssetState::CORRUPTED;
                 return;
             }
@@ -140,7 +140,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        ResourceProvider::ResourceProvider *_resourceProvider,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Texture::Reflect ().mapping);

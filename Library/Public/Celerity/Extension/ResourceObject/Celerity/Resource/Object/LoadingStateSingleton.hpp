@@ -19,7 +19,7 @@ public:
 
     void operator delete (void *_pointer) noexcept;
 
-    ResourceObjectLoadingSharedState (ResourceProvider::ResourceProvider *_resourceProvider,
+    ResourceObjectLoadingSharedState (Resource::Provider::ResourceProvider *_resourceProvider,
                                       Resource::Object::TypeManifest _typeManifest) noexcept;
 
     ResourceObjectLoadingSharedState (const ResourceObjectLoadingSharedState &_other) = delete;

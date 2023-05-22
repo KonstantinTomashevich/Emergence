@@ -8,7 +8,7 @@
 
 namespace Emergence::Resource::Object
 {
-LibraryLoader::LibraryLoader (ResourceProvider::ResourceProvider *_resourceProvider,
+LibraryLoader::LibraryLoader (Provider::ResourceProvider *_resourceProvider,
                               TypeManifest _typeManifest) noexcept
     : resourceProvider (_resourceProvider),
       typeManifest (std::move (_typeManifest))
@@ -62,19 +62,19 @@ bool LibraryLoader::LoadObject (Memory::UniqueString _objectId, bool _loadingAsP
     Object object;
     switch (resourceProvider->LoadObject (Object::Reflect ().mapping, _objectId, &object))
     {
-    case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+    case Provider::LoadingOperationResponse::SUCCESSFUL:
         break;
 
-    case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+    case Provider::LoadingOperationResponse::NOT_FOUND:
         EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Object \"", _objectId, "\" is not found.");
         return false;
 
-    case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+    case Provider::LoadingOperationResponse::IO_ERROR:
         EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to load object \"", _objectId,
                        "\" due to an IO error.");
         return false;
 
-    case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+    case Provider::LoadingOperationResponse::WRONG_TYPE:
         EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to load object \"", _objectId,
                        "\", there is another resource with the same id.");
         return false;

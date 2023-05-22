@@ -16,7 +16,7 @@ class LocalizationSynchronizer final : public TaskExecutorBase<LocalizationSynch
 {
 public:
     LocalizationSynchronizer (TaskConstructor &_constructor,
-                              ResourceProvider::ResourceProvider *_resourceProvider) noexcept;
+                              Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
 
     void Execute () noexcept;
 
@@ -29,11 +29,11 @@ private:
     InsertLongTermQuery insertLocalizedString;
     RemoveAscendingRangeQuery removeLocalizedString;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
 };
 
 LocalizationSynchronizer::LocalizationSynchronizer (TaskConstructor &_constructor,
-                                                    ResourceProvider::ResourceProvider *_resourceProvider) noexcept
+                                                    Resource::Provider::ResourceProvider *_resourceProvider) noexcept
     : modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
       insertLocalizedString (INSERT_LONG_TERM (LocalizedString)),
       removeLocalizedString (REMOVE_ASCENDING_RANGE (LocalizedString, key)),
@@ -71,17 +71,17 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
                 switch (capturedResourceProvider->LoadObject (LocaleConfiguration::Reflect ().mapping, targetLocale,
                                                               &sharedState->configurationInLoading))
                 {
-                case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                     sharedState->loadingState = LocaleLoadingState::SUCCESSFUL;
                     break;
 
-                case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                     EMERGENCE_LOG (ERROR, "Localization: Unable to find locale \"", targetLocale, "\"!");
                     sharedState->loadingState = LocaleLoadingState::FAILED;
                     break;
 
-                case ResourceProvider::LoadingOperationResponse::IO_ERROR:
-                case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                case Resource::Provider::LoadingOperationResponse::IO_ERROR:
+                case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                     EMERGENCE_LOG (ERROR, "Localization: Unable to read locale \"", targetLocale, "\"!");
                     sharedState->loadingState = LocaleLoadingState::FAILED;
                     break;
@@ -126,7 +126,7 @@ void LocalizationSynchronizer::UpdateLocaleLoading (LocaleSingleton *_locale) no
     }
 }
 
-void AddToNormalUpdate (PipelineBuilder &_builder, ResourceProvider::ResourceProvider *_resourceProvider) noexcept
+void AddToNormalUpdate (PipelineBuilder &_builder, Resource::Provider::ResourceProvider *_resourceProvider) noexcept
 {
     _builder.AddCheckpoint (Checkpoint::SYNC_STARTED);
     _builder.AddCheckpoint (Checkpoint::SYNC_FINISHED);

@@ -1,11 +1,11 @@
 #include <Assert/Assert.hpp>
 
-#include <ResourceProvider/Original/ResourceProvider.hpp>
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/Original/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
 
-namespace Emergence::ResourceProvider
+namespace Emergence::Resource::Provider
 {
 ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (
     const ResourceProvider::ObjectRegistryCursor &_other) noexcept
@@ -133,4 +133,4 @@ ResourceProvider::ObjectRegistryCursor ResourceProvider::FindObjectsByType (
     Original::ResourceProvider::ObjectRegistryCursor cursor = internal.resourceProvider->FindObjectsByType (_type);
     return ObjectRegistryCursor (array_cast (cursor));
 }
-} // namespace Emergence::ResourceProvider
+} // namespace Emergence::Resource::Provider

@@ -2,7 +2,7 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 namespace Emergence::Celerity::Localization
 {
@@ -19,5 +19,5 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks for localization management and synchronization.
-void AddToNormalUpdate (PipelineBuilder &_builder, ResourceProvider::ResourceProvider *_resourceProvider) noexcept;
+void AddToNormalUpdate (PipelineBuilder &_builder, Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
 } // namespace Emergence::Celerity::Localization

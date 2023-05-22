@@ -23,7 +23,7 @@ public:
     using LoadingState = Sprite2dUvAnimationLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             ResourceProvider::ResourceProvider *_resourceProvider,
+             Resource::Provider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -38,11 +38,11 @@ private:
     InsertLongTermQuery insertAnimation;
     RemoveValueQuery removeAnimationById;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  ResourceProvider::ResourceProvider *_resourceProvider,
+                  Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
 
@@ -65,21 +65,21 @@ AssetState Manager::StartLoading (Sprite2dUvAnimationLoadingState *_loadingState
             switch (cachedResourceProvider->LoadObject (Sprite2dUvAnimationAsset::Reflect ().mapping, assetId,
                                                         &sharedState->asset))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 sharedState->state = AssetState::READY;
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Unable to find animation \"", assetId, "\".");
                 sharedState->state = AssetState::MISSING;
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Failed to read animation \"", assetId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Object \"", assetId, "\" is not an animation.");
                 sharedState->state = AssetState::CORRUPTED;
                 break;
@@ -120,7 +120,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        ResourceProvider::ResourceProvider *_resourceProvider,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Sprite2dUvAnimation::Reflect ().mapping);

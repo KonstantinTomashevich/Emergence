@@ -6,15 +6,15 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
-#include <ResourceProvider/IndexFile.hpp>
-#include <ResourceProvider/ResourceProvider.hpp>
-#include <ResourceProvider/Test/ResourceProvider.hpp>
+#include <Resource/Provider/IndexFile.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
+#include <Resource/Provider/Test/ResourceProvider.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 #include <Testing/Testing.hpp>
 
-namespace Emergence::ResourceProvider::Test
+namespace Emergence::Resource::Provider::Test
 {
 bool ResourceProviderTestIncludeMarker () noexcept
 {
@@ -302,11 +302,11 @@ void CheckExpectation (const Expectation &_expectation, const ResourceProvider &
     }
 }
 } // namespace
-} // namespace Emergence::ResourceProvider::Test
+} // namespace Emergence::Resource::Provider::Test
 
 using namespace Emergence::Memory::Literals;
-using namespace Emergence::ResourceProvider::Test;
-using namespace Emergence::ResourceProvider;
+using namespace Emergence::Resource::Provider::Test;
+using namespace Emergence::Resource::Provider;
 
 BEGIN_SUITE (SingleSource)
 

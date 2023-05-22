@@ -4,11 +4,11 @@
 
 #include <Container/String.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <RecordCollection/Collection.hpp>
 
-namespace Emergence::ResourceProvider::Original
+namespace Emergence::Resource::Provider::Original
 {
 class ResourceProvider final
 {
@@ -103,4 +103,4 @@ private:
     Container::MappingRegistry objectTypesRegistry;
     Container::MappingRegistry patchableTypesRegistry;
 };
-} // namespace Emergence::ResourceProvider::Original
+} // namespace Emergence::Resource::Provider::Original

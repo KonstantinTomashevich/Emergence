@@ -8,7 +8,7 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
@@ -137,9 +137,9 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
 
     Container::MappingRegistry resourceTypeRegistry;
     resourceTypeRegistry.Register (LocaleConfiguration::Reflect ().mapping);
-    ResourceProvider::ResourceProvider resourceProvider {resourceTypeRegistry, {}};
+    Resource::Provider::ResourceProvider resourceProvider {resourceTypeRegistry, {}};
     REQUIRE (resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
-             ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+             Resource::Provider::SourceOperationResponse::SUCCESSFUL);
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     Localization::AddToNormalUpdate (builder, &resourceProvider);

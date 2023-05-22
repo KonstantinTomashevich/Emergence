@@ -19,7 +19,7 @@ class LoadingProcessor final : public TaskExecutorBase<LoadingProcessor>
 {
 public:
     LoadingProcessor (TaskConstructor &_constructor,
-                      ResourceProvider::ResourceProvider *_resourceProvider,
+                      Resource::Provider::ResourceProvider *_resourceProvider,
                       Resource::Object::TypeManifest _manifest) noexcept;
 
     void Execute () noexcept;
@@ -38,12 +38,12 @@ private:
     InsertLongTermQuery insertAssemblyDescriptor;
     RemoveValueQuery removeAssemblyDescriptor;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
     Resource::Object::TypeManifest typeManifest;
 };
 
 LoadingProcessor::LoadingProcessor (TaskConstructor &_constructor,
-                                    ResourceProvider::ResourceProvider *_resourceProvider,
+                                    Resource::Provider::ResourceProvider *_resourceProvider,
                                     Resource::Object::TypeManifest _manifest) noexcept
     : modifyState (MODIFY_SINGLETON (ResourceObjectLoadingStateSingleton)),
 
@@ -183,7 +183,7 @@ void LoadingProcessor::ProcessLoading (ResourceObjectLoadingStateSingleton *_sta
 }
 
 void AddToLoadingPipeline (PipelineBuilder &_builder,
-                           ResourceProvider::ResourceProvider *_resourceProvider,
+                           Resource::Provider::ResourceProvider *_resourceProvider,
                            Resource::Object::TypeManifest _typeManifest) noexcept
 {
     auto visualGroup = _builder.OpenVisualGroup ("ResourceObjectLoading");

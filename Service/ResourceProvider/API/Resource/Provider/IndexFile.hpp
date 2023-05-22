@@ -7,7 +7,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-namespace Emergence::ResourceProvider
+namespace Emergence::Resource::Provider
 {
 /// \brief Describes indexed resource which structure is described using reflection.
 struct IndexFileObjectItem final
@@ -75,4 +75,4 @@ struct IndexFile final
 
     static const Reflection &Reflect () noexcept;
 };
-} // namespace Emergence::ResourceProvider
+} // namespace Emergence::Resource::Provider

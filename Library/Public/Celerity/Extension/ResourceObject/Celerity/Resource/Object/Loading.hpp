@@ -4,7 +4,7 @@
 
 #include <Resource/Object/TypeManifest.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 namespace Emergence::Celerity::ResourceObjectLoading
 {
@@ -23,6 +23,6 @@ struct Checkpoint final
 /// \brief Adds tasks that execute loading pipeline: process requests and integrate
 ///        Resource::Object::LibraryLoader with Celerity::Assembly.
 void AddToLoadingPipeline (PipelineBuilder &_builder,
-                           ResourceProvider::ResourceProvider *_resourceProvider,
+                           Resource::Provider::ResourceProvider *_resourceProvider,
                            Resource::Object::TypeManifest _typeManifest) noexcept;
 } // namespace Emergence::Celerity::ResourceObjectLoading

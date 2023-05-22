@@ -3,7 +3,7 @@
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Resource/Config/TypeMeta.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 namespace Emergence::Celerity::ResourceConfigLoading
 {
@@ -21,6 +21,6 @@ struct Checkpoint final
 
 /// \brief Adds task that executes loading routine: processes requests and loads configs.
 void AddToLoadingPipeline (PipelineBuilder &_builder,
-                           ResourceProvider::ResourceProvider *_resourceProvider,
+                           Resource::Provider::ResourceProvider *_resourceProvider,
                            const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept;
 } // namespace Emergence::Celerity::ResourceConfigLoading

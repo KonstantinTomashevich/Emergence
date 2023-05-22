@@ -11,7 +11,7 @@
 #include <Resource/Object/Test/Helpers.hpp>
 #include <Resource/Object/Test/Types.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
@@ -77,7 +77,7 @@ void PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
 using namespace Emergence::Memory::Literals;
 using namespace Emergence::Resource::Object::Test;
 using namespace Emergence::Resource::Object;
-using namespace Emergence::ResourceProvider;
+using namespace Emergence::Resource::Provider;
 
 BEGIN_SUITE (LibraryLoader)
 

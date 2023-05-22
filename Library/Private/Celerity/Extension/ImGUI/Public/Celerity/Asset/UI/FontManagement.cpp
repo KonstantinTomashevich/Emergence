@@ -29,7 +29,7 @@ public:
     using LoadingState = FontLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             ResourceProvider::ResourceProvider *_resourceProvider,
+             Resource::Provider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -44,11 +44,11 @@ private:
     InsertLongTermQuery insertFont;
     RemoveValueQuery removeFontById;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  ResourceProvider::ResourceProvider *_resourceProvider,
+                  Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
       insertFont (INSERT_LONG_TERM (Font)),
@@ -72,20 +72,20 @@ AssetState Manager::StartLoading (FontLoadingState *_loadingState) noexcept
 
             switch (cachedResourceProvider->LoadObject (FontAsset::Reflect ().mapping, fontId, &sharedState->asset))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "FontManagement: Unable to find font \"", fontId, "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "FontManagement: Failed to read font \"", fontId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 sharedState->state = AssetState::CORRUPTED;
                 return;
             }
@@ -93,22 +93,22 @@ AssetState Manager::StartLoading (FontLoadingState *_loadingState) noexcept
             switch (cachedResourceProvider->LoadThirdPartyResource (
                 sharedState->asset.fontId, sharedState->fontDataHeap, sharedState->fontDataSize, sharedState->fontData))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "FontManagement: Unable to find font source \"", sharedState->asset.fontId,
                                "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "FontManagement: Failed to read font source \"", sharedState->asset.fontId,
                                "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 sharedState->state = AssetState::CORRUPTED;
                 return;
             }
@@ -154,7 +154,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        ResourceProvider::ResourceProvider *_resourceProvider,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Font::Reflect ().mapping);

@@ -14,7 +14,7 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
@@ -29,7 +29,7 @@ class Executor final : public TaskExecutorBase<Executor>
 {
 public:
     Executor (TaskConstructor &_constructor,
-              ResourceProvider::ResourceProvider *_resourceProvider,
+              Resource::Provider::ResourceProvider *_resourceProvider,
               Container::Vector<Task> _tasks,
               bool *_isFinished) noexcept;
 
@@ -49,7 +49,7 @@ private:
     FetchAscendingRangeQuery fetchBuildingConfigByAscendingId;
     InsertShortTermQuery insertLoadingRequest;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
     Container::Vector<Task> tasks;
     std::size_t currentTaskIndex = 0u;
     bool loadingRequestSent = false;
@@ -57,7 +57,7 @@ private:
 };
 
 Executor::Executor (TaskConstructor &_constructor,
-                    ResourceProvider::ResourceProvider *_resourceProvider,
+                    Resource::Provider::ResourceProvider *_resourceProvider,
                     Container::Vector<Task> _tasks,
                     bool *_isFinished) noexcept
     : fetchLoadingResponse (FETCH_SEQUENCE (ResourceConfigLoadedResponse)),
@@ -113,7 +113,7 @@ void SerializeConfigs (const Container::String &_folder, const Container::Vector
 bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
 {
     LOG ("Resetting environment...");
-    [[maybe_unused]] ResourceProvider::SourceOperationResponse response =
+    [[maybe_unused]] Resource::Provider::SourceOperationResponse response =
         resourceProvider->RemoveSource (Memory::UniqueString {ENVIRONMENT_ROOT});
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
 
@@ -127,7 +127,7 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
     SerializeConfigs (_task.buildingConfigFolder, _task.buildingConfigs, _task.useBinaryFormat);
 
     REQUIRE (resourceProvider->AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
-             ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+             Resource::Provider::SourceOperationResponse::SUCCESSFUL);
     return true;
 }
 
@@ -228,7 +228,7 @@ void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept
     Container::MappingRegistry configTypes;
     configTypes.Register (BuildingConfig::Reflect ().mapping);
     configTypes.Register (UnitConfig::Reflect ().mapping);
-    ResourceProvider::ResourceProvider resourceProvider {configTypes, {}};
+    Resource::Provider::ResourceProvider resourceProvider {configTypes, {}};
 
     builder.Begin ("LoadingUpdate"_us, PipelineType::CUSTOM);
     ResourceConfigLoading::AddToLoadingPipeline (builder, &resourceProvider, typeMetas);

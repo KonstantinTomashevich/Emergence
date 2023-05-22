@@ -5,15 +5,15 @@
 
 #include <Log/Log.hpp>
 
-#include <ResourceProvider/IndexFile.hpp>
-#include <ResourceProvider/Original/ResourceProvider.hpp>
+#include <Resource/Provider/IndexFile.hpp>
+#include <Resource/Provider/Original/ResourceProvider.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::ResourceProvider::Original
+namespace Emergence::Resource::Provider::Original
 {
 enum class ObjectResourceFormat : uint8_t
 {
@@ -600,4 +600,4 @@ bool ResourceProvider::ClearSource (Memory::UniqueString _path) noexcept
 
     return foundAny;
 }
-} // namespace Emergence::ResourceProvider::Original
+} // namespace Emergence::Resource::Provider::Original

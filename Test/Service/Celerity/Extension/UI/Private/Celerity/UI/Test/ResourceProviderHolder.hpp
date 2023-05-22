@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 namespace Emergence::Celerity::Test
 {
@@ -8,8 +8,8 @@ struct ResourceProviderHolder
 {
     ResourceProviderHolder () noexcept;
 
-    ResourceProvider::ResourceProvider provider;
+    Resource::Provider::ResourceProvider provider;
 };
 
-ResourceProvider::ResourceProvider &GetSharedResourceProvider () noexcept;
+Resource::Provider::ResourceProvider &GetSharedResourceProvider () noexcept;
 } // namespace Emergence::Celerity::Test

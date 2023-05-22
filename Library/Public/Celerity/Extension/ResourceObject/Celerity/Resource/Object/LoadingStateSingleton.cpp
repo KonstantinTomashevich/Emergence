@@ -15,7 +15,7 @@ void ResourceObjectLoadingSharedState::operator delete (void *_pointer) noexcept
 }
 
 ResourceObjectLoadingSharedState::ResourceObjectLoadingSharedState (
-    ResourceProvider::ResourceProvider *_resourceProvider, Resource::Object::TypeManifest _typeManifest) noexcept
+    Resource::Provider::ResourceProvider *_resourceProvider, Resource::Object::TypeManifest _typeManifest) noexcept
     : libraryLoader (_resourceProvider, std::move (_typeManifest))
 {
 }

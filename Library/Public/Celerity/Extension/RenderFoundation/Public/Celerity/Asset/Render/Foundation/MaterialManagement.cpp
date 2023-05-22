@@ -22,7 +22,7 @@ public:
     using LoadingState = MaterialLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             ResourceProvider::ResourceProvider *_resourceProvider,
+             Resource::Provider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -42,11 +42,11 @@ private:
     RemoveValueQuery removeMaterialById;
     RemoveValueQuery removeUniformById;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  ResourceProvider::ResourceProvider *_resourceProvider,
+                  Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
 
@@ -72,20 +72,20 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
             switch (
                 cachedResourceProvider->LoadObject (MaterialAsset::Reflect ().mapping, assetId, &sharedState->asset))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find material \"", assetId, "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Failed to read material \"", assetId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Object \"", assetId, "\" is not a material.");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
@@ -98,20 +98,20 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
                                                                     sharedState->vertexSharedSize,
                                                                     sharedState->vertexShaderData))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find vertex shader \"", vertexShaderId, "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Failed to read vertex shader \"", vertexShaderId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 sharedState->state = AssetState::CORRUPTED;
                 return;
             }
@@ -123,20 +123,20 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
                                                                     sharedState->fragmentSharedSize,
                                                                     sharedState->fragmentShaderData))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find fragment shader \"", fragmentShaderId, "\".");
                 sharedState->state = AssetState::MISSING;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "MaterialManagement: Failed to read fragment shader \"", fragmentShaderId, "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 return;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 sharedState->state = AssetState::CORRUPTED;
                 return;
             }
@@ -214,7 +214,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        ResourceProvider::ResourceProvider *_resourceProvider,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Material::Reflect ().mapping);

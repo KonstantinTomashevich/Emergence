@@ -16,7 +16,7 @@ class Loader final : public TaskExecutorBase<Loader>
 {
 public:
     Loader (TaskConstructor &_constructor,
-            ResourceProvider::ResourceProvider *_resourceProvider,
+            Resource::Provider::ResourceProvider *_resourceProvider,
             const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept;
 
     void Execute () noexcept;
@@ -41,12 +41,12 @@ private:
     ModifySequenceQuery modifyResponse;
     InsertShortTermQuery insertResponse;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
     Container::Vector<PerTypeData> perTypeData {Memory::Profiler::AllocationGroup::Top ()};
 };
 
 Loader::Loader (TaskConstructor &_constructor,
-                ResourceProvider::ResourceProvider *_resourceProvider,
+                Resource::Provider::ResourceProvider *_resourceProvider,
                 const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
     : modifyLoadingState (MODIFY_SINGLETON (ResourceConfigLoadingStateSingleton)),
       modifyRequest (MODIFY_SEQUENCE (ResourceConfigRequest)),
@@ -143,22 +143,22 @@ void Loader::ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState
                                 switch (
                                     cachedResourceProvider->LoadObject (sharedState->configType, *cursor, newConfig))
                                 {
-                                case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                                case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                                     break;
 
-                                case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                                case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                                     EMERGENCE_ASSERT (false);
                                     sharedState->loadingState = ResourceConfigLoadingState::FAILED;
                                     return;
 
-                                case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                                case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                                     EMERGENCE_LOG (
                                         ERROR, "ResourceConfigLoading: Encountered IO error while loading config \"",
                                         *cursor, "\" of type \"", sharedState->configType.GetName (), "\".");
                                     sharedState->loadingState = ResourceConfigLoadingState::FAILED;
                                     return;
 
-                                case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                                case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                                     EMERGENCE_ASSERT (false);
                                     sharedState->loadingState = ResourceConfigLoadingState::FAILED;
                                     return;
@@ -226,7 +226,7 @@ void Loader::ProcessLoading (ResourceConfigLoadingStateSingleton *_loadingState)
 }
 
 void AddToLoadingPipeline (PipelineBuilder &_builder,
-                           ResourceProvider::ResourceProvider *_resourceProvider,
+                           Resource::Provider::ResourceProvider *_resourceProvider,
                            const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
 {
     auto visualGroup = _builder.OpenVisualGroup ("ResourceConfigLoading");

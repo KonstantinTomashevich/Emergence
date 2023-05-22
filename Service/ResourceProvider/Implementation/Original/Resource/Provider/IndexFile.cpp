@@ -1,8 +1,8 @@
-#include <ResourceProvider/IndexFile.hpp>
+#include <Resource/Provider/IndexFile.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-namespace Emergence::ResourceProvider
+namespace Emergence::Resource::Provider
 {
 const IndexFileObjectItem::Reflection &IndexFileObjectItem::Reflect () noexcept
 {
@@ -43,4 +43,4 @@ const IndexFile::Reflection &IndexFile::Reflect () noexcept
 
     return reflection;
 }
-} // namespace Emergence::ResourceProvider
+} // namespace Emergence::Resource::Provider

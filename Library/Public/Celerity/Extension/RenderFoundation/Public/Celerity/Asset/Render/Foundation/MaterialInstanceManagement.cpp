@@ -20,7 +20,7 @@ public:
     using LoadingState = MaterialInstanceLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             ResourceProvider::ResourceProvider *_resourceProvider,
+             Resource::Provider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -57,12 +57,12 @@ private:
     RemoveValueQuery removeUniformMatrix4x4fValueById;
     RemoveValueQuery removeUniformSamplerValueById;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Resource::Provider::ResourceProvider *resourceProvider;
     Container::Vector<UniformValueDescription> uniformValuesCollector {Memory::Profiler::AllocationGroup::Top ()};
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  ResourceProvider::ResourceProvider *_resourceProvider,
+                  Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase<Manager> (_constructor, _stateUpdateEvent),
 
@@ -140,23 +140,23 @@ AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) n
             switch (cachedResourceProvider->LoadObject (MaterialInstanceAsset::Reflect ().mapping, assetId,
                                                         &sharedState->asset))
             {
-            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
                 sharedState->state = AssetState::READY;
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
                 EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to find material instance \"", assetId,
                                "\".");
                 sharedState->state = AssetState::MISSING;
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
                 EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Failed to read material instance \"", assetId,
                                "\".");
                 sharedState->state = AssetState::CORRUPTED;
                 break;
 
-            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
                 EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Object \"", assetId,
                                "\" is not a material instance.");
                 sharedState->state = AssetState::CORRUPTED;
@@ -372,7 +372,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        ResourceProvider::ResourceProvider *_resourceProvider,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (MaterialInstance::Reflect ().mapping);

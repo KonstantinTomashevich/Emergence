@@ -25,12 +25,12 @@ ResourceProviderHolder::ResourceProviderHolder () noexcept
     : provider (GetAssetTypes (), {})
 {
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {GetUIBackendResourceSourcePath ()}) ==
-             ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+             Resource::Provider::SourceOperationResponse::SUCCESSFUL);
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"UITestResources"}) ==
-             ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+             Resource::Provider::SourceOperationResponse::SUCCESSFUL);
 }
 
-ResourceProvider::ResourceProvider &GetSharedResourceProvider () noexcept
+Resource::Provider::ResourceProvider &GetSharedResourceProvider () noexcept
 {
     static ResourceProviderHolder holder;
     return holder.provider;

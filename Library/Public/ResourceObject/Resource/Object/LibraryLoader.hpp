@@ -4,7 +4,7 @@
 
 #include <Resource/Object/Library.hpp>
 
-#include <ResourceProvider/ResourceProvider.hpp>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 namespace Emergence::Resource::Object
 {
@@ -20,7 +20,7 @@ class LibraryLoader final
 {
 public:
     /// \brief Constructs loader with given type manifest.
-    LibraryLoader (ResourceProvider::ResourceProvider *_resourceProvider, TypeManifest _typeManifest) noexcept;
+    LibraryLoader (Provider::ResourceProvider *_resourceProvider, TypeManifest _typeManifest) noexcept;
 
     LibraryLoader (const LibraryLoader &_other) = delete;
 
@@ -46,7 +46,7 @@ private:
     /// \brief Applies post processing to object at given index: inheritance and injection features.
     void PostProcessObject (std::size_t _indexInList) noexcept;
 
-    ResourceProvider::ResourceProvider *resourceProvider;
+    Provider::ResourceProvider *resourceProvider;
     Library currentLibrary;
 
     /// \brief Lists all objects to be loaded in current loading routine.
