@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Container/MappingRegistry.hpp>
+
 #include <Resource/Object/TypeManifest.hpp>
 
 namespace Emergence::Resource::Object::Test
@@ -79,4 +81,8 @@ struct InjectionComponent final
 };
 
 const TypeManifest &GetTypeManifest () noexcept;
+
+const Container::MappingRegistry &GetResourceObjectMappingRegistry () noexcept;
+
+const Container::MappingRegistry &GetPatchableTypesMappingRegistry () noexcept;
 } // namespace Emergence::Resource::Object::Test

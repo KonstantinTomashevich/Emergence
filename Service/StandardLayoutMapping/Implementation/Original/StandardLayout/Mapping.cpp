@@ -75,6 +75,13 @@ void Mapping::Construct (void *_address) const noexcept
     handle->Construct (_address);
 }
 
+void Mapping::MoveConstruct (void *_address, void *_sourceAddress) const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    EMERGENCE_ASSERT (handle);
+    handle->MoveConstruct (_address, _sourceAddress);
+}
+
 void Mapping::Destruct (void *_address) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);

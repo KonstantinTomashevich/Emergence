@@ -8,9 +8,9 @@ sober_library_begin (CelerityLocale STATIC)
 
     sober_library_use_service (EXPECTED PRIVATE JobDispatcher)
     sober_library_use_service (EXPECTED PRIVATE Log)
+    sober_library_use_service (EXPECTED PUBLIC ResourceProvider)
 
     sober_naming_variant_target (Celerity Original CELERITY_LIBRARY_TARGET)
-    sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 
     sober_library_link_library (PRIVATE "${SERIALIZATION_LIBRARY_TARGET}")
     sober_library_link_library (PUBLIC "${CELERITY_LIBRARY_TARGET}")

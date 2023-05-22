@@ -35,9 +35,6 @@ public:
 private:
     friend class LibraryLoader;
 
-    /// \details Library can only be constructed by LibraryLoader.
-    Library () noexcept = default;
-
     Container::HashMap<Memory::UniqueString, ObjectData> objects {
         Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"Library"}}};
 };

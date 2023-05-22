@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Celerity/Asset/Asset.hpp>
+#include <Celerity/Asset/UI/Font.hpp>
 #include <Celerity/Asset/LoadingSharedState.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -13,6 +14,8 @@ public:
     static constexpr const char *ALLOCATION_GROUP_NAME = "FontLoading";
 
     EMERGENCE_STATIONARY_DATA_TYPE (FontLoadingSharedState);
+
+    FontAsset asset;
 
     Memory::Heap fontDataHeap {GetHeap().GetAllocationGroup()};
 

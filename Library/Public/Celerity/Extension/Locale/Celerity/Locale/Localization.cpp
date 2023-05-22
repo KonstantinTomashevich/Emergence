@@ -1,6 +1,3 @@
-#include <filesystem>
-#include <fstream>
-
 #include <Celerity/Locale/LocaleSingleton.hpp>
 #include <Celerity/Locale/Localization.hpp>
 #include <Celerity/Locale/LocalizedString.hpp>
@@ -10,9 +7,6 @@
 
 #include <Log/Log.hpp>
 
-#include <Serialization/Binary.hpp>
-#include <Serialization/Yaml.hpp>
-
 namespace Emergence::Celerity::Localization
 {
 const Memory::UniqueString Checkpoint::SYNC_STARTED {"Localization::SyncStarted"};
@@ -21,7 +15,8 @@ const Memory::UniqueString Checkpoint::SYNC_FINISHED {"Localization::SyncFinishe
 class LocalizationSynchronizer final : public TaskExecutorBase<LocalizationSynchronizer>
 {
 public:
-    LocalizationSynchronizer (TaskConstructor &_constructor, Memory::UniqueString _localizationRootPath) noexcept;
+    LocalizationSynchronizer (TaskConstructor &_constructor,
+                              ResourceProvider::ResourceProvider *_resourceProvider) noexcept;
 
     void Execute () noexcept;
 
@@ -34,17 +29,16 @@ private:
     InsertLongTermQuery insertLocalizedString;
     RemoveAscendingRangeQuery removeLocalizedString;
 
-    Memory::UniqueString localizationRootPath;
-    std::ifstream inputStream;
+    ResourceProvider::ResourceProvider *resourceProvider;
 };
 
 LocalizationSynchronizer::LocalizationSynchronizer (TaskConstructor &_constructor,
-                                                    Memory::UniqueString _localizationRootPath) noexcept
+                                                    ResourceProvider::ResourceProvider *_resourceProvider) noexcept
     : modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
       insertLocalizedString (INSERT_LONG_TERM (LocalizedString)),
       removeLocalizedString (REMOVE_ASCENDING_RANGE (LocalizedString, key)),
 
-      localizationRootPath (_localizationRootPath)
+      resourceProvider (_resourceProvider)
 {
     _constructor.DependOn (Checkpoint::SYNC_STARTED);
     _constructor.MakeDependencyOf (Checkpoint::SYNC_FINISHED);
@@ -68,56 +62,31 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
             return;
         }
 
-        const std::filesystem::path configurationPathBin =
-            EMERGENCE_BUILD_STRING (localizationRootPath, "/", _locale->targetLocale, ".bin");
-
-        const std::filesystem::path configurationPathYaml =
-            EMERGENCE_BUILD_STRING (localizationRootPath, "/", _locale->targetLocale, ".yaml");
-
-        if (std::filesystem::exists (configurationPathBin))
-        {
-            inputStream.open (configurationPathBin, std::ios::binary);
-            if (!inputStream)
+        _locale->sharedState->loadingState = LocaleLoadingState::LOADING;
+        Job::Dispatcher::Global ().Dispatch (
+            Job::Priority::BACKGROUND,
+            [targetLocale {_locale->targetLocale}, capturedResourceProvider {resourceProvider},
+             sharedState {_locale->sharedState}] ()
             {
-                EMERGENCE_LOG (ERROR, "Localization: Unable to open strings database for locale \"",
-                               _locale->targetLocale, "\"!");
-                return;
-            }
-
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [this, _locale] ()
+                switch (capturedResourceProvider->LoadObject (LocaleConfiguration::Reflect ().mapping, targetLocale,
+                                                              &sharedState->configurationInLoading))
                 {
-                    Serialization::Binary::DeserializeObject (inputStream, &_locale->configurationInLoading,
-                                                              LocaleConfiguration::Reflect ().mapping, {});
-                    _locale->isConfigurationLoaded.test_and_set (std::memory_order::acquire);
-                });
-        }
-        else if (std::filesystem::exists (configurationPathYaml))
-        {
-            inputStream.open (configurationPathYaml);
-            if (!inputStream)
-            {
-                EMERGENCE_LOG (ERROR, "Localization: Unable to open strings database for locale \"",
-                               _locale->targetLocale, "\"!");
-                return;
-            }
+                case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                    sharedState->loadingState = LocaleLoadingState::SUCCESSFUL;
+                    break;
 
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [this, _locale] ()
-                {
-                    Serialization::Yaml::DeserializeObject (inputStream, &_locale->configurationInLoading,
-                                                            LocaleConfiguration::Reflect ().mapping, {});
-                    _locale->isConfigurationLoaded.test_and_set (std::memory_order::acquire);
-                });
-        }
-        else
-        {
-            EMERGENCE_LOG (ERROR, "Localization: Unable to find strings database for locale \"", _locale->targetLocale,
-                           "\"!");
-            return;
-        }
+                case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                    EMERGENCE_LOG (ERROR, "Localization: Unable to find locale \"", targetLocale, "\"!");
+                    sharedState->loadingState = LocaleLoadingState::FAILED;
+                    break;
+
+                case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                    EMERGENCE_LOG (ERROR, "Localization: Unable to read locale \"", targetLocale, "\"!");
+                    sharedState->loadingState = LocaleLoadingState::FAILED;
+                    break;
+                }
+            });
 
         _locale->loadingLocale = _locale->targetLocale;
     }
@@ -125,38 +94,43 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
 
 void LocalizationSynchronizer::UpdateLocaleLoading (LocaleSingleton *_locale) noexcept
 {
-    if (*_locale->loadingLocale && _locale->isConfigurationLoaded.test (std::memory_order::acquire))
+    if (*_locale->loadingLocale && _locale->sharedState->loadingState != LocaleLoadingState::LOADING)
     {
-        inputStream.close ();
-
+        if (_locale->sharedState->loadingState == LocaleLoadingState::SUCCESSFUL)
         {
-            auto removalCursor = removeLocalizedString.Execute (nullptr, nullptr);
-            while (removalCursor.ReadConst ())
             {
-                ~removalCursor;
+                auto removalCursor = removeLocalizedString.Execute (nullptr, nullptr);
+                while (removalCursor.ReadConst ())
+                {
+                    ~removalCursor;
+                }
             }
-        }
 
-        auto insertionCursor = insertLocalizedString.Execute ();
-        for (const LocalizedString &localeString : _locale->configurationInLoading.strings)
+            auto insertionCursor = insertLocalizedString.Execute ();
+            for (const LocalizedString &localeString : _locale->sharedState->configurationInLoading.strings)
+            {
+                auto *string = static_cast<LocalizedString *> (++insertionCursor);
+                string->key = localeString.key;
+                string->value = localeString.value;
+            }
+
+            _locale->loadedLocale = _locale->loadingLocale;
+            _locale->loadingLocale = {};
+            _locale->sharedState->configurationInLoading.strings.clear ();
+        }
+        else
         {
-            auto *string = static_cast<LocalizedString *> (++insertionCursor);
-            string->key = localeString.key;
-            string->value = localeString.value;
+            _locale->loadingLocale = {};
+            _locale->targetLocale = _locale->loadedLocale;
         }
-
-        _locale->loadedLocale = _locale->loadingLocale;
-        _locale->loadingLocale = {};
-        _locale->configurationInLoading.strings.clear ();
-        _locale->isConfigurationLoaded.clear (std::memory_order::release);
     }
 }
 
-void AddToNormalUpdate (PipelineBuilder &_builder, Memory::UniqueString _localizationRootPath) noexcept
+void AddToNormalUpdate (PipelineBuilder &_builder, ResourceProvider::ResourceProvider *_resourceProvider) noexcept
 {
     _builder.AddCheckpoint (Checkpoint::SYNC_STARTED);
     _builder.AddCheckpoint (Checkpoint::SYNC_FINISHED);
     _builder.AddTask (Memory::UniqueString {"LocalizationSynchronizer"})
-        .SetExecutor<LocalizationSynchronizer> (_localizationRootPath);
+        .SetExecutor<LocalizationSynchronizer> (_resourceProvider);
 }
 } // namespace Emergence::Celerity::Localization

@@ -73,6 +73,10 @@ public:
     /// \brief If mapping has default constructor, executes it at given address.
     void Construct (void *_address) const noexcept;
 
+    /// \brief If mapping has default move constructor, executes it at given address using given source.
+    /// \warning Does usual construct as fallback mechanism if move construction is not supported!
+    void MoveConstruct (void *_address, void *_sourceAddress) const noexcept;
+
     /// \brief If mapping has default destructor, executes it at given address.
     void Destruct (void *_address) const noexcept;
 

@@ -7,18 +7,16 @@ sober_library_begin (ResourceObject STATIC)
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
     sober_naming_variant_target (Container Original CONTAINER_ORIGINAL_LIBRARY)
-    sober_naming_variant_target (Serialization Original SERIALIZATION_ORIGINAL_LIBRARY)
     sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_ORIGINAL_LIBRARY)
 
     sober_library_link_library (PUBLIC "${CONTAINER_ORIGINAL_LIBRARY}")
-    sober_library_link_library (PUBLIC "${SERIALIZATION_ORIGINAL_LIBRARY}")
     sober_library_link_library (PUBLIC "${SYNTAX_SUGAR_ORIGINAL_LIBRARY}")
 
-    sober_library_use_service (EXPECTED PRIVATE JobDispatcher)
     sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PRIVATE Memory)
     sober_library_use_service (EXPECTED PRIVATE MemoryProfiler)
     sober_library_use_service (EXPECTED PRIVATE StandardLayoutMapping)
+    sober_library_use_service (EXPECTED PUBLIC ResourceProvider)
 
     sober_variant_begin (Original)
     sober_variant_end ()

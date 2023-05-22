@@ -1,37 +1,18 @@
 #pragma once
 
-#include <Celerity/Standard/UniqueId.hpp>
-
-#include <Render/Backend/Texture.hpp>
-
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
-/// \brief Used to separate font name from font size in font asset ids.
-/// \details See Font::assetId.
-constexpr char FONT_SIZE_SEPARATOR = '#';
-
-/// \brief Represents loaded font asset with specific font size.
-struct Font final
+/// \brief Content of font file that stores all the information about this font.
+struct FontAsset final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (Font);
-
-    /// \brief Id used to bind to Asset instance.
-    /// \details Must follow the format `{FontName}{FONT_SIZE_SEPARATOR}{FontSize}`, for example `DroidSans.ttf#14`.
-    Memory::UniqueString assetId;
-
-    /// \brief Texture that contains loaded font atlas.
-    Render::Backend::Texture atlasTexture;
-
-    /// \brief Implementation specific handle, if any.
-    void *nativeHandle = nullptr;
+    /// \brief Id of file with third party format that contains font data, like "MyFont.ttf".
+    Memory::UniqueString fontId;
 
     struct Reflection final
     {
-        StandardLayout::FieldId assetId;
-        StandardLayout::FieldId size;
-        StandardLayout::FieldId nativeHandle;
+        StandardLayout::FieldId fontId;
         StandardLayout::Mapping mapping;
     };
 

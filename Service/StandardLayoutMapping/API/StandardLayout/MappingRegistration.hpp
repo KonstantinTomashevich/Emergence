@@ -22,6 +22,11 @@
         builder.SetConstructor (&Emergence::StandardLayout::Registration::DefaultConstructor<Class>);                  \
     }                                                                                                                  \
                                                                                                                        \
+    if constexpr (std::is_move_constructible_v<Class>)                                                                 \
+    {                                                                                                                  \
+        builder.SetMoveConstructor (&Emergence::StandardLayout::Registration::DefaultMoveConstructor<Class>);          \
+    }                                                                                                                  \
+                                                                                                                       \
     if constexpr (!std::is_trivially_destructible_v<Class>)                                                            \
     {                                                                                                                  \
         builder.SetDestructor (&Emergence::StandardLayout::Registration::DefaultDestructor<Class>);                    \
@@ -102,6 +107,13 @@ template <typename T>
 void DefaultConstructor (void *_address)
 {
     new (_address) T {};
+}
+
+/// \brief Templated default move constructor for objects that need it. See MappingBuilder::SetConstructor.
+template <typename T>
+void DefaultMoveConstructor (void *_address, void *_sourceAddress)
+{
+    new (_address) T {std::move (*static_cast<T *> (_sourceAddress))};
 }
 
 /// \brief Templated default destructor for objects that need it. See MappingBuilder::SetDestructor.

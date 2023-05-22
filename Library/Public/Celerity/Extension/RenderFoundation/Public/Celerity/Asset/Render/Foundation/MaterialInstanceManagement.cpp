@@ -1,6 +1,3 @@
-#include <filesystem>
-#include <fstream>
-
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
@@ -13,9 +10,6 @@
 
 #include <Log/Log.hpp>
 
-#include <Serialization/Binary.hpp>
-#include <Serialization/Yaml.hpp>
-
 namespace Emergence::Celerity::MaterialInstanceManagement
 {
 class Manager : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
@@ -26,7 +20,7 @@ public:
     using LoadingState = MaterialInstanceLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             const Container::Vector<Memory::UniqueString> &_materialInstanceRootPaths,
+             ResourceProvider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -63,12 +57,12 @@ private:
     RemoveValueQuery removeUniformMatrix4x4fValueById;
     RemoveValueQuery removeUniformSamplerValueById;
 
-    Container::Vector<Memory::UniqueString> materialInstanceRoots {Memory::Profiler::AllocationGroup::Top ()};
+    ResourceProvider::ResourceProvider *resourceProvider;
     Container::Vector<UniformValueDescription> uniformValuesCollector {Memory::Profiler::AllocationGroup::Top ()};
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  const Container::Vector<Emergence::Memory::UniqueString> &_materialInstanceRootPaths,
+                  ResourceProvider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase<Manager> (_constructor, _stateUpdateEvent),
 
@@ -89,14 +83,10 @@ Manager::Manager (TaskConstructor &_constructor,
       removeUniformVector4fValueById (REMOVE_VALUE_1F (UniformVector4fValue, assetId)),
       removeUniformMatrix3x3fValueById (REMOVE_VALUE_1F (UniformMatrix3x3fValue, assetId)),
       removeUniformMatrix4x4fValueById (REMOVE_VALUE_1F (UniformMatrix4x4fValue, assetId)),
-      removeUniformSamplerValueById (REMOVE_VALUE_1F (UniformSamplerValue, assetId))
-{
-    materialInstanceRoots.reserve (_materialInstanceRootPaths.size ());
-    for (Memory::UniqueString root : _materialInstanceRootPaths)
-    {
-        materialInstanceRoots.emplace_back (root);
-    }
+      removeUniformSamplerValueById (REMOVE_VALUE_1F (UniformSamplerValue, assetId)),
 
+      resourceProvider (_resourceProvider)
+{
     _constructor.DependOn (AssetManagement::Checkpoint::ASSET_LOADING_STARTED);
     _constructor.MakeDependencyOf (AssetManagement::Checkpoint::ASSET_LOADING_FINISHED);
 }
@@ -142,64 +132,39 @@ AssetState Manager::SummarizeDependencyState (Memory::UniqueString _materialId, 
 
 AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) noexcept
 {
-    for (Memory::UniqueString root : materialInstanceRoots)
-    {
-        std::filesystem::path binaryPath =
-            EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".material.instance.bin");
-        if (std::filesystem::exists (binaryPath))
+    Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
+        [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
+         sharedState {_loadingState->sharedState}] ()
         {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, binaryPath] ()
-                {
-                    std::ifstream input {binaryPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (input, &sharedState->asset,
-                                                                   MaterialInstanceAsset::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (
-                            ERROR, "MaterialInstanceManagement: Unable to load material instance from \"",
-                            binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-                        sharedState->state = AssetState::CORRUPTED;
-                    }
-                    else
-                    {
-                        sharedState->state = AssetState::READY;
-                    }
-                });
+            switch (cachedResourceProvider->LoadObject (MaterialInstanceAsset::Reflect ().mapping, assetId,
+                                                        &sharedState->asset))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                sharedState->state = AssetState::READY;
+                break;
 
-            return AssetState::LOADING;
-        }
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to find material instance \"", assetId,
+                               "\".");
+                sharedState->state = AssetState::MISSING;
+                break;
 
-        std::filesystem::path yamlPath =
-            EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".material.instance.yaml");
-        if (std::filesystem::exists (yamlPath))
-        {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, yamlPath] ()
-                {
-                    std::ifstream input (yamlPath);
-                    if (!Serialization::Yaml::DeserializeObject (input, &sharedState->asset,
-                                                                 MaterialInstanceAsset::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to load material instance from \"",
-                                       yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                                       "\".");
-                        sharedState->state = AssetState::CORRUPTED;
-                    }
-                    else
-                    {
-                        sharedState->state = AssetState::READY;
-                    }
-                });
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Failed to read material instance \"", assetId,
+                               "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                break;
 
-            return AssetState::LOADING;
-        }
-    }
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Object \"", assetId,
+                               "\" is not a material instance.");
+                sharedState->state = AssetState::CORRUPTED;
+                break;
+            }
+        });
 
-    EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to find material instance \"", _loadingState->assetId,
-                   "\".");
-    return AssetState::MISSING;
+    return AssetState::LOADING;
 }
 
 AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingState) noexcept
@@ -407,7 +372,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const Container::Vector<Memory::UniqueString> &_materialInstanceRootPaths,
+                        ResourceProvider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (MaterialInstance::Reflect ().mapping);
@@ -421,6 +386,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("MaterialInstanceManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"MaterialInstanceManager"})
-        .SetExecutor<Manager> (_materialInstanceRootPaths, iterator->second);
+        .SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::MaterialInstanceManagement

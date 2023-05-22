@@ -8,6 +8,8 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
+#include <ResourceProvider/ResourceProvider.hpp>
+
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
 
@@ -133,8 +135,14 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
     World world {"TestWorld"_us, WorldConfiguration {}};
     PipelineBuilder builder {world.GetRootView ()};
 
+    Container::MappingRegistry resourceTypeRegistry;
+    resourceTypeRegistry.Register (LocaleConfiguration::Reflect ().mapping);
+    ResourceProvider::ResourceProvider resourceProvider {resourceTypeRegistry, {}};
+    REQUIRE (resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    Localization::AddToNormalUpdate (builder, Memory::UniqueString {LOCALES_ROOT});
+    Localization::AddToNormalUpdate (builder, &resourceProvider);
     builder.AddTask ("LocalizationTester"_us).SetExecutor<LocalizationTester> (std::move (_stages), &testFinished);
     REQUIRE (builder.End ());
 

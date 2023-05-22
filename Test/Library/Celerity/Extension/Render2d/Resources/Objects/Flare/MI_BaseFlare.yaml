@@ -1,5 +1,5 @@
 # MaterialInstanceAsset
-material: Flare
+material: M_Flare
 uniforms:
   - name: flareRadius_flareStrength_flarePower
     type: 0

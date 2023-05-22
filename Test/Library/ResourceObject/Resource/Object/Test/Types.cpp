@@ -1,3 +1,4 @@
+#include <Resource/Object/Object.hpp>
 #include <Resource/Object/Test/Types.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
@@ -65,7 +66,7 @@ const InjectionComponent::Reflection &InjectionComponent::Reflect () noexcept
 
 const TypeManifest &GetTypeManifest () noexcept
 {
-    static TypeManifest manifest = [] ()
+    static const TypeManifest manifest = [] ()
     {
         TypeManifest typeManifest;
         typeManifest.AddInjection (
@@ -79,5 +80,32 @@ const TypeManifest &GetTypeManifest () noexcept
     }();
 
     return manifest;
+}
+
+const Container::MappingRegistry &GetResourceObjectMappingRegistry () noexcept
+{
+    static const Container::MappingRegistry mappingRegistry = [] ()
+    {
+        Container::MappingRegistry registry;
+        registry.Register (Resource::Object::Object::Reflect ().mapping);
+        return registry;
+    }();
+
+    return mappingRegistry;
+}
+
+const Container::MappingRegistry &GetPatchableTypesMappingRegistry () noexcept
+{
+    static const Container::MappingRegistry mappingRegistry = [] ()
+    {
+        Container::MappingRegistry registry;
+        registry.Register (FirstComponent::Reflect ().mapping);
+        registry.Register (SecondComponent::Reflect ().mapping);
+        registry.Register (MultiComponent::Reflect ().mapping);
+        registry.Register (InjectionComponent::Reflect ().mapping);
+        return registry;
+    }();
+
+    return mappingRegistry;
 }
 } // namespace Emergence::Resource::Object::Test

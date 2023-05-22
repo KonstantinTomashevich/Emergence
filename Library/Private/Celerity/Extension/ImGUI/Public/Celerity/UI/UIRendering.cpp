@@ -18,7 +18,7 @@
 
 namespace Emergence::Celerity::UIRendering
 {
-static const Memory::UniqueString MATERIAL_ID {"ImGUI"};
+static const Memory::UniqueString MATERIAL_ID {"M_ImGUI"};
 static const Memory::UniqueString TEXTURE_UNIFORM_NAME {"colorTexture"};
 static const Memory::UniqueString HAS_TEXTURE_UNIFORM_NAME {"hasColorTexture"};
 

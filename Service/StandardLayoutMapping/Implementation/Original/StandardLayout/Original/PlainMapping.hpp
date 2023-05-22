@@ -235,6 +235,8 @@ public:
 
     void Construct (void *_address) const noexcept;
 
+    void MoveConstruct (void *_address, void *_sourceAddress) const noexcept;
+
     void Destruct (void *_address) const noexcept;
 
     [[nodiscard]] const FieldData *GetField (FieldId _field) const noexcept;
@@ -294,6 +296,7 @@ private:
     Memory::UniqueString name;
 
     void (*constructor) (void *) = nullptr;
+    void (*moveConstructor) (void *, void *) = nullptr;
     void (*destructor) (void *) = nullptr;
 
     ConditionData *firstCondition = nullptr;
@@ -321,6 +324,8 @@ public:
     Handling::Handle<PlainMapping> End () noexcept;
 
     void SetConstructor (void (*_constructor) (void *)) noexcept;
+
+    void SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept;
 
     void SetDestructor (void (*_destructor) (void *)) noexcept;
 

@@ -38,6 +38,11 @@ void MappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
     block_cast<PlainMappingBuilder> (data).SetConstructor (_constructor);
 }
 
+void MappingBuilder::SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept
+{
+    block_cast<PlainMappingBuilder> (data).SetMoveConstructor (_constructor);
+}
+
 void MappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
 {
     block_cast<PlainMappingBuilder> (data).SetDestructor (_destructor);

@@ -6,9 +6,13 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
+#include <Celerity/Asset/Render/2d/Sprite2dUvAnimation.hpp>
 #include <Celerity/Asset/Render/2d/Sprite2dUvAnimationManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/Material.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/Texture.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/PipelineBuilder.hpp>
@@ -35,6 +39,8 @@
 #include <FileSystem/Test/Utility.hpp>
 
 #include <Render/Backend/Configuration.hpp>
+
+#include <ResourceProvider/ResourceProvider.hpp>
 
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -479,8 +485,38 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::ExpectFilesEqual (EMERGENCE_BUILD_STRING ("Render2dTestResources/Expectation/", _id, ".png"),
+    FileSystem::Test::ExpectFilesEqual (EMERGENCE_BUILD_STRING ("Expectation/", _id, ".png"),
                                         EMERGENCE_BUILD_STRING (_id, ".png"));
+}
+
+static Container::MappingRegistry GetAssetTypes () noexcept
+{
+    Container::MappingRegistry registry;
+    registry.Register (MaterialAsset::Reflect ().mapping);
+    registry.Register (MaterialInstanceAsset::Reflect ().mapping);
+    registry.Register (Sprite2dUvAnimationAsset::Reflect ().mapping);
+    registry.Register (TextureAsset::Reflect ().mapping);
+    return registry;
+}
+
+struct ResourceProviderHolder
+{
+    ResourceProviderHolder () noexcept
+        : provider (GetAssetTypes (), {})
+    {
+        REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Render2dResources"}) ==
+                 ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+        REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Render2dTestResources"}) ==
+                 ResourceProvider::SourceOperationResponse::SUCCESSFUL);
+    }
+
+    ResourceProvider::ResourceProvider provider;
+};
+
+static ResourceProvider::ResourceProvider &GetSharedResourceProvider () noexcept
+{
+    static ResourceProviderHolder holder;
+    return holder.provider;
 }
 
 void ExecuteScenario (Scenario _scenario) noexcept
@@ -502,30 +538,23 @@ void ExecuteScenario (Scenario _scenario) noexcept
         RegisterRenderFoundationEvents (registrar);
     }
 
-    static const Emergence::Memory::UniqueString testAnimationsPath {"Render2dTestResources/Animations"};
-    static const Emergence::Memory::UniqueString testMaterialInstancesPath {"Render2dTestResources/MaterialInstances"};
-    static const Emergence::Memory::UniqueString testMaterialsPath {"Render2dTestResources/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {"Render2dResources/Materials"};
-    static const Emergence::Memory::UniqueString testShadersPath {"Render2dTestResources/Shaders"};
-    static const Emergence::Memory::UniqueString engineShadersPath {"Render2dResources/Shaders"};
-    static const Emergence::Memory::UniqueString testTexturesPath {"Render2dTestResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
-
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
     bool scenarioFinished = false;
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialInstancesPath},
+    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                                    assetReferenceBindingEventMap);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {testShadersPath, engineShadersPath}, assetReferenceBindingEventMap);
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+                                           assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, {testAnimationsPath},
+    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                                       assetReferenceBindingEventMap);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, assetReferenceBindingEventMap);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+                                          assetReferenceBindingEventMap);
     TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);

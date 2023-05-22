@@ -1,4 +1,4 @@
-#include <Celerity/Asset/UI/Font.hpp>
+#include <Celerity/UI/Font.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/Texture.hpp>
 #include <Celerity/UI/AssetUsage.hpp>

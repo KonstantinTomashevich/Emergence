@@ -43,7 +43,7 @@ TEST_CASE (Several)
             CreateCamera {3u, 2.0f, ~0u},
 
             CreateTransform {4u, INVALID_UNIQUE_ID, {}},
-            CreateSprite {4u, 0u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
+            CreateSprite {4u, 0u, "MI_Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, ~0u},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"ViewportSeveral"_us},
@@ -63,10 +63,10 @@ TEST_CASE (Overlap)
             CreateCamera {1u, 2.0f, 2u},
 
             CreateTransform {2u, INVALID_UNIQUE_ID, {}},
-            CreateSprite {2u, 0u, "ChangedFlare"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 1u, 1u},
+            CreateSprite {2u, 0u, "MI_ChangedFlare"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 1u, 1u},
 
             CreateTransform {3u, INVALID_UNIQUE_ID, {}},
-            CreateSprite {3u, 1u, "Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, 2u},
+            CreateSprite {3u, 1u, "MI_Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {0.5f, 0.5f}, 1u, 2u},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"ViewportOverlap"_us},

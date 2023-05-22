@@ -5,11 +5,11 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/StatefulAssetManagerBase.hpp>
-#include <Celerity/Asset/UI/Font.hpp>
 #include <Celerity/Asset/UI/FontLoadingState.hpp>
 #include <Celerity/Asset/UI/FontManagement.hpp>
 #include <Celerity/Asset/UI/FontUtility.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/UI/Font.hpp>
 
 #include <Job/Dispatcher.hpp>
 
@@ -29,7 +29,7 @@ public:
     using LoadingState = FontLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             const Container::Vector<Memory::UniqueString> &_fontRootPaths,
+             ResourceProvider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -44,80 +44,88 @@ private:
     InsertLongTermQuery insertFont;
     RemoveValueQuery removeFontById;
 
-    Container::Vector<Memory::UniqueString> rootPaths {Memory::Profiler::AllocationGroup::Top ()};
+    ResourceProvider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  const Container::Vector<Emergence::Memory::UniqueString> &_fontRootPaths,
+                  ResourceProvider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
       insertFont (INSERT_LONG_TERM (Font)),
-      removeFontById (REMOVE_VALUE_1F (Font, assetId))
+      removeFontById (REMOVE_VALUE_1F (Font, assetId)),
+
+      resourceProvider (_resourceProvider)
 {
-    rootPaths.reserve (_fontRootPaths.size ());
-    for (Memory::UniqueString root : _fontRootPaths)
-    {
-        rootPaths.emplace_back (root);
-    }
 }
 
 AssetState Manager::StartLoading (FontLoadingState *_loadingState) noexcept
 {
-    const char *sizeSeparator = strchr (*_loadingState->assetId, FONT_SIZE_SEPARATOR);
-    EMERGENCE_ASSERT (sizeSeparator && *(sizeSeparator + 1u) != '\0');
-    EMERGENCE_ASSERT (sizeSeparator != *_loadingState->assetId);
-    Container::String fontFile {*_loadingState->assetId, static_cast<size_t> (sizeSeparator - *_loadingState->assetId)};
-
-    for (Memory::UniqueString root : rootPaths)
-    {
-        std::filesystem::path filePath = EMERGENCE_BUILD_STRING (root, "/", fontFile);
-        if (std::filesystem::exists (filePath))
+    Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
+        [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
+         sharedState {_loadingState->sharedState}] ()
         {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, filePath] ()
-                {
-                    // TODO: Do not rely on 1-1 id mapping and add font settings?
-                    FILE *file = std::fopen (filePath.generic_string ().c_str (), "rb");
+            const char *sizeSeparator = strchr (*assetId, FONT_SIZE_SEPARATOR);
+            EMERGENCE_ASSERT (sizeSeparator && *(sizeSeparator + 1u) != '\0');
+            EMERGENCE_ASSERT (sizeSeparator != *assetId);
+            Memory::UniqueString fontId {std::string_view {*assetId, static_cast<size_t> (sizeSeparator - *assetId)}};
 
-                    if (!file)
-                    {
-                        EMERGENCE_LOG (ERROR, "FontManagement: Unable to open font file \"",
-                                       filePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                                       "\".");
-                        sharedState->state = AssetState::CORRUPTED;
-                        return;
-                    }
+            switch (cachedResourceProvider->LoadObject (FontAsset::Reflect ().mapping, fontId, &sharedState->asset))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
 
-                    fseek (file, 0u, SEEK_END);
-                    sharedState->fontDataSize = static_cast<uint64_t> (ftell (file));
-                    fseek (file, 0u, SEEK_SET);
-                    sharedState->fontData = static_cast<uint8_t *> (
-                        sharedState->fontDataHeap.Acquire (sharedState->fontDataSize, alignof (uint8_t)));
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "FontManagement: Unable to find font \"", fontId, "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
 
-                    if (fread (sharedState->fontData, 1u, sharedState->fontDataSize, file) != sharedState->fontDataSize)
-                    {
-                        EMERGENCE_LOG (ERROR, "FontManagement: Unable to read font file \"",
-                                       filePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                                       "\".");
-                        sharedState->state = AssetState::CORRUPTED;
-                        return;
-                    }
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "FontManagement: Failed to read font \"", fontId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
 
-                    fclose (file);
-                    sharedState->state = AssetState::READY;
-                });
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
 
-            return AssetState::LOADING;
-        }
-    }
+            switch (cachedResourceProvider->LoadThirdPartyResource (
+                sharedState->asset.fontId, sharedState->fontDataHeap, sharedState->fontDataSize, sharedState->fontData))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
 
-    EMERGENCE_LOG (ERROR, "FontManagement: Unable to find font file for font \"", _loadingState->assetId, "\".");
-    return AssetState::MISSING;
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "FontManagement: Unable to find font source \"", sharedState->asset.fontId,
+                               "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
+
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "FontManagement: Failed to read font source \"", sharedState->asset.fontId,
+                               "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
+
+            sharedState->state = AssetState::READY;
+        });
+
+    return AssetState::LOADING;
 }
 
 AssetState Manager::TryFinishLoading (FontLoadingState *_loadingState) noexcept
 {
+    if (_loadingState->sharedState->state != AssetState::READY)
+    {
+        return _loadingState->sharedState->state;
+    }
+
     const char *sizeSeparator = strchr (*_loadingState->assetId, FONT_SIZE_SEPARATOR);
     EMERGENCE_ASSERT (sizeSeparator && *(sizeSeparator + 1u) != '\0');
     auto fontSize = static_cast<float> (std::atof (sizeSeparator + 1u));
@@ -146,7 +154,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const Container::Vector<Memory::UniqueString> &_fontRootPaths,
+                        ResourceProvider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Font::Reflect ().mapping);
@@ -160,6 +168,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("FontManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"FontManager"})
-        .SetExecutor<Manager> (_fontRootPaths, iterator->second);
+        .SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::FontManagement

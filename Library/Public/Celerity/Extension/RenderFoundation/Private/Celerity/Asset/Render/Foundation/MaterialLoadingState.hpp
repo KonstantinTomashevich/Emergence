@@ -13,7 +13,19 @@ class MaterialLoadingSharedState final : public LoadingSharedState<MaterialLoadi
 public:
     static constexpr const char *ALLOCATION_GROUP_NAME = "MaterialLoading";
 
+    EMERGENCE_STATIONARY_DATA_TYPE (MaterialLoadingSharedState);
+
     MaterialAsset asset;
+
+    Memory::Heap shaderDataHeap {GetAllocationGroup ()};
+
+    uint64_t vertexSharedSize = 0u;
+
+    uint8_t *vertexShaderData = nullptr;
+
+    uint64_t fragmentSharedSize = 0u;
+
+    uint8_t *fragmentShaderData = nullptr;
 };
 
 struct MaterialLoadingState final

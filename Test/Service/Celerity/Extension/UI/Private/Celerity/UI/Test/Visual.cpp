@@ -19,6 +19,7 @@
 #include <Celerity/UI/Events.hpp>
 #include <Celerity/UI/Test/ControlManagement.hpp>
 #include <Celerity/UI/Test/ImplementationStrings.hpp>
+#include <Celerity/UI/Test/ResourceProviderHolder.hpp>
 #include <Celerity/UI/Test/SDLContextHolder.hpp>
 #include <Celerity/UI/Test/Visual.hpp>
 #include <Celerity/UI/UI.hpp>
@@ -36,7 +37,7 @@ bool VisualTestIncludeMarker () noexcept
     return true;
 }
 
-static const Memory::UniqueString USED_LOCALE {"English"};
+static const Memory::UniqueString USED_LOCALE {"L_English"};
 
 class ScreenshotTester final : public TaskExecutorBase<ScreenshotTester>
 {
@@ -125,7 +126,7 @@ void ScreenshotTester::CheckScreenshot () const noexcept
     LOG ("Starting image check.");
 
     FileSystem::Test::ExpectFilesEqual (
-        EMERGENCE_BUILD_STRING ("UITestResources/Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"),
+        EMERGENCE_BUILD_STRING ("Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"),
         screenshotFile);
 }
 
@@ -167,24 +168,18 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
         RegisterUIEvents (registrar);
     }
 
-    static const Emergence::Memory::UniqueString testMaterialsPath {"UITestResources/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {GetUIBackendMaterialPath ()};
-    static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
-    static const Emergence::Memory::UniqueString testTexturesPath {"UITestResources/Textures"};
-    static const Emergence::Memory::UniqueString testFontsPath {"UITestResources/Fonts"};
-    static const Emergence::Memory::UniqueString testLocalePath {"UITestResources/Locales"};
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
-
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (_frames));
-    FontManagement::AddToNormalUpdate (pipelineBuilder, {testFontsPath}, assetReferenceBindingEventMap);
+    FontManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (), assetReferenceBindingEventMap);
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
-    Localization::AddToNormalUpdate (pipelineBuilder, testLocalePath);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {engineShadersPath}, assetReferenceBindingEventMap);
+    Localization::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider ());
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+                                           assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, assetReferenceBindingEventMap);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+                                          assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, {});
 
     bool testFinished = false;
@@ -324,7 +319,7 @@ TEST_CASE (CustomSkin)
             CreateStyleFloatPairProperty {"DefaultStyle"_us, UIStyleFloatPairPropertyName::BUTTON_TEXT_ALIGN, 0.5f,
                                           0.5f},
 
-            CreateStyleFontProperty {"DefaultStyle"_us, "DroidSans.ttf#14"_us},
+            CreateStyleFontProperty {"DefaultStyle"_us, "F_DroidSans#14"_us},
 
             CreateStyleColorProperty {"OkButtonStyle"_us, UIStyleColorPropertyName::BUTTON, 0.0f, 0.5f, 0.0f, 1.0f},
             CreateStyleColorProperty {"OkButtonStyle"_us, UIStyleColorPropertyName::BUTTON_HOVERED, 0.0f, 0.9f, 0.0f,
@@ -410,7 +405,7 @@ TEST_CASE (CustomSkin)
             CreateIntInput (15u, 14u),
             CreateFloatInput (16u, 14u),
             CreateTextInput (17u, 14u),
-            CreateImage {18u, 14u, ""_us, 150u, 150u, "Earth.png"_us, {{0.0f, 0.0f}, {2.0f, 2.0f}}},
+            CreateImage {18u, 14u, ""_us, 150u, 150u, "T_Earth"_us, {{0.0f, 0.0f}, {2.0f, 2.0f}}},
         }});
 }
 

@@ -1,16 +1,6 @@
-#include <filesystem>
-#include <fstream>
-
-#include <Assert/Assert.hpp>
-
-#include <Job/Dispatcher.hpp>
-
 #include <Log/Log.hpp>
 
 #include <Resource/Object/LibraryLoader.hpp>
-
-#include <Serialization/Binary.hpp>
-#include <Serialization/Yaml.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
@@ -18,68 +8,31 @@
 
 namespace Emergence::Resource::Object
 {
-LibraryLoader::LibraryLoader (TypeManifest _typeManifest) noexcept
-    : typeManifest (std::move (_typeManifest))
+LibraryLoader::LibraryLoader (ResourceProvider::ResourceProvider *_resourceProvider,
+                              TypeManifest _typeManifest) noexcept
+    : resourceProvider (_resourceProvider),
+      typeManifest (std::move (_typeManifest))
 {
-    for (const auto &mappingInfoPair : typeManifest.GetMap ())
-    {
-        patchableTypesRegistry.Register (mappingInfoPair.first);
-    }
 }
 
-LibraryLoader::~LibraryLoader () noexcept
+Library LibraryLoader::Load (const Container::Vector<LibraryLoadingTask> &_loadingTasks) noexcept
 {
-    EMERGENCE_ASSERT (!IsLoading ());
-}
+    uint64_t loadingStartTimeNs = Time::NanosecondsSinceStartup ();
+    FormObjectList (_loadingTasks);
+    size_t objectIndex = 0u;
 
-void LibraryLoader::Begin (const Container::Vector<LibraryLoadingTask> &_loadingTasks) noexcept
-{
-    EMERGENCE_ASSERT (!IsLoading ());
-    loading.test_and_set (std::memory_order_acquire);
-
-    for (const LibraryLoadingTask &task : _loadingTasks)
+    while (objectIndex < objectList.size ())
     {
-        loadingTasks.emplace_back (task);
+        PostProcessObject (objectIndex);
+        ++objectIndex;
     }
 
-    Job::Dispatcher::Global ().Dispatch (
-        Job::Priority::BACKGROUND,
-        [this] ()
-        {
-            loadingStartTimeNs = Time::NanosecondsSinceStartup ();
-            FormFolderList ();
-            FormObjectList ();
+    const uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
+    EMERGENCE_LOG (INFO, "Resource::Object::LibraryLoader: Library loading took ",
+                   static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
 
-            size_t objectIndex = 0u;
-            while (objectIndex < objectList.size ())
-            {
-                PostProcessObject (objectIndex);
-                ++objectIndex;
-            }
-
-            loading.clear (std::memory_order_release);
-            const uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
-            EMERGENCE_LOG (INFO, "Resource::Object::LibraryLoader: Library loading took ",
-                           static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
-        });
-}
-
-bool LibraryLoader::IsLoading () const noexcept
-{
-    return loading.test (std::memory_order_acquire);
-}
-
-const Container::Vector<LibraryLoadingTask> &LibraryLoader::GetLoadingTasks () noexcept
-{
-    return loadingTasks;
-}
-
-Library LibraryLoader::End () noexcept
-{
-    EMERGENCE_ASSERT (!IsLoading ());
-    loadingTasks.clear ();
-    folderList.clear ();
     objectList.clear ();
+    indexInObjectList.clear();
     return std::move (currentLibrary);
 }
 
@@ -88,229 +41,72 @@ Memory::Profiler::AllocationGroup LibraryLoader::GetAllocationGroup () noexcept
     return Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"LibraryLoader"}};
 }
 
-void LibraryLoader::RegisterFolder (const Container::String &_folder) noexcept
+bool LibraryLoader::LoadObject (Memory::UniqueString _objectId, bool _loadingAsParent) noexcept
 {
-    if (std::find (folderList.begin (), folderList.end (), _folder) != folderList.end ())
+    if (auto iterator = currentLibrary.objects.find (_objectId); iterator != currentLibrary.objects.end ())
     {
-        return;
-    }
-
-    folderList.emplace_back (_folder);
-    std::filesystem::path folderPath {_folder};
-    FolderDependencyList folderDependencyList;
-
-    std::filesystem::path binDependencyListPath = folderPath / BINARY_FOLDER_DEPENDENCY_LIST;
-    std::filesystem::path yamlDependencyListPath = folderPath / YAML_FOLDER_DEPENDENCY_LIST;
-
-    if (std::filesystem::is_regular_file (binDependencyListPath))
-    {
-        std::ifstream input (binDependencyListPath, std::ios::binary);
-        // We need to do get-unget in order to force empty file check. Otherwise, it is not guaranteed.
-        input.get ();
-        input.unget ();
-
-        if (input)
-        {
-            if (Serialization::Binary::DeserializeObject (input, &folderDependencyList,
-                                                          FolderDependencyList::Reflect ().mapping, {}))
-            {
-                for (const FolderDependency &dependency : folderDependencyList.list)
-                {
-                    RegisterFolder ((folderPath / dependency.relativePath.data ())
-                                        .lexically_normal ()
-                                        .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ());
-                }
-            }
-            else
-            {
-                EMERGENCE_LOG (
-                    ERROR, "Resource::Object::LibraryLoader: Unable to deserialize folder dependency list \"",
-                    binDependencyListPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                    "\".");
-            }
-        }
-    }
-    else if (std::filesystem::is_regular_file (yamlDependencyListPath))
-    {
-        std::ifstream input (yamlDependencyListPath);
-        // We need to do get-unget in order to force empty file check. Otherwise, it is not guaranteed.
-        input.get ();
-        input.unget ();
-
-        if (input)
-        {
-            if (Serialization::Yaml::DeserializeObject (input, &folderDependencyList,
-                                                        FolderDependencyList::Reflect ().mapping, {}))
-            {
-                for (const FolderDependency &dependency : folderDependencyList.list)
-                {
-                    RegisterFolder ((folderPath / dependency.relativePath.data ())
-                                        .lexically_normal ()
-                                        .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ());
-                }
-            }
-            else
-            {
-                EMERGENCE_LOG (
-                    ERROR, "Resource::Object::LibraryLoader: Unable to deserialize folder dependency list \"",
-                    yamlDependencyListPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                    "\".");
-            }
-        }
-    }
-    else
-    {
-        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find dependencies list for folder \"",
-                       folderPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-    }
-}
-
-void LibraryLoader::FormFolderList () noexcept
-{
-    for (const LibraryLoadingTask &task : loadingTasks)
-    {
-        std::filesystem::path folderPath {task.folder};
-        RegisterFolder (
-            folderPath.lexically_normal ().generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ());
-    }
-}
-
-bool LibraryLoader::FindAndLoadObject (Memory::UniqueString _objectName, bool _loadingAsParent) noexcept
-{
-    for (const Container::String &folder : folderList)
-    {
-        std::filesystem::path parentBinaryDeclarationPath {
-            EMERGENCE_BUILD_STRING (folder, "/", _objectName, BINARY_OBJECT_SUFFIX)};
-
-        std::filesystem::path parentYamlDeclarationPath {
-            EMERGENCE_BUILD_STRING (folder, "/", _objectName, YAML_OBJECT_SUFFIX)};
-
-        if (std::filesystem::is_regular_file (parentBinaryDeclarationPath) ||
-            std::filesystem::is_regular_file (parentYamlDeclarationPath))
-        {
-            LoadObject (folder, _objectName, _loadingAsParent);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void LibraryLoader::LoadObject (const Container::String &_objectFolder,
-                                Memory::UniqueString _objectName,
-                                bool _loadingAsParent) noexcept
-{
-    if (auto iterator = currentLibrary.objects.find (_objectName); iterator != currentLibrary.objects.end ())
-    {
-        auto indexInObjectListIterator = indexInObjectList.find (_objectName);
+        auto indexInObjectListIterator = indexInObjectList.find (_objectId);
         if (indexInObjectListIterator == indexInObjectList.end ())
         {
             EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Found cyclic dependency during object \"",
-                           _objectName, "\" parent traversal!");
+                           _objectId, "\" parent traversal!");
         }
         else
         {
-            // Check that we're trying to read the same object, not its name-duplicate.
-            ObjectListItem &objectListItem = objectList[indexInObjectListIterator->second];
             iterator->second.loadedAsParent &= _loadingAsParent;
-
-            if (_objectFolder != objectListItem.folder)
-            {
-                EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Both folders \"", _objectFolder, "\" and \"",
-                               objectListItem.folder, "\" contain object \"", _objectName,
-                               "\". That results in undefined behaviour!");
-            }
         }
 
-        return;
+        return true;
     }
 
     Object object;
-    std::filesystem::path binaryPath {EMERGENCE_BUILD_STRING (_objectFolder, "/", _objectName, BINARY_OBJECT_SUFFIX)};
+    switch (resourceProvider->LoadObject (Object::Reflect ().mapping, _objectId, &object))
+    {
+    case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+        break;
 
-    std::filesystem::path yamlPath {EMERGENCE_BUILD_STRING (_objectFolder, "/", _objectName, YAML_OBJECT_SUFFIX)};
+    case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Object \"", _objectId, "\" is not found.");
+        return false;
 
-    if (std::filesystem::is_regular_file (binaryPath))
-    {
-        std::ifstream input {binaryPath, std::ios::binary};
-        Serialization::Binary::DeserializeObject (input, &object, Object::Reflect ().mapping, patchableTypesRegistry);
-    }
-    else if (std::filesystem::is_regular_file (yamlPath))
-    {
-        std::ifstream input {yamlPath};
-        Serialization::Yaml::DeserializeObject (input, &object, Object::Reflect ().mapping, patchableTypesRegistry);
-    }
-    else
-    {
-        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find declaration for object \"", _objectName,
-                       "\" in folder \"", _objectFolder, "\".");
-        return;
+    case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to load object \"", _objectId,
+                       "\" due to an IO error.");
+        return false;
+
+    case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+        EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to load object \"", _objectId,
+                       "\", there is another resource with the same id.");
+        return false;
     }
 
     Memory::UniqueString parent = object.parent;
-    currentLibrary.objects.emplace (_objectName, Library::ObjectData {std::move (object), _loadingAsParent});
+    currentLibrary.objects.emplace (_objectId, Library::ObjectData {std::move (object), _loadingAsParent});
 
     if (*parent)
     {
-        if (!FindAndLoadObject (parent, true))
+        if (!LoadObject (parent, true))
         {
-            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find parent \"", parent,
-                           "\" for object \"", _objectName, "\".");
+            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to load parent \"", parent,
+                           "\" for object \"", _objectId, "\".");
+            currentLibrary.objects.erase (_objectId);
+            return false;
         }
     }
 
-    indexInObjectList.emplace (_objectName, objectList.size ());
-    objectList.emplace_back () = {_objectFolder, _objectName};
+    indexInObjectList.emplace (_objectId, objectList.size ());
+    objectList.emplace_back (_objectId);
+    return true;
 }
 
-void LibraryLoader::FormObjectList () noexcept
+void LibraryLoader::FormObjectList (const Container::Vector<LibraryLoadingTask> &_loadingTasks) noexcept
 {
-    for (const LibraryLoadingTask &task : loadingTasks)
+    for (const LibraryLoadingTask &task : _loadingTasks)
     {
-        std::filesystem::path folderPath = std::filesystem::path {task.folder}.lexically_normal ();
-        if (!std::filesystem::exists (folderPath))
+        if (!LoadObject (task.objectId, false))
         {
-            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to find folder \"",
-                           folderPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\"!");
-            continue;
-        }
-
-        if (*task.loadSelectedObject)
-        {
-            LoadObject (folderPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                        task.loadSelectedObject, false);
-            continue;
-        }
-
-        for (const std::filesystem::directory_entry &entry : std::filesystem::recursive_directory_iterator (folderPath))
-        {
-            if (!std::filesystem::is_regular_file (entry))
-            {
-                continue;
-            }
-
-            Container::String relativePath =
-                std::filesystem::relative (entry.path (), folderPath)
-                    .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ();
-            Memory::UniqueString objectName;
-
-            if (relativePath.ends_with (BINARY_OBJECT_SUFFIX))
-            {
-                objectName = Memory::UniqueString {
-                    relativePath.substr (0u, relativePath.size () - BINARY_OBJECT_SUFFIX.size ())};
-            }
-            else if (relativePath.ends_with (YAML_OBJECT_SUFFIX))
-            {
-                objectName =
-                    Memory::UniqueString {relativePath.substr (0u, relativePath.size () - YAML_OBJECT_SUFFIX.size ())};
-            }
-
-            // If this file is not a declaration, objectName will be left empty, so we will ignore this file.
-            if (*objectName)
-            {
-                LoadObject (folderPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                            objectName, false);
-            }
+            EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Unable to load requested object \"", task.objectId,
+                           "\".");
         }
     }
 
@@ -322,12 +118,11 @@ void LibraryLoader::FormObjectList () noexcept
 
 void LibraryLoader::PostProcessObject (std::size_t _indexInList) noexcept
 {
-    auto objectDataIterator = currentLibrary.objects.find (objectList[_indexInList].name);
+    auto objectDataIterator = currentLibrary.objects.find (objectList[_indexInList]);
     if (objectDataIterator == currentLibrary.objects.end ())
     {
         EMERGENCE_LOG (ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Object \"",
-                       objectList[_indexInList].name,
-                       "\" is found in object list, but its declaration is not found in library.");
+                       objectList[_indexInList], "\" is found in object list, but its data is not found in library.");
         return;
     }
 
@@ -337,9 +132,9 @@ void LibraryLoader::PostProcessObject (std::size_t _indexInList) noexcept
         auto parentObjectDataIterator = currentLibrary.objects.find (objectData.object.parent);
         if (parentObjectDataIterator == currentLibrary.objects.end ())
         {
-            EMERGENCE_LOG (
-                ERROR, "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
-                objectList[_indexInList].name, "\", which is \"", objectData.object.parent, "\", is not found.");
+            EMERGENCE_LOG (ERROR,
+                           "Resource::Object::LibraryLoader: Internal logic error occurred. Parent for object \"",
+                           objectList[_indexInList], "\", which is \"", objectData.object.parent, "\", is not found.");
             return;
         }
 
@@ -364,11 +159,11 @@ void LibraryLoader::PostProcessObject (std::size_t _indexInList) noexcept
                             const Memory::UniqueString dependency =
                                 *static_cast<const Memory::UniqueString *> (change.newValue);
 
-                            if (!FindAndLoadObject (dependency, false))
+                            if (!LoadObject (dependency, false))
                             {
                                 EMERGENCE_LOG (ERROR,
-                                               "Resource::Object::LibraryLoader: Unable to find injected sub object \"",
-                                               dependency, "\" for object \"", objectList[_indexInList].name, "\".");
+                                               "Resource::Object::LibraryLoader: Unable to load injected sub object \"",
+                                               dependency, "\" for object \"", objectList[_indexInList], "\".");
                             }
 
                             break;
@@ -378,30 +173,6 @@ void LibraryLoader::PostProcessObject (std::size_t _indexInList) noexcept
             }
         }
     }
-}
-
-const FolderDependency::Reflection &FolderDependency::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (FolderDependency);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (relativePath);
-        EMERGENCE_MAPPING_REGISTRATION_END ();
-    }();
-
-    return reflection;
-}
-
-const FolderDependencyList::Reflection &FolderDependencyList::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (FolderDependencyList);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (list);
-        EMERGENCE_MAPPING_REGISTRATION_END ();
-    }();
-
-    return reflection;
 }
 } // namespace Emergence::Resource::Object
 

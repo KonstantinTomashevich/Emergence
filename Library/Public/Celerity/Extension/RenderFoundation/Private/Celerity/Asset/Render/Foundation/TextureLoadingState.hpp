@@ -2,8 +2,7 @@
 
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/LoadingSharedState.hpp>
-
-#include <Render/Backend/Texture.hpp>
+#include <Celerity/Asset/Render/Foundation/Texture.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -16,7 +15,7 @@ public:
 
     EMERGENCE_STATIONARY_DATA_TYPE (TextureLoadingSharedState);
 
-    Render::Backend::TextureSettings settings;
+    TextureAsset asset;
 
     Memory::Heap textureDataHeap {GetHeap ().GetAllocationGroup ()};
 

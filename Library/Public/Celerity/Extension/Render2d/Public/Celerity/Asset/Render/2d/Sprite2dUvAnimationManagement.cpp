@@ -1,6 +1,3 @@
-#include <filesystem>
-#include <fstream>
-
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/2d/Sprite2dUvAnimation.hpp>
@@ -16,9 +13,6 @@
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <Serialization/Binary.hpp>
-#include <Serialization/Yaml.hpp>
-
 namespace Emergence::Celerity::Sprite2dUvAnimationManagement
 {
 class Manager final : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
@@ -29,7 +23,7 @@ public:
     using LoadingState = Sprite2dUvAnimationLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             const Container::Vector<Memory::UniqueString> &_animationRootPaths,
+             ResourceProvider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -44,86 +38,55 @@ private:
     InsertLongTermQuery insertAnimation;
     RemoveValueQuery removeAnimationById;
 
-    Container::Vector<Memory::UniqueString> animationRootPaths {Memory::Profiler::AllocationGroup::Top ()};
+    ResourceProvider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  const Container::Vector<Memory::UniqueString> &_animationRootPaths,
+                  ResourceProvider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
 
       insertAnimation (INSERT_LONG_TERM (Sprite2dUvAnimation)),
-      removeAnimationById (REMOVE_VALUE_1F (Sprite2dUvAnimation, assetId))
-{
-    animationRootPaths.reserve (_animationRootPaths.size ());
-    for (Memory::UniqueString animationRoot : _animationRootPaths)
-    {
-        animationRootPaths.emplace_back (animationRoot);
-    }
+      removeAnimationById (REMOVE_VALUE_1F (Sprite2dUvAnimation, assetId)),
 
+      resourceProvider (_resourceProvider)
+{
     _constructor.DependOn (AssetManagement::Checkpoint::ASSET_LOADING_STARTED);
     _constructor.MakeDependencyOf (AssetManagement::Checkpoint::ASSET_LOADING_FINISHED);
 }
 
 AssetState Manager::StartLoading (Sprite2dUvAnimationLoadingState *_loadingState) noexcept
 {
-    for (Memory::UniqueString root : animationRootPaths)
-    {
-        std::filesystem::path binaryPath = EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".animation.bin");
-        if (std::filesystem::exists (binaryPath))
+    Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
+        [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
+         sharedState {_loadingState->sharedState}] ()
         {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, binaryPath] ()
-                {
-                    std::ifstream input {binaryPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (input, &sharedState->asset,
-                                                                   Sprite2dUvAnimationAsset::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (
-                            ERROR, "Sprite2dUvAnimationManagement: Unable to load animation from \"",
-                            binaryPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
+            switch (cachedResourceProvider->LoadObject (Sprite2dUvAnimationAsset::Reflect ().mapping, assetId,
+                                                        &sharedState->asset))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                sharedState->state = AssetState::READY;
+                break;
 
-                        sharedState->state = AssetState::CORRUPTED;
-                    }
-                    else
-                    {
-                        sharedState->state = AssetState::READY;
-                    }
-                });
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Unable to find animation \"", assetId, "\".");
+                sharedState->state = AssetState::MISSING;
+                break;
 
-            return AssetState::LOADING;
-        }
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Failed to read animation \"", assetId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                break;
 
-        std::filesystem::path yamlPath = EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".animation.yaml");
-        if (std::filesystem::exists (yamlPath))
-        {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, yamlPath] ()
-                {
-                    std::ifstream input {yamlPath};
-                    if (!Serialization::Yaml::DeserializeObject (input, &sharedState->asset,
-                                                                 Sprite2dUvAnimationAsset::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Unable to load animation from \"",
-                                       yamlPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                                       "\".");
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Object \"", assetId, "\" is not an animation.");
+                sharedState->state = AssetState::CORRUPTED;
+                break;
+            }
+        });
 
-                        sharedState->state = AssetState::CORRUPTED;
-                    }
-                    else
-                    {
-                        sharedState->state = AssetState::READY;
-                    }
-                });
-
-            return AssetState::LOADING;
-        }
-    }
-
-    EMERGENCE_LOG (ERROR, "Sprite2dUvAnimationManagement: Unable to find animation \"", _loadingState->assetId, "\".");
-    return AssetState::MISSING;
+    return AssetState::LOADING;
 }
 
 AssetState Manager::TryFinishLoading (Sprite2dUvAnimationLoadingState *_loadingState) noexcept
@@ -157,7 +120,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const Container::Vector<Memory::UniqueString> &_animationRootPaths,
+                        ResourceProvider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Sprite2dUvAnimation::Reflect ().mapping);
@@ -171,6 +134,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Sprite2dUvAnimationManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"Sprite2dUvAnimationManager"})
-        .SetExecutor<Manager> (_animationRootPaths, iterator->second);
+        .SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::Sprite2dUvAnimationManagement

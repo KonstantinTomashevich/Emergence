@@ -6,9 +6,14 @@ add_test (NAME "TestCelerityResourceConfigOriginal" COMMAND TestCelerityResource
 add_dependencies (LibraryTests TestCelerityResourceConfigOriginal)
 target_include_directories (TestCelerityResourceConfigOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
+sober_naming_implementation_target (ResourceProvider Original RESOURCE_PROVIDER_LIBRARY_TARGET)
 sober_naming_variant_target (CelerityResourceConfig Original CELERITY_RESOURCE_CONFIG_LIBRARY_TARGET)
+sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 
-target_link_libraries (TestCelerityResourceConfigOriginal PRIVATE ${CELERITY_RESOURCE_CONFIG_LIBRARY_TARGET})
+target_link_libraries (TestCelerityResourceConfigOriginal PRIVATE
+        ${RESOURCE_PROVIDER_LIBRARY_TARGET}
+        ${CELERITY_RESOURCE_CONFIG_LIBRARY_TARGET}
+        ${SERIALIZATION_LIBRARY_TARGET})
 link_celerity_with_dependencies (TestCelerityResourceConfigOriginal)
 
 # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

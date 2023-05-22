@@ -25,10 +25,7 @@ struct Sprite2dUvAnimationFrameInfo final
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Content of sprite uv animation  file that stores all the information about this animation.
-/// \invariant Path to animation header file is <animation root folder>/<animation id>.animation.<format extension>,
-///            where animation root folder is any registered root folder for animations, animation id is any string
-///            that may include '/' for folder grouping, and format extension is either yaml or bin.
+/// \brief Content of sprite uv animation file that stores all the information about this animation.
 struct Sprite2dUvAnimationAsset final
 {
     /// \brief Id of a material instance that is used along with this sprite animation.

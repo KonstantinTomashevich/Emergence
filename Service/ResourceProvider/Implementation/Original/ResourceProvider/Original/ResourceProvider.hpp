@@ -80,11 +80,11 @@ private:
     SourceOperationResponse AddObject (Memory::UniqueString _id,
                                        Memory::UniqueString _typeName,
                                        Memory::UniqueString _source,
-                                       const Container::String &_relativePath) noexcept;
+                                       const Container::Utf8String &_relativePath) noexcept;
 
     SourceOperationResponse AddThirdPartyResource (Memory::UniqueString _id,
                                                    Memory::UniqueString _source,
-                                                   const Container::String &_relativePath) noexcept;
+                                                   const Container::Utf8String &_relativePath) noexcept;
 
     bool ClearSource (Memory::UniqueString _path) noexcept;
 

@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/UI/Font.hpp>
+#include <Celerity/UI/Font.hpp>
 #include <Celerity/Asset/UI/FontUtility.hpp>
 #include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/Input/Input.hpp>

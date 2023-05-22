@@ -2,14 +2,9 @@
 
 namespace Emergence::Celerity::Test
 {
-const char *GetUIBackendMaterialPath () noexcept
+const char *GetUIBackendResourceSourcePath () noexcept
 {
-    return "ImGUIResources/Materials";
-}
-
-const char *GetUIBackendShaderPath () noexcept
-{
-    return "ImGUIResources/Shaders";
+    return "ImGUIResources";
 }
 
 const char *GetUIBackendScreenshotPrefix () noexcept

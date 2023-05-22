@@ -2,6 +2,8 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
+#include <ResourceProvider/ResourceProvider.hpp>
+
 namespace Emergence::Celerity::Localization
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
@@ -17,9 +19,5 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks for localization management and synchronization.
-///
-/// \param _localizationRootPath Known root folder for locale-specific folders. Files for every locale must be
-///                              stored in `{_localizationRootPath}/{localeName}/*`.
-void AddToNormalUpdate (PipelineBuilder &_builder,
-                        Memory::UniqueString _localizationRootPath) noexcept;
+void AddToNormalUpdate (PipelineBuilder &_builder, ResourceProvider::ResourceProvider *_resourceProvider) noexcept;
 } // namespace Emergence::Celerity::Localization

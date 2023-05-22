@@ -4,6 +4,21 @@
 
 namespace Emergence::Celerity
 {
+MaterialLoadingSharedState::MaterialLoadingSharedState () noexcept = default;
+
+MaterialLoadingSharedState::~MaterialLoadingSharedState () noexcept
+{
+    if (vertexShaderData)
+    {
+        shaderDataHeap.Release (vertexShaderData, vertexSharedSize);
+    }
+
+    if (fragmentShaderData)
+    {
+        shaderDataHeap.Release (fragmentShaderData, fragmentSharedSize);
+    }
+}
+
 const MaterialLoadingState::Reflection &MaterialLoadingState::Reflect () noexcept
 {
     static Reflection reflection = [] ()

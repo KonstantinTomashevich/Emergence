@@ -1,7 +1,7 @@
 sober_library_begin (CelerityImGUI STATIC)
     file (GLOB_RECURSE HEADERS "Public/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp")
-    file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")
+    file (GLOB_RECURSE SHADERS "Shaders/*.sc")
 
     list (APPEND SOURCES ${HEADERS})
     list (APPEND SOURCES ${SHADERS})
@@ -31,9 +31,9 @@ sober_library_end ()
 
 set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Materials"
-        "${RESOURCES_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
-register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
+# TODO: Rename not-shaders resources to content? Then directory structure will be Resources/Content.
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/" "${RESOURCES_COMPILED_DIRECTORY}/Resources" SYMBOLIC)
+register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_library_base_target (CelerityImGUI CELERITY_IMGUI_LIBRARY)
 register_resource_usage ("${CELERITY_IMGUI_LIBRARY}" "${RESOURCES_COMPILED_DIRECTORY}" "ImGUIResources")

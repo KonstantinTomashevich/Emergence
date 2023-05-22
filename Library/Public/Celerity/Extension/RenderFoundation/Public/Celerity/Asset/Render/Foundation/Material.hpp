@@ -36,9 +36,6 @@ struct UniformDescription final
 };
 
 /// \brief Content of material file that stores all the information about this material
-/// \invariant Path to material header file is <material root folder>/<material id>.material.<format extension>,
-///            where material root folder is any registered root folder for materials, material id is any string
-///            that may include '/' for folder grouping, and format extension is either yaml or bin.
 struct MaterialAsset final
 {
     /// \brief Id of a fragment shader used by this material.

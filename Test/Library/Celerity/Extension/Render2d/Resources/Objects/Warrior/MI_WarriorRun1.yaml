@@ -1,6 +1,6 @@
 # MaterialInstanceAsset
-material: Sprite
+material: M_Sprite
 uniforms:
   - name: colorTexture
     type: 3
-    textureId: Crate.png
+    textureId: T_WarriorRun1

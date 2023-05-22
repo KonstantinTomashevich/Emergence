@@ -70,7 +70,12 @@ static const char *RegisterValue (const std::string_view &_value)
             }
 
             char *space = static_cast<char *> (lastStack->Acquire (_value.size () + 1u, 1u));
-            strcpy (space, _value.data ());
+            for (size_t index = 0u; index < _value.size (); ++index)
+            {
+                space[index] = _value[index];
+            }
+
+            space[_value.size ()] = '\0';
             auto [insertionIterator, result] = stringRegister.emplace (space);
             EMERGENCE_ASSERT (result);
             return insertionIterator->data ();

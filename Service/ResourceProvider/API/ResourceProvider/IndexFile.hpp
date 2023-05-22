@@ -19,7 +19,7 @@ struct IndexFileObjectItem final
     Memory::UniqueString typeName;
 
     /// \brief Path to resource from source root.
-    Container::String relativePath;
+    Container::Utf8String relativePath;
 
     struct Reflection final
     {
@@ -39,7 +39,7 @@ struct IndexFileThirdPartyItem final
     Memory::UniqueString id;
 
     /// \brief Path to resource from source root.
-    Container::String relativePath;
+    Container::Utf8String relativePath;
 
     struct Reflection final
     {
@@ -56,7 +56,7 @@ struct IndexFileThirdPartyItem final
 struct IndexFile final
 {
     /// \brief Resource provider expects index file to be named this way.
-    inline static const Container::String INDEX_FILE_NAME = ".resource.provider.index";
+    inline static const Container::Utf8String INDEX_FILE_NAME = ".resource.provider.index";
 
     /// \brief List of all resources backed by reflection.
     Container::Vector<IndexFileObjectItem> objects {

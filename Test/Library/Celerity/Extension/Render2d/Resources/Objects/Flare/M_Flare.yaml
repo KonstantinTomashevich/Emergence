@@ -1,6 +1,6 @@
 # MaterialAsset
-vertexShader: "Sprite"
-fragmentShader: "Flare"
+vertexShader: S_Sprite
+fragmentShader: S_Flare
 uniforms:
   - name: flareRadius_flareStrength_flarePower
     type: 0

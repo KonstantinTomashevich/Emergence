@@ -1,7 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
-#include <fstream>
-
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
@@ -15,9 +11,6 @@
 
 #include <Log/Log.hpp>
 
-#include <Serialization/Binary.hpp>
-#include <Serialization/Yaml.hpp>
-
 namespace Emergence::Celerity::TextureManagement
 {
 class Manager : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
@@ -28,7 +21,7 @@ public:
     using LoadingState = TextureLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             const Container::Vector<Memory::UniqueString> &_textureRootPaths,
+             ResourceProvider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -43,133 +36,88 @@ private:
     InsertLongTermQuery insertTexture;
     RemoveValueQuery removeTextureById;
 
-    Container::Vector<Memory::UniqueString> rootPaths {Memory::Profiler::AllocationGroup::Top ()};
+    ResourceProvider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  const Container::Vector<Emergence::Memory::UniqueString> &_textureRootPaths,
+                  ResourceProvider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase<Manager> (_constructor, _stateUpdateEvent),
       insertTexture (INSERT_LONG_TERM (Texture)),
-      removeTextureById (REMOVE_VALUE_1F (Texture, assetId))
+      removeTextureById (REMOVE_VALUE_1F (Texture, assetId)),
+
+      resourceProvider (_resourceProvider)
 {
-    rootPaths.reserve (_textureRootPaths.size ());
-    for (Memory::UniqueString root : _textureRootPaths)
-    {
-        rootPaths.emplace_back (root);
-    }
 }
 
 AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
 {
-    std::filesystem::path settingsPath;
-    Memory::UniqueString selectedRoot;
-    bool binary;
-    bool found = false;
-
-    for (Memory::UniqueString root : rootPaths)
-    {
-        std::filesystem::path binaryPath = EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".settings.bin");
-        if (std::filesystem::exists (binaryPath))
+    Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
+        [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
+         sharedState {_loadingState->sharedState}] ()
         {
-            settingsPath = binaryPath;
-            selectedRoot = root;
-            binary = true;
-            found = true;
-            break;
-        }
-
-        std::filesystem::path yamlPath = EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".settings.yaml");
-        if (std::filesystem::exists (yamlPath))
-        {
-            settingsPath = yamlPath;
-            selectedRoot = root;
-            binary = false;
-            found = true;
-            break;
-        }
-    }
-
-    if (found)
-    {
-        Job::Dispatcher::Global ().Dispatch (
-            Job::Priority::BACKGROUND,
-            [assetId {_loadingState->assetId}, sharedState {_loadingState->sharedState}, settingsPath, selectedRoot,
-             binary] ()
+            switch (cachedResourceProvider->LoadObject (TextureAsset::Reflect ().mapping, assetId, &sharedState->asset))
             {
-                if (binary)
-                {
-                    std::ifstream input {settingsPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (
-                            input, &sharedState->settings, Render::Backend::TextureSettings::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (
-                            ERROR, "TextureManagement: Unable to load texture settings from \"",
-                            settingsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-                        sharedState->state = AssetState::CORRUPTED;
-                        return;
-                    }
-                }
-                else
-                {
-                    std::ifstream input {settingsPath};
-                    if (!Serialization::Yaml::DeserializeObject (
-                            input, &sharedState->settings, Render::Backend::TextureSettings::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (
-                            ERROR, "TextureManagement: Unable to load texture settings from \"",
-                            settingsPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (), "\".");
-                        sharedState->state = AssetState::CORRUPTED;
-                        return;
-                    }
-                }
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
 
-                // TODO: Do not rely on 1-1 id mapping and add texture id field to settings?
-                std::filesystem::path texturePath = EMERGENCE_BUILD_STRING (selectedRoot, "/", assetId);
-                FILE *file = std::fopen (texturePath.generic_string ().c_str (), "rb");
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "TextureManagement: Unable to find texture \"", assetId, "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
 
-                if (!file)
-                {
-                    EMERGENCE_LOG (ERROR, "TextureManagement: Unable to open texture file \"",
-                                   texturePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                                   "\".");
-                    sharedState->state = AssetState::CORRUPTED;
-                    return;
-                }
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "TextureManagement: Failed to read texture \"", assetId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
 
-                fseek (file, 0u, SEEK_END);
-                sharedState->textureDataSize = static_cast<uint64_t> (ftell (file));
-                fseek (file, 0u, SEEK_SET);
-                sharedState->textureData = static_cast<uint8_t *> (
-                    sharedState->textureDataHeap.Acquire (sharedState->textureDataSize, alignof (uint8_t)));
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                EMERGENCE_LOG (ERROR, "TextureManagement: Object \"", assetId, "\" is not a texture.");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
 
-                if (fread (sharedState->textureData, 1u, sharedState->textureDataSize, file) !=
-                    sharedState->textureDataSize)
-                {
-                    EMERGENCE_LOG (ERROR, "TextureManagement: Unable to read texture file \"",
-                                   texturePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                                   "\".");
-                    sharedState->state = AssetState::CORRUPTED;
-                    return;
-                }
+            switch (cachedResourceProvider->LoadThirdPartyResource (
+                sharedState->asset.textureId, sharedState->textureDataHeap, sharedState->textureDataSize,
+                sharedState->textureData))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
 
-                fclose (file);
-                sharedState->state = AssetState::READY;
-            });
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "TextureManagement: Unable to find texture source \"",
+                               sharedState->asset.textureId, "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
 
-        return AssetState::LOADING;
-    }
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "TextureManagement: Failed to read texture source \"",
+                               sharedState->asset.textureId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
 
-    EMERGENCE_LOG (ERROR, "TextureManagement: Unable to find texture settings for texture \"", _loadingState->assetId,
-                   "\".");
-    return AssetState::MISSING;
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
+
+            sharedState->state = AssetState::READY;
+        });
+
+    return AssetState::LOADING;
 }
 
 AssetState Manager::TryFinishLoading (TextureLoadingState *_loadingState) noexcept
 {
+    if (_loadingState->sharedState->state != AssetState::READY)
+    {
+        return _loadingState->sharedState->state;
+    }
+
     Render::Backend::Texture nativeTexture {_loadingState->sharedState->textureData,
                                             _loadingState->sharedState->textureDataSize,
-                                            _loadingState->sharedState->settings};
+                                            _loadingState->sharedState->asset.settings};
     if (!nativeTexture.IsValid ())
     {
         EMERGENCE_LOG (ERROR, "TextureManagement: Failed to load texture \"", _loadingState->assetId, "\" from data.");
@@ -192,7 +140,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const Container::Vector<Memory::UniqueString> &_textureRootPaths,
+                        ResourceProvider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Texture::Reflect ().mapping);
@@ -206,6 +154,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TextureManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"TextureManager"})
-        .SetExecutor<Manager> (_textureRootPaths, iterator->second);
+        .SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::TextureManagement

@@ -335,6 +335,19 @@ void PlainMapping::Construct (void *_address) const noexcept
     }
 }
 
+void PlainMapping::MoveConstruct (void *_address, void *_sourceAddress) const noexcept
+{
+    if (moveConstructor)
+    {
+        moveConstructor (_address, _sourceAddress);
+    }
+    else
+    {
+        EMERGENCE_ASSERT (false);
+        Construct (_address);
+    }
+}
+
 void PlainMapping::Destruct (void *_address) const noexcept
 {
     if (destructor)
@@ -485,6 +498,12 @@ void PlainMappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcep
 {
     EMERGENCE_ASSERT (underConstruction);
     underConstruction->constructor = _constructor;
+}
+
+void PlainMappingBuilder::SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept
+{
+    EMERGENCE_ASSERT (underConstruction);
+    underConstruction->moveConstructor = _constructor;
 }
 
 void PlainMappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept

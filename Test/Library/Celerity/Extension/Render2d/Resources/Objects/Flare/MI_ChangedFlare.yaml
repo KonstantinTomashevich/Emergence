@@ -1,6 +1,6 @@
 # MaterialInstanceAsset
-material: Flare
-parent: BaseFlare
+material: M_Flare
+parent: MI_BaseFlare
 uniforms:
   - name: color
     type: 0

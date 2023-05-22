@@ -11,6 +11,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+// TODO: Migrate to Resource/Provider directory structure and namespaces? To be consistent with Resource/Object.
+
 namespace Emergence::ResourceProvider
 {
 /// \brief Exit codes for ResourceProvider operations that work with resource sources.

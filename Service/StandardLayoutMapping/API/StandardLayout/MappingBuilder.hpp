@@ -44,6 +44,10 @@ public:
     /// \invariant There is active mapping construction routine that uses this builder.
     void SetConstructor (void (*_constructor) (void *)) noexcept;
 
+    /// \brief Sets default move constructor for objects of constructed mapping.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    void SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept;
+
     /// \brief Sets default destructor for objects of constructed mapping.
     /// \invariant There is active mapping construction routine that uses this builder.
     void SetDestructor (void (*_destructor) (void *)) noexcept;

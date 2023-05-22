@@ -1,5 +1,5 @@
 # MaterialInstanceAsset
-material: Debug
+material: M_Debug
 uniforms:
   - name: color
     type: 0

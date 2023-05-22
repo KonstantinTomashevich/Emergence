@@ -1,6 +1,3 @@
-#include <filesystem>
-#include <fstream>
-
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/Foundation/Material.hpp>
@@ -15,9 +12,6 @@
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <Serialization/Binary.hpp>
-#include <Serialization/Yaml.hpp>
-
 namespace Emergence::Celerity::MaterialManagement
 {
 class Manager final : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
@@ -28,8 +22,7 @@ public:
     using LoadingState = MaterialLoadingState;
 
     Manager (TaskConstructor &_constructor,
-             const Container::Vector<Memory::UniqueString> &_materialRootPaths,
-             const Container::Vector<Memory::UniqueString> &_shaderRootPaths,
+             ResourceProvider::ResourceProvider *_resourceProvider,
              const StandardLayout::Mapping &_stateUpdateEvent) noexcept;
 
 private:
@@ -38,8 +31,6 @@ private:
     AssetState StartLoading (MaterialLoadingState *_loadingState) noexcept;
 
     AssetState TryFinishLoading (MaterialLoadingState *_loadingState) noexcept;
-
-    Container::Vector<uint8_t> LoadShaderFile (const Container::String &_file) noexcept;
 
     bool RegisterUniform (Memory::UniqueString _assetId, const UniformDescription &_description) noexcept;
 
@@ -51,13 +42,11 @@ private:
     RemoveValueQuery removeMaterialById;
     RemoveValueQuery removeUniformById;
 
-    Container::Vector<Memory::UniqueString> materialRootPaths {Memory::Profiler::AllocationGroup::Top ()};
-    Container::Vector<Memory::UniqueString> shaderRootPaths {Memory::Profiler::AllocationGroup::Top ()};
+    ResourceProvider::ResourceProvider *resourceProvider;
 };
 
 Manager::Manager (TaskConstructor &_constructor,
-                  const Container::Vector<Memory::UniqueString> &_materialRootPaths,
-                  const Container::Vector<Memory::UniqueString> &_shaderRootPaths,
+                  ResourceProvider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
     : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
 
@@ -65,87 +54,97 @@ Manager::Manager (TaskConstructor &_constructor,
       insertUniform (INSERT_LONG_TERM (Uniform)),
 
       removeMaterialById (REMOVE_VALUE_1F (Material, assetId)),
-      removeUniformById (REMOVE_VALUE_1F (Uniform, assetId))
+      removeUniformById (REMOVE_VALUE_1F (Uniform, assetId)),
+
+      resourceProvider (_resourceProvider)
 {
-    materialRootPaths.reserve (_materialRootPaths.size ());
-    for (Memory::UniqueString materialRoot : _materialRootPaths)
-    {
-        materialRootPaths.emplace_back (materialRoot);
-    }
-
-    shaderRootPaths.reserve (_shaderRootPaths.size ());
-    for (Memory::UniqueString shaderRoot : _shaderRootPaths)
-    {
-        shaderRootPaths.emplace_back (shaderRoot);
-    }
-
     _constructor.DependOn (AssetManagement::Checkpoint::ASSET_LOADING_STARTED);
     _constructor.MakeDependencyOf (AssetManagement::Checkpoint::ASSET_LOADING_FINISHED);
 }
 
 AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
 {
-    for (Memory::UniqueString root : materialRootPaths)
-    {
-        std::filesystem::path binaryMaterialPath =
-            EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".material.bin");
-        if (std::filesystem::exists (binaryMaterialPath))
+    Job::Dispatcher::Global ().Dispatch (
+        Job::Priority::BACKGROUND,
+        [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
+         sharedState {_loadingState->sharedState}] ()
         {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, binaryMaterialPath] ()
-                {
-                    std::ifstream input {binaryMaterialPath, std::ios::binary};
-                    if (!Serialization::Binary::DeserializeObject (input, &sharedState->asset,
-                                                                   MaterialAsset::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (
-                            ERROR, "MaterialManagement: Unable to load material from \"",
-                            binaryMaterialPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                            "\".");
+            switch (
+                cachedResourceProvider->LoadObject (MaterialAsset::Reflect ().mapping, assetId, &sharedState->asset))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
 
-                        sharedState->state = AssetState::CORRUPTED;
-                    }
-                    else
-                    {
-                        sharedState->state = AssetState::READY;
-                    }
-                });
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find material \"", assetId, "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
 
-            return AssetState::LOADING;
-        }
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Failed to read material \"", assetId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
 
-        std::filesystem::path yamlMaterialPath =
-            EMERGENCE_BUILD_STRING (root, "/", _loadingState->assetId, ".material.yaml");
-        if (std::filesystem::exists (yamlMaterialPath))
-        {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [sharedState {_loadingState->sharedState}, yamlMaterialPath] ()
-                {
-                    std::ifstream input {yamlMaterialPath};
-                    if (!Serialization::Yaml::DeserializeObject (input, &sharedState->asset,
-                                                                 MaterialAsset::Reflect ().mapping, {}))
-                    {
-                        EMERGENCE_LOG (
-                            ERROR, "MaterialManagement: Unable to load material from \"",
-                            yamlMaterialPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> (),
-                            "\".");
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Object \"", assetId, "\" is not a material.");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
 
-                        sharedState->state = AssetState::CORRUPTED;
-                    }
-                    else
-                    {
-                        sharedState->state = AssetState::READY;
-                    }
-                });
+            const Memory::UniqueString vertexShaderId {EMERGENCE_BUILD_STRING (
+                sharedState->asset.vertexShader, ".vertex", Render::Backend::Program::GetShaderSuffix ())};
 
-            return AssetState::LOADING;
-        }
-    }
+            switch (cachedResourceProvider->LoadThirdPartyResource (vertexShaderId, sharedState->shaderDataHeap,
+                                                                    sharedState->vertexSharedSize,
+                                                                    sharedState->vertexShaderData))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
 
-    EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find material \"", _loadingState->assetId, "\".");
-    return AssetState::MISSING;
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find vertex shader \"", vertexShaderId, "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
+
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Failed to read vertex shader \"", vertexShaderId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
+
+            const Memory::UniqueString fragmentShaderId {EMERGENCE_BUILD_STRING (
+                sharedState->asset.fragmentShader, ".fragment", Render::Backend::Program::GetShaderSuffix ())};
+
+            switch (cachedResourceProvider->LoadThirdPartyResource (fragmentShaderId, sharedState->shaderDataHeap,
+                                                                    sharedState->fragmentSharedSize,
+                                                                    sharedState->fragmentShaderData))
+            {
+            case ResourceProvider::LoadingOperationResponse::SUCCESSFUL:
+                break;
+
+            case ResourceProvider::LoadingOperationResponse::NOT_FOUND:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Unable to find fragment shader \"", fragmentShaderId, "\".");
+                sharedState->state = AssetState::MISSING;
+                return;
+
+            case ResourceProvider::LoadingOperationResponse::IO_ERROR:
+                EMERGENCE_LOG (ERROR, "MaterialManagement: Failed to read fragment shader \"", fragmentShaderId, "\".");
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+
+            case ResourceProvider::LoadingOperationResponse::WRONG_TYPE:
+                sharedState->state = AssetState::CORRUPTED;
+                return;
+            }
+
+            sharedState->state = AssetState::READY;
+        });
+
+    return AssetState::LOADING;
 }
 
 AssetState Manager::TryFinishLoading (MaterialLoadingState *_loadingState) noexcept
@@ -156,11 +155,9 @@ AssetState Manager::TryFinishLoading (MaterialLoadingState *_loadingState) noexc
     material->vertexShader = _loadingState->sharedState->asset.vertexShader;
     material->fragmentShader = _loadingState->sharedState->asset.fragmentShader;
 
-    const Container::Vector<uint8_t> vertexShader =
-        LoadShaderFile (EMERGENCE_BUILD_STRING (material->vertexShader, ".vertex"));
-    const Container::Vector<uint8_t> fragmentShader =
-        LoadShaderFile (EMERGENCE_BUILD_STRING (material->fragmentShader, ".fragment"));
-    material->program = {vertexShader.data (), vertexShader.size (), fragmentShader.data (), fragmentShader.size ()};
+    material->program = {_loadingState->sharedState->vertexShaderData, _loadingState->sharedState->vertexSharedSize,
+                         _loadingState->sharedState->fragmentShaderData,
+                         _loadingState->sharedState->fragmentSharedSize};
 
     if (!material->program.IsValid ())
     {
@@ -177,29 +174,6 @@ AssetState Manager::TryFinishLoading (MaterialLoadingState *_loadingState) noexc
     }
 
     return AssetState::READY;
-}
-
-Container::Vector<uint8_t> Manager::LoadShaderFile (const Container::String &_file) noexcept
-{
-    Container::Vector<uint8_t> result {Render::Backend::GetSharedAllocationGroup ()};
-    for (Memory::UniqueString shaderRoot : shaderRootPaths)
-    {
-        std::filesystem::path shaderPath =
-            EMERGENCE_BUILD_STRING (shaderRoot, "/", _file, Render::Backend::Program::GetShaderSuffix ());
-
-        if (std::filesystem::exists (shaderPath))
-        {
-            std::ifstream input {shaderPath, std::ios::binary | std::ios::ate};
-            std::streamsize fileSize = input.tellg ();
-            input.seekg (0u, std::ios::beg);
-
-            result.resize (fileSize);
-            input.read (reinterpret_cast<char *> (result.data ()), fileSize);
-            break;
-        }
-    }
-
-    return result;
 }
 
 bool Manager::RegisterUniform (Memory::UniqueString _assetId, const UniformDescription &_description) noexcept
@@ -240,8 +214,7 @@ void Manager::Unload (Memory::UniqueString _assetId) noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const Container::Vector<Memory::UniqueString> &_materialRootPaths,
-                        const Container::Vector<Memory::UniqueString> &_shaderRootPaths,
+                        ResourceProvider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept
 {
     auto iterator = _eventMap.stateUpdate.find (Material::Reflect ().mapping);
@@ -255,6 +228,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("MaterialManagement");
     _pipelineBuilder.AddTask (Memory::UniqueString {"MaterialManager"})
-        .SetExecutor<Manager> (_materialRootPaths, _shaderRootPaths, iterator->second);
+        .SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::MaterialManagement

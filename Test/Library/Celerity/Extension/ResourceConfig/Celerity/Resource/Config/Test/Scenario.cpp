@@ -8,12 +8,13 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Resource/Config/Loading.hpp>
 #include <Celerity/Resource/Config/Messages.hpp>
-#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 #include <Celerity/Resource/Config/Test/Scenario.hpp>
 
 #include <Container/StringBuilder.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
+
+#include <ResourceProvider/ResourceProvider.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
@@ -27,7 +28,10 @@ static const char *const ENVIRONMENT_ROOT = "../Resources";
 class Executor final : public TaskExecutorBase<Executor>
 {
 public:
-    Executor (TaskConstructor &_constructor, Container::Vector<Task> _tasks, bool *_isFinished) noexcept;
+    Executor (TaskConstructor &_constructor,
+              ResourceProvider::ResourceProvider *_resourceProvider,
+              Container::Vector<Task> _tasks,
+              bool *_isFinished) noexcept;
 
     void Execute () noexcept;
 
@@ -45,21 +49,27 @@ private:
     FetchAscendingRangeQuery fetchBuildingConfigByAscendingId;
     InsertShortTermQuery insertLoadingRequest;
 
+    ResourceProvider::ResourceProvider *resourceProvider;
     Container::Vector<Task> tasks;
     std::size_t currentTaskIndex = 0u;
     bool loadingRequestSent = false;
     bool *isFinished = nullptr;
 };
 
-Executor::Executor (TaskConstructor &_constructor, Container::Vector<Task> _tasks, bool *_isFinished) noexcept
+Executor::Executor (TaskConstructor &_constructor,
+                    ResourceProvider::ResourceProvider *_resourceProvider,
+                    Container::Vector<Task> _tasks,
+                    bool *_isFinished) noexcept
     : fetchLoadingResponse (FETCH_SEQUENCE (ResourceConfigLoadedResponse)),
       fetchUnitConfigByAscendingId (FETCH_ASCENDING_RANGE (UnitConfig, id)),
       fetchBuildingConfigByAscendingId (FETCH_ASCENDING_RANGE (BuildingConfig, id)),
       insertLoadingRequest (INSERT_SHORT_TERM (ResourceConfigRequest)),
+
+      resourceProvider (_resourceProvider),
       tasks (std::move (_tasks)),
       isFinished (_isFinished)
 {
-    _constructor.MakeDependencyOf (ResourceConfigPathMappingLoading::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (ResourceConfigLoading::Checkpoint::STARTED);
 }
 
 void Executor::Execute () noexcept
@@ -103,6 +113,8 @@ void SerializeConfigs (const Container::String &_folder, const Container::Vector
 bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
 {
     LOG ("Resetting environment...");
+    [[maybe_unused]] ResourceProvider::SourceOperationResponse response =
+        resourceProvider->RemoveSource (Memory::UniqueString {ENVIRONMENT_ROOT});
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
 
     if (std::filesystem::exists (rootPath))
@@ -111,25 +123,11 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
     }
 
     std::filesystem::create_directories (rootPath);
-    ResourceConfigPathMappingLoading::PathMapping pathMapping;
-    pathMapping.configs.emplace_back () = {UnitConfig::Reflect ().mapping.GetName (), _task.unitConfigFolder};
-    pathMapping.configs.emplace_back () = {BuildingConfig::Reflect ().mapping.GetName (), _task.buildingConfigFolder};
-
-    if (_task.useBinaryFormat)
-    {
-        std::ofstream output (rootPath / ResourceConfigPathMappingLoading::BINARY_FILE_NAME, std::ios::binary);
-        Serialization::Binary::SerializeObject (output, &pathMapping,
-                                                ResourceConfigPathMappingLoading::PathMapping::Reflect ().mapping);
-    }
-    else
-    {
-        std::ofstream output (rootPath / ResourceConfigPathMappingLoading::YAML_FILE_NAME);
-        Serialization::Yaml::SerializeObject (output, &pathMapping,
-                                                ResourceConfigPathMappingLoading::PathMapping::Reflect ().mapping);
-    }
-
     SerializeConfigs (_task.unitConfigFolder, _task.unitConfigs, _task.useBinaryFormat);
     SerializeConfigs (_task.buildingConfigFolder, _task.buildingConfigs, _task.useBinaryFormat);
+
+    REQUIRE (resourceProvider->AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             ResourceProvider::SourceOperationResponse::SUCCESSFUL);
     return true;
 }
 
@@ -227,10 +225,14 @@ void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept
     PipelineBuilder builder {world.GetRootView ()};
     bool scenarioFinished = false;
 
+    Container::MappingRegistry configTypes;
+    configTypes.Register (BuildingConfig::Reflect ().mapping);
+    configTypes.Register (UnitConfig::Reflect ().mapping);
+    ResourceProvider::ResourceProvider resourceProvider {configTypes, {}};
+
     builder.Begin ("LoadingUpdate"_us, PipelineType::CUSTOM);
-    ResourceConfigPathMappingLoading::AddToLoadingPipeline (builder, ENVIRONMENT_ROOT, typeMetas);
-    ResourceConfigLoading::AddToLoadingPipeline (builder, 16000000u, typeMetas);
-    builder.AddTask ("Executor"_us).SetExecutor<Executor> (_tasks, &scenarioFinished);
+    ResourceConfigLoading::AddToLoadingPipeline (builder, &resourceProvider, typeMetas);
+    builder.AddTask ("Executor"_us).SetExecutor<Executor> (&resourceProvider, _tasks, &scenarioFinished);
     Pipeline *loadingUpdate = builder.End ();
     REQUIRE (loadingUpdate);
 

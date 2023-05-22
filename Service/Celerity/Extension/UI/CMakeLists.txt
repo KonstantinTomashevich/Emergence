@@ -1,4 +1,5 @@
 sober_service_begin (CelerityUI)
+    sober_naming_service_target (ResourceProvider RESOURCE_PROVIDER_TARGET)
     sober_naming_variant_target (Celerity Original CELERITY_TARGET)
     sober_naming_variant_target (CelerityAsset Original CELERITY_ASSET_TARGET)
     sober_naming_variant_target (CelerityInput Original CELERITY_INPUT_TARGET)
@@ -8,6 +9,7 @@ sober_service_begin (CelerityUI)
     sober_service_add_api_dependency (${CELERITY_ASSET_TARGET})
     sober_service_add_api_dependency (${CELERITY_INPUT_TARGET})
     sober_service_add_api_dependency (${MATH_TARGET})
+    sober_service_add_api_dependency (${RESOURCE_PROVIDER_TARGET})
 
     sober_service_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}/API")
     sober_service_add_implementation ("${CMAKE_CURRENT_SOURCE_DIR}/Implementation/ImGUI")

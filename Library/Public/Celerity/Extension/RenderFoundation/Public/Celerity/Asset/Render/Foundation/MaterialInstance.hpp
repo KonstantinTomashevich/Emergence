@@ -65,11 +65,6 @@ struct UniformValueDescription final
 };
 
 /// \brief Content of material instance file that stores all the information about material instance.
-/// \invariant Path to material instance header file is
-///            <material instance root folder>/<material instance id>.material.instance.<format extension>,
-///            where material instance root folder is any registered root folder for material instances,
-///            material instance id is any string that may include '/' for folder grouping,
-///            and format extension is either yaml or bin.
 struct MaterialInstanceAsset final
 {
     /// \brief Parent material instances id if parent exists for this instance.

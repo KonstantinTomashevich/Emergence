@@ -26,7 +26,7 @@ struct ObjectResourceData final
     Memory::UniqueString id;
     StandardLayout::Mapping type;
     Memory::UniqueString source;
-    Container::String relativePath;
+    Container::Utf8String relativePath;
     ObjectResourceFormat format = ObjectResourceFormat::BINARY;
 
     struct Reflection final
@@ -76,7 +76,7 @@ struct ThirdPartyResourceData final
 {
     Memory::UniqueString id;
     Memory::UniqueString source;
-    Container::String relativePath;
+    Container::Utf8String relativePath;
 
     struct Reflection final
     {
@@ -425,7 +425,8 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
         return SourceOperationResponse::NOT_FOUND;
     }
 
-    for (std::filesystem::recursive_directory_iterator iterator (EMERGENCE_BUILD_STRING (_path, "/"));
+    for (std::filesystem::recursive_directory_iterator iterator (
+             EMERGENCE_BUILD_STRING (_path, "/"), std::filesystem::directory_options::follow_directory_symlink);
          iterator != std::filesystem::end (iterator); ++iterator)
     {
         const std::filesystem::directory_entry &entry = *iterator;
@@ -434,7 +435,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
             continue;
         }
 
-        const Container::String relativePath =
+        const Container::Utf8String relativePath =
             std::filesystem::relative (entry.path (), *_path)
                 .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ();
 
@@ -524,7 +525,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
 SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
                                                      Memory::UniqueString _typeName,
                                                      Memory::UniqueString _source,
-                                                     const Container::String &_relativePath) noexcept
+                                                     const Container::Utf8String &_relativePath) noexcept
 {
     StandardLayout::Mapping type = objectTypesRegistry.Get (_typeName);
     if (!type)
@@ -566,7 +567,7 @@ SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
 
 SourceOperationResponse ResourceProvider::AddThirdPartyResource (Memory::UniqueString _id,
                                                                  Memory::UniqueString _source,
-                                                                 const Container::String &_relativePath) noexcept
+                                                                 const Container::Utf8String &_relativePath) noexcept
 {
     if (auto cursor = thirdPartyResourcesById.ReadPoint (&_id); *cursor)
     {

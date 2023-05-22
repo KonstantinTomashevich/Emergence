@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include <Container/String.hpp>
 #include <Container/StringBuilder.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -11,6 +10,8 @@
 #include <Resource/Object/LibraryLoader.hpp>
 #include <Resource/Object/Test/Helpers.hpp>
 #include <Resource/Object/Test/Types.hpp>
+
+#include <ResourceProvider/ResourceProvider.hpp>
 
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
@@ -29,25 +30,16 @@ enum class SerializationFormat
 
 struct ObjectDefinition final
 {
-    Memory::UniqueString name;
+    Memory::UniqueString id;
+
+    /// \details Relative to ::ENVIRONMENT_ROOT.
+    Container::String folderPath;
+
     Object object;
     SerializationFormat format = SerializationFormat::YAML;
 };
 
-struct FolderDefinition final
-{
-    /// \details Relative to ::ENVIRONMENT_ROOT.
-    Container::String relativePath;
-
-    /// \details Relative to this folder path.
-    FolderDependencyList dependencyList;
-
-    SerializationFormat dependencySerializationFormat = SerializationFormat::YAML;
-
-    Container::Vector<ObjectDefinition> objects;
-};
-
-void PrepareEnvironment (const Container::Vector<FolderDefinition> &_folders)
+void PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
 {
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
     if (std::filesystem::exists (rootPath))
@@ -55,69 +47,28 @@ void PrepareEnvironment (const Container::Vector<FolderDefinition> &_folders)
         std::filesystem::remove_all (rootPath);
     }
 
-    for (const FolderDefinition &folder : _folders)
+    for (const ObjectDefinition &object : _objects)
     {
-        const std::filesystem::path folderPath = rootPath / folder.relativePath;
+        const std::filesystem::path folderPath = rootPath / object.folderPath;
         std::filesystem::create_directories (folderPath);
 
-        FolderDependency dependency;
-        const bool eitherBinaryOrHasDependencies =
-            folder.dependencySerializationFormat == SerializationFormat::BINARY || !folder.dependencyList.list.empty ();
-        REQUIRE_WITH_MESSAGE (eitherBinaryOrHasDependencies, "Only binary format supports absence of dependencies!");
-
-        switch (folder.dependencySerializationFormat)
+        switch (object.format)
         {
         case SerializationFormat::BINARY:
         {
-            std::ofstream output {folderPath / LibraryLoader::BINARY_FOLDER_DEPENDENCY_LIST, std::ios::binary};
-            if (!folder.dependencyList.list.empty ())
-            {
-                Serialization::Binary::SerializeObject (output, &folder.dependencyList,
-                                                        FolderDependencyList::Reflect ().mapping);
-            }
-
+            std::filesystem::path objectPath = folderPath / EMERGENCE_BUILD_STRING (*object.id, ".bin");
+            std::ofstream objectOutput {objectPath, std::ios::binary};
+            Serialization::Binary::SerializeObject (objectOutput, &object.object, Object::Reflect ().mapping);
             break;
         }
+
         case SerializationFormat::YAML:
         {
-            std::ofstream output {folderPath / LibraryLoader::YAML_FOLDER_DEPENDENCY_LIST};
-            Serialization::Yaml::SerializeObject (output, &folder.dependencyList,
-                                                  FolderDependencyList::Reflect ().mapping);
+            std::filesystem::path objectPath = folderPath / EMERGENCE_BUILD_STRING (*object.id, ".yaml");
+            std::ofstream objectOutput {objectPath, std::ios::binary};
+            Serialization::Yaml::SerializeObject (objectOutput, &object.object, Object::Reflect ().mapping);
             break;
         }
-        }
-
-        for (const ObjectDefinition &object : folder.objects)
-        {
-            std::filesystem::path objectPath = folderPath / *object.name;
-            std::filesystem::create_directories (objectPath.parent_path ());
-
-            switch (object.format)
-            {
-            case SerializationFormat::BINARY:
-            {
-                std::ofstream objectOutput {
-                    (objectPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> () +
-                     LibraryLoader::BINARY_OBJECT_SUFFIX)
-                        .c_str (),
-                    std::ios::binary};
-
-                Serialization::Binary::SerializeObject (objectOutput, &object.object, Object::Reflect ().mapping);
-                break;
-            }
-
-            case SerializationFormat::YAML:
-            {
-                std::ofstream objectOutput {
-                    (objectPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> () +
-                     LibraryLoader::YAML_OBJECT_SUFFIX)
-                        .c_str (),
-                    std::ios::binary};
-
-                Serialization::Yaml::SerializeObject (objectOutput, &object.object, Object::Reflect ().mapping);
-                break;
-            }
-            }
         }
     }
 }
@@ -126,40 +77,33 @@ void PrepareEnvironment (const Container::Vector<FolderDefinition> &_folders)
 using namespace Emergence::Memory::Literals;
 using namespace Emergence::Resource::Object::Test;
 using namespace Emergence::Resource::Object;
+using namespace Emergence::ResourceProvider;
 
 BEGIN_SUITE (LibraryLoader)
 
 TEST_CASE (LoadTrivial)
 {
-    const Emergence::Memory::UniqueString folderName {"Objects"};
-
-    const Emergence::Memory::UniqueString firstObjectName {"First"};
+    const Emergence::Memory::UniqueString firstObjectId {"First"};
     Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
         MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
 
-    const Emergence::Memory::UniqueString secondObjectName {"Second"};
+    const Emergence::Memory::UniqueString secondObjectId {"Second"};
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({{*folderName,
-                          {},
-                          SerializationFormat::BINARY,
-                          {
-                              {firstObjectName, {{}, firstObjectChangelist}},
-                              {secondObjectName, {{}, secondObjectChangelist}},
-                          }}});
+    PrepareEnvironment ({
+        {firstObjectId, "Objects", {{}, firstObjectChangelist}},
+        {secondObjectId, "Objects", {{}, secondObjectChangelist}},
+    });
 
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), {}}});
+    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             SourceOperationResponse::SUCCESSFUL);
+    LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
-    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
-    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
+    Library library = loader.Load ({{firstObjectId}, {secondObjectId}});
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectId);
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectId);
 
     REQUIRE (firstObjectData);
     REQUIRE (secondObjectData);
@@ -174,36 +118,68 @@ TEST_CASE (LoadTrivial)
     CHECK_EQUAL (secondObjectData->loadedAsParent, false);
 }
 
-TEST_CASE (LoadSpecified)
+TEST_CASE (LoadDifferentFolders)
 {
-    const Emergence::Memory::UniqueString folderName {"Objects"};
-
-    const Emergence::Memory::UniqueString firstObjectName {"First"};
+    const Emergence::Memory::UniqueString firstObjectId {"First"};
     Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
         MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
 
-    const Emergence::Memory::UniqueString secondObjectName {"Second"};
+    const Emergence::Memory::UniqueString secondObjectId {"Second"};
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({{*folderName,
-                          {},
-                          SerializationFormat::BINARY,
-                          {
-                              {firstObjectName, {{}, firstObjectChangelist}},
-                              {secondObjectName, {{}, secondObjectChangelist}},
-                          }}});
+    PrepareEnvironment ({
+        {firstObjectId, "FolderOne", {{}, firstObjectChangelist}},
+        {secondObjectId, "FolderTwo", {{}, secondObjectChangelist}},
+    });
 
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), secondObjectName}});
+    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             SourceOperationResponse::SUCCESSFUL);
+    LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
+    Library library = loader.Load ({{firstObjectId}, {secondObjectId}});
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectId);
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectId);
 
-    Library library = loader.End ();
-    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
+    REQUIRE (firstObjectData);
+    REQUIRE (secondObjectData);
+    CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 2u);
+
+    CHECK_EQUAL (firstObjectData->object.parent, ""_us);
+    CheckChangelistEquality (firstObjectData->object.changelist, firstObjectChangelist);
+    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
+
+    CHECK_EQUAL (secondObjectData->object.parent, ""_us);
+    CheckChangelistEquality (secondObjectData->object.changelist, secondObjectChangelist);
+    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
+}
+
+TEST_CASE (LoadOnlySelected)
+{
+    const Emergence::Memory::UniqueString firstObjectId {"First"};
+    Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
+        MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
+
+    const Emergence::Memory::UniqueString secondObjectId {"Second"};
+    Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
+        MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
+
+    PrepareEnvironment ({
+        {firstObjectId, "Objects", {{}, firstObjectChangelist}},
+        {secondObjectId, "Objects", {{}, secondObjectChangelist}},
+    });
+
+    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             SourceOperationResponse::SUCCESSFUL);
+    LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
+
+    Library library = loader.Load ({{secondObjectId}});
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectId);
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectId);
+
+    REQUIRE (!firstObjectData);
     REQUIRE (secondObjectData);
     CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 1u);
 
@@ -212,51 +188,43 @@ TEST_CASE (LoadSpecified)
     CHECK_EQUAL (secondObjectData->loadedAsParent, false);
 }
 
-TEST_CASE (LoadSpecifiedWithInjection)
+TEST_CASE (LoadWithInjection)
 {
-    const Emergence::Memory::UniqueString folderName {"Objects"};
-
-    const Emergence::Memory::UniqueString firstObjectName {"First"};
+    const Emergence::Memory::UniqueString firstObjectId {"First"};
     Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
         MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
 
-    const Emergence::Memory::UniqueString secondObjectName {"Second"};
+    const Emergence::Memory::UniqueString secondObjectId {"Second"};
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u}),
-        MakeComponentPatch (InjectionComponent {0u, firstObjectName})};
+        MakeComponentPatch (InjectionComponent {0u, firstObjectId})};
 
-    const Emergence::Memory::UniqueString thirdObjectName {"Third"};
+    const Emergence::Memory::UniqueString thirdObjectId {"Third"};
     Emergence::Container::Vector<ObjectComponent> thirdObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u}),
-        MakeComponentPatch (InjectionComponent {0u, secondObjectName})};
+        MakeComponentPatch (InjectionComponent {0u, secondObjectId})};
 
-    PrepareEnvironment ({{*folderName,
-                          {},
-                          SerializationFormat::BINARY,
-                          {
-                              {firstObjectName, {{}, firstObjectChangelist}},
-                              {secondObjectName, {{}, secondObjectChangelist}},
-                              {thirdObjectName, {{}, thirdObjectChangelist}},
-                          }}});
+    PrepareEnvironment ({
+        {firstObjectId, "Objects", {{}, firstObjectChangelist}},
+        {secondObjectId, "Objects", {{}, secondObjectChangelist}},
+        {thirdObjectId, "Objects", {{}, thirdObjectChangelist}},
+    });
 
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), thirdObjectName}});
+    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             SourceOperationResponse::SUCCESSFUL);
+    LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
+    Library library = loader.Load ({{thirdObjectId}});
     CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 3u);
 
-    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectId);
     REQUIRE (firstObjectData);
 
-    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectId);
     REQUIRE (secondObjectData);
 
-    const Library::ObjectData *thirdObjectData = library.Find (thirdObjectName);
+    const Library::ObjectData *thirdObjectData = library.Find (thirdObjectId);
     REQUIRE (thirdObjectData);
 
     CHECK_EQUAL (firstObjectData->object.parent, ""_us);
@@ -272,135 +240,29 @@ TEST_CASE (LoadSpecifiedWithInjection)
     CHECK_EQUAL (thirdObjectData->loadedAsParent, false);
 }
 
-TEST_CASE (InjectionFromOtherFolder)
-{
-    const Emergence::Memory::UniqueString firstFolderName {"Objects/First"};
-    const Emergence::Memory::UniqueString secondFolderName {"Objects/Second"};
-
-    const Emergence::Memory::UniqueString firstObjectName {"First"};
-    Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
-        MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
-
-    const Emergence::Memory::UniqueString secondObjectName {"Second"};
-    Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
-        MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u}),
-        MakeComponentPatch (InjectionComponent {0u, firstObjectName})};
-
-    PrepareEnvironment ({{*firstFolderName,
-                          {},
-                          SerializationFormat::BINARY,
-                          {
-                              {firstObjectName, {{}, firstObjectChangelist}},
-                          }},
-                         {*secondFolderName,
-                          {{{"../First"}}},
-                          SerializationFormat::BINARY,
-                          {
-                              {secondObjectName, {{}, secondObjectChangelist}},
-                          }}});
-
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", secondFolderName), secondObjectName}});
-
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
-    CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 2u);
-
-    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
-    REQUIRE (firstObjectData);
-
-    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
-    REQUIRE (secondObjectData);
-
-    CHECK_EQUAL (firstObjectData->object.parent, ""_us);
-    CheckChangelistEquality (firstObjectData->object.changelist, firstObjectChangelist);
-    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
-
-    CHECK_EQUAL (secondObjectData->object.parent, ""_us);
-    CheckChangelistEquality (secondObjectData->object.changelist, secondObjectChangelist);
-    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
-}
-
 TEST_CASE (LoadTrivialBinary)
 {
-    const Emergence::Memory::UniqueString folderName {"Objects"};
-
-    const Emergence::Memory::UniqueString firstObjectName {"First"};
+    const Emergence::Memory::UniqueString firstObjectId {"First"};
     Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
         MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
 
-    const Emergence::Memory::UniqueString secondObjectName {"Second"};
+    const Emergence::Memory::UniqueString secondObjectId {"Second"};
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({{*folderName,
-                          {},
-                          SerializationFormat::BINARY,
-                          {
-                              {firstObjectName, {{}, firstObjectChangelist}, SerializationFormat::BINARY},
-                              {secondObjectName, {{}, secondObjectChangelist}, SerializationFormat::BINARY},
-                          }}});
+    PrepareEnvironment ({
+        {firstObjectId, "Objects", {{}, firstObjectChangelist}, SerializationFormat::BINARY},
+        {secondObjectId, "Objects", {{}, secondObjectChangelist}, SerializationFormat::BINARY},
+    });
 
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), {}}});
+    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             SourceOperationResponse::SUCCESSFUL);
+    LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
-    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
-    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
-
-    REQUIRE (firstObjectData);
-    REQUIRE (secondObjectData);
-    CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 2u);
-
-    CHECK_EQUAL (firstObjectData->object.parent, ""_us);
-    CheckChangelistEquality (firstObjectData->object.changelist, firstObjectChangelist);
-    CHECK_EQUAL (firstObjectData->loadedAsParent, false);
-
-    CHECK_EQUAL (secondObjectData->object.parent, ""_us);
-    CheckChangelistEquality (secondObjectData->object.changelist, secondObjectChangelist);
-    CHECK_EQUAL (secondObjectData->loadedAsParent, false);
-}
-
-TEST_CASE (LoadTrivialSubdirectories)
-{
-    const Emergence::Memory::UniqueString folderName {"Objects"};
-
-    const Emergence::Memory::UniqueString firstObjectName {"Subdir1/First"};
-    Emergence::Container::Vector<ObjectComponent> firstObjectChangelist {
-        MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 4.0f})};
-
-    const Emergence::Memory::UniqueString secondObjectName {"Subdir2/Second"};
-    Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
-        MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
-
-    PrepareEnvironment ({{*folderName,
-                          {},
-                          SerializationFormat::BINARY,
-                          {
-                              {firstObjectName, {{}, firstObjectChangelist}},
-                              {secondObjectName, {{}, secondObjectChangelist}},
-                          }}});
-
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), {}}});
-
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
-    const Library::ObjectData *firstObjectData = library.Find (firstObjectName);
-    const Library::ObjectData *secondObjectData = library.Find (secondObjectName);
+    Library library = loader.Load ({{firstObjectId}, {secondObjectId}});
+    const Library::ObjectData *firstObjectData = library.Find (firstObjectId);
+    const Library::ObjectData *secondObjectData = library.Find (secondObjectId);
 
     REQUIRE (firstObjectData);
     REQUIRE (secondObjectData);
@@ -417,129 +279,47 @@ TEST_CASE (LoadTrivialSubdirectories)
 
 TEST_CASE (LoadInheritance)
 {
-    const Emergence::Memory::UniqueString folderName {"Objects"};
-
-    const Emergence::Memory::UniqueString baseObjectName {"Base"};
+    const Emergence::Memory::UniqueString baseObjectId {"Base"};
     Emergence::Container::Vector<ObjectComponent> baseObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    const Emergence::Memory::UniqueString firstDerivationObjectName {"FirstDerivation"};
+    const Emergence::Memory::UniqueString firstDerivationObjectId {"FirstDerivation"};
     Emergence::Container::Vector<ObjectComponent> firstDerivationObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 0u, 30u, 0u})};
 
-    const Emergence::Memory::UniqueString secondDerivationObjectName {"SecondDerivation"};
-    Emergence::Container::Vector<ObjectComponent> secondDerivationObjectChangelist {
-        MakeComponentPatch (SecondComponent {0u, 0u, 0u, 11u})};
-
-    PrepareEnvironment (
-        {{*folderName,
-          {},
-          SerializationFormat::BINARY,
-          {
-              {baseObjectName, {{}, baseObjectChangelist}},
-              {firstDerivationObjectName, {baseObjectName, firstDerivationObjectChangelist}},
-              {secondDerivationObjectName, {firstDerivationObjectName, secondDerivationObjectChangelist}},
-          }}});
-
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", folderName), {}}});
-
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
-    const Library::ObjectData *firstDerivationObjectData = library.Find (firstDerivationObjectName);
-    const Library::ObjectData *secondDerivationObjectData = library.Find (secondDerivationObjectName);
-
-    REQUIRE (firstDerivationObjectData);
-    REQUIRE (secondDerivationObjectData);
-    CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 3u);
-
-    CHECK_EQUAL (firstDerivationObjectData->object.parent, baseObjectName);
-    ObjectComponent firstDerivationComponent {baseObjectChangelist.front ().component +
-                                              firstDerivationObjectChangelist.front ().component};
-    CheckChangelistEquality (firstDerivationObjectData->object.changelist, {firstDerivationComponent});
-    CHECK_EQUAL (firstDerivationObjectData->loadedAsParent, false);
-
-    CHECK_EQUAL (secondDerivationObjectData->object.parent, firstDerivationObjectName);
-    ObjectComponent secondDerivationComponent {firstDerivationComponent.component +
-                                               secondDerivationObjectChangelist.front ().component};
-    CheckChangelistEquality (secondDerivationObjectData->object.changelist, {secondDerivationComponent});
-    CHECK_EQUAL (secondDerivationObjectData->loadedAsParent, false);
-}
-
-TEST_CASE (LoadDependencies)
-{
-    const Emergence::Memory::UniqueString baseFolderName {"Objects/Common"};
-    const Emergence::Memory::UniqueString firstDerivationFolderName {"Objects/Units"};
-    const Emergence::Memory::UniqueString secondDerivationFolderName {"Objects/Maps/Ranglor"};
-
-    const Emergence::Memory::UniqueString baseObjectName {"Base"};
-    Emergence::Container::Vector<ObjectComponent> baseObjectChangelist {
-        MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u}),
-        MakeComponentPatch (FirstComponent {0u, 1.0f, 2.0f, 3.0f, 0.5f})};
-
-    const Emergence::Memory::UniqueString firstDerivationObjectName {"FirstDerivation"};
-    Emergence::Container::Vector<ObjectComponent> firstDerivationObjectChangelist {
-        MakeComponentPatch (SecondComponent {0u, 0u, 30u, 0u}),
-        MakeComponentPatch (FirstComponent {1u, 5.0f, 3.0f, 4.0f, 1.0f})};
-
-    const Emergence::Memory::UniqueString secondDerivationObjectName {"SecondDerivation"};
+    const Emergence::Memory::UniqueString secondDerivationObjectId {"SecondDerivation"};
     Emergence::Container::Vector<ObjectComponent> secondDerivationObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 0u, 0u, 11u})};
 
     PrepareEnvironment ({
-        {*baseFolderName,
-         {},
-         SerializationFormat::BINARY,
-         {
-             {baseObjectName, {{}, baseObjectChangelist}},
-         }},
-        {*firstDerivationFolderName,
-         {{{"../Common"}}},
-         SerializationFormat::YAML,
-         {
-             {firstDerivationObjectName, {baseObjectName, firstDerivationObjectChangelist}},
-         }},
-        {*secondDerivationFolderName,
-         {{{"../../Units"}}},
-         SerializationFormat::YAML,
-         {
-             {secondDerivationObjectName, {firstDerivationObjectName, secondDerivationObjectChangelist}},
-         }},
+        {baseObjectId, "Objects", {{}, baseObjectChangelist}},
+        {firstDerivationObjectId, "Objects", {baseObjectId, firstDerivationObjectChangelist}},
+        {secondDerivationObjectId, "Objects", {firstDerivationObjectId, secondDerivationObjectChangelist}},
     });
 
-    LibraryLoader loader {GetTypeManifest ()};
-    loader.Begin ({{EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", secondDerivationFolderName), {}}});
+    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+             SourceOperationResponse::SUCCESSFUL);
+    LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
-    while (loader.IsLoading ())
-    {
-        std::this_thread::yield ();
-    }
-
-    Library library = loader.End ();
-    const Library::ObjectData *firstDerivationObjectData = library.Find (firstDerivationObjectName);
-    const Library::ObjectData *secondDerivationObjectData = library.Find (secondDerivationObjectName);
+    Library library = loader.Load ({{secondDerivationObjectId}});
+    const Library::ObjectData *firstDerivationObjectData = library.Find (firstDerivationObjectId);
+    const Library::ObjectData *secondDerivationObjectData = library.Find (secondDerivationObjectId);
 
     REQUIRE (firstDerivationObjectData);
     REQUIRE (secondDerivationObjectData);
     CHECK_EQUAL (library.GetRegisteredObjectMap ().size (), 3u);
 
-    CHECK_EQUAL (firstDerivationObjectData->object.parent, baseObjectName);
+    CHECK_EQUAL (firstDerivationObjectData->object.parent, baseObjectId);
     ObjectComponent firstDerivationComponent {baseObjectChangelist.front ().component +
                                               firstDerivationObjectChangelist.front ().component};
-    CheckChangelistEquality (firstDerivationObjectData->object.changelist,
-                             {firstDerivationComponent, baseObjectChangelist[1u], firstDerivationObjectChangelist[1u]});
+    CheckChangelistEquality (firstDerivationObjectData->object.changelist, {firstDerivationComponent});
     CHECK_EQUAL (firstDerivationObjectData->loadedAsParent, true);
 
-    CHECK_EQUAL (secondDerivationObjectData->object.parent, firstDerivationObjectName);
+    CHECK_EQUAL (secondDerivationObjectData->object.parent, firstDerivationObjectId);
     ObjectComponent secondDerivationComponent {firstDerivationComponent.component +
                                                secondDerivationObjectChangelist.front ().component};
-    CheckChangelistEquality (
-        secondDerivationObjectData->object.changelist,
-        {secondDerivationComponent, baseObjectChangelist[1u], firstDerivationObjectChangelist[1u]});
+    CheckChangelistEquality (secondDerivationObjectData->object.changelist, {secondDerivationComponent});
     CHECK_EQUAL (secondDerivationObjectData->loadedAsParent, false);
 }
 
