@@ -24,9 +24,7 @@ static Container::MappingRegistry GetAssetTypes () noexcept
 ResourceProviderHolder::ResourceProviderHolder () noexcept
     : provider (GetAssetTypes (), {})
 {
-    REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {GetUIBackendResourceSourcePath ()}) ==
-             Resource::Provider::SourceOperationResponse::SUCCESSFUL);
-    REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"UITestResources"}) ==
+    REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
              Resource::Provider::SourceOperationResponse::SUCCESSFUL);
 }
 

@@ -25,4 +25,4 @@ add_subdirectory (Shared)
 
 register_resource_usage ("${GAME_NAME}GameLauncher" "${URHO3D_HOME}/share/Resources/CoreData" "Urho3DCoreResources")
 register_resource_usage ("${GAME_NAME}GameLauncher" "${GAME_RESOURCES}" "GameResources")
-deploy_used_resources ("${GAME_NAME}GameLauncher")
+deploy_used_resources ("${GAME_NAME}GameLauncher" "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}/Resources")

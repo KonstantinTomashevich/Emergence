@@ -31,12 +31,12 @@ if (MSVC)
 endif ()
 
 file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Expectation" "${CMAKE_CURRENT_BINARY_DIR}/Expectation" SYMBOLIC)
-set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ResourcesWorkspace")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
 
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources" "${RESOURCES_COMPILED_DIRECTORY}/Resources" SYMBOLIC)
-register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
+register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 register_resource_usage (TestCelerityRender2dOriginal "${RESOURCES_COMPILED_DIRECTORY}" "Render2dTestResources")
 copy_required_shared_libraries (TestCelerityRender2dOriginal)
-deploy_used_resources (TestCelerityRender2dOriginal)
+deploy_used_resources (TestCelerityRender2dOriginal "${CMAKE_CURRENT_BINARY_DIR}/Resources")

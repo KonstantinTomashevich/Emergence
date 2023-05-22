@@ -13,10 +13,10 @@ namespace Emergence::Celerity::Physics2dDebugDraw
 const Memory::UniqueString Checkpoint::STARTED {"Physics2dDebugDraw::Started"};
 const Memory::UniqueString Checkpoint::FINISHED {"Physics2dDebugDraw::Finished"};
 
-static const Memory::UniqueString DETACHED_MATERIAL {"Physics2dDebugDetached"};
-static const Memory::UniqueString DYNAMIC_MATERIAL {"Physics2dDebugDynamic"};
-static const Memory::UniqueString KINEMATIC_MATERIAL {"Physics2dDebugKinematic"};
-static const Memory::UniqueString STATIC_MATERIAL {"Physics2dDebugStatic"};
+static const Memory::UniqueString DETACHED_MATERIAL {"MI_Physics2dDebugDetached"};
+static const Memory::UniqueString DYNAMIC_MATERIAL {"MI_Physics2dDebugDynamic"};
+static const Memory::UniqueString KINEMATIC_MATERIAL {"MI_Physics2dDebugKinematic"};
+static const Memory::UniqueString STATIC_MATERIAL {"MI_Physics2dDebugStatic"};
 
 struct ShapeDebugDrawLink final
 {

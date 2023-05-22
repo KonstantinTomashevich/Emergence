@@ -23,4 +23,4 @@ file (CREATE_LINK "${GAME_RESOURCES_SOURCE}/Textures" "${GAME_RESOURCES_TARGET}/
 
 register_bgfx_shaders ("${GAME_RESOURCES_SOURCE}/Shaders" "${GAME_RESOURCES_TARGET}/Shaders")
 register_resource_usage ("${GAME_NAME}GameLauncher" "${GAME_RESOURCES_TARGET}" "GameResources")
-deploy_used_resources ("${GAME_NAME}GameLauncher")
+deploy_used_resources ("${GAME_NAME}GameLauncher" "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}/Resources")

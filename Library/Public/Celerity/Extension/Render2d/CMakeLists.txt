@@ -1,7 +1,7 @@
 sober_library_begin (CelerityRender2d STATIC)
     file (GLOB_RECURSE HEADERS "Public/*.hpp" "Private/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp" "Private/*.cpp")
-    file (GLOB_RECURSE SHADERS "Shaders/*.sc")
+    file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")
 
     list (APPEND SOURCES ${HEADERS})
     list (APPEND SOURCES ${SHADERS})
@@ -30,8 +30,8 @@ sober_library_end ()
 
 set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources" "${RESOURCES_COMPILED_DIRECTORY}/Resources" SYMBOLIC)
-register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
+register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_library_base_target (CelerityRender2d CELERITY_RENDER_2D_LIBRARY)
 register_resource_usage ("${CELERITY_RENDER_2D_LIBRARY}" "${RESOURCES_COMPILED_DIRECTORY}" "Render2dResources")

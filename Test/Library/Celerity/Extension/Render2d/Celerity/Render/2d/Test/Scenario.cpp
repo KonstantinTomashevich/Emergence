@@ -504,9 +504,7 @@ struct ResourceProviderHolder
     ResourceProviderHolder () noexcept
         : provider (GetAssetTypes (), {})
     {
-        REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Render2dResources"}) ==
-                 Resource::Provider::SourceOperationResponse::SUCCESSFUL);
-        REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Render2dTestResources"}) ==
+        REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
                  Resource::Provider::SourceOperationResponse::SUCCESSFUL);
     }
 
