@@ -11,12 +11,3 @@ that suits any unit, then extend it with components in child objects that are cr
 can create child classes with unit skins too! `ResourceObject` library automatically unwraps inheritance trees and
 is capable of providing ready-to-use data in `AssemblyDescriptor`-friendly format, making it cool addition to
 [Celerity::Assembly](../Celerity/Extension/Assembly/README.md).
-
-In addition, `ResourceObject` library uses folder system to load packages of objects instead of on-demand loading. It 
-allows to load all required objects at once during level loading, but also expects user to know which packages are
-needed for the selected level. Every folder may declare list of dependencies: folders that should be loaded along
-with this folder, for example folder with common base objects. It makes package selection more flexible as user only
-needs to know which top-level packages game needs, because lower level packages will be loaded automatically as
-dependencies. Also, folder system is used to automatically generate object names from object paths: object path
-is essentially `{PathToFolder}/{ObjectName}{Suffix}` where object name is allowed to contain `/` symbols too, making
-use of subdirectories as namespaces possible.
