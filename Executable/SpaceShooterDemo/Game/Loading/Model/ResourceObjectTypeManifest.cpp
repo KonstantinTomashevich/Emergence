@@ -19,6 +19,7 @@ Emergence::Resource::Object::TypeManifest PrepareResourceObjectTypeManifest () n
     Emergence::Resource::Object::TypeManifest typeManifest;
     typeManifest.AddInjection ({Emergence::Celerity::PrototypeComponent::Reflect ().mapping,
                                 Emergence::Celerity::PrototypeComponent::Reflect ().objectId});
+    typeManifest.AddInjection ({ShooterComponent::Reflect ().mapping, ShooterComponent::Reflect ().bulletPrototype});
 
     typeManifest.Register (ControllableComponent::Reflect ().mapping, {ControllableComponent::Reflect ().objectId});
     typeManifest.Register (DamageDealerComponent::Reflect ().mapping, {DamageDealerComponent::Reflect ().objectId});

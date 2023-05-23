@@ -1,4 +1,5 @@
-parent: "Structure/ObstacleBase"
+# ResourceObject
+parent: "RO_ObstacleBase"
 changelist:
   - component:
       type: StaticModelComponent
@@ -6,4 +7,4 @@ changelist:
         objectId: 0
         modelId: 0
         materialNames:
-          values[0]: Materials/WallTileBorderYellow.xml
+          values[0]: Materials/WallTileBorderRed.xml

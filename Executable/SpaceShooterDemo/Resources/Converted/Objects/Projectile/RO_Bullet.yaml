@@ -1,3 +1,4 @@
+# ResourceObject
 parent: ""
 changelist:
   - component:
@@ -22,7 +23,7 @@ changelist:
       content:
         objectId: 0
         shapeId: 0
-        materialId: Default
+        materialId: DM_Default
         sendContactEvents: 1
         geometry:
           type: 1 # Sphere

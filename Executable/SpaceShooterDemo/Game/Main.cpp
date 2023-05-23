@@ -15,7 +15,6 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Resource/Config/Loading.hpp>
-#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -38,6 +37,7 @@
 
 #include <Loading/Model/ResourceConfigTypeMeta.hpp>
 #include <Loading/Model/ResourceObjectTypeManifest.hpp>
+#include <Loading/Model/ResourceProviderTypes.hpp>
 #include <Loading/Task/InputInitialization.hpp>
 #include <Loading/Task/LevelGeneration.hpp>
 #include <Loading/Task/LoadingOrchestration.hpp>
@@ -111,6 +111,8 @@ private:
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
+    Emergence::Resource::Provider::ResourceProvider resourceProvider {PrepareResourceTypesRegistry (),
+                                                                      PreparePatchableTypesRegistry ()};
     Emergence::Celerity::FrameInputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
 
@@ -139,8 +141,18 @@ void GameApplication::Setup ()
     engineParameters_[Urho3D::EP_WINDOW_RESIZABLE] = true;
     engineParameters_[Urho3D::EP_WINDOW_TITLE] = "Emergence Space Shooter Demo";
     engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreResources;GameResources";
-    engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "..";
-}
+    engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "../Resources";
+
+    Emergence::Resource::Provider::SourceOperationResponse response =
+        resourceProvider.AddSource (Emergence::Memory::UniqueString {"../Resources/GameResources"});
+
+    if (response != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    {
+        Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Unable to load main resource source! Response: ",
+                                                                static_cast<uint16_t> (response)),
+                                        __FILE__, __LINE__);
+    }
+};
 
 void GameApplication::Start ()
 {
@@ -163,11 +175,9 @@ void GameApplication::Start ()
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {world.GetRootView ()};
     pipelineBuilder.Begin ("Loading"_us, Emergence::Celerity::PipelineType::CUSTOM);
-    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, 16000000u /*16 ms*/,
+    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, &resourceProvider,
                                                                       PrepareResourceConfigTypeMeta ());
-    Emergence::Celerity::ResourceConfigPathMappingLoading::AddToLoadingPipeline (pipelineBuilder, "../GameResources",
-                                                                                 PrepareResourceConfigTypeMeta ());
-    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
+    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder, &resourceProvider,
                                                                       PrepareResourceObjectTypeManifest ());
     InputInitialization::AddToLoadingPipeline (pipelineBuilder);
     LevelGeneration::AddToLoadingPipeline (pipelineBuilder);

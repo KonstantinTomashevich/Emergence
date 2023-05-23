@@ -12,7 +12,7 @@ changelist:
       content:
         objectId: 0
         shapeId: 0
-        materialId: Default
+        materialId: DM_Default
         geometry:
           type: 0 # Box
           boxHalfExtents:

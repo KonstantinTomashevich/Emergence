@@ -6,6 +6,18 @@ namespace Emergence::Celerity
 {
 DynamicsMaterial3d::DynamicsMaterial3d () noexcept = default;
 
+DynamicsMaterial3d::DynamicsMaterial3d (DynamicsMaterial3d &&_other) noexcept
+    : id (_other.id),
+      dynamicFriction (_other.dynamicFriction),
+      staticFriction (_other.staticFriction),
+      enableFriction (_other.enableFriction),
+      restitution (_other.restitution),
+      density (_other.density),
+      implementationHandle (_other.implementationHandle)
+{
+    _other.implementationHandle = nullptr;
+}
+
 DynamicsMaterial3d::~DynamicsMaterial3d () noexcept = default;
 
 const DynamicsMaterial3d::Reflection &DynamicsMaterial3d::Reflect () noexcept

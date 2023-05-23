@@ -1,3 +1,4 @@
+# ResourceObject
 parent: ""
 changelist:
   - component:
@@ -25,7 +26,7 @@ changelist:
       content:
         objectId: 0
         shapeId: 0
-        materialId: Default
+        materialId: DM_Default
         geometry:
           type: 1 # Sphere
           sphereRadius: 0.5
@@ -37,7 +38,7 @@ changelist:
       content:
         objectId: 0
         shapeId: 1
-        materialId: Default
+        materialId: DM_Default
         geometry:
           type: 0 # Box
           boxHalfExtents:
@@ -75,7 +76,7 @@ changelist:
       content:
         objectId: 0
         coolDownNs: 500000000 # 0.5s
-        bulletPrototype: Projectile/Bullet
+        bulletPrototype: RO_Bullet
         shootingPointObjectId: 1
 
   - component:
