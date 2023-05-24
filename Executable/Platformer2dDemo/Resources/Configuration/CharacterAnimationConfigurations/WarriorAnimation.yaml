@@ -1,8 +1,0 @@
-# CharacterAnimationConfiguration
-crouchAnimationId: WarriorCrouchAnimation
-fallAnimationId: WarriorFallAnimation
-idleAnimationId: WarriorIdleAnimation
-jumpAnimationId: WarriorJumpAnimation
-rollAnimationId: WarriorRollAnimation
-runAnimationId: WarriorRunAnimation
-slideAnimationId: WarriorSlideAnimation

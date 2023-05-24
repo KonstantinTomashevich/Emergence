@@ -1,0 +1,6 @@
+# MaterialInstanceAsset
+material: M_Sprite
+uniforms:
+  - name: colorTexture
+    type: 3
+    textureId: T_Mushroom2

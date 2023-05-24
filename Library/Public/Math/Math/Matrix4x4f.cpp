@@ -52,7 +52,23 @@ Matrix4x4f::Matrix4x4f (const Transform3d &_transform) noexcept
 
 Matrix4x4f::Matrix4x4f (const Matrix4x4f &_other) noexcept
 {
-    glm_mat4_copy (const_cast<Column *> (_other.columns), columns);
+    // Some versions of MSVC CLang crash if we use cglm copy here, therefore we just copy field by field.
+    m00 = _other.m00;
+    m01 = _other.m01;
+    m02 = _other.m02;
+    m03 = _other.m03;
+    m10 = _other.m10;
+    m11 = _other.m11;
+    m12 = _other.m12;
+    m13 = _other.m13;
+    m20 = _other.m20;
+    m21 = _other.m21;
+    m22 = _other.m22;
+    m23 = _other.m23;
+    m30 = _other.m30;
+    m31 = _other.m31;
+    m32 = _other.m32;
+    m33 = _other.m33;
 }
 
 Matrix4x4f::Matrix4x4f (Matrix4x4f &&_other) noexcept

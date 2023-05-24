@@ -425,6 +425,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
         return SourceOperationResponse::NOT_FOUND;
     }
 
+    SourceOperationResponse finalResponse = SourceOperationResponse::SUCCESSFUL;
     for (std::filesystem::recursive_directory_iterator iterator (
              EMERGENCE_BUILD_STRING (_path, "/"), std::filesystem::directory_options::follow_directory_symlink);
          iterator != std::filesystem::end (iterator); ++iterator)
@@ -460,8 +461,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
             {
                 EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"", relativePath,
                                "\" of source \"", _path, "\".");
-                ClearSource (_path);
-                return SourceOperationResponse::IO_ERROR;
+                finalResponse = SourceOperationResponse::IO_ERROR;
             }
 
             if (SourceOperationResponse response =
@@ -469,8 +469,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                                Memory::UniqueString {typeName.Get ()}, _path, relativePath);
                 response != SourceOperationResponse::SUCCESSFUL)
             {
-                ClearSource (_path);
-                return response;
+                finalResponse = response;
             }
         }
         else if (relativePath.ends_with (".yaml"))
@@ -494,8 +493,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
             {
                 EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"", relativePath,
                                "\" of source \"", _path, "\".");
-                ClearSource (_path);
-                return SourceOperationResponse::IO_ERROR;
+                finalResponse = SourceOperationResponse::IO_ERROR;
             }
 
             if (SourceOperationResponse response =
@@ -503,8 +501,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                                Memory::UniqueString {typeName.Get () + 2u}, _path, relativePath);
                 response != SourceOperationResponse::SUCCESSFUL)
             {
-                ClearSource (_path);
-                return response;
+                finalResponse = response;
             }
         }
         else if (!relativePath.ends_with (IndexFile::INDEX_FILE_NAME))
@@ -513,13 +510,17 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                     Memory::UniqueString (entry.path ().filename ().string ().c_str ()), _path, relativePath);
                 response != SourceOperationResponse::SUCCESSFUL)
             {
-                ClearSource (_path);
-                return response;
+                finalResponse = response;
             }
         }
     }
 
-    return SourceOperationResponse::SUCCESSFUL;
+    if (finalResponse != SourceOperationResponse::SUCCESSFUL)
+    {
+        ClearSource (_path);
+    }
+
+    return finalResponse;
 }
 
 SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,

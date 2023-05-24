@@ -2,6 +2,8 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
+#include <Resource/Provider/ResourceProvider.hpp>
+
 namespace LevelsConfigurationLoading
 {
 struct Checkpoint final
@@ -12,5 +14,6 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString FINISHED;
 };
 
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
+void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
+                        Emergence::Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
 } // namespace LevelsConfigurationLoading

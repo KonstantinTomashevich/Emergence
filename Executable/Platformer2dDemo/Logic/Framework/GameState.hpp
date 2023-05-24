@@ -6,6 +6,8 @@
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/World.hpp>
 
+#include <Resource/Provider/ResourceProvider.hpp>
+
 class GameState;
 
 using ModuleInitializer =
@@ -55,7 +57,8 @@ class GameState final
 public:
     static const Emergence::Memory::UniqueString TERMINATION_REDIRECT;
 
-    GameState (const Emergence::Celerity::WorldConfiguration &_worldConfiguration,
+    GameState (Emergence::Resource::Provider::ResourceProvider *_resourceProvider,
+               const Emergence::Celerity::WorldConfiguration &_worldConfiguration,
                const ModuleInitializer &_rootViewInitializer) noexcept;
 
     ~GameState () = default;
@@ -72,6 +75,8 @@ public:
 
     Emergence::Celerity::FrameInputAccumulator *GetFrameInputAccumulator () noexcept;
 
+    Emergence::Resource::Provider::ResourceProvider *GetResourceProvider () const noexcept;
+
     void ExecuteFrame () noexcept;
 
     [[nodiscard]] bool IsTerminated () const noexcept;
@@ -84,6 +89,7 @@ private:
 
     Emergence::Celerity::World world;
     Emergence::Celerity::FrameInputAccumulator frameInputAccumulator;
+    Emergence::Resource::Provider::ResourceProvider *resourceProvider;
 
     Emergence::Container::HashMap<Emergence::Memory::UniqueString, WorldStateDefinition> worldStates {
         Emergence::Memory::Profiler::AllocationGroup::Top ()};

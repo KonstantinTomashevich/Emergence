@@ -3,9 +3,6 @@
  <editorsettings>
   <export target="../Resources/EmergenceResourcesRoot.stub" format="EmergenceAssemblyMap"/>
  </editorsettings>
- <properties>
-  <property name="CustomDependency0" value="../../Objects/Common"/>
- </properties>
  <tileset firstgid="1" source="ForestTiles.tsx"/>
  <tileset firstgid="21" source="ForestObjects.tsx"/>
  <layer id="1" name="Terrain" width="30" height="20">

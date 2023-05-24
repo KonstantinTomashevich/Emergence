@@ -1,9 +1,30 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 
 namespace Emergence::Celerity
 {
+// NOLINTNEXTLINE(modernize-use-equals-default): We cannot use default for no-initialization due to union.
+UniformValueDescription::UniformValueDescription () noexcept
+{
+}
+
+UniformValueDescription::UniformValueDescription (const UniformValueDescription &_other) noexcept
+    : name (_other.name),
+      type (_other.type),
+      matrix4x4f(_other.matrix4x4f)
+{
+}
+
+UniformValueDescription::UniformValueDescription (UniformValueDescription &&_other) noexcept
+    : name (_other.name),
+      type (_other.type),
+      matrix4x4f(_other.matrix4x4f)
+{
+}
+
 UniformValueDescription::UniformValueDescription (Memory::UniqueString _name, const Math::Vector4f &_value) noexcept
     : name (_name),
       vector4f (_value)
@@ -30,6 +51,33 @@ UniformValueDescription::UniformValueDescription (Memory::UniqueString _name,
       type (Render::Backend::UniformType::SAMPLER),
       textureId (_textureId)
 {
+}
+
+// NOLINTNEXTLINE(modernize-use-equals-default): We cannot use default here due to union.
+UniformValueDescription::~UniformValueDescription () noexcept
+{
+}
+
+UniformValueDescription &UniformValueDescription::operator= (const UniformValueDescription &_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~UniformValueDescription ();
+        new (this) UniformValueDescription (_other);
+    }
+
+    return *this;
+}
+
+UniformValueDescription &UniformValueDescription::operator= (UniformValueDescription &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~UniformValueDescription ();
+        new (this) UniformValueDescription (std::move (_other));
+    }
+
+    return *this;
 }
 
 const UniformValueDescription::Reflection &UniformValueDescription::Reflect () noexcept

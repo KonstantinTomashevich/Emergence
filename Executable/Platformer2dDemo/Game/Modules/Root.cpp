@@ -13,14 +13,12 @@
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
 #include <Celerity/Resource/Config/Loading.hpp>
-#include <Celerity/Resource/Config/PathMappingLoading.hpp>
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
 #include <Celerity/UI/Events.hpp>
 
 #include <Configuration/AssetUsage.hpp>
-#include <Configuration/Paths.hpp>
 #include <Configuration/ResourceConfigTypeMeta.hpp>
 #include <Configuration/ResourceObjectTypeManifest.hpp>
 
@@ -59,7 +57,7 @@ Emergence::Celerity::WorldViewConfig GetViewConfig () noexcept
     return rootViewConfig;
 }
 
-void Initializer (GameState & /*unused*/,
+void Initializer (GameState &_gameState,
                   Emergence::Celerity::World &_world,
                   Emergence::Celerity::WorldView &_rootView) noexcept
 {
@@ -80,29 +78,26 @@ void Initializer (GameState & /*unused*/,
     }
 
     Emergence::Celerity::PipelineBuilder pipelineBuilder {&_rootView};
-    constexpr uint64_t MAX_LOADING_TIME_NS = 10000000u;
 
     pipelineBuilder.Begin ("NormalUpdate"_us, Emergence::Celerity::PipelineType::NORMAL);
     Emergence::Celerity::AssetManagement::AddToNormalUpdate (pipelineBuilder, assetReferenceBindingList,
                                                              assetReferenceBindingEventMap);
-    Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, GetFontPaths (),
+    Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider (),
                                                             assetReferenceBindingEventMap);
-    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, GetLocalizationPath ());
+    Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider ());
     Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
-        pipelineBuilder, GetMaterialInstancePaths (),  assetReferenceBindingEventMap);
-    Emergence::Celerity::MaterialManagement::AddToNormalUpdate (
-        pipelineBuilder, GetMaterialPaths (), GetShadersPaths (), assetReferenceBindingEventMap);
-    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (pipelineBuilder, MAX_LOADING_TIME_NS,
-                                                                      GetResourceConfigTypeMeta ());
-    Emergence::Celerity::ResourceConfigPathMappingLoading::AddToLoadingPipeline (
-        pipelineBuilder, *GetResourceConfigRootPath (), GetResourceConfigTypeMeta ());
-    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (pipelineBuilder,
-                                                                      GetResourceObjectTypeManifest ());
+        pipelineBuilder, _gameState.GetResourceProvider (), assetReferenceBindingEventMap);
+    Emergence::Celerity::MaterialManagement::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider (),
+                                                                assetReferenceBindingEventMap);
+    Emergence::Celerity::ResourceConfigLoading::AddToLoadingPipeline (
+        pipelineBuilder, _gameState.GetResourceProvider (), GetResourceConfigTypeMeta ());
+    Emergence::Celerity::ResourceObjectLoading::AddToLoadingPipeline (
+        pipelineBuilder, _gameState.GetResourceProvider (), GetResourceObjectTypeManifest ());
     Emergence::Celerity::Sprite2dUvAnimationManagement::AddToNormalUpdate (
-        pipelineBuilder, GetSpriteAnimationPaths (),  assetReferenceBindingEventMap);
-    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, GetTexturePaths (),
+        pipelineBuilder, _gameState.GetResourceProvider (), assetReferenceBindingEventMap);
+    Emergence::Celerity::TextureManagement::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider (),
                                                                assetReferenceBindingEventMap);
-    LevelsConfigurationLoading::AddToNormalUpdate (pipelineBuilder);
+    LevelsConfigurationLoading::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider ());
 
     pipelineBuilder.AddCheckpointDependency (Emergence::Celerity::ResourceConfigLoading::Checkpoint::FINISHED,
                                              Emergence::Celerity::AssetManagement::Checkpoint::STARTED);

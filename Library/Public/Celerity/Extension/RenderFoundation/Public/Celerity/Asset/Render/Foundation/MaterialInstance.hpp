@@ -15,7 +15,13 @@ namespace Emergence::Celerity
 /// \brief Item of uniform values array inside material instance file.
 struct UniformValueDescription final
 {
-    UniformValueDescription () noexcept = default;
+    UniformValueDescription () noexcept;
+
+    UniformValueDescription (const UniformValueDescription &_other) noexcept;
+
+    UniformValueDescription (UniformValueDescription &&_other) noexcept;
+
+    ~UniformValueDescription() noexcept;
 
     UniformValueDescription (Memory::UniqueString _name, const Math::Vector4f &_value) noexcept;
 
@@ -25,19 +31,23 @@ struct UniformValueDescription final
 
     UniformValueDescription (Memory::UniqueString _name, const Memory::UniqueString &_textureId) noexcept;
 
+    UniformValueDescription &operator= (const UniformValueDescription &_other) noexcept;
+
+    UniformValueDescription &operator= (UniformValueDescription &&_other) noexcept;
+
     /// \brief Name of the uniform to which value will be assigned.
     Memory::UniqueString name;
 
     /// \brief Value type used for deserialization and correctness check.
     Render::Backend::UniformType type = Render::Backend::UniformType::VECTOR_4F;
 
-    struct
+    union
     {
         /// \brief Field for Render::Backend::UniformType::VECTOR_4F values.
-        Math::Vector4f vector4f {Math::NoInitializationFlag::Confirm ()};
+        Math::Vector4f vector4f;
 
         /// \brief Field for Render::Backend::UniformType::MATRIX_3X3F values.
-        Math::Matrix3x3f matrix3x3f {Math::NoInitializationFlag::Confirm ()};
+        Math::Matrix3x3f matrix3x3f;
 
         // This structure is only used during material deserialization,
         // therefore we shouldn't worry about small waste of padding here.

@@ -7,6 +7,7 @@
 
 #include <Assert/Assert.hpp>
 
+#include <Configuration/ResourceProviderTypes.hpp>
 #include <Configuration/WorldStates.hpp>
 
 #include <Log/Log.hpp>
@@ -40,7 +41,8 @@ static Emergence::Memory::Profiler::EventObserver StartMemoryRecording (
 
 Application::Application () noexcept
     : memoryEventOutput ("MemoryRecording.track", std::ios::binary),
-      memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput))
+      memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput)),
+      resourceProvider (GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
 {
     Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
                                         {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
@@ -51,6 +53,12 @@ Application::Application () noexcept
         sdlTicksAfterInit = SDL_GetTicks64 ();
         sdlInitTimeNs = Emergence::Time::NanosecondsSinceStartup ();
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
+    }
+
+    if (resourceProvider.AddSource ("../Resources"_us) !=
+        Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    {
+        Emergence::ReportCriticalError ("Resource provider initialization", __FILE__, __LINE__);
     }
 }
 
@@ -142,8 +150,10 @@ void Application::InitWindow () noexcept
 
 void Application::InitGameState () noexcept
 {
-    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState))) GameState {
-        {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, Modules::Root::GetViewConfig ()}, Modules::Root::Initializer};
+    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState)))
+        GameState {&resourceProvider,
+                   {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, Modules::Root::GetViewConfig ()},
+                   Modules::Root::Initializer};
 
     WorldStateDefinition mainMenuState;
     mainMenuState.name = WorldStates::MAIN_MENU;

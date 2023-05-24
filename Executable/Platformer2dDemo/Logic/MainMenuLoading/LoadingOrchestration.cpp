@@ -99,7 +99,7 @@ void LoadingOrchestrator::Execute () noexcept
 
     if (!*levelLoading->levelName)
     {
-        levelLoading->levelName = Emergence::Memory::UniqueString {"MainMenu"};
+        levelLoading->levelName = Emergence::Memory::UniqueString {"RO_MainMenu"};
     }
 
     auto localeCursor = modifyLocale.Execute ();

@@ -1,11 +1,11 @@
-let saveSpriteMaterialInstance = (rootFolder, instanceName, textureName) => {
-    let instancesFolder = rootFolder + "/MaterialInstances/";
-    let materialFile = new TextFile(instancesFolder + instanceName + ".material.instance.yaml", TextFile.WriteOnly);
-    materialFile.writeLine("material: Sprite");
+let saveSpriteMaterialInstance = (folder, instanceName, textureName) => {
+    let materialFile = new TextFile(folder + "/MI_" + instanceName + ".yaml", TextFile.WriteOnly);
+    materialFile.writeLine("# MaterialInstanceAsset");
+    materialFile.writeLine("material: M_Sprite");
     materialFile.writeLine("uniforms:");
     materialFile.writeLine("  - name: colorTexture");
     materialFile.writeLine("    type: 3");
-    materialFile.writeLine("    textureId: " + textureName);
+    materialFile.writeLine("    textureId: T_" + textureName);
     materialFile.commit();
 };
 
@@ -43,7 +43,7 @@ let saveMapObject = (file, objectId, className, locationX, locationY, rotation, 
     file.writeLine("      type: PrototypeComponent")
     file.writeLine("      content:")
     file.writeLine("        objectId: " + objectId);
-    file.writeLine("        descriptorId: " + className);
+    file.writeLine("        descriptorId: RO_" + className);
     file.writeLine("        requestImmediateFixedAssembly: 0");
     file.writeLine("        requestImmediateNormalAssembly: 0");
 };
@@ -63,28 +63,25 @@ tiled.registerTilesetFormat(
             let columns = Math.trunc(tileset.imageWidth / (tileset.tileWidth + tileset.tileSpacing));
             let libraryDirectory = FileInfo.path(fileName) + "/Objects/" + tileset.name;
             File.makePath(libraryDirectory);
-            tiled.log("Saving Emergence Assembly library to \"" + libraryDirectory + "\".");
 
             // Save material for atlas-based tilesets.
             if (tileset.image !== "") {
                 saveSpriteMaterialInstance(
-                    FileInfo.path(fileName),
+                    libraryDirectory,
                     FileInfo.baseName(tileset.image),
-                    FileInfo.fileName(tileset.image));
+                    FileInfo.baseName(tileset.image));
             }
-
-            let folderDependenciesFile = new BinaryFile(
-                libraryDirectory + "/ObjectFolderDependencies.bin", BinaryFile.WriteOnly);
-            folderDependenciesFile.commit();
 
             tileset.tiles.forEach(tile => {
                 if (tile.className == null || tile.className === "") {
                     return;
                 }
 
+                File.makePath(libraryDirectory + "/" + tile.className);
                 let tileObjectFile = new TextFile(
-                    libraryDirectory + "/" + tile.className + ".object.yaml", TextFile.WriteOnly);
+                    libraryDirectory + "/" + tile.className + "/RO_" + tile.className + ".yaml", TextFile.WriteOnly);
 
+                tileObjectFile.writeLine("# ResourceObject")
                 tileObjectFile.writeLine("parent: \"\"")
                 tileObjectFile.writeLine("changelist:")
 
@@ -100,11 +97,11 @@ tiled.registerTilesetFormat(
                 var maxY;
 
                 if (tileset.image === "") {
-                    tileObjectFile.writeLine("        materialInstanceId: " + FileInfo.baseName(tile.imageFileName));
+                    tileObjectFile.writeLine("        materialInstanceId: MI_" + FileInfo.baseName(tile.imageFileName));
                     saveSpriteMaterialInstance(
-                        FileInfo.path(fileName),
+                        libraryDirectory + "/" + tile.className,
                         FileInfo.baseName(tile.imageFileName),
-                        FileInfo.fileName(tile.imageFileName));
+                        FileInfo.baseName(tile.imageFileName));
 
                     minX = 0.0;
                     minY = 0.0;
@@ -113,7 +110,7 @@ tiled.registerTilesetFormat(
                     maxY = 1.0;
 
                 } else {
-                    tileObjectFile.writeLine("        materialInstanceId: " + FileInfo.baseName(tileset.image));
+                    tileObjectFile.writeLine("        materialInstanceId: MI_" + FileInfo.baseName(tileset.image));
                     let column = tile.id % columns;
                     let row = Math.trunc(tile.id / columns);
 
@@ -199,12 +196,14 @@ tiled.registerTilesetFormat(
                         }
 
                         let materialPropertyValue = collisionShape.property("Material");
-                        let material = materialPropertyValue === undefined ? "Default" : materialPropertyValue;
+                        let material = materialPropertyValue === undefined ?
+                            "DM_Default" : materialPropertyValue;
                         tileObjectFile.writeLine("        materialId: " + material);
 
                         let triggerPropertyValue = collisionShape.property("Trigger");
 
-                        let trigger = triggerPropertyValue === undefined ? 0 : (triggerPropertyValue === true ? 1 : 0);
+                        let trigger = triggerPropertyValue === undefined ?
+                            0 : (triggerPropertyValue === true ? 1 : 0);
                         tileObjectFile.writeLine("        trigger: " + trigger);
 
                         let collisionGroupPropertyValue = collisionShape.property("CollisionGroup");
@@ -233,29 +232,9 @@ tiled.registerMapFormat(
             }
 
             let mapName = tilemap.className;
-            let libraryDirectory = FileInfo.path(fileName) + "/Levels/" + mapName + "/";
-            File.makePath(libraryDirectory);
-            let folderDependenciesFile = new TextFile(
-                libraryDirectory + "ObjectFolderDependencies.yaml", TextFile.WriteOnly);
-
-            folderDependenciesFile.writeLine("list:")
-            tilemap.usedTilesets().forEach(tileset => {
-                folderDependenciesFile.writeLine("  - relativePath: \"../../Objects/" + tileset.name + "\"")
-            });
-
-            let customDependencyIndex = 0;
-            let resolvedProperties = tilemap.resolvedProperties();
-
-            while (resolvedProperties["CustomDependency" + customDependencyIndex] != null) {
-                folderDependenciesFile.writeLine("  - relativePath: \"" +
-                    resolvedProperties["CustomDependency" + customDependencyIndex] + "\"");
-                ++customDependencyIndex;
-            }
-
-            folderDependenciesFile.commit();
-
             let levelObjectFile = new TextFile(
-                libraryDirectory + mapName + ".object.yaml", TextFile.WriteOnly);
+                FileInfo.path(fileName) + "/Levels/RO_" + mapName + ".yaml", TextFile.WriteOnly);
+            levelObjectFile.writeLine("# ResourceObject");
             levelObjectFile.writeLine("parent: \"\"");
             levelObjectFile.writeLine("changelist:");
 
