@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
@@ -28,8 +30,6 @@ private:
 
     AssetState GetDependencyState (Memory::UniqueString _assetId) noexcept;
 
-    AssetState SummarizeDependencyState (Memory::UniqueString _materialId, Memory::UniqueString _parentId) noexcept;
-
     AssetState StartLoading (MaterialInstanceLoadingState *_loadingState) noexcept;
 
     void CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noexcept;
@@ -46,6 +46,7 @@ private:
 
     FetchValueQuery fetchAssetById;
     FetchValueQuery fetchMaterialInstanceById;
+    EditValueQuery editMaterialInstanceById;
     FetchValueQuery fetchUniformVector4fValueById;
     FetchValueQuery fetchUniformMatrix3x3fValueById;
     FetchValueQuery fetchUniformMatrix4x4fValueById;
@@ -74,6 +75,7 @@ Manager::Manager (TaskConstructor &_constructor,
 
       fetchAssetById (FETCH_VALUE_1F (Asset, id)),
       fetchMaterialInstanceById (FETCH_VALUE_1F (MaterialInstance, assetId)),
+      editMaterialInstanceById (EDIT_VALUE_1F (MaterialInstance, assetId)),
       fetchUniformVector4fValueById (FETCH_VALUE_1F (UniformVector4fValue, assetId)),
       fetchUniformMatrix3x3fValueById (FETCH_VALUE_1F (UniformMatrix3x3fValue, assetId)),
       fetchUniformMatrix4x4fValueById (FETCH_VALUE_1F (UniformMatrix4x4fValue, assetId)),
@@ -104,65 +106,49 @@ AssetState Manager::GetDependencyState (Memory::UniqueString _assetId) noexcept
     return AssetState::LOADING;
 }
 
-AssetState Manager::SummarizeDependencyState (Memory::UniqueString _materialId, Memory::UniqueString _parentId) noexcept
-{
-    const AssetState materialState = GetDependencyState (_materialId);
-    bool allDependenciesReady = materialState == AssetState::READY;
-    bool anyDependencyErrored = materialState == AssetState::MISSING || materialState == AssetState::CORRUPTED;
-
-    if (*_parentId)
-    {
-        const AssetState parentState = GetDependencyState (_parentId);
-        allDependenciesReady &= parentState == AssetState::READY;
-        anyDependencyErrored |= parentState == AssetState::MISSING || parentState == AssetState::CORRUPTED;
-    }
-
-    if (anyDependencyErrored)
-    {
-        return AssetState::CORRUPTED;
-    }
-
-    if (allDependenciesReady)
-    {
-        return AssetState::READY;
-    }
-
-    return AssetState::LOADING;
-}
-
 AssetState Manager::StartLoading (MaterialInstanceLoadingState *_loadingState) noexcept
 {
-    Job::Dispatcher::Global ().Dispatch (
-        Job::Priority::BACKGROUND,
-        [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
-         sharedState {_loadingState->sharedState}] ()
-        {
-            switch (cachedResourceProvider->LoadObject (MaterialInstanceAsset::Reflect ().mapping, assetId,
-                                                        &sharedState->asset))
+    const char *runtimeIdSeparator = strchr (*_loadingState->assetId, MATERIAL_INSTANCE_RUNTIME_ID_SEPARATOR);
+    if (runtimeIdSeparator)
+    {
+        _loadingState->sharedState->asset.parent = Memory::UniqueString {std::string_view (
+            *_loadingState->assetId, static_cast<size_t> (runtimeIdSeparator - *_loadingState->assetId))};
+        _loadingState->sharedState->state = AssetState::READY;
+    }
+    else
+    {
+        Job::Dispatcher::Global ().Dispatch (
+            Job::Priority::BACKGROUND,
+            [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
+             sharedState {_loadingState->sharedState}] ()
             {
-            case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
-                sharedState->state = AssetState::READY;
-                break;
+                switch (cachedResourceProvider->LoadObject (MaterialInstanceAsset::Reflect ().mapping, assetId,
+                                                            &sharedState->asset))
+                {
+                case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
+                    sharedState->state = AssetState::READY;
+                    break;
 
-            case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
-                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to find material instance \"", assetId,
-                               "\".");
-                sharedState->state = AssetState::MISSING;
-                break;
+                case Resource::Provider::LoadingOperationResponse::NOT_FOUND:
+                    EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Unable to find material instance \"", assetId,
+                                   "\".");
+                    sharedState->state = AssetState::MISSING;
+                    break;
 
-            case Resource::Provider::LoadingOperationResponse::IO_ERROR:
-                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Failed to read material instance \"", assetId,
-                               "\".");
-                sharedState->state = AssetState::CORRUPTED;
-                break;
+                case Resource::Provider::LoadingOperationResponse::IO_ERROR:
+                    EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Failed to read material instance \"", assetId,
+                                   "\".");
+                    sharedState->state = AssetState::CORRUPTED;
+                    break;
 
-            case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
-                EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Object \"", assetId,
-                               "\" is not a material instance.");
-                sharedState->state = AssetState::CORRUPTED;
-                break;
-            }
-        });
+                case Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
+                    EMERGENCE_LOG (ERROR, "MaterialInstanceManagement: Object \"", assetId,
+                                   "\" is not a material instance.");
+                    sharedState->state = AssetState::CORRUPTED;
+                    break;
+                }
+            });
+    }
 
     return AssetState::LOADING;
 }
@@ -185,9 +171,9 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
     }
 
     _loadingState->parentId = _loadingState->sharedState->asset.parent;
-    if (!*_loadingState->sharedState->asset.material)
+    if (!*_loadingState->sharedState->asset.material && !*_loadingState->sharedState->asset.parent)
     {
-        EMERGENCE_LOG (ERROR, "MaterialInstanceManager: Material instance \"", _loadingState->assetId,
+        EMERGENCE_LOG (ERROR, "MaterialInstanceManager: Parentless material instance \"", _loadingState->assetId,
                        "\" is not attached to any material!");
         return AssetState::CORRUPTED;
     }
@@ -201,24 +187,63 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
         materialInstance->materialId = _loadingState->sharedState->asset.material;
     }
 
-    const AssetState dependencyState =
-        SummarizeDependencyState (_loadingState->sharedState->asset.material, _loadingState->sharedState->asset.parent);
-
-    if (dependencyState != AssetState::READY)
-    {
-        return dependencyState;
-    }
-
-#ifdef EMERGENCE_ASSERT_ENABLED
+    Memory::UniqueString materialId = _loadingState->sharedState->asset.material;
     if (*_loadingState->sharedState->asset.parent)
     {
-        auto parentMaterialInstanceCursor =
-            fetchMaterialInstanceById.Execute (&_loadingState->sharedState->asset.parent);
-        const auto *parentMaterialInstance = static_cast<const MaterialInstance *> (*parentMaterialInstanceCursor);
-        EMERGENCE_ASSERT (parentMaterialInstance);
-        EMERGENCE_ASSERT (parentMaterialInstance->materialId == _loadingState->sharedState->asset.material);
-    }
+        switch (GetDependencyState (_loadingState->sharedState->asset.parent))
+        {
+        case AssetState::LOADING:
+            return AssetState::LOADING;
+
+        case AssetState::MISSING:
+            return AssetState::MISSING;
+
+        case AssetState::CORRUPTED:
+            return AssetState::CORRUPTED;
+
+        case AssetState::READY:
+            break;
+        }
+
+        if (!*materialId)
+        {
+            {
+                auto parentMaterialInstanceCursor =
+                    fetchMaterialInstanceById.Execute (&_loadingState->sharedState->asset.parent);
+                const auto *parentMaterialInstance =
+                    static_cast<const MaterialInstance *> (*parentMaterialInstanceCursor);
+                materialId = parentMaterialInstance->materialId;
+            }
+
+            auto materialInstanceCursor = editMaterialInstanceById.Execute (&_loadingState->assetId);
+            auto *materialInstance = static_cast<MaterialInstance *> (*materialInstanceCursor);
+            materialInstance->materialId = materialId;
+        }
+#ifdef EMERGENCE_ASSERT_ENABLED
+        else
+        {
+            auto parentMaterialInstanceCursor =
+                fetchMaterialInstanceById.Execute (&_loadingState->sharedState->asset.parent);
+            const auto *parentMaterialInstance = static_cast<const MaterialInstance *> (*parentMaterialInstanceCursor);
+            EMERGENCE_ASSERT (materialId == parentMaterialInstance->materialId);
+        }
 #endif
+    }
+
+    switch (GetDependencyState (materialId))
+    {
+    case AssetState::LOADING:
+        return AssetState::LOADING;
+
+    case AssetState::MISSING:
+        return AssetState::MISSING;
+
+    case AssetState::CORRUPTED:
+        return AssetState::CORRUPTED;
+
+    case AssetState::READY:
+        break;
+    }
 
     for (const UniformValueDescription &uniform : _loadingState->sharedState->asset.uniforms)
     {

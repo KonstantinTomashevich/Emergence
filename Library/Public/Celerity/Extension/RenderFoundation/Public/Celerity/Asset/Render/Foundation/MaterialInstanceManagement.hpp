@@ -7,7 +7,7 @@
 
 namespace Emergence::Celerity::MaterialInstanceManagement
 {
-// TODO: Add support for runtime material instance creation. For example, "MI_Crate#<RuntimeId>".
+// TODO: Tests for runtime material instances.
 
 /// \brief Adds task for MaterialInstance asset loading and unloading in normal update pipeline.
 /// \details Inserted into asset loading, therefore has no specific checkpoints.

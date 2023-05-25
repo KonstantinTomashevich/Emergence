@@ -16,6 +16,12 @@ struct RenderFoundationSingleton final
     ///          we work with underlying implementation that operates under different read-write ruleset.
     mutable Render::Backend::Renderer renderer;
 
+    /// \invariant Do not access directly, use ::GenerateRuntimeMaterialInstanceId.
+    std::atomic_unsigned_lock_free runtimeMaterialInstanceIdCounter = 0u;
+
+    /// \details Intentionally const to allow simultaneous access from multiple tasks.
+    Memory::UniqueString GenerateRuntimeMaterialInstanceId (Memory::UniqueString _materialInstanceId) const noexcept;
+
     struct Reflection final
     {
         StandardLayout::Mapping mapping;
