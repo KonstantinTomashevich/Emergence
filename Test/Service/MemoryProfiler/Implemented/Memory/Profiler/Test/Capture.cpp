@@ -88,7 +88,7 @@ TEST_CASE (EventCapture)
     EventObserver observer = Capture::Start ().second;
     auto checkEvents = [&observer, &group] (const Vector<Event> &_expectation)
     {
-        uint64_t previousEventTime = 0u;
+        std::uint64_t previousEventTime = 0u;
         auto iterator = _expectation.begin ();
 
         while (const Event *received = observer.NextEvent ())
@@ -109,7 +109,7 @@ TEST_CASE (EventCapture)
 
                 if (previousEventTime)
                 {
-                    CHECK (previousEventTime <= received->timeNs);
+                    CHECK ((previousEventTime <= received->timeNs));
                 }
 
                 previousEventTime = received->timeNs;
@@ -143,18 +143,26 @@ TEST_CASE (EventCapture)
 
     checkEvents ({{
                       .type = Emergence::Memory::Profiler::EventType::ACQUIRE,
+                      .group = group,
+                      /*unused*/ .timeNs = 0u,
                       .bytes = 100u,
                   },
                   {
                       .type = Emergence::Memory::Profiler::EventType::FREE,
+                      .group = group,
+                      /*unused*/ .timeNs = 0u,
                       .bytes = 50u,
                   },
                   {
                       .type = Emergence::Memory::Profiler::EventType::RELEASE,
+                      .group = group,
+                      /*unused*/ .timeNs = 0u,
                       .bytes = 25u,
                   },
                   {
                       .type = Emergence::Memory::Profiler::EventType::ALLOCATE,
+                      .group = group,
+                      /*unused*/ .timeNs = 0u,
                       .bytes = 1000u,
                   }});
 
@@ -166,24 +174,37 @@ TEST_CASE (EventCapture)
     group.Acquire (350u);
     AddMarker (testGroupMarker, group);
 
-    checkEvents ({{
-                      .type = Emergence::Memory::Profiler::EventType::MARKER,
-                      .group = AllocationGroup::Root (),
-                      .markerId = testRootMarker,
-                  },
-                  {
-                      .type = Emergence::Memory::Profiler::EventType::ALLOCATE,
-                      .group = AllocationGroup::Root (),
-                      .bytes = 1000u,
-                  },
-                  {
-                      .type = Emergence::Memory::Profiler::EventType::ACQUIRE,
-                      .bytes = 350u,
-                  },
-                  {
-                      .type = Emergence::Memory::Profiler::EventType::MARKER,
-                      .markerId = testGroupMarker,
-                  }});
+    // For some reason GCC 11 is unable to read this vector through initializer list, therefore we manually code it.
+    Vector<Event> expectation;
+    expectation.emplace_back (Event {
+        .type = Emergence::Memory::Profiler::EventType::MARKER,
+        .group = AllocationGroup::Root (),
+        /*unused*/ .timeNs = 0u,
+        .markerId = testRootMarker,
+    });
+
+    expectation.emplace_back (Event {
+        .type = Emergence::Memory::Profiler::EventType::ALLOCATE,
+        .group = AllocationGroup::Root (),
+        /*unused*/ .timeNs = 0u,
+        .bytes = 1000u,
+    });
+
+    expectation.emplace_back (Event {
+        .type = Emergence::Memory::Profiler::EventType::ACQUIRE,
+        .group = group,
+        /*unused*/ .timeNs = 0u,
+        .bytes = 350u,
+    });
+
+    expectation.emplace_back (Event {
+        .type = Emergence::Memory::Profiler::EventType::MARKER,
+        .group = group,
+        /*unused*/ .timeNs = 0u,
+        .markerId = testGroupMarker,
+    });
+
+    checkEvents (expectation);
 }
 
 END_SUITE

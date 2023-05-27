@@ -4,7 +4,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-enum class ControlType : uint8_t
+enum class ControlType : std::uint8_t
 {
     NONE,
     PLAYER,

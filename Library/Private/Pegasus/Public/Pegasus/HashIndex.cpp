@@ -20,11 +20,11 @@ void HashIndex::Drop () noexcept
     storage->DropIndex (*this);
 }
 
-static size_t CalculateMask (const StandardLayout::Field &_field)
+static std::size_t CalculateMask (const StandardLayout::Field &_field)
 {
-    EMERGENCE_ASSERT (_field.GetSize () <= sizeof (size_t));
-    std::array<uint8_t, sizeof (size_t)> byteRepresentation;
-    std::fill (byteRepresentation.begin (), byteRepresentation.end (), uint8_t (0u));
+    EMERGENCE_ASSERT (_field.GetSize () <= sizeof (std::size_t));
+    std::array<uint8_t, sizeof (std::size_t)> byteRepresentation;
+    std::fill (byteRepresentation.begin (), byteRepresentation.end (), std::uint8_t (0u));
 
     if (_field.GetArchetype () == StandardLayout::FieldArchetype::BIT)
     {
@@ -32,23 +32,23 @@ static size_t CalculateMask (const StandardLayout::Field &_field)
     }
     else
     {
-        for (size_t index = 0u; index < _field.GetSize (); ++index)
+        for (std::size_t index = 0u; index < _field.GetSize (); ++index)
         {
             byteRepresentation[index] = 255u;
         }
     }
 
-    return *reinterpret_cast<size_t *> (&byteRepresentation.front ());
+    return *reinterpret_cast<std::size_t *> (&byteRepresentation.front ());
 }
 
-inline size_t ExtractFromRecord (const void *_record, size_t _mask, size_t _offset)
+inline std::size_t ExtractFromRecord (const void *_record, std::size_t _mask, std::size_t _offset)
 {
-    return _mask & *reinterpret_cast<const size_t *> (static_cast<const uint8_t *> (_record) + _offset);
+    return _mask & *reinterpret_cast<const std::size_t *> (static_cast<const uint8_t *> (_record) + _offset);
 }
 
-inline size_t ExtractFromLookup (const void *_lookup, size_t _mask)
+inline std::size_t ExtractFromLookup (const void *_lookup, std::size_t _mask)
 {
-    return _mask & *static_cast<const size_t *> (_lookup);
+    return _mask & *static_cast<const std::size_t *> (_lookup);
 }
 
 HashIndex::DirectHasher::DirectHasher (HashIndex *_owner) noexcept
@@ -85,6 +85,12 @@ bool HashIndex::DirectComparator::operator() (const void *_firstRecord, const vo
 
 bool HashIndex::DirectComparator::operator() (const void *_record,
                                               const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
+{
+    return _record == _recordWithBackup.record;
+}
+
+bool HashIndex::DirectComparator::operator() (const HashIndex::RecordWithBackup &_recordWithBackup,
+                                              const void *_record) const noexcept
 {
     return _record == _recordWithBackup.record;
 }
@@ -209,6 +215,12 @@ bool HashIndex::GenericComparator::operator() (const void *_firstRecord, const v
 
 bool HashIndex::GenericComparator::operator() (const void *_record,
                                                const HashIndex::RecordWithBackup &_recordWithBackup) const noexcept
+{
+    return _record == _recordWithBackup.record;
+}
+
+bool HashIndex::GenericComparator::operator() (const HashIndex::RecordWithBackup &_recordWithBackup,
+                                               const void *_record) const noexcept
 {
     return _record == _recordWithBackup.record;
 }

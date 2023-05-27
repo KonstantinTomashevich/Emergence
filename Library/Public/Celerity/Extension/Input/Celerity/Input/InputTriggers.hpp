@@ -10,7 +10,7 @@ namespace Emergence::Celerity
 // TODO: Think about mouse triggers.
 
 /// \brief Describes how trigger is activated.
-enum class KeyTriggerType : uint8_t
+enum class KeyTriggerType : std::uint8_t
 {
     /// \brief Trigger is active when selected key has selected state, but cannot be activated more than once per frame.
     ON_STATE = 0u,

@@ -117,7 +117,7 @@ void MovementUpdater::Execute () noexcept
         auto updateVelocity = [time, &worldTransform] (const Emergence::Math::Vector3f &_previousVelocity,
                                                        const Emergence::Math::Vector3f &_factor,
                                                        const Emergence::Math::Vector3f &_acceleration, float _maxSpeed,
-                                                       uint8_t _mask)
+                                                       std::uint8_t _mask)
         {
             const Emergence::Math::Vector3f acceleration =
                 Emergence::Math::Rotate (_acceleration * _factor, worldTransform.rotation) * time->fixedDurationS;

@@ -42,7 +42,7 @@ public:
     /// Moving indices is forbidden, because otherwise user can move index out of Storage.
     HashIndex (HashIndex &&_other) = delete;
 
-    const IndexedFieldVector &GetIndexedFields () const noexcept;
+    [[nodiscard]] const IndexedFieldVector &GetIndexedFields () const noexcept;
 
     void Drop () noexcept;
 
@@ -83,8 +83,8 @@ private:
 
         std::size_t operator() (const LookupRequest &_request) const noexcept;
 
-        size_t mask = 0u;
-        size_t offset = 0u;
+        std::size_t mask = 0u;
+        std::size_t offset = 0u;
     };
 
     struct DirectComparator final
@@ -97,12 +97,14 @@ private:
 
         bool operator() (const void *_record, const RecordWithBackup &_recordWithBackup) const noexcept;
 
+        bool operator() (const RecordWithBackup &_recordWithBackup, const void *_record) const noexcept;
+
         bool operator() (const void *_record, const LookupRequest &_request) const noexcept;
 
         bool operator() (const LookupRequest &_request, const void *_record) const noexcept;
 
-        size_t mask = 0u;
-        size_t offset = 0u;
+        std::size_t mask = 0u;
+        std::size_t offset = 0u;
     };
 
     using DirectHashSet = Container::HashMultiSet<const void *, DirectHasher, DirectComparator>;
@@ -127,6 +129,8 @@ private:
         bool operator() (const void *_firstRecord, const void *_secondRecord) const noexcept;
 
         bool operator() (const void *_record, const RecordWithBackup &_recordWithBackup) const noexcept;
+
+        bool operator() (const RecordWithBackup &_recordWithBackup, const void *_record) const noexcept;
 
         bool operator() (const void *_record, const LookupRequest &_request) const noexcept;
 

@@ -19,7 +19,7 @@ private:
     explicit EventNode (Event _event) noexcept;
 
     EventNode *next = nullptr;
-    size_t observers = 0u;
+    std::size_t observers = 0u;
 };
 
 class EventManager final
@@ -31,13 +31,19 @@ public:
 
     EventManager (EventManager &&_other) = delete;
 
-    void Allocate (const Profiler::AllocationGroup &_group, size_t _bytes, const ProfilingLock & /*unused*/) noexcept;
+    void Allocate (const Profiler::AllocationGroup &_group,
+                   std::size_t _bytes,
+                   const ProfilingLock & /*unused*/) noexcept;
 
-    void Acquire (const Profiler::AllocationGroup &_group, size_t _bytes, const ProfilingLock & /*unused*/) noexcept;
+    void Acquire (const Profiler::AllocationGroup &_group,
+                  std::size_t _bytes,
+                  const ProfilingLock & /*unused*/) noexcept;
 
-    void Release (const Profiler::AllocationGroup &_group, size_t _bytes, const ProfilingLock & /*unused*/) noexcept;
+    void Release (const Profiler::AllocationGroup &_group,
+                  std::size_t _bytes,
+                  const ProfilingLock & /*unused*/) noexcept;
 
-    void Free (const Profiler::AllocationGroup &_group, size_t _bytes, const ProfilingLock & /*unused*/) noexcept;
+    void Free (const Profiler::AllocationGroup &_group, std::size_t _bytes, const ProfilingLock & /*unused*/) noexcept;
 
     void Marker (const Profiler::AllocationGroup &_group,
                  UniqueString _markerId,
@@ -70,9 +76,9 @@ private:
     EventNode *last = nullptr;
 
     /// \brief Number of active observers. If there is no observers, event creation will be skipped.
-    size_t observers = 0u;
+    std::size_t observers = 0u;
 
     /// \brief Number of freshly constructed observers, that have requested their first event yet.
-    size_t freshObservers = 0u;
+    std::size_t freshObservers = 0u;
 };
 } // namespace Emergence::Memory::Profiler::Original

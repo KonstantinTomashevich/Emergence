@@ -51,12 +51,12 @@ struct UnionTest final
 
     union
     {
-        uint32_t first;
+        std::uint32_t first;
 
         struct
         {
-            uint16_t secondA;
-            uint16_t secondB;
+            std::uint16_t secondA;
+            std::uint16_t secondB;
         };
 
         float third;

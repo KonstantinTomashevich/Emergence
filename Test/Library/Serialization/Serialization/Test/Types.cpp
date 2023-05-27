@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 #include <Serialization/Test/Types.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
@@ -35,7 +37,7 @@ const TrivialStruct::Reflection &TrivialStruct::Reflect () noexcept
 
 bool NonTrivialStruct::operator== (const NonTrivialStruct &_other) const noexcept
 {
-    constexpr uint8_t USED_BITS = (1u << ALIVE_OFFSET) | (1u << POISONED_OFFSET) | (1u << STUNNED_OFFSET);
+    constexpr std::uint8_t USED_BITS = (1u << ALIVE_OFFSET) | (1u << POISONED_OFFSET) | (1u << STUNNED_OFFSET);
     return (flags & USED_BITS) == (_other.flags & USED_BITS) && strcmp (string.data (), _other.string.data ()) == 0 &&
            uniqueString == _other.uniqueString;
 }

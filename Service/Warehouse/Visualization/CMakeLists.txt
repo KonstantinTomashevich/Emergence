@@ -1,4 +1,4 @@
-sober_library_begin (WarehouseVisualization STATIC)
+sober_library_begin (WarehouseVisualization OBJECT)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})

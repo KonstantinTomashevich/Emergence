@@ -17,6 +17,14 @@
 /// \def END_IGNORING_PADDING_WARNING
 /// \brief Tells compile to start detecting wasted padding warning again after BEGIN_IGNORING_PADDING_WARNING.
 
+/// \def BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS
+/// \brief Tells compiler to ignore unknown attributes without raising an error.
+/// \details Needed to silence old GCC versions that do not support [[maybe_unused]] on fields.
+
+/// \def BEGIN_MUTING_NO_RETURN_WARNINGS
+/// \brief Tells compiler to ignore no-return method with return warning.
+/// \details Needed because we cannot support no-return behaviour as we do not support exceptions.
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #    define BEGIN_MUTING_WARNINGS _Pragma ("warning (push, 0)")
 #    define END_MUTING_WARNINGS _Pragma ("warning (pop)")
@@ -24,6 +32,9 @@
 // clang-format off
 #    define BEGIN_MUTING_WARNINGS                                                                                      \
         _Pragma ("GCC diagnostic push")                                                                                \
+        _Pragma ("GCC diagnostic ignored \"-Wpragmas\"")                                                               \
+        _Pragma ("GCC diagnostic ignored \"-Wdeprecated-copy\"")                                                       \
+        _Pragma ("GCC diagnostic ignored \"-Wdeprecated-copy-with-user-provided-copy\"")                               \
         _Pragma ("GCC diagnostic ignored \"-Winconsistent-missing-override\"")                                         \
         _Pragma ("GCC diagnostic ignored \"-Wlanguage-extension-token\"")                                              \
         _Pragma ("GCC diagnostic ignored \"-Wreturn-type-c-linkage\"")                                                 \
@@ -32,6 +43,39 @@
 // clang-format on
 
 #    define END_MUTING_WARNINGS _Pragma ("GCC diagnostic pop")
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#    define BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS
+#else
+// clang-format off
+#    define BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                    \
+        _Pragma ("GCC diagnostic push")                                                                                \
+        _Pragma ("GCC diagnostic ignored \"-Wpragmas\"")                                                               \
+        _Pragma ("GCC diagnostic ignored \"-Wattributes\"")
+// clang-format on
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#    define BEGIN_MUTING_OLD_DESTRUCTOR_NAME
+#else
+// clang-format off
+#    define BEGIN_MUTING_OLD_DESTRUCTOR_NAME                                                                           \
+        _Pragma ("GCC diagnostic push")                                                                                \
+        _Pragma ("GCC diagnostic ignored \"-Wpragmas\"")                                                               \
+        _Pragma ("GCC diagnostic ignored \"-Wdtor-name\"")
+// clang-format on
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#    define BEGIN_MUTING_NO_RETURN_WARNINGS _Pragma ("warning (push, 0)")
+#else
+// clang-format off
+#    define BEGIN_MUTING_NO_RETURN_WARNINGS                                                                            \
+        _Pragma ("GCC diagnostic push")                                                                                \
+        _Pragma ("GCC diagnostic ignored \"-Wpragmas\"")                                                               \
+        _Pragma ("GCC diagnostic ignored \"-Winvalid-noreturn\"")
+// clang-format on
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)

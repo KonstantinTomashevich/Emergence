@@ -59,11 +59,11 @@ void GroupUIDAssigner::ImportCapture (const Profiler::CapturedAllocationGroup &_
                     {
                         // Nested assignment is disallowed for captured groups, because it makes
                         // no sense: ImportCapture should always be called on capture root group.
-                        EMERGENCE_ASSERT (_event.id == _captured.GetId ());
+                        EMERGENCE_ASSERT (_event.declareGroup.id == _captured.GetId ());
 
                         _event.timeNs = _captured.GetCaptureTimeNs ();
-                        _event.reservedBytes = _captured.GetReserved ();
-                        _event.acquiredBytes = _captured.GetAcquired ();
+                        _event.declareGroup.reservedBytes = _captured.GetReserved ();
+                        _event.declareGroup.acquiredBytes = _captured.GetAcquired ();
                         _declarationConsumer (_event);
                     });
 

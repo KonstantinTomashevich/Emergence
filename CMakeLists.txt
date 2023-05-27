@@ -30,3 +30,5 @@ add_subdirectory (Service)
 add_subdirectory (Library)
 add_subdirectory (Test)
 add_subdirectory (Executable)
+
+sober_post_link_object_libraries ()

@@ -1,5 +1,3 @@
-#include <Container/String.hpp>
-
 #include <Flow/TaskRegister.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -74,7 +72,22 @@ static void Check (const Emergence::Task::Collection &_result, const CollectionE
     {
         LOG ("Checking task at index ", taskIndex, ".");
         const auto &result = _result.tasks[taskIndex];
-        const auto &expectation = _expectation.tasks[taskIndex];
+        CollectionExpectation::Task expectation;
+
+        for (const CollectionExpectation::Task &expectedTask : _expectation.tasks)
+        {
+            if (expectedTask.name == *result.name)
+            {
+                expectation = expectedTask;
+                break;
+            }
+        }
+
+        if (expectation.name.empty ())
+        {
+            CHECK_WITH_MESSAGE (false, "Unable to find expectation for result with name \"", *result.name, "\".");
+            break;
+        }
 
         CHECK_EQUAL (*result.name, expectation.name);
         // Unfortunately, we can not check task executors equality, because it's not supported by std::function.
@@ -85,11 +98,54 @@ static void Check (const Emergence::Task::Collection &_result, const CollectionE
 
         for (std::size_t dependantTaskIndex = 0u; dependantTaskIndex < dependantTasksToCheck; ++dependantTaskIndex)
         {
-            LOG ("Checking dependant task at index ", dependantTaskIndex, ".");
-            std::size_t resultIndex = result.dependantTasksIndices[dependantTaskIndex];
-            CHECK_EQUAL (_expectation.tasks[resultIndex].name, expectation.dependantTasks[dependantTaskIndex]);
+            const std::size_t resultIndex = result.dependantTasksIndices[dependantTaskIndex];
+            CHECK ((resultIndex < _result.tasks.size ()));
+            const Memory::UniqueString &dependantTaskName = _result.tasks[resultIndex].name;
+
+            LOG ("Checking dependant task \"", dependantTaskName, "\".");
+            CHECK ((std::find (expectation.dependantTasks.begin (), expectation.dependantTasks.end (),
+                               *dependantTaskName) != expectation.dependantTasks.end ()));
         }
     }
+}
+
+static void SortGraphContent (Emergence::VisualGraph::Graph &_graph)
+{
+    std::sort (_graph.subgraphs.begin (), _graph.subgraphs.end (),
+               [] (const Emergence::VisualGraph::Graph &_first, const Emergence::VisualGraph::Graph &_second)
+               {
+                   return _first.id < _second.id;
+               });
+
+    std::sort (_graph.nodes.begin (), _graph.nodes.end (),
+               [] (const Emergence::VisualGraph::Node &_first, const Emergence::VisualGraph::Node &_second)
+               {
+                   return _first.id < _second.id;
+               });
+
+    std::sort (_graph.edges.begin (), _graph.edges.end (),
+               [] (const Emergence::VisualGraph::Edge &_first, const Emergence::VisualGraph::Edge &_second)
+               {
+                   if (_first.from == _second.from)
+                   {
+                       return _first.to < _second.to;
+                   }
+
+                   return _first.from < _second.from;
+               });
+
+    for (Emergence::VisualGraph::Graph &subgraph : _graph.subgraphs)
+    {
+        SortGraphContent (subgraph);
+    }
+}
+
+static void CheckVisualGraphs (Emergence::VisualGraph::Graph _result, Emergence::VisualGraph::Graph _expected)
+{
+    // We need to sort graph contents, because graph generation logic does not guarantee any order.
+    SortGraphContent (_result);
+    SortGraphContent (_expected);
+    CHECK ((_result == _expected));
 }
 
 static Container::String CheckpointNodeLabel (Container::String _name)
@@ -421,7 +477,7 @@ TEST_CASE (TrivialSafeResourceUsageNoResources)
     expected.edges.clear ();
 
     Emergence::VisualGraph::Graph result = Grow (TRIVIAL_SAFE_RESOURCE_USAGE_SEED).ExportVisual (false);
-    CHECK (result == expected);
+    CheckVisualGraphs (result, expected);
 }
 
 TEST_CASE (TrivialSafeResourceUsageWithResources)
@@ -429,7 +485,7 @@ TEST_CASE (TrivialSafeResourceUsageWithResources)
     using namespace Emergence::Flow::Test;
     Emergence::VisualGraph::Graph result = Grow (TRIVIAL_SAFE_RESOURCE_USAGE_SEED).ExportVisual (true);
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();
-    CHECK (result == expected);
+    CheckVisualGraphs (result, expected);
 }
 
 TEST_CASE (TrivialSafeResourceUsageWithIntroducedCircularDependency)
@@ -442,7 +498,7 @@ TEST_CASE (TrivialSafeResourceUsageWithIntroducedCircularDependency)
 
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();
     expected.subgraphs[1u].edges.emplace_back (Emergence::VisualGraph::Edge {"B2", "A1", {}});
-    CHECK (result == expected);
+    CheckVisualGraphs (result, expected);
 }
 
 TEST_CASE (TrivialSafeResourceUsageWithCollision)
@@ -456,7 +512,7 @@ TEST_CASE (TrivialSafeResourceUsageWithCollision)
     Emergence::VisualGraph::Graph expected = GetTrivialSafeResourceUsageGraph ();
     expected.edges.emplace_back (Emergence::VisualGraph::Edge {
         TaskNodePath ("B2"), ResourceNodePath ("R2"), Emergence::Flow::TaskRegister::VISUAL_WRITE_ACCESS_COLOR});
-    CHECK (result == expected);
+    CheckVisualGraphs (result, expected);
 }
 
 TEST_CASE (VisualGrouping)
@@ -528,7 +584,8 @@ TEST_CASE (VisualGrouping)
                                             },
                                             {},
                                             {}};
-    CHECK (result == expected);
+
+    CheckVisualGraphs (result, expected);
 }
 
 END_SUITE

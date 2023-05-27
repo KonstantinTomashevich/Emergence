@@ -101,7 +101,7 @@ WorldView::WorldView (World *_world,
         localRegistry.SetGarbageCollectionEnabled (enforcedType, false);
     }
 
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
     // Validate that there is no enforcement overlaps.
     WorldView *viewToCheck = parent;
 
@@ -248,9 +248,9 @@ TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstances (
     {
         if (!row.Empty () && row.Front ().GetTrigger () == &_source->Front ())
         {
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
             EMERGENCE_ASSERT (row.GetCount () == _source->GetCount ());
-            for (size_t index = 0u; index < row.GetCount (); ++index)
+            for (std::size_t index = 0u; index < row.GetCount (); ++index)
             {
                 EMERGENCE_ASSERT (row[index].GetTrigger () == &(*_source)[index]);
             }
@@ -274,13 +274,13 @@ TrivialEventTriggerInstanceRow *WorldView::RequestTrivialEventInstances (
 TrivialEventTriggerInstanceRow *WorldView::RequestOnAddEventInstances (PipelineType _pipeline,
                                                                        const TrivialEventTriggerRow *_source) noexcept
 {
-    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<size_t> (_pipeline)].onAdd, _source);
+    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<std::size_t> (_pipeline)].onAdd, _source);
 }
 
 TrivialEventTriggerInstanceRow *WorldView::RequestOnRemoveEventInstances (
     PipelineType _pipeline, const TrivialEventTriggerRow *_source) noexcept
 {
-    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<size_t> (_pipeline)].onRemove, _source);
+    return RequestTrivialEventInstances (eventSchemeInstances[static_cast<std::size_t> (_pipeline)].onRemove, _source);
 }
 
 OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (PipelineType _pipeline,
@@ -290,13 +290,13 @@ OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (Pipel
     const ChangeTracker::EventVector eventVector = _source->GetEventTriggers ();
     EMERGENCE_ASSERT (!eventVector.Empty ());
 
-    for (OnChangeEventTriggerInstanceRow &row : eventSchemeInstances[static_cast<size_t> (_pipeline)].onChange)
+    for (OnChangeEventTriggerInstanceRow &row : eventSchemeInstances[static_cast<std::size_t> (_pipeline)].onChange)
     {
         if (!row.Empty () && row.Front ().GetTrigger () == eventVector.Front ())
         {
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
             EMERGENCE_ASSERT (row.GetCount () == eventVector.GetCount ());
-            for (size_t index = 0u; index < row.GetCount (); ++index)
+            for (std::size_t index = 0u; index < row.GetCount (); ++index)
             {
                 EMERGENCE_ASSERT (row[index].GetTrigger () == eventVector[index]);
             }
@@ -306,7 +306,8 @@ OnChangeEventTriggerInstanceRow *WorldView::RequestOnChangeEventInstances (Pipel
         }
     }
 
-    OnChangeEventTriggerInstanceRow &row = eventSchemeInstances[static_cast<size_t> (_pipeline)].onChange.Acquire ();
+    OnChangeEventTriggerInstanceRow &row =
+        eventSchemeInstances[static_cast<std::size_t> (_pipeline)].onChange.Acquire ();
     for (const OnChangeEventTrigger *trigger : eventVector)
     {
         row.EmplaceBack (OnChangeEventTriggerInstance {
@@ -418,11 +419,11 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     // - Developer stopped program at breakpoint.
     // - Program was frozen for some other reason.
     // In any of these cases we skip one update cycle.
-    constexpr uint64_t MAX_TIME_DELTA_NS = 1000000000u;
+    constexpr std::uint64_t MAX_TIME_DELTA_NS = 1000000000u;
 
-    const uint64_t currentTimeNs = Emergence::Time::NanosecondsSinceStartup ();
+    const std::uint64_t currentTimeNs = Emergence::Time::NanosecondsSinceStartup ();
     EMERGENCE_ASSERT (currentTimeNs >= _time->realNormalTimeNs);
-    uint64_t realTimeDeltaNs = currentTimeNs - _time->realNormalTimeNs;
+    std::uint64_t realTimeDeltaNs = currentTimeNs - _time->realNormalTimeNs;
     _time->realNormalTimeNs = currentTimeNs;
 
     if (realTimeDeltaNs > MAX_TIME_DELTA_NS)
@@ -451,7 +452,7 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     }
 
     const auto scaledTimeDeltaNs =
-        static_cast<uint64_t> (static_cast<float> (realTimeDeltaNs) * updateModeTimeScale * _time->timeSpeed);
+        static_cast<std::uint64_t> (static_cast<float> (realTimeDeltaNs) * updateModeTimeScale * _time->timeSpeed);
     _time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
     _time->normalTimeNs += scaledTimeDeltaNs;
 }
@@ -487,7 +488,7 @@ void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
         // We do not need to take time scaling into account,
         // because it affects fixed updates by slowing down normal time.
         _time->fixedDurationS = _time->targetFixedFrameDurationsS[selectedStepIndex];
-        const auto fixedDurationNs = static_cast<uint64_t> (_time->fixedDurationS * 1e9f);
+        const auto fixedDurationNs = static_cast<std::uint64_t> (_time->fixedDurationS * 1e9f);
 
         // Catch up to normal time.
         while (_time->fixedTimeNs <= _time->normalTimeNs)
@@ -536,13 +537,13 @@ World::EventScheme::EventScheme (const Memory::Profiler::AllocationGroup &_rootA
 
 // TODO: Having separate setup-and-run functions for testing looks a bit bad. Any ideas how to make it better?
 
-void WorldTestingUtility::RunNormalUpdateOnce (World &_world, uint64_t _timeDeltaNs) noexcept
+void WorldTestingUtility::RunNormalUpdateOnce (World &_world, std::uint64_t _timeDeltaNs) noexcept
 {
     auto [time, world] = ExtractSingletons (_world);
     time->realNormalDurationS = static_cast<float> (_timeDeltaNs) * 1e-9f;
 
     EMERGENCE_ASSERT (time->timeSpeed >= 0.0f);
-    const auto scaledTimeDeltaNs = static_cast<uint64_t> (static_cast<float> (_timeDeltaNs) * time->timeSpeed);
+    const auto scaledTimeDeltaNs = static_cast<std::uint64_t> (static_cast<float> (_timeDeltaNs) * time->timeSpeed);
 
     time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
     time->normalTimeNs += scaledTimeDeltaNs;
@@ -557,7 +558,7 @@ void WorldTestingUtility::RunFixedUpdateOnce (World &_world) noexcept
     // Keep it simple, because we do not need death spiral avoidance there.
     EMERGENCE_ASSERT (!time->targetFixedFrameDurationsS.Empty ());
     time->fixedDurationS = time->targetFixedFrameDurationsS[0u];
-    const auto fixedDurationNs = static_cast<uint64_t> (time->fixedDurationS * 1e9f);
+    const auto fixedDurationNs = static_cast<std::uint64_t> (time->fixedDurationS * 1e9f);
 
     _world.rootView.ExecuteFixedPipeline ();
     time->fixedTimeNs += fixedDurationNs;

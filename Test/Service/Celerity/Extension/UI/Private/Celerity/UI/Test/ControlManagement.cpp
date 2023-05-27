@@ -36,7 +36,7 @@ private:
 
     RemoveValueQuery removeNodeById;
 
-    uint64_t currentFrameIndex = 0u;
+    std::uint64_t currentFrameIndex = 0u;
     Container::Vector<Frame> frames;
 };
 

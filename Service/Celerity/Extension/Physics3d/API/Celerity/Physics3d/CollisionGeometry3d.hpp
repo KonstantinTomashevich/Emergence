@@ -7,7 +7,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Represents supported types of collision geometry.
-enum class CollisionGeometry3dType : uint8_t
+enum class CollisionGeometry3dType : std::uint8_t
 {
     BOX = 0u,
     SPHERE,

@@ -25,22 +25,28 @@ public:
     ~Heap () noexcept;
 
     /// \brief Acquires given amount of memory with given alignment.
-    void *Acquire (size_t _bytes, size_t _alignment) noexcept;
+    void *Acquire (std::size_t _bytes, std::size_t _alignment) noexcept;
 
     /// \brief Resizes given record pointer and copies it byte-to-byte to the new location if needed.
     /// \param _currentSize Record current size, required for the same reasons as `_bytes` in ::Release.
-    void *Resize (void *_record, size_t _alignment, size_t _currentSize, size_t _newSize) noexcept;
+    void *Resize (void *_record, std::size_t _alignment, std::size_t _currentSize, std::size_t _newSize) noexcept;
 
     /// \brief Releases given record pointer.
     /// \param _bytes Record size, must be equal to allocated value, passed through ::Acquire or ::Resize.
     ///               We have no access to malloc internal data, therefore we rely on this parameter to
     ///               log information to memory profiler.
-    void Release (void *_record, size_t _bytes) noexcept;
+    void Release (void *_record, std::size_t _bytes) noexcept;
 
     /// \return Allocation group to which this allocator belongs.
     /// \warning Group will report zero memory usage if it is a placeholder or
     ///          if executable is linked to no-profile implementation.
     [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
+
+    /// \brief Comparison needed for some STL implementations.
+    bool operator== (const Heap &_other) const noexcept;
+
+    /// \brief Comparison needed for some STL implementations.
+    bool operator!= (const Heap &_other) const noexcept;
 
     /// Copy assigning memory allocator looks counter-intuitive.
     Heap &operator= (const Heap &_other) = delete;
@@ -48,15 +54,30 @@ public:
     Heap &operator= (Heap &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 };
 
+// Only MSVC STL makes it possible to use undefined template for incorrect
+// allocation detection. Other STLs require heap default constructor to
+// be functional, therefore we need default "Undocumented" group.
+#if defined(_MSVC_STL_VERSION)
 template <typename Type>
 struct DefaultAllocationGroup;
+#else
+template <typename Type>
+struct DefaultAllocationGroup
+{
+    static Profiler::AllocationGroup Get () noexcept
+    {
+        return Profiler::AllocationGroup {Profiler::AllocationGroup::Top (), UniqueString {"Undocumented"}};
+    }
+};
+#endif
 
 /// \brief Wraps Heap into C++ STD Allocator requirements.
+/// \details Cannot be final as some STL implementations inherit from allocator.
 template <typename Type>
-class HeapSTD final
+class HeapSTD
 {
 public:
     using value_type = Type;
@@ -96,14 +117,14 @@ public:
     ~HeapSTD () = default;
 
     // NOLINTNEXTLINE(readability-identifier-naming): STD naming.
-    Type *allocate (size_t _count) noexcept
+    Type *allocate (std::size_t _count) noexcept
     {
         // NOLINTNEXTLINE(bugprone-sizeof-expression): Type might be pointer.
         return static_cast<Type *> (heap.Acquire (sizeof (Type) * _count, alignof (Type)));
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming): STD naming.
-    void deallocate (Type *_record, size_t _count) noexcept
+    void deallocate (Type *_record, std::size_t _count) noexcept
     {
         // NOLINTNEXTLINE(bugprone-sizeof-expression): Type might be pointer.
         heap.Release (_record, sizeof (Type) * _count);
@@ -113,6 +134,12 @@ public:
     {
         return heap.GetAllocationGroup ();
     }
+
+    /// \brief Comparison needed for some STL implementations.
+    bool operator== (const HeapSTD &_other) const noexcept = default;
+
+    /// \brief Comparison needed for some STL implementations.
+    bool operator!= (const HeapSTD &_other) const noexcept = default;
 
     HeapSTD &operator= (const HeapSTD &_other) = delete;
 

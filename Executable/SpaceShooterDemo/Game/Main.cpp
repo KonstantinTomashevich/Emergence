@@ -149,7 +149,7 @@ void GameApplication::Setup ()
     if (response != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
     {
         Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Unable to load main resource source! Response: ",
-                                                                static_cast<uint16_t> (response)),
+                                                                static_cast<std::uint16_t> (response)),
                                         __FILE__, __LINE__);
     }
 };

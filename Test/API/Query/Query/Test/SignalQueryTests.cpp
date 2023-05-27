@@ -9,30 +9,31 @@ namespace Emergence::Query::Test::SignalQuery
 {
 using namespace Tasks;
 
-constexpr uint8_t FLAG_PLAYER_ID_SOURCE = 1u << 0u;
+constexpr std::uint8_t FLAG_PLAYER_ID_SOURCE = 1u << 0u;
 
-constexpr uint32_t PLAYER_ID_SIGNALED_VALUE = 2u;
+constexpr std::uint32_t PLAYER_ID_SIGNALED_VALUE = 2u;
 
-constexpr uint8_t FLAG_PLAYER_IMMOBILIZED_SOURCE = 1u << 1u;
+constexpr std::uint8_t FLAG_PLAYER_IMMOBILIZED_SOURCE = 1u << 1u;
 
-constexpr uint8_t PLAYER_IMMOBILIZED_SIGNALED_VALUE = Player::Status::FLAG_IMMOBILIZED;
+constexpr std::uint8_t PLAYER_IMMOBILIZED_SIGNALED_VALUE = Player::Status::FLAG_IMMOBILIZED;
 
-static Storage RequestStorage (const Container::Vector<const void *> &_objects, uint8_t _sources)
+static Storage RequestStorage (const Container::Vector<const void *> &_objects, std::uint8_t _sources)
 {
     Storage storage {Player::Reflect ().mapping, _objects, {}};
 
     EMERGENCE_ASSERT (_sources > 0u);
     if (_sources & FLAG_PLAYER_ID_SOURCE)
     {
-        storage.sources.emplace_back (Sources::Signal {
-            "playerId", Player::Reflect ().id, array_cast<uint32_t, sizeof (uint64_t)> (PLAYER_ID_SIGNALED_VALUE)});
+        storage.sources.emplace_back (
+            Sources::Signal {"playerId", Player::Reflect ().id,
+                             array_cast<std::uint32_t, sizeof (std::uint64_t)> (PLAYER_ID_SIGNALED_VALUE)});
     }
 
     if (_sources & FLAG_PLAYER_IMMOBILIZED_SOURCE)
     {
         storage.sources.emplace_back (
             Sources::Signal {"playerImmobilized", Player::Reflect ().immobilized,
-                             array_cast<uint8_t, sizeof (uint64_t)> (PLAYER_IMMOBILIZED_SIGNALED_VALUE)});
+                             array_cast<std::uint8_t, sizeof (std::uint64_t)> (PLAYER_IMMOBILIZED_SIGNALED_VALUE)});
     }
 
     return storage;

@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <algorithm>
+#include <cstring>
 
 #include <Celerity/Event/EventTrigger.hpp>
 
@@ -15,8 +16,8 @@ static void ApplyCopyOut (const CopyOutBlock &_block, const void *_source, void 
     EMERGENCE_ASSERT (_source);
     EMERGENCE_ASSERT (_target);
 
-    memcpy (static_cast<uint8_t *> (_target) + _block.targetOffset,
-            static_cast<const uint8_t *> (_source) + _block.sourceOffset, _block.length);
+    memcpy (static_cast<std::uint8_t *> (_target) + _block.targetOffset,
+            static_cast<const std::uint8_t *> (_source) + _block.sourceOffset, _block.length);
 }
 
 static Memory::Profiler::AllocationGroup GetEventRegistrationAlgorithmsGroup ()
@@ -210,7 +211,7 @@ OnChangeEventTrigger::OnChangeEventTrigger (StandardLayout::Mapping _trackedType
 {
     BakeTrackedFields (trackedType, _trackedFields);
 
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
     for (const CopyOutField &copyOut : _copyOutOfInitial)
     {
         // Only tracked fields can be copied out of unchanged version of record for several reasons:
@@ -335,7 +336,7 @@ void ChangeTracker::BeginEdition (const void *_record) noexcept
     EMERGENCE_ASSERT (_record);
     for (const TrackedZone &zone : trackedZones)
     {
-        memcpy (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length);
+        memcpy (zone.buffer, static_cast<const std::uint8_t *> (_record) + zone.sourceOffset, zone.length);
     }
 }
 
@@ -347,7 +348,7 @@ void ChangeTracker::EndEdition (const void *_record, OnChangeEventTriggerInstanc
 
     for (const TrackedZone &zone : trackedZones)
     {
-        if (memcmp (zone.buffer, static_cast<const uint8_t *> (_record) + zone.sourceOffset, zone.length) != 0)
+        if (memcmp (zone.buffer, static_cast<const std::uint8_t *> (_record) + zone.sourceOffset, zone.length) != 0)
         {
             changedMask |= currentZoneFlag;
         }
@@ -463,7 +464,7 @@ void ChangeTracker::BakeTrackedZones (const ChangeTracker::EventVector &_events)
     }
 
     // Calculate buffer offsets.
-    uint8_t *zoneBuffer = &buffer.front ();
+    std::uint8_t *zoneBuffer = &buffer.front ();
 
     for (TrackedZone &trackedZone : trackedZones)
     {

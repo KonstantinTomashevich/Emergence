@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <Pegasus/SignalIndex.hpp>
 #include <Pegasus/Storage.hpp>
 
@@ -143,27 +145,27 @@ const StandardLayout::Field &SignalIndex::GetIndexedField () const
     return indexedField;
 }
 
-bool SignalIndex::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+bool SignalIndex::IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const
 {
-    const size_t offsetDelta = indexedField.GetOffset () - offset;
-    std::array<uint8_t, sizeof (uint64_t)> shiftedValue;
+    const std::size_t offsetDelta = indexedField.GetOffset () - offset;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> shiftedValue;
 
-    for (size_t index = 0u; index < indexedField.GetSize (); ++index)
+    for (std::size_t index = 0u; index < indexedField.GetSize (); ++index)
     {
         shiftedValue[index + offsetDelta] = _value[index];
     }
 
-    auto convertedValue = block_cast<uint64_t> (shiftedValue);
+    auto convertedValue = block_cast<std::uint64_t> (shiftedValue);
     return (convertedValue & mask) == signaledValue;
 }
 
-std::array<uint8_t, sizeof (uint64_t)> SignalIndex::GetSignaledValue () const
+std::array<std::uint8_t, sizeof (std::uint64_t)> SignalIndex::GetSignaledValue () const
 {
-    const size_t offsetDelta = indexedField.GetOffset () - offset;
-    std::array<uint8_t, sizeof (uint64_t)> result;
-    std::fill (result.begin (), result.end (), uint8_t (0u));
+    const std::size_t offsetDelta = indexedField.GetOffset () - offset;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> result;
+    std::fill (result.begin (), result.end (), std::uint8_t (0u));
 
-    for (size_t index = 0u; index < indexedField.GetSize (); ++index)
+    for (std::size_t index = 0u; index < indexedField.GetSize (); ++index)
     {
         result[index] = array_cast (signaledValue)[index + offsetDelta];
     }
@@ -180,25 +182,25 @@ void SignalIndex::Drop () noexcept
 
 using namespace Memory::Literals;
 
-static size_t CalculateOffset (const StandardLayout::Field &_field)
+static std::size_t CalculateOffset (const StandardLayout::Field &_field)
 {
-    EMERGENCE_ASSERT (_field.GetSize () <= sizeof (uint64_t));
-    size_t offset = _field.GetOffset ();
+    EMERGENCE_ASSERT (_field.GetSize () <= sizeof (std::uint64_t));
+    std::size_t offset = _field.GetOffset ();
 
-    if (const size_t leftover = offset % sizeof (uint64_t))
+    if (const std::size_t leftover = offset % sizeof (std::uint64_t))
     {
-        offset -= sizeof (uint64_t) - leftover;
+        offset -= sizeof (std::uint64_t) - leftover;
     }
 
-    EMERGENCE_ASSERT (_field.GetOffset () + _field.GetSize () <= offset + sizeof (uint64_t));
+    EMERGENCE_ASSERT (_field.GetOffset () + _field.GetSize () <= offset + sizeof (std::uint64_t));
     return offset;
 }
 
-static uint64_t CalculateMask (const StandardLayout::Field &_field, size_t _offset)
+static std::uint64_t CalculateMask (const StandardLayout::Field &_field, std::size_t _offset)
 {
-    std::array<uint8_t, sizeof (uint64_t)> maskData;
-    std::fill (maskData.begin (), maskData.end (), uint8_t (0u));
-    const size_t offsetDelta = _field.GetOffset () - _offset;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> maskData;
+    std::fill (maskData.begin (), maskData.end (), std::uint8_t (0u));
+    const std::size_t offsetDelta = _field.GetOffset () - _offset;
 
     if (_field.GetArchetype () == StandardLayout::FieldArchetype::BIT)
     {
@@ -207,34 +209,34 @@ static uint64_t CalculateMask (const StandardLayout::Field &_field, size_t _offs
     else
     {
         EMERGENCE_ASSERT (_field.GetSize () + offsetDelta <= maskData.size ());
-        for (size_t index = 0u; index < _field.GetSize (); ++index)
+        for (std::size_t index = 0u; index < _field.GetSize (); ++index)
         {
             maskData[index + offsetDelta] = 255u;
         }
     }
 
-    return block_cast<uint64_t> (maskData);
+    return block_cast<std::uint64_t> (maskData);
 }
 
-static uint64_t CalculateSignaledValue (const StandardLayout::Field &_field,
-                                        size_t _offset,
-                                        uint64_t _mask,
-                                        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue)
+static std::uint64_t CalculateSignaledValue (const StandardLayout::Field &_field,
+                                             std::size_t _offset,
+                                             std::uint64_t _mask,
+                                             const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue)
 {
-    const size_t offsetDelta = _field.GetOffset () - _offset;
-    std::array<uint8_t, sizeof (uint64_t)> shiftedValue;
+    const std::size_t offsetDelta = _field.GetOffset () - _offset;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> shiftedValue;
 
-    for (size_t index = 0u; index < _signaledValue.size () - offsetDelta; ++index)
+    for (std::size_t index = 0u; index < _signaledValue.size () - offsetDelta; ++index)
     {
         shiftedValue[index + offsetDelta] = _signaledValue[index];
     }
 
-    return block_cast<uint64_t> (shiftedValue) & _mask;
+    return block_cast<std::uint64_t> (shiftedValue) & _mask;
 }
 
 SignalIndex::SignalIndex (Storage *_owner,
                           StandardLayout::FieldId _indexedField,
-                          const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+                          const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
     : IndexBase (_owner),
       indexedField (_owner->GetRecordMapping ().GetField (_indexedField)),
       offset (CalculateOffset (indexedField)),
@@ -246,8 +248,8 @@ SignalIndex::SignalIndex (Storage *_owner,
 
 bool SignalIndex::IsSignaled (const void *_record) const noexcept
 {
-    const auto *targetAddress = static_cast<const uint8_t *> (_record) + offset;
-    const uint64_t &recordValue = *reinterpret_cast<const uint64_t *> (targetAddress);
+    const auto *targetAddress = static_cast<const std::uint8_t *> (_record) + offset;
+    const std::uint64_t &recordValue = *reinterpret_cast<const std::uint64_t *> (targetAddress);
     return (recordValue & mask) == signaledValue;
 }
 

@@ -98,10 +98,10 @@ AssetState Manager::TryFinishLoading (Sprite2dUvAnimationLoadingState *_loadingS
 
     for (const Sprite2dUvAnimationFrameInfo &info : _loadingState->sharedState->asset.frames)
     {
-        animation->frames.emplace_back () = {info.uv, static_cast<uint64_t> (info.durationS * 1e9f), 0u};
+        animation->frames.emplace_back () = {info.uv, static_cast<std::uint64_t> (info.durationS * 1e9f), 0u};
     }
 
-    for (size_t index = 1u; index < animation->frames.size (); ++index)
+    for (std::size_t index = 1u; index < animation->frames.size (); ++index)
     {
         animation->frames[index].startTimeNs =
             animation->frames[index - 1u].startTimeNs + animation->frames[index - 1u].durationNs;

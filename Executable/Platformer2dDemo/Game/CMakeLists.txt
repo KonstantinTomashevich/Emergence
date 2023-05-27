@@ -1,4 +1,4 @@
-sober_library_begin ("${GAME_NAME}Game" STATIC)
+sober_library_begin ("${GAME_NAME}Game" OBJECT)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})
@@ -38,7 +38,7 @@ sober_library_end ()
 
 add_executable ("${GAME_NAME}GameLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
 sober_naming_variant_target ("${GAME_NAME}Game" Original GAME_TARGET)
-target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
+sober_target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 
 set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}/Game")

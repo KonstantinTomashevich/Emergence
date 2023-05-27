@@ -28,23 +28,23 @@ struct Player final
     {
         Status () = delete;
 
-        static constexpr uint8_t FLAG_ALIVE_OFFSET = 0u;
-        static constexpr uint8_t FLAG_ALIVE = 1u << FLAG_ALIVE_OFFSET;
+        static constexpr std::uint8_t FLAG_ALIVE_OFFSET = 0u;
+        static constexpr std::uint8_t FLAG_ALIVE = 1u << FLAG_ALIVE_OFFSET;
 
-        static constexpr uint8_t FLAG_STUNNED_OFFSET = 1u;
-        static constexpr uint8_t FLAG_STUNNED = 1u << FLAG_STUNNED_OFFSET;
+        static constexpr std::uint8_t FLAG_STUNNED_OFFSET = 1u;
+        static constexpr std::uint8_t FLAG_STUNNED = 1u << FLAG_STUNNED_OFFSET;
 
-        static constexpr uint8_t FLAG_POISONED_OFFSET = 2u;
-        static constexpr uint8_t FLAG_POISONED = 1u << FLAG_POISONED_OFFSET;
+        static constexpr std::uint8_t FLAG_POISONED_OFFSET = 2u;
+        static constexpr std::uint8_t FLAG_POISONED = 1u << FLAG_POISONED_OFFSET;
 
-        static constexpr uint8_t FLAG_IMMOBILIZED_OFFSET = 3u;
-        static constexpr uint8_t FLAG_IMMOBILIZED = 1u << FLAG_IMMOBILIZED_OFFSET;
+        static constexpr std::uint8_t FLAG_IMMOBILIZED_OFFSET = 3u;
+        static constexpr std::uint8_t FLAG_IMMOBILIZED = 1u << FLAG_IMMOBILIZED_OFFSET;
     };
 
-    uint32_t id = 0u;
+    std::uint32_t id = 0u;
     std::array<char, 32u> name = {0u};
     Memory::UniqueString classId;
-    uint8_t status = 0u;
+    std::uint8_t status = 0u;
 };
 
 /// \brief Data structure for floating-point shape and ray intersection queries.
@@ -147,15 +147,15 @@ struct AllFieldTypesStructure
     int32_t int32 = 0;
     int64_t int64 = 0;
 
-    uint8_t uint8 = 0u;
-    uint16_t uint16 = 0u;
-    uint32_t uint32 = 0u;
-    uint64_t uint64 = 0u;
+    std::uint8_t uint8 = 0u;
+    std::uint16_t uint16 = 0u;
+    std::uint32_t uint32 = 0u;
+    std::uint64_t uint64 = 0u;
 
     float floating = 0.0f;
     double doubleFloating = 0.0;
 
-    std::array<uint8_t, 4> block {};
+    std::array<std::uint8_t, 4> block {};
     std::array<char, 24> string {};
     Memory::UniqueString uniqueString;
 };
@@ -185,13 +185,13 @@ struct PlayerNameAndId final
 
 struct PlayerAlive
 {
-    uint8_t aliveFlag = 0u;
+    std::uint8_t aliveFlag = 0u;
 };
 
 struct PlayerAliveAndStunned
 {
-    uint8_t aliveFlag = 0u;
-    uint8_t stunnedFlag = 0u;
+    std::uint8_t aliveFlag = 0u;
+    std::uint8_t stunnedFlag = 0u;
 };
 } // namespace Queries
 } // namespace Emergence::Query::Test

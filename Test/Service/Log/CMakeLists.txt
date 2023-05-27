@@ -1,6 +1,6 @@
 set (IMPLEMENTATIONS_TO_TEST SPDLog)
 
-sober_library_begin (TestLogShared STATIC)
+sober_library_begin (TestLogShared OBJECT)
     file (GLOB_RECURSE SOURCES "Shared/*.cpp")
     file (GLOB_RECURSE HEADERS "Shared/*.hpp")
     list (APPEND SOURCES ${HEADERS})
@@ -25,7 +25,7 @@ sober_naming_implementation_target (StandardLayoutMapping Original STANDARD_LAYO
 sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 sober_naming_variant_target (TestLogShared Original LOG_TEST_SHARED_LIBRARY)
 
-sober_library_begin (TestLogApp STATIC)
+sober_library_begin (TestLogApp OBJECT)
     file (GLOB_RECURSE SOURCES "App/*.cpp")
     file (GLOB_RECURSE HEADERS "App/*.hpp")
     list (APPEND SOURCES ${HEADERS})
@@ -50,7 +50,7 @@ sober_library_begin (TestLogApp STATIC)
 sober_library_end ()
 
 add_executable (TestLogDriver "${CMAKE_CURRENT_SOURCE_DIR}/Driver/Log/Test/Main.cpp")
-target_link_libraries (TestLogDriver PRIVATE
+sober_target_link_libraries (TestLogDriver PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_TEST_SHARED_LIBRARY} ${MEMORY_IMPLEMENTATION_TARGET}
         ${MEMORY_PROFILER_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_STUB_TARGET}
         ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET} ${DRIVER_LOG_IMPLEMENTATION_TARGET})
@@ -60,7 +60,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS_TO_TEST})
     set (RUNNER_TARGET "TestLogApp${IMPLEMENTATION}Runner")
     add_executable ("${RUNNER_TARGET}" ${SOBER_TEST_RUNNER_STUB_SOURCE})
     sober_naming_variant_target (TestLogApp ${IMPLEMENTATION} IMPLEMENTATION_LIBRARY)
-    target_link_libraries ("${RUNNER_TARGET}" PRIVATE ${IMPLEMENTATION_LIBRARY})
+    sober_target_link_libraries ("${RUNNER_TARGET}" PRIVATE ${IMPLEMENTATION_LIBRARY})
 
     add_dependencies (ServiceTests "${RUNNER_TARGET}")
     add_test (NAME "${RUNNER_TARGET}" COMMAND TestLogDriver $<TARGET_FILE:${RUNNER_TARGET}>)

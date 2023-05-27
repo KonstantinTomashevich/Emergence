@@ -841,7 +841,7 @@ static void SyncStaticModel (const StaticModelComponent *_staticModel, Urho3D::S
     }
 
     const std::size_t materialCount = std::min (_staticModel->materialNames.GetCount (),
-                                                static_cast<size_t> (_urho3DStaticModel->GetBatches ().Size ()));
+                                                static_cast<std::size_t> (_urho3DStaticModel->GetBatches ().Size ()));
 
     for (std::size_t index = 0u; index < materialCount; ++index)
     {

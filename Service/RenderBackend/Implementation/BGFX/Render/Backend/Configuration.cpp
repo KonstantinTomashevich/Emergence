@@ -22,9 +22,9 @@ END_MUTING_WARNINGS
 
 namespace Emergence::Render::Backend
 {
-static uint32_t ExtractBgfxFlags (const Config &_config)
+static std::uint32_t ExtractBgfxFlags (const Config &_config)
 {
-    uint32_t flags = BGFX_RESET_NONE;
+    std::uint32_t flags = BGFX_RESET_NONE;
     switch (_config.msaa)
     {
     case MultiSampleAntiAliasingType::NONE:
@@ -75,43 +75,49 @@ struct Callback final : bgfx::CallbackI
 
     ~Callback () override = default;
 
-    void fatal (const char *_filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char *_str) override;
+    void fatal (const char *_filePath, std::uint16_t _line, bgfx::Fatal::Enum _code, const char *_str) override;
 
-    void traceVargs (const char *_filePath, uint16_t _line, const char *_format, va_list _argList) override;
+    void traceVargs (const char *_filePath, std::uint16_t _line, const char *_format, va_list _argList) override;
 
-    void profilerBegin (const char *_name, uint32_t _abgr, const char *_filePath, uint16_t _line) override;
+    void profilerBegin (const char *_name, std::uint32_t _abgr, const char *_filePath, std::uint16_t _line) override;
 
-    void profilerBeginLiteral (const char *_name, uint32_t _abgr, const char *_filePath, uint16_t _line) override;
+    void profilerBeginLiteral (const char *_name,
+                               std::uint32_t _abgr,
+                               const char *_filePath,
+                               std::uint16_t _line) override;
 
     void profilerEnd () override;
 
-    uint32_t cacheReadSize (uint64_t _id) override;
+    std::uint32_t cacheReadSize (std::uint64_t _id) override;
 
-    bool cacheRead (uint64_t _id, void *_data, uint32_t _size) override;
+    bool cacheRead (std::uint64_t _id, void *_data, std::uint32_t _size) override;
 
-    void cacheWrite (uint64_t _id, const void *_data, uint32_t _size) override;
+    void cacheWrite (std::uint64_t _id, const void *_data, std::uint32_t _size) override;
 
     void screenShot (const char *_filePath,
-                     uint32_t _width,
-                     uint32_t _height,
-                     uint32_t _pitch,
+                     std::uint32_t _width,
+                     std::uint32_t _height,
+                     std::uint32_t _pitch,
                      const void *_data,
-                     uint32_t _size,
+                     std::uint32_t _size,
                      bool _yFlip) override;
 
-    void captureBegin (
-        uint32_t _width, uint32_t _height, uint32_t _pitch, bgfx::TextureFormat::Enum _format, bool _yFlip) override;
+    void captureBegin (std::uint32_t _width,
+                       std::uint32_t _height,
+                       std::uint32_t _pitch,
+                       bgfx::TextureFormat::Enum _format,
+                       bool _yFlip) override;
 
     void captureEnd () override;
 
-    void captureFrame (const void *_data, uint32_t _size) override;
+    void captureFrame (const void *_data, std::uint32_t _size) override;
 
     Callback &operator= (const Callback &_callback) = default;
 
     Callback &operator= (Callback &&_callback) = default;
 };
 
-void Callback::fatal (const char *_filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char *_str)
+void Callback::fatal (const char *_filePath, std::uint16_t _line, bgfx::Fatal::Enum _code, const char *_str)
 {
     if (_code == bgfx::Fatal::DebugCheck)
     {
@@ -127,7 +133,7 @@ void Callback::fatal (const char *_filePath, uint16_t _line, bgfx::Fatal::Enum _
                          _filePath, _line);
 }
 
-void Callback::traceVargs (const char *_filePath, uint16_t _line, const char *_format, va_list _argList)
+void Callback::traceVargs (const char *_filePath, std::uint16_t _line, const char *_format, va_list _argList)
 {
     char buffer[2048u];
     char *lastCharacter = buffer;
@@ -151,17 +157,17 @@ void Callback::traceVargs (const char *_filePath, uint16_t _line, const char *_f
 }
 
 void Callback::profilerBegin (const char * /*unused*/,
-                              uint32_t /*unused*/,
+                              std::uint32_t /*unused*/,
                               const char * /*unused*/,
-                              uint16_t /*unused*/)
+                              std::uint16_t /*unused*/)
 {
     // We do not support BGFX profiling yet.
 }
 
 void Callback::profilerBeginLiteral (const char * /*unused*/,
-                                     uint32_t /*unused*/,
+                                     std::uint32_t /*unused*/,
                                      const char * /*unused*/,
-                                     uint16_t /*unused*/)
+                                     std::uint16_t /*unused*/)
 {
     // We do not support BGFX profiling yet.
 }
@@ -171,29 +177,29 @@ void Callback::profilerEnd ()
     // We do not support BGFX profiling yet.
 }
 
-uint32_t Callback::cacheReadSize (uint64_t /*unused*/)
+uint32_t Callback::cacheReadSize (std::uint64_t /*unused*/)
 {
     // We do not support BGFX caching yet.
     return 0;
 }
 
-bool Callback::cacheRead (uint64_t /*unused*/, void * /*unused*/, uint32_t /*unused*/)
+bool Callback::cacheRead (std::uint64_t /*unused*/, void * /*unused*/, std::uint32_t /*unused*/)
 {
     // We do not support BGFX caching yet.
     return false;
 }
 
-void Callback::cacheWrite (uint64_t /*unused*/, const void * /*unused*/, uint32_t /*unused*/)
+void Callback::cacheWrite (std::uint64_t /*unused*/, const void * /*unused*/, std::uint32_t /*unused*/)
 {
     // We do not support BGFX caching yet.
 }
 
 void Callback::screenShot (const char *_filePath,
-                           uint32_t _width,
-                           uint32_t _height,
-                           uint32_t _pitch,
+                           std::uint32_t _width,
+                           std::uint32_t _height,
+                           std::uint32_t _pitch,
                            const void *_data,
-                           uint32_t /*unused*/,
+                           std::uint32_t /*unused*/,
                            bool _yFlip)
 {
     EMERGENCE_ASSERT (Container::String {_filePath}.ends_with (".png"));
@@ -207,9 +213,9 @@ void Callback::screenShot (const char *_filePath,
     }
 }
 
-void Callback::captureBegin (uint32_t /*unused*/,
-                             uint32_t /*unused*/,
-                             uint32_t /*unused*/,
+void Callback::captureBegin (std::uint32_t /*unused*/,
+                             std::uint32_t /*unused*/,
+                             std::uint32_t /*unused*/,
                              bgfx::TextureFormat::Enum /*unused*/,
                              bool /*unused*/)
 {
@@ -221,7 +227,7 @@ void Callback::captureEnd ()
     // We do not support BGFX capture yet.
 }
 
-void Callback::captureFrame (const void * /*unused*/, uint32_t /*unused*/)
+void Callback::captureFrame (const void * /*unused*/, std::uint32_t /*unused*/)
 {
     // We do not support BGFX capture yet.
 }

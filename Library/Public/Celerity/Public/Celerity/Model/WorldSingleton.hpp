@@ -38,10 +38,10 @@ struct WorldSingleton final
     WorldUpdateMode updateMode = WorldUpdateMode::SIMULATING;
 
     /// \invariant Do not access directly, use ::GenerateId.
-    std::atomic_unsigned_lock_free idCounter = 0u;
+    std::atomic_uintptr_t idCounter = 0u;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateId () const noexcept;
+    std::uintptr_t GenerateId () const noexcept;
 
     struct Reflection final
     {

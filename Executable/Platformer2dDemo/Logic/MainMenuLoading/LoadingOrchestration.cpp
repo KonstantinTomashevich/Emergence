@@ -150,7 +150,7 @@ void LoadingOrchestrator::SpawnViewports (const Emergence::Celerity::WorldSingle
     auto *camera = static_cast<Emergence::Celerity::Camera2dComponent *> (++cameraCursor);
     camera->objectId = cameraTransform->GetObjectId ();
     camera->halfOrthographicSize = 3.75f;
-    camera->visibilityMask = static_cast<uint64_t> (VisibilityMask::GAME_SCENE);
+    camera->visibilityMask = static_cast<std::uint64_t> (VisibilityMask::GAME_SCENE);
 
     auto viewportCursor = insertViewport.Execute ();
     auto *worldViewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);

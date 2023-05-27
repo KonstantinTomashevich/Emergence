@@ -27,10 +27,10 @@ public:
         friend class FetchShapeIntersectionQuery;
 
         /// Cursor implementation could copy Shape inside to be more cache coherent and Shape could contain doubles,
-        /// which are 8-byte long on all architectures. Therefore we use uint64_t as base size type.
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 46u);
+        /// which are 8-byte long on all architectures. Therefore we use std::uint64_t as base size type.
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 46u);
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchShapeIntersectionQuery, Cursor, Shape _shape);
@@ -43,8 +43,8 @@ private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-    explicit FetchShapeIntersectionQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit FetchShapeIntersectionQuery (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

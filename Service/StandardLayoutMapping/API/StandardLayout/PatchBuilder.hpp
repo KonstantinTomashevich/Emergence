@@ -61,19 +61,19 @@ public:
 
     /// \brief Pushes command that sets given value to given unsigned integer field.
     /// \invariant There is active patch construction routine that uses this builder.
-    void SetUInt8 (FieldId _field, uint8_t _value) noexcept;
+    void SetUInt8 (FieldId _field, std::uint8_t _value) noexcept;
 
     /// \brief Pushes command that sets given value to given unsigned integer field.
     /// \invariant There is active patch construction routine that uses this builder.
-    void SetUInt16 (FieldId _field, uint16_t _value) noexcept;
+    void SetUInt16 (FieldId _field, std::uint16_t _value) noexcept;
 
     /// \brief Pushes command that sets given value to given unsigned integer field.
     /// \invariant There is active patch construction routine that uses this builder.
-    void SetUInt32 (FieldId _field, uint32_t _value) noexcept;
+    void SetUInt32 (FieldId _field, std::uint32_t _value) noexcept;
 
     /// \brief Pushes command that sets given value to given unsigned integer field.
     /// \invariant There is active patch construction routine that uses this builder.
-    void SetUInt64 (FieldId _field, uint64_t _value) noexcept;
+    void SetUInt64 (FieldId _field, std::uint64_t _value) noexcept;
 
     /// \brief Pushes command that sets given value to given floating point field.
     /// \invariant There is active patch construction routine that uses this builder.
@@ -91,6 +91,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (PatchBuilder);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 };
 } // namespace Emergence::StandardLayout

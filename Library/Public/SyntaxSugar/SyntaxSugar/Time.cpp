@@ -8,7 +8,7 @@ struct TimeData final
 {
     std::chrono::high_resolution_clock::time_point startupTime = std::chrono::high_resolution_clock::now ();
     bool frozen = false;
-    uint64_t frozenValue = 0u;
+    std::uint64_t frozenValue = 0u;
 };
 
 // We need to enclose this data inside function to make sure that it works properly during static initialization.
@@ -27,11 +27,11 @@ uint64_t Time::NanosecondsSinceStartup () noexcept
     }
     else
     {
-        return static_cast<uint64_t> ((std::chrono::high_resolution_clock::now () - data.startupTime).count ());
+        return static_cast<std::uint64_t> ((std::chrono::high_resolution_clock::now () - data.startupTime).count ());
     }
 }
 
-void Time::Override (uint64_t _ns) noexcept
+void Time::Override (std::uint64_t _ns) noexcept
 {
     TimeData &data = AccessTimeData ();
     data.frozen = true;
@@ -45,5 +45,5 @@ void Time::LiftOverride () noexcept
 
 // Function-static variables initialization is done on first call,
 // therefore we must guarantee that function is called at least once during startup.
-[[maybe_unused]] static uint64_t ensureThatStartupTimeIsRecorded = Time::NanosecondsSinceStartup ();
+[[maybe_unused]] static std::uint64_t ensureThatStartupTimeIsRecorded = Time::NanosecondsSinceStartup ();
 } // namespace Emergence

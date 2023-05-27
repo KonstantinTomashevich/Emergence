@@ -16,7 +16,7 @@ sober_naming_implementation_target (ResourceProvider Original RESOURCE_PROVIDER_
 sober_naming_variant_target (CelerityRender2d Original CELERITY_RENDER_2D_LIBRARY_TARGET)
 sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
 
-target_link_libraries (TestCelerityRender2dOriginal PUBLIC
+sober_target_link_libraries (TestCelerityRender2dOriginal PUBLIC
         ${RENDER_BACKEND_BGFX_TARGET}
         ${RESOURCE_PROVIDER_ORIGINAL_TARGET}
         ${CELERITY_RENDER_2D_LIBRARY_TARGET}

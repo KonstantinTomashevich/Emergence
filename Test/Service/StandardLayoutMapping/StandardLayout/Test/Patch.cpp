@@ -16,7 +16,7 @@ bool PatchTestIncludeMarker () noexcept
 
 struct Struct
 {
-    uint32_t uint32 = 0u;
+    std::uint32_t uint32 = 0u;
     float floating = 0.0f;
 
     bool operator== (const Struct &_other) const = default;

@@ -26,22 +26,22 @@ Sources::Volumetric::SupportedValue::SupportedValue (int64_t _value) noexcept
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint8_t _value) noexcept
+Sources::Volumetric::SupportedValue::SupportedValue (std::uint8_t _value) noexcept
     : uint8 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint16_t _value) noexcept
+Sources::Volumetric::SupportedValue::SupportedValue (std::uint16_t _value) noexcept
     : uint16 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint32_t _value) noexcept
+Sources::Volumetric::SupportedValue::SupportedValue (std::uint32_t _value) noexcept
     : uint32 (_value)
 {
 }
 
-Sources::Volumetric::SupportedValue::SupportedValue (uint64_t _value) noexcept
+Sources::Volumetric::SupportedValue::SupportedValue (std::uint64_t _value) noexcept
     : uint64 (_value)
 {
 }
@@ -346,7 +346,7 @@ Scenario RemapSources (Scenario _scenario,
     return _scenario;
 }
 
-static Container::Vector<uint8_t> LayoutVolumetricQueryParameters (
+static Container::Vector<std::uint8_t> LayoutVolumetricQueryParameters (
     const Container::Vector<Sources::Volumetric::SupportedValue> &_firstSequence,
     const Container::Vector<Sources::Volumetric::SupportedValue> &_secondSequence,
     const Container::Vector<std::size_t> &_valueSizes)
@@ -360,20 +360,20 @@ static Container::Vector<uint8_t> LayoutVolumetricQueryParameters (
         sequenceSize += size * 2u;
     }
 
-    Container::Vector<uint8_t> sequence (sequenceSize);
-    uint8_t *output = sequence.data ();
+    Container::Vector<std::uint8_t> sequence (sequenceSize);
+    std::uint8_t *output = sequence.data ();
 
     for (std::size_t dimensionIndex = 0u; dimensionIndex < _valueSizes.size (); ++dimensionIndex)
     {
         for (std::size_t byteIndex = 0u; byteIndex < _valueSizes[dimensionIndex]; ++byteIndex)
         {
-            *output = reinterpret_cast<const uint8_t *> (&_firstSequence[dimensionIndex])[byteIndex];
+            *output = reinterpret_cast<const std::uint8_t *> (&_firstSequence[dimensionIndex])[byteIndex];
             ++output;
         }
 
         for (std::size_t byteIndex = 0u; byteIndex < _valueSizes[dimensionIndex]; ++byteIndex)
         {
-            *output = reinterpret_cast<const uint8_t *> (&_secondSequence[dimensionIndex])[byteIndex];
+            *output = reinterpret_cast<const std::uint8_t *> (&_secondSequence[dimensionIndex])[byteIndex];
             ++output;
         }
     }
@@ -381,14 +381,14 @@ static Container::Vector<uint8_t> LayoutVolumetricQueryParameters (
     return sequence;
 }
 
-Container::Vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
-                                                                   const Container::Vector<std::size_t> &_valueSizes)
+Container::Vector<std::uint8_t> LayoutShapeIntersectionQueryParameters (
+    const Tasks::ShapeIntersectionQueryBase &_query, const Container::Vector<std::size_t> &_valueSizes)
 {
     return LayoutVolumetricQueryParameters (_query.min, _query.max, _valueSizes);
 }
 
-Container::Vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
-                                                                 const Container::Vector<std::size_t> &_valueSizes)
+Container::Vector<std::uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
+                                                                      const Container::Vector<std::size_t> &_valueSizes)
 {
     return LayoutVolumetricQueryParameters (_query.origin, _query.direction, _valueSizes);
 }

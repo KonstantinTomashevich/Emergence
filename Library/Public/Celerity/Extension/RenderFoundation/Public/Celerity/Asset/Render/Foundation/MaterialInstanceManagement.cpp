@@ -8,6 +8,8 @@
 #include <Celerity/Asset/StatefulAssetManagerBase.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
+#include <Container/Algorithm.hpp>
+
 #include <Job/Dispatcher.hpp>
 
 #include <Log/Log.hpp>
@@ -219,7 +221,7 @@ AssetState Manager::TryFinishLoading (MaterialInstanceLoadingState *_loadingStat
             auto *materialInstance = static_cast<MaterialInstance *> (*materialInstanceCursor);
             materialInstance->materialId = materialId;
         }
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
         else
         {
             auto parentMaterialInstanceCursor =
@@ -329,8 +331,8 @@ void Manager::CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noex
     for (auto uniformCursor = fetchUniformVector4fValueById.Execute (&_assetId);
          const auto *uniform = static_cast<const UniformVector4fValue *> (*uniformCursor); ++uniformCursor)
     {
-        if (std::find_if (uniformValuesCollector.begin (), uniformValuesCollector.end (),
-                          findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
+        if (Container::FindIf (uniformValuesCollector.begin (), uniformValuesCollector.end (),
+                               findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
         {
             uniformValuesCollector.emplace_back (uniform->uniformName, uniform->value);
         }
@@ -339,8 +341,8 @@ void Manager::CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noex
     for (auto uniformCursor = fetchUniformMatrix3x3fValueById.Execute (&_assetId);
          const auto *uniform = static_cast<const UniformMatrix3x3fValue *> (*uniformCursor); ++uniformCursor)
     {
-        if (std::find_if (uniformValuesCollector.begin (), uniformValuesCollector.end (),
-                          findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
+        if (Container::FindIf (uniformValuesCollector.begin (), uniformValuesCollector.end (),
+                               findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
         {
             uniformValuesCollector.emplace_back (uniform->uniformName, uniform->value);
         }
@@ -349,8 +351,8 @@ void Manager::CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noex
     for (auto uniformCursor = fetchUniformMatrix4x4fValueById.Execute (&_assetId);
          const auto *uniform = static_cast<const UniformMatrix4x4fValue *> (*uniformCursor); ++uniformCursor)
     {
-        if (std::find_if (uniformValuesCollector.begin (), uniformValuesCollector.end (),
-                          findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
+        if (Container::FindIf (uniformValuesCollector.begin (), uniformValuesCollector.end (),
+                               findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
         {
             uniformValuesCollector.emplace_back (uniform->uniformName, uniform->value);
         }
@@ -359,8 +361,8 @@ void Manager::CopyParentValuesIntoCollector (Memory::UniqueString _assetId) noex
     for (auto uniformCursor = fetchUniformSamplerValueById.Execute (&_assetId);
          const auto *uniform = static_cast<const UniformSamplerValue *> (*uniformCursor); ++uniformCursor)
     {
-        if (std::find_if (uniformValuesCollector.begin (), uniformValuesCollector.end (),
-                          findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
+        if (Container::FindIf (uniformValuesCollector.begin (), uniformValuesCollector.end (),
+                               findByNameLambda (uniform->uniformName)) == uniformValuesCollector.end ())
         {
             uniformValuesCollector.emplace_back (uniform->uniformName, uniform->textureId);
         }

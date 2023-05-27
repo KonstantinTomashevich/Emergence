@@ -56,7 +56,7 @@ struct CollisionShape3dComponent final
 
     /// \brief Shape collision groups are used to filter out unneeded collisions.
     /// \invariant < 32u
-    uint8_t collisionGroup = 0u;
+    std::uint8_t collisionGroup = 0u;
 
     /// \brief Pointer to implementation-specific object.
     void *implementationHandle = nullptr;

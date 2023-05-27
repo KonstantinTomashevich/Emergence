@@ -37,7 +37,7 @@ struct BitValueComparator final
 {
     int Compare (const void *_firstValue, const void *_secondValue) const noexcept;
 
-    const uint8_t mask;
+    const std::uint8_t mask;
 };
 
 struct BlockValueComparator final
@@ -67,7 +67,7 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     {
     case StandardLayout::FieldArchetype::BIT:
     {
-        uint8_t mask = 1u << _field.GetBitOffset ();
+        std::uint8_t mask = 1u << _field.GetBitOffset ();
         return _callback (BitValueComparator {mask});
     }
 
@@ -94,17 +94,17 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     {
         switch (_field.GetSize ())
         {
-        case sizeof (uint8_t):
-            return _callback (NumericValueComparator<uint8_t> {});
+        case sizeof (std::uint8_t):
+            return _callback (NumericValueComparator<std::uint8_t> {});
 
-        case sizeof (uint16_t):
-            return _callback (NumericValueComparator<uint16_t> {});
+        case sizeof (std::uint16_t):
+            return _callback (NumericValueComparator<std::uint16_t> {});
 
-        case sizeof (uint32_t):
-            return _callback (NumericValueComparator<uint32_t> {});
+        case sizeof (std::uint32_t):
+            return _callback (NumericValueComparator<std::uint32_t> {});
 
-        case sizeof (uint64_t):
-            return _callback (NumericValueComparator<uint64_t> {});
+        case sizeof (std::uint64_t):
+            return _callback (NumericValueComparator<std::uint64_t> {});
         }
 
         break;
@@ -143,6 +143,7 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     {
         // _field should be leaf-field, not intermediate nested object.
         EMERGENCE_ASSERT (false);
+        break;
     }
 
     case StandardLayout::FieldArchetype::UTF8_STRING:
@@ -151,6 +152,7 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
     {
         // Vectors, patches and external strings aren't supported for indexing.
         EMERGENCE_ASSERT (false);
+        break;
     }
     }
 

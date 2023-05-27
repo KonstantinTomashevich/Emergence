@@ -65,8 +65,8 @@ public:
 
     LoadingOperationResponse LoadThirdPartyResource (Memory::UniqueString _id,
                                                      Memory::Heap &_allocator,
-                                                     uint64_t &_sizeOutput,
-                                                     uint8_t *&_dataOutput) const noexcept;
+                                                     std::uint64_t &_sizeOutput,
+                                                     std::uint8_t *&_dataOutput) const noexcept;
 
     ObjectRegistryCursor FindObjectsByType (const StandardLayout::Mapping &_type) const noexcept;
 
@@ -88,8 +88,8 @@ private:
 
     bool ClearSource (Memory::UniqueString _path) noexcept;
 
-    mutable std::atomic_unsigned_lock_free dataWritersCount = 0u;
-    mutable std::atomic_unsigned_lock_free dataReadersCount = 0u;
+    mutable std::atomic_uintptr_t dataWritersCount = 0u;
+    mutable std::atomic_uintptr_t dataReadersCount = 0u;
 
     RecordCollection::Collection objects;
     mutable RecordCollection::PointRepresentation objectsById;

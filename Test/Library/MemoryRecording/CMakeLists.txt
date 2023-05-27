@@ -15,7 +15,7 @@ sober_naming_implementation_target (StandardLayoutMapping Original STANDARD_LAYO
 sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_LIBRARY_TARGET)
 sober_naming_implementation_target (Testing Doctest TESTING_IMPLEMENTATION_TARGET)
 
-target_link_libraries (
+sober_target_link_libraries (
         TestMemoryRecordingOriginal PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET} ${MEMORY_RECORDING_LIBRARY_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET}  ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}

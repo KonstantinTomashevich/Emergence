@@ -25,7 +25,7 @@ class ProfiledAllocator final : public physx::PxAllocatorCallback
 public:
     ProfiledAllocator (Memory::Profiler::AllocationGroup _group);
 
-    void *allocate (size_t _size, const char * /*unused*/, const char * /*unused*/, int /*unused*/) override;
+    void *allocate (std::size_t _size, const char * /*unused*/, const char * /*unused*/, int /*unused*/) override;
 
     void deallocate (void *_pointer) override;
 
@@ -38,7 +38,7 @@ class PhysXJobDispatcher final : public physx::PxCpuDispatcher
 public:
     void submitTask (physx::PxBaseTask &_task) override;
 
-    [[nodiscard]] uint32_t getWorkerCount () const override;
+    [[nodiscard]] std::uint32_t getWorkerCount () const override;
 };
 
 struct PhysXWorld final

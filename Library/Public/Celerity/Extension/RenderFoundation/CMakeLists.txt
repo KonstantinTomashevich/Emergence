@@ -1,4 +1,4 @@
-sober_library_begin (CelerityRenderFoundation STATIC)
+sober_library_begin (CelerityRenderFoundation OBJECT)
     file (GLOB_RECURSE HEADERS "Public/*.hpp" "Private/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp" "Private/*.cpp")
     list (APPEND SOURCES ${HEADERS})

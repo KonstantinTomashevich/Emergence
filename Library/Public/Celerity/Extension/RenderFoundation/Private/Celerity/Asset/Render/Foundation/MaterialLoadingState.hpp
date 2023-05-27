@@ -19,13 +19,13 @@ public:
 
     Memory::Heap shaderDataHeap {GetAllocationGroup ()};
 
-    uint64_t vertexSharedSize = 0u;
+    std::uint64_t vertexSharedSize = 0u;
 
-    uint8_t *vertexShaderData = nullptr;
+    std::uint8_t *vertexShaderData = nullptr;
 
-    uint64_t fragmentSharedSize = 0u;
+    std::uint64_t fragmentSharedSize = 0u;
 
-    uint8_t *fragmentShaderData = nullptr;
+    std::uint8_t *fragmentShaderData = nullptr;
 };
 
 struct MaterialLoadingState final

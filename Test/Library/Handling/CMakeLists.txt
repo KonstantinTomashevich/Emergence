@@ -16,7 +16,7 @@ sober_naming_variant_target (ContextExtension Original CONTEXT_EXTENSION_LIBRARY
 sober_naming_variant_target (Handling Original HANDLING_LIBRARY_TARGET)
 sober_naming_variant_target (TestReferenceAPI Original TEST_REFERENCE_API_LIBRARY_TARGET)
 
-target_link_libraries (
+sober_target_link_libraries (
         TestHandlingOriginal PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}

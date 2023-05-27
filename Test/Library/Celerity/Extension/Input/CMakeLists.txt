@@ -7,7 +7,7 @@ add_dependencies (LibraryTests TestCelerityInputOriginal)
 target_include_directories (TestCelerityInputOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_variant_target (CelerityInput Original CELERITY_INPUT_LIBRARY_TARGET)
-target_link_libraries (TestCelerityInputOriginal PRIVATE ${CELERITY_INPUT_LIBRARY_TARGET})
+sober_target_link_libraries (TestCelerityInputOriginal PRIVATE ${CELERITY_INPUT_LIBRARY_TARGET})
 link_celerity_with_dependencies (TestCelerityInputOriginal)
 
 # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

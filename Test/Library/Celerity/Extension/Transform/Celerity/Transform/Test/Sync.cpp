@@ -20,7 +20,7 @@ using namespace Requests;
 // Use 1 us fixed frames to make test time points more readable.
 constexpr float TEST_FIXED_FRAME_TIME_S = 0.000001f;
 
-void SyncTest (Container::Vector<uint64_t> _timeSamples,
+void SyncTest (Container::Vector<std::uint64_t> _timeSamples,
                Container::Vector<RequestExecutor::RequestPacket> _fixedRequests,
                Container::Vector<RequestExecutor::RequestPacket> _normalRequests,
                bool _use2d)
@@ -58,7 +58,7 @@ void SyncTest (Container::Vector<uint64_t> _timeSamples,
     REQUIRE (builder.End ());
     std::sort (_timeSamples.begin (), _timeSamples.end ());
 
-    for (const uint64_t time : _timeSamples)
+    for (const std::uint64_t time : _timeSamples)
     {
         Time::Override (time);
         world.Update ();

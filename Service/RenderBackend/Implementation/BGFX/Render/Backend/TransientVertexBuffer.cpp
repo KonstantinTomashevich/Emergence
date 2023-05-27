@@ -6,12 +6,12 @@
 
 namespace Emergence::Render::Backend
 {
-uint32_t TransientVertexBuffer::TruncateSizeToAvailability (uint32_t _vertexCount, const VertexLayout &_layout)
+uint32_t TransientVertexBuffer::TruncateSizeToAvailability (std::uint32_t _vertexCount, const VertexLayout &_layout)
 {
     return bgfx::getAvailTransientVertexBuffer (_vertexCount, block_cast<bgfx::VertexLayout> (_layout.data));
 }
 
-TransientVertexBuffer::TransientVertexBuffer (uint32_t _vertexCount, const VertexLayout &_layout) noexcept
+TransientVertexBuffer::TransientVertexBuffer (std::uint32_t _vertexCount, const VertexLayout &_layout) noexcept
 {
     bgfx::allocTransientVertexBuffer (&block_cast<bgfx::TransientVertexBuffer> (data), _vertexCount,
                                       block_cast<bgfx::VertexLayout> (_layout.data));

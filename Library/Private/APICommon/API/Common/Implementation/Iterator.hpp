@@ -149,7 +149,7 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    ServiceClass::ServiceClass (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                              \
+    ServiceClass::ServiceClass (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept                         \
     {                                                                                                                  \
         new (&data) ImplementationClass (block_cast<ImplementationClass> (_data));                                     \
     }

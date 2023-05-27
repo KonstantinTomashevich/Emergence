@@ -37,7 +37,7 @@ public:
 
     /// \return Hash of stored string. Guaranteed to be unique,
     ///         but can not be stored in files or shared between processes.
-    [[nodiscard]] uintptr_t Hash () const noexcept;
+    [[nodiscard]] std::uintptr_t Hash () const noexcept;
 
     [[nodiscard]] bool operator== (const UniqueString &_other) const noexcept;
 
@@ -50,12 +50,12 @@ public:
     UniqueString &operator= (UniqueString &&_other) noexcept = default;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 };
 
 namespace Literals
 {
-inline UniqueString operator"" _us (const char *_string, [[maybe_unused]] size_t _size)
+inline UniqueString operator"" _us (const char *_string, [[maybe_unused]] std::size_t _size)
 {
     return UniqueString {_string};
 }

@@ -12,16 +12,16 @@ namespace Emergence::Celerity
 struct Render2dSingleton final
 {
     /// \invariant Do not access directly, use ::GenerateSprite2dId.
-    std::atomic_unsigned_lock_free sprite2dIdCounter = 0u;
+    std::atomic_uintptr_t sprite2dIdCounter = 0u;
 
     /// \invariant Do not access directly, use ::GenerateDebugShape2dId.
-    std::atomic_unsigned_lock_free debugShape2dIdCounter = 0u;
+    std::atomic_uintptr_t debugShape2dIdCounter = 0u;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateSprite2dId () const noexcept;
+    std::uintptr_t GenerateSprite2dId () const noexcept;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateDebugShape2dId () const noexcept;
+    std::uintptr_t GenerateDebugShape2dId () const noexcept;
 
     struct Reflection final
     {

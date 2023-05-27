@@ -103,10 +103,10 @@ void TransformVisualSynchronizer<TransformComponentType>::Execute () noexcept
         }
 
         // Apply interpolation.
-        const uint64_t elapsed = time->normalTimeNs - transform->visualTransformLastSyncTimeNs;
+        const std::uint64_t elapsed = time->normalTimeNs - transform->visualTransformLastSyncTimeNs;
 
-        const uint64_t duration = std::max (
-            uint64_t {1u}, transform->logicalTransformLastObservationTimeNs - transform->visualTransformLastSyncTimeNs);
+        const std::uint64_t duration = std::max (std::uint64_t {1u}, transform->logicalTransformLastObservationTimeNs -
+                                                                         transform->visualTransformLastSyncTimeNs);
 
         const float progress = Math::Clamp (static_cast<float> (elapsed) / static_cast<float> (duration), 0.0f, 1.0f);
 

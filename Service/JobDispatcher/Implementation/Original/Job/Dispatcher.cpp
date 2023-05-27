@@ -32,7 +32,7 @@ private:
     Dispatcher::Job Pop (bool &_wasBackground) noexcept;
 
     Container::Vector<std::jthread> threads {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
-    size_t maxBackgroundThreadCount;
+    std::size_t maxBackgroundThreadCount;
 
     Container::Vector<Dispatcher::Job> foregroundJobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
     Container::Vector<Dispatcher::Job> backgroundJobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
@@ -42,8 +42,8 @@ private:
 
     std::atomic_flag terminating;
 
-    std::atomic_unsigned_lock_free availableThreadsCount = 0u;
-    std::atomic_unsigned_lock_free backgroundThreadCount = 0u;
+    std::atomic_uintptr_t availableThreadsCount = 0u;
+    std::atomic_uintptr_t backgroundThreadCount = 0u;
 };
 
 DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) noexcept

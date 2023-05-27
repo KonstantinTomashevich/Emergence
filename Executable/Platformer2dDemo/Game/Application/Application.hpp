@@ -40,7 +40,7 @@ private:
 
     void EventLoop () noexcept;
 
-    [[nodiscard]] uint64_t SDLTicksToTime (uint64_t _ticks) const noexcept;
+    [[nodiscard]] std::uint64_t SDLTicksToTime (std::uint64_t _ticks) const noexcept;
 
     Settings settings;
 
@@ -54,6 +54,6 @@ private:
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
     Emergence::Resource::Provider::ResourceProvider resourceProvider;
-    uint64_t sdlInitTimeNs = 0u;
-    uint64_t sdlTicksAfterInit = 0u;
+    std::uint64_t sdlInitTimeNs = 0u;
+    std::uint64_t sdlTicksAfterInit = 0u;
 };

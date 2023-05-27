@@ -146,7 +146,7 @@ void InputGenerator::Execute () noexcept
                 Emergence::Math::Vector3f {random->NextInRange (-TARGET_STEP, TARGET_STEP), 0.0f,
                                            random->NextInRange (-TARGET_STEP, TARGET_STEP)};
 
-            constexpr uint64_t CHASE_TIME_NS = 10000000000u; // 10s
+            constexpr std::uint64_t CHASE_TIME_NS = 10000000000u; // 10s
             randomAi->chaseTargetPointUntilNs = time->fixedTimeNs + CHASE_TIME_NS;
         }
 

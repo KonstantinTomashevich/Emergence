@@ -12,6 +12,8 @@
 
 namespace Emergence::Serialization::Yaml::Test
 {
+using namespace Emergence::Serialization::Test;
+
 template <typename Type>
 void ObjectSerializationDeserializationTest (const Type &_value)
 {

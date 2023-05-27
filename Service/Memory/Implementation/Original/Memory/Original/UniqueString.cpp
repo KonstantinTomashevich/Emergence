@@ -70,7 +70,7 @@ static const char *RegisterValue (const std::string_view &_value)
             }
 
             char *space = static_cast<char *> (lastStack->Acquire (_value.size () + 1u, 1u));
-            for (size_t index = 0u; index < _value.size (); ++index)
+            for (std::size_t index = 0u; index < _value.size (); ++index)
             {
                 space[index] = _value[index];
             }
@@ -102,7 +102,7 @@ const char *UniqueString::operator* () const noexcept
 
 uintptr_t UniqueString::Hash () const noexcept
 {
-    return reinterpret_cast<uintptr_t> (value);
+    return reinterpret_cast<std::uintptr_t> (value);
 }
 
 bool UniqueString::operator== (const UniqueString &_other) const

@@ -219,7 +219,7 @@ void ExecuteTask (ExecutionContext &_context, const PrepareModifyDescendingRange
 template <typename Query>
 void ValidateCreatedQuery (const StandardLayout::Mapping &_typeMapping,
                            StandardLayout::FieldId _keyField,
-                           const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+                           const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue,
                            const Query &_query)
 {
     CHECK (_typeMapping.GetField (_keyField).IsSame (_query.GetKeyField ()));
@@ -406,7 +406,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
 {
     auto &query = std::get<FetchShapeIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence =
+    Container::Vector<std::uint8_t> sequence =
         Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (sequence.data ()));
@@ -416,7 +416,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
 {
     auto &query = std::get<ModifyShapeIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence =
+    Container::Vector<std::uint8_t> sequence =
         Query::Test::LayoutShapeIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (), query.Execute (sequence.data ()));
@@ -426,7 +426,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
 {
     auto &query = std::get<FetchRayIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence =
+    Container::Vector<std::uint8_t> sequence =
         Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (),
@@ -437,7 +437,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
 {
     auto &query = std::get<ModifyRayIntersectionQuery> (GetObject<PreparedQuery> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence =
+    Container::Vector<std::uint8_t> sequence =
         Query::Test::LayoutRayIntersectionQueryParameters (_task, CollectVolumetricQueryKeyFieldSizes (query));
 
     AddObject<Cursor> (_context, _task.cursorName, query.GetTypeMapping (),
@@ -944,7 +944,7 @@ static Container::Vector<Task> CheckQueryEnvironment (const Task &_queryPreparat
             if constexpr (SingletonQueryPreparation<std::decay_t<decltype (_query)>>)
             {
                 // To simplify testing logic, we expect that singleton has zero-filling default constructor.
-                static std::array<uint8_t, 1024u> zeroMemory {0u};
+                static std::array<std::uint8_t, 1024u> zeroMemory {0u};
                 REQUIRE (_query.typeMapping.GetObjectSize () <= zeroMemory.max_size ());
 
                 tasks += {PrepareFetchSingletonQuery {{_query.typeMapping, "EnvironmentCheck"}},

@@ -21,9 +21,10 @@ bool Emergence::RecordCollection::Test::SignalRepresentationTestIncludeMarker ()
 static Emergence::Query::Test::Storage GetTestStorage ()
 {
     using namespace Emergence::Query::Test;
-    return {Player::Reflect ().mapping,
-            {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED},
-            {Sources::Signal {"Source", Player::Reflect ().id, array_cast<uint32_t, sizeof (uint64_t)> (0u)}}};
+    return {
+        Player::Reflect ().mapping,
+        {&HUGO_0_KNIGHT_ALIVE_STUNNED, &KARL_1_MAGE_ALIVE_IMMOBILIZED},
+        {Sources::Signal {"Source", Player::Reflect ().id, array_cast<std::uint32_t, sizeof (std::uint64_t)> (0u)}}};
 }
 
 static void ExecuteRepresentationReferenceApiTest (const Emergence::Reference::Test::Scenario &_scenario)

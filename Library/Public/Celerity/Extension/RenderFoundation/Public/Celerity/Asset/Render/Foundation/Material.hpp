@@ -21,7 +21,7 @@ struct UniformDescription final
     union
     {
         /// \brief Stage for uniforms of Render::Backend::UniformType::SAMPLER type.
-        uint8_t textureStage = 0u;
+        std::uint8_t textureStage = 0u;
     };
 
     struct Reflection final

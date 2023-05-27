@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <API/Common/Cursor.hpp>
 
 #include <Celerity/Event/EventTrigger.hpp>
@@ -68,9 +70,11 @@
             void ExitRecord () noexcept;                                                                               \
                                                                                                                        \
             BaseClass::Cursor source;                                                                                  \
+            BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                        \
             [[maybe_unused]] Emergence::Celerity::TrivialEventTriggerInstanceRow *eventsOnRemove;                      \
             [[maybe_unused]] Emergence::Celerity::OnChangeEventTriggerInstanceRow *eventsOnChange;                     \
             [[maybe_unused]] Emergence::Celerity::ChangeTracker *changeTracker;                                        \
+            END_MUTING_WARNINGS                                                                                        \
         };                                                                                                             \
                                                                                                                        \
         QueryClass (const QueryClass &_other) noexcept;                                                                \

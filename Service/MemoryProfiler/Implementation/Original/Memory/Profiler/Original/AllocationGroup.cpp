@@ -97,25 +97,25 @@ AllocationGroup *AllocationGroup::Request (AllocationGroup *_parent,
     return newGroup;
 }
 
-void AllocationGroup::Allocate (size_t _bytesCount, const ProfilingLock &_lock) noexcept
+void AllocationGroup::Allocate (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
     AllocateInternal (_bytesCount);
     EventManager::Get ().Allocate (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
-void AllocationGroup::Acquire (size_t _bytesCount, const ProfilingLock &_lock) noexcept
+void AllocationGroup::Acquire (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
     AcquireInternal (_bytesCount);
     EventManager::Get ().Acquire (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
-void AllocationGroup::Release (size_t _bytesCount, const ProfilingLock &_lock) noexcept
+void AllocationGroup::Release (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
     ReleaseInternal (_bytesCount);
     EventManager::Get ().Release (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
 }
 
-void AllocationGroup::Free (size_t _bytesCount, const ProfilingLock &_lock) noexcept
+void AllocationGroup::Free (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept
 {
     FreeInternal (_bytesCount);
     EventManager::Get ().Free (ImplementationUtils::ToServiceFormat (this), _bytesCount, _lock);
@@ -141,17 +141,17 @@ UniqueString AllocationGroup::GetId () const noexcept
     return id;
 }
 
-size_t AllocationGroup::GetAcquired () const noexcept
+std::size_t AllocationGroup::GetAcquired () const noexcept
 {
     return acquired;
 }
 
-size_t AllocationGroup::GetReserved () const noexcept
+std::size_t AllocationGroup::GetReserved () const noexcept
 {
     return reserved;
 }
 
-size_t AllocationGroup::GetTotal () const noexcept
+std::size_t AllocationGroup::GetTotal () const noexcept
 {
     return acquired + reserved;
 }
@@ -159,10 +159,10 @@ size_t AllocationGroup::GetTotal () const noexcept
 uintptr_t AllocationGroup::Hash () const noexcept
 {
     // Groups are never deallocated, therefore address is a perfect hash.
-    return reinterpret_cast<uintptr_t> (this);
+    return reinterpret_cast<std::uintptr_t> (this);
 }
 
-void AllocationGroup::AllocateInternal (size_t _bytesCount) noexcept
+void AllocationGroup::AllocateInternal (std::size_t _bytesCount) noexcept
 {
     reserved += _bytesCount;
     if (parent)
@@ -171,7 +171,7 @@ void AllocationGroup::AllocateInternal (size_t _bytesCount) noexcept
     }
 }
 
-void AllocationGroup::AcquireInternal (size_t _bytesCount) noexcept
+void AllocationGroup::AcquireInternal (std::size_t _bytesCount) noexcept
 {
     EMERGENCE_ASSERT (reserved >= _bytesCount);
     reserved -= _bytesCount;
@@ -183,7 +183,7 @@ void AllocationGroup::AcquireInternal (size_t _bytesCount) noexcept
     }
 }
 
-void AllocationGroup::ReleaseInternal (size_t _bytesCount) noexcept
+void AllocationGroup::ReleaseInternal (std::size_t _bytesCount) noexcept
 {
     EMERGENCE_ASSERT (acquired >= _bytesCount);
     acquired -= _bytesCount;
@@ -195,7 +195,7 @@ void AllocationGroup::ReleaseInternal (size_t _bytesCount) noexcept
     }
 }
 
-void AllocationGroup::FreeInternal (size_t _bytesCount) noexcept
+void AllocationGroup::FreeInternal (std::size_t _bytesCount) noexcept
 {
     EMERGENCE_ASSERT (reserved >= _bytesCount);
     reserved -= _bytesCount;

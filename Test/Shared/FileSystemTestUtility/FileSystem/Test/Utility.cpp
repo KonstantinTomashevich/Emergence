@@ -29,8 +29,8 @@ void ExpectFilesEqual (const Container::String &_expectedFilePath, const Contain
 
     constexpr auto BUFFER_SIZE = static_cast<std::streamsize> (16u * 1024u);
     std::streamsize read = 0u;
-    std::array<uint8_t, BUFFER_SIZE> expectedBuffer;
-    std::array<uint8_t, BUFFER_SIZE> resultBuffer;
+    std::array<std::uint8_t, BUFFER_SIZE> expectedBuffer;
+    std::array<std::uint8_t, BUFFER_SIZE> resultBuffer;
 
     while (read < expectedSize)
     {

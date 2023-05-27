@@ -17,15 +17,15 @@ struct TrivialStruct final
     int32_t int32 = 0;
     int64_t int64 = 0;
 
-    uint8_t uint8 = 0u;
-    uint16_t uint16 = 0u;
-    uint32_t uint32 = 0u;
-    uint64_t uint64 = 0u;
+    std::uint8_t uint8 = 0u;
+    std::uint16_t uint16 = 0u;
+    std::uint32_t uint32 = 0u;
+    std::uint64_t uint64 = 0u;
 
     float floating = 0.0f;
     double doubleFloating = 0.0;
 
-    std::array<uint8_t, 8u> data = {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u};
+    std::array<std::uint8_t, 8u> data = {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u};
 
     bool operator== (const TrivialStruct &_other) const noexcept = default;
 
@@ -55,11 +55,11 @@ struct TrivialStruct final
 
 struct NonTrivialStruct final
 {
-    static constexpr uint8_t ALIVE_OFFSET = 0u;
-    static constexpr uint8_t POISONED_OFFSET = 1u;
-    static constexpr uint8_t STUNNED_OFFSET = 2u;
+    static constexpr std::uint8_t ALIVE_OFFSET = 0u;
+    static constexpr std::uint8_t POISONED_OFFSET = 1u;
+    static constexpr std::uint8_t STUNNED_OFFSET = 2u;
 
-    uint8_t flags = 0u;
+    std::uint8_t flags = 0u;
     std::array<char, 32u> string {'\0'};
     Memory::UniqueString uniqueString {"Hello, world!"};
 
@@ -84,7 +84,7 @@ struct UnionStruct final
 {
     UnionStruct () noexcept = default;
 
-    uint64_t type = 0u;
+    std::uint64_t type = 0u;
     union
     {
         struct
@@ -95,8 +95,8 @@ struct UnionStruct final
 
         struct
         {
-            uint64_t m;
-            uint64_t n;
+            std::uint64_t m;
+            std::uint64_t n;
         };
     };
 
@@ -119,8 +119,8 @@ struct UnionStruct final
 
 struct SimpleTestStruct final
 {
-    uint64_t a = 0u;
-    uint64_t b = 0u;
+    std::uint64_t a = 0u;
+    std::uint64_t b = 0u;
 
     bool operator== (const SimpleTestStruct &_other) const noexcept = default;
 

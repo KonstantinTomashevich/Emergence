@@ -1,7 +1,7 @@
-#include <Celerity/UI/Font.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/Texture.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
+#include <Celerity/UI/Font.hpp>
 #include <Celerity/UI/ImageControl.hpp>
 #include <Celerity/UI/UIAssetPin.hpp>
 #include <Celerity/UI/UIStyle.hpp>

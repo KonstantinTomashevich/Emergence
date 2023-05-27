@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Batching2d.hpp>
@@ -47,7 +49,7 @@ static const RectVertex QUAD_VERTICES[4u] = {
     {{-1.0f, -1.0f}, {0.0f, 1.0f}},
 };
 
-static const uint16_t QUAD_INDICES[6u] = {2u, 1u, 0u, 0u, 3u, 2u};
+static const std::uint16_t QUAD_INDICES[6u] = {2u, 1u, 0u, 0u, 3u, 2u};
 
 class WorldRenderer final : public TaskExecutorBase<WorldRenderer>
 {
@@ -302,13 +304,13 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
         return;
     }
 
-    const auto totalVertices = static_cast<uint32_t> (_batch.sprites.size () * 4u);
-    const auto totalIndices = static_cast<uint32_t> (_batch.sprites.size () * 6u);
+    const auto totalVertices = static_cast<std::uint32_t> (_batch.sprites.size () * 4u);
+    const auto totalIndices = static_cast<std::uint32_t> (_batch.sprites.size () * 6u);
 
-    const uint32_t availableVertices =
+    const std::uint32_t availableVertices =
         Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, rectVertexLayout);
 
-    const uint32_t availableIndices =
+    const std::uint32_t availableIndices =
         Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
 
     if (availableVertices != totalVertices || availableIndices != totalIndices)
@@ -317,13 +319,13 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
                        "Celerity::Render2d: Unable to submit all rects due to being unable to allocate buffers.");
     }
 
-    const uint32_t maxRects = std::min (availableVertices / 4u, availableIndices / 6u);
-    const uint32_t size = std::min (maxRects, static_cast<uint32_t> (_batch.sprites.size ()));
+    const std::uint32_t maxRects = std::min (availableVertices / 4u, availableIndices / 6u);
+    const std::uint32_t size = std::min (maxRects, static_cast<std::uint32_t> (_batch.sprites.size ()));
 
     Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, rectVertexLayout};
     Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
 
-    for (uint32_t index = 0u; index < size; ++index)
+    for (std::uint32_t index = 0u; index < size; ++index)
     {
         auto spriteCursor = fetchSpriteBySpriteId.Execute (&_batch.sprites[index]);
         const auto *sprite = static_cast<const Sprite2dComponent *> (*spriteCursor);
@@ -349,7 +351,7 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
         RectVertex *vertices =
             reinterpret_cast<RectVertex *> (vertexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 4u);
 
-        for (uint32_t vertexIndex = 0u; vertexIndex < 4u; ++vertexIndex)
+        for (std::uint32_t vertexIndex = 0u; vertexIndex < 4u; ++vertexIndex)
         {
             RectVertex &vertex = vertices[vertexIndex];
             const Math::Vector2f localPoint = QUAD_VERTICES[vertexIndex].translation * sprite->halfSize;
@@ -362,10 +364,11 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
             vertex.uv.y = sprite->uv.min.y + QUAD_VERTICES[vertexIndex].uv.y * (sprite->uv.max.y - sprite->uv.min.y);
         }
 
-        uint16_t *indices = reinterpret_cast<uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 6u);
-        for (uint32_t indexIndex = 0u; indexIndex < 6u; ++indexIndex)
+        std::uint16_t *indices =
+            reinterpret_cast<std::uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (index * 6u);
+        for (std::uint32_t indexIndex = 0u; indexIndex < 6u; ++indexIndex)
         {
-            indices[indexIndex] = static_cast<uint16_t> (QUAD_INDICES[indexIndex] + index * 4u);
+            indices[indexIndex] = static_cast<std::uint16_t> (QUAD_INDICES[indexIndex] + index * 4u);
         }
     }
 
@@ -387,8 +390,8 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
         return;
     }
 
-    constexpr size_t DEBUG_CIRCLE_POINT_COUNT = 16u;
-    size_t lineCount = 0u;
+    constexpr std::size_t DEBUG_CIRCLE_POINT_COUNT = 16u;
+    std::size_t lineCount = 0u;
 
     for (UniqueId debugShapeId : _batch.debugShapes)
     {
@@ -417,13 +420,13 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
         return;
     }
 
-    const auto totalVertices = static_cast<uint32_t> (lineCount * 2u);
-    const auto totalIndices = static_cast<uint32_t> (lineCount * 2u);
+    const auto totalVertices = static_cast<std::uint32_t> (lineCount * 2u);
+    const auto totalIndices = static_cast<std::uint32_t> (lineCount * 2u);
 
-    const uint32_t availableVertices =
+    const std::uint32_t availableVertices =
         Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, lineVertexLayout);
 
-    const uint32_t availableIndices =
+    const std::uint32_t availableIndices =
         Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
 
     if (availableVertices != totalVertices || availableIndices != totalIndices)
@@ -432,13 +435,13 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
                        "Celerity::Render2d: Unable to submit all lines due to being unable to allocate buffers.");
     }
 
-    const uint32_t maxLines = std::min (availableVertices / 2u, availableIndices / 2u);
-    const uint32_t size = std::min (maxLines, static_cast<uint32_t> (lineCount));
+    const std::uint32_t maxLines = std::min (availableVertices / 2u, availableIndices / 2u);
+    const std::uint32_t size = std::min (maxLines, static_cast<std::uint32_t> (lineCount));
 
     Render::Backend::TransientVertexBuffer vertexBuffer {totalVertices, lineVertexLayout};
     Render::Backend::TransientIndexBuffer indexBuffer {totalIndices, false};
 
-    size_t lineIndex = 0u;
+    std::size_t lineIndex = 0u;
     auto addLine =
         [size, &lineIndex, &vertexBuffer, &indexBuffer] (const Math::Vector2f &_start, const Math::Vector2f &_end)
     {
@@ -453,11 +456,11 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
         vertices[0u].translation = _start;
         vertices[1u].translation = _end;
 
-        uint16_t *indices =
-            reinterpret_cast<uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (lineIndex * 2u);
-        EMERGENCE_ASSERT (lineIndex * 2u + 1 < std::numeric_limits<uint16_t>::max ());
-        indices[0u] = static_cast<uint16_t> (lineIndex * 2u);
-        indices[1u] = static_cast<uint16_t> (lineIndex * 2u + 1u);
+        std::uint16_t *indices =
+            reinterpret_cast<std::uint16_t *> (indexBuffer.GetData ()) + static_cast<ptrdiff_t> (lineIndex * 2u);
+        EMERGENCE_ASSERT (lineIndex * 2u + 1 < std::numeric_limits<std::uint16_t>::max ());
+        indices[0u] = static_cast<std::uint16_t> (lineIndex * 2u);
+        indices[1u] = static_cast<std::uint16_t> (lineIndex * 2u + 1u);
         ++lineIndex;
     };
 
@@ -495,7 +498,7 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
         switch (shape->shape.type)
         {
         case DebugShape2dType::BOX:
-            for (size_t startVertexIndex = 0u; startVertexIndex < 4u; ++startVertexIndex)
+            for (std::size_t startVertexIndex = 0u; startVertexIndex < 4u; ++startVertexIndex)
             {
                 const RectVertex &startVertex = QUAD_VERTICES[startVertexIndex];
                 const RectVertex &endVertex = QUAD_VERTICES[(startVertexIndex + 1u) % 4u];
@@ -509,8 +512,8 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
 
         case DebugShape2dType::CIRCLE:
         {
-            constexpr size_t POINT_COUNT = 16u;
-            for (size_t startVertexIndex = 0u; startVertexIndex < POINT_COUNT; ++startVertexIndex)
+            constexpr std::size_t POINT_COUNT = 16u;
+            for (std::size_t startVertexIndex = 0u; startVertexIndex < POINT_COUNT; ++startVertexIndex)
             {
                 const float startAngle =
                     static_cast<float> (startVertexIndex) * 2.0f * Math::PI / static_cast<float> (POINT_COUNT);

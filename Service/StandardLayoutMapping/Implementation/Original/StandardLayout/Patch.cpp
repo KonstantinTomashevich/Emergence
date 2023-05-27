@@ -105,13 +105,13 @@ Patch Patch::operator+ (const Patch &_other) const noexcept
 
         if (!overrideFound)
         {
-            builder.Set (info.field, *static_cast<const std::array<uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
+            builder.Set (info.field, *static_cast<const std::array<std::uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
         }
     }
 
     for (const Patch::ChangeInfo &info : _other)
     {
-        builder.Set (info.field, *static_cast<const std::array<uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
+        builder.Set (info.field, *static_cast<const std::array<std::uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
     }
 
     Handling::Handle<PlainPatch> patch = builder.End ();
@@ -160,13 +160,13 @@ Patch Patch::operator- (const Patch &_other) const noexcept
                     switch (field.GetSize ())
                     {
                     case 1u:
-                        CHECK (uint8_t);
+                        CHECK (std::uint8_t);
                     case 2u:
-                        CHECK (uint16_t);
+                        CHECK (std::uint16_t);
                     case 4u:
-                        CHECK (uint32_t);
+                        CHECK (std::uint32_t);
                     case 8u:
-                        CHECK (uint64_t);
+                        CHECK (std::uint64_t);
                     }
                     break;
 
@@ -204,7 +204,7 @@ Patch Patch::operator- (const Patch &_other) const noexcept
 
         if (!found)
         {
-            builder.Set (info.field, *static_cast<const std::array<uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
+            builder.Set (info.field, *static_cast<const std::array<std::uint8_t, VALUE_MAX_SIZE> *> (info.newValue));
         }
     }
 
@@ -244,12 +244,12 @@ Patch &Patch::operator= (Patch &&_other) noexcept
     return *this;
 }
 
-Patch::Patch (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+Patch::Patch (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Handling::Handle<PlainPatch> (block_cast<Handling::Handle<PlainPatch>> (_data));
 }
 
-Patch::Patch (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+Patch::Patch (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Handling::Handle<PlainPatch> (std::move (block_cast<Handling::Handle<PlainPatch>> (_data)));
 }

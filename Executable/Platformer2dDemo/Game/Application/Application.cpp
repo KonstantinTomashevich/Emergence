@@ -112,7 +112,7 @@ void Application::LoadSettings () noexcept
 void Application::InitWindow () noexcept
 {
     EMERGENCE_LOG (INFO, "Application: Initializing window...");
-    uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
+    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
 
     if (settings.fullscreen)
     {
@@ -129,7 +129,7 @@ void Application::InitWindow () noexcept
 
 #if SDL_VIDEO_DRIVER_X11
     void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (uintptr_t) windowsManagerInfo.info.x11.window;
+    void *nativeWindowHandle = (void *) (std::uintptr_t) windowsManagerInfo.info.x11.window;
 #elif SDL_VIDEO_DRIVER_COCOA
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
@@ -271,7 +271,7 @@ void Application::EventLoop () noexcept
     }
 }
 
-uint64_t Application::SDLTicksToTime (uint64_t _ticks) const noexcept
+uint64_t Application::SDLTicksToTime (std::uint64_t _ticks) const noexcept
 {
     return (_ticks - sdlTicksAfterInit) * 1000000u + sdlInitTimeNs;
 }

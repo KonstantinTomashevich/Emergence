@@ -1,6 +1,6 @@
 add_subdirectory (Constants)
 
-sober_library_begin (Flow STATIC)
+sober_library_begin (Flow OBJECT)
     file (GLOB_RECURSE HEADERS "Public/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp")
     list (APPEND SOURCES ${HEADERS})

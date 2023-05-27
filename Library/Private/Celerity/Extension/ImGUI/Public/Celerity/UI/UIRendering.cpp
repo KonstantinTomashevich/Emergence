@@ -40,14 +40,14 @@ private:
 
     bool FetchTextureUniform (Render::Backend::UniformId &_hasTextureIdOutput,
                               Render::Backend::UniformId &_textureIdOutput,
-                              uint8_t &_textureStageOutput) noexcept;
+                              std::uint8_t &_textureStageOutput) noexcept;
 
     void ProcessRenderPass (const UIRenderPass *_renderPass,
                             Render::Backend::SubmissionAgent &_agent,
                             Render::Backend::ProgramId _programId,
                             Render::Backend::UniformId _hasTextureUniformId,
                             Render::Backend::UniformId _textureUniformId,
-                            uint8_t _textureStage) noexcept;
+                            std::uint8_t _textureStage) noexcept;
 
     FetchSingletonQuery fetchRenderFoundation;
     FetchAscendingRangeQuery fetchAssetPin;
@@ -100,7 +100,7 @@ void UIRenderer::Execute ()
     Render::Backend::ProgramId programId;
     Render::Backend::UniformId textureUniformId;
     Render::Backend::UniformId hasTextureUniformId;
-    uint8_t textureStage;
+    std::uint8_t textureStage;
 
     if (!CheckMaterialAssetStatus () || !FetchMaterialProgram (programId) ||
         !FetchTextureUniform (hasTextureUniformId, textureUniformId, textureStage))
@@ -156,7 +156,7 @@ bool UIRenderer::FetchMaterialProgram (Render::Backend::ProgramId &_idOutput) no
 
 bool UIRenderer::FetchTextureUniform (Render::Backend::UniformId &_hasTextureIdOutput,
                                       Render::Backend::UniformId &_textureIdOutput,
-                                      uint8_t &_textureStageOutput) noexcept
+                                      std::uint8_t &_textureStageOutput) noexcept
 {
     struct
     {
@@ -198,7 +198,7 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
                                     Render::Backend::ProgramId _programId,
                                     Render::Backend::UniformId _hasTextureUniformId,
                                     Render::Backend::UniformId _textureUniformId,
-                                    uint8_t _textureStage) noexcept
+                                    std::uint8_t _textureStage) noexcept
 {
     if (!_renderPass->nativeContext)
     {
@@ -239,13 +239,13 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
     for (int listIndex = 0u; listIndex < data->CmdListsCount; ++listIndex)
     {
         const ImDrawList *drawList = data->CmdLists[listIndex];
-        const auto totalVertices = static_cast<uint32_t> (drawList->VtxBuffer.size ());
-        const auto totalIndices = static_cast<uint32_t> (drawList->IdxBuffer.size ());
+        const auto totalVertices = static_cast<std::uint32_t> (drawList->VtxBuffer.size ());
+        const auto totalIndices = static_cast<std::uint32_t> (drawList->IdxBuffer.size ());
 
-        const uint32_t availableVertices =
+        const std::uint32_t availableVertices =
             Render::Backend::TransientVertexBuffer::TruncateSizeToAvailability (totalVertices, imGUIVertexLayout);
 
-        const uint32_t availableIndices =
+        const std::uint32_t availableIndices =
             Render::Backend::TransientIndexBuffer::TruncateSizeToAvailability (totalIndices, false);
 
         if (availableVertices != totalVertices || availableIndices != totalIndices)
@@ -284,10 +284,10 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
             if (clipRect.x < frameBufferWidth && clipRect.y < frameBufferHeight && clipRect.z >= 0.0f &&
                 clipRect.w >= 0.0f)
             {
-                const uint32_t scissorX = viewport->x + std::max (static_cast<uint32_t> (clipRect.x), 0u);
-                const uint32_t scissorY = viewport->y + std::max (static_cast<uint32_t> (clipRect.y), 0u);
-                const uint32_t scissorWidth = std::max (static_cast<uint32_t> (clipRect.z - clipRect.x), 0u);
-                const uint32_t scissorHeight = std::max (static_cast<uint32_t> (clipRect.w - clipRect.y), 0u);
+                const std::uint32_t scissorX = viewport->x + std::max (static_cast<std::uint32_t> (clipRect.x), 0u);
+                const std::uint32_t scissorY = viewport->y + std::max (static_cast<std::uint32_t> (clipRect.y), 0u);
+                const std::uint32_t scissorWidth = std::max (static_cast<std::uint32_t> (clipRect.z - clipRect.x), 0u);
+                const std::uint32_t scissorHeight = std::max (static_cast<std::uint32_t> (clipRect.w - clipRect.y), 0u);
 
                 _agent.SetScissor (scissorX, scissorY,
                                    std::min (scissorWidth, viewport->width - (scissorX - viewport->x)),

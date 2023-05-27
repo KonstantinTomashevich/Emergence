@@ -52,7 +52,7 @@ sober_naming_implementation_target (StandardLayoutMapping Original STANDARD_LAYO
 sober_naming_implementation_target (Testing Doctest TESTING_LIBRARY_TARGET)
 sober_naming_service_target (MemoryProfiler MEMORY_PROFILER_TARGET)
 
-target_link_libraries (TestMemoryProfilerNone PRIVATE
+sober_target_link_libraries (TestMemoryProfilerNone PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}
         ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET}

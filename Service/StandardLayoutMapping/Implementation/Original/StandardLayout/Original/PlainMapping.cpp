@@ -32,12 +32,12 @@ bool FieldData::IsProjected () const noexcept
     return projected;
 }
 
-size_t FieldData::GetOffset () const noexcept
+std::size_t FieldData::GetOffset () const noexcept
 {
     return offset;
 }
 
-size_t FieldData::GetSize () const noexcept
+std::size_t FieldData::GetSize () const noexcept
 {
     return size;
 }
@@ -129,7 +129,7 @@ FieldData::FieldData (FieldData::VectorSeed _seed) noexcept
       vectorItemMapping (std::move (_seed.vectorItemMapping))
 {
     EMERGENCE_ASSERT (vectorItemMapping);
-    size = sizeof (Container::Vector<uint8_t>);
+    size = sizeof (Container::Vector<std::uint8_t>);
 }
 
 FieldData::FieldData (FieldData::PatchSeed _seed) noexcept
@@ -262,27 +262,27 @@ void PlainMapping::ConditionalFieldIterator::UpdateWhetherTopConditionSatisfied 
     if (topCondition)
     {
         const FieldData *sourceField = owner->GetField (topCondition->sourceField);
-        const auto *shifted = static_cast<const uint8_t *> (object) + sourceField->GetOffset ();
+        const auto *shifted = static_cast<const std::uint8_t *> (object) + sourceField->GetOffset ();
 
 #define DO_OPERATION(Operation)                                                                                        \
     switch (sourceField->GetSize ())                                                                                   \
     {                                                                                                                  \
     case 1u:                                                                                                           \
-        topConditionSatisfied = static_cast<uint64_t> (*shifted) Operation topCondition->argument;                     \
+        topConditionSatisfied = static_cast<std::uint64_t> (*shifted) Operation topCondition->argument;                \
         break;                                                                                                         \
                                                                                                                        \
     case 2u:                                                                                                           \
-        topConditionSatisfied =                                                                                        \
-            static_cast<uint64_t> (*reinterpret_cast<const uint16_t *> (shifted)) Operation topCondition->argument;    \
+        topConditionSatisfied = static_cast<std::uint64_t> (*reinterpret_cast<const std::uint16_t *> (shifted))        \
+                                    Operation topCondition->argument;                                                  \
         break;                                                                                                         \
                                                                                                                        \
     case 4u:                                                                                                           \
-        topConditionSatisfied =                                                                                        \
-            static_cast<uint64_t> (*reinterpret_cast<const uint32_t *> (shifted)) Operation topCondition->argument;    \
+        topConditionSatisfied = static_cast<std::uint64_t> (*reinterpret_cast<const std::uint32_t *> (shifted))        \
+                                    Operation topCondition->argument;                                                  \
         break;                                                                                                         \
                                                                                                                        \
     case 8u:                                                                                                           \
-        topConditionSatisfied = *reinterpret_cast<const uint64_t *> (shifted) Operation topCondition->argument;        \
+        topConditionSatisfied = *reinterpret_cast<const std::uint64_t *> (shifted) Operation topCondition->argument;   \
         break;                                                                                                         \
                                                                                                                        \
     default:                                                                                                           \

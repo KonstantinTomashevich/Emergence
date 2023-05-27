@@ -9,6 +9,8 @@
 
 namespace Emergence::Serialization::Binary
 {
+// TODO: Remove type name serialization from serialization routine?
+
 /// \brief Serializes given object of given type into given binary stream.
 /// \warning Serialization is mapping-dependant: deserialization must be
 ///          made using exactly same mapping, otherwise data will be broken.

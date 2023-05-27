@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Math/AxisAlignedBox2d.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>

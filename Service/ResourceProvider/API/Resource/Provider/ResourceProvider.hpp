@@ -14,7 +14,7 @@
 namespace Emergence::Resource::Provider
 {
 /// \brief Exit codes for ResourceProvider operations that work with resource sources.
-enum class SourceOperationResponse : uint8_t
+enum class SourceOperationResponse : std::uint8_t
 {
     /// \brief Executed successfully.
     SUCCESSFUL = 0u,
@@ -39,7 +39,7 @@ enum class SourceOperationResponse : uint8_t
 };
 
 /// \brief Exit codes for ResourceProvider operations that load resources.
-enum class LoadingOperationResponse : uint8_t
+enum class LoadingOperationResponse : std::uint8_t
 {
     /// \brief Executed successfully.
     SUCCESSFUL = 0u,
@@ -98,9 +98,9 @@ public:
     private:
         friend class ResourceProvider;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 8u);
 
-        explicit ObjectRegistryCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit ObjectRegistryCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Constructs resource provider the supports given resource types and is aware of given patchable types.
@@ -139,14 +139,14 @@ public:
     /// \brief Attempts to fully load third party resource by its id, using given heap to allocate memory for it.
     [[nodiscard]] LoadingOperationResponse LoadThirdPartyResource (Memory::UniqueString _id,
                                                                    Memory::Heap &_allocator,
-                                                                   uint64_t &_sizeOutput,
-                                                                   uint8_t *&_dataOutput) const noexcept;
+                                                                   std::uint64_t &_sizeOutput,
+                                                                   std::uint8_t *&_dataOutput) const noexcept;
 
     /// \brief Returns cursor that provides access to ids of all resources of given type.
     /// \warning Cursor holds read access to resource registry while it is alive.
     [[nodiscard]] ObjectRegistryCursor FindObjectsByType (const StandardLayout::Mapping &_type) const noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 };
 } // namespace Emergence::Resource::Provider

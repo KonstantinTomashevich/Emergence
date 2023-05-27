@@ -131,7 +131,7 @@ TEST_CASE (NonStandardAlignment)
 
     for (std::size_t index = 0u; index < SAMPLE_COUNT; ++index)
     {
-        CHECK_EQUAL (reinterpret_cast<uintptr_t> (allocator.Allocate ()) % alignof (Align16), 0u);
+        CHECK_EQUAL (reinterpret_cast<std::uintptr_t> (allocator.Allocate ()) % alignof (Align16), 0u);
     }
 }
 

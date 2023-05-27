@@ -10,7 +10,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Describes how action should be delivered to the user objects.
-enum class InputActionDispatchType : uint8_t
+enum class InputActionDispatchType : std::uint8_t
 {
     /// \brief Action should be dispatched in normal update and thrown away after being dispatched once.
     NORMAL = 0u,
@@ -30,10 +30,10 @@ enum class InputActionDispatchType : uint8_t
 struct InputAction final
 {
     /// \brief Maximum count of discrete parameters.
-    static constexpr const size_t MAX_DISCRETE_PARAMETERS = 3u;
+    static constexpr const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
 
     /// \brief Maximum count of real parameters.
-    static constexpr const size_t MAX_REAL_PARAMETERS = 3u;
+    static constexpr const std::size_t MAX_REAL_PARAMETERS = 3u;
 
     InputAction () noexcept;
 

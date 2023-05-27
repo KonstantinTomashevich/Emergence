@@ -15,9 +15,9 @@
 
 namespace Emergence::Render::Backend
 {
-static uint64_t SettingsToFlags (const TextureSettings &_settings)
+static std::uint64_t SettingsToFlags (const TextureSettings &_settings)
 {
-    uint64_t flags = BGFX_TEXTURE_NONE;
+    std::uint64_t flags = BGFX_TEXTURE_NONE;
     switch (_settings.uSampling)
     {
     case TextureSampling::NONE:
@@ -103,7 +103,7 @@ const TextureSettings::Reflection &TextureSettings::Reflect () noexcept
 
 Texture::Texture () noexcept
 {
-    block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
+    block_cast<std::uint16_t> (data) = bgfx::kInvalidHandle;
 }
 
 static void ImageReleaseCallback (void * /*unused*/, void *_userData)
@@ -111,13 +111,13 @@ static void ImageReleaseCallback (void * /*unused*/, void *_userData)
     bimg::imageFree (static_cast<bimg::ImageContainer *> (_userData));
 }
 
-Texture::Texture (const uint8_t *_data, const std::uint64_t _size, const TextureSettings &_settings) noexcept
+Texture::Texture (const std::uint8_t *_data, const std::uint64_t _size, const TextureSettings &_settings) noexcept
 {
-    auto &resultHandle = block_cast<uint16_t> (data);
+    auto &resultHandle = block_cast<std::uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
 
     bimg::ImageContainer *imageContainer =
-        bimg::imageParse (GetCurrentAllocator (), _data, static_cast<uint32_t> (_size));
+        bimg::imageParse (GetCurrentAllocator (), _data, static_cast<std::uint32_t> (_size));
 
     if (!imageContainer)
     {
@@ -141,7 +141,7 @@ Texture::Texture (const uint8_t *_data, const std::uint64_t _size, const Texture
         bgfx::makeRef (imageContainer->m_data, imageContainer->m_size, ImageReleaseCallback, imageContainer);
 
     bgfx::TextureHandle handle = bgfx::createTexture2D (
-        static_cast<uint16_t> (imageContainer->m_width), static_cast<uint16_t> (imageContainer->m_height),
+        static_cast<std::uint16_t> (imageContainer->m_width), static_cast<std::uint16_t> (imageContainer->m_height),
         1u < imageContainer->m_numMips, imageContainer->m_numLayers,
         static_cast<bgfx::TextureFormat::Enum> (imageContainer->m_format), SettingsToFlags (_settings), memory);
 
@@ -154,16 +154,17 @@ Texture::Texture (const uint8_t *_data, const std::uint64_t _size, const Texture
     resultHandle = handle.idx;
 }
 
-Texture::Texture (const uint8_t *_data,
+Texture::Texture (const std::uint8_t *_data,
                   std::uint64_t _width,
                   std::uint64_t _height,
                   const TextureSettings &_settings) noexcept
 {
-    auto &resultHandle = block_cast<uint16_t> (data);
+    auto &resultHandle = block_cast<std::uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
-    bgfx::TextureHandle handle = bgfx::createTexture2D (
-        static_cast<uint16_t> (_width), static_cast<uint16_t> (_height), false, 1u, bgfx::TextureFormat::BGRA8,
-        SettingsToFlags (_settings), bgfx::copy (_data, static_cast<uint32_t> (_width * _height * 4u)));
+    bgfx::TextureHandle handle =
+        bgfx::createTexture2D (static_cast<std::uint16_t> (_width), static_cast<std::uint16_t> (_height), false, 1u,
+                               bgfx::TextureFormat::BGRA8, SettingsToFlags (_settings),
+                               bgfx::copy (_data, static_cast<std::uint32_t> (_width * _height * 4u)));
 
     if (!bgfx::isValid (handle))
     {
@@ -177,12 +178,12 @@ Texture::Texture (const uint8_t *_data,
 Texture::Texture (Texture &&_other) noexcept
 {
     data = _other.data;
-    block_cast<uint16_t> (_other.data) = bgfx::kInvalidHandle;
+    block_cast<std::uint16_t> (_other.data) = bgfx::kInvalidHandle;
 }
 
 Texture::~Texture () noexcept
 {
-    if (std::uint16_t handle = block_cast<uint16_t> (data); handle != bgfx::kInvalidHandle)
+    if (std::uint16_t handle = block_cast<std::uint16_t> (data); handle != bgfx::kInvalidHandle)
     {
         bgfx::destroy (bgfx::TextureHandle {handle});
     }
@@ -190,12 +191,12 @@ Texture::~Texture () noexcept
 
 bool Texture::IsValid () const noexcept
 {
-    return block_cast<uint16_t> (data) != bgfx::kInvalidHandle;
+    return block_cast<std::uint16_t> (data) != bgfx::kInvalidHandle;
 }
 
 TextureId Texture::GetId () const noexcept
 {
-    return static_cast<uint64_t> (block_cast<uint16_t> (data));
+    return static_cast<std::uint64_t> (block_cast<std::uint16_t> (data));
 }
 
 Texture &Texture::operator= (Texture &&_other) noexcept

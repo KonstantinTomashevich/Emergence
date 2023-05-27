@@ -7,11 +7,11 @@ namespace Emergence::Query::Test::VolumetricQuery
 {
 using namespace Tasks;
 
-constexpr uint8_t FLAG_2D_SOURCE = 1u;
+constexpr std::uint8_t FLAG_2D_SOURCE = 1u;
 
-constexpr uint8_t FLAG_3D_SOURCE = 1u << 1u;
+constexpr std::uint8_t FLAG_3D_SOURCE = 1u << 1u;
 
-static Storage RequestBoundingBoxStorage (const Container::Vector<const void *> &_objects, uint8_t _sources)
+static Storage RequestBoundingBoxStorage (const Container::Vector<const void *> &_objects, std::uint8_t _sources)
 {
     Storage storage {BoundingBox::Reflect ().mapping, _objects, {}};
 

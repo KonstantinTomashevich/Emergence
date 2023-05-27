@@ -354,8 +354,8 @@ void DebugDrawManager::UpdateShapeDebugDraw (const CollisionShape2dComponent *_c
 
     case CollisionGeometry2dType::LINE:
         _debugShape->shape.type = DebugShape2dType::LINE;
-        _debugShape->translation += _collisionShape->geometry.lineStart;
-        _debugShape->shape.lineEnd = _collisionShape->geometry.lineEnd - _collisionShape->geometry.lineStart;
+        _debugShape->translation += _collisionShape->geometry.line.start;
+        _debugShape->shape.lineEnd = _collisionShape->geometry.line.end - _collisionShape->geometry.line.start;
         break;
     }
 }

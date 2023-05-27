@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -225,9 +227,9 @@ public:
 
         [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
-        [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+        [[nodiscard]] bool IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const;
 
-        [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const noexcept;
+        [[nodiscard]] std::array<std::uint8_t, sizeof (std::uint64_t)> GetSignaledValue () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -247,9 +249,9 @@ public:
 
         [[nodiscard]] StandardLayout::Field GetKeyField () const noexcept;
 
-        [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+        [[nodiscard]] bool IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const;
 
-        [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const noexcept;
+        [[nodiscard]] std::array<std::uint8_t, sizeof (std::uint64_t)> GetSignaledValue () const noexcept;
 
     private:
         friend class LongTermContainer;
@@ -364,10 +366,10 @@ public:
     ModifyDescendingRangeQuery ModifyDescendingRange (StandardLayout::FieldId _keyField) noexcept;
 
     FetchSignalQuery FetchSignal (StandardLayout::FieldId _keyField,
-                                  const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+                                  const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     ModifySignalQuery ModifySignal (StandardLayout::FieldId _keyField,
-                                    const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+                                    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     FetchShapeIntersectionQuery FetchShapeIntersection (
         const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
@@ -409,7 +411,8 @@ private:
         const Container::Vector<StandardLayout::FieldId> &_keyFields) noexcept;
 
     RecordCollection::SignalRepresentation AcquireSignalRepresentation (
-        StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+        StandardLayout::FieldId _keyField,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     RecordCollection::VolumetricRepresentation AcquireVolumetricRepresentation (
         const Container::Vector<RecordCollection::Collection::DimensionDescriptor> &_dimensions) noexcept;
@@ -417,9 +420,11 @@ private:
     RecordCollection::Collection collection;
 };
 
+BEGIN_MUTING_OLD_DESTRUCTOR_NAME
 template <typename Representation>
-LongTermContainer::RepresentationQueryBase<Representation>::~RepresentationQueryBase<Representation> () noexcept
+LongTermContainer::RepresentationQueryBase<Representation>::~RepresentationQueryBase () noexcept
 {
+    END_MUTING_WARNINGS
     // If prepared query was moved out, representation call will result in undefined behaviour.
     // Therefore, we should check container reference first. It will be null of query was moved out.
     if (container && representation.CanBeDropped ())

@@ -7,9 +7,9 @@
 namespace Emergence::Memory::Original
 {
 UnorderedPool::UnorderedPool (Profiler::AllocationGroup _group,
-                              size_t _chunkSize,
-                              size_t _alignment,
-                              size_t _pageCapacity) noexcept
+                              std::size_t _chunkSize,
+                              std::size_t _alignment,
+                              std::size_t _pageCapacity) noexcept
     : chunkSize (CorrectAlignedBlockSize (_alignment, _chunkSize)),
       alignment (_alignment),
       pageCapacity (_pageCapacity),
@@ -42,7 +42,7 @@ void *UnorderedPool::Acquire () noexcept
 {
     if (!topFreeChunk)
     {
-        const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
+        const std::size_t pageSize = GetPageSize (chunkSize, pageCapacity);
         group.Allocate (pageSize);
         group.Acquire (GetPageMetadataSize ());
 
@@ -51,9 +51,9 @@ void *UnorderedPool::Acquire () noexcept
         topPage = newPage;
         auto *currentChunk = static_cast<Chunk *> (GetPageChunksBegin (newPage));
 
-        for (size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
+        for (std::size_t nextChunkIndex = 1u; nextChunkIndex < pageCapacity; ++nextChunkIndex)
         {
-            auto *next = reinterpret_cast<Chunk *> (reinterpret_cast<uint8_t *> (currentChunk) + chunkSize);
+            auto *next = reinterpret_cast<Chunk *> (reinterpret_cast<std::uint8_t *> (currentChunk) + chunkSize);
             currentChunk->nextFree = next;
             currentChunk = next;
         }
@@ -86,7 +86,7 @@ void UnorderedPool::Clear () noexcept
     acquiredChunkCount = 0u;
 
     AlignedPoolPage *page = topPage;
-    const size_t pageSize = GetPageSize (chunkSize, pageCapacity);
+    const std::size_t pageSize = GetPageSize (chunkSize, pageCapacity);
 
     while (page)
     {

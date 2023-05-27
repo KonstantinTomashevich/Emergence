@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
@@ -159,7 +161,7 @@ void Manager::Instantiate (LoadingAnimationSingleton *_loadingAnimation) noexcep
     auto *camera = static_cast<Emergence::Celerity::Camera2dComponent *> (++cameraCursor);
     camera->objectId = cameraTransform->GetObjectId ();
     camera->halfOrthographicSize = 5.0f;
-    camera->visibilityMask = static_cast<uint64_t> (VisibilityMask::LOADING_ANIMATION);
+    camera->visibilityMask = static_cast<std::uint64_t> (VisibilityMask::LOADING_ANIMATION);
 
     auto viewportCursor = insertViewport.Execute ();
     auto *worldViewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);

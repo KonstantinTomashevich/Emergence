@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -18,16 +20,16 @@ struct MortalComponent final
     /// \brief If higher than zero, mortal will die after it lives for given amount of seconds.
     float maximumLifetimeS = 0.0f;
 
-    uint64_t dieAfterNs = std::numeric_limits<uint64_t>::max ();
+    std::uint64_t dieAfterNs = std::numeric_limits<std::uint64_t>::max ();
 
     float corpseLifetimeS = 2.0f;
 
     /// \details Timer for transform removal after death.
-    uint64_t removeAfterNs = std::numeric_limits<uint64_t>::max ();
+    std::uint64_t removeAfterNs = std::numeric_limits<std::uint64_t>::max ();
 
     [[nodiscard]] inline bool IsCorpse () const
     {
-        return removeAfterNs != std::numeric_limits<uint64_t>::max ();
+        return removeAfterNs != std::numeric_limits<std::uint64_t>::max ();
     }
 
     struct Reflection final

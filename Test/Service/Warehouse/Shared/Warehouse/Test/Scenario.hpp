@@ -83,13 +83,13 @@ struct PrepareModifyDescendingRangeQuery : public QueryPreparationBase
 struct PrepareFetchSignalQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
-    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> signaledValue;
 };
 
 struct PrepareModifySignalQuery : public QueryPreparationBase
 {
     StandardLayout::FieldId keyField = 0u;
-    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> signaledValue;
 };
 
 struct PrepareFetchShapeIntersectionQuery : public QueryPreparationBase

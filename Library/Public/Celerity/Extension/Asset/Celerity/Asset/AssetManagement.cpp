@@ -89,7 +89,7 @@ void AssetManager::Execute () noexcept
     {
         auto checkEvent = [this, assetManager, &assetUser] (const AssetUserAddedEventView *_event)
         {
-            for (size_t index = 0u; index < assetUser.fields.size (); ++index)
+            for (std::size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
                 OnAssetUsageAdded (assetManager, _event->assetReferences[index], assetUser.fields[index].type);
             }
@@ -112,7 +112,7 @@ void AssetManager::Execute () noexcept
     {
         auto checkEvent = [this, assetManager, &assetUser] (const AssetUserChangedEventView *_event)
         {
-            for (size_t index = 0u; index < assetUser.fields.size (); ++index)
+            for (std::size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
                 if (_event->assetReferenceSequence[index] !=
                     _event->assetReferenceSequence[assetUser.fields.size () + index])
@@ -141,7 +141,7 @@ void AssetManager::Execute () noexcept
     {
         auto checkEvent = [this, assetManager, &assetUser] (const AssetUserRemovedEventView *_event)
         {
-            for (size_t index = 0u; index < assetUser.fields.size (); ++index)
+            for (std::size_t index = 0u; index < assetUser.fields.size (); ++index)
             {
                 OnAssetUsageRemoved (assetManager, _event->assetReferences[index]);
             }
@@ -287,7 +287,7 @@ void AssetStateUpdater::Execute () noexcept
     auto assetManagerCursor = modifyAssetManager.Execute ();
     auto *assetManager = static_cast<AssetManagerSingleton *> (*assetManagerCursor);
 
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
     Container::HashSet<Memory::UniqueString> assetsUpdatedThisFrame {fetchStateUpdateEvents.get_allocator ()};
 #endif
 

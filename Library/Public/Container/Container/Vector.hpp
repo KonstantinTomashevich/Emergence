@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 #include <Memory/Heap.hpp>
@@ -52,7 +53,7 @@ namespace UntypedVectorUtility
 {
 /// \brief Resizes given vector to given size in bytes without initializing content.
 /// \invariant Vector must be empty.
-void InitSize (void *_vector, size_t _sizeInBytes) noexcept;
+void InitSize (void *_vector, std::size_t _sizeInBytes) noexcept;
 
 /// \return Pointer to the beginning of vector memory region.
 uint8_t *Begin (void *_vector) noexcept;
@@ -61,9 +62,9 @@ uint8_t *Begin (void *_vector) noexcept;
 uint8_t *End (void *_vector) noexcept;
 
 /// \return Pointer to the beginning of vector memory region.
-const uint8_t *Begin (const void *_vector) noexcept;
+const std::uint8_t *Begin (const void *_vector) noexcept;
 
 /// \return Pointer to the ending of vector memory region.
-const uint8_t *End (const void *_vector) noexcept;
+const std::uint8_t *End (const void *_vector) noexcept;
 } // namespace UntypedVectorUtility
 } // namespace Emergence::Container

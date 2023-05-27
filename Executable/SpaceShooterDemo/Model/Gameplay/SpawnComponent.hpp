@@ -14,11 +14,11 @@ struct SpawnComponent final
 
     Emergence::Memory::UniqueString objectToSpawnId;
 
-    uint64_t spawnCoolDownNs = 5000000000u; // 5 seconds.
+    std::uint64_t spawnCoolDownNs = 5000000000u; // 5 seconds.
 
-    uint64_t spawnCoolingDownUntilNs = 0u;
+    std::uint64_t spawnCoolingDownUntilNs = 0u;
 
-    uint8_t maxSpawnedObjects = 1u;
+    std::uint8_t maxSpawnedObjects = 1u;
 
     Emergence::Container::InplaceVector<Emergence::Celerity::UniqueId, MAX_OBJECTS_PER_SPAWN> spawnedObjects;
 

@@ -54,7 +54,7 @@ public:
 
         std::size_t offset = 0u;
 
-        uint_fast8_t bitOffset = 0u;
+        std::uint_fast8_t bitOffset = 0u;
 
         bool projected = false;
     };
@@ -122,11 +122,11 @@ public:
 
     [[nodiscard]] bool IsProjected () const noexcept;
 
-    [[nodiscard]] size_t GetOffset () const noexcept;
+    [[nodiscard]] std::size_t GetOffset () const noexcept;
 
-    [[nodiscard]] size_t GetSize () const noexcept;
+    [[nodiscard]] std::size_t GetSize () const noexcept;
 
-    [[nodiscard]] uint_fast8_t GetBitOffset () const noexcept;
+    [[nodiscard]] std::uint_fast8_t GetBitOffset () const noexcept;
 
     [[nodiscard]] Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
 

@@ -43,7 +43,7 @@ bool CapturedAllocationGroup::Iterator::operator!= (const CapturedAllocationGrou
     return false;
 }
 
-CapturedAllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
+CapturedAllocationGroup::Iterator::Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &data;
@@ -74,19 +74,19 @@ UniqueString CapturedAllocationGroup::GetId () const noexcept
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
-size_t CapturedAllocationGroup::GetAcquired () const noexcept
+std::size_t CapturedAllocationGroup::GetAcquired () const noexcept
 {
     return 0u;
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
-size_t CapturedAllocationGroup::GetReserved () const noexcept
+std::size_t CapturedAllocationGroup::GetReserved () const noexcept
 {
     return 0u;
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
-size_t CapturedAllocationGroup::GetTotal () const noexcept
+std::size_t CapturedAllocationGroup::GetTotal () const noexcept
 {
     return 0u;
 }
@@ -120,7 +120,7 @@ const Event *EventObserver::NextEvent () noexcept
     return nullptr;
 }
 
-EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
+EventObserver::EventObserver (std::array<std::uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &data;
@@ -128,7 +128,7 @@ EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) n
 
 std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
 {
-    static std::array<uint8_t, EventObserver::DATA_MAX_SIZE> stub;
+    static std::array<std::uint8_t, EventObserver::DATA_MAX_SIZE> stub;
     return {CapturedAllocationGroup {nullptr}, EventObserver {stub}};
 }
 } // namespace Emergence::Memory::Profiler

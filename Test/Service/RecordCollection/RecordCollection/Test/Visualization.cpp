@@ -53,7 +53,7 @@ TEST_CASE (OneInstanceOfEachRepresentationType)
                 "playerId",
                 StandardLayout::ProjectNestedField (Query::Test::PlayerWithBoundingBox::Reflect ().player,
                                                     Query::Test::Player::Reflect ().id),
-                array_cast<uint32_t, sizeof (uint64_t)> (176345u)},
+                array_cast<std::uint32_t, sizeof (std::uint64_t)> (176345u)},
 
             CreateVolumetricRepresentation {
                 "2d",
@@ -187,9 +187,9 @@ TEST_CASE (MultipleInstancesOfSignalRepresentation)
         Query::Test::Player::Reflect ().mapping,
         {
             CreateSignalRepresentation {"playerId", Query::Test::Player::Reflect ().id,
-                                        array_cast<uint32_t, sizeof (uint64_t)> (349u)},
+                                        array_cast<std::uint32_t, sizeof (std::uint64_t)> (349u)},
             CreateSignalRepresentation {"classId", Query::Test::Player::Reflect ().classId,
-                                        array_cast<Memory::UniqueString, sizeof (uint64_t)> ("Knight"_us)},
+                                        array_cast<Memory::UniqueString, sizeof (std::uint64_t)> ("Knight"_us)},
         }}.ExecuteAndVisualize ();
 
     const Container::String mappingPath =

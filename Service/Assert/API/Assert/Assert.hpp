@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 
 namespace Emergence
 {
@@ -8,14 +9,14 @@ namespace Emergence
 void SetIsAssertInteractive (bool _interactive) noexcept;
 
 /// \brief Reports critical error by logging it and prompting user to choose action if interactive mode is enabled.
-void ReportCriticalError (const char *_expression, const char *_file, size_t _line) noexcept;
+void ReportCriticalError (const char *_expression, const char *_file, std::size_t _line) noexcept;
 } // namespace Emergence
 
-#ifndef NDEBUG
+#if !defined(NDEBUG)
 #    define EMERGENCE_ASSERT_ENABLED
 #endif
 
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
 /// \brief Provides assertion feature.
 #    define EMERGENCE_ASSERT(...)                                                                                      \
         if (!((__VA_ARGS__)))                                                                                          \

@@ -48,9 +48,9 @@ private:
 
     friend class ModifyShapeIntersectionQuery;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-    explicit DimensionIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit DimensionIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse
 

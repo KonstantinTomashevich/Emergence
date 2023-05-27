@@ -145,7 +145,8 @@ public:
     Handling::Handle<OrderedIndex> CreateOrderedIndex (StandardLayout::FieldId _indexedField) noexcept;
 
     Handling::Handle<SignalIndex> CreateSignalIndex (
-        StandardLayout::FieldId _indexedField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+        StandardLayout::FieldId _indexedField,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     Handling::Handle<VolumetricIndex> CreateVolumetricIndex (
         const Container::Vector<VolumetricIndex::DimensionDescriptor> &_dimensions) noexcept;

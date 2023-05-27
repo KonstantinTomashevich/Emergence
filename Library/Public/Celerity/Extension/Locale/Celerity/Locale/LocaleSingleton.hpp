@@ -2,15 +2,15 @@
 
 #include <Celerity/Locale/LocaleConfiguration.hpp>
 
-#include <Handling/HandleableBase.hpp>
 #include <Handling/Handle.hpp>
+#include <Handling/HandleableBase.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief States of locale loading for LocaleLoadingSharedState synchronization.
-enum class LocaleLoadingState : uint8_t
+enum class LocaleLoadingState : std::uint8_t
 {
     /// \brief Loading routine is executing.
     LOADING,

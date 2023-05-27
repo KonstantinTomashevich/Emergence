@@ -8,8 +8,7 @@
 
 namespace Emergence::Resource::Object
 {
-LibraryLoader::LibraryLoader (Provider::ResourceProvider *_resourceProvider,
-                              TypeManifest _typeManifest) noexcept
+LibraryLoader::LibraryLoader (Provider::ResourceProvider *_resourceProvider, TypeManifest _typeManifest) noexcept
     : resourceProvider (_resourceProvider),
       typeManifest (std::move (_typeManifest))
 {
@@ -17,9 +16,9 @@ LibraryLoader::LibraryLoader (Provider::ResourceProvider *_resourceProvider,
 
 Library LibraryLoader::Load (const Container::Vector<LibraryLoadingTask> &_loadingTasks) noexcept
 {
-    uint64_t loadingStartTimeNs = Time::NanosecondsSinceStartup ();
+    std::uint64_t loadingStartTimeNs = Time::NanosecondsSinceStartup ();
     FormObjectList (_loadingTasks);
-    size_t objectIndex = 0u;
+    std::size_t objectIndex = 0u;
 
     while (objectIndex < objectList.size ())
     {
@@ -27,12 +26,12 @@ Library LibraryLoader::Load (const Container::Vector<LibraryLoadingTask> &_loadi
         ++objectIndex;
     }
 
-    const uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
+    const std::uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
     EMERGENCE_LOG (INFO, "Resource::Object::LibraryLoader: Library loading took ",
                    static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
 
     objectList.clear ();
-    indexInObjectList.clear();
+    indexInObjectList.clear ();
     return std::move (currentLibrary);
 }
 

@@ -10,7 +10,7 @@ sober_naming_implementation_target (ResourceProvider Original RESOURCE_PROVIDER_
 sober_naming_variant_target (CelerityLocale Original CELERITY_LOCALE_LIBRARY_TARGET)
 sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 
-target_link_libraries (TestCelerityLocaleOriginal PRIVATE
+sober_target_link_libraries (TestCelerityLocaleOriginal PRIVATE
         ${RESOURCE_PROVIDER_IMPLEMENTATION_TARGET} ${CELERITY_LOCALE_LIBRARY_TARGET} ${SERIALIZATION_LIBRARY_TARGET})
 link_celerity_with_dependencies (TestCelerityLocaleOriginal)
 

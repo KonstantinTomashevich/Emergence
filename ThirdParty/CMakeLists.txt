@@ -1,6 +1,11 @@
 # BGFX
 add_subdirectory (bgfx.cmake)
 
+# Boost: we use Boost Unordered containers instead of STL because they have important features that
+# aren't fully supported by STL. For example, transient hashers and equality checkers: they are in
+# C++ 20, but aren't supported yet in a lot of places.
+add_subdirectory (boost)
+
 # Box2d
 set (BOX2D_BUILD_UNIT_TESTS OFF CACHE BOOL
         "We use double-set with cache to override third party project options for good.")

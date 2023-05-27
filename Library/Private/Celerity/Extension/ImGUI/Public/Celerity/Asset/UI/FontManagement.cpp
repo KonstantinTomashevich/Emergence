@@ -68,7 +68,8 @@ AssetState Manager::StartLoading (FontLoadingState *_loadingState) noexcept
             const char *sizeSeparator = strchr (*assetId, FONT_SIZE_SEPARATOR);
             EMERGENCE_ASSERT (sizeSeparator && *(sizeSeparator + 1u) != '\0');
             EMERGENCE_ASSERT (sizeSeparator != *assetId);
-            Memory::UniqueString fontId {std::string_view {*assetId, static_cast<size_t> (sizeSeparator - *assetId)}};
+            Memory::UniqueString fontId {
+                std::string_view {*assetId, static_cast<std::size_t> (sizeSeparator - *assetId)}};
 
             switch (cachedResourceProvider->LoadObject (FontAsset::Reflect ().mapping, fontId, &sharedState->asset))
             {

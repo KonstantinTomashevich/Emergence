@@ -1,6 +1,7 @@
 #include <chrono>
 #include <thread>
 
+#include <Container/Algorithm.hpp>
 #include <Container/Vector.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -54,11 +55,11 @@ void GrowAndTest (const Seed &_seed)
 
         for (const Memory::UniqueString &dependantTaskName : taskSeed.dependantTasks)
         {
-            auto iterator = std::find_if (_seed.begin (), _seed.end (),
-                                          [&dependantTaskName] (const TaskSeed &_other)
-                                          {
-                                              return _other.name == dependantTaskName;
-                                          });
+            auto iterator = Container::FindIf (_seed.begin (), _seed.end (),
+                                               [&dependantTaskName] (const TaskSeed &_other)
+                                               {
+                                                   return _other.name == dependantTaskName;
+                                               });
 
             REQUIRE (iterator != _seed.end ());
             taskItem.dependantTasksIndices.emplace_back (std::distance (_seed.begin (), iterator));

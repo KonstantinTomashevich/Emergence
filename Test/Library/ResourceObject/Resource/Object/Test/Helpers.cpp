@@ -1,3 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <cstring>
+
 #include <Container/StringBuilder.hpp>
 
 #include <Resource/Object/Test/Helpers.hpp>
@@ -15,8 +19,8 @@ void CheckChangelistEquality (const Container::Vector<ObjectComponent> &_first,
     // - All object types have no paddings.
     // - All object types take 128 bytes of memory or less.
 
-    std::array<uint8_t, 128u> firstBuffer;
-    std::array<uint8_t, 128u> secondBuffer;
+    std::array<std::uint8_t, 128u> firstBuffer;
+    std::array<std::uint8_t, 128u> secondBuffer;
     CHECK_EQUAL (_first.size (), _second.size ());
 
     for (std::size_t index = 0u; index < std::min (_first.size (), _second.size ()); ++index)

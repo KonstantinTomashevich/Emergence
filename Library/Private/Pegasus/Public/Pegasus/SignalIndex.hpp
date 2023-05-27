@@ -53,9 +53,9 @@ public:
 
     [[nodiscard]] const StandardLayout::Field &GetIndexedField () const;
 
-    [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+    [[nodiscard]] bool IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const;
 
-    [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const;
+    [[nodiscard]] std::array<std::uint8_t, sizeof (std::uint64_t)> GetSignaledValue () const;
 
     void Drop () noexcept;
 
@@ -66,7 +66,7 @@ private:
 
     SignalIndex (Storage *_owner,
                  StandardLayout::FieldId _indexedField,
-                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+                 const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     ~SignalIndex () noexcept = default;
 
@@ -85,9 +85,9 @@ private:
     void OnWriterClosed () noexcept;
 
     StandardLayout::Field indexedField;
-    const size_t offset;
-    const uint64_t mask;
-    const uint64_t signaledValue;
+    const std::size_t offset;
+    const std::uint64_t mask;
+    const std::uint64_t signaledValue;
     Container::Vector<const void *> signaledRecords;
 };
 } // namespace Emergence::Pegasus

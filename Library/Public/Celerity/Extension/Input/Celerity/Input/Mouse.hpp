@@ -5,7 +5,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Enumerates supported mouse buttons.
-enum class MouseButton : uint8_t
+enum class MouseButton : std::uint8_t
 {
     LEFT = 0u,
     MIDDLE,

@@ -48,7 +48,9 @@ void MappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
     block_cast<PlainMappingBuilder> (data).SetDestructor (_destructor);
 }
 
-FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept
+FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name,
+                                     std::size_t _offset,
+                                     std::uint_fast8_t _bitOffset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (FieldData::BitSeed {_name, _offset, _bitOffset, false});
 }
@@ -80,25 +82,25 @@ FieldId MappingBuilder::RegisterInt64 (Memory::UniqueString _name, std::size_t _
 FieldId MappingBuilder::RegisterUInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint8_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint8_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint16_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint16_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint32_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint32_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint64_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint64_t)});
 }
 
 FieldId MappingBuilder::RegisterFloat (Memory::UniqueString _name, std::size_t _offset) noexcept

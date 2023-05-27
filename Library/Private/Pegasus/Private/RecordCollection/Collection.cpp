@@ -25,7 +25,7 @@ void *Collection::Allocator::Allocate () noexcept
     return block_cast<Pegasus::Storage::Allocator> (data).Next ();
 }
 
-Collection::Allocator::Allocator (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+Collection::Allocator::Allocator (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Pegasus::Storage::Allocator (std::move (block_cast<Pegasus::Storage::Allocator> (_data)));
 }
@@ -138,7 +138,7 @@ PointRepresentation Collection::CreatePointRepresentation (
 }
 
 SignalRepresentation Collection::CreateSignalRepresentation (
-    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+    StandardLayout::FieldId _keyField, const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     auto &internal = block_cast<InternalData> (data);
     EMERGENCE_ASSERT (internal.storage);

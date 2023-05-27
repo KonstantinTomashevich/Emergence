@@ -10,13 +10,13 @@ struct SpawnComponent final
 
     Emergence::Memory::UniqueString prototypeId;
 
-    uint64_t spawnDelayNs = 0u;
+    std::uint64_t spawnDelayNs = 0u;
 
-    uint64_t nextSpawnTimeNs = 0u;
+    std::uint64_t nextSpawnTimeNs = 0u;
 
-    uint8_t maxSpawnedCount = 1u;
+    std::uint8_t maxSpawnedCount = 1u;
 
-    uint8_t currentSpawnedCount = 0u;
+    std::uint8_t currentSpawnedCount = 0u;
 
     bool respawn = true;
 

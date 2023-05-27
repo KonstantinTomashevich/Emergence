@@ -12,7 +12,7 @@ namespace Emergence::Celerity
 {
 struct Batch2d final
 {
-    uint16_t layer = 0u;
+    std::uint16_t layer = 0u;
     Memory::UniqueString materialInstanceId;
     Container::Vector<UniqueId> sprites;
     Container::Vector<UniqueId> debugShapes;
@@ -28,7 +28,9 @@ struct ViewportInfoContainer final
 
 struct Batching2dSingleton final
 {
-    Batch2d &GetBatch (size_t _viewportIndex, uint16_t _layer, Memory::UniqueString _materialInstanceId) noexcept;
+    Batch2d &GetBatch (std::size_t _viewportIndex,
+                       std::uint16_t _layer,
+                       Memory::UniqueString _materialInstanceId) noexcept;
 
     void Reset () noexcept;
 

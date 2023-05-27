@@ -28,9 +28,9 @@ public:
         /// Mapping constructs iterators.
         friend class Mapping;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-        explicit FieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit FieldIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over Mapping fields that are visible from given object.
@@ -47,9 +47,9 @@ public:
         /// Mapping constructs iterators.
         friend class Mapping;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 6u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 6u);
 
-        explicit ConditionalFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit ConditionalFieldIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Constructs invalid mapping. Needed only to simplify registration procedure and must be reassigned.
@@ -104,7 +104,7 @@ public:
     [[nodiscard]] FieldId GetFieldId (const Field &_field) const noexcept;
 
     /// \return Hash for this mapping.
-    [[nodiscard]] uintptr_t Hash () const noexcept;
+    [[nodiscard]] std::uintptr_t Hash () const noexcept;
 
     /// \return Whether this instance points to a valid mapping.
     /// \return Is field ::handle valid?
@@ -130,13 +130,13 @@ private:
     /// Field::GetNestedObjectMapping() wraps implementation data into Mapping interface.
     friend class Field;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
     /// \brief Copies implementation-specific values from given pointer.
-    explicit Mapping (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit Mapping (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 
     /// \brief Moves implementation-specific values from given pointer.
-    explicit Mapping (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit Mapping (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 
 /// \brief Wraps Mapping::Begin for foreach sentences.

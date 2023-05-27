@@ -19,12 +19,12 @@ bool ByteHasherTestIncludeMarker () noexcept
 
 struct AppendOne
 {
-    uint8_t byte;
+    std::uint8_t byte;
 };
 
 struct AppendMany
 {
-    const uint8_t *bytes;
+    const std::uint8_t *bytes;
     std::size_t count;
 };
 
@@ -74,9 +74,9 @@ using namespace Emergence::Hashing::Test;
 
 BEGIN_SUITE (ByteHasher)
 
-static const uint8_t FIRST_SEQUENCE[] = {126u, 74u, 243u, 12u, 63u, 187u};
+static const std::uint8_t FIRST_SEQUENCE[] = {126u, 74u, 243u, 12u, 63u, 187u};
 
-static const uint8_t SECOND_SEQUENCE[] = {11u, 6u, 221u, 154u, 37u};
+static const std::uint8_t SECOND_SEQUENCE[] = {11u, 6u, 221u, 154u, 37u};
 
 TEST_CASE (OneByte)
 {
@@ -140,10 +140,10 @@ TEST_CASE (Clear)
 TEST_CASE (DifferentSequencesThroughOneHasher)
 {
     Emergence::Hashing::ByteHasher hasher;
-    uint64_t firstResult = ExecuteScenario (hasher, {AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)}});
+    std::uint64_t firstResult = ExecuteScenario (hasher, {AppendMany {FIRST_SEQUENCE, sizeof (FIRST_SEQUENCE)}});
 
     hasher.Clear ();
-    uint64_t secondResult = ExecuteScenario (hasher, {AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)}});
+    std::uint64_t secondResult = ExecuteScenario (hasher, {AppendMany {SECOND_SEQUENCE, sizeof (SECOND_SEQUENCE)}});
 
     CHECK_NOT_EQUAL (firstResult, secondResult);
 }
@@ -151,20 +151,20 @@ TEST_CASE (DifferentSequencesThroughOneHasher)
 TEST_CASE (VeryCloseBigRandomSequences)
 {
     srand (static_cast<unsigned int> (time (nullptr)));
-    std::array<uint8_t, 512u> sequence;
+    std::array<std::uint8_t, 512u> sequence;
 
-    for (uint8_t &byte : sequence)
+    for (std::uint8_t &byte : sequence)
     {
-        byte = static_cast<uint8_t> (rand ());
+        byte = static_cast<std::uint8_t> (rand ());
     }
 
     Emergence::Hashing::ByteHasher hasher;
-    uint64_t firstResult = ExecuteScenario (hasher, {AppendMany {sequence.data (), sequence.size ()}});
+    std::uint64_t firstResult = ExecuteScenario (hasher, {AppendMany {sequence.data (), sequence.size ()}});
 
     --sequence[sequence.size () / 2u];
     hasher.Clear ();
 
-    uint64_t secondResult = ExecuteScenario (hasher, {AppendMany {sequence.data (), sequence.size ()}});
+    std::uint64_t secondResult = ExecuteScenario (hasher, {AppendMany {sequence.data (), sequence.size ()}});
     CHECK_NOT_EQUAL (firstResult, secondResult);
 }
 

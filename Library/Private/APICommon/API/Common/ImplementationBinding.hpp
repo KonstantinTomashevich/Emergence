@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
 #include <array>
 
 /// \brief Reserves DataMaxSize amount of bytes for implementation data
@@ -9,14 +11,16 @@
     union                                                                                                              \
     {                                                                                                                  \
         /*! \brief Iterator implementation-specific data. */                                                           \
-        std::array<uint8_t, DATA_MAX_SIZE> data;                                                                       \
+        std::array<std::uint8_t, DATA_MAX_SIZE> data;                                                                  \
                                                                                                                        \
         /*!                                                                                                            \
          * \details Binding implementation through ::data results in 1-byte alignment,                                 \
          *          which is not suitable for most use cases. This pointer-size integer                                \
          *          is added to solve this problem by enforcing default arch-byte alignment.                           \
          */                                                                                                            \
-        [[maybe_unused]] uintptr_t alignmentFixer;                                                                     \
+        BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                            \
+        [[maybe_unused]] std::uintptr_t alignmentFixer;                                                                \
+        END_MUTING_WARNINGS                                                                                            \
     }
 
 /// \brief Adds implementation handle field with brief documentation comment.

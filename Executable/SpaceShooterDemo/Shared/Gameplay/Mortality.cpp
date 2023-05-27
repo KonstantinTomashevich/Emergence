@@ -57,7 +57,7 @@ void KillerBase::Kill (MortalComponent *_mortal) noexcept
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);
 
-    _mortal->removeAfterNs = time->fixedTimeNs + static_cast<const uint64_t> (_mortal->corpseLifetimeS * 1e9f);
+    _mortal->removeAfterNs = time->fixedTimeNs + static_cast<const std::uint64_t> (_mortal->corpseLifetimeS * 1e9f);
     auto deathFixedEventCursor = insertDeathFixedEvent.Execute ();
     auto *deathFixedEvent = static_cast<DeathFixedEvent *> (++deathFixedEventCursor);
     deathFixedEvent->objectId = _mortal->objectId;
@@ -103,7 +103,7 @@ void LifetimeProcessor::Execute () noexcept
         if (auto *mortal = static_cast<MortalComponent *> (*mortalCursor);
             mortal && !Emergence::Math::NearlyEqual (0.0f, mortal->maximumLifetimeS))
         {
-            mortal->dieAfterNs = time->fixedTimeNs + static_cast<uint64_t> (mortal->maximumLifetimeS * 1e9f);
+            mortal->dieAfterNs = time->fixedTimeNs + static_cast<std::uint64_t> (mortal->maximumLifetimeS * 1e9f);
         }
     }
 

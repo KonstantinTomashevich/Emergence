@@ -27,7 +27,7 @@ public:
     void Execute ();
 
 private:
-    uint64_t currentFrameIndex = 0u;
+    std::uint64_t currentFrameIndex = 0u;
     Container::Vector<ConfiguratorFrame> frames;
     Container::Vector<ConfiguratorFrame>::const_iterator framesIterator;
 
@@ -250,7 +250,7 @@ public:
     void Execute () noexcept;
 
 private:
-    uint64_t currentFrameIndex = 0u;
+    std::uint64_t currentFrameIndex = 0u;
     Container::Vector<ValidatorFrame> frames;
     Container::Vector<ValidatorFrame>::const_iterator framesIterator;
 

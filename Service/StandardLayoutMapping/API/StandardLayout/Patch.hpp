@@ -32,11 +32,11 @@ public:
         /// Patch constructs iterators.
         friend class Patch;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
-    
+
     /// \brief Constructs invalid patch. Needed only to simplify registration procedure and must be reassigned.
     Patch () noexcept;
 
@@ -78,28 +78,28 @@ public:
     /// \details `x = y - z => y = z + x`. Keep in mind that `+` is not commutative!
     /// \invariant Both patches were build for one mapping!
     Patch operator- (const Patch &_other) const noexcept;
-    
+
     /// \return Whether this instance points to a valid patch.
     /// \return Is field ::handle valid?
     [[nodiscard]] bool IsHandleValid () const noexcept;
-    
+
     /// \return ::IsHandleValid ()
     explicit operator bool () const noexcept;
 
     Patch &operator= (const Patch &_other) noexcept;
-    
+
     Patch &operator= (Patch &&_other) noexcept;
 
 private:
     friend class PatchBuilder;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
     /// \brief Copies implementation-specific values from given pointer.
-    explicit Patch (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit Patch (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 
     /// \brief Moves implementation-specific values from given pointer.
-    explicit Patch (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit Patch (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 
 /// \brief Wraps Patch::Begin for foreach sentences.

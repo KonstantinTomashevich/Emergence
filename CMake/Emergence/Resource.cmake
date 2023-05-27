@@ -46,7 +46,7 @@ endfunction ()
 function (deploy_used_resources TARGET DEPLOY_ROOT)
     file (MAKE_DIRECTORY "${DEPLOY_ROOT}")
     private_deploy_direct_resources ("${TARGET}" "${DEPLOY_ROOT}")
-    find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
+    sober_find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
 
     foreach (LINKED_TARGET ${ALL_LINKED_TARGETS})
         private_deploy_direct_resources ("${LINKED_TARGET}" "${DEPLOY_ROOT}")

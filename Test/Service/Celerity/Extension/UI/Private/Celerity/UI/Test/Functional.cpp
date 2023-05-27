@@ -204,7 +204,7 @@ static CreateWindow NotResizable (CreateWindow _task)
     return _task;
 }
 
-static CreateWindow WithCustomSize (CreateWindow _task, uint32_t _width, uint32_t _height)
+static CreateWindow WithCustomSize (CreateWindow _task, std::uint32_t _width, std::uint32_t _height)
 {
     _task.width = _width;
     _task.height = _height;

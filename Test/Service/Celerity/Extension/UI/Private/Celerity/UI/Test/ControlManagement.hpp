@@ -27,7 +27,7 @@ struct CreateViewport
     std::uint32_t y = 0u;
     std::uint32_t width = 0u;
     std::uint32_t height = 0u;
-    uint32_t clearColor = 0x000000FF;
+    std::uint32_t clearColor = 0x000000FF;
     Memory::UniqueString defaultStyleId;
 };
 
@@ -39,8 +39,8 @@ struct CreateButton final
 
     Memory::UniqueString labelKey;
     Container::Utf8String label;
-    uint32_t width = 0u;
-    uint32_t height = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
 
     InputAction onClickAction;
     InputActionDispatchType onClickActionDispatch = InputActionDispatchType::NORMAL;
@@ -69,8 +69,8 @@ struct CreateContainer final
     ContainerControlType type = ContainerControlType::PANEL;
     ContainerControlLayout layout = ContainerControlLayout::VERTICAL;
 
-    uint32_t width = 0u;
-    uint32_t height = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
 
     bool border = false;
 
@@ -86,8 +86,8 @@ struct CreateImage final
     UniqueId parentId = INVALID_UNIQUE_ID;
     Memory::UniqueString styleId;
 
-    uint32_t width = 0u;
-    uint32_t height = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
 
     Memory::UniqueString textureId;
     Math::AxisAlignedBox2d uv;
@@ -146,8 +146,8 @@ struct CreateWindow final
 
     int32_t x = 0;
     int32_t y = 0;
-    uint32_t width = 0u;
-    uint32_t height = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
 
     InputAction onClosedAction;
     InputActionDispatchType onClosedActionDispatch = InputActionDispatchType::NORMAL;

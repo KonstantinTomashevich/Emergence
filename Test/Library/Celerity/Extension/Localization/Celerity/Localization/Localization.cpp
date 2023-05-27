@@ -42,7 +42,7 @@ private:
     FetchAscendingRangeQuery fetchLocalizedStringByAscendingKey;
 
     Container::Vector<LocalizationTestStage> stages;
-    size_t stageIndex = 0u;
+    std::size_t stageIndex = 0u;
     bool *finishedOutput = nullptr;
 };
 
@@ -72,7 +72,7 @@ void LocalizationTester::Execute () noexcept
 
     if (locale->loadedLocale == locale->targetLocale)
     {
-        size_t stringIndex = 0u;
+        std::size_t stringIndex = 0u;
         for (auto cursor = fetchLocalizedStringByAscendingKey.Execute (nullptr, nullptr);
              const auto *string = static_cast<const LocalizedString *> (*cursor); ++stringIndex, ++cursor)
         {

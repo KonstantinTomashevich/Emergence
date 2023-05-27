@@ -69,7 +69,7 @@ void SlowdownProcessor::Execute () noexcept
 
     if (time->fixedTimeNs < slowdown->endTimeNs)
     {
-        const uint64_t elapsed = time->fixedTimeNs + slowdown->durationNs - slowdown->endTimeNs;
+        const std::uint64_t elapsed = time->fixedTimeNs + slowdown->durationNs - slowdown->endTimeNs;
         const float t = Emergence::Math::Clamp (
             static_cast<float> (elapsed) / static_cast<float> (slowdown->durationNs), 0.0f, 1.0f);
 

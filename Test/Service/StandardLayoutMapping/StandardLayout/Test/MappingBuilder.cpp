@@ -272,25 +272,25 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                     }
                     else if constexpr (std::is_same_v<Seed, UInt8FieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), sizeof (uint8_t));
+                        CHECK_EQUAL (field.GetSize (), sizeof (std::uint8_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt16FieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), sizeof (uint16_t));
+                        CHECK_EQUAL (field.GetSize (), sizeof (std::uint16_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt32FieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), sizeof (uint32_t));
+                        CHECK_EQUAL (field.GetSize (), sizeof (std::uint32_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         CHECK (!field.IsProjected ());
                     }
                     else if constexpr (std::is_same_v<Seed, UInt64FieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), sizeof (uint64_t));
+                        CHECK_EQUAL (field.GetSize (), sizeof (std::uint64_t));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::UINT);
                         CHECK (!field.IsProjected ());
                     }
@@ -380,7 +380,7 @@ void GrowAndTest (MappingSeed _seed, MappingBuilder &_builder)
                     }
                     else if constexpr (std::is_same_v<Seed, VectorFieldSeed>)
                     {
-                        CHECK_EQUAL (field.GetSize (), sizeof (Container::Vector<uint8_t>));
+                        CHECK_EQUAL (field.GetSize (), sizeof (Container::Vector<std::uint8_t>));
                         CHECK_EQUAL (field.GetArchetype (), FieldArchetype::VECTOR);
                         CHECK (field.GetVectorItemMapping () == _seed.typeMapping);
                         CHECK (!field.IsProjected ());
@@ -436,7 +436,7 @@ using namespace Memory::Literals;
 
 struct TwoIntsTest
 {
-    uint32_t first;
+    std::uint32_t first;
     int16_t second;
 };
 
@@ -458,17 +458,17 @@ static const MappingSeed TWO_INTS_REVERSED_ORDER {"TwoInts"_us,
 
 struct AllBasicTypesTest final
 {
-    uint64_t someFlags;
+    std::uint64_t someFlags;
 
     int8_t int8;
     int16_t int16;
     int32_t int32;
     int64_t int64;
 
-    uint8_t uint8;
-    uint16_t uint16;
-    uint32_t uint32;
-    uint64_t uint64;
+    std::uint8_t uint8;
+    std::uint16_t uint16;
+    std::uint32_t uint32;
+    std::uint64_t uint64;
 
     float floating;
     double doubleFloating;
@@ -511,7 +511,7 @@ struct UnionWithBasicTypesTest
     char nonUnionField[24u];
     union
     {
-        uint64_t union1UInt64;
+        std::uint64_t union1UInt64;
         char union1String[16u];
     };
 
@@ -526,7 +526,7 @@ struct UnionWithBasicTypesTest
         double union2Double;
     };
 
-    uint64_t nonUnionFlags;
+    std::uint64_t nonUnionFlags;
 };
 
 static const MappingSeed UNION_WITH_BASIC_TYPES {
@@ -553,7 +553,7 @@ static const MappingSeed UNION_WITH_BASIC_TYPES {
 
 struct NestedOneSublevelTest
 {
-    uint64_t uint64;
+    std::uint64_t uint64;
     TwoIntsTest firstNested;
     AllBasicTypesTest secondNested;
     char block[32u];
@@ -574,7 +574,7 @@ static const MappingSeed NESTED_ONE_SUBLEVEL {
 
 struct NestedInUnionOneSublevelTest
 {
-    uint64_t uint64;
+    std::uint64_t uint64;
     union
     {
         TwoIntsTest firstNested;
@@ -651,13 +651,12 @@ struct PatchTest
     Patch patch;
 };
 
-static const MappingSeed PATCH {
-    "Patch"_us,
-    sizeof (PatchTest),
-    alignof (PatchTest),
-    {
-        PatchFieldSeed {{"patch"_us, offsetof (PatchTest, patch)}},
-    }};
+static const MappingSeed PATCH {"Patch"_us,
+                                sizeof (PatchTest),
+                                alignof (PatchTest),
+                                {
+                                    PatchFieldSeed {{"patch"_us, offsetof (PatchTest, patch)}},
+                                }};
 
 struct NestedPatchTest
 {
@@ -757,11 +756,11 @@ TEST_CASE (FieldManipulations)
     Emergence::StandardLayout::Mapping mapping = Grow (TWO_INTS_CORRECT_ORDER);
     auto iterator = mapping.Begin ();
 
-    REQUIRE (iterator != mapping.End ());
+    REQUIRE ((iterator != mapping.End ()));
     Emergence::StandardLayout::Field firstField = *iterator;
     ++iterator;
 
-    REQUIRE (iterator != mapping.End ());
+    REQUIRE ((iterator != mapping.End ()));
     Emergence::StandardLayout::Field secondField = *iterator;
 
     Emergence::StandardLayout::Field emptyField;
@@ -791,7 +790,7 @@ TEST_CASE (FieldsIteration)
     Emergence::StandardLayout::Field firstField = *iterator++;
     Emergence::StandardLayout::Field secondField = *iterator++;
 
-    CHECK (iterator == mapping.End ());
+    CHECK ((iterator == mapping.End ()));
     CHECK (firstField.IsHandleValid ());
     CHECK (secondField.IsHandleValid ());
     CHECK (!firstField.IsSame (secondField));
@@ -800,25 +799,25 @@ TEST_CASE (FieldsIteration)
     CHECK (firstField.IsSame (*--iterator));
 
     auto iteratorCopyAtBegin = iterator++;
-    CHECK (iteratorCopyAtBegin != iterator);
+    CHECK ((iteratorCopyAtBegin != iterator));
     CHECK (firstField.IsSame (*iteratorCopyAtBegin));
     CHECK (secondField.IsSame (*iterator));
 
     auto iteratorCopyAtSecond = iterator--;
-    CHECK (iterator == iteratorCopyAtBegin);
-    CHECK (iterator != iteratorCopyAtSecond);
+    CHECK ((iterator == iteratorCopyAtBegin));
+    CHECK ((iterator != iteratorCopyAtSecond));
 
     CHECK (firstField.IsSame (*iteratorCopyAtBegin));
     CHECK (firstField.IsSame (*iterator));
     CHECK (secondField.IsSame (*iteratorCopyAtSecond));
 
     iterator = iteratorCopyAtSecond;
-    CHECK (iterator != iteratorCopyAtBegin);
-    CHECK (iterator == iteratorCopyAtSecond);
+    CHECK ((iterator != iteratorCopyAtBegin));
+    CHECK ((iterator == iteratorCopyAtSecond));
 
     iterator = std::move (iteratorCopyAtBegin);
-    CHECK (iterator == iteratorCopyAtBegin);
-    CHECK (iterator != iteratorCopyAtSecond);
+    CHECK ((iterator == iteratorCopyAtBegin));
+    CHECK ((iterator != iteratorCopyAtSecond));
 }
 
 TEST_CASE (MappingEquality)
@@ -827,20 +826,20 @@ TEST_CASE (MappingEquality)
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingCopy = twoIntsCorrectOrderMapping;
     Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (TWO_INTS_REVERSED_ORDER);
 
-    CHECK (twoIntsCorrectOrderMapping == twoIntsCorrectOrderMapping);
-    CHECK (twoIntsCorrectOrderMappingCopy == twoIntsCorrectOrderMappingCopy);
-    CHECK (twoIntsReversedOrderMapping == twoIntsReversedOrderMapping);
+    CHECK ((twoIntsCorrectOrderMapping == twoIntsCorrectOrderMapping));
+    CHECK ((twoIntsCorrectOrderMappingCopy == twoIntsCorrectOrderMappingCopy));
+    CHECK ((twoIntsReversedOrderMapping == twoIntsReversedOrderMapping));
 
-    CHECK (twoIntsCorrectOrderMapping == twoIntsCorrectOrderMappingCopy);
-    CHECK (twoIntsCorrectOrderMapping != twoIntsReversedOrderMapping);
-    CHECK (twoIntsCorrectOrderMappingCopy != twoIntsReversedOrderMapping);
+    CHECK ((twoIntsCorrectOrderMapping == twoIntsCorrectOrderMappingCopy));
+    CHECK ((twoIntsCorrectOrderMapping != twoIntsReversedOrderMapping));
+    CHECK ((twoIntsCorrectOrderMappingCopy != twoIntsReversedOrderMapping));
 
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingMoved = std::move (twoIntsCorrectOrderMapping);
-    CHECK (twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingMoved);
-    CHECK (twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingCopy);
-    CHECK (twoIntsCorrectOrderMappingMoved != twoIntsCorrectOrderMapping);
-    CHECK (twoIntsCorrectOrderMappingCopy != twoIntsCorrectOrderMapping);
-    CHECK (twoIntsCorrectOrderMappingMoved != twoIntsReversedOrderMapping);
+    CHECK ((twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingMoved));
+    CHECK ((twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingCopy));
+    CHECK ((twoIntsCorrectOrderMappingMoved != twoIntsCorrectOrderMapping));
+    CHECK ((twoIntsCorrectOrderMappingCopy != twoIntsCorrectOrderMapping));
+    CHECK ((twoIntsCorrectOrderMappingMoved != twoIntsReversedOrderMapping));
 }
 
 TEST_CASE (MappingHash)
@@ -850,13 +849,13 @@ TEST_CASE (MappingHash)
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingCopy = twoIntsCorrectOrderMapping;
     Emergence::StandardLayout::Mapping twoIntsReversedOrderMapping = Grow (TWO_INTS_REVERSED_ORDER);
 
-    CHECK (twoIntsCorrectOrderMapping.Hash () == twoIntsCorrectOrderMapping.Hash ());
-    CHECK (twoIntsCorrectOrderMappingCopy.Hash () == twoIntsCorrectOrderMappingCopy.Hash ());
-    CHECK (twoIntsReversedOrderMapping.Hash () == twoIntsReversedOrderMapping.Hash ());
+    CHECK ((twoIntsCorrectOrderMapping.Hash () == twoIntsCorrectOrderMapping.Hash ()));
+    CHECK ((twoIntsCorrectOrderMappingCopy.Hash () == twoIntsCorrectOrderMappingCopy.Hash ()));
+    CHECK ((twoIntsReversedOrderMapping.Hash () == twoIntsReversedOrderMapping.Hash ()));
 
-    CHECK (twoIntsCorrectOrderMapping.Hash () == twoIntsCorrectOrderMappingCopy.Hash ());
-    CHECK (twoIntsCorrectOrderMapping.Hash () != twoIntsReversedOrderMapping.Hash ());
-    CHECK (twoIntsCorrectOrderMappingCopy.Hash () != twoIntsReversedOrderMapping.Hash ());
+    CHECK ((twoIntsCorrectOrderMapping.Hash () == twoIntsCorrectOrderMappingCopy.Hash ()));
+    CHECK ((twoIntsCorrectOrderMapping.Hash () != twoIntsReversedOrderMapping.Hash ()));
+    CHECK ((twoIntsCorrectOrderMappingCopy.Hash () != twoIntsReversedOrderMapping.Hash ()));
 }
 
 END_SUITE

@@ -12,10 +12,10 @@ class TransientIndexBuffer
 {
 public:
     /// \brief If there is not enough space to allocate buffer for required count, returns maximum possible count.
-    static uint32_t TruncateSizeToAvailability (uint32_t _indexCount, bool _use32BitIndices);
+    static std::uint32_t TruncateSizeToAvailability (std::uint32_t _indexCount, bool _use32BitIndices);
 
     /// \brief Constructs temporary buffer for given count of indices using 32-bit indices if requested.
-    TransientIndexBuffer (uint32_t _indexCount, bool _use32BitIndices) noexcept;
+    TransientIndexBuffer (std::uint32_t _indexCount, bool _use32BitIndices) noexcept;
 
     TransientIndexBuffer (const TransientIndexBuffer &_other) = delete;
 
@@ -34,6 +34,6 @@ public:
 private:
     friend class SubmissionAgent;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 };
 } // namespace Emergence::Render::Backend

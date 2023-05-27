@@ -45,7 +45,7 @@ struct Event final
     {
         /// \brief Amount of bytes, used by operation, associated with ::type.
         /// \invariant ::type is EventType::ALLOCATE, EventType::ACQUIRE, EventType::RELEASE or EventType::Free.
-        size_t bytes = 0u;
+        std::size_t bytes = 0u;
 
         /// \brief Marker id.
         /// \invariant ::type is EventType::MARKER.
@@ -71,9 +71,9 @@ public:
         /// CapturedAllocationGroup constructs iterators.
         friend class CapturedAllocationGroup;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     CapturedAllocationGroup (const CapturedAllocationGroup &_other) noexcept;
@@ -91,13 +91,13 @@ public:
     [[nodiscard]] UniqueString GetId () const noexcept;
 
     /// \return Amount of bytes, that are used by any object.
-    [[nodiscard]] size_t GetAcquired () const noexcept;
+    [[nodiscard]] std::size_t GetAcquired () const noexcept;
 
     /// \return Amount of bytes, that are not used by any object, but reserved for usage in future.
-    [[nodiscard]] size_t GetReserved () const noexcept;
+    [[nodiscard]] std::size_t GetReserved () const noexcept;
 
     /// \return Total amount of bytes, that are owned by allocation group.
-    [[nodiscard]] size_t GetTotal () const noexcept;
+    [[nodiscard]] std::size_t GetTotal () const noexcept;
 
     /// \return Allocation group, from which this capture was created.
     [[nodiscard]] AllocationGroup GetSource () const noexcept;
@@ -137,9 +137,9 @@ public:
 private:
     friend class Capture;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-    explicit EventObserver (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit EventObserver (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 
 /// \brief Provides API for capturing memory consumption.

@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 #include <Assert/Assert.hpp>
 
 #include <Container/Optional.hpp>
@@ -98,7 +100,7 @@ static bool DeserializePatchValue (std::istream &_input,
                                    StandardLayout::FieldId _fieldId,
                                    StandardLayout::PatchBuilder &_builder)
 {
-    std::array<uint8_t, 8u> buffer;
+    std::array<std::uint8_t, 8u> buffer;
     if (_field.GetArchetype () != StandardLayout::FieldArchetype::UNIQUE_STRING)
     {
         EMERGENCE_ASSERT (buffer.size () >= _field.GetSize ());
@@ -136,16 +138,16 @@ static bool DeserializePatchValue (std::istream &_input,
         switch (_field.GetSize ())
         {
         case 1u:
-            _builder.SetUInt8 (_fieldId, block_cast<uint8_t> (buffer));
+            _builder.SetUInt8 (_fieldId, block_cast<std::uint8_t> (buffer));
             break;
         case 2u:
-            _builder.SetUInt16 (_fieldId, block_cast<uint16_t> (buffer));
+            _builder.SetUInt16 (_fieldId, block_cast<std::uint16_t> (buffer));
             break;
         case 4u:
-            _builder.SetUInt32 (_fieldId, block_cast<uint32_t> (buffer));
+            _builder.SetUInt32 (_fieldId, block_cast<std::uint32_t> (buffer));
             break;
         case 8u:
-            _builder.SetUInt64 (_fieldId, block_cast<uint64_t> (buffer));
+            _builder.SetUInt64 (_fieldId, block_cast<std::uint64_t> (buffer));
             break;
         }
         break;
@@ -193,7 +195,7 @@ void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch)
     const StandardLayout::Mapping &mapping = _patch.GetTypeMapping ();
     WriteString (_output, *mapping.GetName ());
 
-    const auto changeCount = static_cast<uint32_t> (_patch.GetChangeCount ());
+    const auto changeCount = static_cast<std::uint32_t> (_patch.GetChangeCount ());
     _output.write (reinterpret_cast<const char *> (&changeCount), sizeof (changeCount));
 
     for (const auto &change : _patch)
@@ -259,7 +261,7 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
     WriteString (_output, *_mapping.GetName ());
 
     const void *lastBitsetByteAddress = nullptr;
-    uint8_t lastBitsetByte = 0u;
+    std::uint8_t lastBitsetByte = 0u;
 
     for (auto iterator = _mapping.BeginConditional (_object), end = _mapping.EndConditional (); iterator != end;
          ++iterator)
@@ -271,7 +273,7 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
         // We need to write last bitset byte if we stopped encountering bits.
         if (lastBitsetByteAddress && field.GetArchetype () != StandardLayout::FieldArchetype::BIT)
         {
-            _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (uint8_t));
+            _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (std::uint8_t));
             lastBitsetByteAddress = nullptr;
         }
 
@@ -284,14 +286,14 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
                 if (lastBitsetByteAddress != address && lastBitsetByteAddress != nullptr)
                 {
                     // We're starting new bitset byte: write older one.
-                    _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (uint8_t));
+                    _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (std::uint8_t));
                 }
 
                 lastBitsetByteAddress = address;
                 lastBitsetByte = 0u;
             }
 
-            lastBitsetByte |= *static_cast<const uint8_t *> (address) & (1u << field.GetBitOffset ());
+            lastBitsetByte |= *static_cast<const std::uint8_t *> (address) & (1u << field.GetBitOffset ());
             break;
         }
 
@@ -320,15 +322,15 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
 
         case StandardLayout::FieldArchetype::VECTOR:
         {
-            const auto vectorSizeInBytes = static_cast<uint32_t> (Container::UntypedVectorUtility::End (address) -
-                                                                  Container::UntypedVectorUtility::Begin (address));
+            const auto vectorSizeInBytes = static_cast<std::uint32_t> (
+                Container::UntypedVectorUtility::End (address) - Container::UntypedVectorUtility::Begin (address));
             EMERGENCE_ASSERT (vectorSizeInBytes % field.GetVectorItemMapping ().GetObjectSize () == 0u);
-            const uint32_t vectorSize = vectorSizeInBytes / field.GetVectorItemMapping ().GetObjectSize ();
+            const std::uint32_t vectorSize = vectorSizeInBytes / field.GetVectorItemMapping ().GetObjectSize ();
 
             _output.write (reinterpret_cast<const char *> (&vectorSize),
                            static_cast<std::streamsize> (sizeof (vectorSize)));
 
-            for (const uint8_t *pointer = Container::UntypedVectorUtility::Begin (address);
+            for (const std::uint8_t *pointer = Container::UntypedVectorUtility::Begin (address);
                  pointer != Container::UntypedVectorUtility::End (address);
                  pointer += field.GetVectorItemMapping ().GetObjectSize ())
             {
@@ -349,7 +351,7 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
     // If bitset was last field -- write it now.
     if (lastBitsetByteAddress != nullptr)
     {
-        _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (uint8_t));
+        _output.write (reinterpret_cast<const char *> (&lastBitsetByte), sizeof (std::uint8_t));
     }
 }
 
@@ -358,7 +360,7 @@ bool DeserializeObject (std::istream &_input,
                         const StandardLayout::Mapping &_mapping,
                         const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
     if (Container::Optional<Container::String> typeName = ReadString (_input))
     {
         EMERGENCE_ASSERT (typeName == *_mapping.GetName ());
@@ -393,13 +395,13 @@ bool DeserializeObject (std::istream &_input,
                 }
             }
 
-            if (static_cast<uint8_t> (lastBitsetByte) & (1u << field.GetBitOffset ()))
+            if (static_cast<std::uint8_t> (lastBitsetByte) & (1u << field.GetBitOffset ()))
             {
-                *static_cast<uint8_t *> (address) |= 1u << field.GetBitOffset ();
+                *static_cast<std::uint8_t *> (address) |= 1u << field.GetBitOffset ();
             }
             else
             {
-                *static_cast<uint8_t *> (address) &= ~(1u << field.GetBitOffset ());
+                *static_cast<std::uint8_t *> (address) &= ~(1u << field.GetBitOffset ());
             }
 
             break;
@@ -464,7 +466,7 @@ bool DeserializeObject (std::istream &_input,
 
         case StandardLayout::FieldArchetype::VECTOR:
         {
-            uint32_t vectorSize;
+            std::uint32_t vectorSize;
             if (!_input.read (reinterpret_cast<char *> (&vectorSize), sizeof (vectorSize)))
             {
                 return false;
@@ -473,7 +475,7 @@ bool DeserializeObject (std::istream &_input,
             const StandardLayout::Mapping &itemMapping = field.GetVectorItemMapping ();
             Container::UntypedVectorUtility::InitSize (address, vectorSize * itemMapping.GetObjectSize ());
 
-            for (uint8_t *pointer = Container::UntypedVectorUtility::Begin (address);
+            for (std::uint8_t *pointer = Container::UntypedVectorUtility::Begin (address);
                  pointer != Container::UntypedVectorUtility::End (address); pointer += itemMapping.GetObjectSize ())
             {
                 itemMapping.Construct (pointer);

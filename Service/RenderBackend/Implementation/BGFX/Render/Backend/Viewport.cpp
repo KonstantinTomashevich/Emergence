@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <bgfx/bgfx.h>
 
 #include <bx/math.h>
@@ -11,12 +13,12 @@ namespace Emergence::Render::Backend
 {
 Viewport::Viewport () noexcept
 {
-    block_cast<uint64_t> (data) = std::numeric_limits<std::uint64_t>::max ();
+    block_cast<std::uint64_t> (data) = std::numeric_limits<std::uint64_t>::max ();
 }
 
 Viewport::Viewport (class Renderer &_context) noexcept
 {
-    block_cast<uint64_t> (data) = reinterpret_cast<RendererData *> (&_context)->viewportIndexCounter++;
+    block_cast<std::uint64_t> (data) = reinterpret_cast<RendererData *> (&_context)->viewportIndexCounter++;
 }
 
 Viewport::Viewport (Viewport &&_other) noexcept
@@ -33,12 +35,12 @@ void Viewport::SubmitConfiguration (std::uint32_t _x,
                                     ViewportSortMode _sortMode,
                                     std::uint32_t _clearColor) noexcept
 {
-    auto nativeId = static_cast<uint16_t> (block_cast<uint64_t> (data));
+    auto nativeId = static_cast<std::uint16_t> (block_cast<std::uint64_t> (data));
     bgfx::resetView (nativeId);
-    bgfx::setViewRect (nativeId, static_cast<uint16_t> (_x), static_cast<uint16_t> (_y), static_cast<uint16_t> (_width),
-                       static_cast<uint16_t> (_height));
+    bgfx::setViewRect (nativeId, static_cast<std::uint16_t> (_x), static_cast<std::uint16_t> (_y),
+                       static_cast<std::uint16_t> (_width), static_cast<std::uint16_t> (_height));
 
-    uint16_t clearFlags = 0u;
+    std::uint16_t clearFlags = 0u;
     if (_clearColor)
     {
         clearFlags |= BGFX_CLEAR_COLOR;
@@ -67,7 +69,7 @@ void Viewport::SubmitConfiguration (std::uint32_t _x,
 void Viewport::SubmitOrthographicView (const Math::Transform2d &_view,
                                        const Math::Vector2f &_halfOrthographicSize) noexcept
 {
-    auto nativeId = static_cast<uint16_t> (block_cast<uint64_t> (data));
+    auto nativeId = static_cast<std::uint16_t> (block_cast<std::uint64_t> (data));
     float view[16u];
     bx::mtxSRT (view, _view.scale.x, _view.scale.y, 1.0f, 0.0f, 0.0f, _view.rotation, -_view.translation.x,
                 -_view.translation.y, 1.0f);
@@ -80,7 +82,7 @@ void Viewport::SubmitOrthographicView (const Math::Transform2d &_view,
 
 ViewportId Viewport::GetId () const noexcept
 {
-    return block_cast<uint64_t> (data);
+    return block_cast<std::uint64_t> (data);
 }
 
 Viewport &Viewport::operator= (Viewport &&_other) noexcept

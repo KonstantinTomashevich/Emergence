@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 
 #include <API/Common/ImplementationBinding.hpp>
 
@@ -9,7 +10,7 @@
 namespace Emergence::StandardLayout
 {
 /// \brief Mapped field unique identifier.
-using FieldId = uint_fast64_t;
+using FieldId = std::uint_fast64_t;
 
 /// \brief Defines mapping-independent field space projection rule.
 ///
@@ -21,7 +22,7 @@ FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
 /// \brief Declares field archetype, that can be used to reconstruct actual field type.
 ///
 /// \details Field type reconstruction can be useful for serialization or reflection-based comparison.
-enum class FieldArchetype : uint8_t
+enum class FieldArchetype : std::uint8_t
 {
     /// \brief Single bit.
     BIT = 0u,

@@ -19,14 +19,14 @@ struct TimeSingleton final
     static constexpr std::size_t MAXIMUM_TARGET_FIXED_DURATIONS = 3u;
 
     /// \details Is not constrained to Time::NanosecondsSinceStartup.
-    uint64_t normalTimeNs = 0u;
+    std::uint64_t normalTimeNs = 0u;
 
     /// \details Unaffected by ::timeSpeed mechanics, taken directly from Time::NanosecondsSinceStartup.
     ///          Used to correctly calculate deltas and advance time.
-    uint64_t realNormalTimeNs = 0u;
+    std::uint64_t realNormalTimeNs = 0u;
 
     /// \details Is not constrained to Time::NanosecondsSinceStartup.
-    uint64_t fixedTimeNs = 0u;
+    std::uint64_t fixedTimeNs = 0u;
 
     /// \brief Time elapsed from previous normal update.
     float normalDurationS = 0.0f;

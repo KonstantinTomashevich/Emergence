@@ -15,7 +15,7 @@
 
 namespace Emergence::Resource::Provider::Original
 {
-enum class ObjectResourceFormat : uint8_t
+enum class ObjectResourceFormat : std::uint8_t
 {
     BINARY = 0u,
     YAML
@@ -49,15 +49,15 @@ const ObjectResourceData::Reflection &ObjectResourceData::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ObjectResourceData);
         EMERGENCE_MAPPING_REGISTER_REGULAR (id);
 
-        static_assert (sizeof (StandardLayout::Mapping) == sizeof (uint64_t) ||
-                       sizeof (StandardLayout::Mapping) == sizeof (uint32_t));
+        static_assert (sizeof (StandardLayout::Mapping) == sizeof (std::uint64_t) ||
+                       sizeof (StandardLayout::Mapping) == sizeof (std::uint32_t));
 
-        if constexpr (sizeof (StandardLayout::Mapping) == sizeof (uint64_t))
+        if constexpr (sizeof (StandardLayout::Mapping) == sizeof (std::uint64_t))
         {
             reflectionData.typeNumber =
                 builder.RegisterUInt64 (Memory::UniqueString {"typeStateBlock"}, offsetof (ObjectResourceData, type));
         }
-        else if constexpr (sizeof (StandardLayout::Mapping) == sizeof (uint32_t))
+        else if constexpr (sizeof (StandardLayout::Mapping) == sizeof (std::uint32_t))
         {
             reflectionData.typeNumber =
                 builder.RegisterUInt32 (Memory::UniqueString {"typeStateBlock"}, offsetof (ObjectResourceData, type));
@@ -139,11 +139,7 @@ Memory::UniqueString ResourceProvider::ObjectRegistryCursor::operator* () const 
 
 ResourceProvider::ObjectRegistryCursor &ResourceProvider::ObjectRegistryCursor::operator++ () noexcept
 {
-    if (*cursor)
-    {
-        ++cursor;
-    }
-
+    ++cursor;
     return *this;
 }
 
@@ -334,8 +330,8 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
 LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::UniqueString _id,
                                                                    Memory::Heap &_allocator,
-                                                                   uint64_t &_sizeOutput,
-                                                                   uint8_t *&_dataOutput) const noexcept
+                                                                   std::uint64_t &_sizeOutput,
+                                                                   std::uint8_t *&_dataOutput) const noexcept
 {
     EMERGENCE_ASSERT (dataWritersCount == 0u);
     ++dataReadersCount;
@@ -357,9 +353,9 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
     }
 
     fseek (file, 0u, SEEK_END);
-    _sizeOutput = static_cast<uint64_t> (ftell (file));
+    _sizeOutput = static_cast<std::uint64_t> (ftell (file));
     fseek (file, 0u, SEEK_SET);
-    _dataOutput = static_cast<uint8_t *> (_allocator.Acquire (_sizeOutput, alignof (uint64_t)));
+    _dataOutput = static_cast<std::uint8_t *> (_allocator.Acquire (_sizeOutput, alignof (std::uint64_t)));
 
     if (fread (_dataOutput, 1u, _sizeOutput, file) != _sizeOutput)
     {

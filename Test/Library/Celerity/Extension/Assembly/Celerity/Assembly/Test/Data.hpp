@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include <Celerity/Assembly/AssemblerConfiguration.hpp>
 
 #include <Math/Vector3f.hpp>
@@ -9,8 +11,8 @@ namespace Emergence::Celerity::Test
 struct FixedComponentA final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
-    uint32_t x = 0u;
-    uint32_t y = 0u;
+    std::uint32_t x = 0u;
+    std::uint32_t y = 0u;
 
     struct Reflection final
     {
@@ -30,7 +32,7 @@ struct FixedComponentB final
     bool conditionB = false;
     bool conditionC = false;
     bool conditionD = false;
-    uint32_t q = 0u;
+    std::uint32_t q = 0u;
 
     struct Reflection final
     {
@@ -68,9 +70,9 @@ struct FixedMultiComponent final
 
 struct FixedMultiComponentIdGeneratorSingleton final
 {
-    std::atomic_unsigned_lock_free instanceIdCounter = 0u;
+    std::atomic_uintptr_t instanceIdCounter = 0u;
 
-    uintptr_t GenerateInstanceId () const noexcept;
+    std::uintptr_t GenerateInstanceId () const noexcept;
 
     struct Reflection final
     {

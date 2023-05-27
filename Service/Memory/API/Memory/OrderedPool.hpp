@@ -29,9 +29,9 @@ public:
         /// Pool constructs iterators.
         friend class OrderedPool;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 4u);
 
-        explicit AcquiredChunkConstIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit AcquiredChunkConstIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over acquired chunks.
@@ -44,14 +44,14 @@ public:
         /// Pool constructs iterators.
         friend class OrderedPool;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 4u);
 
-        explicit AcquiredChunkIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit AcquiredChunkIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \param _chunkSize Fixed chunk size.
     /// \param _alignment Address alignment, required for each chunk.
-    /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
+    /// \invariant _chunkSize must be greater or equal to `sizeof (std::uintptr_t)`.
     OrderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _alignment) noexcept;
 
     /// \param _preferredPageCapacity allocator will create pages with given capacity, if possible.
@@ -115,7 +115,7 @@ public:
     OrderedPool &operator= (OrderedPool &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 7u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 7u);
 };
 
 /// \brief Wraps OrderedPool::BeginAcquired for foreach sentences.

@@ -10,9 +10,9 @@ public:
     void Render (class Client &_client) noexcept;
 
 private:
-    static uint32_t ExtractGroupColor (const class RecordedAllocationGroup *_group,
-                                       float _minBrightness,
-                                       float _maxBrightness) noexcept;
+    static std::uint32_t ExtractGroupColor (const class RecordedAllocationGroup *_group,
+                                            float _minBrightness,
+                                            float _maxBrightness) noexcept;
 
     static std::pair<ImVec2, ImVec2> GetWindowRect () noexcept;
 

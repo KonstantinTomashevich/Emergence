@@ -29,9 +29,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 7u);
 
-        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit ReadCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -45,9 +45,9 @@ public:
         /// PointRepresentation constructs its cursors.
         friend class PointRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 7u);
 
-        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit EditCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows iteration over PointRepresentation key fields.
@@ -60,9 +60,9 @@ public:
         /// PointRepresentation constructs iterators for key fields.
         friend class PointRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-        explicit KeyFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit KeyFieldIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Defines point by specifying value for each key field.

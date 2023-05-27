@@ -19,8 +19,8 @@ private:
 
     friend class ModifyValueQuery;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-    explicit KeyFieldIterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit KeyFieldIterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

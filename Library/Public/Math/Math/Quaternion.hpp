@@ -59,12 +59,6 @@ struct alignas (sizeof (float) * 4u) Quaternion final
             float z;
             float w;
         };
-
-        struct
-        {
-            Vector3f imaginary;
-            float real;
-        };
     };
 
     struct Reflection final

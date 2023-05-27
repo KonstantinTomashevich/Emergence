@@ -34,7 +34,7 @@ public:
 
     CapturedAllocationGroup (const AllocationGroup &_source,
                              const ProfilingLock &_lock,
-                             uint64_t _sharedCaptureTime) noexcept;
+                             std::uint64_t _sharedCaptureTime) noexcept;
 
     CapturedAllocationGroup (const CapturedAllocationGroup &_other) = delete;
 
@@ -48,15 +48,15 @@ public:
 
     [[nodiscard]] UniqueString GetId () const noexcept;
 
-    [[nodiscard]] size_t GetAcquired () const noexcept;
+    [[nodiscard]] std::size_t GetAcquired () const noexcept;
 
-    [[nodiscard]] size_t GetReserved () const noexcept;
+    [[nodiscard]] std::size_t GetReserved () const noexcept;
 
-    [[nodiscard]] size_t GetTotal () const noexcept;
+    [[nodiscard]] std::size_t GetTotal () const noexcept;
 
     [[nodiscard]] const AllocationGroup *GetSource () const noexcept;
 
-    [[nodiscard]] uint64_t GetCaptureTimeNs () const noexcept;
+    [[nodiscard]] std::uint64_t GetCaptureTimeNs () const noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (CapturedAllocationGroup);
 
@@ -69,7 +69,7 @@ private:
     Handling::Handle<CapturedAllocationGroup> nextOnLevel;
 
     const AllocationGroup *source = nullptr;
-    uint64_t captureTimeNs = 0u;
+    std::uint64_t captureTimeNs = 0u;
 };
 
 class EventObserver final

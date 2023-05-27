@@ -16,7 +16,7 @@ class Stack final
 {
 public:
     /// \param _capacity Stack capacity in bytes.
-    explicit Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept;
+    explicit Stack (Profiler::AllocationGroup _group, std::size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -27,7 +27,7 @@ public:
 
     /// \brief Acquires chunk of memory with given size from the stack head.
     /// \param _alignAs Required alignment for requested chunk.
-    [[nodiscard]] void *Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept;
+    [[nodiscard]] void *Acquire (std::size_t _chunkSize, std::uintptr_t _alignAs) noexcept;
 
     /// \return Current stack head, that points to first free byte.
     [[nodiscard]] const void *Head () const noexcept;
@@ -41,7 +41,7 @@ public:
 
     /// \return How many free bytes left?
     /// \details Not based on memory profiler implementation, therefore guaranteed to be always correct.
-    [[nodiscard]] size_t GetFreeSize () const noexcept;
+    [[nodiscard]] std::size_t GetFreeSize () const noexcept;
 
     /// \return Allocation group to which this allocator belongs.
     /// \warning Group will report zero memory usage if it is a placeholder or
@@ -55,6 +55,6 @@ public:
     Stack &operator= (Stack &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 4u);
 };
 } // namespace Emergence::Memory

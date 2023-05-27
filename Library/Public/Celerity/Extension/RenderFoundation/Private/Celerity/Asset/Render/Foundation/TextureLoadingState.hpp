@@ -19,9 +19,9 @@ public:
 
     Memory::Heap textureDataHeap {GetHeap ().GetAllocationGroup ()};
 
-    uint64_t textureDataSize = 0u;
+    std::uint64_t textureDataSize = 0u;
 
-    uint8_t *textureData = nullptr;
+    std::uint8_t *textureData = nullptr;
 };
 
 struct TextureLoadingState final

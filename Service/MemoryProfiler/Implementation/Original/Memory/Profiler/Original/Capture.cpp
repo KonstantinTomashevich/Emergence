@@ -69,7 +69,7 @@ void CapturedAllocationGroup::operator delete (void *_pointer) noexcept
 
 CapturedAllocationGroup::CapturedAllocationGroup (const AllocationGroup &_source,
                                                   const ProfilingLock &_lock,
-                                                  uint64_t _sharedCaptureTime) noexcept
+                                                  std::uint64_t _sharedCaptureTime) noexcept
     : id (_source.GetId ()),
       reserved (_source.GetReserved ()),
       acquired (_source.GetAcquired ()),
@@ -97,17 +97,17 @@ UniqueString CapturedAllocationGroup::GetId () const noexcept
     return id;
 }
 
-size_t CapturedAllocationGroup::GetAcquired () const noexcept
+std::size_t CapturedAllocationGroup::GetAcquired () const noexcept
 {
     return acquired;
 }
 
-size_t CapturedAllocationGroup::GetReserved () const noexcept
+std::size_t CapturedAllocationGroup::GetReserved () const noexcept
 {
     return reserved;
 }
 
-size_t CapturedAllocationGroup::GetTotal () const noexcept
+std::size_t CapturedAllocationGroup::GetTotal () const noexcept
 {
     return acquired + reserved;
 }

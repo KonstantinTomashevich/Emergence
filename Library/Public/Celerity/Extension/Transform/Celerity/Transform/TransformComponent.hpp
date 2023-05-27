@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Transform2d.hpp>
@@ -77,22 +79,22 @@ private:
     UniqueId parentObjectId = INVALID_UNIQUE_ID;
 
     Transform logicalLocalTransform;
-    uint64_t logicalLocalTransformRevision = 0u;
-    mutable uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
+    std::uint64_t logicalLocalTransformRevision = 0u;
+    mutable std::uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool logicalLocalTransformChangedSinceLastUpdate = true;
     mutable Transform logicalWorldTransformCache;
 
     Transform visualLocalTransform;
-    uint64_t visualLocalTransformRevision = 0u;
-    mutable uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
+    std::uint64_t visualLocalTransformRevision = 0u;
+    mutable std::uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool visualLocalTransformChangedSinceLastUpdate = true;
     mutable Transform visualWorldTransformCache;
 
     bool visualTransformSyncNeeded = false;
 
-    uint64_t lastObservedLogicalTransformRevision = 0u;
-    uint64_t logicalTransformLastObservationTimeNs = 0u;
-    uint64_t visualTransformLastSyncTimeNs = 0u;
+    std::uint64_t lastObservedLogicalTransformRevision = 0u;
+    std::uint64_t logicalTransformLastObservationTimeNs = 0u;
+    std::uint64_t visualTransformLastSyncTimeNs = 0u;
 
 public:
     struct Reflection final

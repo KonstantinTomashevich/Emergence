@@ -41,9 +41,9 @@ public:
         /// SignalRepresentation constructs its cursors.
         friend class SignalRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-        explicit ReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit ReadCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete signaled records.
@@ -56,9 +56,9 @@ public:
         /// SignalRepresentation constructs its cursors.
         friend class SignalRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-        explicit EditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit EditCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     SignalRepresentation (const SignalRepresentation &_other) noexcept;
@@ -84,13 +84,13 @@ public:
     /// \details This method omits all insignificant bits from both signaled value and given value to make sure
     ///          that comparison is logically correct. Insignificant unequal bits usually arise due to `array_cast`
     ///          usage, in other words these bits are garbage that was accidentally captured from memory slice.
-    [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+    [[nodiscard]] bool IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const;
 
     /// \return Signaled value.
     /// \warning Use ::IsSignaledValue for comparison.
     /// \details We return value instead of reference, because implementation
     ///          might store signaled value in custom optimized format.
-    [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const;
+    [[nodiscard]] std::array<std::uint8_t, sizeof (std::uint64_t)> GetSignaledValue () const;
 
     /// \see Collection::GetRecordMapping
     [[nodiscard]] const StandardLayout::Mapping &GetTypeMapping () const noexcept;

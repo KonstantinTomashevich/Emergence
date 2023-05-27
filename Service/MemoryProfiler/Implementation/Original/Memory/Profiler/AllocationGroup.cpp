@@ -74,7 +74,7 @@ AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
     return AllocationGroup::PlacedOnStack (handle);
 }
 
-void AllocationGroup::Allocate (size_t _bytesCount) noexcept
+void AllocationGroup::Allocate (std::size_t _bytesCount) noexcept
 {
     if (handle)
     {
@@ -83,7 +83,7 @@ void AllocationGroup::Allocate (size_t _bytesCount) noexcept
     }
 }
 
-void AllocationGroup::Acquire (size_t _bytesCount) noexcept
+void AllocationGroup::Acquire (std::size_t _bytesCount) noexcept
 {
     if (handle)
     {
@@ -92,7 +92,7 @@ void AllocationGroup::Acquire (size_t _bytesCount) noexcept
     }
 }
 
-void AllocationGroup::Release (size_t _bytesCount) noexcept
+void AllocationGroup::Release (std::size_t _bytesCount) noexcept
 {
     if (handle)
     {
@@ -101,7 +101,7 @@ void AllocationGroup::Release (size_t _bytesCount) noexcept
     }
 }
 
-void AllocationGroup::Free (size_t _bytesCount) noexcept
+void AllocationGroup::Free (std::size_t _bytesCount) noexcept
 {
     if (handle)
     {
@@ -140,7 +140,7 @@ UniqueString AllocationGroup::GetId () const noexcept
     return {};
 }
 
-size_t AllocationGroup::GetAcquired () const noexcept
+std::size_t AllocationGroup::GetAcquired () const noexcept
 {
     if (handle)
     {
@@ -150,7 +150,7 @@ size_t AllocationGroup::GetAcquired () const noexcept
     return 0u;
 }
 
-size_t AllocationGroup::GetReserved () const noexcept
+std::size_t AllocationGroup::GetReserved () const noexcept
 {
     if (handle)
     {
@@ -160,7 +160,7 @@ size_t AllocationGroup::GetReserved () const noexcept
     return 0u;
 }
 
-size_t AllocationGroup::GetTotal () const noexcept
+std::size_t AllocationGroup::GetTotal () const noexcept
 {
     if (handle)
     {

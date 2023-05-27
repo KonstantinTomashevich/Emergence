@@ -126,10 +126,10 @@ void DefaultDestructor (void *_address)
 /// \brief Checks that type has static `Reflect` method for reflection-based logic.
 template <typename T>
 concept HasReflection = requires (T) {
-    {
-        T::Reflect ()
-    };
-};
+                            {
+                                T::Reflect ()
+                            };
+                        };
 
 template <typename>
 struct IsVector
@@ -147,8 +147,8 @@ struct IsVector<Container::Vector<ValueType>>
 template <typename T>
 concept RegularFieldType =
     std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
-    std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
-    std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
+    std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, std::uint8_t> ||
+    std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t> ||
     std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, Memory::UniqueString> ||
     std::is_enum_v<T> || std::is_pointer_v<T> || HasReflection<T> || std::is_same_v<T, Container::Utf8String> ||
     IsVector<T>::VALUE || std::is_same_v<T, StandardLayout::Patch>;
@@ -174,19 +174,19 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     {
         return _builder.RegisterInt64 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, bool> || std::is_same_v<Type, uint8_t>)
+    else if constexpr (std::is_same_v<Type, bool> || std::is_same_v<Type, std::uint8_t>)
     {
         return _builder.RegisterUInt8 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, uint16_t>)
+    else if constexpr (std::is_same_v<Type, std::uint16_t>)
     {
         return _builder.RegisterUInt16 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, uint32_t>)
+    else if constexpr (std::is_same_v<Type, std::uint32_t>)
     {
         return _builder.RegisterUInt32 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, uint64_t>)
+    else if constexpr (std::is_same_v<Type, std::uint64_t>)
     {
         return _builder.RegisterUInt64 (Memory::UniqueString {_name}, _offset);
     }

@@ -14,14 +14,14 @@ UniformValueDescription::UniformValueDescription () noexcept
 UniformValueDescription::UniformValueDescription (const UniformValueDescription &_other) noexcept
     : name (_other.name),
       type (_other.type),
-      matrix4x4f(_other.matrix4x4f)
+      matrix4x4f (_other.matrix4x4f)
 {
 }
 
 UniformValueDescription::UniformValueDescription (UniformValueDescription &&_other) noexcept
     : name (_other.name),
       type (_other.type),
-      matrix4x4f(_other.matrix4x4f)
+      matrix4x4f (_other.matrix4x4f)
 {
 }
 

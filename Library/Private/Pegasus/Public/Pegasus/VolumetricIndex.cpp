@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 #include <Pegasus/Storage.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
@@ -178,7 +180,7 @@ PartitioningTree<Dimensions>::RayEnumerator::RayEnumerator (
         currentPoint.coordinates[dimension] = _ray.axis[dimension].origin;
         const float offset = _ray.axis[dimension].direction > 0.0f ? Constants::VolumetricIndex::EPSILON :
                                                                      -Constants::VolumetricIndex::EPSILON;
-        currentTargetNode[dimension] = static_cast<Index> (std::floorf (currentPoint.coordinates[dimension] + offset));
+        currentTargetNode[dimension] = static_cast<Index> (floorf (currentPoint.coordinates[dimension] + offset));
 
         normalizedDirection.coordinates[dimension] = _ray.axis[dimension].direction;
         directionSquareSum += normalizedDirection.coordinates[dimension] * normalizedDirection.coordinates[dimension];
@@ -264,8 +266,8 @@ void PartitioningTree<Dimensions>::RayEnumerator::MoveToNextTarget () noexcept
                                                   Emergence::Pegasus::Constants::VolumetricIndex::EPSILON :
                                                   -Emergence::Pegasus::Constants::VolumetricIndex::EPSILON;
 
-            const auto floored = static_cast<Index> (
-                std::floorf (currentPoint.coordinates[dimension] + directionInfo[dimension].offset));
+            const auto floored =
+                static_cast<Index> (floorf (currentPoint.coordinates[dimension] + directionInfo[dimension].offset));
             const Index topLevelCoordinate = floored & topLevelMask;
 
             const float moveTarget = directionInfo[dimension].positive ?
@@ -314,7 +316,7 @@ void PartitioningTree<Dimensions>::RayEnumerator::MoveToNextTarget () noexcept
                 return;
             }
 
-            currentTargetNode[dimension] = static_cast<Index> (std::floorf (pointWithOffset));
+            currentTargetNode[dimension] = static_cast<Index> (floorf (pointWithOffset));
         }
     }
 
@@ -681,10 +683,10 @@ bool VolumetricTree<Unit, Dimensions>::RayIntersectionEnumerator::CheckIntersect
     // Algorithm is taken from GitHub:
     // https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
 
-    constexpr uint8_t LEFT = 0u;
-    constexpr uint8_t MIDDLE = 1u;
-    constexpr uint8_t RIGHT = 2u;
-    std::array<uint8_t, Dimensions> quadrant;
+    constexpr std::uint8_t LEFT = 0u;
+    constexpr std::uint8_t MIDDLE = 1u;
+    constexpr std::uint8_t RIGHT = 2u;
+    std::array<std::uint8_t, Dimensions> quadrant;
 
     bool insideShape = true;
     std::array<FloatingUnit, Dimensions> candidatePoint;
@@ -776,8 +778,8 @@ VolumetricTree<Unit, Dimensions>::VolumetricTree (const std::array<Dimension, Di
 }
 
 template <typename Unit, std::size_t Dimensions>
-const std::array<typename VolumetricTree<Unit, Dimensions>::Dimension, Dimensions> &
-VolumetricTree<Unit, Dimensions>::GetDimensions () const noexcept
+const std::array<typename VolumetricTree<Unit, Dimensions>::Dimension, Dimensions>
+    &VolumetricTree<Unit, Dimensions>::GetDimensions () const noexcept
 {
     return dimensions;
 }
@@ -864,7 +866,7 @@ typename PartitioningTree<Dimensions>::Index VolumetricTree<Unit, Dimensions>::P
             static_cast<float> (space) * Constants::VolumetricIndex::IDEAL_UNIT_TO_PARTITION_SCALE;
 
         const auto roundedPartitions =
-            static_cast<typename PartitioningTree<Dimensions>::Index> (std::ceilf (floatingPartitions));
+            static_cast<typename PartitioningTree<Dimensions>::Index> (ceilf (floatingPartitions));
 
         constexpr std::size_t BIT_COUNT = sizeof (typename PartitioningTree<Dimensions>::Index) * 8u;
         maxBorder = std::max (maxBorder, static_cast<typename PartitioningTree<Dimensions>::Index> (
@@ -927,7 +929,7 @@ typename PartitioningTree<Dimensions>::Index VolumetricTree<Unit, Dimensions>::C
     const FloatingUnit percent = static_cast<FloatingUnit> (localizedValue) / static_cast<FloatingUnit> (space);
 
     return static_cast<typename PartitioningTree<Dimensions>::Index> (
-        std::floor (percent * static_cast<FloatingUnit> (partitions)));
+        floor (percent * static_cast<FloatingUnit> (partitions)));
 }
 
 template <typename Unit, std::size_t Dimensions>
@@ -1458,7 +1460,7 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
 
 #define UNHANDLED_COMBINATION                                                                                          \
     EMERGENCE_ASSERT (false);                                                                                          \
-    return VolumetricTree<uint8_t, 1u> ({})
+    return VolumetricTree<std::uint8_t, 1u> ({})
 
 #define HANDLE_DIMENSION_COUNT(Count)                                                                                  \
     case Count:                                                                                                        \
@@ -1477,18 +1479,26 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
                 return VolumetricTree<int64_t, Count> (ConvertDimensions<int64_t, Count> (_storage, _dimensions));     \
             }                                                                                                          \
                                                                                                                        \
+            break;                                                                                                     \
+                                                                                                                       \
         case StandardLayout::FieldArchetype::UINT:                                                                     \
             switch (selectionBaseField.GetSize ())                                                                     \
             {                                                                                                          \
             case 1u:                                                                                                   \
-                return VolumetricTree<uint8_t, Count> (ConvertDimensions<uint8_t, Count> (_storage, _dimensions));     \
+                return VolumetricTree<std::uint8_t, Count> (                                                           \
+                    ConvertDimensions<std::uint8_t, Count> (_storage, _dimensions));                                   \
             case 2u:                                                                                                   \
-                return VolumetricTree<uint16_t, Count> (ConvertDimensions<uint16_t, Count> (_storage, _dimensions));   \
+                return VolumetricTree<std::uint16_t, Count> (                                                          \
+                    ConvertDimensions<std::uint16_t, Count> (_storage, _dimensions));                                  \
             case 4u:                                                                                                   \
-                return VolumetricTree<uint32_t, Count> (ConvertDimensions<uint32_t, Count> (_storage, _dimensions));   \
+                return VolumetricTree<std::uint32_t, Count> (                                                          \
+                    ConvertDimensions<std::uint32_t, Count> (_storage, _dimensions));                                  \
             case 8u:                                                                                                   \
-                return VolumetricTree<uint64_t, Count> (ConvertDimensions<uint64_t, Count> (_storage, _dimensions));   \
+                return VolumetricTree<std::uint64_t, Count> (                                                          \
+                    ConvertDimensions<std::uint64_t, Count> (_storage, _dimensions));                                  \
             }                                                                                                          \
+                                                                                                                       \
+            break;                                                                                                     \
                                                                                                                        \
         case StandardLayout::FieldArchetype::FLOAT:                                                                    \
             switch (selectionBaseField.GetSize ())                                                                     \
@@ -1499,6 +1509,8 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
                 return VolumetricTree<double, Count> (ConvertDimensions<double, Count> (_storage, _dimensions));       \
             }                                                                                                          \
                                                                                                                        \
+            break;                                                                                                     \
+                                                                                                                       \
         case StandardLayout::FieldArchetype::BIT:                                                                      \
         case StandardLayout::FieldArchetype::STRING:                                                                   \
         case StandardLayout::FieldArchetype::BLOCK:                                                                    \
@@ -1508,7 +1520,9 @@ VolumetricTreeVariant VolumetricIndex::CreateVolumetricTree (
         case StandardLayout::FieldArchetype::VECTOR:                                                                   \
         case StandardLayout::FieldArchetype::PATCH:                                                                    \
             UNHANDLED_COMBINATION;                                                                                     \
-        }
+        }                                                                                                              \
+                                                                                                                       \
+        break;
 
     switch (_dimensions.size ())
     {

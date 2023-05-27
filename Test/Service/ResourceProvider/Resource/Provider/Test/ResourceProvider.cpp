@@ -1,3 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 
@@ -124,7 +127,7 @@ struct ResourceSourceDescription final
     Container::Vector<ResourceObject<TestResourceObjectSecond>> secondObjectBinary;
     Container::Vector<ResourceObject<TestResourceObjectSecond>> secondObjectYaml;
 
-    Container::Vector<ResourceObject<Container::Vector<uint8_t>>> thirdPartyResources;
+    Container::Vector<ResourceObject<Container::Vector<std::uint8_t>>> thirdPartyResources;
 };
 
 Container::MappingRegistry GetObjectTypeRegistry ()
@@ -182,7 +185,7 @@ void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sour
             Serialization::Yaml::SerializeObject (output, &object.object, TestResourceObjectSecond::Reflect ().mapping);
         }
 
-        for (const ResourceObject<Container::Vector<uint8_t>> &resource : source.thirdPartyResources)
+        for (const ResourceObject<Container::Vector<std::uint8_t>> &resource : source.thirdPartyResources)
         {
             std::filesystem::create_directories (
                 std::filesystem::path {sourcePath / resource.relativePath}.parent_path ());
@@ -205,7 +208,7 @@ struct Expectation final
 {
     Container::Vector<IdentifiedObject<TestResourceObjectFirst>> firstObjects;
     Container::Vector<IdentifiedObject<TestResourceObjectSecond>> secondObjects;
-    Container::Vector<IdentifiedObject<Container::Vector<uint8_t>>> thirdParty;
+    Container::Vector<IdentifiedObject<Container::Vector<std::uint8_t>>> thirdParty;
 };
 
 void AddToExpectation (Expectation &_expectation, const ResourceSourceDescription &_source)
@@ -238,9 +241,9 @@ void AddToExpectation (Expectation &_expectation, const ResourceSourceDescriptio
             object.object});
     }
 
-    for (const ResourceObject<Container::Vector<uint8_t>> &resource : _source.thirdPartyResources)
+    for (const ResourceObject<Container::Vector<std::uint8_t>> &resource : _source.thirdPartyResources)
     {
-        _expectation.thirdParty.emplace_back (IdentifiedObject<Container::Vector<uint8_t>> {
+        _expectation.thirdParty.emplace_back (IdentifiedObject<Container::Vector<std::uint8_t>> {
             Memory::UniqueString {std::filesystem::path {resource.relativePath}.filename ().string ().c_str ()},
             resource.object});
     }
@@ -287,11 +290,11 @@ void CheckExpectation (const Expectation &_expectation, const ResourceProvider &
                _expectation.secondObjects.end ());
     }
 
-    for (const IdentifiedObject<Container::Vector<uint8_t>> &resource : _expectation.thirdParty)
+    for (const IdentifiedObject<Container::Vector<std::uint8_t>> &resource : _expectation.thirdParty)
     {
         Memory::Heap thirdPartyHeap {Memory::Profiler::AllocationGroup::Top ()};
-        uint64_t thirdPartySize = 0u;
-        uint8_t *thirdPartyData = nullptr;
+        std::uint64_t thirdPartySize = 0u;
+        std::uint8_t *thirdPartyData = nullptr;
 
         REQUIRE (_provider.LoadThirdPartyResource (resource.id, thirdPartyHeap, thirdPartySize, thirdPartyData) ==
                  LoadingOperationResponse::SUCCESSFUL);

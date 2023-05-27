@@ -29,9 +29,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 
-        explicit AscendingReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit AscendingReadCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -45,9 +45,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 
-        explicit AscendingEditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit AscendingEditCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read records, that match criteria,
@@ -62,9 +62,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 
-        explicit DescendingReadCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit DescendingReadCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Allows user to read, modify and delete records, that
@@ -78,9 +78,9 @@ public:
         /// LinearRepresentation constructs its cursors.
         friend class LinearRepresentation;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 
-        explicit DescendingEditCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit DescendingEditCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Points to value, that defines one of interval borders.

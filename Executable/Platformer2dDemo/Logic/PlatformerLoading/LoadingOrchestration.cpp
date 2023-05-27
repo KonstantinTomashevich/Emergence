@@ -218,7 +218,7 @@ void LoadingOrchestrator::Execute () noexcept
         InitInput ();
         viewDropHandle.RequestViewDrop (ownerView);
 
-        const uint64_t loadingTimeNs =
+        const std::uint64_t loadingTimeNs =
             Emergence::Time::NanosecondsSinceStartup () - platformerLoading->loadingStartTimeNs;
         platformerLoading->loadingStartTimeNs = 0u;
 
@@ -243,7 +243,7 @@ void LoadingOrchestrator::SpawnViewports (const Emergence::Celerity::WorldSingle
     auto *camera = static_cast<Emergence::Celerity::Camera2dComponent *> (++cameraCursor);
     camera->objectId = cameraTransform->GetObjectId ();
     camera->halfOrthographicSize = 3.75f;
-    camera->visibilityMask = static_cast<uint64_t> (VisibilityMask::GAME_SCENE);
+    camera->visibilityMask = static_cast<std::uint64_t> (VisibilityMask::GAME_SCENE);
 
     auto cameraContextCursor = insertCameraContext.Execute ();
     auto *cameraContext = static_cast<CameraContextComponent *> (++cameraContextCursor);

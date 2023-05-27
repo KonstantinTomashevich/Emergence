@@ -16,11 +16,11 @@ struct UISingleton final
 
     /// \brief Atomic counter for generating unique ids for UI nodes.
     /// \invariant Do not access directly, use ::GenerateNodeId.
-    std::atomic_unsigned_lock_free nodeIdCounter = 0u;
+    std::atomic_uintptr_t nodeIdCounter = 0u;
 
     /// \brief Generates new unique id for a UI node.
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    [[nodiscard]] uintptr_t GenerateNodeId () const noexcept;
+    [[nodiscard]] std::uintptr_t GenerateNodeId () const noexcept;
 
     struct Reflection final
     {

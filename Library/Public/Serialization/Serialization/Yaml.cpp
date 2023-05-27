@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 #include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
@@ -26,7 +28,7 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
     case StandardLayout::FieldArchetype::BIT:
 
         // We are casting to bool to signal that this value must be serialized as boolean.
-        result = static_cast<bool> (*static_cast<const uint8_t *> (_address) & (1u << _field.GetBitOffset ()));
+        result = static_cast<bool> (*static_cast<const std::uint8_t *> (_address) & (1u << _field.GetBitOffset ()));
         break;
 
     case StandardLayout::FieldArchetype::INT:
@@ -56,19 +58,19 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
         {
         case 1u:
             // We are converting to 16-bit int to avoid char conversion.
-            result = static_cast<uint16_t> (*static_cast<const uint8_t *> (_address));
+            result = static_cast<std::uint16_t> (*static_cast<const std::uint8_t *> (_address));
             break;
 
         case 2u:
-            result = *static_cast<const uint16_t *> (_address);
+            result = *static_cast<const std::uint16_t *> (_address);
             break;
 
         case 4u:
-            result = *static_cast<const uint32_t *> (_address);
+            result = *static_cast<const std::uint32_t *> (_address);
             break;
 
         case 8u:
-            result = *static_cast<const uint64_t *> (_address);
+            result = *static_cast<const std::uint64_t *> (_address);
             break;
         }
         break;
@@ -176,7 +178,7 @@ static void SerializeObjectToYaml (YAML::Node &_output, const void *_object, con
             YAML::Node node {YAML::NodeType::Sequence};
             const void *vectorAddress = field.GetValue (_object);
 
-            for (const uint8_t *pointer = Container::UntypedVectorUtility::Begin (vectorAddress);
+            for (const std::uint8_t *pointer = Container::UntypedVectorUtility::Begin (vectorAddress);
                  pointer != Container::UntypedVectorUtility::End (vectorAddress);
                  pointer += field.GetVectorItemMapping ().GetObjectSize ())
             {
@@ -221,11 +223,11 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
         case StandardLayout::FieldArchetype::BIT:
             if (_input.as<bool> ())
             {
-                *static_cast<uint8_t *> (_address) |= 1u << _field.GetBitOffset ();
+                *static_cast<std::uint8_t *> (_address) |= 1u << _field.GetBitOffset ();
             }
             else
             {
-                *static_cast<uint8_t *> (_address) &= ~(1u << _field.GetBitOffset ());
+                *static_cast<std::uint8_t *> (_address) &= ~(1u << _field.GetBitOffset ());
             }
             break;
 
@@ -251,16 +253,16 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
             switch (_field.GetSize ())
             {
             case 1u:
-                *static_cast<uint8_t *> (_address) = _input.as<uint8_t> ();
+                *static_cast<std::uint8_t *> (_address) = _input.as<std::uint8_t> ();
                 break;
             case 2u:
-                *static_cast<uint16_t *> (_address) = _input.as<uint16_t> ();
+                *static_cast<std::uint16_t *> (_address) = _input.as<std::uint16_t> ();
                 break;
             case 4u:
-                *static_cast<uint32_t *> (_address) = _input.as<uint32_t> ();
+                *static_cast<std::uint32_t *> (_address) = _input.as<std::uint32_t> ();
                 break;
             case 8u:
-                *static_cast<uint64_t *> (_address) = _input.as<uint64_t> ();
+                *static_cast<std::uint64_t *> (_address) = _input.as<std::uint64_t> ();
                 break;
             }
             break;
@@ -350,16 +352,16 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
             switch (_field.GetSize ())
             {
             case 1u:
-                _builder.SetUInt8 (fieldId, _input.as<uint8_t> ());
+                _builder.SetUInt8 (fieldId, _input.as<std::uint8_t> ());
                 break;
             case 2u:
-                _builder.SetUInt16 (fieldId, _input.as<uint16_t> ());
+                _builder.SetUInt16 (fieldId, _input.as<std::uint16_t> ());
                 break;
             case 4u:
-                _builder.SetUInt32 (fieldId, _input.as<uint32_t> ());
+                _builder.SetUInt32 (fieldId, _input.as<std::uint32_t> ());
                 break;
             case 8u:
-                _builder.SetUInt64 (fieldId, _input.as<uint64_t> ());
+                _builder.SetUInt64 (fieldId, _input.as<std::uint64_t> ());
                 break;
             }
             break;
@@ -546,12 +548,12 @@ static bool DeserializeObjectFromYaml (const YAML::Node &_input,
 
             const YAML::Node &sequenceNode = iterator->second;
             void *vectorAddress = field.GetValue (_objectAddress);
-            const auto vectorSize = static_cast<uint32_t> (sequenceNode.size ());
+            const auto vectorSize = static_cast<std::uint32_t> (sequenceNode.size ());
             const StandardLayout::Mapping &itemMapping = field.GetVectorItemMapping ();
             Container::UntypedVectorUtility::InitSize (vectorAddress, vectorSize * itemMapping.GetObjectSize ());
             int32_t itemIndex = 0u;
 
-            for (uint8_t *pointer = Container::UntypedVectorUtility::Begin (vectorAddress);
+            for (std::uint8_t *pointer = Container::UntypedVectorUtility::Begin (vectorAddress);
                  pointer != Container::UntypedVectorUtility::End (vectorAddress);
                  pointer += itemMapping.GetObjectSize ())
             {

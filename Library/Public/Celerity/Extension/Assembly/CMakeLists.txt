@@ -1,4 +1,4 @@
-sober_library_begin (CelerityAssembly STATIC)
+sober_library_begin (CelerityAssembly OBJECT)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})

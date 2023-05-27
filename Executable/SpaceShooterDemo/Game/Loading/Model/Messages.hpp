@@ -6,7 +6,7 @@
 
 struct LevelGenerationRequest final
 {
-    [[maybe_unused]] uintptr_t alignmentFixer = 0u;
+    [[maybe_unused]] std::uintptr_t alignmentFixer = 0u;
 
     struct Reflection final
     {
@@ -18,7 +18,7 @@ struct LevelGenerationRequest final
 
 struct LevelGenerationFinishedResponse final
 {
-    [[maybe_unused]] uintptr_t alignmentFixer = 0u;
+    [[maybe_unused]] std::uintptr_t alignmentFixer = 0u;
 
     struct Reflection final
     {

@@ -17,10 +17,10 @@ struct IntsSubstructure final
     int32_t int32;
     int64_t int64;
 
-    uint8_t uint8;
-    uint16_t uint16;
-    uint32_t uint32;
-    uint64_t uint64;
+    std::uint8_t uint8;
+    std::uint16_t uint16;
+    std::uint32_t uint32;
+    std::uint64_t uint64;
 
     struct Reflection final
     {
@@ -92,16 +92,16 @@ const FloatsSubstructure::Reflection &FloatsSubstructure::Reflect () noexcept
 
 struct TestStructure final
 {
-    static constexpr size_t ALIVE_OFFSET = 0u;
-    static constexpr size_t POISONED_OFFSET = 1u;
-    static constexpr size_t BLESSED_OFFSET = 2u;
+    static constexpr std::size_t ALIVE_OFFSET = 0u;
+    static constexpr std::size_t POISONED_OFFSET = 1u;
+    static constexpr std::size_t BLESSED_OFFSET = 2u;
 
-    uint64_t flags;
+    std::uint64_t flags;
 
     IntsSubstructure ints;
     FloatsSubstructure floats;
 
-    uint8_t block[8u];
+    std::uint8_t block[8u];
     char string[24u];
     Memory::UniqueString uniqueString;
 

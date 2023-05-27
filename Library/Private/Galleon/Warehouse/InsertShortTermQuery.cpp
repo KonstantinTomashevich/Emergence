@@ -26,7 +26,7 @@ void *InsertShortTermQuery::Cursor::operator++ () noexcept
     return ++block_cast<CursorImplementation> (data);
 }
 
-InsertShortTermQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+InsertShortTermQuery::Cursor::Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (_data)));
 }

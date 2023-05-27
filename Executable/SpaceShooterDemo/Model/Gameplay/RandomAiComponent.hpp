@@ -12,7 +12,7 @@ struct RandomAiComponent final
 
     Emergence::Math::Vector3f currentTargetPoint {0.0f, 0.0f, 0.0f};
 
-    uint64_t chaseTargetPointUntilNs = 0u;
+    std::uint64_t chaseTargetPointUntilNs = 0u;
 
     float averageShotsPerS = 1.0f;
 

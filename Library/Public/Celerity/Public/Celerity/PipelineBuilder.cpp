@@ -314,18 +314,20 @@ RemoveDescendingRangeQuery TaskConstructor::RemoveDescendingRange (const Standar
         view.localRegistry.ModifyDescendingRange (_typeMapping, _keyField), view, _typeMapping);
 }
 
-FetchSignalQuery TaskConstructor::FetchSignal (const StandardLayout::Mapping &_typeMapping,
-                                               StandardLayout::FieldId _keyField,
-                                               const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+FetchSignalQuery TaskConstructor::FetchSignal (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     RegisterReadAccess (_typeMapping.GetName ());
     return parent->worldView->FindViewForType (_typeMapping)
         .localRegistry.FetchSignal (_typeMapping, _keyField, _signaledValue);
 }
 
-ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &_typeMapping,
-                                                 StandardLayout::FieldId _keyField,
-                                                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+ModifySignalQuery TaskConstructor::ModifySignal (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     return ModifySignalPartial (_typeMapping, _keyField, _signaledValue, {});
 }
@@ -333,7 +335,7 @@ ModifySignalQuery TaskConstructor::ModifySignal (const StandardLayout::Mapping &
 ModifySignalQuery TaskConstructor::ModifySignalPartial (
     const StandardLayout::Mapping &_typeMapping,
     StandardLayout::FieldId _keyField,
-    const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue,
     const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
@@ -343,9 +345,10 @@ ModifySignalQuery TaskConstructor::ModifySignalPartial (
         view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping, _editedFields);
 }
 
-EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typeMapping,
-                                             StandardLayout::FieldId _keyField,
-                                             const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+EditSignalQuery TaskConstructor::EditSignal (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     return EditSignalPartial (_typeMapping, _keyField, _signaledValue, {});
 }
@@ -353,7 +356,7 @@ EditSignalQuery TaskConstructor::EditSignal (const StandardLayout::Mapping &_typ
 EditSignalQuery TaskConstructor::EditSignalPartial (
     const StandardLayout::Mapping &_typeMapping,
     StandardLayout::FieldId _keyField,
-    const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue,
     const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
@@ -363,9 +366,10 @@ EditSignalQuery TaskConstructor::EditSignalPartial (
         view.localRegistry.ModifySignal (_typeMapping, _keyField, _signaledValue), view, _typeMapping, _editedFields);
 }
 
-RemoveSignalQuery TaskConstructor::RemoveSignal (const StandardLayout::Mapping &_typeMapping,
-                                                 StandardLayout::FieldId _keyField,
-                                                 const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+RemoveSignalQuery TaskConstructor::RemoveSignal (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     RegisterWriteAccess (_typeMapping.GetName ());
     WorldView &view = parent->worldView->FindViewForType (_typeMapping);

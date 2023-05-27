@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Vector.hpp>

@@ -158,7 +158,7 @@ Container::String GraphId (const PointRepresentation &_representation)
 
 Container::String GraphId (const SignalRepresentation &_representation)
 {
-    const std::array<uint8_t, sizeof (uint64_t)> &signaledValue = _representation.GetSignaledValue ();
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &signaledValue = _representation.GetSignaledValue ();
     return EMERGENCE_BUILD_STRING (
         "SignalRepresentation {", _representation.GetKeyField ().GetName (), " = ",
         Container::StringBuilder::FieldPointer {&signaledValue, _representation.GetKeyField ()}, "}");

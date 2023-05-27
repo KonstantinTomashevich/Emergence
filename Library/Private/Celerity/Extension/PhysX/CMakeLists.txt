@@ -3,7 +3,7 @@ if (NOT TARGET PhysX)
     return ()
 endif ()
 
-sober_library_begin (CelerityPhysX STATIC)
+sober_library_begin (CelerityPhysX OBJECT)
     file (GLOB_RECURSE HEADERS "*.hpp" )
     file (GLOB_RECURSE SOURCES "*.cpp")
     list (APPEND SOURCES ${HEADERS})

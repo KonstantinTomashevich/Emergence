@@ -4,7 +4,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-enum class LevelLoadingState : uint8_t
+enum class LevelLoadingState : std::uint8_t
 {
     NONE,
     LOADING_DESCRIPTOR,

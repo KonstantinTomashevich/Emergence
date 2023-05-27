@@ -14,7 +14,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Describes states of resource config loading routine.
-enum class ResourceConfigLoadingState : uint8_t
+enum class ResourceConfigLoadingState : std::uint8_t
 {
     /// \brief Loading routine is executing.
     LOADING,

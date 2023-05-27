@@ -36,7 +36,7 @@ ResourceProvider::ObjectRegistryCursor &ResourceProvider::ObjectRegistryCursor::
     return *this;
 }
 
-ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Original::ResourceProvider::ObjectRegistryCursor (
         std::move (block_cast<Original::ResourceProvider::ObjectRegistryCursor> (_data)));
@@ -117,8 +117,8 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
 LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::UniqueString _id,
                                                                    Memory::Heap &_allocator,
-                                                                   uint64_t &_sizeOutput,
-                                                                   uint8_t *&_dataOutput) const noexcept
+                                                                   std::uint64_t &_sizeOutput,
+                                                                   std::uint8_t *&_dataOutput) const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
     EMERGENCE_ASSERT (internal.resourceProvider);

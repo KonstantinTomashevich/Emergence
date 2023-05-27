@@ -36,13 +36,13 @@ public:
                                      UniqueString _id,
                                      const ProfilingLock & /*unused*/) noexcept;
 
-    void Allocate (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
+    void Allocate (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
-    void Acquire (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
+    void Acquire (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
-    void Release (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
+    void Release (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
-    void Free (size_t _bytesCount, const ProfilingLock &_lock) noexcept;
+    void Free (std::size_t _bytesCount, const ProfilingLock &_lock) noexcept;
 
     [[nodiscard]] AllocationGroup *Parent () const noexcept;
 
@@ -52,13 +52,13 @@ public:
 
     [[nodiscard]] UniqueString GetId () const noexcept;
 
-    [[nodiscard]] size_t GetAcquired () const noexcept;
+    [[nodiscard]] std::size_t GetAcquired () const noexcept;
 
-    [[nodiscard]] size_t GetReserved () const noexcept;
+    [[nodiscard]] std::size_t GetReserved () const noexcept;
 
-    [[nodiscard]] size_t GetTotal () const noexcept;
+    [[nodiscard]] std::size_t GetTotal () const noexcept;
 
-    [[nodiscard]] uintptr_t Hash () const noexcept;
+    [[nodiscard]] std::uintptr_t Hash () const noexcept;
 
 private:
     friend class AllocationGroupStack;
@@ -67,13 +67,13 @@ private:
 
     AllocationGroup (AllocationGroup *_parent, UniqueString _id) noexcept;
 
-    void AllocateInternal (size_t _bytesCount) noexcept;
+    void AllocateInternal (std::size_t _bytesCount) noexcept;
 
-    void AcquireInternal (size_t _bytesCount) noexcept;
+    void AcquireInternal (std::size_t _bytesCount) noexcept;
 
-    void ReleaseInternal (size_t _bytesCount) noexcept;
+    void ReleaseInternal (std::size_t _bytesCount) noexcept;
 
-    void FreeInternal (size_t _bytesCount) noexcept;
+    void FreeInternal (std::size_t _bytesCount) noexcept;
 
     Memory::UniqueString id;
     std::size_t reserved = 0u;

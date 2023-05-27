@@ -56,7 +56,7 @@ struct MouseButtonEvent final
 
     /// \brief How many clicks happened?
     /// \details Useful for catching double-clicks.
-    uint8_t clicks = 0;
+    std::uint8_t clicks = 0;
 
     bool operator== (const MouseButtonEvent &_other) const noexcept = default;
 
@@ -101,7 +101,7 @@ struct MouseWheelEvent final
 struct TextInputEvent final
 {
     /// \brief Maximum amount of bytes per one input event.
-    static constexpr size_t TEXT_BUFFER_SIZE = 32u;
+    static constexpr std::size_t TEXT_BUFFER_SIZE = 32u;
 
     /// \brief Input text encoded in utf8 format with zero terminator.
     std::array<char, TEXT_BUFFER_SIZE> utf8Value {"\0"};
@@ -114,21 +114,21 @@ struct TextInputEvent final
 /// \brief Universal structure for storing information about physical input.
 struct InputEvent final
 {
-    InputEvent (uint64_t _timeNs, const KeyboardEvent &_event) noexcept;
+    InputEvent (std::uint64_t _timeNs, const KeyboardEvent &_event) noexcept;
 
-    InputEvent (uint64_t _timeNs, const MouseButtonEvent &_event) noexcept;
+    InputEvent (std::uint64_t _timeNs, const MouseButtonEvent &_event) noexcept;
 
-    InputEvent (uint64_t _timeNs, const MouseMotionEvent &_event) noexcept;
+    InputEvent (std::uint64_t _timeNs, const MouseMotionEvent &_event) noexcept;
 
-    InputEvent (uint64_t _timeNs, const MouseWheelEvent &_event) noexcept;
+    InputEvent (std::uint64_t _timeNs, const MouseWheelEvent &_event) noexcept;
 
-    InputEvent (uint64_t _timeNs, const TextInputEvent &_event) noexcept;
+    InputEvent (std::uint64_t _timeNs, const TextInputEvent &_event) noexcept;
 
     /// \brief Type of event that is stored inside.
     InputEventType type;
 
     /// \brief Time since program startup to the event in nanoseconds.
-    uint64_t timeNs = 0u;
+    std::uint64_t timeNs = 0u;
 
     union
     {

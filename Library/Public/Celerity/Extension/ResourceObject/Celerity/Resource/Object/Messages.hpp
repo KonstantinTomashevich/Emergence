@@ -10,7 +10,7 @@ namespace Emergence::Celerity
 struct ResourceObjectRequest final
 {
     /// \brief Ids of resource objects to be loaded.
-    Container::Vector<Memory::UniqueString> objects {Memory::Profiler::AllocationGroup::Top()};
+    Container::Vector<Memory::UniqueString> objects {Memory::Profiler::AllocationGroup::Top ()};
 
     /// \brief Should objects be reloaded if it is already loaded.
     bool forceReload = false;

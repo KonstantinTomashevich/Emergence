@@ -31,3 +31,45 @@
 [submodule "ThirdParty/box2d"]
 	path = ThirdParty/box2d
 	url = https://github.com/erincatto/box2d.git
+[submodule "ThirdParty/boost/unordered"]
+	path = ThirdParty/boost/unordered
+	url = https://github.com/boostorg/unordered.git
+[submodule "ThirdParty/boost/assert"]
+	path = ThirdParty/boost/assert
+	url = https://github.com/boostorg/assert.git
+[submodule "ThirdParty/boost/config"]
+	path = ThirdParty/boost/config
+	url = https://github.com/boostorg/config.git
+[submodule "ThirdParty/boost/container_hash"]
+	path = ThirdParty/boost/container_hash
+	url = https://github.com/boostorg/container_hash.git
+[submodule "ThirdParty/boost/core"]
+	path = ThirdParty/boost/core
+	url = https://github.com/boostorg/core.git
+[submodule "ThirdParty/boost/move"]
+	path = ThirdParty/boost/move
+	url = https://github.com/boostorg/move.git
+[submodule "ThirdParty/boost/mp11"]
+	path = ThirdParty/boost/mp11
+	url = https://github.com/boostorg/mp11.git
+[submodule "ThirdParty/boost/predef"]
+	path = ThirdParty/boost/predef
+	url = https://github.com/boostorg/predef.git
+[submodule "ThirdParty/boost/preprocessor"]
+	path = ThirdParty/boost/preprocessor
+	url = https://github.com/boostorg/preprocessor.git
+[submodule "ThirdParty/boost/throw_exception"]
+	path = ThirdParty/boost/throw_exception
+	url = https://github.com/boostorg/throw_exception.git
+[submodule "ThirdParty/boost/tuple"]
+	path = ThirdParty/boost/tuple
+	url = https://github.com/boostorg/tuple.git
+[submodule "ThirdParty/boost/type_traits"]
+	path = ThirdParty/boost/type_traits
+	url = https://github.com/boostorg/type_traits.git
+[submodule "ThirdParty/boost/describe"]
+	path = ThirdParty/boost/describe
+	url = https://github.com/boostorg/describe.git
+[submodule "ThirdParty/boost/static_assert"]
+	path = ThirdParty/boost/static_assert
+	url = https://github.com/boostorg/static_assert.git

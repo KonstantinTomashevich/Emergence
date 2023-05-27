@@ -1,4 +1,4 @@
-sober_library_begin (CelerityRender2d STATIC)
+sober_library_begin (CelerityRender2d OBJECT)
     file (GLOB_RECURSE HEADERS "Public/*.hpp" "Private/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp" "Private/*.cpp")
     file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")

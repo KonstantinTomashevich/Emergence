@@ -12,11 +12,11 @@ namespace Emergence::Memory::Test::Pool
 using namespace Emergence::Memory::Literals;
 
 /// \brief Memory profiler reports internal page data as part of total data usage.
-constexpr size_t RESERVED_FOR_PAGE_INTERNALS = sizeof (uintptr_t);
+constexpr std::size_t RESERVED_FOR_PAGE_INTERNALS = sizeof (std::uintptr_t);
 
 struct TestItem
 {
-    uint64_t integer;
+    std::uint64_t integer;
     float floating;
     bool flag;
 };
@@ -27,7 +27,7 @@ struct FullPoolContext
     static constexpr std::size_t PAGE_CAPACITY = 8u;
     static constexpr std::size_t PAGES_TO_FILL = 2u;
 
-    FullPoolContext<Pool> ()
+    FullPoolContext ()
     {
         for (std::size_t index = 0u; index < PAGES_TO_FILL * PAGE_CAPACITY; ++index)
         {
@@ -180,17 +180,19 @@ void NonStandardAlignment ()
         for (std::size_t index = 0u; index < SAMPLE_COUNT; ++index)
         {
             void *chunk = pool.Acquire ();
-            CHECK (reinterpret_cast<uintptr_t> (chunk) % _alignment == 0u);
+            CHECK ((reinterpret_cast<std::uintptr_t> (chunk) % _alignment == 0u));
 
             for (void *other : alreadyAcquired)
             {
                 if (other < chunk)
                 {
-                    CHECK (static_cast<uint8_t *> (chunk) - static_cast<uint8_t *> (other) >= _objectSize);
+                    CHECK ((static_cast<size_t> (static_cast<std::uint8_t *> (chunk) -
+                                                 static_cast<std::uint8_t *> (other)) >= _objectSize));
                 }
                 else
                 {
-                    CHECK (static_cast<uint8_t *> (other) - static_cast<uint8_t *> (chunk) >= _objectSize);
+                    CHECK ((static_cast<size_t> (static_cast<std::uint8_t *> (other) -
+                                                 static_cast<std::uint8_t *> (chunk)) >= _objectSize));
                 }
             }
 

@@ -1,6 +1,6 @@
 add_subdirectory (Constants)
 
-sober_library_begin (Pegasus STATIC)
+sober_library_begin (Pegasus OBJECT)
     file (GLOB_RECURSE HEADERS "Public/*.hpp" "Private/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp" "Private/*.cpp")
     list (APPEND SOURCES ${HEADERS})

@@ -27,7 +27,7 @@ public:
     void UnregisterReference () noexcept;
 
     /// \return ::references
-    [[nodiscard]] uintptr_t GetReferenceCount () const noexcept;
+    [[nodiscard]] std::uintptr_t GetReferenceCount () const noexcept;
 
     /// It doesn't make sense to copy assign references counters.
     HandleableBase &operator= (const HandleableBase &_other) = delete;
@@ -41,6 +41,6 @@ protected:
 
 private:
     /// \brief Internal reference counter.
-    std::atomic_unsigned_lock_free references {0u};
+    std::atomic_uintptr_t references {0u};
 };
 } // namespace Emergence::Handling

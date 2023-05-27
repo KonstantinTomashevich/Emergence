@@ -20,7 +20,7 @@ Heap::~Heap () noexcept
     block_cast<Profiler::AllocationGroup> (data).~AllocationGroup ();
 }
 
-void *Heap::Acquire (size_t _bytes, size_t _alignment) noexcept
+void *Heap::Acquire (std::size_t _bytes, std::size_t _alignment) noexcept
 {
     auto &registry = block_cast<Profiler::AllocationGroup> (data);
     registry.Allocate (_bytes);
@@ -28,7 +28,7 @@ void *Heap::Acquire (size_t _bytes, size_t _alignment) noexcept
     return Original::AlignedAllocate (_alignment, _bytes);
 }
 
-void *Heap::Resize (void *_record, size_t _alignment, size_t _currentSize, size_t _newSize) noexcept
+void *Heap::Resize (void *_record, std::size_t _alignment, std::size_t _currentSize, std::size_t _newSize) noexcept
 {
     auto &registry = block_cast<Profiler::AllocationGroup> (data);
     registry.Allocate (_newSize);
@@ -38,7 +38,7 @@ void *Heap::Resize (void *_record, size_t _alignment, size_t _currentSize, size_
     return Original::AlignedReallocate (_record, _alignment, _currentSize, _newSize);
 }
 
-void Heap::Release (void *_record, size_t _bytes) noexcept
+void Heap::Release (void *_record, std::size_t _bytes) noexcept
 {
     auto &registry = block_cast<Profiler::AllocationGroup> (data);
     registry.Release (_bytes);
@@ -49,6 +49,16 @@ void Heap::Release (void *_record, size_t _bytes) noexcept
 const Profiler::AllocationGroup &Heap::GetAllocationGroup () const noexcept
 {
     return block_cast<Profiler::AllocationGroup> (data);
+}
+
+bool Heap::operator== (const Heap &_other) const noexcept
+{
+    return GetAllocationGroup () == _other.GetAllocationGroup ();
+}
+
+bool Heap::operator!= (const Heap &_other) const noexcept
+{
+    return !(*this == _other);
 }
 
 Heap &Heap::operator= (Heap &&_other) noexcept

@@ -85,7 +85,7 @@ void ContextHolder::Frame () noexcept
 
 ContextHolder::ContextHolder () noexcept
 {
-    uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
+    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
     window = SDL_CreateWindow ("Celerity::Render tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                static_cast<int> (WIDTH), static_cast<int> (HEIGHT),
                                static_cast<SDL_WindowFlags> (windowFlags));
@@ -96,7 +96,7 @@ ContextHolder::ContextHolder () noexcept
 
 #if SDL_VIDEO_DRIVER_X11
     void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (uintptr_t) windowsManagerInfo.info.x11.window;
+    void *nativeWindowHandle = (void *) (std::uintptr_t) windowsManagerInfo.info.x11.window;
 #elif SDL_VIDEO_DRIVER_COCOA
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
@@ -163,10 +163,10 @@ private:
 
     std::size_t currentPointIndex = 0u;
     Scenario scenario;
-    uint32_t framesWaiting = 0u;
+    std::uint32_t framesWaiting = 0u;
     bool *finishedOutput = nullptr;
     Memory::UniqueString pendingScreenShot;
-    uint64_t framesLeftToSkip = 0u;
+    std::uint64_t framesLeftToSkip = 0u;
 
     // We need to wait one frame after checking if all assets were loaded, because
     // new asset usages might be created as a result of current frame asset loading.
@@ -558,8 +558,8 @@ void ExecuteScenario (Scenario _scenario) noexcept
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);
     REQUIRE (pipelineBuilder.End ());
 
-    constexpr uint64_t SIMULATED_TIME_STEP_NS = 10000000u;
-    uint64_t timeOverride = 0u;
+    constexpr std::uint64_t SIMULATED_TIME_STEP_NS = 10000000u;
+    std::uint64_t timeOverride = 0u;
 
     while (!scenarioFinished)
     {

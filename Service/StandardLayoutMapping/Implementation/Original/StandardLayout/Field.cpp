@@ -90,7 +90,7 @@ void *Field::GetValue (void *_object) const noexcept
 const void *Field::GetValue (const void *_object) const noexcept
 {
     EMERGENCE_ASSERT (_object);
-    return static_cast<const uint8_t *> (_object) + GetOffset ();
+    return static_cast<const std::uint8_t *> (_object) + GetOffset ();
 }
 
 bool Field::IsSame (const Field &_other) const noexcept

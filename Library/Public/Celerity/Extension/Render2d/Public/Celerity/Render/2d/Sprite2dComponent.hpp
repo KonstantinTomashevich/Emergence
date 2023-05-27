@@ -35,7 +35,7 @@ struct Sprite2dComponent final
     /// \details Sprites with higher value appear on top of the sprites with lower value.
     ///          It is advised to use the minimum possible amount of layers as sprites
     ///          from the different layers cannot be batched together.
-    uint16_t layer = 0u;
+    std::uint16_t layer = 0u;
 
     /// \brief Visibility mask used for filtering out unwanted drawables. See Camera2dComponent::visibilityMask.
     std::uint64_t visibilityMask = ~0u;

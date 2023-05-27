@@ -1,6 +1,6 @@
 #pragma once
 
-enum class MovementState : uint8_t
+enum class MovementState : std::uint8_t
 {
     IDLE = 0,
     RUN,
@@ -12,7 +12,7 @@ enum class MovementState : uint8_t
     BLOCKED,
 };
 
-enum class MovementStateFlag : uint8_t
+enum class MovementStateFlag : std::uint8_t
 {
     NONE = 0u,
     IDLE = 1u << 0u,

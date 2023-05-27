@@ -1,3 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <cstring>
+
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
@@ -73,7 +77,7 @@ void Configurator::Execute () noexcept
 
                     for (const PatchSource &source : _task.patches)
                     {
-                        static std::array<uint8_t, 1024u> buffer;
+                        static std::array<std::uint8_t, 1024u> buffer;
                         REQUIRE (buffer.size () >= source.type.GetObjectSize ());
 
                         source.type.Construct (buffer.data ());

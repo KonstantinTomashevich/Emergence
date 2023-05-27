@@ -13,7 +13,7 @@ bool CollisionContact2d::operator== (const CollisionContact2d &_other) const
 
     if (fieldsEqual)
     {
-        for (size_t index = 0u; index < points.GetCount (); ++index)
+        for (std::size_t index = 0u; index < points.GetCount (); ++index)
         {
             fieldsEqual |= Math::NearlyEqual (points[index], _other.points[index]);
         }

@@ -34,9 +34,9 @@ public:
         /// Prepared query constructs its cursors.
         friend class InsertShortTermQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (InsertShortTermQuery, Cursor);
@@ -45,8 +45,8 @@ private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-    explicit InsertShortTermQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit InsertShortTermQuery (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

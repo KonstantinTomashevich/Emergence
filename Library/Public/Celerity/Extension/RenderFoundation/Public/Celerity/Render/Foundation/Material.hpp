@@ -67,7 +67,7 @@ struct Uniform final
     {
         /// \brief Stage to which texture of Render::Backend::UniformType::SAMPLER will be passed.
         /// \details Allowed to be changed during runtime.
-        uint8_t textureStage = 0u;
+        std::uint8_t textureStage = 0u;
     };
 
     struct Reflection final

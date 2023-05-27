@@ -31,7 +31,7 @@ const void *FetchSingletonQuery::Cursor::operator* () const noexcept
     return *block_cast<CursorImplementation> (data);
 }
 
-FetchSingletonQuery::Cursor::Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+FetchSingletonQuery::Cursor::Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) CursorImplementation (std::move (block_cast<CursorImplementation> (_data)));
 }

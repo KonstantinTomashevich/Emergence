@@ -109,7 +109,7 @@ VertexLayout &VertexLayout::operator= (VertexLayout &&_other) noexcept
     return *this;
 }
 
-VertexLayout::VertexLayout (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept
+VertexLayout::VertexLayout (std::array<std::uint8_t, DATA_MAX_SIZE> *_data) noexcept
 {
     new (data.data ()) bgfx::VertexLayout (block_cast<bgfx::VertexLayout> (*_data));
 }
@@ -127,7 +127,7 @@ VertexLayoutBuilder &VertexLayoutBuilder::Begin () noexcept
 
 VertexLayoutBuilder &VertexLayoutBuilder::Add (Attribute _attribute,
                                                AttributeType _type,
-                                               uint8_t _elementCount,
+                                               std::uint8_t _elementCount,
                                                bool _normalized) noexcept
 {
     block_cast<bgfx::VertexLayout> (data).add (ToBGFX (_attribute), _elementCount, ToBGFX (_type), _normalized);

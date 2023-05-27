@@ -1,4 +1,4 @@
-sober_library_begin (Handling STATIC)
+sober_library_begin (Handling OBJECT)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})

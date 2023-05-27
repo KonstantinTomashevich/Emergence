@@ -53,19 +53,19 @@
 
 #define FETCH_SIGNAL(Type, Field, Value)                                                                               \
     _constructor.FetchSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                        \
-                              array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
+                              array_cast<decltype (Type::Field), sizeof (std::uint64_t)> (Value))
 
 #define MODIFY_SIGNAL(Type, Field, Value)                                                                              \
     _constructor.ModifySignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                       \
-                               array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
+                               array_cast<decltype (Type::Field), sizeof (std::uint64_t)> (Value))
 
 #define EDIT_SIGNAL(Type, Field, Value)                                                                                \
     _constructor.EditSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                         \
-                             array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
+                             array_cast<decltype (Type::Field), sizeof (std::uint64_t)> (Value))
 
 #define REMOVE_SIGNAL(Type, Field, Value)                                                                              \
     _constructor.RemoveSignal (Type::Reflect ().mapping, Type::Reflect ().Field,                                       \
-                               array_cast<decltype (Type::Field), sizeof (uint64_t)> (Value))
+                               array_cast<decltype (Type::Field), sizeof (std::uint64_t)> (Value))
 
 // It's impossible to fit all data for shape and ray intersection
 // queries in one line anyway, therefore there is no macros for them.

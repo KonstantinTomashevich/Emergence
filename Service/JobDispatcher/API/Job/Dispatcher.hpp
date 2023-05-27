@@ -64,6 +64,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Dispatcher);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 17u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 17u);
 };
 } // namespace Emergence::Job

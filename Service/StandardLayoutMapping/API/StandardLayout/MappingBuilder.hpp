@@ -56,7 +56,7 @@ public:
     /// \invariant There is active mapping construction routine, that uses this builder.
     [[nodiscard]] FieldId RegisterBit (Memory::UniqueString _name,
                                        std::size_t _offset,
-                                       uint_fast8_t _bitOffset) noexcept;
+                                       std::uint_fast8_t _bitOffset) noexcept;
 
     /// \brief Registers 1 byte long integer.
     /// \invariant There is active mapping construction routine that uses this builder.
@@ -146,6 +146,6 @@ public:
     MappingBuilder &operator= (MappingBuilder &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 };
 } // namespace Emergence::StandardLayout

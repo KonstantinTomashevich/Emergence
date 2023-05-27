@@ -112,7 +112,7 @@ void LevelLoader::RequestDescriptor (const LevelLoadingSingleton *_levelLoading)
 {
     auto cursor = insertResourceObjectRequest.Execute ();
     auto *request = static_cast<Emergence::Celerity::ResourceObjectRequest *> (++cursor);
-    request->objects.emplace_back(_levelLoading->levelName);
+    request->objects.emplace_back (_levelLoading->levelName);
 }
 
 bool LevelLoader::CheckDescriptorLoadingResponse (const LevelLoadingSingleton *_levelLoading) noexcept

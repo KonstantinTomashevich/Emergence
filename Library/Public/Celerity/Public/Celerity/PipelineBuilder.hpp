@@ -45,6 +45,8 @@
 
 namespace Emergence::Celerity
 {
+class PipelineBuilder;
+
 /// \brief RAII-style constructor for Pipeline tasks.
 /// \note We have 4 access types for long term objects because of automated event triggering logic. If task has
 ///       edit access, it is registered as OnChange event producer, because it is able to change objects. If task
@@ -216,16 +218,17 @@ public:
 
     /// \brief Grants read-only access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
-    [[nodiscard]] FetchSignalQuery FetchSignal (const StandardLayout::Mapping &_typeMapping,
-                                                StandardLayout::FieldId _keyField,
-                                                const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+    [[nodiscard]] FetchSignalQuery FetchSignal (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
     [[nodiscard]] ModifySignalQuery ModifySignal (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
-        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Grants edit+remove access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
@@ -235,14 +238,15 @@ public:
     [[nodiscard]] ModifySignalQuery ModifySignalPartial (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
-        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue,
         const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
-    [[nodiscard]] EditSignalQuery EditSignal (const StandardLayout::Mapping &_typeMapping,
-                                              StandardLayout::FieldId _keyField,
-                                              const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+    [[nodiscard]] EditSignalQuery EditSignal (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Grants edit access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects with given value in given field.
@@ -252,7 +256,7 @@ public:
     [[nodiscard]] EditSignalQuery EditSignalPartial (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
-        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue,
         const Container::Vector<StandardLayout::FieldId> &_editedFields) noexcept;
 
     /// \brief Grants read+remove access to long term objects storage, described by given mapping, through
@@ -260,7 +264,7 @@ public:
     [[nodiscard]] RemoveSignalQuery RemoveSignal (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
-        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Grants read-only access to long term objects storage, described by given mapping, through
     ///        prepared query, that allows iterating over objects that intersect with selected shape.

@@ -15,10 +15,10 @@ struct ImageControl final
     UniqueId nodeId = INVALID_UNIQUE_ID;
 
     /// \brief Width of this control.
-    uint32_t width = 0u;
+    std::uint32_t width = 0u;
 
     /// \brief Height of this control.
-    uint32_t height = 0u;
+    std::uint32_t height = 0u;
 
     /// \brief Id of a texture that should be rendered.
     Memory::UniqueString textureId;

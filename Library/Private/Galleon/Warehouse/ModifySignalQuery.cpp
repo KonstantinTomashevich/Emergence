@@ -30,12 +30,12 @@ StandardLayout::Field ModifySignalQuery::GetKeyField () const noexcept
     return block_cast<QueryImplementation> (data).GetKeyField ();
 }
 
-bool ModifySignalQuery::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+bool ModifySignalQuery::IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const
 {
     return block_cast<QueryImplementation> (data).IsSignaledValue (_value);
 }
 
-std::array<uint8_t, sizeof (uint64_t)> ModifySignalQuery::GetSignaledValue () const noexcept
+std::array<std::uint8_t, sizeof (std::uint64_t)> ModifySignalQuery::GetSignaledValue () const noexcept
 {
     return block_cast<QueryImplementation> (data).GetSignaledValue ();
 }

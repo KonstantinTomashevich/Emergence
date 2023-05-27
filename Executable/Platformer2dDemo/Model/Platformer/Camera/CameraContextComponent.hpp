@@ -4,7 +4,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-enum class CameraTarget : uint8_t
+enum class CameraTarget : std::uint8_t
 {
     PLAYER = 0u,
 };

@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Render/2d/Render2dSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>

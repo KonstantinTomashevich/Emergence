@@ -37,7 +37,7 @@ public:
                const CustomKeyVector &_customKeys,
                const TypeBindingVector &_types,
                bool _isFixed,
-               uint64_t _assemblyTimeLimit) noexcept;
+               std::uint64_t _assemblyTimeLimit) noexcept;
 
     void Execute () noexcept;
 
@@ -70,10 +70,10 @@ private:
 
     void ProcessImmediatePrototypes () noexcept;
 
-    void ProcessWaitingPrototypes (uint64_t _executionStartTime) noexcept;
+    void ProcessWaitingPrototypes (std::uint64_t _executionStartTime) noexcept;
 
     AssemblyExecutionResult AssembleObject (PrototypeAssemblyComponent *_assembly,
-                                            uint64_t _executionStartTime) noexcept;
+                                            std::uint64_t _executionStartTime) noexcept;
 
     static UniqueId ReplaceId (KeyState &_keyState, UniqueId _id) noexcept;
 
@@ -104,7 +104,7 @@ private:
 
     Container::Vector<KeyState> keyStates {Memory::Profiler::AllocationGroup::Top ()};
 
-    const uint64_t assemblyTimeLimit;
+    const std::uint64_t assemblyTimeLimit;
     const bool isFixed;
     bool needRootObjectTransform3d = false;
 };
@@ -118,7 +118,7 @@ Assembler::Assembler (TaskConstructor &_constructor,
                       const CustomKeyVector &_customKeys,
                       const TypeBindingVector &_types,
                       bool _isFixed,
-                      uint64_t _assemblyTimeLimit) noexcept
+                      std::uint64_t _assemblyTimeLimit) noexcept
     : fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
       fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
 
@@ -129,23 +129,23 @@ Assembler::Assembler (TaskConstructor &_constructor,
           PrototypeAssemblyComponent::Reflect ().mapping,
           _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
                      PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
-          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY))),
+          array_cast<AssemblyState, sizeof (std::uint64_t)> (AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY))),
       modifyImmediatePrototypeAssemblies (_constructor.ModifySignal (
           PrototypeAssemblyComponent::Reflect ().mapping,
           _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
                      PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
-          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY))),
+          array_cast<AssemblyState, sizeof (std::uint64_t)> (AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY))),
 
       fetchWaitingPrototypeAssemblies (_constructor.FetchSignal (
           PrototypeAssemblyComponent::Reflect ().mapping,
           _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
                      PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
-          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
+          array_cast<AssemblyState, sizeof (std::uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
       modifyWaitingPrototypeAssemblies (_constructor.ModifySignal (
           PrototypeAssemblyComponent::Reflect ().mapping,
           _isFixed ? PrototypeAssemblyComponent::Reflect ().fixedAssemblyState :
                      PrototypeAssemblyComponent::Reflect ().normalAssemblyState,
-          array_cast<AssemblyState, sizeof (uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
+          array_cast<AssemblyState, sizeof (std::uint64_t)> (AssemblyState::WAITING_FOR_ASSEMBLY))),
 
       fetchTransform3dById (FETCH_VALUE_1F (Transform3dComponent, objectId)),
       transformWorldAccessor (_constructor),
@@ -198,7 +198,7 @@ Assembler::Assembler (TaskConstructor &_constructor,
 
 void Assembler::Execute () noexcept
 {
-    const uint64_t startTime = Time::NanosecondsSinceStartup ();
+    const std::uint64_t startTime = Time::NanosecondsSinceStartup ();
     bool hasUninitializedPrototypes = *fetchFreshPrototypes.Execute ();
     bool hasPendingImmediatePrototypes = *fetchImmediatePrototypeAssemblies.Execute ();
     bool hasPendingWaitingPrototypes = *fetchWaitingPrototypeAssemblies.Execute ();
@@ -256,7 +256,7 @@ void Assembler::ProcessImmediatePrototypes () noexcept
     }
 }
 
-void Assembler::ProcessWaitingPrototypes (uint64_t _executionStartTime) noexcept
+void Assembler::ProcessWaitingPrototypes (std::uint64_t _executionStartTime) noexcept
 {
     for (auto cursor = modifyWaitingPrototypeAssemblies.Execute ();
          auto *assembly = static_cast<PrototypeAssemblyComponent *> (*cursor);)
@@ -276,7 +276,7 @@ void Assembler::ProcessWaitingPrototypes (uint64_t _executionStartTime) noexcept
 }
 
 AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_assembly,
-                                                   uint64_t _executionStartTime) noexcept
+                                                   std::uint64_t _executionStartTime) noexcept
 {
     Memory::UniqueString descriptorId;
     bool requestImmediateNormalAssembly = false;
@@ -364,7 +364,7 @@ AssemblyExecutionResult Assembler::AssembleObject (PrototypeAssemblyComponent *_
     const bool immediate = (isFixed ? _assembly->fixedAssemblyState : _assembly->normalAssemblyState) ==
                            AssemblyState::IN_NEED_OF_IMMEDIATE_ASSEMBLY;
     GetObjectIdKeyState ().idReplacement.emplace (ASSEMBLY_ROOT_OBJECT_ID, _assembly->objectId);
-    size_t &index = (isFixed ? _assembly->fixedCurrentComponentIndex : _assembly->normalCurrentComponentIndex);
+    std::size_t &index = (isFixed ? _assembly->fixedCurrentComponentIndex : _assembly->normalCurrentComponentIndex);
 
     while (index < descriptor->components.size () &&
            (immediate || Time::NanosecondsSinceStartup () - _executionStartTime < assemblyTimeLimit))

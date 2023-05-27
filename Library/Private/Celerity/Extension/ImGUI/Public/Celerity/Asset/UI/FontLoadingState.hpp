@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/UI/Font.hpp>
 #include <Celerity/Asset/LoadingSharedState.hpp>
+#include <Celerity/Asset/UI/Font.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
@@ -17,11 +17,11 @@ public:
 
     FontAsset asset;
 
-    Memory::Heap fontDataHeap {GetHeap().GetAllocationGroup()};
+    Memory::Heap fontDataHeap {GetHeap ().GetAllocationGroup ()};
 
-    uint64_t fontDataSize = 0u;
+    std::uint64_t fontDataSize = 0u;
 
-    uint8_t *fontData = nullptr;
+    std::uint8_t *fontData = nullptr;
 };
 
 struct FontLoadingState final

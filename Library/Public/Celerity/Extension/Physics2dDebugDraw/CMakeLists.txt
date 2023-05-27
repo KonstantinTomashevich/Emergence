@@ -1,4 +1,4 @@
-sober_library_begin (CelerityPhysics2dDebugDraw STATIC)
+sober_library_begin (CelerityPhysics2dDebugDraw OBJECT)
     file (GLOB_RECURSE HEADERS "*.hpp")
     file (GLOB_RECURSE SOURCES "*.cpp")
     file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")

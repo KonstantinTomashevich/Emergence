@@ -19,12 +19,16 @@ ByteHasher::ByteHasher () noexcept
 
 ByteHasher::ByteHasher (const ByteHasher &_other) noexcept
 {
+    BEGIN_MUTING_WARNINGS
     new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
+    END_MUTING_WARNINGS
 }
 
 ByteHasher::ByteHasher (ByteHasher &&_other) noexcept
 {
+    BEGIN_MUTING_WARNINGS
     new (&data) xxh::hash_state64_t (block_cast<xxh::hash_state64_t> (_other.data));
+    END_MUTING_WARNINGS
 }
 
 ByteHasher::~ByteHasher () noexcept
@@ -32,12 +36,12 @@ ByteHasher::~ByteHasher () noexcept
     block_cast<xxh::hash_state64_t> (data).~hash_state_t ();
 }
 
-void ByteHasher::Append (uint8_t _byte) noexcept
+void ByteHasher::Append (std::uint8_t _byte) noexcept
 {
     block_cast<xxh::hash_state64_t> (data).update (&_byte, 1u);
 }
 
-void ByteHasher::Append (const uint8_t *_bytes, std::size_t _count) noexcept
+void ByteHasher::Append (const std::uint8_t *_bytes, std::size_t _count) noexcept
 {
     EMERGENCE_ASSERT (_bytes);
     block_cast<xxh::hash_state64_t> (data).update (_bytes, _count);

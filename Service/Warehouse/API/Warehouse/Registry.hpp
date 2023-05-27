@@ -147,15 +147,16 @@ public:
                                                                     StandardLayout::FieldId _keyField) noexcept;
 
     /// \brief Prepare FetchSignalQuery, that treats objects with given value in given field as signaled.
-    [[nodiscard]] FetchSignalQuery FetchSignal (const StandardLayout::Mapping &_typeMapping,
-                                                StandardLayout::FieldId _keyField,
-                                                const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+    [[nodiscard]] FetchSignalQuery FetchSignal (
+        const StandardLayout::Mapping &_typeMapping,
+        StandardLayout::FieldId _keyField,
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Prepare ModifySignalQuery, that treats objects with given value in given field as signaled.
     [[nodiscard]] ModifySignalQuery ModifySignal (
         const StandardLayout::Mapping &_typeMapping,
         StandardLayout::FieldId _keyField,
-        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept;
+        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept;
 
     /// \brief Prepare FetchShapeIntersectionQuery for given type on given dimensions.
     /// \invariant There is at least one dimension.
@@ -196,6 +197,6 @@ public:
     Registry &operator= (Registry &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 };
 } // namespace Emergence::Warehouse

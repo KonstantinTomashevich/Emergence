@@ -9,6 +9,8 @@
 
 namespace Emergence::Serialization::Yaml
 {
+// TODO: Remove type name serialization from serialization routine?
+
 /// \brief Serializes given object of given type into given text stream using Yaml format.
 void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept;
 

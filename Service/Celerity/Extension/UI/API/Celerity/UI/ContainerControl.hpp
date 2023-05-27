@@ -45,11 +45,11 @@ struct ContainerControl final
 
     /// \brief Container control fixed width.
     /// \invariant Only applicable for ContainerType::PANEL.
-    uint32_t width = 0u;
+    std::uint32_t width = 0u;
 
     /// \brief Container control fixed height.
     /// \invariant Only applicable for ContainerType::PANEL.
-    uint32_t height = 0u;
+    std::uint32_t height = 0u;
 
     /// \brief Whether container control has visible border.
     /// \invariant Only applicable for ContainerType::PANEL.

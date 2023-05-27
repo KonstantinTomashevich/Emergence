@@ -68,7 +68,7 @@ static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
                 }
                 else
                 {
-                    static_assert (sizeof (UniqueId) == sizeof (uintptr_t));
+                    static_assert (sizeof (UniqueId) == sizeof (std::uintptr_t));
                     _output =
                         reinterpret_cast<UniqueId> (**static_cast<const Memory::UniqueString *> (changeInfo.newValue));
                 }

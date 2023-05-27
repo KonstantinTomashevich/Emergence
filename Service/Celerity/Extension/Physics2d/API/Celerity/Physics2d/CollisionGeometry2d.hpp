@@ -15,6 +15,25 @@ enum class CollisionGeometry2dType : uint8_t
     // TODO: Add polygons, chains and one-sided lines.
 };
 
+/// \brief Two dimensional line that can be used as CollisionGeometry2d.
+struct Line2d final
+{
+    /// \brief Line start point.
+    Math::Vector2f start;
+
+    /// \brief Line end point.
+    Math::Vector2f end;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId start;
+        StandardLayout::FieldId end;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
 /// \brief Stores collision geometry data along with its type.
 struct CollisionGeometry2d final
 {
@@ -30,12 +49,7 @@ struct CollisionGeometry2d final
         float circleRadius;
 
         /// \details Used if ::type is CollisionGeometry2dType::LINE.
-        struct
-        {
-            Math::Vector2f lineStart;
-
-            Math::Vector2f lineEnd;
-        };
+        Line2d line;
     };
 
     struct Reflection final
@@ -43,8 +57,7 @@ struct CollisionGeometry2d final
         StandardLayout::FieldId type;
         StandardLayout::FieldId boxHalfExtents;
         StandardLayout::FieldId circleRadius;
-        StandardLayout::FieldId lineStart;
-        StandardLayout::FieldId lineEnd;
+        StandardLayout::FieldId line;
         StandardLayout::Mapping mapping;
     };
 

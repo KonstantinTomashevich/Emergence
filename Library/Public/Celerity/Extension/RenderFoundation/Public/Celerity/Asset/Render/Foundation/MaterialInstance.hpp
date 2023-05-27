@@ -21,7 +21,7 @@ struct UniformValueDescription final
 
     UniformValueDescription (UniformValueDescription &&_other) noexcept;
 
-    ~UniformValueDescription() noexcept;
+    ~UniformValueDescription () noexcept;
 
     UniformValueDescription (Memory::UniqueString _name, const Math::Vector4f &_value) noexcept;
 
