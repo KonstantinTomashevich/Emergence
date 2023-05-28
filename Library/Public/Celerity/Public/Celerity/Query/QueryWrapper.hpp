@@ -70,7 +70,7 @@
             void ExitRecord () noexcept;                                                                               \
                                                                                                                        \
             BaseClass::Cursor source;                                                                                  \
-            BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                        \
+            BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                    \
             [[maybe_unused]] Emergence::Celerity::TrivialEventTriggerInstanceRow *eventsOnRemove;                      \
             [[maybe_unused]] Emergence::Celerity::OnChangeEventTriggerInstanceRow *eventsOnChange;                     \
             [[maybe_unused]] Emergence::Celerity::ChangeTracker *changeTracker;                                        \

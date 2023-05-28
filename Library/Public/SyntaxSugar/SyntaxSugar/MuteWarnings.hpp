@@ -79,6 +79,17 @@
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
+#    define BEGIN_MUTING_STRING_ALIASING_WARNINGS
+#else
+// clang-format off
+#    define BEGIN_MUTING_STRING_ALIASING_WARNINGS                                                                      \
+        _Pragma ("GCC diagnostic push")                                                                                \
+        _Pragma ("GCC diagnostic ignored \"-Wpragmas\"")                                                               \
+        _Pragma ("GCC diagnostic ignored \"-Wstrict-aliasing\"")
+// clang-format on
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
 #    define BEGIN_IGNORING_PADDING_WARNING _Pragma ("warning (push)") _Pragma ("warning (disable: 4324)")
 #    define END_IGNORING_PADDING_WARNING _Pragma ("warning (pop)")
 #else

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Render/Backend/Renderer.hpp>
@@ -17,7 +19,7 @@ struct RenderFoundationSingleton final
     mutable Render::Backend::Renderer renderer;
 
     /// \invariant Do not access directly, use ::GenerateRuntimeMaterialInstanceId.
-    std::atomic_unsigned_lock_free runtimeMaterialInstanceIdCounter = 0u;
+    std::atomic_uintptr_t runtimeMaterialInstanceIdCounter = 0u;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     Memory::UniqueString GenerateRuntimeMaterialInstanceId (Memory::UniqueString _materialInstanceId) const noexcept;

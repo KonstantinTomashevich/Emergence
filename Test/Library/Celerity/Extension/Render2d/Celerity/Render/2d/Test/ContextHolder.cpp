@@ -1,4 +1,6 @@
-#include <Celerity/UI/Test/SDLContextHolder.hpp>
+#include <cstdint>
+
+#include <Celerity/Render/2d/Test/ContextHolder.hpp>
 
 #include <Render/Backend/Configuration.hpp>
 
@@ -59,7 +61,7 @@ ContextHolder::~ContextHolder () noexcept
 {
     if (window)
     {
-        Render::Backend::Shutdown ();
+        Emergence::Render::Backend::Shutdown ();
         SDL_DestroyWindow (window);
     }
 

@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 #include <bgfx/bgfx.h>
 
 #include <Log/Log.hpp>

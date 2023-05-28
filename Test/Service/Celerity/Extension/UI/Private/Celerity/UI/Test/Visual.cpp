@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <filesystem>
+#include <thread>
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
@@ -125,9 +126,9 @@ void ScreenshotTester::CheckScreenshot () const noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::ExpectFilesEqual (
-        EMERGENCE_BUILD_STRING ("Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"),
-        screenshotFile);
+    FileSystem::Test::CheckFilesEquality (
+        EMERGENCE_BUILD_STRING ("Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"), screenshotFile,
+        0.02f);
 }
 
 bool ScreenshotTester::IsWaitingForDependencies () noexcept

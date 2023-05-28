@@ -62,8 +62,8 @@ function (add_common_compile_options)
             else ()
                 # Exceptions in GCC format.
                 add_compile_options (
-                        # Used by XXHash.
-                        -Wno-error=array-bounds
+                        # Used by XXHash and in some other places, that rely on block_cast.
+                        -Wno-array-bounds
                         # In most cases, using offsetof on non-POD types is safe nowadays, therefore we disable this warning.
                         -Wno-invalid-offsetof)
             endif ()

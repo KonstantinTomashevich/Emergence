@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>

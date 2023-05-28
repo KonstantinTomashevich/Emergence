@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Render/Backend/Renderer.hpp>
@@ -18,10 +20,10 @@ struct Render2dSingleton final
     std::atomic_uintptr_t debugShape2dIdCounter = 0u;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    std::uintptr_t GenerateSprite2dId () const noexcept;
+    [[nodiscard]] std::uintptr_t GenerateSprite2dId () const noexcept;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    std::uintptr_t GenerateDebugShape2dId () const noexcept;
+    [[nodiscard]] std::uintptr_t GenerateDebugShape2dId () const noexcept;
 
     struct Reflection final
     {

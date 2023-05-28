@@ -22,8 +22,13 @@
 
 #include <Serialization/Yaml.hpp>
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#if defined(__unix__)
+#    include <SDL2/SDL.h>
+#    include <SDL2/SDL_syswm.h>
+#else
+#    include <SDL.h>
+#    include <SDL_syswm.h>
+#endif
 
 #include <SyntaxSugar/Time.hpp>
 
@@ -55,10 +60,12 @@ Application::Application () noexcept
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
     }
 
-    if (resourceProvider.AddSource ("../Resources"_us) !=
-        Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource ("../Resources"_us);
+        result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
     {
-        Emergence::ReportCriticalError ("Resource provider initialization", __FILE__, __LINE__);
+        Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",
+                                                                static_cast<std::uint16_t> (result)),
+                                        __FILE__, __LINE__);
     }
 }
 

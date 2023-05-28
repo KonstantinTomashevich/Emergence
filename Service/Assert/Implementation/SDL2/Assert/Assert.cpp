@@ -7,7 +7,11 @@
 
 #include <Log/Log.hpp>
 
-#include <SDL.h>
+#if defined(__unix__)
+#    include <SDL2/SDL.h>
+#else
+#    include <SDL.h>
+#endif
 
 #if !defined(EMERGENCE_FALLBACK_TO_CXX_20)
 #    include <stacktrace>

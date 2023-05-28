@@ -50,12 +50,14 @@ Batch2d &Batching2dSingleton::GetBatch (std::size_t _viewportIndex,
                            Container::Vector<UniqueId> {viewport.batches.get_allocator ()}});
     }
 
-    Batch2d &pooledBatch = freeBatches.back ();
+    Batch2d &pooledBatch = *viewport.batches.emplace (next, std::move (freeBatches.back ()));
     freeBatches.pop_back ();
 
     pooledBatch.layer = _layer;
     pooledBatch.materialInstanceId = _materialInstanceId;
-    return *viewport.batches.emplace (next, std::move (pooledBatch));
+    pooledBatch.sprites.clear ();
+    pooledBatch.debugShapes.clear ();
+    return pooledBatch;
 }
 
 void Batching2dSingleton::Reset () noexcept

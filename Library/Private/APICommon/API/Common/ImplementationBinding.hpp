@@ -18,7 +18,7 @@
          *          which is not suitable for most use cases. This pointer-size integer                                \
          *          is added to solve this problem by enforcing default arch-byte alignment.                           \
          */                                                                                                            \
-        BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                            \
+        BEGIN_MUTING_UNKNOWN_ATTRIBUTE_WARNINGS                                                                        \
         [[maybe_unused]] std::uintptr_t alignmentFixer;                                                                \
         END_MUTING_WARNINGS                                                                                            \
     }

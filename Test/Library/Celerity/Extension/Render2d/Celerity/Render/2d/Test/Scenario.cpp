@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <thread>
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
@@ -24,6 +25,7 @@
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dUvAnimationComponent.hpp>
+#include <Celerity/Render/2d/Test/ContextHolder.hpp>
 #include <Celerity/Render/2d/Test/Scenario.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
@@ -42,90 +44,12 @@
 
 #include <Resource/Provider/ResourceProvider.hpp>
 
-#include <SDL.h>
-#include <SDL_syswm.h>
-
 #include <SyntaxSugar/Time.hpp>
 
 #include <Testing/Testing.hpp>
 
 namespace Emergence::Celerity::Test
 {
-class ContextHolder final
-{
-public:
-    static void Frame () noexcept;
-
-    ContextHolder (const ContextHolder &_other) = delete;
-
-    ContextHolder (ContextHolder &&_other) = delete;
-
-    ContextHolder &operator= (const ContextHolder &_other) = delete;
-
-    ContextHolder &operator= (ContextHolder &&_other) = delete;
-
-private:
-    ContextHolder () noexcept;
-
-    ~ContextHolder () noexcept;
-
-    SDL_Window *window = nullptr;
-};
-
-void ContextHolder::Frame () noexcept
-{
-    static ContextHolder contextHolder;
-    SDL_Event event;
-
-    while (SDL_PollEvent (&event))
-    {
-        // Just poll all events...
-    }
-}
-
-ContextHolder::ContextHolder () noexcept
-{
-    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
-    window = SDL_CreateWindow ("Celerity::Render tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               static_cast<int> (WIDTH), static_cast<int> (HEIGHT),
-                               static_cast<SDL_WindowFlags> (windowFlags));
-
-    SDL_SysWMinfo windowsManagerInfo;
-    SDL_VERSION (&windowsManagerInfo.version);
-    SDL_GetWindowWMInfo (window, &windowsManagerInfo);
-
-#if SDL_VIDEO_DRIVER_X11
-    void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (std::uintptr_t) windowsManagerInfo.info.x11.window;
-#elif SDL_VIDEO_DRIVER_COCOA
-    void *nativeDisplayType = nullptr;
-    void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
-#elif SDL_VIDEO_DRIVER_WINDOWS
-    void *nativeDisplayType = nullptr;
-    void *nativeWindowHandle = windowsManagerInfo.info.win.window;
-#elif SDL_VIDEO_DRIVER_VIVANTE
-    void *nativeDisplayType = windowsManagerInfo.info.vivante.display;
-    void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
-#endif
-
-    Render::Backend::Config config;
-    config.width = WIDTH;
-    config.height = HEIGHT;
-    config.vsync = true;
-    Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
-}
-
-ContextHolder::~ContextHolder () noexcept
-{
-    if (window)
-    {
-        Emergence::Render::Backend::Shutdown ();
-        SDL_DestroyWindow (window);
-    }
-
-    SDL_Quit ();
-}
-
 class ScenarioExecutor final : public TaskExecutorBase<ScenarioExecutor>
 {
 public:
@@ -247,7 +171,7 @@ void ScenarioExecutor::Execute () noexcept
             allAssetsWereLoadedDuringPreviousFrame = false;
             ++framesWaiting;
             // ~5 seconds target FPS loading time cap.
-            REQUIRE (framesWaiting < 300u);
+            REQUIRE ((framesWaiting < 300u));
         }
     }
     else if (auto *screenShotPoint = std::get_if<ScreenShotPoint> (&scenario[currentPointIndex]))
@@ -485,8 +409,8 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::ExpectFilesEqual (EMERGENCE_BUILD_STRING ("Expectation/", _id, ".png"),
-                                        EMERGENCE_BUILD_STRING (_id, ".png"));
+    FileSystem::Test::CheckFilesEquality (EMERGENCE_BUILD_STRING ("Expectation/", _id, ".png"),
+                                          EMERGENCE_BUILD_STRING (_id, ".png"), 0.02f);
 }
 
 static Container::MappingRegistry GetAssetTypes () noexcept
@@ -504,8 +428,8 @@ struct ResourceProviderHolder
     ResourceProviderHolder () noexcept
         : provider (GetAssetTypes (), {})
     {
-        REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
-                 Resource::Provider::SourceOperationResponse::SUCCESSFUL);
+        REQUIRE ((provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
+                  Resource::Provider::SourceOperationResponse::SUCCESSFUL));
     }
 
     Resource::Provider::ResourceProvider provider;

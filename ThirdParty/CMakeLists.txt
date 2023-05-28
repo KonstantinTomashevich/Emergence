@@ -1,6 +1,3 @@
-# BGFX
-add_subdirectory (bgfx.cmake)
-
 # Boost: we use Boost Unordered containers instead of STL because they have important features that
 # aren't fully supported by STL. For example, transient hashers and equality checkers: they are in
 # C++ 20, but aren't supported yet in a lot of places.
@@ -59,10 +56,18 @@ target_include_directories (SDL2ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui/
 target_link_libraries (SDL2ImGUI PUBLIC ImGUI SDL2)
 
 # SDL2
-# TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?
-set (SDL_SHARED ON CACHE BOOL "We use double-set with cache to override third party project options for good.")
-set (SDL_SHARED ON)
-add_subdirectory (SDL)
+if (UNIX)
+    # Right now SDL2 from GitHub does not have correct SDL_config.h for Linux for some reason.
+    # Perhaps, it is not added to GitHub version as there is lots of distros and it is impossible
+    # to create configs for all of them. Therefore on Linux we have to resort to using installed
+    # package, that is guaranteed to have correct config.
+    find_package (SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2 SDL2main)
+else ()
+    # TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?
+    set (SDL_SHARED ON CACHE BOOL "We use double-set with cache to override third party project options for good.")
+    set (SDL_SHARED ON)
+    add_subdirectory (SDL)
+endif ()
 
 # SPDLog
 # We don't need exceptions neither from spdlog nor fmt.
@@ -83,3 +88,16 @@ add_subdirectory (yaml-cpp)
 if (MSVC)
     target_compile_options (yaml-cpp PRIVATE /EHa)
 endif ()
+
+# BGFX
+# We add it last due to link libraries addition below.
+
+if (NOT MSVC)
+    # On GCC we need to link STL and math everywhere.
+    # It seems easier to do it globally here instead of adding this check to every target.
+    # Normally, we wouldn't need this for third party targets, but some of them need this
+    # dependencies while not linking them (like bgfx sprirv compiler).
+    link_libraries (m stdc++)
+endif ()
+
+add_subdirectory (bgfx.cmake)

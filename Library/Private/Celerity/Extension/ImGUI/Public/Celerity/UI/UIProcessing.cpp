@@ -1188,8 +1188,10 @@ void UIProcessor::ProcessControl (const ImageControl *_control) noexcept
     EMERGENCE_ASSERT (texture);
 
     const Render::Backend::TextureId textureId = texture->texture.GetId ();
+    BEGIN_MUTING_STRING_ALIASING_WARNINGS
     // NOLINTNEXTLINE(misc-misplaced-const): This const is only needed for style.
     const ImTextureID imGUITextureId = *reinterpret_cast<const ImTextureID *> (&textureId);
+    END_MUTING_WARNINGS
 
     ImGui::Image (imGUITextureId, {static_cast<float> (_control->width), static_cast<float> (_control->height)},
                   {_control->uv.min.x, _control->uv.min.y}, {_control->uv.max.x, _control->uv.max.y});

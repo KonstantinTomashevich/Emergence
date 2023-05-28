@@ -301,8 +301,10 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
                 if (command.TextureId)
                 {
                     _agent.SetVector4f (_hasTextureUniformId, Math::Vector4f::ONE);
+                    BEGIN_MUTING_STRING_ALIASING_WARNINGS
                     _agent.SetSampler (_textureUniformId, _textureStage,
                                        *reinterpret_cast<const Render::Backend::TextureId *> (&command.TextureId));
+                    END_MUTING_WARNINGS
                 }
                 else
                 {

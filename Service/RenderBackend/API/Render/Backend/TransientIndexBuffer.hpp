@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 

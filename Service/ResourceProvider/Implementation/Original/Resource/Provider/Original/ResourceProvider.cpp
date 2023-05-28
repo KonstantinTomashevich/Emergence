@@ -418,6 +418,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
 {
     if (!std::filesystem::exists (*_path))
     {
+        EMERGENCE_LOG (ERROR, "ResourceProvider: Given source path \"", _path, "\" does not exist.");
         return SourceOperationResponse::NOT_FOUND;
     }
 
@@ -477,7 +478,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
             while (input)
             {
                 int next = input.get ();
-                if (next == '\n')
+                if (next == '\n' || next == '\r')
                 {
                     break;
                 }

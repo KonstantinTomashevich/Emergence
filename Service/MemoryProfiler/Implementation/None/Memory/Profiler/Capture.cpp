@@ -110,7 +110,10 @@ CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept
     [[maybe_unused]] auto *stub = &handle;
 }
 
-EventObserver::EventObserver (EventObserver &&_other) noexcept = default;
+EventObserver::EventObserver (EventObserver &&_other) noexcept
+    : data (_other.data)
+{
+}
 
 EventObserver::~EventObserver () noexcept = default;
 
@@ -120,10 +123,9 @@ const Event *EventObserver::NextEvent () noexcept
     return nullptr;
 }
 
-EventObserver::EventObserver (std::array<std::uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
+EventObserver::EventObserver (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
+    : data (_data)
 {
-    // Suppress unused class field warning.
-    [[maybe_unused]] auto *stub = &data;
 }
 
 std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
