@@ -113,6 +113,7 @@ void PrepareEnvironment (const Environment &_environment)
         {
             const std::filesystem::path stringsPath {EMERGENCE_BUILD_STRING (*locale.locale, ".bin")};
             std::ofstream output {LOCALES_ROOT / stringsPath, std::ios::binary};
+            Serialization::Binary::SerializeTypeName (output, LocaleConfiguration::Reflect ().mapping.GetName ());
             Serialization::Binary::SerializeObject (output, &locale.configuration,
                                                     LocaleConfiguration::Reflect ().mapping);
         }
@@ -120,6 +121,7 @@ void PrepareEnvironment (const Environment &_environment)
         {
             const std::filesystem::path stringsPath {EMERGENCE_BUILD_STRING (*locale.locale, ".yaml")};
             std::ofstream output {LOCALES_ROOT / stringsPath, std::ios::binary};
+            Serialization::Yaml::SerializeTypeName (output, LocaleConfiguration::Reflect ().mapping.GetName ());
             Serialization::Yaml::SerializeObject (output, &locale.configuration,
                                                   LocaleConfiguration::Reflect ().mapping);
         }

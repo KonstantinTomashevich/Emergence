@@ -99,11 +99,13 @@ void SerializeConfigs (const Container::String &_folder, const Container::Vector
         if (_binary)
         {
             std::ofstream output {fullPath, std::ios::binary};
+            Serialization::Binary::SerializeTypeName (output, Type::Reflect ().mapping.GetName());
             Serialization::Binary::SerializeObject (output, &config, Type::Reflect ().mapping);
         }
         else
         {
             std::ofstream output {fullPath};
+            Serialization::Yaml::SerializeTypeName (output, Type::Reflect ().mapping.GetName());
             Serialization::Yaml::SerializeObject (output, &config, Type::Reflect ().mapping);
         }
     }

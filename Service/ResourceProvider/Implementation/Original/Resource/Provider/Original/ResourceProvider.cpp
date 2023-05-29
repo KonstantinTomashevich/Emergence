@@ -306,6 +306,10 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     switch (object->format)
     {
     case ObjectResourceFormat::BINARY:
+    {
+        [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Binary::DeserializeTypeName (input);
+        EMERGENCE_ASSERT (typeName == _type.GetName ());
+
         if (!Serialization::Binary::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
             --dataReadersCount;
@@ -313,8 +317,13 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         }
 
         break;
+    }
 
     case ObjectResourceFormat::YAML:
+    {
+        [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
+        EMERGENCE_ASSERT (typeName == _type.GetName ());
+
         if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
             --dataReadersCount;
@@ -322,6 +331,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         }
 
         break;
+    }
     }
 
     --dataReadersCount;
@@ -441,30 +451,18 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
         {
             // Attempt to read type name.
             std::ifstream input (entry.path (), std::ios::binary);
-            Container::StringBuilder typeName;
+            const Memory::UniqueString typeName = Serialization::Binary::DeserializeTypeName (input);
 
-            while (input)
-            {
-                int next = input.get ();
-                if (next == '\0')
-                {
-                    break;
-                }
-
-                typeName.Append (static_cast<char> (next));
-            }
-
-            if (!input || typeName.Get ()[0u] == '\0')
+            if (!*typeName)
             {
                 EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"", relativePath,
                                "\" of source \"", _path, "\".");
                 finalResponse = SourceOperationResponse::IO_ERROR;
             }
-
-            if (SourceOperationResponse response =
-                    AddObject (Memory::UniqueString (entry.path ().stem ().string ().c_str ()),
-                               Memory::UniqueString {typeName.Get ()}, _path, relativePath);
-                response != SourceOperationResponse::SUCCESSFUL)
+            else if (SourceOperationResponse response =
+                         AddObject (Memory::UniqueString (entry.path ().stem ().string ().c_str ()), typeName, _path,
+                                    relativePath);
+                     response != SourceOperationResponse::SUCCESSFUL)
             {
                 finalResponse = response;
             }
@@ -473,30 +471,18 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
         {
             // Attempt to read type name.
             std::ifstream input (entry.path ());
-            Container::StringBuilder typeName;
+            const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
 
-            while (input)
-            {
-                int next = input.get ();
-                if (next == '\n' || next == '\r')
-                {
-                    break;
-                }
-
-                typeName.Append (static_cast<char> (next));
-            }
-
-            if (!input || typeName.Get ()[0u] != '#' || typeName.Get ()[1u] != ' ' || typeName.Get ()[2u] == '\n')
+            if (!*typeName)
             {
                 EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"", relativePath,
                                "\" of source \"", _path, "\".");
                 finalResponse = SourceOperationResponse::IO_ERROR;
             }
-
-            if (SourceOperationResponse response =
-                    AddObject (Memory::UniqueString (entry.path ().stem ().string ().c_str ()),
-                               Memory::UniqueString {typeName.Get () + 2u}, _path, relativePath);
-                response != SourceOperationResponse::SUCCESSFUL)
+            else if (SourceOperationResponse response =
+                         AddObject (Memory::UniqueString (entry.path ().stem ().string ().c_str ()), typeName, _path,
+                                    relativePath);
+                     response != SourceOperationResponse::SUCCESSFUL)
             {
                 finalResponse = response;
             }

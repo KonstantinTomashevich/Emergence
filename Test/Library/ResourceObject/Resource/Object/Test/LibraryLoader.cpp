@@ -58,6 +58,7 @@ void PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
         {
             std::filesystem::path objectPath = folderPath / EMERGENCE_BUILD_STRING (*object.id, ".bin");
             std::ofstream objectOutput {objectPath, std::ios::binary};
+            Serialization::Binary::SerializeTypeName (objectOutput, Object::Reflect ().mapping.GetName());
             Serialization::Binary::SerializeObject (objectOutput, &object.object, Object::Reflect ().mapping);
             break;
         }
@@ -66,6 +67,7 @@ void PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
         {
             std::filesystem::path objectPath = folderPath / EMERGENCE_BUILD_STRING (*object.id, ".yaml");
             std::ofstream objectOutput {objectPath, std::ios::binary};
+            Serialization::Yaml::SerializeTypeName (objectOutput, Object::Reflect ().mapping.GetName());
             Serialization::Yaml::SerializeObject (objectOutput, &object.object, Object::Reflect ().mapping);
             break;
         }

@@ -33,7 +33,7 @@ static void WriteString (std::ostream &_output, const char *_string)
 
 static Container::Optional<Container::String> ReadString (std::istream &_input)
 {
-    Container::String output;
+    Container::StringBuilder output;
     while (true)
     {
         char next;
@@ -44,28 +44,26 @@ static Container::Optional<Container::String> ReadString (std::istream &_input)
 
         if (next == '\0')
         {
-            return output;
+            return output.Get ();
         }
 
-        output += next;
+        output.Append (next);
     }
 }
 
-[[maybe_unused]] static void SkipString (std::istream &_input)
+void SerializeTypeName (std::ostream &_output, Memory::UniqueString _typeName) noexcept
 {
-    while (true)
-    {
-        char next;
-        if (!_input.get (next))
-        {
-            return;
-        }
+    WriteString (_output, *_typeName);
+}
 
-        if (next == '\0')
-        {
-            return;
-        }
+Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept
+{
+    if (Container::Optional<Container::String> typeName = ReadString (_input))
+    {
+        return Memory::UniqueString {typeName->c_str()};
     }
+
+    return {};
 }
 
 static void SerializePatchValue (std::ostream &_output, const StandardLayout::Field &_field, const void *_value)
@@ -257,9 +255,6 @@ bool DeserializePatch (std::istream &_input,
 
 void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept
 {
-    // Write string with object type for type detection.
-    WriteString (_output, *_mapping.GetName ());
-
     const void *lastBitsetByteAddress = nullptr;
     std::uint8_t lastBitsetByte = 0u;
 
@@ -360,19 +355,6 @@ bool DeserializeObject (std::istream &_input,
                         const StandardLayout::Mapping &_mapping,
                         const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
-#if defined(EMERGENCE_ASSERT_ENABLED)
-    if (Container::Optional<Container::String> typeName = ReadString (_input))
-    {
-        EMERGENCE_ASSERT (typeName == *_mapping.GetName ());
-    }
-    else
-    {
-        return false;
-    }
-#else
-    SkipString (_input);
-#endif
-
     const void *lastBitsetByteAddress = nullptr;
     char lastBitsetByte = 0u;
 

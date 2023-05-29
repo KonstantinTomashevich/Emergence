@@ -9,7 +9,11 @@
 
 namespace Emergence::Serialization::Binary
 {
-// TODO: Remove type name serialization from serialization routine?
+/// \brief Adds type name info to given output stream.
+void SerializeTypeName (std::ostream &_output, Memory::UniqueString _typeName) noexcept;
+
+/// \brief Attempts to read type name from given output stream. Returns empty name on error.
+Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept;
 
 /// \brief Serializes given object of given type into given binary stream.
 /// \warning Serialization is mapping-dependant: deserialization must be

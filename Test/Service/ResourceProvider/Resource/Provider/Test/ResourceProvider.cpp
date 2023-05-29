@@ -156,6 +156,7 @@ void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sour
             std::filesystem::create_directories (
                 std::filesystem::path {sourcePath / object.relativePath}.parent_path ());
             std::ofstream output (sourcePath / object.relativePath, std::ios::binary);
+            Serialization::Binary::SerializeTypeName (output, TestResourceObjectFirst::Reflect ().mapping.GetName ());
             Serialization::Binary::SerializeObject (output, &object.object,
                                                     TestResourceObjectFirst::Reflect ().mapping);
         }
@@ -165,6 +166,7 @@ void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sour
             std::filesystem::create_directories (
                 std::filesystem::path {sourcePath / object.relativePath}.parent_path ());
             std::ofstream output (sourcePath / object.relativePath);
+            Serialization::Yaml::SerializeTypeName (output, TestResourceObjectFirst::Reflect ().mapping.GetName ());
             Serialization::Yaml::SerializeObject (output, &object.object, TestResourceObjectFirst::Reflect ().mapping);
         }
 
@@ -173,6 +175,7 @@ void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sour
             std::filesystem::create_directories (
                 std::filesystem::path {sourcePath / object.relativePath}.parent_path ());
             std::ofstream output (sourcePath / object.relativePath, std::ios::binary);
+            Serialization::Binary::SerializeTypeName (output, TestResourceObjectSecond::Reflect ().mapping.GetName ());
             Serialization::Binary::SerializeObject (output, &object.object,
                                                     TestResourceObjectSecond::Reflect ().mapping);
         }
@@ -182,6 +185,7 @@ void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sour
             std::filesystem::create_directories (
                 std::filesystem::path {sourcePath / object.relativePath}.parent_path ());
             std::ofstream output (sourcePath / object.relativePath);
+            Serialization::Yaml::SerializeTypeName (output, TestResourceObjectSecond::Reflect ().mapping.GetName ());
             Serialization::Yaml::SerializeObject (output, &object.object, TestResourceObjectSecond::Reflect ().mapping);
         }
 

@@ -20,6 +20,36 @@
 
 namespace Emergence::Serialization::Yaml
 {
+void SerializeTypeName (std::ostream &_output, Memory::UniqueString _typeName) noexcept
+{
+    _output << "# " << *_typeName << std::endl;
+}
+
+Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept
+{
+    Container::StringBuilder typeName;
+    while (_input)
+    {
+        int next = _input.get ();
+        if (next == '\n' || next == '\r')
+        {
+            break;
+        }
+
+        typeName.Append (static_cast<char> (next));
+    }
+
+    if (!_input || typeName.Get ()[0u] != '#' || typeName.Get ()[1u] != ' ' || typeName.Get ()[2u] == '\n' ||
+        typeName.Get ()[2u] == '\r')
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Failed to parse type name. Parsed sequence: \"", typeName.Get (),
+                       "\".");
+        return {};
+    }
+
+    return Memory::UniqueString {typeName.Get () + 2u};
+}
+
 static YAML::Node SerializeLeafValueToYaml (const void *_address, const StandardLayout::Field &_field)
 {
     YAML::Node result {YAML::NodeType::Scalar};
@@ -657,7 +687,6 @@ static bool DeserializeObjectFromYaml (const YAML::Node &_input,
 
 void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept
 {
-    _output << "# " << *_mapping.GetName () << std::endl;
     YAML::Node node {YAML::NodeType::Map};
     SerializeObjectToYaml (node, _object, _mapping);
     _output << node;
