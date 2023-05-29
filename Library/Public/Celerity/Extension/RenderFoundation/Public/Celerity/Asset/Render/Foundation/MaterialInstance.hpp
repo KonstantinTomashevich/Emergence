@@ -51,10 +51,10 @@ struct UniformValueDescription final
 
         // This structure is only used during material deserialization,
         // therefore we shouldn't worry about small waste of padding here.
-        BEGIN_IGNORING_PADDING_WARNING
+        BEGIN_MUTING_PADDING_WARNING
         /// \brief Field for Render::Backend::UniformType::MATRIX_4X4F values.
         Math::Matrix4x4f matrix4x4f {Math::NoInitializationFlag::Confirm ()};
-        END_IGNORING_PADDING_WARNING
+        END_MUTING_WARNINGS
 
         /// \brief Id of a texture for Render::Backend::UniformType::SAMPLER values.
         Memory::UniqueString textureId;

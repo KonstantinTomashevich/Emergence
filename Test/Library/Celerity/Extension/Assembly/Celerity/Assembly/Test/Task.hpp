@@ -1,10 +1,8 @@
 #pragma once
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#    pragma warning(push)
-// We do not care about excessive padding in test tasks. Also, we need to do it before variant declaration.
-#    pragma warning(disable : 4324)
-#endif
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_PADDING_WARNING
 
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
@@ -76,6 +74,4 @@ void AddConfiguratorAndValidator (Emergence::Celerity::PipelineBuilder &_pipelin
                                   Container::Vector<ValidatorTask> _validatorTasks);
 } // namespace Emergence::Celerity::Test
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#    pragma warning(pop)
-#endif
+END_MUTING_WARNINGS

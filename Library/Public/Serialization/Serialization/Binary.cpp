@@ -60,7 +60,7 @@ Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept
 {
     if (Container::Optional<Container::String> typeName = ReadString (_input))
     {
-        return Memory::UniqueString {typeName->c_str()};
+        return Memory::UniqueString {typeName->c_str ()};
     }
 
     return {};
@@ -320,7 +320,8 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
             const auto vectorSizeInBytes = static_cast<std::uint32_t> (
                 Container::UntypedVectorUtility::End (address) - Container::UntypedVectorUtility::Begin (address));
             EMERGENCE_ASSERT (vectorSizeInBytes % field.GetVectorItemMapping ().GetObjectSize () == 0u);
-            const std::uint32_t vectorSize = vectorSizeInBytes / field.GetVectorItemMapping ().GetObjectSize ();
+            const std::uint32_t vectorSize =
+                static_cast<std::uint32_t> (vectorSizeInBytes / field.GetVectorItemMapping ().GetObjectSize ());
 
             _output.write (reinterpret_cast<const char *> (&vectorSize),
                            static_cast<std::streamsize> (sizeof (vectorSize)));

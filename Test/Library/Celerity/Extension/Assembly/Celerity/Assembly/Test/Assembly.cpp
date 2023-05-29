@@ -1,3 +1,7 @@
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_PADDING_WARNING
+
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
@@ -317,3 +321,5 @@ TEST_CASE (FixedAndNormalCombined)
 }
 
 END_SUITE
+
+END_MUTING_WARNINGS

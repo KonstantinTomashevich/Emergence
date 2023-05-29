@@ -1,3 +1,7 @@
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_PADDING_WARNING
+
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/Test/Task.hpp>
@@ -231,3 +235,5 @@ TEST_CASE (IntermediateTransformRemoval)
 }
 
 END_SUITE
+
+END_MUTING_WARNINGS

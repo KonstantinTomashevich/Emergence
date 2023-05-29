@@ -1,5 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_PADDING_WARNING
+
 #include <cstring>
 
 #include <Celerity/Assembly/Assembly.hpp>
@@ -224,3 +228,5 @@ void AddConfiguratorAndValidator (PipelineBuilder &_pipelineBuilder,
     _pipelineBuilder.AddTask ("Validator"_us).SetExecutor<Validator> (std::move (_validatorTasks));
 }
 } // namespace Emergence::Celerity::Test
+
+END_MUTING_WARNINGS
