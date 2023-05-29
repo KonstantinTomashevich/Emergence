@@ -1,4 +1,7 @@
 #include <Celerity/Render/2d/Test/Scenario.hpp>
+#include <Celerity/Render/Foundation/MaterialInstance.hpp>
+
+#include <Container/StringBuilder.hpp>
 
 #include <Math/Constants.hpp>
 
@@ -21,6 +24,29 @@ TEST_CASE (CrateSprite)
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateSprite {1u, 0u, "MI_Crate"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}, {1.0f, 1.0f}, 0u, ~0u},
+        },
+        AssetWaitPoint {},
+        ScreenShotPoint {"CrateSprite"_us},
+    });
+}
+
+TEST_CASE (CrateSpriteWithRuntimeMaterialInstance)
+{
+    ExecuteScenario ({
+        TaskPoint {
+            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateTransform {0u, INVALID_UNIQUE_ID, {}},
+            CreateCamera {0u, 2.0f, ~0u},
+
+            CreateTransform {1u, INVALID_UNIQUE_ID, {}},
+            CreateSprite {1u,
+                          0u,
+                          Emergence::Memory::UniqueString (
+                              EMERGENCE_BUILD_STRING ("MI_Crate", MATERIAL_INSTANCE_RUNTIME_ID_SEPARATOR, "0")),
+                          {{0.0f, 0.0f}, {1.0f, 1.0f}},
+                          {1.0f, 1.0f},
+                          0u,
+                          ~0u},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"CrateSprite"_us},
