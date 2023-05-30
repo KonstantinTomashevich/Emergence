@@ -120,6 +120,8 @@ void LocalizationSynchronizer::UpdateLocaleLoading (LocaleSingleton *_locale) no
         }
         else
         {
+            EMERGENCE_LOG (ERROR, "Localization: Unable to load locale \"", _locale->loadingLocale,
+                           "\", falling back to \"", _locale->loadedLocale, "\"!");
             _locale->loadingLocale = {};
             _locale->targetLocale = _locale->loadedLocale;
         }

@@ -263,6 +263,11 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
     return *this;
 }
 
+std::size_t StringBuilder::GetCount () const noexcept
+{
+    return count;
+}
+
 std::size_t StringBuilder::SpaceLeft () const noexcept
 {
     EMERGENCE_ASSERT (count < BUFFER_SIZE);

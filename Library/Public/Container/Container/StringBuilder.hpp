@@ -111,6 +111,9 @@ public:
     template <typename... Args>
     inline StringBuilder &Append (Args... _args) noexcept;
 
+    /// \return Count of characters in string builder.
+    [[nodiscard]] std::size_t GetCount () const noexcept;
+
     /// \return How many symbols can be appended to the buffer?
     [[nodiscard]] std::size_t SpaceLeft () const noexcept;
 

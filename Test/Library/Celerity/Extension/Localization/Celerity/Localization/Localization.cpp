@@ -85,6 +85,7 @@ void LocalizationTester::Execute () noexcept
         }
 
         CHECK_EQUAL (stringIndex, stages[stageIndex].expectedConfiguration.strings.size ());
+        LOG ("Finished stage ", stageIndex, ".");
         ++stageIndex;
     }
 }

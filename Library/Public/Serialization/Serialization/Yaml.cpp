@@ -31,16 +31,24 @@ Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept
     while (_input)
     {
         int next = _input.get ();
-        if (next == '\n' || next == '\r')
+        if (next == '\n')
         {
+            break;
+        }
+
+        if (next == '\r')
+        {
+            // Fully skip linux new line.
+            next = _input.get ();
+            EMERGENCE_ASSERT (next == '\n');
             break;
         }
 
         typeName.Append (static_cast<char> (next));
     }
 
-    if (!_input || typeName.Get ()[0u] != '#' || typeName.Get ()[1u] != ' ' || typeName.Get ()[2u] == '\n' ||
-        typeName.Get ()[2u] == '\r')
+    if (!_input || typeName.GetCount () < 3u || typeName.Get ()[0u] != '#' || typeName.Get ()[1u] != ' ' ||
+        typeName.Get ()[2u] == '\n' || typeName.Get ()[2u] == '\r')
     {
         EMERGENCE_LOG (ERROR, "Serialization::Yaml: Failed to parse type name. Parsed sequence: \"", typeName.Get (),
                        "\".");

@@ -72,7 +72,7 @@ struct FixedMultiComponentIdGeneratorSingleton final
 {
     std::atomic_uintptr_t instanceIdCounter = 0u;
 
-    std::uintptr_t GenerateInstanceId () const noexcept;
+    [[nodiscard]] std::uintptr_t GenerateInstanceId () const noexcept;
 
     struct Reflection final
     {
@@ -85,7 +85,7 @@ struct FixedMultiComponentIdGeneratorSingleton final
 struct VelocityFixedComponent final
 {
     UniqueId objectId = INVALID_UNIQUE_ID;
-    Math::Vector3f globalVelocity;
+    Math::Vector3f globalVelocity = Math::Vector3f::ZERO;
 
     struct Reflection final
     {

@@ -78,17 +78,17 @@ private:
     UniqueId objectId = INVALID_UNIQUE_ID;
     UniqueId parentObjectId = INVALID_UNIQUE_ID;
 
-    Transform logicalLocalTransform;
+    Transform logicalLocalTransform {};
     std::uint64_t logicalLocalTransformRevision = 0u;
     mutable std::uint64_t logicalLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool logicalLocalTransformChangedSinceLastUpdate = true;
-    mutable Transform logicalWorldTransformCache;
+    mutable Transform logicalWorldTransformCache {};
 
-    Transform visualLocalTransform;
+    Transform visualLocalTransform {};
     std::uint64_t visualLocalTransformRevision = 0u;
     mutable std::uint64_t visualLastUpdateParentTransformRevision = UNKNOWN_REVISION;
     mutable bool visualLocalTransformChangedSinceLastUpdate = true;
-    mutable Transform visualWorldTransformCache;
+    mutable Transform visualWorldTransformCache {};
 
     bool visualTransformSyncNeeded = false;
 
