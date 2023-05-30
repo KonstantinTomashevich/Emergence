@@ -31,16 +31,8 @@ Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept
     while (_input)
     {
         int next = _input.get ();
-        if (next == '\n')
+        if (next == '\n' || next == '\r')
         {
-            break;
-        }
-
-        if (next == '\r')
-        {
-            // Fully skip linux new line.
-            next = _input.get ();
-            EMERGENCE_ASSERT (next == '\n');
             break;
         }
 

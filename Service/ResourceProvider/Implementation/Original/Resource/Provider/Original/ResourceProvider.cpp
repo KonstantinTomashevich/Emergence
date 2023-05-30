@@ -321,9 +321,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
     case ObjectResourceFormat::YAML:
     {
-//        [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
-//        EMERGENCE_ASSERT (typeName == _type.GetName ());
-
+        // We skip type name deserialization here as it is just a comment.
         if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
             --dataReadersCount;
