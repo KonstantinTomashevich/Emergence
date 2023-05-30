@@ -3,7 +3,7 @@ if (NOT EMERGENCE_INCLUDE_GPU_DEPENDANT_TESTS)
 endif ()
 
 add_subdirectory (ImplementationStrings)
-sober_test_begin (CelerityUI)
+sober_test_begin (CelerityUI OBJECT)
     file (GLOB_RECURSE SOURCES "Private/*.cpp")
     file (GLOB_RECURSE HEADERS "Private/*.hpp")
     list (APPEND SOURCES ${HEADERS})

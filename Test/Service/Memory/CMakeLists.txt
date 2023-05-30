@@ -1,4 +1,4 @@
-sober_test_begin (Memory)
+sober_test_begin (Memory OBJECT)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
     list (APPEND SOURCES ${HEADERS})

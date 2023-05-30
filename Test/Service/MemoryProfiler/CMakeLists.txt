@@ -3,7 +3,7 @@
 # - Tests for stubbed out profiling, that check if it has expected safe behaviour.
 
 # Test for real implementations.
-sober_test_begin (MemoryProfiler)
+sober_test_begin (MemoryProfiler OBJECT)
     file (GLOB_RECURSE SOURCES "Implemented/*.cpp")
     file (GLOB_RECURSE HEADERS "Implemented/*.hpp")
     list (APPEND SOURCES ${HEADERS})
