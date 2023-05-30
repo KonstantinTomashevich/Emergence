@@ -69,7 +69,8 @@ void LocalizationTester::Execute () noexcept
     auto localeCursor = modifyLocale.Execute ();
     auto *locale = static_cast<LocaleSingleton *> (*localeCursor);
     locale->targetLocale = stages[stageIndex].targetLocale;
-    LOG ("Loaded: ", *locale->loadedLocale, ". Target: ", *locale->targetLocale, ".");
+    LOG ("Loaded: ", (*locale->loadedLocale ? *locale->loadedLocale : "null"),
+         ". Target: ", (*locale->targetLocale ? *locale->targetLocale : "null"), ".");
 
     if (locale->loadedLocale == locale->targetLocale)
     {
