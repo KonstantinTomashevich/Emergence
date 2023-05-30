@@ -72,6 +72,7 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
                                                               &sharedState->configurationInLoading))
                 {
                 case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
+                    EMERGENCE_LOG (ERROR, "Localization: Temp log \"", targetLocale, "\"!");
                     sharedState->loadingState = LocaleLoadingState::SUCCESSFUL;
                     break;
 
@@ -98,6 +99,7 @@ void LocalizationSynchronizer::UpdateLocaleLoading (LocaleSingleton *_locale) no
     {
         if (_locale->sharedState->loadingState == LocaleLoadingState::SUCCESSFUL)
         {
+            EMERGENCE_LOG (ERROR, "Localization: Another temp log \"", _locale->loadingLocale, "\"!");
             {
                 auto removalCursor = removeLocalizedString.Execute (nullptr, nullptr);
                 while (removalCursor.ReadConst ())
