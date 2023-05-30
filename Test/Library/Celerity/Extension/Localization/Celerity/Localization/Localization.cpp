@@ -141,8 +141,8 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
     Container::MappingRegistry resourceTypeRegistry;
     resourceTypeRegistry.Register (LocaleConfiguration::Reflect ().mapping);
     Resource::Provider::ResourceProvider resourceProvider {resourceTypeRegistry, {}};
-    REQUIRE (resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
-             Resource::Provider::SourceOperationResponse::SUCCESSFUL);
+    REQUIRE ((resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+              Resource::Provider::SourceOperationResponse::SUCCESSFUL));
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     Localization::AddToNormalUpdate (builder, &resourceProvider);
@@ -153,7 +153,7 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
     {
         world.Update ();
         ++frameIndex;
-        REQUIRE (frameIndex < 1000u);
+        REQUIRE ((frameIndex < 1000u));
     }
 }
 

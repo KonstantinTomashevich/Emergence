@@ -697,10 +697,21 @@ bool DeserializeObject (std::istream &_input,
                         const StandardLayout::Mapping &_mapping,
                         const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
-    YAML::Node node = YAML::Load (_input);
+    std::stringstream stringStream;
+    while (_input)
+    {
+        int next = _input.get ();
+        if (next != EOF)
+        {
+            stringStream << static_cast<char> (next);
+        }
+    }
+
+    YAML::Node node = YAML::Load (stringStream.str ());
     if (!node.IsMap ())
     {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!");
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!\n",
+                       stringStream.str ().c_str ());
         return false;
     }
 
