@@ -68,10 +68,12 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
             [targetLocale {_locale->targetLocale}, capturedResourceProvider {resourceProvider},
              sharedState {_locale->sharedState}] ()
             {
+                EMERGENCE_LOG (ERROR, "Localization: [Temp] Target locale loading started \"", targetLocale, "\"!");
                 switch (capturedResourceProvider->LoadObject (LocaleConfiguration::Reflect ().mapping, targetLocale,
                                                               &sharedState->configurationInLoading))
                 {
                 case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
+                    EMERGENCE_LOG (ERROR, "Localization: [Temp] Target locale loaded \"", targetLocale, "\"!");
                     sharedState->loadingState = LocaleLoadingState::SUCCESSFUL;
                     break;
 
