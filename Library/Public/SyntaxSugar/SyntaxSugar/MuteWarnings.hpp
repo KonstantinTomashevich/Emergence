@@ -34,6 +34,7 @@
 #    define BEGIN_MUTING_WARNINGS                                                                                      \
         _Pragma ("GCC diagnostic push")                                                                                \
         _Pragma ("GCC diagnostic ignored \"-Wpragmas\"")                                                               \
+        _Pragma ("GCC diagnostic ignored \"-Wunknown-warning-option\"")                                                \
         _Pragma ("GCC diagnostic ignored \"-Wdeprecated-copy\"")                                                       \
         _Pragma ("GCC diagnostic ignored \"-Wdeprecated-copy-with-user-provided-copy\"")                               \
         _Pragma ("GCC diagnostic ignored \"-Winconsistent-missing-override\"")                                         \
