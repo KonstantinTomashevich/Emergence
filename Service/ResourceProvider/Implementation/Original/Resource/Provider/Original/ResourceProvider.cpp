@@ -307,17 +307,11 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     {
     case ObjectResourceFormat::BINARY:
     {
-        EMERGENCE_LOG (ERROR, "Temp log: 6");
-
         [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Binary::DeserializeTypeName (input);
         EMERGENCE_ASSERT (typeName == _type.GetName ());
 
-        EMERGENCE_LOG (ERROR, "Temp log: 7");
-
         if (!Serialization::Binary::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
-            EMERGENCE_LOG (ERROR, "Temp log: ---");
-
             --dataReadersCount;
             return LoadingOperationResponse::IO_ERROR;
         }
@@ -327,17 +321,11 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
     case ObjectResourceFormat::YAML:
     {
-        EMERGENCE_LOG (ERROR, "Temp log: 8");
-
         [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
         EMERGENCE_ASSERT (typeName == _type.GetName ());
 
-        EMERGENCE_LOG (ERROR, "Temp log: 9");
-
         if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
-            EMERGENCE_LOG (ERROR, "Temp log: ---");
-
             --dataReadersCount;
             return LoadingOperationResponse::IO_ERROR;
         }
