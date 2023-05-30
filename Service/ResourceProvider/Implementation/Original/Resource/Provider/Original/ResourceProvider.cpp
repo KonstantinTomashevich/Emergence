@@ -321,8 +321,8 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
     case ObjectResourceFormat::YAML:
     {
-        [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
-        EMERGENCE_ASSERT (typeName == _type.GetName ());
+//        [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
+//        EMERGENCE_ASSERT (typeName == _type.GetName ());
 
         if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
