@@ -270,8 +270,6 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     EMERGENCE_ASSERT (dataWritersCount == 0u);
     ++dataReadersCount;
 
-    EMERGENCE_LOG (ERROR, "Temp log: 1");
-
     auto cursor = objectsById.ReadPoint (&_id);
     const auto *object = static_cast<const ObjectResourceData *> (*cursor);
 
@@ -281,15 +279,11 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         return LoadingOperationResponse::NOT_FOUND;
     }
 
-    EMERGENCE_LOG (ERROR, "Temp log: 2");
-
     if (object->type != _type)
     {
         --dataReadersCount;
         return LoadingOperationResponse::WRONG_TYPE;
     }
-
-    EMERGENCE_LOG (ERROR, "Temp log: 3");
 
     std::ios_base::openmode openMode = std::ios::in;
     switch (object->format)
@@ -302,16 +296,12 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         break;
     }
 
-    EMERGENCE_LOG (ERROR, "Temp log: 4");
-
     std::ifstream input (EMERGENCE_BUILD_STRING (object->source, "/", object->relativePath), openMode);
     if (!input)
     {
         --dataReadersCount;
         return LoadingOperationResponse::NOT_FOUND;
     }
-
-    EMERGENCE_LOG (ERROR, "Temp log: 5");
 
     switch (object->format)
     {
@@ -356,7 +346,6 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     }
     }
 
-    EMERGENCE_LOG (ERROR, "Temp log: 10");
     --dataReadersCount;
     return LoadingOperationResponse::SUCCESSFUL;
 }
