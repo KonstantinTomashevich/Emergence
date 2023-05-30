@@ -270,6 +270,8 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     EMERGENCE_ASSERT (dataWritersCount == 0u);
     ++dataReadersCount;
 
+    EMERGENCE_LOG (ERROR, "Temp log: 1");
+
     auto cursor = objectsById.ReadPoint (&_id);
     const auto *object = static_cast<const ObjectResourceData *> (*cursor);
 
@@ -279,11 +281,15 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         return LoadingOperationResponse::NOT_FOUND;
     }
 
+    EMERGENCE_LOG (ERROR, "Temp log: 2");
+
     if (object->type != _type)
     {
         --dataReadersCount;
         return LoadingOperationResponse::WRONG_TYPE;
     }
+
+    EMERGENCE_LOG (ERROR, "Temp log: 3");
 
     std::ios_base::openmode openMode = std::ios::in;
     switch (object->format)
@@ -296,6 +302,8 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         break;
     }
 
+    EMERGENCE_LOG (ERROR, "Temp log: 4");
+
     std::ifstream input (EMERGENCE_BUILD_STRING (object->source, "/", object->relativePath), openMode);
     if (!input)
     {
@@ -303,15 +311,23 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         return LoadingOperationResponse::NOT_FOUND;
     }
 
+    EMERGENCE_LOG (ERROR, "Temp log: 5");
+
     switch (object->format)
     {
     case ObjectResourceFormat::BINARY:
     {
+        EMERGENCE_LOG (ERROR, "Temp log: 6");
+
         [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Binary::DeserializeTypeName (input);
         EMERGENCE_ASSERT (typeName == _type.GetName ());
 
+        EMERGENCE_LOG (ERROR, "Temp log: 7");
+
         if (!Serialization::Binary::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
+            EMERGENCE_LOG (ERROR, "Temp log: ---");
+
             --dataReadersCount;
             return LoadingOperationResponse::IO_ERROR;
         }
@@ -321,11 +337,17 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
     case ObjectResourceFormat::YAML:
     {
+        EMERGENCE_LOG (ERROR, "Temp log: 8");
+
         [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
         EMERGENCE_ASSERT (typeName == _type.GetName ());
 
+        EMERGENCE_LOG (ERROR, "Temp log: 9");
+
         if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
+            EMERGENCE_LOG (ERROR, "Temp log: ---");
+
             --dataReadersCount;
             return LoadingOperationResponse::IO_ERROR;
         }
@@ -334,6 +356,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     }
     }
 
+    EMERGENCE_LOG (ERROR, "Temp log: 10");
     --dataReadersCount;
     return LoadingOperationResponse::SUCCESSFUL;
 }
