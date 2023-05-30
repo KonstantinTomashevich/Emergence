@@ -43,7 +43,7 @@ jobs:
 
       - name: Setup dependencies
         # Currently, things that use Urho3D or PhysX aren't supported on Ubuntu.
-        if: matrix.os == 'windows-2022'
+        if: matrix.os != 'ubuntu-22.04'
         uses: ./.github/actions/SetupDependencies
         with:
           platform: ${{runner.os}}
