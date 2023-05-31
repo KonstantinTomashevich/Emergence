@@ -9,6 +9,7 @@ const ResourceObjectRequest::Reflection &ResourceObjectRequest::Reflect () noexc
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ResourceObjectRequest);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (objectId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (forceReload);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();

@@ -99,9 +99,12 @@ void LoadingOrchestrator::Execute () noexcept
     case LoadingStage::NOT_STARTED:
     {
         auto resourceObjectRequestCursor = insertResourceObjectRequest.Execute ();
-        auto *resourceObjectRequest =
-            static_cast<Emergence::Celerity::ResourceObjectRequest *> (++resourceObjectRequestCursor);
-        resourceObjectRequest->objects = objectsLeftToBeLoaded;
+        for (Emergence::Memory::UniqueString objectId : objectsLeftToBeLoaded)
+        {
+            auto *resourceObjectRequest =
+                static_cast<Emergence::Celerity::ResourceObjectRequest *> (++resourceObjectRequestCursor);
+            resourceObjectRequest->objectId = objectId;
+        }
 
         auto resourceConfigRequestCursor = insertResourceConfigRequest.Execute ();
         auto *dynamicsMaterialRequest =

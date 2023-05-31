@@ -7,8 +7,6 @@
 
 namespace Emergence::Celerity::MaterialInstanceManagement
 {
-// TODO: Tests for runtime material instances.
-
 /// \brief Adds task for MaterialInstance asset loading and unloading in normal update pipeline.
 /// \details Inserted into asset loading, therefore has no specific checkpoints.
 ///

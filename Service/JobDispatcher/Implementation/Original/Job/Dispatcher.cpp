@@ -135,13 +135,17 @@ Dispatcher::Job DispatcherImplementation::Pop (bool &_wasBackground) noexcept
             };
         }
 
-        if (foregroundJobPool.empty () && backgroundJobPool.empty ())
+        const bool noForegroundJobs = foregroundJobPool.empty ();
+        const bool noBackgroundJobs = backgroundJobPool.empty ();
+        const bool underTheBackgroundJobLimit = backgroundThreadCount < maxBackgroundThreadCount;
+
+        if ((noBackgroundJobs || !underTheBackgroundJobLimit) && noForegroundJobs)
         {
             continue;
         }
 
         Dispatcher::Job job;
-        if (!backgroundJobPool.empty () && backgroundThreadCount < maxBackgroundThreadCount)
+        if (!noBackgroundJobs && underTheBackgroundJobLimit)
         {
             job = std::move (backgroundJobPool.back ());
             backgroundJobPool.pop_back ();

@@ -110,7 +110,7 @@ void StatefulAssetManagerBase<Successor>::ProcessLoading () noexcept
             }
 
             // If we have failed to start loading, remove the loading state.
-            if (state != AssetState::LOADING && state != AssetState::READY)
+            if (state != AssetState::LOADING)
             {
                 auto loadingStateCursor = removeLoadingStateById.Execute (&asset->id);
                 EMERGENCE_ASSERT (loadingStateCursor.ReadConst ());

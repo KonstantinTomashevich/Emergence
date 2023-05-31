@@ -8,6 +8,7 @@
 
 namespace boost
 {
+// We do not support exceptions, therefore we need to provide mock for boost exceptions.
 BEGIN_MUTING_NO_RETURN_WARNINGS
 BOOST_NORETURN inline void throw_exception (const std::exception &_exception)
 {

@@ -75,61 +75,62 @@ void LoadingProcessor::Execute () noexcept
 
 void LoadingProcessor::ProcessRequests (ResourceObjectLoadingStateSingleton *_state) noexcept
 {
-    for (auto requestCursor = modifyRequests.Execute ();
-         auto *request = static_cast<ResourceObjectRequest *> (*requestCursor); ~requestCursor)
+    auto requestCursor = modifyRequests.Execute ();
+    if (!*requestCursor)
     {
-        Handling::Handle<ResourceObjectLoadingSharedState> loadingState {
-            new ResourceObjectLoadingSharedState (resourceProvider, typeManifest)};
+        return;
+    }
 
-        for (Memory::UniqueString objectId : request->objects)
+    Handling::Handle<ResourceObjectLoadingSharedState> loadingState {
+        new ResourceObjectLoadingSharedState (resourceProvider, typeManifest)};
+
+    for (; auto *request = static_cast<ResourceObjectRequest *> (*requestCursor); ~requestCursor)
+    {
+        if (!request->forceReload)
         {
-            if (!request->forceReload)
+            if (auto cursor = removeAssemblyDescriptor.Execute (&request->objectId); cursor.ReadConst ())
             {
-                if (auto cursor = removeAssemblyDescriptor.Execute (&objectId); cursor.ReadConst ())
-                {
-                    // Skip loading of already loaded object.
-                    continue;
-                }
-            }
-
-            bool alreadyLoading = false;
-            for (const Handling::Handle<ResourceObjectLoadingSharedState> &otherState : _state->sharedStates)
-            {
-                if (std::find (otherState->requestedObjectList.begin (), otherState->requestedObjectList.end (),
-                               objectId) != otherState->requestedObjectList.end ())
-                {
-                    alreadyLoading = true;
-                    break;
-                }
-            }
-
-            if (alreadyLoading)
-            {
-                // Already loading as part of other request. Skip.
+                // Skip loading of already loaded object.
                 continue;
             }
-
-            loadingState->requestedObjectList.emplace_back (objectId);
         }
 
-        if (!loadingState->requestedObjectList.empty ())
+        bool alreadyLoading = false;
+        for (const Handling::Handle<ResourceObjectLoadingSharedState> &otherState : _state->sharedStates)
         {
-            Job::Dispatcher::Global ().Dispatch (
-                Job::Priority::BACKGROUND,
-                [loadingState] ()
-                {
-                    Container::Vector<Resource::Object::LibraryLoadingTask> tasks;
-                    for (Memory::UniqueString objectId : loadingState->requestedObjectList)
-                    {
-                        tasks.emplace_back () = {objectId};
-                    }
-
-                    loadingState->library = loadingState->libraryLoader.Load (tasks);
-                    loadingState->loaded.test_and_set (std::memory_order::release);
-                });
-
-            _state->sharedStates.emplace_back (std::move (loadingState));
+            if (std::find (otherState->requestedObjectList.begin (), otherState->requestedObjectList.end (),
+                           request->objectId) != otherState->requestedObjectList.end ())
+            {
+                alreadyLoading = true;
+                break;
+            }
         }
+
+        if (alreadyLoading)
+        {
+            // Already loading as part of other request. Skip.
+            continue;
+        }
+
+        loadingState->requestedObjectList.emplace_back (request->objectId);
+    }
+
+    if (!loadingState->requestedObjectList.empty ())
+    {
+        Job::Dispatcher::Global ().Dispatch (Job::Priority::BACKGROUND,
+                                             [loadingState] ()
+                                             {
+                                                 Container::Vector<Resource::Object::LibraryLoadingTask> tasks;
+                                                 for (Memory::UniqueString objectId : loadingState->requestedObjectList)
+                                                 {
+                                                     tasks.emplace_back () = {objectId};
+                                                 }
+
+                                                 loadingState->library = loadingState->libraryLoader.Load (tasks);
+                                                 loadingState->loaded.test_and_set (std::memory_order::release);
+                                             });
+
+        _state->sharedStates.emplace_back (std::move (loadingState));
     }
 }
 

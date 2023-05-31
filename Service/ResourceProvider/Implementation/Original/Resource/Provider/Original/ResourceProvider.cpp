@@ -55,12 +55,12 @@ const ObjectResourceData::Reflection &ObjectResourceData::Reflect () noexcept
         if constexpr (sizeof (StandardLayout::Mapping) == sizeof (std::uint64_t))
         {
             reflectionData.typeNumber =
-                builder.RegisterUInt64 (Memory::UniqueString {"typeStateBlock"}, offsetof (ObjectResourceData, type));
+                builder.RegisterUInt64 (Memory::UniqueString {"typeBlock"}, offsetof (ObjectResourceData, type));
         }
         else if constexpr (sizeof (StandardLayout::Mapping) == sizeof (std::uint32_t))
         {
             reflectionData.typeNumber =
-                builder.RegisterUInt32 (Memory::UniqueString {"typeStateBlock"}, offsetof (ObjectResourceData, type));
+                builder.RegisterUInt32 (Memory::UniqueString {"typeBlock"}, offsetof (ObjectResourceData, type));
         }
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (source);

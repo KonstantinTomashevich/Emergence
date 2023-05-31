@@ -22,7 +22,8 @@ struct RenderFoundationSingleton final
     std::atomic_uintptr_t runtimeMaterialInstanceIdCounter = 0u;
 
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    Memory::UniqueString GenerateRuntimeMaterialInstanceId (Memory::UniqueString _materialInstanceId) const noexcept;
+    [[nodiscard]] Memory::UniqueString GenerateRuntimeMaterialInstanceId (
+        Memory::UniqueString _materialInstanceId) const noexcept;
 
     struct Reflection final
     {

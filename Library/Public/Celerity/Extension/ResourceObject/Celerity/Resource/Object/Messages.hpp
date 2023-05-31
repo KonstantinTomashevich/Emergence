@@ -9,14 +9,15 @@ namespace Emergence::Celerity
 /// \brief Request resource objects to be loaded.
 struct ResourceObjectRequest final
 {
-    /// \brief Ids of resource objects to be loaded.
-    Container::Vector<Memory::UniqueString> objects {Memory::Profiler::AllocationGroup::Top ()};
+    /// \brief Id of resource object to be loaded.
+    Memory::UniqueString objectId;
 
     /// \brief Should objects be reloaded if it is already loaded.
     bool forceReload = false;
 
     struct Reflection final
     {
+        StandardLayout::FieldId objectId;
         StandardLayout::FieldId forceReload;
         StandardLayout::Mapping mapping;
     };

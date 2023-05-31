@@ -173,6 +173,11 @@ void Loader::ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState
                 }
             }
         }
+        else
+        {
+            EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Type \"", request->type.GetName (),
+                           "\" is not registered as config type!");
+        }
     }
 }
 
@@ -219,6 +224,8 @@ void Loader::ProcessLoading (ResourceConfigLoadingStateSingleton *_loadingState)
             break;
 
         case ResourceConfigLoadingState::FAILED:
+            EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Failed to load configs of type \"",
+                           sharedState->configType.GetName (), "\".");
             iterator = Container::EraseExchangingWithLast (_loadingState->loadingStates, iterator);
             break;
         }

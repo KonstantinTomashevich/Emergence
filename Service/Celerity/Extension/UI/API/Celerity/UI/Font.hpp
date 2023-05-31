@@ -18,7 +18,7 @@ struct Font final
     EMERGENCE_STATIONARY_DATA_TYPE (Font);
 
     /// \brief Id used to bind to Asset instance.
-    /// \details Must follow the format `{FontName}{FONT_SIZE_SEPARATOR}{FontSize}`, for example `DroidSans.ttf#14`.
+    /// \details Must follow the format `{FontName}{FONT_SIZE_SEPARATOR}{FontSize}`, for example `F_DroidSans#14`.
     Memory::UniqueString assetId;
 
     /// \brief Texture that contains loaded font atlas.

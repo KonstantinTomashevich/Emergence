@@ -103,7 +103,7 @@ public:
         explicit ObjectRegistryCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
-    /// \brief Constructs resource provider the supports given resource types and is aware of given patchable types.
+    /// \brief Constructs resource provider that supports given resource types and is aware of given patchable types.
     ResourceProvider (Container::MappingRegistry _objectTypesRegistry,
                       Container::MappingRegistry _patchableTypesRegistry) noexcept;
 

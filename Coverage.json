@@ -69,12 +69,6 @@
       "Reason": "For now, only simple returns are uncovered (file is very small), therefore it is ok to lower coverage requirement."
     },
     {
-      "Prefix": "./Library/Public/Container/Container/StringBuilder.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 69.0,
-      "Reason": "A lot of formatting options aren't used by tests yet and there is no separate tests for Container. Perhaps, should be fixed later."
-    },
-    {
       "Prefix": "./Library/Public/Math",
       "Action": "Exclude",
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."

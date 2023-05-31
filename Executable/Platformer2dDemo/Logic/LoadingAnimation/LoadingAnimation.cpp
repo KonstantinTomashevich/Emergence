@@ -135,7 +135,7 @@ void Manager::RequestDescriptorLoading () noexcept
     {
         auto cursor = insertResourceObjectRequest.Execute ();
         auto *request = static_cast<Emergence::Celerity::ResourceObjectRequest *> (++cursor);
-        request->objects.emplace_back (LOADING_PROTOTYPE_NAME);
+        request->objectId = LOADING_PROTOTYPE_NAME;
     }
 }
 

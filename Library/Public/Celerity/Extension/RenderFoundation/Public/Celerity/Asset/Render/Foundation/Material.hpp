@@ -39,13 +39,9 @@ struct UniformDescription final
 struct MaterialAsset final
 {
     /// \brief Id of a fragment shader used by this material.
-    /// \details Shaders reside in shader root folders and their ids are allowed to contain '/',
-    ///          but their extension is implementation specific.
     Memory::UniqueString vertexShader;
 
     /// \brief Id of a vertex shader used by this material.
-    /// \details Shaders reside in shader root folders and their ids are allowed to contain '/',
-    ///          but their extension is implementation specific.
     Memory::UniqueString fragmentShader;
 
     /// \brief Lists all the uniforms of this material.

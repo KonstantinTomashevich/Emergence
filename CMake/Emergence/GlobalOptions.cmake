@@ -72,7 +72,7 @@ function (add_common_compile_options)
 
     if (NOT MSVC)
         # On GCC we need to link STL and math everywhere.
-        # It seems easier to do it globally here instead of adding this check to every target.
+        # It seems easier to do it globally here instead of adding this code to every target.
         link_libraries (m stdc++)
     endif ()
 endfunction ()

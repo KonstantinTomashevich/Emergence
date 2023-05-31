@@ -30,11 +30,11 @@ public:
 
     void operator delete (void *_pointer) noexcept;
 
+    /// \brief Describes in which state locale loading is right now.
+    std::atomic<LocaleLoadingState> loadingState = LocaleLoadingState::LOADING;
+
     /// \brief Configuration that is currently being loaded from resources.
     LocaleConfiguration configurationInLoading;
-
-    /// \brief Describes in which state locale loading is right now.
-    std::atomic<LocaleLoadingState> loadingState;
 
 private:
     /// \brief Allocation group used by ::GetHeap.
